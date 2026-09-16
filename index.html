@@ -1742,6 +1742,7 @@
   #page-4 {
     align-items: flex-start;
     overflow-y: auto;
+    touch-action: pan-y;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
     padding-top: calc(40px + env(safe-area-inset-top));
@@ -2001,6 +2002,7 @@
   .wheel-options-scroll {
     max-height: 118px;
     overflow-y: auto;
+    touch-action: pan-y;
     overflow-x: hidden;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
@@ -2268,6 +2270,7 @@
     flex-direction: column;
     align-items: center;
     overflow-y: auto;
+    touch-action: pan-y;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
     scrollbar-width: none;
@@ -2288,6 +2291,7 @@
     justify-content: flex-start;
     padding-top: calc(48px + env(safe-area-inset-top));
     overflow-y: auto;
+    touch-action: pan-y;
     overflow-x: hidden;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
@@ -2444,6 +2448,7 @@
     width: 100%;
     max-height: 50vh;
     overflow-y: auto;
+    touch-action: pan-y;
     box-sizing: border-box;
     padding: 0.15rem;
     scrollbar-width: none;
@@ -3684,6 +3689,7 @@
     flex-direction: column;
     align-items: center;
     overflow-y: auto;
+    touch-action: pan-y;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
     scrollbar-width: none;
@@ -5040,6 +5046,7 @@
     flex: 1 1 auto;
     min-height: 0;
     overflow-y: auto;
+    touch-action: pan-y;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
   }
@@ -5058,6 +5065,7 @@
     width: 100%;
     max-height: 55vh;
     overflow-y: auto;
+    touch-action: pan-y;
     overflow-x: hidden;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
@@ -5537,6 +5545,7 @@
     gap: 1rem;
     padding: calc(44px + env(safe-area-inset-top)) 20px calc(28px + env(safe-area-inset-bottom));
     overflow-y: auto;
+    touch-action: pan-y;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
     scrollbar-width: none;
@@ -6342,6 +6351,7 @@
     gap: 0.55rem;
     max-height: 320px;
     overflow-y: auto;
+    touch-action: pan-y;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
   }
@@ -6463,6 +6473,7 @@
     justify-content: flex-start;
     padding-top: calc(48px + env(safe-area-inset-top));
     overflow-y: auto;
+    touch-action: pan-y;
     overflow-x: hidden;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
@@ -7452,6 +7463,7 @@
     gap: 1rem;
     padding: calc(44px + env(safe-area-inset-top)) 20px calc(28px + env(safe-area-inset-bottom));
     overflow-y: auto;
+    touch-action: pan-y;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
   }
@@ -7467,6 +7479,7 @@
     gap: 1rem;
     padding: calc(44px + env(safe-area-inset-top)) 20px calc(28px + env(safe-area-inset-bottom));
     overflow-y: auto;
+    touch-action: pan-y;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
   }
@@ -8586,6 +8599,7 @@
     max-width: 300px;
     max-height: 34vh;
     overflow-y: auto;
+    touch-action: pan-y;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
     display: flex;
@@ -8921,6 +8935,7 @@
     flex: 1 1 auto;
     min-height: 0;
     overflow-y: auto;
+    touch-action: pan-y;
     overflow-x: hidden;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
@@ -9344,6 +9359,7 @@
     gap: 1.1rem;
     padding: calc(44px + env(safe-area-inset-top)) 20px calc(22px + env(safe-area-inset-bottom));
     overflow-y: auto;
+    touch-action: pan-y;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
   }
@@ -9637,6 +9653,7 @@
     gap: 1.1rem;
     padding: calc(44px + env(safe-area-inset-top)) 20px calc(22px + env(safe-area-inset-bottom));
     overflow-y: auto;
+    touch-action: pan-y;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
   }
@@ -9650,6 +9667,7 @@
     justify-content: flex-start;
     padding: calc(44px + env(safe-area-inset-top)) 20px calc(22px + env(safe-area-inset-bottom));
     overflow-y: auto;
+    touch-action: pan-y;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
   }
@@ -9751,6 +9769,7 @@
     flex-direction: column;
     align-items: center;
     overflow-y: auto;
+    touch-action: pan-y;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
     scrollbar-width: none;
@@ -10005,6 +10024,7 @@
     gap: 1.1rem;
     padding: calc(44px + env(safe-area-inset-top)) 20px calc(22px + env(safe-area-inset-bottom));
     overflow-y: auto;
+    touch-action: pan-y;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
   }
@@ -13549,9 +13569,26 @@
   // hızlıca farklı butonlara basılabilir.
   let pageTransitionTimer = null;
 
+  // Güvenlik önlemi: bir pop-up/tam ekran panel kapanırken kendi kilit
+  // sınıfını body'den kaldırmayı unutursa (ör. bir hata ya da beklenmeyen
+  // bir akış yüzünden), bu iz body'de takılı kalıp SONRAKİ sayfalarda da
+  // kaydırmayı/scroll'u kilitli bırakabilir. Kullanıcı normal bir sayfaya
+  // her geçiş yaptığında bu olası kilit sınıflarını temizleyerek, tek bir
+  // unutulmuş satırın tüm uygulamanın kaymasını durdurmasını engelliyoruz.
+  const BODY_LOCK_CLASSES = [
+    'has-modal-open', 'is-wheel-open', 'is-laps-open', 'is-page10-open',
+    'is-calendar-open', 'is-patterns-open', 'is-exam-detail-open',
+    'is-analytics-open', 'is-zero-error-open', 'is-qhavuz-test-open'
+  ];
+  const clearStaleBodyLocks = () => {
+    BODY_LOCK_CLASSES.forEach((cls) => document.body.classList.remove(cls));
+  };
+
   const goToPage = (id) => {
     const nextPage = document.getElementById(id);
     if (!nextPage || nextPage === activePage) return;
+
+    clearStaleBodyLocks();
 
     const prevPage = activePage;
     activePage = nextPage;
