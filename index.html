@@ -830,6 +830,16 @@
     transform: translateX(9px);
   }
 
+  /* Anahtar AÇIKKEN iz (track) her zaman aynı koyu tonda kalıyordu; sadece
+     27px'lik topuzun 9px kayması (41px'lik izin içinde) fark ediliyordu,
+     bu da açık/kapalı durumunun net anlaşılmasını zorlaştırıyordu. Artık
+     işaretliyken iz, uygulamanın vurgu rengine (--accent-color) dönüyor;
+     kapalıyken eski koyu tonunda kalıyor — böylece durum, topuzun konumuna
+     bakmadan sadece renkten bile anlaşılıyor. */
+  .brutal-toggle input:checked + .track {
+    background: var(--accent-color, #ff90e8);
+  }
+
   /* Anahtar aktif edildiğinde (checked) sayfadaki button_top butonları
      antresit (koyu gri) tonuna geçer — referans görseldeki takvim
      hücrelerinden ilham alındı. Alt katman (--button_outline_color)
@@ -2691,11 +2701,11 @@
 
   .page8-item-row {
     display: flex;
-    /* flex-start: kutu artık satırın dikey ortasına değil, metnin İLK
-       satırına hizalanıyor. Metin birden çok satıra yayıldığında
-       (satır atlamalı içerik) hangi kutunun hangi metne ait olduğu
-       böylece belirsizleşmiyor. */
-    align-items: flex-start;
+    /* center: kutu, metin tek satır olsun çok satır olsun her zaman
+       metin bloğunun TAM dikey ortasına hizalanır. Çok satırlı
+       görevlerde kutunun üstte asılı kalmaması için flex-start yerine
+       center kullanılıyor. */
+    align-items: center;
     gap: 0.6rem;
     /* Ayrı görevler arasında, aynı görevin kendi satırları arasındaki
        boşluktan (satır yüksekliği) belirgin şekilde daha geniş bir
@@ -2725,22 +2735,65 @@
     border-bottom-color: rgba(242, 242, 244, 0.14);
   }
 
+  /* ---- "Basılı tutma" vurgusu (iPhone tarzı) ----
+     Bir görev/rutin satırına ya da kategori/rutin grubu başlığına parmakla
+     basılı tutulduğu anda (Kopyala/Düzenle/Sil balonu belirmeden ÖNCE bile)
+     dokunulan öğe hafif bir zeminle vurgulanır; böylece kullanıcı balon
+     açılana kadar TAM OLARAK hangi öğeyi seçtiğini görür. Balon açık
+     kaldığı sürece de vurgu kalır, balon kapanınca (bkz. closePage8CopyBubble)
+     kaldırılır. */
+  .page8-item-row,
+  .page8-group-header {
+    transition: background-color 0.15s ease;
+  }
+
+  .page8-item-row.page8-longpress-active {
+    background-color: rgba(18, 18, 18, 0.06);
+    border-radius: 0.6rem;
+  }
+
+  .page8-group-header.page8-longpress-active {
+    background-color: rgba(18, 18, 18, 0.06);
+  }
+
+  body.is-anthracite .page8-item-row.page8-longpress-active,
+  body.is-anthracite .page8-group-header.page8-longpress-active {
+    background-color: rgba(242, 242, 244, 0.12);
+  }
+
   .page8-item-check-label {
     display: flex;
-    align-items: flex-start;
+    /* Kutu, tek satırlık görevlerde de çok satırlı görevlerde de metnin
+       (tüm blok yüksekliğinin) tam dikey ortasına hizalanır. Önceden çok
+       satırlı görevlerde "ilk satıra hizalı" (flex-start) tutuluyordu, ama
+       bu, tek satırlık görevlerdeki JS tabanlı ölçüme (ResizeObserver)
+       bağımlıydı ve bazen (ör. yeni eklenen bir görevde) zamanında
+       tetiklenmeyip kutunun üstte, metnin ortalanmamış kalmasına yol
+       açıyordu. Artık tamamen CSS ile, satır sayısından bağımsız her zaman
+       ortalanıyor — hem daha güvenilir hem de kullanıcının referans aldığı
+       çok satırlı görünümle (kutu bloğun ortasında) birebir aynı davranış. */
+    align-items: center;
     gap: 0.6rem;
     flex: 1 1 auto;
     min-width: 0;
     cursor: pointer;
   }
 
-  /* Metin tek satıra sığıyorsa kutu satırın üstüne değil, tam ortasına
-     hizalanır (JS ölçüp bu class'ı ekliyor/kaldırıyor, bkz.
-     syncPage8ItemLineAlign); birden çok satıra yayılan görevlerde ise
-     yukarıdaki varsayılan flex-start korunur (kutu ilk satıra hizalı
-     kalır ki hangi kutunun hangi metne ait olduğu net olsun). */
-  .page8-item-check-label.is-page8-single-line {
-    align-items: center;
+  /* Kutuyla metin dikeyde aynı çizgide (align-items:center) olsa da, yazı
+     tipinin satır kutusu içindeki üst/alt boşluk simetrik olmadığından
+     (harflerin "iniş" payı üstten daha az), metin gözle görülür biçimde
+     kutunun biraz ÜSTÜNDE duruyormuş gibi algılanıyordu. Metni hafifçe
+     aşağı kaydırıp gerçek optik merkeze oturtuyoruz (satır sayısından
+     bağımsız, her zaman geçerli). */
+  .page8-item-text {
+    /* ÖNEMLİ: bu bir <span> (satır-içi/inline) öğe olduğu için
+       margin-top HİÇBİR görsel etki yapmıyordu (satır-içi öğelerde
+       dikey margin tamamen yok sayılır) — kutunun optik merkeziyle
+       aradaki fark bu yüzden hiç kapanmıyordu. position:relative + top
+       satır-içi öğelerde de gerçekten çalıştığı için onun yerine
+       kullanılıyor. */
+    position: relative;
+    top: 0.3rem;
   }
 
   .page8-item-check {
@@ -2750,7 +2803,6 @@
   .page8-item-box {
     width: 1.3rem;
     height: 1.3rem;
-    margin-top: 0.05rem;
     border: 2.5px solid #000;
     border-radius: 0.4rem;
     background: #fff;
@@ -2834,10 +2886,9 @@
     font-family: "Space Grotesk", sans-serif;
     font-weight: 700;
     font-size: 0.92rem;
-    /* Sabit, sayısal bir line-height gerekli: tanımlanmazsa tarayıcı
-       "normal" (birimsiz) döndürür ve JS tarafındaki tek satır/çok satır
-       ölçümü (syncPage8ItemLineAlign) bunu piksele çeviremeyip sessizce
-       başarısız olur — checkbox hep üstte hizalı kalırdı. */
+    /* Sabit, sayısal bir line-height: tarayıcının "normal" (birimsiz)
+       değeri, satır yüksekliğine bağlı diğer piksel hesaplarını
+       bozmaması için sabitlendi. */
     line-height: 1.35;
     color: #121212;
     text-decoration-line: line-through;
@@ -17293,33 +17344,6 @@
     text.className = 'page8-item-text';
     text.textContent = item.text;
 
-    // Metin tek satır mı yoksa birden çok satıra mı yayılıyor ölçüp
-    // etikete uygun class'ı ekler/kaldırır (bkz. yukarıdaki
-    // .page8-item-check-label.is-page8-single-line kuralı). ResizeObserver
-    // kullanılıyor ki hem ilk çizimde hem pencere/font genişliği
-    // değiştiğinde hem de metin satır içi düzenlemeyle değiştiğinde
-    // hizalama otomatik güncellensin.
-    const syncPage8ItemLineAlign = () => {
-      const style = getComputedStyle(text);
-      let lineHeight = parseFloat(style.lineHeight);
-      // "normal" gibi birimsiz bir değer parseFloat'tan NaN döner; bu
-      // durumda font-size üzerinden makul bir yaklaşık satır yüksekliği
-      // hesaplıyoruz ki ölçüm hiçbir zaman sessizce başarısız olup class
-      // eklemeden çıkmasın.
-      if (!lineHeight || Number.isNaN(lineHeight)) {
-        const fontSize = parseFloat(style.fontSize) || 16;
-        lineHeight = fontSize * 1.2;
-      }
-      const isSingleLine = text.scrollHeight <= lineHeight * 1.4;
-      label.classList.toggle('is-page8-single-line', isSingleLine);
-    };
-    if (typeof ResizeObserver !== 'undefined') {
-      new ResizeObserver(syncPage8ItemLineAlign).observe(text);
-    } else {
-      // ResizeObserver yoksa (çok eski tarayıcı) en azından ilk çizimde bir
-      // kez ölç; pencere boyutu değişince hizalama güncellenmeyebilir.
-      window.setTimeout(syncPage8ItemLineAlign, 0);
-    }
 
     const toggleDone = () => {
       item.done = !item.done;
@@ -17372,7 +17396,15 @@
     const PRESS_MOVE_TOLERANCE = 10;
 
     const clearPressTimer = () => {
-      if (pressTimer) { clearTimeout(pressTimer); pressTimer = null; }
+      if (pressTimer) {
+        clearTimeout(pressTimer);
+        pressTimer = null;
+        // Zamanlayıcı henüz ateşlenmeden (balon hiç açılmadan) basılı tutma
+        // erken bırakıldı/kaydırıldı: anında eklenen vurguyu da geri al.
+        // Zamanlayıcı zaten ateşlenmişse (aşağıda null'landığı için buraya
+        // hiç girilmez) vurgu, balon açık olduğu sürece kalmaya devam eder.
+        row.classList.remove('page8-longpress-active');
+      }
     };
 
     const startPress = (e) => {
@@ -17380,7 +17412,12 @@
       pressStartX = e.clientX;
       pressStartY = e.clientY;
       clearPressTimer();
+      // Balon açılmayı bekleyene kadar kullanıcı hangi satırı bastığını
+      // hemen görsün diye vurgu, zamanlayıcı beklemeden anında eklenir
+      // (iPhone'daki basılı tutma davranışıyla aynı).
+      row.classList.add('page8-longpress-active');
       pressTimer = setTimeout(() => {
+        pressTimer = null;
         if (!pressMoved) {
           // Balon, satırın sabit bir köşesine değil, parmağın/imlecin
           // gerçekten bastığı noktaya göre açılsın diye o anki koordinatlar
@@ -17388,7 +17425,9 @@
           showPage8CopyBubble(text, item.text, {
             onEdit: () => { if (typeof onEditText === 'function') onEditText(); },
             onDelete
-          }, pressStartX, pressStartY);
+          }, pressStartX, pressStartY, row);
+        } else {
+          row.classList.remove('page8-longpress-active');
         }
       }, LONG_PRESS_MS);
     };
@@ -17440,6 +17479,9 @@
   // ---- Kopyala balonu ve "Kopyalandı" bildirimi (tüm Sayfa 8 için ortak) ----
   let page8CopyBubbleEl = null;
   let page8CopyBubbleCloseHandler = null;
+  // Balon açıkken vurgulanan satır/başlık öğesi (bkz. .page8-longpress-active);
+  // balon kapanınca (nereden kapanırsa kapansın) vurgu da birlikte kalkar.
+  let page8CopyBubbleHighlightEl = null;
 
   const closePage8CopyBubble = () => {
     if (page8CopyBubbleEl) {
@@ -17450,6 +17492,10 @@
       document.removeEventListener('pointerdown', page8CopyBubbleCloseHandler, true);
       window.removeEventListener('scroll', page8CopyBubbleCloseHandler, true);
       page8CopyBubbleCloseHandler = null;
+    }
+    if (page8CopyBubbleHighlightEl) {
+      page8CopyBubbleHighlightEl.classList.remove('page8-longpress-active');
+      page8CopyBubbleHighlightEl = null;
     }
   };
 
@@ -17507,9 +17553,16 @@
   // üstünde ve yatayda ortalanmış olarak açılır. Koordinat verilmezse (ör.
   // ileride başka bir yerden anchor tabanlı çağrılırsa) eski davranışa,
   // anchorEl'in kendi merkezine göre konumlanmaya geri düşülür.
-  const showPage8CopyBubble = (anchorEl, value, actions, touchX, touchY) => {
+  // `highlightEl` verilmişse, balon açıkken o öğe (satır/başlık) basılı
+  // tutma vurgusuyla (.page8-longpress-active) işaretli kalır; kapanınca
+  // (bkz. closePage8CopyBubble) otomatik kaldırılır.
+  const showPage8CopyBubble = (anchorEl, value, actions, touchX, touchY, highlightEl) => {
     closePage8CopyBubble();
     actions = actions || {};
+    if (highlightEl) {
+      page8CopyBubbleHighlightEl = highlightEl;
+      highlightEl.classList.add('page8-longpress-active');
+    }
 
     const menu = document.createElement('div');
     menu.className = 'page8-copy-bubble';
@@ -17670,6 +17723,58 @@
       if (!page8EditMode) return;
       startRename();
     });
+
+    // ---- Kategori/rutin grubu başlığına basılı tutunca: Kopyala/Düzenle/Sil ----
+    // Görev/rutin satırlarındaki basılı tutma balonuyla (showPage8CopyBubble)
+    // birebir aynı bileşen; düzenleme moduna hiç girmeden de bir kategoriyi
+    // yeniden adlandırabilmeyi ya da silebilmeyi sağlar. Basılı tutulduğu an
+    // (balon açılmadan önce bile) başlık iPhone tarzı bir vurguyla işaretlenir
+    // (bkz. showPage8CopyBubble / .page8-longpress-active) ki kullanıcı hangi
+    // kategoriyi seçtiğini net görsün.
+    let groupPressTimer = null;
+    let groupPressMoved = false;
+    let groupPressStartX = 0;
+    let groupPressStartY = 0;
+    const GROUP_LONG_PRESS_MS = 450;
+    const GROUP_PRESS_MOVE_TOLERANCE = 10;
+
+    const clearGroupPressTimer = () => {
+      if (groupPressTimer) {
+        clearTimeout(groupPressTimer);
+        groupPressTimer = null;
+        header.classList.remove('page8-longpress-active');
+      }
+    };
+
+    nameWrap.addEventListener('pointerdown', (e) => {
+      if (e.pointerType === 'mouse' && e.button !== 0) return;
+      groupPressMoved = false;
+      groupPressStartX = e.clientX;
+      groupPressStartY = e.clientY;
+      clearGroupPressTimer();
+      header.classList.add('page8-longpress-active');
+      groupPressTimer = setTimeout(() => {
+        groupPressTimer = null;
+        if (!groupPressMoved) {
+          showPage8CopyBubble(nameWrap, group.name, {
+            onEdit: startRename,
+            onDelete: opts.onDeleteGroup
+          }, groupPressStartX, groupPressStartY, header);
+        } else {
+          header.classList.remove('page8-longpress-active');
+        }
+      }, GROUP_LONG_PRESS_MS);
+    });
+    nameWrap.addEventListener('pointermove', (e) => {
+      if (!groupPressTimer) return;
+      const dx = e.clientX - groupPressStartX;
+      const dy = e.clientY - groupPressStartY;
+      if (Math.hypot(dx, dy) > GROUP_PRESS_MOVE_TOLERANCE) groupPressMoved = true;
+    });
+    nameWrap.addEventListener('pointerup', clearGroupPressTimer);
+    nameWrap.addEventListener('pointerleave', clearGroupPressTimer);
+    nameWrap.addEventListener('pointercancel', clearGroupPressTimer);
+    nameWrap.addEventListener('contextmenu', (e) => e.preventDefault());
 
     const addBtn = document.createElement('button');
     addBtn.type = 'button';
