@@ -3681,6 +3681,14 @@
     display: none;
   }
 
+  /* Soru Seç modu açıkken ekranın altında sabit duran çubuk (bkz.
+     .qhavuz-select-bar) ızgaranın son satırının üzerine biniyordu;
+     bu modda kaydırma alanına ekstra alt boşluk eklenip son satırın
+     (branş etiketiyle birlikte) çubuğun üstünde tam görünmesi sağlanır. */
+  .qhavuz-scroll:has(.qhavuz-grid.is-select-mode) {
+    padding-bottom: calc(216px + env(safe-area-inset-bottom));
+  }
+
   .qhavuz-tear-line {
     flex: 1 1 auto;
     height: 2.5px;
@@ -3754,11 +3762,35 @@
     display: none;
   }
 
+  /* ---- Soru Havuzu: 3) Soru seçerek Test/Paket oluşturma ----
+     "Soru Seç" ikon butonu (kesim çizgisindeki kalemle aynı dilde) ve
+     "Paketlerim" butonu (ikinci aksiyon satırı). */
+  .qhavuz-select-btn.is-active {
+    opacity: 1;
+    color: #000;
+    background-color: var(--accent-color, #ff90e8);
+  }
+
+  .qhavuz-actions-secondary {
+    margin-top: -0.35rem;
+  }
+
+  .qhavuz-packages-btn {
+    background-color: #f2f2f2;
+    color: #121212;
+  }
+
+  body.is-anthracite .qhavuz-packages-btn {
+    background-color: var(--dark-card-color, #32343a);
+    color: #f2f2f4;
+  }
+
   /* ---------- Soru Havuzu: filtreleme çubuğu ----------
-     Üstte sınav türü (Tümü/TYT/AYT) segmented control'ü, altında o an
-     listede sorusu bulunan derslere göre yatay kaydırmalı çip satırı.
-     İkisi birlikte "sadece TYT", "sadece AYT" ya da tek bir derse göre
-     daraltılmış bir liste görmeyi sağlar. */
+     Sınav türü (Tümü/TYT/AYT) segmented control'ü ve o türde sorusu
+     bulunan derslere göre çip listesi artık sayfada sabit yer kaplamıyor;
+     ikisi de tek bir "Filtrele" pop-up'ında birlikte seçiliyor (bkz.
+     #qhavuzTrackSubjectBackdrop). Sayfadaki filtre çubuğunda yalnızca
+     seçili filtreyi gösteren tek bir buton kalıyor, böylece yer kazanılıyor. */
   .qhavuz-filter-bar {
     display: flex;
     flex-direction: column;
@@ -3770,22 +3802,142 @@
     width: calc(33.333% - 3px);
   }
 
-  .qhavuz-filter-subjects {
+  /* Filtrele butonu ve tarihe-göre-sırala butonu aynı satırda: filtre
+     butonu kalan genişliği doldurur (metni sığmazsa kısaltılır), sırala
+     butonu ise sağda sabit kalır ve küçülmez (flex-shrink:0). */
+  .qhavuz-filter-row {
     display: flex;
+    align-items: center;
     gap: 0.5rem;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-    padding-bottom: 0.1rem;
   }
 
-  .qhavuz-filter-subjects::-webkit-scrollbar {
+  .qhavuz-tracksubj-row {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  /* Pop-up içindeki ders çip listesi: page8-groups-chip-list ile aynı
+     dili paylaşır (kaydırılabilir, satır kırmalı ızgara). Havuzda hiç
+     ders yoksa (is-hidden) tamamen gizlenir. */
+  #qhavuzFilterSubjects.is-hidden {
     display: none;
   }
 
-  .qhavuz-filter-subjects.is-hidden {
+  .qhavuz-sort-btn {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    white-space: nowrap;
+    padding: 0.42rem 0.7rem;
+    font-family: "Space Grotesk", sans-serif;
+    font-weight: 700;
+    font-size: 0.78rem;
+    color: #121212;
+    background-color: #f2f2f2;
+    border: 2.5px solid #000;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: background-color 0.18s ease, transform 0.15s ease;
+  }
+
+  .qhavuz-sort-btn:active {
+    transform: translate(1px, 1px);
+  }
+
+  .qhavuz-sort-btn-icon {
+    flex: 0 0 auto;
+    transition: transform 0.2s ease;
+  }
+
+  /* Varsayılan (en yeni önce) durumda ok aşağı bakar; en eski önce
+     moduna geçilince tersine dönüp yukarı bakar - iki yönü de tek bir
+     SVG'yi döndürerek gösteriyoruz. */
+  .qhavuz-sort-btn.is-asc .qhavuz-sort-btn-icon {
+    transform: rotate(180deg);
+  }
+
+  body.is-anthracite .qhavuz-sort-btn {
+    background-color: var(--dark-card-color, #32343a);
+    color: #f2f2f4;
+  }
+
+  /* ---- Soru Havuzu: "Kaynağa Göre Ara" satırı ----
+     Sınav türü sekmesinin (Tümü/TYT/AYT) hemen altında duran, tam
+     genişlikte bir "sahte arama kutusu" butonu; dokununca soru eklenirken
+     girilen Kaynak (kitap adı) alanlarından türetilmiş bir seçim pop-up'ı
+     açılır (bkz. #qhavuzSourceBackdrop, Sayfa 8'deki Kategoriler pop-up'ıyla
+     aynı dili paylaşır). Bir kaynak seçiliyken buton vurgu rengiyle dolar,
+     seçilen adı gösterir ve yanındaki × butonuyla tek dokunuşla temizlenir. */
+  .qhavuz-source-search-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .qhavuz-source-search-btn {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.55rem 0.75rem;
+    font-family: "Space Grotesk", sans-serif;
+    font-weight: 700;
+    font-size: 0.82rem;
+    color: #121212;
+    text-align: left;
+    background-color: #f2f2f2;
+    border: 2.5px solid #000;
+    border-radius: 0.65rem;
+    cursor: pointer;
+    transition: background-color 0.18s ease, transform 0.15s ease;
+  }
+
+  .qhavuz-source-search-btn svg {
+    flex-shrink: 0;
+  }
+
+  .qhavuz-source-search-btn span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .qhavuz-source-search-btn:active {
+    transform: translate(1px, 1px);
+  }
+
+  .qhavuz-source-search-btn.is-active {
+    background-color: var(--accent-color, #ff90e8);
+  }
+
+  body.is-anthracite .qhavuz-source-search-btn {
+    background-color: var(--dark-card-color, #32343a);
+    color: #f2f2f4;
+  }
+
+  body.is-anthracite .qhavuz-source-search-btn.is-active {
+    background-color: var(--accent-color, #ff90e8);
+    color: #121212;
+  }
+
+  .qhavuz-source-search-clear {
+    width: 1.7rem;
+    height: 1.7rem;
+    font-size: 0.95rem;
+  }
+
+  .qhavuz-source-search-clear.is-hidden {
     display: none;
+  }
+
+  /* ---- Soru Havuzu: "Eklenen Kaynaklar" pop-up'ındaki arama kutusu ----
+     .page9-add-custom-input ile aynı dili paylaşır; burada tam genişlikte
+     tek satırlık bir alan olarak kullanılıyor. */
+  .qhavuz-source-search-input {
+    width: 100%;
+    box-sizing: border-box;
   }
 
   .qhavuz-filter-chip {
@@ -3856,7 +4008,7 @@
     box-shadow: 6px 6px 0px 0px #000;
     overflow: hidden;
     cursor: pointer;
-    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
   }
 
   .qhavuz-card:hover {
@@ -4049,6 +4201,193 @@
 
   body.is-anthracite .qhavuz-context-menu-item:active {
     background: rgba(255, 255, 255, 0.08);
+  }
+
+  /* ---- Soru Havuzu: "Soru Seç" modu ----
+     Düzenleme (silme) modundan ayrı, kartların SAĞ üst köşesinde beliren
+     dairesel bir onay kutusu (sol üst köşe zaten sınav türü rozetiyle
+     -.qhavuz-card-track-ribbon- dolu olduğu için çakışmasın diye sağa
+     alındı). Test/Paket oluşturmak için hangi soruların seçildiğini
+     gösterir; seçili kartın etrafı vurgu rengiyle çerçevelenir. */
+  .qhavuz-card-select-check {
+    position: absolute;
+    top: 0.4rem;
+    right: 0.4rem;
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: 50%;
+    border: 2.5px solid #fff;
+    background: rgba(0, 0, 0, 0.35);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 4;
+    transition: background-color 0.15s ease, border-color 0.15s ease;
+  }
+
+  .qhavuz-grid.is-select-mode .qhavuz-card-select-check,
+  .qhavuz-packages-grid.is-select-mode .qhavuz-card-select-check {
+    display: flex;
+  }
+
+  .qhavuz-card.is-selected {
+    /* Önceki sürüm outline ile dışarıdan ikinci bir çerçeve çiziyordu;
+       kartın kendi 4px'lik siyah kenarlığıyla üst üste binince,
+       özellikle yuvarlatılmış köşelerde (border-radius) aralardan siyah
+       piksel sızıntısı oluyordu. Artık ayrı bir katman eklemek yerine
+       doğrudan kartın MEVCUT kenarlığının rengini değiştiriyoruz; aynı
+       kenarlık/köşe olduğu için sızıntı ihtimali kalmıyor. */
+    border-color: var(--qhavuz-select-color, var(--accent-color, #ff90e8));
+  }
+
+  .qhavuz-card.is-selected .qhavuz-card-select-check {
+    background: var(--qhavuz-select-color, var(--accent-color, #ff90e8));
+    border-color: #000;
+  }
+
+  /* Seçim modundayken kartın normal tıklama davranışı (görseli büyütme)
+     yerine seçim değiştiği görsel olarak da belli olsun diye hafif bir
+     karartma eklenir. */
+  .qhavuz-grid.is-select-mode .qhavuz-card-delete,
+  .qhavuz-grid.is-edit-mode.is-select-mode .qhavuz-card-delete {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  /* ---- Soru Havuzu: Seçim modu alt aksiyon çubuğu ----
+     Ekranın altında, nav bar'ın hemen üzerinde sabit duran; kaç sorunun
+     seçildiğini gösteren ve Test/Paket oluşturma butonlarını taşıyan
+     brütalist çubuk. Sadece seçim modu açıkken belirir. */
+  .qhavuz-select-bar {
+    position: fixed;
+    left: 50%;
+    bottom: calc(96px + env(safe-area-inset-bottom));
+    transform: translate(-50%, 16px);
+    z-index: 60;
+    width: calc(100% - 48px);
+    max-width: 380px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+    padding: 0.7rem 0.85rem;
+    background: #fff;
+    border: 3px solid #000;
+    border-radius: 1.1em;
+    box-shadow: 5px 5px 0px 0px #000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+  }
+
+  .qhavuz-select-bar.is-open {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translate(-50%, 0);
+  }
+
+  .qhavuz-select-bar-count {
+    font-family: "Space Grotesk", sans-serif;
+    font-weight: 700;
+    font-size: 0.8rem;
+    color: #121212;
+    text-align: center;
+  }
+
+  .qhavuz-select-bar-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .qhavuz-select-bar-cancel {
+    flex: 0 0 auto;
+    padding: 0.6rem 0.7rem;
+    font-family: "Space Grotesk", sans-serif;
+    font-weight: 700;
+    font-size: 0.78rem;
+    color: #121212;
+    background: #f2f2f2;
+    border: 2.5px solid #000;
+    border-radius: 0.65rem;
+    cursor: pointer;
+  }
+
+  .qhavuz-select-bar-cancel:active {
+    transform: translate(1px, 1px);
+  }
+
+  .qhavuz-select-bar-btn {
+    flex: 1 1 0;
+    text-align: center;
+    padding-left: 0.35rem;
+    padding-right: 0.35rem;
+    font-size: 0.78rem;
+  }
+
+  body.is-anthracite .qhavuz-select-bar {
+    background: var(--dark-card-color, #32343a);
+  }
+
+  body.is-anthracite .qhavuz-select-bar-count {
+    color: #f2f2f4;
+  }
+
+  body.is-anthracite .qhavuz-select-bar-cancel {
+    background-color: #26272c;
+    color: #f2f2f4;
+  }
+
+  /* ---- Paketlerim sayfası + paket detay sayfası ----
+     Paket kartları, Soru Havuzu kartlarıyla (.qhavuz-card) aynı görsel
+     dili paylaşır; ızgara düzeni de birebir aynıdır. */
+  .qhavuz-packages-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.85rem;
+    width: 100%;
+  }
+
+  .qhavuz-package-count-badge {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    padding: 0.22rem 0.55rem;
+    border-radius: 999px;
+    background: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+    color: #fff;
+    font-family: "Space Grotesk", sans-serif;
+    font-weight: 700;
+    font-size: 0.62rem;
+    z-index: 3;
+    pointer-events: none;
+  }
+
+  .qhavuz-package-empty-thumb {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    opacity: 0.4;
+  }
+
+  .qhavuz-package-detail-actions {
+    width: 100%;
+    display: flex;
+    margin-bottom: 0.2rem;
+  }
+
+  .qhavuz-context-menu-item.qhavuz-package-context-test {
+    color: #121212;
+    border-bottom: 2px solid #000;
+  }
+
+  body.is-anthracite .qhavuz-context-menu-item.qhavuz-package-context-test {
+    color: #f2f2f4;
+    border-bottom-color: rgba(255, 255, 255, 0.25);
   }
 
   /* ---- Soru Havuzu: soru görselini büyük gösteren lightbox ---- */
@@ -6940,7 +7279,9 @@
      #page-11-detail ile birebir aynı üstte hizalı, kaydırmalı düzeni
      paylaşırlar. */
   #page-analytics,
-  #page-zero-error {
+  #page-zero-error,
+  #page-camera-packages,
+  #page-camera-package-detail {
     flex-direction: column;
     align-items: center;
     justify-content: flex-start;
@@ -12361,6 +12702,12 @@
 
     <div class="qhavuz-tear">
       <span class="qhavuz-tear-line" aria-hidden="true"></span>
+      <button type="button" class="qhavuz-tear-pencil qhavuz-select-btn" id="qhavuzSelectBtn" aria-label="Soru seç" aria-pressed="false">
+        <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 11l3 3L22 4"/>
+          <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+        </svg>
+      </button>
       <button type="button" class="qhavuz-tear-pencil" id="qhavuzEditBtn" aria-label="Soruları düzenle" aria-pressed="false">
         <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
           <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
@@ -12375,20 +12722,92 @@
           <button type="button" class="add-task-btn qhavuz-add-btn" id="qhavuzAddBtn">+ Görsel Yükle</button>
           <button type="button" class="add-task-btn qhavuz-test-start-btn" id="qhavuzTestBtn">Test Modu</button>
         </div>
+        <div class="qhavuz-actions qhavuz-actions-secondary">
+          <button type="button" class="add-task-btn qhavuz-packages-btn" id="qhavuzPackagesBtn">Paketlerim</button>
+        </div>
         <input type="file" accept="image/*" id="qhavuzFileInput" class="qhavuz-file-input">
 
         <div class="qhavuz-filter-bar" id="qhavuzFilterBar">
-          <div class="settings-segmented qhavuz-filter-track-segmented" id="qhavuzFilterTrackSegmented">
-            <div class="settings-segmented-slider" id="qhavuzFilterTrackSlider"></div>
-            <button type="button" class="settings-segmented-option is-active" data-value="all">Tümü</button>
-            <button type="button" class="settings-segmented-option" data-value="tyt">TYT</button>
-            <button type="button" class="settings-segmented-option" data-value="ayt">AYT</button>
+          <div class="qhavuz-source-search-row">
+            <button type="button" class="qhavuz-source-search-btn" id="qhavuzSourceFilterBtn" aria-haspopup="dialog">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.5" cy="10.5" r="6.5"/><line x1="15.5" y1="15.5" x2="21" y2="21"/></svg>
+              <span id="qhavuzSourceFilterLabel">Kaynağa göre ara</span>
+            </button>
+            <button type="button" class="delete-btn qhavuz-source-search-clear is-hidden" id="qhavuzSourceFilterClear" aria-label="Kaynak filtresini temizle">×</button>
           </div>
-          <div class="qhavuz-filter-subjects" id="qhavuzFilterSubjects"></div>
+          <div class="qhavuz-filter-row">
+            <div class="qhavuz-source-search-row qhavuz-tracksubj-row">
+              <button type="button" class="qhavuz-source-search-btn qhavuz-tracksubj-btn" id="qhavuzTrackSubjectFilterBtn" aria-haspopup="dialog">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="20" y2="12"/><line x1="12" y1="18" x2="20" y2="18"/></svg>
+                <span id="qhavuzTrackSubjectFilterLabel">Tümü</span>
+              </button>
+              <button type="button" class="delete-btn qhavuz-source-search-clear is-hidden" id="qhavuzTrackSubjectFilterClear" aria-label="Filtreyi temizle">×</button>
+            </div>
+            <button type="button" class="qhavuz-sort-btn" id="qhavuzSortBtn" aria-label="Tarihe göre sırala">
+              <svg class="qhavuz-sort-btn-icon" id="qhavuzSortBtnIcon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 5v14M12 19l-5-5M12 19l5-5"/>
+              </svg>
+              <span id="qhavuzSortBtnLabel">Yeni</span>
+            </button>
+          </div>
         </div>
 
         <div class="qhavuz-grid" id="qhavuzGrid"></div>
       </div>
+    </div>
+
+    <div class="qhavuz-select-bar" id="qhavuzSelectBar">
+      <span class="qhavuz-select-bar-count" id="qhavuzSelectCount">0 soru seçildi</span>
+      <div class="qhavuz-select-bar-actions">
+        <button type="button" class="qhavuz-select-bar-cancel" id="qhavuzSelectCancelBtn">Vazgeç</button>
+        <button type="button" class="add-task-btn qhavuz-select-bar-btn" id="qhavuzSelectPackageBtn" disabled>Paket Oluştur</button>
+        <button type="button" class="add-task-btn qhavuz-test-start-btn qhavuz-select-bar-btn" id="qhavuzSelectTestBtn" disabled>Test Oluştur</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Paketlerim: Soru Havuzu'ndan seçilen sorularla oluşturulan, isim
+       verilebilen soru paketlerinin listelendiği sayfa. Kartlar Soru
+       Havuzu ızgarasıyla aynı görsel dili kullanır (bkz. .qhavuz-card). -->
+  <section class="page" id="page-camera-packages">
+    <div class="exam-detail-wrap">
+      <div class="calendar-topbar">
+        <button type="button" class="calendar-back-btn" id="qhavuzPackagesBackBtn" aria-label="Geri dön">
+          <svg viewBox="0 0 24 24" width="18" height="18">
+            <path d="M15 4l-8 8 8 8" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+        <span class="calendar-topbar-title">Paketlerim</span>
+        <span class="calendar-topbar-spacer"></span>
+      </div>
+
+      <span class="page11-subtitle">Soru Havuzu'ndan seçtiğin sorularla oluşturduğun paketler. Bir pakete dokunarak içindekileri gör, basılı tutarak doğrudan test oluştur.</span>
+
+      <div class="qhavuz-packages-grid" id="qhavuzPackagesGrid"></div>
+    </div>
+  </section>
+
+  <!-- Bir paketin içeriğini gösteren detay sayfası: paketin adı başlıkta,
+       içindeki sorular Soru Havuzu ile aynı kart ızgarasında listelenir;
+       üstteki "Test Oluştur" butonu bu paketteki sorularla Test Modu'nu
+       (mevcut #page-camera-test ekranı) başlatır. -->
+  <section class="page" id="page-camera-package-detail">
+    <div class="exam-detail-wrap">
+      <div class="calendar-topbar">
+        <button type="button" class="calendar-back-btn" id="qhavuzPackageDetailBackBtn" aria-label="Geri dön">
+          <svg viewBox="0 0 24 24" width="18" height="18">
+            <path d="M15 4l-8 8 8 8" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+        <span class="calendar-topbar-title" id="qhavuzPackageDetailTitle">Paket</span>
+        <span class="calendar-topbar-spacer"></span>
+      </div>
+
+      <div class="qhavuz-package-detail-actions">
+        <button type="button" class="add-task-btn qhavuz-test-start-btn" id="qhavuzPackageDetailTestBtn" style="width:100%;">Test Oluştur</button>
+      </div>
+
+      <div class="qhavuz-grid" id="qhavuzPackageDetailGrid"></div>
     </div>
   </section>
 
@@ -12465,6 +12884,39 @@
      noktanın yakınında beliren "Sil" bağlam menüsü. -->
 <div class="qhavuz-context-menu" id="qhavuzContextMenu">
   <button type="button" class="qhavuz-context-menu-item" id="qhavuzContextMenuDelete">Sil</button>
+</div>
+
+<!-- Soru Havuzu: Seçim modunda "Paket Oluştur" ile açılan, pakete isim
+     verilen pop-up. Sayfa 8'deki "Yeni Kategori" isim pop-up'ıyla aynı
+     dili kullanır. -->
+<div class="settings-confirm-backdrop" id="qhavuzPackageNameBackdrop">
+  <div class="page8-name-card">
+    <span class="page8-name-title">Pakete İsim Ver</span>
+    <input type="text" class="page8-name-field-input" id="qhavuzPackageNameInput" maxlength="32" placeholder="İsim gir">
+    <div class="settings-confirm-actions">
+      <button type="button" class="settings-confirm-cancel" id="qhavuzPackageNameCancel">Vazgeç</button>
+      <button type="button" class="page11-modal-confirm" id="qhavuzPackageNameConfirm">Oluştur</button>
+    </div>
+  </div>
+</div>
+
+<!-- Paketlerim: bir paketi silmeden önce sorulan onay pop-up'ı. -->
+<div class="settings-confirm-backdrop" id="qhavuzPackageDeleteConfirmBackdrop">
+  <div class="settings-confirm-card">
+    <span class="settings-confirm-title">Emin misin?</span>
+    <span class="settings-confirm-desc">Bu paket silinecek (içindeki sorular Soru Havuzu'nda kalmaya devam eder).</span>
+    <div class="settings-confirm-actions">
+      <button type="button" class="settings-confirm-cancel" id="qhavuzPackageDeleteConfirmCancel">Vazgeç</button>
+      <button type="button" class="settings-confirm-confirm" id="qhavuzPackageDeleteConfirmConfirm">Evet, sil</button>
+    </div>
+  </div>
+</div>
+
+<!-- Paketlerim: bir paket kartına basılı tutunca (veya sağ tıklanınca)
+     beliren "Test Oluştur / Sil" bağlam menüsü. -->
+<div class="qhavuz-context-menu" id="qhavuzPackageContextMenu">
+  <button type="button" class="qhavuz-context-menu-item qhavuz-package-context-test" id="qhavuzPackageContextMenuTest">Test Oluştur</button>
+  <button type="button" class="qhavuz-context-menu-item" id="qhavuzPackageContextMenuDelete">Sil</button>
 </div>
 
 <!-- Sayfa 5: Kronometre başlığının yanındaki küçük kare buton ile açılan
@@ -12684,6 +13136,52 @@
     <div class="settings-confirm-actions">
       <button type="button" class="settings-confirm-cancel" id="qhavuzInfoCloseBtn">Kapat</button>
     </div>
+  </div>
+</div>
+
+<!-- Soru Havuzu: filtre çubuğundaki tek "Filtrele" butonuyla açılan pop-up.
+     Sınav türü (Tümü/TYT/AYT) segmented control'ü ve o türde en az bir
+     sorusu bulunan derslerin çip listesi artık ayrı ayrı sayfada durmak
+     yerine burada, tek bir pop-up içinde birlikte seçiliyor; sayfadaki
+     filtre çubuğunda yalnızca seçili filtre gösterilip yer kazanılıyor
+     (bkz. #qhavuzTrackSubjectFilterBtn). Sayfa 8'deki Kategoriler
+     pop-up'ıyla aynı dili paylaşır. -->
+<div class="settings-confirm-backdrop" id="qhavuzTrackSubjectBackdrop">
+  <div class="page11-modal-card page8-groups-modal-card">
+    <div class="exam-resources-header">
+      <div class="page11-modal-heading">
+        <span class="page11-modal-title">Filtrele</span>
+        <span class="page11-modal-subtitle">Sınav türünü ve dersi seç</span>
+      </div>
+      <button type="button" class="delete-btn exam-resources-close" id="qhavuzTrackSubjectCloseBtn" aria-label="Kapat">×</button>
+    </div>
+    <div class="settings-segmented qhavuz-filter-track-segmented" id="qhavuzFilterTrackSegmented">
+      <div class="settings-segmented-slider" id="qhavuzFilterTrackSlider"></div>
+      <button type="button" class="settings-segmented-option is-active" data-value="all">Tümü</button>
+      <button type="button" class="settings-segmented-option" data-value="tyt">TYT</button>
+      <button type="button" class="settings-segmented-option" data-value="ayt">AYT</button>
+    </div>
+    <div class="page8-groups-chip-list" id="qhavuzFilterSubjects"></div>
+  </div>
+</div>
+
+<!-- Soru Havuzu: filtre çubuğundaki "Kaynağa göre ara" butonuyla açılan
+     pop-up. Sayfa 8'deki Kategoriler pop-up'ıyla aynı dili kullanır: soru
+     eklenirken girilen Kaynak (kitap adı) alanlarından tekilleştirilmiş bir
+     liste türetilip etiket (chip) halinde gösterilir. Üstteki arama kutusu
+     uzun listelerde daraltmak için var; bir etikete dokununca ızgara o
+     kaynağa göre filtrelenir ve pop-up kapanır. -->
+<div class="settings-confirm-backdrop" id="qhavuzSourceBackdrop">
+  <div class="page11-modal-card page8-groups-modal-card">
+    <div class="exam-resources-header">
+      <div class="page11-modal-heading">
+        <span class="page11-modal-title">Eklenen Kaynaklar</span>
+        <span class="page11-modal-subtitle">Soru eklerken yazdığın kaynaklardan birini seç</span>
+      </div>
+      <button type="button" class="delete-btn exam-resources-close" id="qhavuzSourceCloseBtn" aria-label="Kapat">×</button>
+    </div>
+    <input type="text" class="page9-add-custom-input qhavuz-source-search-input" id="qhavuzSourceSearchInput" placeholder="Kaynak ara..." maxlength="60">
+    <div class="page8-groups-chip-list" id="qhavuzSourceChipList"></div>
   </div>
 </div>
 
@@ -12944,6 +13442,8 @@
     'page-analytics': 'page-11',
     'page-zero-error': 'page-11',
     'page-camera-test': 'page-camera',
+    'page-camera-packages': 'page-camera',
+    'page-camera-package-detail': 'page-camera',
     'page-patterns': 'page-settings',
   };
 
@@ -20854,8 +21354,14 @@
   const qhavuzState = (savedQhavuz && Array.isArray(savedQhavuz.items))
     ? savedQhavuz
     : { items: [] };
+  // Soru Paketleri: Soru Havuzu'ndan seçilen soruların id listesini ve bir
+  // ismi tutan kayıtlar. Eski kayıtlarda bu alan hiç yoktu; yoksa boş
+  // dizi olarak eklenir.
+  if (!Array.isArray(qhavuzState.packages)) qhavuzState.packages = [];
 
   const saveQhavuzState = () => saveAppState({ questionPool: qhavuzState });
+
+  const qhavuzGenPackageId = () => 'paket-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
 
   const qhavuzGrid = document.getElementById('qhavuzGrid');
   const qhavuzEditBtn = document.getElementById('qhavuzEditBtn');
@@ -20901,6 +21407,16 @@
     ? Array.from(qhavuzFilterTrackSegmented.querySelectorAll('.settings-segmented-option'))
     : [];
   const qhavuzFilterSubjectsEl = document.getElementById('qhavuzFilterSubjects');
+  // Sınav türü + ders filtresini tek bir buton üzerinden açılan pop-up'a
+  // taşıyan öğeler (bkz. #qhavuzTrackSubjectBackdrop). Buton, seçili
+  // filtreyi (varsa) etikette gösterir; hiçbiri seçili değilse "Tümü" yazar.
+  const qhavuzTrackSubjectFilterBtn = document.getElementById('qhavuzTrackSubjectFilterBtn');
+  const qhavuzTrackSubjectFilterLabel = document.getElementById('qhavuzTrackSubjectFilterLabel');
+  const qhavuzTrackSubjectFilterClear = document.getElementById('qhavuzTrackSubjectFilterClear');
+  const qhavuzTrackSubjectBackdrop = document.getElementById('qhavuzTrackSubjectBackdrop');
+  const qhavuzTrackSubjectCloseBtn = document.getElementById('qhavuzTrackSubjectCloseBtn');
+  const qhavuzSortBtn = document.getElementById('qhavuzSortBtn');
+  const qhavuzSortBtnLabel = document.getElementById('qhavuzSortBtnLabel');
 
   // Pop-up artık tek seferde değil, adım adım ilerliyor: 0) görseli kırp,
   // 1) sınav türü + ders, 2) doğru cevap. qhavuzAddStep hangi adımda
@@ -21371,9 +21887,53 @@
     qhavuzEditBtn.classList.toggle('is-active', on);
     qhavuzEditBtn.setAttribute('aria-pressed', on ? 'true' : 'false');
     qhavuzEditBtn.setAttribute('aria-label', on ? 'Düzenlemeyi bitir' : 'Soruları düzenle');
+    // Düzenleme (silme) modu açılırsa, karışıklık olmasın diye soru seçme
+    // modu otomatik kapatılır (aşağıda tanımlı setQhavuzSelectMode).
+    if (on && typeof setQhavuzSelectMode === 'function' && qhavuzSelectMode) setQhavuzSelectMode(false);
   };
 
   qhavuzEditBtn.addEventListener('click', () => setQhavuzEditMode(!qhavuzEditMode));
+
+  // ---- Soru Havuzu: "Soru Seç" modu (Test/Paket oluşturma için) ----
+  // Düzenleme (silme) modundan bağımsız ayrı bir mod: açıkken kartlara
+  // dokunmak görseli büyütmek yerine seçili/seçili-değil durumunu
+  // değiştirir. Alttaki sabit çubuktan (qhavuzSelectBar) seçili sorularla
+  // doğrudan Test Modu başlatılabilir ya da isim verilip bir Soru Paketi
+  // olarak kaydedilebilir.
+  let qhavuzSelectMode = false;
+  let qhavuzSelectedIds = new Set();
+
+  const qhavuzSelectBtn = document.getElementById('qhavuzSelectBtn');
+  const qhavuzSelectBar = document.getElementById('qhavuzSelectBar');
+  const qhavuzSelectCount = document.getElementById('qhavuzSelectCount');
+  const qhavuzSelectCancelBtn = document.getElementById('qhavuzSelectCancelBtn');
+  const qhavuzSelectPackageBtn = document.getElementById('qhavuzSelectPackageBtn');
+  const qhavuzSelectTestBtn = document.getElementById('qhavuzSelectTestBtn');
+
+  const updateQhavuzSelectBar = () => {
+    const n = qhavuzSelectedIds.size;
+    if (qhavuzSelectCount) qhavuzSelectCount.textContent = `${n} soru seçildi`;
+    if (qhavuzSelectPackageBtn) qhavuzSelectPackageBtn.disabled = n === 0;
+    if (qhavuzSelectTestBtn) qhavuzSelectTestBtn.disabled = n === 0;
+  };
+
+  const setQhavuzSelectMode = (on) => {
+    qhavuzSelectMode = on;
+    if (!on) qhavuzSelectedIds.clear();
+    if (qhavuzGrid) qhavuzGrid.classList.toggle('is-select-mode', on);
+    if (qhavuzSelectBtn) {
+      qhavuzSelectBtn.classList.toggle('is-active', on);
+      qhavuzSelectBtn.setAttribute('aria-pressed', on ? 'true' : 'false');
+      qhavuzSelectBtn.setAttribute('aria-label', on ? 'Soru seçmeyi bitir' : 'Soru seç');
+    }
+    if (qhavuzSelectBar) qhavuzSelectBar.classList.toggle('is-open', on);
+    if (on && qhavuzEditMode) setQhavuzEditMode(false);
+    updateQhavuzSelectBar();
+    renderQhavuzGrid();
+  };
+
+  if (qhavuzSelectBtn) qhavuzSelectBtn.addEventListener('click', () => setQhavuzSelectMode(!qhavuzSelectMode));
+  if (qhavuzSelectCancelBtn) qhavuzSelectCancelBtn.addEventListener('click', () => setQhavuzSelectMode(false));
 
   // ---- Ortak: büyütülmüş soru görselinde iki parmakla yakınlaştırma ve
   // sürükleyerek gezinme (pinch-zoom + pan). Sayfa genelinde pinch/çift
@@ -21781,6 +22341,29 @@
   // olmayan bir ders çip olarak karşımıza çıkıp kafa karıştırmaz.
   let qhavuzFilterTrack = 'all';
   let qhavuzFilterSubject = 'all';
+  // Tarihe göre sıralama: 'desc' = en yeni eklenen en üstte (varsayılan,
+  // zaten items dizisine unshift ile eklendiği için doğal sırayla aynı),
+  // 'asc' = en eski eklenen en üstte.
+  let qhavuzSortOrder = 'desc';
+
+  const qhavuzUpdateSortBtn = () => {
+    if (!qhavuzSortBtn) return;
+    qhavuzSortBtn.classList.toggle('is-asc', qhavuzSortOrder === 'asc');
+    if (qhavuzSortBtnLabel) qhavuzSortBtnLabel.textContent = qhavuzSortOrder === 'asc' ? 'Eski' : 'Yeni';
+    qhavuzSortBtn.setAttribute(
+      'aria-label',
+      qhavuzSortOrder === 'asc' ? 'Tarihe göre sırala: önce en eski' : 'Tarihe göre sırala: önce en yeni'
+    );
+  };
+
+  if (qhavuzSortBtn) {
+    qhavuzSortBtn.addEventListener('click', () => {
+      qhavuzSortOrder = qhavuzSortOrder === 'asc' ? 'desc' : 'asc';
+      qhavuzUpdateSortBtn();
+      renderQhavuzGrid();
+    });
+    qhavuzUpdateSortBtn();
+  }
 
   // translateX(idx * %100) kullanıyoruz (offsetWidth/offsetLeft yerine):
   // böylece Soru Havuzu sekmesi henüz ekranda görünür olmasa bile
@@ -21810,6 +22393,7 @@
     // silinmiş ya da tür değiştirilmiş olabilir) filtre otomatik sıfırlanır.
     if (qhavuzFilterSubject !== 'all' && !subjects.includes(qhavuzFilterSubject)) {
       qhavuzFilterSubject = 'all';
+      qhavuzUpdateTrackSubjectFilterBtn();
     }
 
     if (!subjects.length) {
@@ -21829,10 +22413,14 @@
       chip.textContent = label;
       chip.classList.toggle('is-active', qhavuzFilterSubject === value);
       chip.addEventListener('click', () => {
-        if (qhavuzFilterSubject === value) return;
+        if (qhavuzFilterSubject === value) { setQhavuzTrackSubjectPanel(false); return; }
         qhavuzFilterSubject = value;
         qhavuzBuildFilterSubjectChips();
+        qhavuzUpdateTrackSubjectFilterBtn();
         renderQhavuzGrid();
+        // Ders seçilince pop-up otomatik kapanır (Kaynağa göre ara
+        // pop-up'ıyla aynı davranış): kullanıcı tek dokunuşla filtreler.
+        setQhavuzTrackSubjectPanel(false);
       });
       qhavuzFilterSubjectsEl.appendChild(chip);
     };
@@ -21852,9 +22440,75 @@
       qhavuzFilterSubject = 'all';
       qhavuzFilterTrackOptions.forEach((b) => b.classList.toggle('is-active', b === btn));
       qhavuzFilterMoveSlider();
+      qhavuzBuildFilterSubjectChips();
+      qhavuzUpdateTrackSubjectFilterBtn();
       renderQhavuzGrid();
+      // Sınav türü değişince pop-up açık kalır: kullanıcı hemen ardından
+      // o türe özel bir ders seçebilir; sadece türe göre filtrelemek
+      // istiyorsa "Tümü" ders çipine dokunarak pop-up'ı kapatabilir.
     });
   });
+
+  // Sayfadaki tek satırlık "Filtrele" butonu: seçili sınav türü ve/veya
+  // dersi kısa bir etikette özetler (ör. "TYT · Biyoloji"), hiçbiri seçili
+  // değilse "Tümü" gösterir. Aktifken vurgu rengiyle dolar ve yanındaki ×
+  // butonuyla tek dokunuşla iki filtre de birden temizlenir.
+  const QHAVUZ_TRACK_LABELS = { all: 'Tümü', tyt: 'TYT', ayt: 'AYT' };
+
+  const qhavuzUpdateTrackSubjectFilterBtn = () => {
+    if (!qhavuzTrackSubjectFilterBtn) return;
+    const active = qhavuzFilterTrack !== 'all' || qhavuzFilterSubject !== 'all';
+    let label = 'Tümü';
+    if (qhavuzFilterTrack !== 'all' && qhavuzFilterSubject !== 'all') {
+      label = `${QHAVUZ_TRACK_LABELS[qhavuzFilterTrack]} · ${qhavuzFilterSubject}`;
+    } else if (qhavuzFilterTrack !== 'all') {
+      label = QHAVUZ_TRACK_LABELS[qhavuzFilterTrack];
+    } else if (qhavuzFilterSubject !== 'all') {
+      label = qhavuzFilterSubject;
+    }
+    qhavuzTrackSubjectFilterBtn.classList.toggle('is-active', active);
+    // Bir ders seçiliyse buton sabit vurgu rengi yerine o dersin kendi
+    // rengiyle dolar (kart etiketleriyle aynı renk dili); sadece sınav
+    // türü seçiliyken (ders "Tümü") ya da hiçbir filtre yokken satır
+    // içi renk kaldırılıp CSS'teki varsayılan/vurgu rengine dönülür.
+    qhavuzTrackSubjectFilterBtn.style.backgroundColor = qhavuzFilterSubject !== 'all'
+      ? qhavuzSubjectColor(qhavuzFilterSubject)
+      : '';
+    if (qhavuzTrackSubjectFilterLabel) qhavuzTrackSubjectFilterLabel.textContent = label;
+    if (qhavuzTrackSubjectFilterClear) qhavuzTrackSubjectFilterClear.classList.toggle('is-hidden', !active);
+  };
+
+  const setQhavuzTrackSubjectPanel = (open) => {
+    if (!qhavuzTrackSubjectBackdrop) return;
+    qhavuzTrackSubjectBackdrop.classList.toggle('is-open', open);
+    if (open) qhavuzBuildFilterSubjectChips();
+  };
+
+  if (qhavuzTrackSubjectFilterBtn) {
+    qhavuzTrackSubjectFilterBtn.addEventListener('click', () => setQhavuzTrackSubjectPanel(true));
+  }
+  if (qhavuzTrackSubjectCloseBtn) {
+    qhavuzTrackSubjectCloseBtn.addEventListener('click', () => setQhavuzTrackSubjectPanel(false));
+  }
+  if (qhavuzTrackSubjectBackdrop) {
+    qhavuzTrackSubjectBackdrop.addEventListener('click', (e) => {
+      if (e.target === qhavuzTrackSubjectBackdrop) setQhavuzTrackSubjectPanel(false);
+    });
+  }
+  if (qhavuzTrackSubjectFilterClear) {
+    qhavuzTrackSubjectFilterClear.addEventListener('click', (e) => {
+      e.stopPropagation();
+      qhavuzFilterTrack = 'all';
+      qhavuzFilterSubject = 'all';
+      qhavuzFilterTrackOptions.forEach((b) => b.classList.toggle('is-active', b.dataset.value === 'all'));
+      qhavuzFilterMoveSlider();
+      qhavuzBuildFilterSubjectChips();
+      qhavuzUpdateTrackSubjectFilterBtn();
+      renderQhavuzGrid();
+    });
+  }
+
+  qhavuzUpdateTrackSubjectFilterBtn();
 
   // ---- Soru Havuzu: silme onay pop-up'ı ----
   // × butonuyla silme artık anında olmuyor; hem düzenleme modundaki ×
@@ -21976,19 +22630,147 @@
     if (e.key === 'Escape') closeQhavuzContextMenu();
   });
 
+  // ---- Soru Havuzu: "Kaynağa Göre Ara" pop-up'ı ----
+  // Filtre çubuğundaki arama kutusu görünümlü butona dokununca, soru
+  // eklenirken girilen Kaynak (kitap adı) alanlarından tekilleştirilmiş bir
+  // liste açılır (bkz. #qhavuzSourceBackdrop, Sayfa 8'deki Kategoriler
+  // pop-up'ıyla aynı dili paylaşır). Bir etikete dokununca ızgara o kaynağa
+  // göre filtrelenir; üstteki arama kutusu uzun listelerde daraltmak için var.
+  let qhavuzFilterBook = 'all';
+
+  const qhavuzSourceFilterBtn = document.getElementById('qhavuzSourceFilterBtn');
+  const qhavuzSourceFilterLabel = document.getElementById('qhavuzSourceFilterLabel');
+  const qhavuzSourceFilterClear = document.getElementById('qhavuzSourceFilterClear');
+  const qhavuzSourceBackdrop = document.getElementById('qhavuzSourceBackdrop');
+  const qhavuzSourceCloseBtn = document.getElementById('qhavuzSourceCloseBtn');
+  const qhavuzSourceSearchInput = document.getElementById('qhavuzSourceSearchInput');
+  const qhavuzSourceChipList = document.getElementById('qhavuzSourceChipList');
+
+  // Eklenmiş tüm sorulardaki Kaynak (kitap adı) alanlarını, boş olanları
+  // atlayıp büyük/küçük harf ve baştaki/sondaki boşluk farklarını yok
+  // sayarak tekilleştirir; sıra items dizisiyle aynı (en yeni eklenen önce).
+  const qhavuzAllBooks = () => {
+    const seen = new Set();
+    const books = [];
+    qhavuzState.items.forEach((it) => {
+      const name = (it.book || '').trim();
+      if (!name) return;
+      const key = name.toLocaleLowerCase('tr');
+      if (seen.has(key)) return;
+      seen.add(key);
+      books.push(name);
+    });
+    return books;
+  };
+
+  const qhavuzUpdateSourceFilterBtn = () => {
+    if (!qhavuzSourceFilterBtn) return;
+    const active = qhavuzFilterBook !== 'all';
+    qhavuzSourceFilterBtn.classList.toggle('is-active', active);
+    if (qhavuzSourceFilterLabel) qhavuzSourceFilterLabel.textContent = active ? qhavuzFilterBook : 'Kaynağa göre ara';
+    if (qhavuzSourceFilterClear) qhavuzSourceFilterClear.classList.toggle('is-hidden', !active);
+  };
+
+  const setQhavuzSourcePanel = (open) => {
+    if (!qhavuzSourceBackdrop) return;
+    qhavuzSourceBackdrop.classList.toggle('is-open', open);
+    if (open) {
+      if (qhavuzSourceSearchInput) qhavuzSourceSearchInput.value = '';
+      renderQhavuzSourceChips();
+    }
+  };
+
+  const renderQhavuzSourceChips = () => {
+    if (!qhavuzSourceChipList) return;
+    qhavuzSourceChipList.innerHTML = '';
+    const allBooks = qhavuzAllBooks();
+    const query = qhavuzSourceSearchInput ? qhavuzSourceSearchInput.value.trim().toLocaleLowerCase('tr') : '';
+    const books = query ? allBooks.filter((name) => name.toLocaleLowerCase('tr').includes(query)) : allBooks;
+
+    if (!books.length) {
+      const empty = document.createElement('span');
+      empty.className = 'page8-groups-empty';
+      empty.textContent = allBooks.length
+        ? 'Aramayla eşleşen kaynak yok.'
+        : 'Henüz kaynak girilmedi. Soru eklerken Kaynak alanını doldurabilirsin.';
+      qhavuzSourceChipList.appendChild(empty);
+      return;
+    }
+
+    const makeChip = (label, value) => {
+      const chip = document.createElement('button');
+      chip.type = 'button';
+      chip.className = 'qhavuz-filter-chip';
+      chip.style.setProperty('--qhavuz-chip-color', 'var(--accent-color, #ff90e8)');
+      chip.textContent = label;
+      chip.classList.toggle('is-active', qhavuzFilterBook === value);
+      chip.addEventListener('click', () => {
+        qhavuzFilterBook = value;
+        setQhavuzSourcePanel(false);
+        qhavuzUpdateSourceFilterBtn();
+        renderQhavuzGrid();
+      });
+      qhavuzSourceChipList.appendChild(chip);
+    };
+
+    if (!query) makeChip('Tümü', 'all');
+    books.forEach((name) => makeChip(name, name));
+  };
+
+  if (qhavuzSourceFilterBtn) {
+    qhavuzSourceFilterBtn.addEventListener('click', () => setQhavuzSourcePanel(true));
+  }
+  if (qhavuzSourceCloseBtn) {
+    qhavuzSourceCloseBtn.addEventListener('click', () => setQhavuzSourcePanel(false));
+  }
+  if (qhavuzSourceBackdrop) {
+    qhavuzSourceBackdrop.addEventListener('click', (e) => {
+      if (e.target === qhavuzSourceBackdrop) setQhavuzSourcePanel(false);
+    });
+  }
+  if (qhavuzSourceSearchInput) {
+    qhavuzSourceSearchInput.addEventListener('input', renderQhavuzSourceChips);
+  }
+  if (qhavuzSourceFilterClear) {
+    qhavuzSourceFilterClear.addEventListener('click', (e) => {
+      e.stopPropagation();
+      qhavuzFilterBook = 'all';
+      qhavuzUpdateSourceFilterBtn();
+      renderQhavuzGrid();
+    });
+  }
+
+  qhavuzUpdateSourceFilterBtn();
+
   const renderQhavuzGrid = () => {
     closeQhavuzContextMenu();
     qhavuzBuildFilterSubjectChips();
 
+    // Seçili kaynak artık hiçbir soruda geçmiyorsa (o soru(lar) silinmiş
+    // olabilir) filtre otomatik olarak "Tümü"ne döner.
+    if (qhavuzFilterBook !== 'all' && !qhavuzAllBooks().includes(qhavuzFilterBook)) {
+      qhavuzFilterBook = 'all';
+      qhavuzUpdateSourceFilterBtn();
+    }
+
     const filteredItems = qhavuzState.items.filter((item) => {
       if (qhavuzFilterTrack !== 'all' && item.track !== qhavuzFilterTrack) return false;
       if (qhavuzFilterSubject !== 'all' && item.subject !== qhavuzFilterSubject) return false;
+      if (qhavuzFilterBook !== 'all' && (item.book || '').trim() !== qhavuzFilterBook) return false;
       return true;
+    });
+
+    // Tarihe göre sırala: eski kayıtlarda "ts" alanı olmayabilir, bunlar
+    // 0 kabul edilip en eski konumuna (asc'de en başa, desc'te en sona) düşer.
+    filteredItems.sort((a, b) => {
+      const diff = (a.ts || 0) - (b.ts || 0);
+      return qhavuzSortOrder === 'asc' ? diff : -diff;
     });
 
     qhavuzGrid.innerHTML = '';
     qhavuzCardEls = {};
     qhavuzGrid.classList.toggle('is-edit-mode', qhavuzEditMode);
+    qhavuzGrid.classList.toggle('is-select-mode', qhavuzSelectMode);
     if (!qhavuzState.items.length) {
       const empty = document.createElement('div');
       empty.className = 'qhavuz-empty';
@@ -22006,6 +22788,10 @@
     filteredItems.forEach((item) => {
       const card = document.createElement('div');
       card.className = 'qhavuz-card';
+      // Seçim vurgusu (outline + onay kutusu dolgusu) artık sabit vurgu
+      // rengi yerine dersin kendi rengini kullanıyor; bu değişken
+      // .qhavuz-card.is-selected kurallarında okunuyor.
+      card.style.setProperty('--qhavuz-select-color', qhavuzSubjectColor(item.subject));
 
       const thumb = document.createElement('div');
       thumb.className = 'qhavuz-thumb';
@@ -22057,6 +22843,14 @@
         thumb.appendChild(checkEl);
       }
 
+      // ---- Soru Seç modu: sol üst köşede beliren onay kutusu ----
+      const selectCheck = document.createElement('span');
+      selectCheck.className = 'qhavuz-card-select-check';
+      selectCheck.setAttribute('aria-hidden', 'true');
+      selectCheck.innerHTML = '<svg viewBox="0 0 24 24" width="14" height="14"><path d="M4 12l5 5L20 6" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+      thumb.appendChild(selectCheck);
+      if (qhavuzSelectedIds.has(item.id)) card.classList.add('is-selected');
+
       qhavuzCardEls[item.id] = { card, thumb, checkEl };
 
       // ---- Basılı tutunca "Sil" bağlam menüsü ----
@@ -22080,7 +22874,7 @@
       };
 
       card.addEventListener('pointerdown', (e) => {
-        if (qhavuzEditMode) return;
+        if (qhavuzEditMode || qhavuzSelectMode) return;
         if (e.target.closest('.qhavuz-card-delete')) return;
         if (e.pointerType === 'mouse' && e.button !== 0) return;
         qhavuzLongPressTriggered = false;
@@ -22109,17 +22903,26 @@
       // Masaüstünde sağ tıklama, tarayıcının kendi sağ-tık menüsü yerine
       // aynı bağlam menüsünü açar.
       card.addEventListener('contextmenu', (e) => {
-        if (qhavuzEditMode) return;
+        if (qhavuzEditMode || qhavuzSelectMode) return;
         e.preventDefault();
         openQhavuzContextMenu(item.id, e.clientX, e.clientY);
       });
 
       // Silme butonu haricinde karta dokununca soru görseli büyük açılır;
       // basılı tutma bağlam menüsünü tetiklediyse bu tıklama yok sayılır.
+      // Soru Seç modundayken ise görseli büyütmek yerine seçim durumu
+      // değiştirilir (3. istek: Test/Paket'e eklenecek soruları işaretleme).
       card.addEventListener('click', (e) => {
         if (e.target.closest('.qhavuz-card-delete')) return;
         if (qhavuzLongPressTriggered) {
           qhavuzLongPressTriggered = false;
+          return;
+        }
+        if (qhavuzSelectMode) {
+          if (qhavuzSelectedIds.has(item.id)) qhavuzSelectedIds.delete(item.id);
+          else qhavuzSelectedIds.add(item.id);
+          card.classList.toggle('is-selected', qhavuzSelectedIds.has(item.id));
+          updateQhavuzSelectBar();
           return;
         }
         openQhavuzLightbox(item);
@@ -22128,6 +22931,363 @@
       qhavuzGrid.appendChild(card);
     });
   };
+
+  // ========== 3) Seçili sorulardan Test/Paket oluşturma ==========
+  // "Test Oluştur": seçili soruları doğrudan (Test Modu kurulum pop-up'ı
+  // atlanarak) mevcut startQhavuzTest() akışıyla başlatır — aynı fonksiyon
+  // zaten branş bazlı testler ve "0 Hata Testlerim" için de kullanılıyor.
+  if (qhavuzSelectTestBtn) {
+    qhavuzSelectTestBtn.addEventListener('click', () => {
+      const chosen = qhavuzState.items.filter((it) => qhavuzSelectedIds.has(it.id));
+      if (!chosen.length) return;
+      const label = chosen.length === 1 ? 'Seçili Soru' : `${chosen.length} Seçili Soru`;
+      setQhavuzSelectMode(false);
+      startQhavuzTest(chosen, label);
+    });
+  }
+
+  // "Paket Oluştur": seçili soru id'lerini kaybetmeden isim sorma
+  // pop-up'ını açar; onaylanınca yeni paket qhavuzState.packages'a eklenir.
+  const qhavuzPackageNameBackdrop = document.getElementById('qhavuzPackageNameBackdrop');
+  const qhavuzPackageNameInput = document.getElementById('qhavuzPackageNameInput');
+  const qhavuzPackageNameCancel = document.getElementById('qhavuzPackageNameCancel');
+  const qhavuzPackageNameConfirm = document.getElementById('qhavuzPackageNameConfirm');
+  let qhavuzPendingPackageIds = [];
+
+  const openQhavuzPackageNamePopup = (ids) => {
+    qhavuzPendingPackageIds = ids;
+    if (qhavuzPackageNameInput) qhavuzPackageNameInput.value = '';
+    if (qhavuzPackageNameBackdrop) qhavuzPackageNameBackdrop.classList.add('is-open');
+    setTimeout(() => { if (qhavuzPackageNameInput) qhavuzPackageNameInput.focus(); }, 80);
+  };
+
+  const closeQhavuzPackageNamePopup = () => {
+    qhavuzPendingPackageIds = [];
+    if (qhavuzPackageNameBackdrop) qhavuzPackageNameBackdrop.classList.remove('is-open');
+  };
+
+  if (qhavuzSelectPackageBtn) {
+    qhavuzSelectPackageBtn.addEventListener('click', () => {
+      if (!qhavuzSelectedIds.size) return;
+      openQhavuzPackageNamePopup(Array.from(qhavuzSelectedIds));
+    });
+  }
+
+  if (qhavuzPackageNameCancel) qhavuzPackageNameCancel.addEventListener('click', closeQhavuzPackageNamePopup);
+  if (qhavuzPackageNameBackdrop) {
+    qhavuzPackageNameBackdrop.addEventListener('click', (e) => {
+      if (e.target === qhavuzPackageNameBackdrop) closeQhavuzPackageNamePopup();
+    });
+  }
+
+  const qhavuzCreatePackage = () => {
+    const name = (qhavuzPackageNameInput && qhavuzPackageNameInput.value.trim()) || '';
+    if (!name || !qhavuzPendingPackageIds.length) return;
+    qhavuzState.packages.push({
+      id: qhavuzGenPackageId(),
+      name,
+      itemIds: qhavuzPendingPackageIds.slice(),
+      ts: Date.now(),
+    });
+    saveQhavuzState();
+    closeQhavuzPackageNamePopup();
+    setQhavuzSelectMode(false);
+    showAppToast('Paket oluşturuldu');
+  };
+
+  if (qhavuzPackageNameConfirm) qhavuzPackageNameConfirm.addEventListener('click', qhavuzCreatePackage);
+  if (qhavuzPackageNameInput) {
+    qhavuzPackageNameInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') { e.preventDefault(); qhavuzCreatePackage(); }
+    });
+  }
+
+  // ========== Paketlerim sayfası ==========
+  const qhavuzPackagesGrid = document.getElementById('qhavuzPackagesGrid');
+  const qhavuzPackagesBtn = document.getElementById('qhavuzPackagesBtn');
+  const qhavuzPackagesBackBtn = document.getElementById('qhavuzPackagesBackBtn');
+
+  // Bir paketin içindeki soruları (havuzdan silinmiş olanlar hariç) döner.
+  const qhavuzPackageQuestions = (pkg) => qhavuzState.items.filter((it) => pkg.itemIds.includes(it.id));
+
+  const openQhavuzPackagesPage = () => {
+    renderQhavuzPackagesGrid();
+    document.body.classList.add('is-zero-error-open');
+    goToPage('page-camera-packages');
+  };
+
+  const closeQhavuzPackagesPage = () => {
+    document.body.classList.remove('is-zero-error-open');
+    goToPage('page-camera');
+  };
+
+  if (qhavuzPackagesBtn) qhavuzPackagesBtn.addEventListener('click', openQhavuzPackagesPage);
+  if (qhavuzPackagesBackBtn) qhavuzPackagesBackBtn.addEventListener('click', closeQhavuzPackagesPage);
+
+  // ---- Paketlerim: basılı tutunca "Test Oluştur / Sil" bağlam menüsü ----
+  const qhavuzPackageContextMenu = document.getElementById('qhavuzPackageContextMenu');
+  const qhavuzPackageContextMenuTest = document.getElementById('qhavuzPackageContextMenuTest');
+  const qhavuzPackageContextMenuDelete = document.getElementById('qhavuzPackageContextMenuDelete');
+  let qhavuzPackageContextMenuId = null;
+
+  const closeQhavuzPackageContextMenu = () => {
+    qhavuzPackageContextMenuId = null;
+    if (qhavuzPackageContextMenu) qhavuzPackageContextMenu.classList.remove('is-open');
+  };
+
+  const openQhavuzPackageContextMenu = (pkgId, x, y) => {
+    if (!qhavuzPackageContextMenu) return;
+    qhavuzPackageContextMenuId = pkgId;
+    const GUESS_WIDTH = 148, GUESS_HEIGHT = 92, GAP = 10;
+    qhavuzPackageContextMenu.style.left = `${x - GUESS_WIDTH / 2}px`;
+    qhavuzPackageContextMenu.style.top = `${Math.max(8, y - GAP - GUESS_HEIGHT)}px`;
+    qhavuzPackageContextMenu.classList.add('is-open');
+    requestAnimationFrame(() => {
+      if (!qhavuzPackageContextMenu.classList.contains('is-open')) return;
+      const rect = qhavuzPackageContextMenu.getBoundingClientRect();
+      const adjLeft = Math.min(Math.max(8, rect.left), window.innerWidth - rect.width - 8);
+      const adjTop = Math.min(Math.max(8, rect.top), window.innerHeight - rect.height - 8);
+      qhavuzPackageContextMenu.style.left = `${adjLeft}px`;
+      qhavuzPackageContextMenu.style.top = `${adjTop}px`;
+    });
+  };
+
+  document.addEventListener('pointerdown', (e) => {
+    if (qhavuzPackageContextMenu && qhavuzPackageContextMenu.classList.contains('is-open') && !qhavuzPackageContextMenu.contains(e.target)) {
+      closeQhavuzPackageContextMenu();
+    }
+  });
+
+  const qhavuzPackageDeleteConfirmBackdrop = document.getElementById('qhavuzPackageDeleteConfirmBackdrop');
+  const qhavuzPackageDeleteConfirmCancel = document.getElementById('qhavuzPackageDeleteConfirmCancel');
+  const qhavuzPackageDeleteConfirmConfirm = document.getElementById('qhavuzPackageDeleteConfirmConfirm');
+  let qhavuzPendingDeletePackageId = null;
+
+  const openQhavuzPackageDeleteConfirm = (pkgId) => {
+    qhavuzPendingDeletePackageId = pkgId;
+    if (qhavuzPackageDeleteConfirmBackdrop) qhavuzPackageDeleteConfirmBackdrop.classList.add('is-open');
+  };
+
+  const closeQhavuzPackageDeleteConfirm = () => {
+    qhavuzPendingDeletePackageId = null;
+    if (qhavuzPackageDeleteConfirmBackdrop) qhavuzPackageDeleteConfirmBackdrop.classList.remove('is-open');
+  };
+
+  if (qhavuzPackageDeleteConfirmCancel) qhavuzPackageDeleteConfirmCancel.addEventListener('click', closeQhavuzPackageDeleteConfirm);
+  if (qhavuzPackageDeleteConfirmBackdrop) {
+    qhavuzPackageDeleteConfirmBackdrop.addEventListener('click', (e) => {
+      if (e.target === qhavuzPackageDeleteConfirmBackdrop) closeQhavuzPackageDeleteConfirm();
+    });
+  }
+  if (qhavuzPackageDeleteConfirmConfirm) {
+    qhavuzPackageDeleteConfirmConfirm.addEventListener('click', () => {
+      const id = qhavuzPendingDeletePackageId;
+      if (!id) { closeQhavuzPackageDeleteConfirm(); return; }
+      qhavuzState.packages = qhavuzState.packages.filter((p) => p.id !== id);
+      saveQhavuzState();
+      closeQhavuzPackageDeleteConfirm();
+      renderQhavuzPackagesGrid();
+    });
+  }
+
+  const qhavuzStartPackageTest = (pkg) => {
+    const questions = qhavuzPackageQuestions(pkg);
+    if (!questions.length) { showAppToast('Bu pakette artık soru yok.', 'error'); return; }
+    startQhavuzTest(questions, pkg.name, 'page-camera-packages', renderQhavuzPackagesGrid);
+  };
+
+  if (qhavuzPackageContextMenuTest) {
+    qhavuzPackageContextMenuTest.addEventListener('click', () => {
+      const id = qhavuzPackageContextMenuId;
+      closeQhavuzPackageContextMenu();
+      const pkg = qhavuzState.packages.find((p) => p.id === id);
+      if (pkg) qhavuzStartPackageTest(pkg);
+    });
+  }
+  if (qhavuzPackageContextMenuDelete) {
+    qhavuzPackageContextMenuDelete.addEventListener('click', () => {
+      const id = qhavuzPackageContextMenuId;
+      closeQhavuzPackageContextMenu();
+      if (id) openQhavuzPackageDeleteConfirm(id);
+    });
+  }
+
+  const renderQhavuzPackagesGrid = () => {
+    closeQhavuzPackageContextMenu();
+    if (!qhavuzPackagesGrid) return;
+    qhavuzPackagesGrid.innerHTML = '';
+    if (!qhavuzState.packages.length) {
+      const empty = document.createElement('div');
+      empty.className = 'qhavuz-empty';
+      empty.textContent = 'Henüz bir paketin yok. Soru Havuzu\'nda "Soru Seç" ile istediğin soruları işaretleyip "Paket Oluştur"a bas.';
+      qhavuzPackagesGrid.appendChild(empty);
+      return;
+    }
+
+    qhavuzState.packages.slice().sort((a, b) => (b.ts || 0) - (a.ts || 0)).forEach((pkg) => {
+      const questions = qhavuzPackageQuestions(pkg);
+      const card = document.createElement('div');
+      card.className = 'qhavuz-card';
+
+      const thumb = document.createElement('div');
+      thumb.className = 'qhavuz-thumb';
+      if (questions[0]) {
+        const img = document.createElement('img');
+        img.alt = pkg.name;
+        thumb.appendChild(img);
+        resolveImageSrc(questions[0].image).then((url) => { if (url) img.src = url; });
+      } else {
+        const placeholder = document.createElement('div');
+        placeholder.className = 'qhavuz-package-empty-thumb';
+        placeholder.textContent = '📦';
+        thumb.appendChild(placeholder);
+      }
+
+      const countBadge = document.createElement('span');
+      countBadge.className = 'qhavuz-package-count-badge';
+      countBadge.textContent = `${questions.length} soru`;
+      thumb.appendChild(countBadge);
+
+      const info = document.createElement('div');
+      info.className = 'qhavuz-card-info';
+      const nameBadge = document.createElement('span');
+      nameBadge.className = 'qhavuz-card-subject';
+      nameBadge.style.background = '#f2f2f2';
+      nameBadge.textContent = pkg.name;
+      info.appendChild(nameBadge);
+
+      card.appendChild(thumb);
+      card.appendChild(info);
+
+      // Basılı tutunca (veya sağ tıklayınca) "Test Oluştur / Sil" menüsü;
+      // Soru Havuzu kartlarıyla aynı uzun-basma mantığı kullanılıyor.
+      let pkgLongPressTimer = null;
+      let pkgLongPressStartX = 0;
+      let pkgLongPressStartY = 0;
+      let pkgLongPressTriggered = false;
+
+      const cancelPkgLongPress = () => {
+        if (pkgLongPressTimer) { clearTimeout(pkgLongPressTimer); pkgLongPressTimer = null; }
+      };
+
+      card.addEventListener('pointerdown', (e) => {
+        if (e.pointerType === 'mouse' && e.button !== 0) return;
+        pkgLongPressTriggered = false;
+        pkgLongPressStartX = e.clientX;
+        pkgLongPressStartY = e.clientY;
+        cancelPkgLongPress();
+        pkgLongPressTimer = setTimeout(() => {
+          pkgLongPressTimer = null;
+          pkgLongPressTriggered = true;
+          if (navigator.vibrate) navigator.vibrate(12);
+          openQhavuzPackageContextMenu(pkg.id, e.clientX, e.clientY);
+        }, 480);
+      });
+      card.addEventListener('pointermove', (e) => {
+        if (!pkgLongPressTimer) return;
+        const dx = e.clientX - pkgLongPressStartX;
+        const dy = e.clientY - pkgLongPressStartY;
+        if (Math.hypot(dx, dy) > 10) cancelPkgLongPress();
+      });
+      card.addEventListener('pointerup', cancelPkgLongPress);
+      card.addEventListener('pointercancel', cancelPkgLongPress);
+      card.addEventListener('pointerleave', cancelPkgLongPress);
+      card.addEventListener('contextmenu', (e) => {
+        e.preventDefault();
+        openQhavuzPackageContextMenu(pkg.id, e.clientX, e.clientY);
+      });
+
+      card.addEventListener('click', () => {
+        if (pkgLongPressTriggered) { pkgLongPressTriggered = false; return; }
+        openQhavuzPackageDetail(pkg.id);
+      });
+
+      qhavuzPackagesGrid.appendChild(card);
+    });
+  };
+
+  // ========== Paket detay sayfası ==========
+  const qhavuzPackageDetailGrid = document.getElementById('qhavuzPackageDetailGrid');
+  const qhavuzPackageDetailTitle = document.getElementById('qhavuzPackageDetailTitle');
+  const qhavuzPackageDetailTestBtn = document.getElementById('qhavuzPackageDetailTestBtn');
+  const qhavuzPackageDetailBackBtn = document.getElementById('qhavuzPackageDetailBackBtn');
+  let qhavuzOpenPackageId = null;
+
+  const openQhavuzPackageDetail = (pkgId) => {
+    const pkg = qhavuzState.packages.find((p) => p.id === pkgId);
+    if (!pkg) return;
+    qhavuzOpenPackageId = pkgId;
+    renderQhavuzPackageDetail();
+    document.body.classList.add('is-zero-error-open');
+    goToPage('page-camera-package-detail');
+  };
+
+  const closeQhavuzPackageDetail = () => {
+    qhavuzOpenPackageId = null;
+    document.body.classList.remove('is-zero-error-open');
+    goToPage('page-camera-packages');
+  };
+
+  const renderQhavuzPackageDetail = () => {
+    const pkg = qhavuzState.packages.find((p) => p.id === qhavuzOpenPackageId);
+    if (!pkg) { closeQhavuzPackageDetail(); return; }
+    if (qhavuzPackageDetailTitle) qhavuzPackageDetailTitle.textContent = pkg.name;
+    const questions = qhavuzPackageQuestions(pkg);
+
+    if (!qhavuzPackageDetailGrid) return;
+    qhavuzPackageDetailGrid.innerHTML = '';
+    if (!questions.length) {
+      const empty = document.createElement('div');
+      empty.className = 'qhavuz-empty';
+      empty.textContent = 'Bu paketteki sorular Soru Havuzu\'ndan silinmiş.';
+      qhavuzPackageDetailGrid.appendChild(empty);
+      if (qhavuzPackageDetailTestBtn) qhavuzPackageDetailTestBtn.disabled = true;
+      return;
+    }
+    if (qhavuzPackageDetailTestBtn) qhavuzPackageDetailTestBtn.disabled = false;
+
+    questions.forEach((item) => {
+      const card = document.createElement('div');
+      card.className = 'qhavuz-card';
+
+      const thumb = document.createElement('div');
+      thumb.className = 'qhavuz-thumb';
+      const img = document.createElement('img');
+      img.alt = item.subject + ' sorusu';
+      thumb.appendChild(img);
+      resolveImageSrc(item.image).then((url) => { if (url) img.src = url; });
+
+      if (item.track && PAGE9_TRACK_LABELS[item.track]) {
+        const ribbon = document.createElement('span');
+        ribbon.className = 'qhavuz-card-track-ribbon is-' + item.track;
+        ribbon.textContent = PAGE9_TRACK_LABELS[item.track];
+        thumb.appendChild(ribbon);
+      }
+
+      const info = document.createElement('div');
+      info.className = 'qhavuz-card-info';
+      const subjectBadge = document.createElement('span');
+      subjectBadge.className = 'qhavuz-card-subject';
+      subjectBadge.style.background = qhavuzSubjectColor(item.subject);
+      subjectBadge.textContent = item.subject;
+      info.appendChild(subjectBadge);
+
+      card.appendChild(thumb);
+      card.appendChild(info);
+
+      card.addEventListener('click', () => openQhavuzLightbox(item));
+
+      qhavuzPackageDetailGrid.appendChild(card);
+    });
+  };
+
+  if (qhavuzPackageDetailBackBtn) qhavuzPackageDetailBackBtn.addEventListener('click', closeQhavuzPackageDetail);
+  if (qhavuzPackageDetailTestBtn) {
+    qhavuzPackageDetailTestBtn.addEventListener('click', () => {
+      const pkg = qhavuzState.packages.find((p) => p.id === qhavuzOpenPackageId);
+      if (pkg) qhavuzStartPackageTest(pkg);
+    });
+  }
 
   // ---- İlk render ----
   // NOT: resolveImageSrc / openImageDB gibi görsel yardımcıları dosyanın
