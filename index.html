@@ -10513,22 +10513,17 @@
 
     /* Sıra: 1) Görünüm 2) Takvim 3) Gündelik 4) Veri — .settings-page'in
        dört doğrudan .settings-section çocuğu bu sırayla gelir (bkz. HTML).
-       Görünüm sol sütunda tek başına, sağdaki üç satırlık boşluğu (Takvim +
-       Gündelik + Veri) kaplayacak şekilde durur; diğer üçü sağ sütunda alt
-       alta dizilir. */
+       Görünüm sol sütunda, sağdaki üç kart alt alta dizilirken kendi doğal
+       (içeriği kadar) boyunda durur. Önceki sürümde Görünüm, sağdaki üç
+       kartın TOPLAM yüksekliğine zorla gerilip aradaki farkı kart içi
+       satırlar arasına (justify-content:space-between ile) dağıtıyordu;
+       üçüncü bir kart (Gündelik) eklenince bu fark çok büyüyüp Görünüm
+       kartının içinde "Tam ekran" ile "Kart Renkleri" arasında kocaman,
+       kopuk duran boş bir alan bırakıyordu. Artık zorlama kaldırıldı: her
+       iki sütun da üstten hizalı, kendi içeriği kadar yer kaplıyor. */
     .settings-page > .settings-section:nth-child(1) {
       grid-column: 1;
-      grid-row: 1 / span 3;
-      /* Kart içi dolgu/satır aralığı sıkı (kompakt) kalmaya devam ediyor,
-         ama section'ın kendisi yine sağdaki Takvim+Gündelik+Veri'nin toplam
-         yüksekliğine geriliyor; kartın altındaki fazla boşluk aşağıda
-         .settings-card üzerindeki justify-content:space-between ile
-         satır aralarına dağıtılıyor, böylece Görünüm'ün alt kenarı
-         Veri'nin alt kenarıyla hizalanıyor. */
-      align-self: stretch;
-      display: flex;
-      flex-direction: column;
-      height: 100%;
+      grid-row: 1;
     }
 
     .settings-page > .settings-section:nth-child(2) {
@@ -10566,14 +10561,12 @@
       gap: 1.3rem;
     }
 
-    /* Görünüm kartında 6 satır olduğu için diğer kartlara göre doğal
-       olarak en uzun kart o oluyordu; sadece bu kartın iç boşluklarını
-       (kart dolgusu + satır dolgusu) sıkılaştırarak boyunu kısaltıyoruz.
-       Takvim/Veri kartlarının ölçüleri değişmiyor. */
+    /* Görünüm kartında birden çok satır olduğu için diğer kartlara göre
+       doğal olarak en uzun kart o oluyordu; sadece bu kartın iç
+       boşluklarını (kart dolgusu + satır dolgusu) sıkılaştırarak boyunu
+       kısaltıyoruz. Diğer kartların ölçüleri değişmiyor. */
     .settings-page > .settings-section:nth-child(1) .settings-card {
       padding: clamp(0.6rem, 1.6dvh, 1rem) 1.9rem;
-      flex: 1 1 auto;
-      justify-content: space-between;
     }
 
     .settings-page > .settings-section:nth-child(1) .settings-row {
