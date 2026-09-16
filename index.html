@@ -336,6 +336,148 @@
     stroke: var(--font-color-light);
   }
 
+  /* ---------- Spor Modu: navbar ikon değişimi ----------
+     Ayarlar > Görünüm > "Spor Modu" anahtarı açıldığında body'ye
+     is-sport-mode class'ı eklenir (bkz. ilgili JS bloğu). Bu durumda:
+       - Her nav-btn içindeki normal (varsayılan) ikon gizlenir.
+       - Ana Sayfa'nın spor moduna özel ikonu (.nav-icon-sport-home)
+         gösterilir.
+       - Henüz tasarlanmamış diğer sayfalar için boş bırakılan
+         placeholder ikonlar (.nav-icon-sport-slot) gösterilir; bunlar
+         şu an içi boş <svg> oldukları için ekranda herhangi bir şekil
+         görünmez, ileride path eklendiğinde otomatik olarak ortaya
+         çıkar. */
+  .navbar .nav-icon-sport-home,
+  .navbar .nav-icon-sport-slot {
+    display: none;
+  }
+
+  body.is-sport-mode .navbar .nav-btn > .nav-icon:not(.nav-icon-sport-home):not(.nav-icon-sport-slot) {
+    display: none;
+  }
+
+  body.is-sport-mode .navbar .nav-icon-sport-home,
+  body.is-sport-mode .navbar .nav-icon-sport-slot {
+    display: block;
+  }
+
+  /* ---------- Spor Modu: navbar'ı sadeleştirme ----------
+     Spor Modu açıkken mevcut uygulama sayfalarının (Kronometre, Gündelik,
+     Soru Havuzu, Soru Takibi, Denemelerim) hiçbiri navbar'da yer almaz;
+     yalnızca Ana Sayfa (spor içeriği hazır olana kadar "Yakında" gösterir)
+     ve Ayarlar (spor modundan çıkabilmek için) kalır. Pill navbar da bu
+     2 sekmeye göre daralır; tablet yanal panelindeki fazla sekmeler de
+     aynı mantıkla gizlenir. */
+  body.is-sport-mode .navbar .wrapper .option:not(:has(.nav-input[value="page-1"])):not(:has(.nav-input[value="page-settings"])) {
+    display: none;
+  }
+
+  body.is-sport-mode .navbar .wrapper {
+    width: 132px;
+  }
+
+  body.is-sport-mode .navbar .wrapper .option {
+    width: calc(100% / 2);
+  }
+
+  body.is-sport-mode .navbar .nav-slider {
+    width: calc((100% - 8px) / 2);
+  }
+
+  body.is-sport-mode .sidebar-nav-item:not([data-page="page-1"]):not([data-page="page-settings"]) {
+    display: none;
+  }
+
+  /* Ana Sayfa'nın normal içeriği Spor Modu'nda gizlenir, yerine "Yakında"
+     yer tutucusu gösterilir (bkz. #page-1 içindeki .sport-mode-placeholder). */
+  body.is-sport-mode #homeContent {
+    display: none;
+  }
+
+  /* ---------- Spor Modu: Ayarlar sayfası sadeleştirme ----------
+     Spor Modu açıkken Ayarlar sayfasındaki tüm normal içerik (Görünüm,
+     Spor Modu anahtarı, Takvim, Gündelik, Veri kartlarını barındıran
+     #settingsScroll ile üstündeki kesik çizgi) gizlenir; yerine yalnızca
+     Spor Modu'ndan çıkmayı sağlayan tek bir "Çıkış" butonu
+     (.settings-sport-exit) gösterilir. */
+  .settings-sport-exit {
+    display: none;
+  }
+
+  body.is-sport-mode #page-settings .settings-tear,
+  body.is-sport-mode #page-settings .settings-scroll {
+    display: none;
+  }
+
+  body.is-sport-mode .settings-sport-exit {
+    display: flex;
+    flex: 1 1 auto;
+    min-height: 0;
+    width: 100%;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .settings-sport-exit-btn {
+    flex-shrink: 0;
+    padding: 0.9rem 2.8rem;
+    font-family: "Space Grotesk", sans-serif;
+    font-weight: 800;
+    font-size: 1.05rem;
+    letter-spacing: 0.01em;
+    color: #121212;
+    background-color: #fff;
+    border: 3px solid #000;
+    border-radius: 0.9rem;
+    box-shadow: 4px 4px 0px 0px #000;
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+  }
+
+  .settings-sport-exit-btn:hover {
+    transform: translate(-1px, -1px);
+    box-shadow: 5px 5px 0px 0px #000;
+    background-color: #ff5c5c;
+  }
+
+  .settings-sport-exit-btn:active {
+    transform: translate(2px, 2px);
+    box-shadow: 1px 1px 0px 0px #000;
+    background-color: #ff5c5c;
+  }
+
+  .sport-mode-placeholder {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    text-align: center;
+    width: 100%;
+    max-width: 360px;
+  }
+
+  body.is-sport-mode .sport-mode-placeholder {
+    display: flex;
+  }
+
+  .sport-mode-placeholder-title {
+    font-family: "Archivo Expanded", "Space Grotesk", sans-serif;
+    font-weight: 800;
+    font-size: 1.9rem;
+    color: var(--theme-text, #f2f2f7);
+    transition: color 0.5s ease;
+  }
+
+  .sport-mode-placeholder-sub {
+    font-family: "Space Grotesk", sans-serif;
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: var(--theme-text, #f2f2f7);
+    opacity: 0.65;
+    transition: color 0.5s ease;
+  }
+
   /* Zar (mini oyun) ikonundaki dolgulu noktalar da seçili sekmede
      beyaza döner; bunlar stroke değil fill ile çizildiği için ayrı bir
      kuralla eşlenir. */
@@ -9966,6 +10108,36 @@
     flex-shrink: 0;
   }
 
+  /* ---------- Spor Modu kartı: Görünüm bölümünden ayrılıp kendi
+     bağımsız kartına taşındı. Sol tarafta uygulamanın vurgu rengini
+     (--accent-color) kullanan, kupa ikonlu küçük bir rozet var; böylece
+     kart diğer basit anahtar satırlarından görsel olarak ayrışıyor. ---------- */
+  .settings-row-sport {
+    gap: 0.8rem;
+  }
+
+  .settings-sport-icon {
+    flex-shrink: 0;
+    width: 2.6rem;
+    height: 2.6rem;
+    border-radius: 0.75rem;
+    border: 2.5px solid #000;
+    background: var(--accent-color, #ff90e8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 2px 2px 0px 0px #000;
+  }
+
+  .settings-sport-icon svg {
+    color: #121212;
+  }
+
+  body.is-anthracite .settings-sport-icon {
+    border-color: #000;
+    box-shadow: 2px 2px 0px 0px #000;
+  }
+
   /* ---------- Renk satırları (Kart rengi / Renk teması / Vurgu rengi):
      artık her biri "Desenler" ile aynı tıklanabilir satır kalıbını kullanıyor
      (bkz. .settings-row-link) — sağda o an seçili rengi gösteren yuvarlak bir
@@ -11474,6 +11646,243 @@
 </head>
 <body oncopy="return false" oncut="return false" onselectstart="return false" ondragstart="return false">
 
+<!-- ---------- Spor Modu Geçiş Animasyonu ----------
+     Ayarlar > Görünüm > "Spor Modu" anahtarı NORMAL MODDAN SPOR MODUNA
+     açılırken (yalnızca bu yönde) tüm ekranı kaplayan, markanın o anki
+     vurgu rengini (--accent-color) kullanan kısa ve şık bir "premium"
+     geçiş efekti oynatılır. Efekt sırasında asıl navbar/sayfa değişimi
+     (is-sport-mode class'ının eklenmesi) örtü tam opak haldeyken sessizce
+     gerçekleştirilir, böylece kullanıcı hiçbir ani "zıplama" görmez; en
+     sonda örtü, kupa ikonunun bulunduğu merkez noktasına doğru daralan bir
+     "iris" (diyafram) geçişiyle kapanarak Spor Modu'nu ortaya çıkarır.
+     Tetikleme ve zamanlama JS tarafında (bkz. playSportModeTransition)
+     yönetilir; bkz. ilgili script bloğu (Ayarlar > Spor Modu anahtarı). -->
+<div class="sport-transition" id="sportTransition" aria-hidden="true">
+  <div class="sport-transition-veil"></div>
+  <div class="sport-transition-rays"></div>
+  <div class="sport-transition-ring"></div>
+  <div class="sport-transition-ring sport-transition-ring--delay"></div>
+  <div class="sport-transition-content">
+    <span class="sport-transition-icon-glow"></span>
+    <svg class="sport-transition-icon" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M7 4h10v3a5 5 0 0 1-5 5 5 5 0 0 1-5-5V4z"/>
+      <path d="M7 5H5a1.5 1.5 0 0 0-1.5 1.5A3.5 3.5 0 0 0 7 10h.3"/>
+      <path d="M17 5h2a1.5 1.5 0 0 1 1.5 1.5A3.5 3.5 0 0 1 17 10h-.3"/>
+      <line x1="12" y1="12" x2="12" y2="15.5"/>
+      <path d="M8.5 19.5h7l-1-4h-5z"/>
+    </svg>
+    <div class="sport-transition-title">SPOR MODU</div>
+    <div class="sport-transition-line"></div>
+  </div>
+</div>
+<style>
+  .sport-transition {
+    position: fixed;
+    inset: 0;
+    z-index: 99990;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    opacity: 0;
+    pointer-events: none;
+    clip-path: circle(150% at 50% 50%);
+    background: #16171a;
+  }
+
+  .sport-transition.is-active {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  /* Kapanış: örtü, merkezdeki kupa ikonuna doğru daralan bir "iris"
+     efektiyle kaybolur ve altındaki (artık Spor Modu'na geçmiş) uygulama
+     ortaya çıkar. */
+  .sport-transition.is-closing {
+    animation: sport-iris-close 620ms cubic-bezier(0.6, 0, 0.15, 1) forwards;
+  }
+
+  .sport-transition-veil {
+    position: absolute;
+    inset: -10%;
+    background:
+      radial-gradient(circle at 50% 46%, color-mix(in srgb, var(--accent-color, #ff90e8) 55%, transparent) 0%, transparent 42%),
+      radial-gradient(circle at 50% 50%, #24262b 0%, #101114 72%, #0a0a0c 100%);
+    opacity: 0;
+    transform: scale(1.15);
+  }
+
+  .sport-transition.is-active .sport-transition-veil {
+    animation: sport-veil-in 260ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  /* Arka planda yavaşça dönen, ışık huzmesi hissi veren ince konik
+     gradyan; premium/parlak bir doku katmanı olarak çalışır. */
+  .sport-transition-rays {
+    position: absolute;
+    width: 220vmax;
+    height: 220vmax;
+    background: conic-gradient(
+      from 0deg,
+      transparent 0deg,
+      color-mix(in srgb, var(--accent-color, #ff90e8) 22%, transparent) 12deg,
+      transparent 45deg,
+      transparent 180deg,
+      color-mix(in srgb, var(--accent-color, #ff90e8) 14%, transparent) 194deg,
+      transparent 230deg,
+      transparent 360deg
+    );
+    opacity: 0;
+    animation: sport-rays-spin 12s linear infinite;
+  }
+
+  .sport-transition.is-active .sport-transition-rays {
+    animation: sport-rays-spin 12s linear infinite, sport-rays-in 700ms ease-out 120ms forwards;
+  }
+
+  /* Kupa ikonundan dışa doğru yayılan, birbirini takip eden iki adet
+     "şok dalgası" halkası. */
+  .sport-transition-ring {
+    position: absolute;
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    border: 2px solid color-mix(in srgb, var(--accent-color, #ff90e8) 80%, #fff 20%);
+    opacity: 0;
+    transform: scale(0.3);
+  }
+
+  .sport-transition.is-active .sport-transition-ring {
+    animation: sport-ring-pulse 1100ms cubic-bezier(0.16, 1, 0.3, 1) 180ms forwards;
+  }
+
+  .sport-transition.is-active .sport-transition-ring--delay {
+    animation-delay: 340ms;
+  }
+
+  .sport-transition-content {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.85rem;
+  }
+
+  .sport-transition-icon-glow {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 220px;
+    height: 220px;
+    transform: translate(-50%, -60%);
+    background: radial-gradient(circle, color-mix(in srgb, var(--accent-color, #ff90e8) 65%, transparent) 0%, transparent 68%);
+    filter: blur(6px);
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .sport-transition.is-active .sport-transition-icon-glow {
+    animation: sport-glow-in 900ms ease-out 160ms forwards;
+  }
+
+  .sport-transition-icon {
+    width: 58px;
+    height: 58px;
+    opacity: 0;
+    filter: drop-shadow(0 0 18px color-mix(in srgb, var(--accent-color, #ff90e8) 70%, transparent));
+  }
+
+  .sport-transition.is-active .sport-transition-icon {
+    animation: sport-icon-in 700ms cubic-bezier(0.22, 1.4, 0.36, 1) 160ms forwards;
+  }
+
+  .sport-transition-title {
+    font-family: "Archivo Expanded", "Space Grotesk", sans-serif;
+    font-weight: 800;
+    font-size: 1.15rem;
+    color: #fff;
+    opacity: 0;
+    letter-spacing: 0.5em;
+    text-indent: 0.5em;
+    transform: translateY(14px);
+  }
+
+  .sport-transition.is-active .sport-transition-title {
+    animation: sport-title-in 620ms cubic-bezier(0.16, 1, 0.3, 1) 520ms forwards;
+  }
+
+  .sport-transition-line {
+    width: 0;
+    height: 2px;
+    border-radius: 2px;
+    background: var(--accent-color, #ff90e8);
+    opacity: 0;
+    box-shadow: 0 0 10px color-mix(in srgb, var(--accent-color, #ff90e8) 80%, transparent);
+  }
+
+  .sport-transition.is-active .sport-transition-line {
+    animation: sport-line-in 460ms cubic-bezier(0.16, 1, 0.3, 1) 780ms forwards;
+  }
+
+  @keyframes sport-veil-in {
+    from { opacity: 0; transform: scale(1.15); }
+    to   { opacity: 1; transform: scale(1); }
+  }
+
+  @keyframes sport-rays-spin {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+  }
+
+  @keyframes sport-rays-in {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+
+  @keyframes sport-glow-in {
+    0%   { opacity: 0; transform: translate(-50%, -60%) scale(0.6); }
+    55%  { opacity: 1; }
+    100% { opacity: 0.75; transform: translate(-50%, -60%) scale(1); }
+  }
+
+  @keyframes sport-ring-pulse {
+    0%   { transform: scale(0.35); opacity: 0; border-width: 3px; }
+    35%  { opacity: 0.6; }
+    100% { transform: scale(2.6); opacity: 0; border-width: 1px; }
+  }
+
+  @keyframes sport-icon-in {
+    0%   { transform: scale(0.35) rotate(-14deg); opacity: 0; }
+    55%  { transform: scale(1.14) rotate(5deg);   opacity: 1; }
+    78%  { transform: scale(0.95) rotate(-2deg); }
+    100% { transform: scale(1) rotate(0deg);      opacity: 1; }
+  }
+
+  @keyframes sport-title-in {
+    0%   { opacity: 0; transform: translateY(14px); letter-spacing: 0.65em; }
+    100% { opacity: 1; transform: translateY(0);     letter-spacing: 0.32em; }
+  }
+
+  @keyframes sport-line-in {
+    from { width: 0;   opacity: 0; }
+    to   { width: 60px; opacity: 1; }
+  }
+
+  @keyframes sport-iris-close {
+    from { clip-path: circle(150% at 50% 50%); }
+    to   { clip-path: circle(0% at 50% 50%); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .sport-transition,
+    .sport-transition * {
+      animation-duration: 1ms !important;
+      animation-delay: 0ms !important;
+      transition-duration: 1ms !important;
+    }
+  }
+</style>
+
 <!-- Uygulama açılış (splash) ekranı: sayfa/kaynaklar yüklenirken görünür,
      ardından yumuşak bir geçişle kaybolur. PWA olarak ana ekrandan açıldığında
      da native splash ekranı bitene bu ekran hemen devam eder. -->
@@ -11757,6 +12166,14 @@
         </button>
       </div>
     </div>
+
+    <!-- Spor Modu açıkken normal Ana Sayfa içeriği (#homeContent) gizlenir
+         ve bunun yerine bu yer tutucu gösterilir. Spor moduna özel sayfa
+         tasarlandığında bu blok kaldırılıp gerçek içerikle değiştirilebilir. -->
+    <div class="sport-mode-placeholder" id="sportModePlaceholder">
+      <span class="sport-mode-placeholder-title">Yakında</span>
+      <span class="sport-mode-placeholder-sub">Spor Modu için bu sayfa yakında hazır olacak.</span>
+    </div>
   </section>
 
   <section class="page" id="page-4">
@@ -12020,6 +12437,15 @@
       <span class="settings-tear-line"></span>
     </div>
 
+    <!-- Spor Modu: Ayarlar sayfasının normal içeriği (Görünüm, Spor Modu,
+         Takvim, Gündelik, Veri vb. tüm kartlar barındıran #settingsScroll)
+         tamamen gizlenir; yerine yalnızca Spor Modu'ndan çıkmayı sağlayan
+         tek bir "Çıkış" butonu gösterilir (bkz. body.is-sport-mode
+         .settings-sport-exit / .settings-scroll kuralları ve ilgili JS). -->
+    <div class="settings-sport-exit" id="settingsSportExitView">
+      <button type="button" class="settings-sport-exit-btn" id="settingsSportExitBtn">Çıkış</button>
+    </div>
+
     <div class="settings-scroll" id="settingsScroll">
     <div class="settings-page">
       <div class="settings-section">
@@ -12114,6 +12540,34 @@
               </svg>
             </div>
           </button>
+
+        </div>
+      </div>
+
+      <div class="settings-section" id="settingsSportSection">
+        <span class="settings-section-label">Spor Modu</span>
+        <div class="settings-card">
+          <div class="settings-row settings-row-sport">
+            <div class="settings-sport-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M7 4h10v3a5 5 0 0 1-5 5 5 5 0 0 1-5-5V4z"/>
+                <path d="M7 5H5a1.5 1.5 0 0 0-1.5 1.5A3.5 3.5 0 0 0 7 10h.3"/>
+                <path d="M17 5h2a1.5 1.5 0 0 1 1.5 1.5A3.5 3.5 0 0 1 17 10h-.3"/>
+                <line x1="12" y1="12" x2="12" y2="15.5"/>
+                <path d="M8.5 19.5h7l-1-4h-5z"/>
+              </svg>
+            </div>
+            <div class="settings-row-text">
+              <span class="settings-row-title">Spor Modu</span>
+              <span class="settings-row-desc">Alt menüdeki tüm ikonlar kaldırılıp spor moduna özel ikonlarla değiştirilir</span>
+            </div>
+            <label class="toggle brutal-toggle settings-toggle" id="settingsSportModeToggleWrap">
+              <input type="checkbox" id="settingsSportModeToggle" />
+              <span class="track">
+                <span class="thumb"></span>
+              </span>
+            </label>
+          </div>
         </div>
       </div>
 
@@ -13465,6 +13919,15 @@
           <path d="M4 11.5L12 4l8 7.5"/>
           <path d="M6 9.625v9.375a1 1 0 0 0 1 1h3v-6h4v6h3a1 1 0 0 0 1-1v-9.375"/>
         </svg>
+        <!-- Spor Modu: Ana Sayfa için özel ikon (kupa). Sadece
+             body.is-sport-mode aktifken görünür, bkz. ilgili CSS kuralı. -->
+        <svg class="nav-icon nav-icon-sport-home" viewBox="0 0 24 24">
+          <path d="M7 4h10v3a5 5 0 0 1-5 5 5 5 0 0 1-5-5V4z"/>
+          <path d="M7 5H5a1.5 1.5 0 0 0-1.5 1.5A3.5 3.5 0 0 0 7 10h.3"/>
+          <path d="M17 5h2a1.5 1.5 0 0 1 1.5 1.5A3.5 3.5 0 0 1 17 10h-.3"/>
+          <line x1="12" y1="12" x2="12" y2="15.5"/>
+          <path d="M8.5 19.5h7l-1-4h-5z"/>
+        </svg>
       </div>
     </div>
     <div class="option">
@@ -13477,6 +13940,8 @@
           <line class="nav-stopwatch-btn" x1="9" y1="3" x2="15" y2="3"/>
           <line x1="12" y1="3" x2="12" y2="5"/>
         </svg>
+        <!-- Spor Modu: Kronometre için ikon henüz eklenmedi, boş bırakıldı. -->
+        <svg class="nav-icon nav-icon-sport-slot" data-sport-icon-slot="stopwatch" viewBox="0 0 24 24"></svg>
       </div>
     </div>
     <div class="option">
@@ -13489,6 +13954,8 @@
           <line x1="13" y1="6" x2="21" y2="6"/>
           <line x1="13" y1="18" x2="21" y2="18"/>
         </svg>
+        <!-- Spor Modu: Gündelik için ikon henüz eklenmedi, boş bırakıldı. -->
+        <svg class="nav-icon nav-icon-sport-slot" data-sport-icon-slot="gunluk" viewBox="0 0 24 24"></svg>
       </div>
     </div>
     <div class="option">
@@ -13511,6 +13978,8 @@
             <line x1="12" y1="13" x2="16.6" y2="8.4"/>
           </g>
         </svg>
+        <!-- Spor Modu: Soru Havuzu için ikon henüz eklenmedi, boş bırakıldı. -->
+        <svg class="nav-icon nav-icon-sport-slot" data-sport-icon-slot="camera" viewBox="0 0 24 24"></svg>
       </div>
     </div>
     <div class="option">
@@ -13522,6 +13991,8 @@
           <rect class="nav-checklist-clip" x="9" y="3" width="6" height="2.5" rx="1"/>
           <polyline class="nav-checklist-check" points="8.3 13 10.8 15.5 15.7 9.5"/>
         </svg>
+        <!-- Spor Modu: Soru Takibi için ikon henüz eklenmedi, boş bırakıldı. -->
+        <svg class="nav-icon nav-icon-sport-slot" data-sport-icon-slot="checklist" viewBox="0 0 24 24"></svg>
       </div>
     </div>
     <div class="option">
@@ -13534,6 +14005,8 @@
           <line x1="8" y1="12" x2="16" y2="12"/>
           <line x1="8" y1="16" x2="13" y2="16"/>
         </svg>
+        <!-- Spor Modu: Denemelerim için ikon henüz eklenmedi, boş bırakıldı. -->
+        <svg class="nav-icon nav-icon-sport-slot" data-sport-icon-slot="exam" viewBox="0 0 24 24"></svg>
       </div>
     </div>
     <div class="option">
@@ -13541,6 +14014,13 @@
       <div class="nav-btn">
         <span class="nav-tooltip">Ayarlar</span>
         <svg class="nav-icon nav-icon-gear" viewBox="0 0 24 24">
+          <path d="M9.59356 3.94014C9.68397 3.39768 10.1533 3.00009 10.7033 3.00009H13.2972C13.8472 3.00009 14.3165 3.39768 14.4069 3.94014L14.6204 5.22119C14.6828 5.59523 14.9327 5.9068 15.2645 6.09045C15.3387 6.13151 15.412 6.17393 15.4844 6.21766C15.8095 6.41393 16.2048 6.47495 16.5604 6.34175L17.7772 5.88587C18.2922 5.69293 18.8712 5.9006 19.1462 6.37687L20.4432 8.6233C20.7181 9.09957 20.6085 9.70482 20.1839 10.0544L19.1795 10.8812C18.887 11.122 18.742 11.4938 18.7491 11.8726C18.7498 11.915 18.7502 11.9575 18.7502 12.0001C18.7502 12.0427 18.7498 12.0852 18.7491 12.1275C18.742 12.5064 18.887 12.8782 19.1795 13.119L20.1839 13.9458C20.6085 14.2953 20.7181 14.9006 20.4432 15.3769L19.1462 17.6233C18.8712 18.0996 18.2922 18.3072 17.7772 18.1143L16.5604 17.6584C16.2048 17.5252 15.8095 17.5862 15.4844 17.7825C15.412 17.8263 15.3387 17.8687 15.2645 17.9097C14.9327 18.0934 14.6828 18.4049 14.6204 18.779L14.4069 20.06C14.3165 20.6025 13.8472 21.0001 13.2972 21.0001H10.7033C10.1533 21.0001 9.68397 20.6025 9.59356 20.06L9.38005 18.779C9.31771 18.4049 9.06774 18.0934 8.73597 17.9097C8.66179 17.8687 8.58847 17.8263 8.51604 17.7825C8.19101 17.5863 7.79568 17.5252 7.44011 17.6584L6.22325 18.1143C5.70826 18.3072 5.12926 18.0996 4.85429 17.6233L3.55731 15.3769C3.28234 14.9006 3.39199 14.2954 3.81657 13.9458L4.82092 13.119C5.11343 12.8782 5.25843 12.5064 5.25141 12.1276C5.25063 12.0852 5.25023 12.0427 5.25023 12.0001C5.25023 11.9575 5.25063 11.915 5.25141 11.8726C5.25843 11.4938 5.11343 11.122 4.82092 10.8812L3.81657 10.0544C3.39199 9.70484 3.28234 9.09958 3.55731 8.62332L4.85429 6.37688C5.12926 5.90061 5.70825 5.69295 6.22325 5.88588L7.4401 6.34176C7.79566 6.47496 8.19099 6.41394 8.51603 6.21767C8.58846 6.17393 8.66179 6.13151 8.73597 6.09045C9.06774 5.9068 9.31771 5.59523 9.38005 5.22119L9.59356 3.94014Z"/>
+          <path d="M15 12C15 13.6569 13.6569 15 12 15C10.3431 15 9 13.6569 9 12C9 10.3432 10.3431 9.00001 12 9.00001C13.6569 9.00001 15 10.3432 15 12Z"/>
+        </svg>
+        <!-- Spor Modu: Ayarlar ikonu normal moddakiyle aynı (dişli). Spor
+             modunda navbar'da yalnızca Ana Sayfa ve Ayarlar kaldığı için
+             bu ikon her zaman görünür olmalı. -->
+        <svg class="nav-icon nav-icon-sport-slot" data-sport-icon-slot="settings" viewBox="0 0 24 24">
           <path d="M9.59356 3.94014C9.68397 3.39768 10.1533 3.00009 10.7033 3.00009H13.2972C13.8472 3.00009 14.3165 3.39768 14.4069 3.94014L14.6204 5.22119C14.6828 5.59523 14.9327 5.9068 15.2645 6.09045C15.3387 6.13151 15.412 6.17393 15.4844 6.21766C15.8095 6.41393 16.2048 6.47495 16.5604 6.34175L17.7772 5.88587C18.2922 5.69293 18.8712 5.9006 19.1462 6.37687L20.4432 8.6233C20.7181 9.09957 20.6085 9.70482 20.1839 10.0544L19.1795 10.8812C18.887 11.122 18.742 11.4938 18.7491 11.8726C18.7498 11.915 18.7502 11.9575 18.7502 12.0001C18.7502 12.0427 18.7498 12.0852 18.7491 12.1275C18.742 12.5064 18.887 12.8782 19.1795 13.119L20.1839 13.9458C20.6085 14.2953 20.7181 14.9006 20.4432 15.3769L19.1462 17.6233C18.8712 18.0996 18.2922 18.3072 17.7772 18.1143L16.5604 17.6584C16.2048 17.5252 15.8095 17.5862 15.4844 17.7825C15.412 17.8263 15.3387 17.8687 15.2645 17.9097C14.9327 18.0934 14.6828 18.4049 14.6204 18.779L14.4069 20.06C14.3165 20.6025 13.8472 21.0001 13.2972 21.0001H10.7033C10.1533 21.0001 9.68397 20.6025 9.59356 20.06L9.38005 18.779C9.31771 18.4049 9.06774 18.0934 8.73597 17.9097C8.66179 17.8687 8.58847 17.8263 8.51604 17.7825C8.19101 17.5863 7.79568 17.5252 7.44011 17.6584L6.22325 18.1143C5.70826 18.3072 5.12926 18.0996 4.85429 17.6233L3.55731 15.3769C3.28234 14.9006 3.39199 14.2954 3.81657 13.9458L4.82092 13.119C5.11343 12.8782 5.25843 12.5064 5.25141 12.1276C5.25063 12.0852 5.25023 12.0427 5.25023 12.0001C5.25023 11.9575 5.25063 11.915 5.25141 11.8726C5.25843 11.4938 5.11343 11.122 4.82092 10.8812L3.81657 10.0544C3.39199 9.70484 3.28234 9.09958 3.55731 8.62332L4.85429 6.37688C5.12926 5.90061 5.70825 5.69295 6.22325 5.88588L7.4401 6.34176C7.79566 6.47496 8.19099 6.41394 8.51603 6.21767C8.58846 6.17393 8.66179 6.13151 8.73597 6.09045C9.06774 5.9068 9.31771 5.59523 9.38005 5.22119L9.59356 3.94014Z"/>
           <path d="M15 12C15 13.6569 13.6569 15 12 15C10.3431 15 9 13.6569 9 12C9 10.3432 10.3431 9.00001 12 9.00001C13.6569 9.00001 15 10.3432 15 12Z"/>
         </svg>
@@ -14042,6 +14522,118 @@
       saveAppState({ anthracite: darkModeToggle.checked });
     });
     syncAnthracite();
+  }
+</script>
+
+<script>
+  // Ayarlar sayfasındaki "Spor Modu" anahtarı aktif edildiğinde alt
+  // navbar'daki tüm sayfaların normal ikonları kaldırılır ve yerine spor
+  // moduna özel ikonlar gelir (body.is-sport-mode class'ı üzerinden CSS
+  // tetiklenir, bkz. .nav-icon-sport-home / .nav-icon-sport-slot
+  // kuralları). Şu an yalnızca Ana Sayfa'nın spor ikonu tasarlandı;
+  // diğer 6 sayfa için boş <svg class="nav-icon-sport-slot"> alanları
+  // navbar'da hazır bekliyor, ileride içlerine path eklenmesi yeterli.
+  // Anahtarın durumu diğer ayarlar gibi APP_STATE üzerinden
+  // localStorage'a kaydedilir.
+  const sportModeToggle = document.getElementById('settingsSportModeToggle');
+  if (sportModeToggle) {
+    if (typeof APP_STATE.sportMode === 'boolean') {
+      sportModeToggle.checked = APP_STATE.sportMode;
+    }
+
+    // Spor Modu'nda navbar'da yalnızca Ana Sayfa ve Ayarlar kalır. Anahtar
+    // açıldığında kullanıcı hangi sayfada olursa olsun (Ayarlar dahil)
+    // doğrudan Ana Sayfa'dan başlanır. Ayrıca pill navbar 2 sekmeye göre
+    // daraldığı için kayan gösterge (nav-slider) her iki durumda da doğru
+    // konuma taşınır.
+    const syncSportMode = () => {
+      const isSport = sportModeToggle.checked;
+      document.body.classList.toggle('is-sport-mode', isSport);
+
+      if (isSport && activePage && activePage.id !== 'page-1') {
+        const homeInput = document.querySelector('.nav-input[value="page-1"]');
+        if (homeInput) homeInput.checked = true;
+        goToPage('page-1');
+        setActiveSidebarItem('page-1');
+      }
+
+      // Genişlik geçişi (.wrapper/.option/.nav-slider) uygulandıktan sonra
+      // offsetLeft'ler değiştiği için, kayan göstergeyi bir sonraki
+      // frame'de yeniden hizalıyoruz.
+      requestAnimationFrame(() => {
+        const checkedInput = document.querySelector('.nav-input:checked');
+        if (checkedInput) moveSlider(checkedInput);
+      });
+    };
+
+    // ---- Spor Modu Geçiş Animasyonu ----
+    // Yalnızca NORMAL MODDAN SPOR MODUNA geçilirken (anahtar açılırken)
+    // oynatılır; Spor Modu'ndan çıkarken herhangi bir efekt yok (ani ve
+    // sürtünmesiz bir "çıkış" hissi tercih edildi). Efekt tam ekranı
+    // kaplayıp opak hale geldiği an gerçek DOM değişikliği (syncSportMode)
+    // sessizce uygulanır, ardından örtü kupa ikonuna doğru daralan bir
+    // "iris" ile kapanarak Spor Modu'nu ortaya çıkarır.
+    const sportTransitionEl = document.getElementById('sportTransition');
+    const playSportModeTransition = (applyChange) => {
+      if (!sportTransitionEl) { applyChange(); return; }
+
+      const prefersReducedMotion = window.matchMedia &&
+        window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      if (prefersReducedMotion) {
+        applyChange();
+        return;
+      }
+
+      // Önceki bir oynatımdan kalan sınıfları temizleyip reflow tetikleyerek
+      // animasyonların baştan (aynı şekilde) oynatılabilmesini sağlıyoruz.
+      sportTransitionEl.classList.remove('is-active', 'is-closing');
+      // eslint-disable-next-line no-unused-expressions
+      void sportTransitionEl.offsetWidth;
+      sportTransitionEl.classList.add('is-active');
+
+      // Örtü tam opak olduğunda (veil-in animasyonu ~260ms), asıl mod
+      // değişikliğini örtünün arkasında, kullanıcı fark etmeden uygula.
+      window.setTimeout(() => {
+        applyChange();
+      }, 200);
+
+      // Giriş koreografisi tamamlandıktan sonra "iris" kapanışını başlat.
+      window.setTimeout(() => {
+        sportTransitionEl.classList.add('is-closing');
+      }, 1050);
+
+      // Kapanış animasyonu bittiğinde örtüyü tamamen gizleyip sıfırla.
+      window.setTimeout(() => {
+        sportTransitionEl.classList.remove('is-active', 'is-closing');
+      }, 1050 + 640);
+    };
+
+    sportModeToggle.addEventListener('change', () => {
+      const turningOn = sportModeToggle.checked;
+      if (turningOn) {
+        playSportModeTransition(() => {
+          syncSportMode();
+          saveAppState({ sportMode: sportModeToggle.checked });
+        });
+      } else {
+        syncSportMode();
+        saveAppState({ sportMode: sportModeToggle.checked });
+      }
+    });
+    syncSportMode();
+
+    // Ayarlar sayfasında Spor Modu'ndayken görünen tek "Çıkış" butonu:
+    // anahtarı kapatıp normal moda dönüşü, tıpkı anahtarın elle
+    // kapatılması gibi anlık (animasyonsuz) uygular.
+    const sportModeExitBtn = document.getElementById('settingsSportExitBtn');
+    if (sportModeExitBtn) {
+      sportModeExitBtn.addEventListener('click', () => {
+        sportModeToggle.checked = false;
+        syncSportMode();
+        saveAppState({ sportMode: false });
+      });
+    }
   }
 </script>
 
