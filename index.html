@@ -2704,11 +2704,21 @@
        sonraki görev görsel olarak net şekilde ayrılıyor. */
     padding-bottom: 0.7rem;
     border-bottom: 1.5px dashed rgba(18, 18, 18, 0.14);
+    transition: opacity 0.3s ease, transform 0.3s ease;
   }
 
   .page8-item-row:last-child {
     padding-bottom: 0;
     border-bottom: none;
+  }
+
+  /* "İşaretlenince otomatik sil" ayarı açıkken, tiklenen görev listeden
+     kalkmadan hemen önce kısa bir soluklaşma/küçülme animasyonuyla
+     kayboluyor; aksi halde satır aniden kesilip listeden düşer. */
+  .page8-item-row.is-page8-removing {
+    opacity: 0;
+    transform: scale(0.96);
+    pointer-events: none;
   }
 
   body.is-anthracite .page8-item-row {
@@ -3786,11 +3796,12 @@
   }
 
   /* ---------- Soru Havuzu: filtreleme çubuğu ----------
-     Sınav türü (Tümü/TYT/AYT) segmented control'ü ve o türde sorusu
-     bulunan derslere göre çip listesi artık sayfada sabit yer kaplamıyor;
-     ikisi de tek bir "Filtrele" pop-up'ında birlikte seçiliyor (bkz.
-     #qhavuzTrackSubjectBackdrop). Sayfadaki filtre çubuğunda yalnızca
-     seçili filtreyi gösteren tek bir buton kalıyor, böylece yer kazanılıyor. */
+     Sınav türü (Tümü/TYT/AYT), ders ve kaynak filtreleri artık sayfada
+     üç ayrı buton olarak durmuyor; üçü de tek bir "Filtrele" pop-up'ında,
+     iki bölüm halinde birlikte yönetiliyor (bkz. #qhavuzFilterBackdrop).
+     Sayfadaki filtre çubuğunda tek bir "Filtrele" butonu kalıyor; kaç
+     filtrenin aktif olduğu butonun üzerindeki rozet (badge) ile gösterilir
+     (bkz. .qhavuz-filter-badge), böylece yer kazanılıyor. */
   .qhavuz-filter-bar {
     display: flex;
     flex-direction: column;
@@ -3862,13 +3873,13 @@
     color: #f2f2f4;
   }
 
-  /* ---- Soru Havuzu: "Kaynağa Göre Ara" satırı ----
-     Sınav türü sekmesinin (Tümü/TYT/AYT) hemen altında duran, tam
-     genişlikte bir "sahte arama kutusu" butonu; dokununca soru eklenirken
-     girilen Kaynak (kitap adı) alanlarından türetilmiş bir seçim pop-up'ı
-     açılır (bkz. #qhavuzSourceBackdrop, Sayfa 8'deki Kategoriler pop-up'ıyla
-     aynı dili paylaşır). Bir kaynak seçiliyken buton vurgu rengiyle dolar,
-     seçilen adı gösterir ve yanındaki × butonuyla tek dokunuşla temizlenir. */
+  /* ---- Soru Havuzu: "Filtrele" satırı ----
+     Sayfadaki tek "sahte arama kutusu" görünümlü buton; dokununca sınav
+     türü, ders ve kaynağın birlikte yönetildiği birleşik pop-up açılır
+     (bkz. #qhavuzFilterBackdrop). Herhangi bir filtre aktifken buton vurgu
+     rengiyle (ya da seçili dersin kendi rengiyle) dolar, yanındaki rozet
+     kaç filtrenin aktif olduğunu gösterir, × butonuyla tek dokunuşla
+     üçü birden temizlenir. */
   .qhavuz-source-search-row {
     display: flex;
     align-items: center;
@@ -3930,6 +3941,104 @@
 
   .qhavuz-source-search-clear.is-hidden {
     display: none;
+  }
+
+  /* Filtrele butonunun üzerindeki küçük sayı rozeti: kaç filtrenin (tür,
+     ders, kaynak) aktif olduğunu tek bakışta gösterir, pop-up'ı açmaya
+     gerek kalmadan. Hiçbir filtre aktif değilken tamamen gizlenir. */
+  .qhavuz-filter-badge {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.2rem;
+    height: 1.2rem;
+    padding: 0 0.3rem;
+    border-radius: 999px;
+    font-size: 0.68rem;
+    font-weight: 800;
+    background-color: #000;
+    color: #fff;
+  }
+
+  .qhavuz-filter-badge.is-hidden {
+    display: none;
+  }
+
+  body.is-anthracite .qhavuz-source-search-btn.is-active .qhavuz-filter-badge {
+    background-color: #121212;
+    color: #f2f2f4;
+  }
+
+  /* ---- Soru Havuzu: birleşik "Filtrele" pop-up'ı ----
+     "Sınav Türü & Ders" ve "Kaynak" tek pop-up içinde iki bölüm (section)
+     olarak yan yana değil, alt alta duruyor; aralarında ince bir ayırıcı
+     çizgi var. Kart genel page8-groups-modal-card boyutunu miras alır,
+     ama iki bölüm birden sığdığı için kartın kendisine bir üst sınır ve
+     kaydırma eklenip, içindeki her çip listesinin yüksekliği küçültülür
+     (aksi halde iki liste birden ekran boyunu aşabilir). */
+  .qhavuz-filter-modal-card {
+    max-height: 82vh;
+    overflow-y: auto;
+  }
+
+  .qhavuz-filter-modal-card .page8-groups-chip-list {
+    max-height: 26vh;
+  }
+
+  .qhavuz-filter-section {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    width: 100%;
+  }
+
+  .qhavuz-filter-section-title {
+    font-family: "Space Grotesk", sans-serif;
+    font-weight: 800;
+    font-size: 0.72rem;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    color: #6b6b6b;
+  }
+
+  body.is-anthracite .qhavuz-filter-section-title {
+    color: #a5a5ad;
+  }
+
+  .qhavuz-filter-divider {
+    width: 100%;
+    height: 2px;
+    background-color: #e4e4e4;
+    border-radius: 999px;
+  }
+
+  body.is-anthracite .qhavuz-filter-divider {
+    background-color: #45454d;
+  }
+
+  .qhavuz-filter-clearall-btn {
+    width: 100%;
+    padding: 0.6rem 0.75rem;
+    font-family: "Space Grotesk", sans-serif;
+    font-weight: 700;
+    font-size: 0.8rem;
+    color: #121212;
+    text-align: center;
+    background-color: #f2f2f2;
+    border: 2.5px solid #000;
+    border-radius: 0.65rem;
+    cursor: pointer;
+    transition: background-color 0.18s ease, transform 0.15s ease;
+  }
+
+  .qhavuz-filter-clearall-btn:active {
+    transform: translate(1px, 1px);
+  }
+
+  body.is-anthracite .qhavuz-filter-clearall-btn {
+    background-color: var(--dark-card-color, #32343a);
+    color: #f2f2f4;
   }
 
   /* ---- Soru Havuzu: "Eklenen Kaynaklar" pop-up'ındaki arama kutusu ----
@@ -4213,21 +4322,32 @@
     position: absolute;
     top: 0.4rem;
     right: 0.4rem;
-    width: 1.5rem;
-    height: 1.5rem;
+    width: 1.7rem;
+    height: 1.7rem;
     border-radius: 50%;
-    border: 2.5px solid #fff;
-    background: rgba(0, 0, 0, 0.35);
+    border: 2.5px solid #000;
+    background: #fff;
+    box-shadow: 2px 2px 0px 0px #000;
     display: none;
     align-items: center;
     justify-content: center;
     z-index: 4;
-    transition: background-color 0.15s ease, border-color 0.15s ease;
+    transition: background-color 0.15s ease, box-shadow 0.15s ease;
   }
 
   .qhavuz-grid.is-select-mode .qhavuz-card-select-check,
   .qhavuz-packages-grid.is-select-mode .qhavuz-card-select-check {
     display: flex;
+  }
+
+  /* Seçilmemiş haldeyken içindeki tik ikonu tamamen saklanır (boş, içi
+     beyaz bir daire olarak durur); önceden tik her zaman görünür olduğu
+     için henüz hiçbir şey seçilmemişken bile tüm kartlar "seçilmiş" gibi
+     görünüyordu. */
+  .qhavuz-card-select-check svg {
+    opacity: 0;
+    transform: scale(0.5);
+    transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.15s ease;
   }
 
   .qhavuz-card.is-selected {
@@ -4242,6 +4362,16 @@
 
   .qhavuz-card.is-selected .qhavuz-card-select-check {
     background: var(--qhavuz-select-color, var(--accent-color, #ff90e8));
+    border-color: #000;
+  }
+
+  .qhavuz-card.is-selected .qhavuz-card-select-check svg {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  body.is-anthracite .qhavuz-card-select-check {
+    background: var(--dark-card-color, #32343a);
     border-color: #000;
   }
 
@@ -4364,14 +4494,64 @@
     pointer-events: none;
   }
 
-  .qhavuz-package-empty-thumb {
+  /* ---- Soru Havuzu: Paket kapağı ----
+     Kapak artık paketteki ilk sorunun görselini kullanmıyor (bir soru
+     silinirse/değişirse kapak da anlamsızca değişiyordu); bunun yerine
+     paketin kendi id'sinden türetilen sabit bir renk (bkz.
+     qhavuzPackageCoverColor, genel WHEEL_PALETTE'ten) ve paket adının baş
+     harfleriyle oluşturulan orijinal, tipografik bir kapak kullanılıyor.
+     İnce çapraz çizgi deseni currentColor ile çizilip metinle aynı rengi
+     düşük opaklıkta kullanır, böylece hem koyu hem açık zeminde okunaklı
+     kalır (bkz. getReadableTextColor). */
+  .qhavuz-package-cover {
     width: 100%;
     height: 100%;
+    position: relative;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.8rem;
-    opacity: 0.4;
+    overflow: hidden;
+  }
+
+  .qhavuz-package-cover-pattern {
+    position: absolute;
+    inset: 0;
+    background-image: repeating-linear-gradient(135deg, currentColor 0, currentColor 2px, transparent 2px, transparent 14px);
+    opacity: 0.14;
+    pointer-events: none;
+  }
+
+  .qhavuz-package-cover-initial {
+    position: relative;
+    font-family: "Archivo Expanded", "Space Grotesk", sans-serif;
+    font-weight: 800;
+    font-size: 2.4rem;
+    line-height: 1;
+    letter-spacing: 0.01em;
+    text-transform: uppercase;
+    text-align: center;
+  }
+
+  /* 3 harfli kapaklar (ör. "DYA") 2 harfliden daha geniş olduğu için,
+     dar kartlarda (2 sütunlu ızgara) taşmayı önlemek adına biraz daha
+     küçük punto ve sıfır harf aralığıyla çiziliyor. */
+  .qhavuz-package-cover-initial.is-triple {
+    font-size: 1.7rem;
+    letter-spacing: 0;
+  }
+
+  /* Paket adı şeridi: kapak rengiyle değil, uygulama genelindeki
+     "kart rengi" diliyle eşleşir — açık modda sabit açık gri, koyu
+     modda Ayarlar > Kart Renkleri'nden seçilen --dark-card-color
+     (bkz. #qhavuzFilterBtn/.qhavuz-source-search-btn ile aynı dil). */
+  .qhavuz-package-name-badge {
+    background-color: #f2f2f2;
+    color: #121212;
+  }
+
+  body.is-anthracite .qhavuz-package-name-badge {
+    background-color: var(--dark-card-color, #32343a);
+    color: #f2f2f4;
   }
 
   .qhavuz-package-detail-actions {
@@ -11904,6 +12084,24 @@
       </div>
 
       <div class="settings-section">
+        <span class="settings-section-label">Gündelik</span>
+        <div class="settings-card">
+          <div class="settings-row">
+            <div class="settings-row-text">
+              <span class="settings-row-title">İşaretlenince otomatik sil</span>
+              <span class="settings-row-desc">Kapalıyken (varsayılan) bir görevi tamamlandı işaretlemek onu sadece üstü çizili bırakır, silmeyi sen yaparsın. Açıkken işaretlenen görev listeden otomatik kalkar. Sadece Görevler'i etkiler, rutinleri etkilemez.</span>
+            </div>
+            <label class="toggle brutal-toggle settings-toggle" id="settingsPage8AutoDeleteToggleWrap">
+              <input type="checkbox" id="settingsPage8AutoDeleteToggle" />
+              <span class="track">
+                <span class="thumb"></span>
+              </span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div class="settings-section">
         <span class="settings-section-label">Veri</span>
         <div class="settings-card">
           <div class="settings-row">
@@ -12728,20 +12926,14 @@
         <input type="file" accept="image/*" id="qhavuzFileInput" class="qhavuz-file-input">
 
         <div class="qhavuz-filter-bar" id="qhavuzFilterBar">
-          <div class="qhavuz-source-search-row">
-            <button type="button" class="qhavuz-source-search-btn" id="qhavuzSourceFilterBtn" aria-haspopup="dialog">
-              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.5" cy="10.5" r="6.5"/><line x1="15.5" y1="15.5" x2="21" y2="21"/></svg>
-              <span id="qhavuzSourceFilterLabel">Kaynağa göre ara</span>
-            </button>
-            <button type="button" class="delete-btn qhavuz-source-search-clear is-hidden" id="qhavuzSourceFilterClear" aria-label="Kaynak filtresini temizle">×</button>
-          </div>
           <div class="qhavuz-filter-row">
             <div class="qhavuz-source-search-row qhavuz-tracksubj-row">
-              <button type="button" class="qhavuz-source-search-btn qhavuz-tracksubj-btn" id="qhavuzTrackSubjectFilterBtn" aria-haspopup="dialog">
+              <button type="button" class="qhavuz-source-search-btn qhavuz-tracksubj-btn" id="qhavuzFilterBtn" aria-haspopup="dialog">
                 <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="20" y2="12"/><line x1="12" y1="18" x2="20" y2="18"/></svg>
-                <span id="qhavuzTrackSubjectFilterLabel">Tümü</span>
+                <span id="qhavuzFilterBtnLabel">Filtrele</span>
+                <span class="qhavuz-filter-badge is-hidden" id="qhavuzFilterBadge">0</span>
               </button>
-              <button type="button" class="delete-btn qhavuz-source-search-clear is-hidden" id="qhavuzTrackSubjectFilterClear" aria-label="Filtreyi temizle">×</button>
+              <button type="button" class="delete-btn qhavuz-source-search-clear is-hidden" id="qhavuzFilterBtnClear" aria-label="Tüm filtreleri temizle">×</button>
             </div>
             <button type="button" class="qhavuz-sort-btn" id="qhavuzSortBtn" aria-label="Tarihe göre sırala">
               <svg class="qhavuz-sort-btn-icon" id="qhavuzSortBtnIcon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -13140,48 +13332,44 @@
 </div>
 
 <!-- Soru Havuzu: filtre çubuğundaki tek "Filtrele" butonuyla açılan pop-up.
-     Sınav türü (Tümü/TYT/AYT) segmented control'ü ve o türde en az bir
-     sorusu bulunan derslerin çip listesi artık ayrı ayrı sayfada durmak
-     yerine burada, tek bir pop-up içinde birlikte seçiliyor; sayfadaki
-     filtre çubuğunda yalnızca seçili filtre gösterilip yer kazanılıyor
-     (bkz. #qhavuzTrackSubjectFilterBtn). Sayfa 8'deki Kategoriler
-     pop-up'ıyla aynı dili paylaşır. -->
-<div class="settings-confirm-backdrop" id="qhavuzTrackSubjectBackdrop">
-  <div class="page11-modal-card page8-groups-modal-card">
+     Önceden "Sınav Türü & Ders" ve "Kaynak" iki ayrı pop-up'taydı; artık
+     tek pop-up içinde iki bölüm (section) halinde bir arada. Böylece
+     sayfadaki buton kalabalığı azalıyor ama her filtrenin kendi arayüz
+     dili (segmented+çip / arama+çip) korunuyor. Bir bölümdeki seçim
+     diğerini etkilemediği ve kullanıcı genelde ikisini art arda ayarlamak
+     isteyebileceği için (ör. önce ders, sonra kaynak), bir çipe dokununca
+     artık pop-up OTOMATİK KAPANMIYOR — kullanıcı × butonuyla veya
+     arka plana dokunarak kendi kapatıyor (bkz. qhavuzUpdateFilterBtn). -->
+<div class="settings-confirm-backdrop" id="qhavuzFilterBackdrop">
+  <div class="page11-modal-card page8-groups-modal-card qhavuz-filter-modal-card">
     <div class="exam-resources-header">
       <div class="page11-modal-heading">
         <span class="page11-modal-title">Filtrele</span>
-        <span class="page11-modal-subtitle">Sınav türünü ve dersi seç</span>
+        <span class="page11-modal-subtitle">Sınav türü, ders ve kaynağa göre daralt</span>
       </div>
-      <button type="button" class="delete-btn exam-resources-close" id="qhavuzTrackSubjectCloseBtn" aria-label="Kapat">×</button>
+      <button type="button" class="delete-btn exam-resources-close" id="qhavuzFilterCloseBtn" aria-label="Kapat">×</button>
     </div>
-    <div class="settings-segmented qhavuz-filter-track-segmented" id="qhavuzFilterTrackSegmented">
-      <div class="settings-segmented-slider" id="qhavuzFilterTrackSlider"></div>
-      <button type="button" class="settings-segmented-option is-active" data-value="all">Tümü</button>
-      <button type="button" class="settings-segmented-option" data-value="tyt">TYT</button>
-      <button type="button" class="settings-segmented-option" data-value="ayt">AYT</button>
-    </div>
-    <div class="page8-groups-chip-list" id="qhavuzFilterSubjects"></div>
-  </div>
-</div>
 
-<!-- Soru Havuzu: filtre çubuğundaki "Kaynağa göre ara" butonuyla açılan
-     pop-up. Sayfa 8'deki Kategoriler pop-up'ıyla aynı dili kullanır: soru
-     eklenirken girilen Kaynak (kitap adı) alanlarından tekilleştirilmiş bir
-     liste türetilip etiket (chip) halinde gösterilir. Üstteki arama kutusu
-     uzun listelerde daraltmak için var; bir etikete dokununca ızgara o
-     kaynağa göre filtrelenir ve pop-up kapanır. -->
-<div class="settings-confirm-backdrop" id="qhavuzSourceBackdrop">
-  <div class="page11-modal-card page8-groups-modal-card">
-    <div class="exam-resources-header">
-      <div class="page11-modal-heading">
-        <span class="page11-modal-title">Eklenen Kaynaklar</span>
-        <span class="page11-modal-subtitle">Soru eklerken yazdığın kaynaklardan birini seç</span>
+    <div class="qhavuz-filter-section">
+      <span class="qhavuz-filter-section-title">Sınav Türü &amp; Ders</span>
+      <div class="settings-segmented qhavuz-filter-track-segmented" id="qhavuzFilterTrackSegmented">
+        <div class="settings-segmented-slider" id="qhavuzFilterTrackSlider"></div>
+        <button type="button" class="settings-segmented-option is-active" data-value="all">Tümü</button>
+        <button type="button" class="settings-segmented-option" data-value="tyt">TYT</button>
+        <button type="button" class="settings-segmented-option" data-value="ayt">AYT</button>
       </div>
-      <button type="button" class="delete-btn exam-resources-close" id="qhavuzSourceCloseBtn" aria-label="Kapat">×</button>
+      <div class="page8-groups-chip-list" id="qhavuzFilterSubjects"></div>
     </div>
-    <input type="text" class="page9-add-custom-input qhavuz-source-search-input" id="qhavuzSourceSearchInput" placeholder="Kaynak ara..." maxlength="60">
-    <div class="page8-groups-chip-list" id="qhavuzSourceChipList"></div>
+
+    <div class="qhavuz-filter-divider"></div>
+
+    <div class="qhavuz-filter-section">
+      <span class="qhavuz-filter-section-title">Kaynak</span>
+      <input type="text" class="page9-add-custom-input qhavuz-source-search-input" id="qhavuzSourceSearchInput" placeholder="Kaynak ara..." maxlength="60">
+      <div class="page8-groups-chip-list" id="qhavuzSourceChipList"></div>
+    </div>
+
+    <button type="button" class="qhavuz-filter-clearall-btn" id="qhavuzFilterClearAllBtn">Tüm filtreleri temizle</button>
   </div>
 </div>
 
@@ -17051,13 +17239,24 @@
         ]
       }
     ],
-    routinesResetDate: null
+    routinesResetDate: null,
+    // Ayarlar > Gündelik'teki anahtarla kontrol edilir: kapalıyken (varsayılan,
+    // eski davranış) bir görev işaretlendiğinde sadece üstü çizilir, silmeyi
+    // kullanıcı kendi yapar. Açıkken işaretlenen görev listeden otomatik
+    // kalkar. Sadece "Görevler" sekmesi içindir; rutinler her gün sıfırlandığı
+    // için bu ayardan etkilenmez (bkz. createPage8GroupCard çağrıları).
+    autoDeleteTasks: false
   };
 
   const savedPage8 = APP_STATE.page8;
   const page8State = (savedPage8 && Array.isArray(savedPage8.categories) && Array.isArray(savedPage8.routineGroups))
     ? savedPage8
     : JSON.parse(JSON.stringify(PAGE8_DEFAULT_STATE));
+  // Eski (bu ayardan önce kaydedilmiş) yedeklerde alan hiç yok olabilir;
+  // eksikse varsayılan (kapalı) olarak tamamla.
+  if (typeof page8State.autoDeleteTasks !== 'boolean') {
+    page8State.autoDeleteTasks = false;
+  }
 
   // Gün değiştiyse tüm rutinlerin işaretini sıfırla (kategori görevleri
   // kalıcıdır, sadece rutinler her gün yeniden başlar).
@@ -17076,7 +17275,7 @@
   // Tek bir görev/rutin satırını (checkbox + metin + sil) oluşturur.
   // `onEditText`, düzenleme modundayken metne tıklanınca metni yeniden
   // yazılabilir hale getirmek için çağrılır (checkbox'ı tetiklemek yerine).
-  const createPage8ItemRow = (item, accentColor, onToggle, onDelete, onEditText) => {
+  const createPage8ItemRow = (item, accentColor, onToggle, onDelete, onEditText, autoDeleteOnCheck) => {
     const row = document.createElement('div');
     row.className = 'page8-item-row' + (item.done ? ' is-done' : '');
 
@@ -17136,6 +17335,17 @@
       checkbox.checked = item.done;
       row.classList.toggle('is-done', item.done);
       onToggle();
+      // "İşaretlenince otomatik sil" ayarı açıksa (yalnızca Görevler
+      // sekiminde geçerli, bkz. renderItems), işaretlenen görevi hemen
+      // silmek yerine kısa bir "tiklendi" anı yaşatıp (kullanıcı tikin
+      // gerçekten işlediğini görsün) ardından yumuşak bir soluklaşma/
+      // küçülme animasyonuyla listeden kaldırıyoruz.
+      if (item.done && autoDeleteOnCheck) {
+        row.classList.add('is-page8-removing');
+        setTimeout(() => {
+          if (typeof onDelete === 'function') onDelete();
+        }, 420);
+      }
     };
 
     // Kutuya (görsel tik alanına) her zaman tıklanabilir: düzenleme
@@ -17552,7 +17762,8 @@
             renderItems();
             opts.onChange();
           },
-          () => startItemTextEdit(item, row)
+          () => startItemTextEdit(item, row),
+          itemsKey === 'tasks' && !!page8State.autoDeleteTasks
         );
         itemList.appendChild(row);
       });
@@ -17921,6 +18132,22 @@
 
   page8SegOptions.forEach((btn) => btn.addEventListener('click', () => setPage8View(btn.dataset.value)));
   setPage8View('tasks');
+
+  // ---- Ayarlar > Gündelik: "İşaretlenince otomatik sil" anahtarı ----
+  // Sadece Görevler kartlarını etkiler (bkz. renderItems içindeki
+  // autoDeleteOnCheck parametresi); rutinler her gün sıfırlandığından bu
+  // ayardan bağımsız olarak hep eski (silinmeyen) davranışla kalır.
+  const settingsPage8AutoDeleteToggle = document.getElementById('settingsPage8AutoDeleteToggle');
+  if (settingsPage8AutoDeleteToggle) {
+    settingsPage8AutoDeleteToggle.checked = !!page8State.autoDeleteTasks;
+    settingsPage8AutoDeleteToggle.addEventListener('change', () => {
+      page8State.autoDeleteTasks = settingsPage8AutoDeleteToggle.checked;
+      savePage8State();
+      // Görev kartlarını yeniden çizip yeni ayarın anında (bir sonraki
+      // işaretlemeyi beklemeden) etkili olmasını sağlıyoruz.
+      renderPage8Categories();
+    });
+  }
 </script>
 
 <script>
@@ -21407,14 +21634,16 @@
     ? Array.from(qhavuzFilterTrackSegmented.querySelectorAll('.settings-segmented-option'))
     : [];
   const qhavuzFilterSubjectsEl = document.getElementById('qhavuzFilterSubjects');
-  // Sınav türü + ders filtresini tek bir buton üzerinden açılan pop-up'a
-  // taşıyan öğeler (bkz. #qhavuzTrackSubjectBackdrop). Buton, seçili
-  // filtreyi (varsa) etikette gösterir; hiçbiri seçili değilse "Tümü" yazar.
-  const qhavuzTrackSubjectFilterBtn = document.getElementById('qhavuzTrackSubjectFilterBtn');
-  const qhavuzTrackSubjectFilterLabel = document.getElementById('qhavuzTrackSubjectFilterLabel');
-  const qhavuzTrackSubjectFilterClear = document.getElementById('qhavuzTrackSubjectFilterClear');
-  const qhavuzTrackSubjectBackdrop = document.getElementById('qhavuzTrackSubjectBackdrop');
-  const qhavuzTrackSubjectCloseBtn = document.getElementById('qhavuzTrackSubjectCloseBtn');
+  // Sınav türü + ders + kaynak filtrelerinin üçü de tek bir buton
+  // üzerinden açılan birleşik pop-up'a taşındı (bkz. #qhavuzFilterBackdrop).
+  // Sayfadaki buton artık her zaman "Filtrele" yazar; kaç filtrenin aktif
+  // olduğu yanındaki rozette (badge) gösterilir (bkz. qhavuzUpdateFilterBtn).
+  const qhavuzFilterBtn = document.getElementById('qhavuzFilterBtn');
+  const qhavuzFilterBadge = document.getElementById('qhavuzFilterBadge');
+  const qhavuzFilterBtnClear = document.getElementById('qhavuzFilterBtnClear');
+  const qhavuzFilterBackdrop = document.getElementById('qhavuzFilterBackdrop');
+  const qhavuzFilterCloseBtn = document.getElementById('qhavuzFilterCloseBtn');
+  const qhavuzFilterClearAllBtn = document.getElementById('qhavuzFilterClearAllBtn');
   const qhavuzSortBtn = document.getElementById('qhavuzSortBtn');
   const qhavuzSortBtnLabel = document.getElementById('qhavuzSortBtnLabel');
 
@@ -22393,7 +22622,7 @@
     // silinmiş ya da tür değiştirilmiş olabilir) filtre otomatik sıfırlanır.
     if (qhavuzFilterSubject !== 'all' && !subjects.includes(qhavuzFilterSubject)) {
       qhavuzFilterSubject = 'all';
-      qhavuzUpdateTrackSubjectFilterBtn();
+      qhavuzUpdateFilterBtn();
     }
 
     if (!subjects.length) {
@@ -22413,14 +22642,14 @@
       chip.textContent = label;
       chip.classList.toggle('is-active', qhavuzFilterSubject === value);
       chip.addEventListener('click', () => {
-        if (qhavuzFilterSubject === value) { setQhavuzTrackSubjectPanel(false); return; }
-        qhavuzFilterSubject = value;
+        // Aynı çipe tekrar dokununca seçim kalkıp "Tümü"ne döner. Pop-up
+        // artık otomatik kapanmıyor: kullanıcı aynı pop-up içindeki Kaynak
+        // bölümünü de ayarlayabilsin diye × ile ya da arka plana dokunarak
+        // kendi kapatıyor (bkz. qhavuzUpdateFilterBtn / setQhavuzFilterPanel).
+        qhavuzFilterSubject = qhavuzFilterSubject === value ? 'all' : value;
         qhavuzBuildFilterSubjectChips();
-        qhavuzUpdateTrackSubjectFilterBtn();
+        qhavuzUpdateFilterBtn();
         renderQhavuzGrid();
-        // Ders seçilince pop-up otomatik kapanır (Kaynağa göre ara
-        // pop-up'ıyla aynı davranış): kullanıcı tek dokunuşla filtreler.
-        setQhavuzTrackSubjectPanel(false);
       });
       qhavuzFilterSubjectsEl.appendChild(chip);
     };
@@ -22441,74 +22670,13 @@
       qhavuzFilterTrackOptions.forEach((b) => b.classList.toggle('is-active', b === btn));
       qhavuzFilterMoveSlider();
       qhavuzBuildFilterSubjectChips();
-      qhavuzUpdateTrackSubjectFilterBtn();
+      qhavuzUpdateFilterBtn();
       renderQhavuzGrid();
       // Sınav türü değişince pop-up açık kalır: kullanıcı hemen ardından
-      // o türe özel bir ders seçebilir; sadece türe göre filtrelemek
-      // istiyorsa "Tümü" ders çipine dokunarak pop-up'ı kapatabilir.
+      // o türe özel bir ders, sonra da Kaynak bölümünden bir kaynak
+      // seçebilir; işi bitince × ile ya da arka plana dokunarak kapatır.
     });
   });
-
-  // Sayfadaki tek satırlık "Filtrele" butonu: seçili sınav türü ve/veya
-  // dersi kısa bir etikette özetler (ör. "TYT · Biyoloji"), hiçbiri seçili
-  // değilse "Tümü" gösterir. Aktifken vurgu rengiyle dolar ve yanındaki ×
-  // butonuyla tek dokunuşla iki filtre de birden temizlenir.
-  const QHAVUZ_TRACK_LABELS = { all: 'Tümü', tyt: 'TYT', ayt: 'AYT' };
-
-  const qhavuzUpdateTrackSubjectFilterBtn = () => {
-    if (!qhavuzTrackSubjectFilterBtn) return;
-    const active = qhavuzFilterTrack !== 'all' || qhavuzFilterSubject !== 'all';
-    let label = 'Tümü';
-    if (qhavuzFilterTrack !== 'all' && qhavuzFilterSubject !== 'all') {
-      label = `${QHAVUZ_TRACK_LABELS[qhavuzFilterTrack]} · ${qhavuzFilterSubject}`;
-    } else if (qhavuzFilterTrack !== 'all') {
-      label = QHAVUZ_TRACK_LABELS[qhavuzFilterTrack];
-    } else if (qhavuzFilterSubject !== 'all') {
-      label = qhavuzFilterSubject;
-    }
-    qhavuzTrackSubjectFilterBtn.classList.toggle('is-active', active);
-    // Bir ders seçiliyse buton sabit vurgu rengi yerine o dersin kendi
-    // rengiyle dolar (kart etiketleriyle aynı renk dili); sadece sınav
-    // türü seçiliyken (ders "Tümü") ya da hiçbir filtre yokken satır
-    // içi renk kaldırılıp CSS'teki varsayılan/vurgu rengine dönülür.
-    qhavuzTrackSubjectFilterBtn.style.backgroundColor = qhavuzFilterSubject !== 'all'
-      ? qhavuzSubjectColor(qhavuzFilterSubject)
-      : '';
-    if (qhavuzTrackSubjectFilterLabel) qhavuzTrackSubjectFilterLabel.textContent = label;
-    if (qhavuzTrackSubjectFilterClear) qhavuzTrackSubjectFilterClear.classList.toggle('is-hidden', !active);
-  };
-
-  const setQhavuzTrackSubjectPanel = (open) => {
-    if (!qhavuzTrackSubjectBackdrop) return;
-    qhavuzTrackSubjectBackdrop.classList.toggle('is-open', open);
-    if (open) qhavuzBuildFilterSubjectChips();
-  };
-
-  if (qhavuzTrackSubjectFilterBtn) {
-    qhavuzTrackSubjectFilterBtn.addEventListener('click', () => setQhavuzTrackSubjectPanel(true));
-  }
-  if (qhavuzTrackSubjectCloseBtn) {
-    qhavuzTrackSubjectCloseBtn.addEventListener('click', () => setQhavuzTrackSubjectPanel(false));
-  }
-  if (qhavuzTrackSubjectBackdrop) {
-    qhavuzTrackSubjectBackdrop.addEventListener('click', (e) => {
-      if (e.target === qhavuzTrackSubjectBackdrop) setQhavuzTrackSubjectPanel(false);
-    });
-  }
-  if (qhavuzTrackSubjectFilterClear) {
-    qhavuzTrackSubjectFilterClear.addEventListener('click', (e) => {
-      e.stopPropagation();
-      qhavuzFilterTrack = 'all';
-      qhavuzFilterSubject = 'all';
-      qhavuzFilterTrackOptions.forEach((b) => b.classList.toggle('is-active', b.dataset.value === 'all'));
-      qhavuzFilterMoveSlider();
-      qhavuzBuildFilterSubjectChips();
-      qhavuzUpdateTrackSubjectFilterBtn();
-      renderQhavuzGrid();
-    });
-  }
-
-  qhavuzUpdateTrackSubjectFilterBtn();
 
   // ---- Soru Havuzu: silme onay pop-up'ı ----
   // × butonuyla silme artık anında olmuyor; hem düzenleme modundaki ×
@@ -22630,19 +22798,16 @@
     if (e.key === 'Escape') closeQhavuzContextMenu();
   });
 
-  // ---- Soru Havuzu: "Kaynağa Göre Ara" pop-up'ı ----
-  // Filtre çubuğundaki arama kutusu görünümlü butona dokununca, soru
-  // eklenirken girilen Kaynak (kitap adı) alanlarından tekilleştirilmiş bir
-  // liste açılır (bkz. #qhavuzSourceBackdrop, Sayfa 8'deki Kategoriler
-  // pop-up'ıyla aynı dili paylaşır). Bir etikete dokununca ızgara o kaynağa
-  // göre filtrelenir; üstteki arama kutusu uzun listelerde daraltmak için var.
+  // ---- Soru Havuzu: birleşik "Filtrele" pop-up'ı ----
+  // Sınav türü, ders ve kaynak (kitap adı) filtreleri tek bir pop-up'ta,
+  // "Sınav Türü & Ders" ve "Kaynak" olmak üzere iki bölüm halinde bir
+  // arada yönetiliyor (bkz. #qhavuzFilterBackdrop). Kaynak bölümü Sayfa
+  // 8'deki Kategoriler pop-up'ıyla aynı dili paylaşır: soru eklenirken
+  // girilen Kaynak alanlarından tekilleştirilmiş bir liste türetilip
+  // etiket (chip) halinde gösterilir; üstteki arama kutusu uzun
+  // listelerde daraltmak için var.
   let qhavuzFilterBook = 'all';
 
-  const qhavuzSourceFilterBtn = document.getElementById('qhavuzSourceFilterBtn');
-  const qhavuzSourceFilterLabel = document.getElementById('qhavuzSourceFilterLabel');
-  const qhavuzSourceFilterClear = document.getElementById('qhavuzSourceFilterClear');
-  const qhavuzSourceBackdrop = document.getElementById('qhavuzSourceBackdrop');
-  const qhavuzSourceCloseBtn = document.getElementById('qhavuzSourceCloseBtn');
   const qhavuzSourceSearchInput = document.getElementById('qhavuzSourceSearchInput');
   const qhavuzSourceChipList = document.getElementById('qhavuzSourceChipList');
 
@@ -22661,23 +22826,6 @@
       books.push(name);
     });
     return books;
-  };
-
-  const qhavuzUpdateSourceFilterBtn = () => {
-    if (!qhavuzSourceFilterBtn) return;
-    const active = qhavuzFilterBook !== 'all';
-    qhavuzSourceFilterBtn.classList.toggle('is-active', active);
-    if (qhavuzSourceFilterLabel) qhavuzSourceFilterLabel.textContent = active ? qhavuzFilterBook : 'Kaynağa göre ara';
-    if (qhavuzSourceFilterClear) qhavuzSourceFilterClear.classList.toggle('is-hidden', !active);
-  };
-
-  const setQhavuzSourcePanel = (open) => {
-    if (!qhavuzSourceBackdrop) return;
-    qhavuzSourceBackdrop.classList.toggle('is-open', open);
-    if (open) {
-      if (qhavuzSourceSearchInput) qhavuzSourceSearchInput.value = '';
-      renderQhavuzSourceChips();
-    }
   };
 
   const renderQhavuzSourceChips = () => {
@@ -22705,9 +22853,13 @@
       chip.textContent = label;
       chip.classList.toggle('is-active', qhavuzFilterBook === value);
       chip.addEventListener('click', () => {
-        qhavuzFilterBook = value;
-        setQhavuzSourcePanel(false);
-        qhavuzUpdateSourceFilterBtn();
+        // Aynı çipe tekrar dokununca seçim kalkıp "Tümü"ne döner. Pop-up
+        // artık otomatik kapanmıyor (bkz. qhavuzBuildFilterSubjectChips'teki
+        // aynı yaklaşım): kullanıcı üstteki Tür & Ders bölümünü de aynı
+        // pop-up içinde ayarlayabilir.
+        qhavuzFilterBook = qhavuzFilterBook === value ? 'all' : value;
+        renderQhavuzSourceChips();
+        qhavuzUpdateFilterBtn();
         renderQhavuzGrid();
       });
       qhavuzSourceChipList.appendChild(chip);
@@ -22717,30 +22869,81 @@
     books.forEach((name) => makeChip(name, name));
   };
 
-  if (qhavuzSourceFilterBtn) {
-    qhavuzSourceFilterBtn.addEventListener('click', () => setQhavuzSourcePanel(true));
+  // Sayfadaki tek "Filtrele" butonu her zaman "Filtrele" yazar; kaç
+  // filtrenin (tür, ders, kaynak) aktif olduğu yanındaki sayısal rozette
+  // gösterilir (bkz. .qhavuz-filter-badge) — üç ayrı özet yerine tek bir
+  // sayı, çubuğu sade tutar. Herhangi biri aktifken buton vurgu rengiyle
+  // dolar; bir ders seçiliyse dersin kendi rengini alır (kart etiketleriyle
+  // aynı dil). Yanındaki × butonuyla tek dokunuşla üç filtre birden
+  // temizlenir.
+  const qhavuzUpdateFilterBtn = () => {
+    if (!qhavuzFilterBtn) return;
+    const activeCount = (qhavuzFilterTrack !== 'all' ? 1 : 0)
+      + (qhavuzFilterSubject !== 'all' ? 1 : 0)
+      + (qhavuzFilterBook !== 'all' ? 1 : 0);
+    const active = activeCount > 0;
+    qhavuzFilterBtn.classList.toggle('is-active', active);
+    qhavuzFilterBtn.style.backgroundColor = qhavuzFilterSubject !== 'all'
+      ? qhavuzSubjectColor(qhavuzFilterSubject)
+      : '';
+    if (qhavuzFilterBadge) {
+      qhavuzFilterBadge.textContent = String(activeCount);
+      qhavuzFilterBadge.classList.toggle('is-hidden', !active);
+    }
+    if (qhavuzFilterBtnClear) qhavuzFilterBtnClear.classList.toggle('is-hidden', !active);
+  };
+
+  // Pop-up açılınca her iki bölüm de güncel veriyle yeniden çizilir
+  // (ders çipleri o an geçerli türe göre, kaynak arama kutusu sıfırlanmış
+  // olarak). Kapanış otomatik değil: × butonu, arka plana dokunma ya da
+  // "Tüm filtreleri temizle" ile olur.
+  const setQhavuzFilterPanel = (open) => {
+    if (!qhavuzFilterBackdrop) return;
+    qhavuzFilterBackdrop.classList.toggle('is-open', open);
+    if (open) {
+      qhavuzBuildFilterSubjectChips();
+      if (qhavuzSourceSearchInput) qhavuzSourceSearchInput.value = '';
+      renderQhavuzSourceChips();
+    }
+  };
+
+  const qhavuzClearAllFilters = () => {
+    qhavuzFilterTrack = 'all';
+    qhavuzFilterSubject = 'all';
+    qhavuzFilterBook = 'all';
+    qhavuzFilterTrackOptions.forEach((b) => b.classList.toggle('is-active', b.dataset.value === 'all'));
+    qhavuzFilterMoveSlider();
+    qhavuzBuildFilterSubjectChips();
+    renderQhavuzSourceChips();
+    qhavuzUpdateFilterBtn();
+    renderQhavuzGrid();
+  };
+
+  if (qhavuzFilterBtn) {
+    qhavuzFilterBtn.addEventListener('click', () => setQhavuzFilterPanel(true));
   }
-  if (qhavuzSourceCloseBtn) {
-    qhavuzSourceCloseBtn.addEventListener('click', () => setQhavuzSourcePanel(false));
+  if (qhavuzFilterCloseBtn) {
+    qhavuzFilterCloseBtn.addEventListener('click', () => setQhavuzFilterPanel(false));
   }
-  if (qhavuzSourceBackdrop) {
-    qhavuzSourceBackdrop.addEventListener('click', (e) => {
-      if (e.target === qhavuzSourceBackdrop) setQhavuzSourcePanel(false);
+  if (qhavuzFilterBackdrop) {
+    qhavuzFilterBackdrop.addEventListener('click', (e) => {
+      if (e.target === qhavuzFilterBackdrop) setQhavuzFilterPanel(false);
     });
   }
   if (qhavuzSourceSearchInput) {
     qhavuzSourceSearchInput.addEventListener('input', renderQhavuzSourceChips);
   }
-  if (qhavuzSourceFilterClear) {
-    qhavuzSourceFilterClear.addEventListener('click', (e) => {
+  if (qhavuzFilterBtnClear) {
+    qhavuzFilterBtnClear.addEventListener('click', (e) => {
       e.stopPropagation();
-      qhavuzFilterBook = 'all';
-      qhavuzUpdateSourceFilterBtn();
-      renderQhavuzGrid();
+      qhavuzClearAllFilters();
     });
   }
+  if (qhavuzFilterClearAllBtn) {
+    qhavuzFilterClearAllBtn.addEventListener('click', qhavuzClearAllFilters);
+  }
 
-  qhavuzUpdateSourceFilterBtn();
+  qhavuzUpdateFilterBtn();
 
   const renderQhavuzGrid = () => {
     closeQhavuzContextMenu();
@@ -22750,7 +22953,7 @@
     // olabilir) filtre otomatik olarak "Tümü"ne döner.
     if (qhavuzFilterBook !== 'all' && !qhavuzAllBooks().includes(qhavuzFilterBook)) {
       qhavuzFilterBook = 'all';
-      qhavuzUpdateSourceFilterBtn();
+      qhavuzUpdateFilterBtn();
     }
 
     const filteredItems = qhavuzState.items.filter((item) => {
@@ -23010,6 +23213,39 @@
   // Bir paketin içindeki soruları (havuzdan silinmiş olanlar hariç) döner.
   const qhavuzPackageQuestions = (pkg) => qhavuzState.items.filter((it) => pkg.itemIds.includes(it.id));
 
+  // Paket kapağı: içindeki ilk sorunun görseli yerine, paketin kendi
+  // kimliğinden türetilen sabit bir renk + adının baş harfleriyle
+  // oluşturulan orijinal bir kapak (bkz. .qhavuz-package-cover). Renk,
+  // pkg.id'den basit bir hash ile genel WHEEL_PALETTE'ten seçilir; böylece
+  // aynı paket her zaman aynı rengi alır, ama paketler arasında (rastgele
+  // değil, ama görsel olarak çeşitli) bir dağılım olur.
+  const qhavuzPackageCoverColor = (pkg) => {
+    const key = (pkg && (pkg.id || pkg.name)) || '';
+    let hash = 0;
+    for (let i = 0; i < key.length; i++) {
+      hash = (hash * 31 + key.charCodeAt(i)) >>> 0;
+    }
+    return WHEEL_PALETTE[hash % WHEEL_PALETTE.length];
+  };
+
+  // Paket adından baş harfleri çıkarır (en fazla 3 harf): tek kelimeyse
+  // o kelimenin ilk 3 harfi, iki kelimeyse ilk kelimenin ilk harfi + ikinci
+  // kelimenin ilk 2 harfi, üç veya daha çok kelimeyse ilk üç kelimenin
+  // baş harfleri (ör. "Deneme Yanlış Analizi" -> "DYA").
+  const qhavuzPackageCoverInitials = (name) => {
+    const words = (name || '').trim().split(/\s+/).filter(Boolean);
+    if (!words.length) return '?';
+    let initials;
+    if (words.length === 1) {
+      initials = words[0].slice(0, 3);
+    } else if (words.length === 2) {
+      initials = words[0].slice(0, 1) + words[1].slice(0, 2);
+    } else {
+      initials = words[0][0] + words[1][0] + words[2][0];
+    }
+    return initials.toLocaleUpperCase('tr');
+  };
+
   const openQhavuzPackagesPage = () => {
     renderQhavuzPackagesGrid();
     document.body.classList.add('is-zero-error-open');
@@ -23131,17 +23367,25 @@
 
       const thumb = document.createElement('div');
       thumb.className = 'qhavuz-thumb';
-      if (questions[0]) {
-        const img = document.createElement('img');
-        img.alt = pkg.name;
-        thumb.appendChild(img);
-        resolveImageSrc(questions[0].image).then((url) => { if (url) img.src = url; });
-      } else {
-        const placeholder = document.createElement('div');
-        placeholder.className = 'qhavuz-package-empty-thumb';
-        placeholder.textContent = '📦';
-        thumb.appendChild(placeholder);
-      }
+
+      // Kapak artık paketteki ilk sorunun görseli değil (bkz. yukarıdaki
+      // qhavuzPackageCoverColor/Initials): sorular silinse ya da değişse
+      // bile paketin kapağı sabit kalır.
+      const cover = document.createElement('div');
+      cover.className = 'qhavuz-package-cover';
+      const coverColor = qhavuzPackageCoverColor(pkg);
+      cover.style.backgroundColor = coverColor;
+      cover.style.color = getReadableTextColor(coverColor);
+      const coverPattern = document.createElement('div');
+      coverPattern.className = 'qhavuz-package-cover-pattern';
+      cover.appendChild(coverPattern);
+      const coverInitial = document.createElement('span');
+      const coverInitialText = qhavuzPackageCoverInitials(pkg.name);
+      coverInitial.className = 'qhavuz-package-cover-initial'
+        + (coverInitialText.length >= 3 ? ' is-triple' : '');
+      coverInitial.textContent = coverInitialText;
+      cover.appendChild(coverInitial);
+      thumb.appendChild(cover);
 
       const countBadge = document.createElement('span');
       countBadge.className = 'qhavuz-package-count-badge';
@@ -23151,8 +23395,13 @@
       const info = document.createElement('div');
       info.className = 'qhavuz-card-info';
       const nameBadge = document.createElement('span');
-      nameBadge.className = 'qhavuz-card-subject';
-      nameBadge.style.background = '#f2f2f2';
+      // Alt bilgi şeridi, kapak rengiyle değil (o çok değişken/parlak
+      // olabiliyor ve okunabilirliği zorlayabiliyor), Ayarlar > Kart
+      // Renkleri'nden seçilen genel kart rengiyle eşleşiyor — uygulamanın
+      // geri kalanındaki kartlarla (ör. filtre butonları) aynı dili
+      // paylaşır. Açık modda sabit açık gri, koyu modda kullanıcının
+      // seçtiği --dark-card-color; bkz. .qhavuz-package-name-badge.
+      nameBadge.className = 'qhavuz-card-subject qhavuz-package-name-badge';
       nameBadge.textContent = pkg.name;
       info.appendChild(nameBadge);
 
