@@ -1742,7 +1742,6 @@
   #page-4 {
     align-items: flex-start;
     overflow-y: auto;
-    touch-action: pan-y;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
     padding-top: calc(40px + env(safe-area-inset-top));
@@ -2002,7 +2001,6 @@
   .wheel-options-scroll {
     max-height: 118px;
     overflow-y: auto;
-    touch-action: pan-y;
     overflow-x: hidden;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
@@ -2240,20 +2238,20 @@
      kaydırma efekti değil, kutunun sabit kenar şeklidir — bu yüzden
      içerik kaydıkça diş deseni her zaman aynı ekran konumunda sabit
      kalır. */
-  /* iOS Safari'de "clip-path" ile "overflow-y: auto" AYNI elemanda
-     birlikte bulunduğunda parmakla kaydırma tamamen devre dışı kalıyor
-     (bilinen bir WebKit davranışı/hatası) — sayfa görsel olarak
-     kaydırılabilir görünse de dokunuşlar tarayıcı tarafından işlenmiyordu.
-     Çözüm: dişli/zigzag kenar şeklini (clip-path) kaydırma yapan elemandan
-     ayırıp, onu SARMALAYAN ve kendisi kaydırılmayan bu dış kutuya taşıdık.
-     Görsel kırpma (kenar şekli) aynı kalıyor, ama artık gerçek dokunarak
-     kaydırma işini üstlenen .page8-scroll elemanının üzerinde clip-path
-     yok; bu yüzden iOS'ta tekrar kaydırılabilir hale geliyor. */
-  .page8-scroll-clip {
+  .page8-scroll {
     width: 100%;
     flex: 1 1 auto;
     min-height: 0;
-    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    box-sizing: border-box;
+    padding: 0.9rem 24px calc(96px + env(safe-area-inset-bottom));
     clip-path: polygon(
       0.0% 0, 4.167% 6px, 8.333% 0, 12.5% 6px, 16.667% 0, 20.833% 6px,
       25.0% 0, 29.167% 6px, 33.333% 0, 37.5% 6px, 41.667% 0, 45.833% 6px,
@@ -2261,22 +2259,6 @@
       75.0% 0, 79.167% 6px, 83.333% 0, 87.5% 6px, 91.667% 0, 95.833% 6px,
       100.0% 0, 100% 100%, 0% 100%
     );
-  }
-
-  .page8-scroll {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    overflow-y: auto;
-    touch-action: pan-y;
-    -webkit-overflow-scrolling: touch;
-    overscroll-behavior: contain;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-    box-sizing: border-box;
-    padding: 0.9rem 24px calc(96px + env(safe-area-inset-bottom));
   }
 
   .page8-scroll::-webkit-scrollbar {
@@ -2291,7 +2273,6 @@
     justify-content: flex-start;
     padding-top: calc(48px + env(safe-area-inset-top));
     overflow-y: auto;
-    touch-action: pan-y;
     overflow-x: hidden;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
@@ -2448,7 +2429,6 @@
     width: 100%;
     max-height: 50vh;
     overflow-y: auto;
-    touch-action: pan-y;
     box-sizing: border-box;
     padding: 0.15rem;
     scrollbar-width: none;
@@ -3689,7 +3669,6 @@
     flex-direction: column;
     align-items: center;
     overflow-y: auto;
-    touch-action: pan-y;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
     scrollbar-width: none;
@@ -3703,8 +3682,7 @@
   }
 
   .qhavuz-tear-line {
-    flex: 1 1 0;
-    min-width: 0;
+    flex: 1 1 auto;
     height: 2.5px;
     /* border-top: dashed yerine sabit desenli bir arka plan kullanılıyor:
        border-dashed, tire uzunluğunu elemanın toplam genişliğine göre
@@ -3721,21 +3699,6 @@
       transparent 10px
     );
     opacity: 0.4;
-  }
-
-  /* Sağdaki çizgi (kalemin sağında kalan parça): deseni ters yönden
-     (soldan değil sağdan) başlatıyoruz. Böylece olası eksik/yarım tire
-     artık dış kenarda değil kalemin yanında kalıyor; yani sol
-     parçadaki gibi kaleme bitişik tam bir tireyle başlıyor, dış uçtaki
-     tire ile kaleme bitişik tire yer değiştirmiş oluyor. */
-  .qhavuz-tear-line:last-of-type {
-    background-image: repeating-linear-gradient(
-      to left,
-      currentColor 0,
-      currentColor 6px,
-      transparent 6px,
-      transparent 10px
-    );
   }
 
   .qhavuz-tear-pencil {
@@ -3791,202 +3754,16 @@
     display: none;
   }
 
-  /* ---------- Soru Havuzu: filtre butonu + pop-up sayfası ----------
-     Eskiden sayfada daima açık duran filtre çubuğu (tür sekmesi + ders
-     çip satırı) hem yer kaplıyor hem de yeni filtre türleri eklemeyi
-     zorlaştırıyordu. Artık tek bir kompakt "Filtrele" butonu var; ona
-     basılınca tür, ders ve sıralama seçeneklerini bir arada barındıran
-     geniş bir pop-up sayfası (.page9-add-backdrop tabanlı) açılıyor.
-     Gelecekteki yeni filtre türleri de bu pop-up içine kendi
-     .qhavuz-filter-popup-section'larıyla eklenecek. */
-  .qhavuz-toolbar {
-    display: flex;
-    flex-wrap: nowrap;
-    gap: 0.5rem;
-    width: 100%;
-  }
-
-  .qhavuz-filter-btn {
-    position: relative;
-    flex: 1 1 0;
-    min-width: 0;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.3rem;
-    padding: 0.5rem 0.5rem;
-    font-family: "Space Grotesk", sans-serif;
-    font-weight: 800;
-    font-size: 0.8rem;
-    white-space: nowrap;
-    color: #000;
-    background-color: #fff;
-    border: 3px solid #000;
-    border-radius: 0.8rem;
-    box-shadow: 3px 3px 0px 0px #000;
-    cursor: pointer;
-    transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.2s ease;
-  }
-
-  .qhavuz-filter-btn span {
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  .qhavuz-filter-btn svg {
-    flex: 0 0 auto;
-  }
-
-  .qhavuz-filter-btn:active {
-    transform: translate(1px, 1px);
-    box-shadow: 1.5px 1.5px 0px 0px #000;
-  }
-
-  .qhavuz-filter-btn.has-active-filters,
-  .qhavuz-filter-btn.is-on {
-    background-color: var(--accent-color, #ff90e8);
-  }
-
-  body.is-anthracite .qhavuz-filter-btn {
-    background-color: var(--dark-card-color, #32343a);
-    color: #f2f2f4;
-  }
-
-  body.is-anthracite .qhavuz-filter-btn.has-active-filters,
-  body.is-anthracite .qhavuz-filter-btn.is-on {
-    background-color: var(--accent-color, #ff90e8);
-    color: #121212;
-  }
-
-  .qhavuz-filter-btn-badge {
-    flex: 0 0 auto;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 1.1rem;
-    height: 1.1rem;
-    padding: 0 0.3rem;
-    font-size: 0.68rem;
-    font-weight: 800;
-    color: #fff;
-    background-color: #000;
-    border-radius: 999px;
-  }
-
-  .qhavuz-filter-btn-badge.is-hidden {
-    display: none;
-  }
-
-  body.is-anthracite .qhavuz-filter-btn-badge {
-    background-color: #000;
-    color: #fff;
-  }
-
-  /* Pop-up içindeki her filtre grubu (Sıralama / Sınav Türü / Ders...)
-     kendi başlığıyla birlikte bir .qhavuz-filter-popup-section'a
-     sarılıyor; yeni bir filtre türü eklemek tek yapılması gereken şey
-     bu kalıptan bir tane daha eklemek. */
-  .qhavuz-filter-popup-section {
+  /* ---------- Soru Havuzu: filtreleme çubuğu ----------
+     Üstte sınav türü (Tümü/TYT/AYT) segmented control'ü, altında o an
+     listede sorusu bulunan derslere göre yatay kaydırmalı çip satırı.
+     İkisi birlikte "sadece TYT", "sadece AYT" ya da tek bir derse göre
+     daraltılmış bir liste görmeyi sağlar. */
+  .qhavuz-filter-bar {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
-    margin-bottom: 1rem;
-  }
-
-  .qhavuz-filter-popup-section:last-of-type {
-    margin-bottom: 1.2rem;
-  }
-
-  .qhavuz-filter-popup-label {
-    font-family: "Space Grotesk", sans-serif;
-    font-weight: 800;
-    font-size: 0.78rem;
-    letter-spacing: 0.02em;
-    text-transform: uppercase;
-    color: #121212;
-    opacity: 0.55;
-  }
-
-  body.is-anthracite .qhavuz-filter-popup-label {
-    color: #f2f2f4;
-  }
-
-  .qhavuz-filter-popup-reset {
-    display: block;
+    gap: 0.55rem;
     width: 100%;
-    text-align: center;
-    padding: 0.5rem;
-    font-family: "Space Grotesk", sans-serif;
-    font-weight: 700;
-    font-size: 0.82rem;
-    color: #121212;
-    opacity: 0.6;
-    background: none;
-    border: none;
-    cursor: pointer;
-    text-decoration: underline;
-  }
-
-  .qhavuz-filter-popup-reset:active {
-    opacity: 0.9;
-  }
-
-  body.is-anthracite .qhavuz-filter-popup-reset {
-    color: #f2f2f4;
-  }
-
-  /* ---- Soru Havuzu: "Kaynak" filtresi tetikleyici butonu ----
-     Pop-up içinde bir seçili değeri (ya da "Tümü") gösteren, dokununca
-     "Eklenen Kaynaklar" pop-up'ını açan tam genişlikte bir buton. Bir
-     kaynak seçiliyken vurgu rengine boyanır; böylece filtre pop-up'ı
-     kapalıyken bile ana "Filtrele" butonundaki rozetle aynı mantıkla
-     "bir şey seçili" bilgisini taşır. */
-  .qhavuz-filter-source-btn {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 0.6rem;
-    width: 100%;
-    padding: 0.6rem 0.85rem;
-    font-family: "Space Grotesk", sans-serif;
-    font-weight: 700;
-    font-size: 0.85rem;
-    color: #121212;
-    background-color: #f2f2f2;
-    border: 2.5px solid #000;
-    border-radius: 0.75rem;
-    cursor: pointer;
-    transition: background-color 0.18s ease, transform 0.15s ease;
-  }
-
-  .qhavuz-filter-source-btn:active {
-    transform: translate(1px, 1px);
-  }
-
-  .qhavuz-filter-source-btn.has-value {
-    background-color: var(--accent-color, #ff90e8);
-  }
-
-  .qhavuz-filter-source-btn-label {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    text-align: left;
-  }
-
-  .qhavuz-filter-source-btn-chevron {
-    flex-shrink: 0;
-    opacity: 0.5;
-  }
-
-  body.is-anthracite .qhavuz-filter-source-btn {
-    background-color: var(--dark-card-color, #32343a);
-    color: #f2f2f4;
-  }
-
-  body.is-anthracite .qhavuz-filter-source-btn.has-value {
-    background-color: var(--accent-color, #ff90e8);
-    color: #121212;
   }
 
   .qhavuz-filter-track-segmented#qhavuzFilterTrackSegmented .settings-segmented-slider {
@@ -4190,309 +3967,6 @@
     opacity: 1;
     transform: scale(1);
     pointer-events: auto;
-  }
-
-  /* ---------- Soru Havuzu: çoklu seçim modu ("Seç") ----------
-     Düzenleme modundaki × butonuyla aynı köşede (sağ üst), aynı geçiş
-     mantığıyla beliren yuvarlak bir onay kutusu. İki mod birbirini
-     dışlar (Seç açılınca Düzenle kapanır, tersi de öyle), bu yüzden
-     aynı köşeyi paylaşmaları görsel çakışma yaratmaz. */
-  .qhavuz-card-select {
-    position: absolute;
-    top: 0.4rem;
-    right: 0.4rem;
-    width: 1.7rem;
-    height: 1.7rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: #fff;
-    border: 2.5px solid #000;
-    border-radius: 999px;
-    box-shadow: 2px 2px 0px 0px #000;
-    z-index: 2;
-    opacity: 0;
-    transform: scale(0.6);
-    pointer-events: none;
-    transition: transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.2s ease,
-      background-color 0.2s ease;
-  }
-
-  .qhavuz-grid.is-select-mode .qhavuz-card-select {
-    opacity: 1;
-    transform: scale(1);
-    pointer-events: auto;
-  }
-
-  .qhavuz-card-select svg {
-    width: 14px;
-    height: 14px;
-    opacity: 0;
-    stroke: #121212;
-    transition: opacity 0.15s ease;
-  }
-
-  .qhavuz-card-select.is-checked {
-    background-color: var(--accent-color, #ff90e8);
-  }
-
-  .qhavuz-card-select.is-checked svg {
-    opacity: 1;
-  }
-
-  /* Seçim modunda seçili kartın tamamı hafif vurgulanır, böylece hangi
-     soruların işaretli olduğu ızgarada tek bakışta anlaşılır. */
-  .qhavuz-grid.is-select-mode .qhavuz-card.is-selected {
-    outline: 3px solid var(--accent-color, #ff90e8);
-    outline-offset: -3px;
-  }
-
-  /* Seçim modundaki "N soru seçili / Paket Oluştur / Test Oluştur" alt
-     çubuğu; alt nav bar'la aynı position:fixed mantığını paylaşır ama
-     nav bar'ın (66px + 16*2px dolgu + safe-area) üzerine binmesin diye
-     ondan daha yukarıda konumlanır. */
-  .qhavuz-select-bar {
-    position: fixed;
-    left: 0;
-    right: 0;
-    bottom: calc(100px + env(safe-area-inset-bottom));
-    z-index: 45;
-    display: flex;
-    justify-content: center;
-    padding: 0 16px;
-    opacity: 0;
-    transform: translateY(12px);
-    pointer-events: none;
-    transition: opacity 0.2s ease, transform 0.2s ease;
-  }
-
-  .qhavuz-select-bar.is-visible {
-    opacity: 1;
-    transform: translateY(0);
-    pointer-events: auto;
-  }
-
-  .qhavuz-select-bar-inner {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    width: 100%;
-    max-width: 380px;
-    padding: 0.7rem 0.85rem;
-    background: #fff;
-    border: 3px solid #000;
-    border-radius: 1rem;
-    box-shadow: 5px 5px 0px 0px #000;
-  }
-
-  .qhavuz-select-bar-count {
-    font-family: "Space Grotesk", sans-serif;
-    font-weight: 800;
-    font-size: 0.8rem;
-    text-align: center;
-    color: #121212;
-  }
-
-  .qhavuz-select-bar-actions {
-    display: flex;
-    gap: 0.5rem;
-  }
-
-  .qhavuz-select-bar-btn {
-    flex: 1 1 0;
-    padding: 0.5rem 0.4rem;
-    font-family: "Space Grotesk", sans-serif;
-    font-weight: 800;
-    font-size: 0.8rem;
-    color: #121212;
-    background-color: #f2f2f2;
-    border: 2.5px solid #000;
-    border-radius: 0.75rem;
-    cursor: pointer;
-    transition: transform 0.15s ease, background-color 0.2s ease, opacity 0.2s ease;
-  }
-
-  .qhavuz-select-bar-btn.is-primary {
-    background-color: var(--accent-color, #ff90e8);
-  }
-
-  .qhavuz-select-bar-btn:active {
-    transform: translate(1px, 1px);
-  }
-
-  .qhavuz-select-bar-btn:disabled {
-    opacity: 0.45;
-    cursor: default;
-  }
-
-  body.is-anthracite .qhavuz-select-bar-inner {
-    background-color: var(--dark-card-color, #32343a);
-  }
-
-  body.is-anthracite .qhavuz-select-bar-count {
-    color: #f2f2f4;
-  }
-
-  body.is-anthracite .qhavuz-select-bar-btn {
-    background-color: #45474e;
-    color: #f2f2f4;
-  }
-
-  body.is-anthracite .qhavuz-select-bar-btn.is-primary {
-    background-color: var(--accent-color, #ff90e8);
-    color: #121212;
-  }
-
-  /* ---------- Soru Havuzu: "Paketlerim" pop-up'ı ---------- */
-  .qhavuz-package-list-section.is-hidden,
-  .qhavuz-package-detail-section.is-hidden {
-    display: none;
-  }
-
-  .qhavuz-package-list {
-    display: flex;
-    flex-direction: column;
-    gap: 0.6rem;
-  }
-
-  .qhavuz-package-row {
-    display: flex;
-    align-items: center;
-    gap: 0.7rem;
-    padding: 0.5rem;
-    background: #f2f2f2;
-    border: 2.5px solid #000;
-    border-radius: 0.9rem;
-    cursor: pointer;
-    transition: transform 0.15s ease;
-  }
-
-  .qhavuz-package-row:active {
-    transform: translate(1px, 1px);
-  }
-
-  .qhavuz-package-row-thumb {
-    flex-shrink: 0;
-    width: 46px;
-    height: 46px;
-    background: #fff;
-    border: 2px solid #000;
-    border-radius: 0.6rem;
-    overflow: hidden;
-  }
-
-  .qhavuz-package-row-thumb img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-  }
-
-  .qhavuz-package-row-info {
-    flex: 1;
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 0.15rem;
-  }
-
-  .qhavuz-package-row-name {
-    font-family: "Space Grotesk", sans-serif;
-    font-weight: 800;
-    font-size: 0.88rem;
-    color: #121212;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  .qhavuz-package-row-count {
-    font-family: "Space Grotesk", sans-serif;
-    font-weight: 700;
-    font-size: 0.72rem;
-    color: #121212;
-    opacity: 0.6;
-  }
-
-  .qhavuz-package-row-chevron {
-    flex-shrink: 0;
-    color: #121212;
-    opacity: 0.4;
-  }
-
-  .qhavuz-package-empty {
-    display: block;
-    text-align: center;
-    padding: 1rem 0.4rem;
-    font-family: "Space Grotesk", sans-serif;
-    font-weight: 600;
-    font-size: 0.82rem;
-    color: #121212;
-    opacity: 0.6;
-  }
-
-  body.is-anthracite .qhavuz-package-row {
-    background-color: #45474e;
-  }
-
-  body.is-anthracite .qhavuz-package-row-name,
-  body.is-anthracite .qhavuz-package-row-count,
-  body.is-anthracite .qhavuz-package-row-chevron,
-  body.is-anthracite .qhavuz-package-empty {
-    color: #f2f2f4;
-  }
-
-  /* "Pakete Ekle" seçicisindeki "+ Yeni Paket Oluştur" satırı, aynı
-     .qhavuz-package-row kalıbını kullanır; küçük resim yerine ortalanmış
-     bir "+" ikonu gösterir. */
-  .qhavuz-package-row-thumb.is-new {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #121212;
-  }
-
-  body.is-anthracite .qhavuz-package-row-thumb.is-new {
-    color: #f2f2f4;
-  }
-
-  .qhavuz-package-detail-toolbar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 0.6rem;
-    margin-bottom: 0.9rem;
-  }
-
-  .qhavuz-package-back-btn {
-    padding: 0.4rem 0.2rem;
-    font-family: "Space Grotesk", sans-serif;
-    font-weight: 700;
-    font-size: 0.82rem;
-    color: #121212;
-    background: none;
-    border: none;
-    cursor: pointer;
-    opacity: 0.7;
-  }
-
-  body.is-anthracite .qhavuz-package-back-btn {
-    color: #f2f2f4;
-  }
-
-  .qhavuz-package-test-btn {
-    padding: 0.5rem 0.8rem;
-    font-size: 0.82rem;
-  }
-
-  /* Bağlam menüsündeki "Sil" dışı seçenekler (ör. "Test Oluştur") kırmızı
-     değil, normal metin rengiyle gösterilir. */
-  .qhavuz-context-menu-item.is-neutral {
-    color: #121212;
-  }
-
-  body.is-anthracite .qhavuz-context-menu-item.is-neutral {
-    color: #f2f2f4;
   }
 
   /* Test modunda doğru yapılan sorunun kartında, havuza dönünce görselin
@@ -5046,7 +4520,6 @@
     flex: 1 1 auto;
     min-height: 0;
     overflow-y: auto;
-    touch-action: pan-y;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
   }
@@ -5065,7 +4538,6 @@
     width: 100%;
     max-height: 55vh;
     overflow-y: auto;
-    touch-action: pan-y;
     overflow-x: hidden;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
@@ -5545,7 +5017,6 @@
     gap: 1rem;
     padding: calc(44px + env(safe-area-inset-top)) 20px calc(28px + env(safe-area-inset-bottom));
     overflow-y: auto;
-    touch-action: pan-y;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
     scrollbar-width: none;
@@ -6351,7 +5822,6 @@
     gap: 0.55rem;
     max-height: 320px;
     overflow-y: auto;
-    touch-action: pan-y;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
   }
@@ -6473,7 +5943,6 @@
     justify-content: flex-start;
     padding-top: calc(48px + env(safe-area-inset-top));
     overflow-y: auto;
-    touch-action: pan-y;
     overflow-x: hidden;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
@@ -7463,7 +6932,6 @@
     gap: 1rem;
     padding: calc(44px + env(safe-area-inset-top)) 20px calc(28px + env(safe-area-inset-bottom));
     overflow-y: auto;
-    touch-action: pan-y;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
   }
@@ -7479,7 +6947,6 @@
     gap: 1rem;
     padding: calc(44px + env(safe-area-inset-top)) 20px calc(28px + env(safe-area-inset-bottom));
     overflow-y: auto;
-    touch-action: pan-y;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
   }
@@ -8599,7 +8066,6 @@
     max-width: 300px;
     max-height: 34vh;
     overflow-y: auto;
-    touch-action: pan-y;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
     display: flex;
@@ -8935,7 +8401,6 @@
     flex: 1 1 auto;
     min-height: 0;
     overflow-y: auto;
-    touch-action: pan-y;
     overflow-x: hidden;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
@@ -9359,7 +8824,6 @@
     gap: 1.1rem;
     padding: calc(44px + env(safe-area-inset-top)) 20px calc(22px + env(safe-area-inset-bottom));
     overflow-y: auto;
-    touch-action: pan-y;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
   }
@@ -9653,7 +9117,6 @@
     gap: 1.1rem;
     padding: calc(44px + env(safe-area-inset-top)) 20px calc(22px + env(safe-area-inset-bottom));
     overflow-y: auto;
-    touch-action: pan-y;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
   }
@@ -9667,7 +9130,6 @@
     justify-content: flex-start;
     padding: calc(44px + env(safe-area-inset-top)) 20px calc(22px + env(safe-area-inset-bottom));
     overflow-y: auto;
-    touch-action: pan-y;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
   }
@@ -9769,7 +9231,6 @@
     flex-direction: column;
     align-items: center;
     overflow-y: auto;
-    touch-action: pan-y;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
     scrollbar-width: none;
@@ -10024,7 +9485,6 @@
     gap: 1.1rem;
     padding: calc(44px + env(safe-area-inset-top)) 20px calc(22px + env(safe-area-inset-bottom));
     overflow-y: auto;
-    touch-action: pan-y;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
   }
@@ -12308,18 +11768,16 @@
       </div>
     </div>
 
-    <div class="page8-scroll-clip">
-      <div class="page8-scroll" id="page8Scroll">
-        <div class="page8-wrap">
-          <div class="page8-view" id="page8TasksView">
-            <div class="page8-group-list" id="page8CategoryList"></div>
-            <button type="button" class="add-task-btn page8-add-group-btn" id="page8AddCategoryBtn">+ Kategori</button>
-          </div>
+    <div class="page8-scroll" id="page8Scroll">
+      <div class="page8-wrap">
+        <div class="page8-view" id="page8TasksView">
+          <div class="page8-group-list" id="page8CategoryList"></div>
+          <button type="button" class="add-task-btn page8-add-group-btn" id="page8AddCategoryBtn">+ Kategori</button>
+        </div>
 
-          <div class="page8-view is-hidden" id="page8RoutinesView">
-            <div class="page8-group-list" id="page8RoutineGroupList"></div>
-            <button type="button" class="add-task-btn page8-add-group-btn" id="page8AddRoutineGroupBtn">+ Rutin Grubu</button>
-          </div>
+        <div class="page8-view is-hidden" id="page8RoutinesView">
+          <div class="page8-group-list" id="page8RoutineGroupList"></div>
+          <button type="button" class="add-task-btn page8-add-group-btn" id="page8AddRoutineGroupBtn">+ Rutin Grubu</button>
         </div>
       </div>
     </div>
@@ -12919,37 +12377,17 @@
         </div>
         <input type="file" accept="image/*" id="qhavuzFileInput" class="qhavuz-file-input">
 
-        <div class="qhavuz-toolbar">
-          <button type="button" class="qhavuz-filter-btn" id="qhavuzFilterBtn" aria-label="Filtrele ve sırala" aria-haspopup="true">
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16l-6.2 7.4V19l-3.6 1.8v-8.4L4 5z"/></svg>
-            <span>Filtrele</span>
-            <span class="qhavuz-filter-btn-badge is-hidden" id="qhavuzFilterBtnBadge">0</span>
-          </button>
-          <button type="button" class="qhavuz-filter-btn" id="qhavuzSelectModeBtn" aria-label="Soru seç" aria-pressed="false">
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5 5L20 6"/></svg>
-            <span>Seç</span>
-          </button>
-          <button type="button" class="qhavuz-filter-btn" id="qhavuzPackagesBtn" aria-label="Paketlerim" aria-haspopup="true">
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 8.2L12 4l8.5 4.2v7.6L12 20l-8.5-4.2V8.2z"/><path d="M3.9 8.4L12 12.4l8.1-4"/><path d="M12 12.4V20"/></svg>
-            <span>Paketlerim</span>
-          </button>
+        <div class="qhavuz-filter-bar" id="qhavuzFilterBar">
+          <div class="settings-segmented qhavuz-filter-track-segmented" id="qhavuzFilterTrackSegmented">
+            <div class="settings-segmented-slider" id="qhavuzFilterTrackSlider"></div>
+            <button type="button" class="settings-segmented-option is-active" data-value="all">Tümü</button>
+            <button type="button" class="settings-segmented-option" data-value="tyt">TYT</button>
+            <button type="button" class="settings-segmented-option" data-value="ayt">AYT</button>
+          </div>
+          <div class="qhavuz-filter-subjects" id="qhavuzFilterSubjects"></div>
         </div>
 
         <div class="qhavuz-grid" id="qhavuzGrid"></div>
-      </div>
-    </div>
-
-    <!-- Soru Havuzu: "Seç" moduyla birden çok soru seçilince ekranın altında
-         beliren, "Test Oluştur" ve "Paket Oluştur" eylemlerini barındıran
-         yüzen çubuk. Tıpkı alt nav bar gibi position:fixed'dir ama daha
-         yukarıda durur ki nav bar'ın üzerine binmesin. -->
-    <div class="qhavuz-select-bar" id="qhavuzSelectBar">
-      <div class="qhavuz-select-bar-inner">
-        <span class="qhavuz-select-bar-count" id="qhavuzSelectBarCount">0 soru seçili</span>
-        <div class="qhavuz-select-bar-actions">
-          <button type="button" class="qhavuz-select-bar-btn" id="qhavuzSelectBarPackageBtn" disabled>Paket Oluştur</button>
-          <button type="button" class="qhavuz-select-bar-btn is-primary" id="qhavuzSelectBarTestBtn" disabled>Test Oluştur</button>
-        </div>
       </div>
     </div>
   </section>
@@ -13027,168 +12465,6 @@
      noktanın yakınında beliren "Sil" bağlam menüsü. -->
 <div class="qhavuz-context-menu" id="qhavuzContextMenu">
   <button type="button" class="qhavuz-context-menu-item" id="qhavuzContextMenuDelete">Sil</button>
-</div>
-
-<!-- Soru Havuzu: "Filtrele" butonuna basılınca açılan geniş pop-up sayfası.
-     Eskiden sayfada sürekli yer kaplayan filtre çubuğu (tür sekmesi + ders
-     çipleri) artık burada toplanıyor; ayrıca tarihe göre sıralama seçeneği
-     de buraya eklendi. İleride gelecek yeni filtre türleri için de bu
-     pop-up genişletilecek şekilde tasarlandı (her filtre kendi
-     .qhavuz-filter-popup-section'ı). -->
-<div class="page9-add-backdrop" id="qhavuzFilterBackdrop">
-  <div class="page9-add-card">
-    <div class="page9-add-header">
-      <div class="page9-add-heading">
-        <span class="page9-add-title">Filtrele &amp; Sırala</span>
-        <span class="page9-add-subtitle" id="qhavuzFilterPopupSubtitle"></span>
-      </div>
-      <button type="button" class="delete-btn page9-add-close" id="qhavuzFilterPopupClose" aria-label="Kapat">×</button>
-    </div>
-
-    <div class="qhavuz-filter-popup-section">
-      <span class="qhavuz-filter-popup-label">Sıralama</span>
-      <div class="settings-segmented page9-segmented" id="qhavuzSortSegmented">
-        <div class="settings-segmented-slider" id="qhavuzSortSlider"></div>
-        <button type="button" class="settings-segmented-option is-active" data-value="newest">Yeni → Eski</button>
-        <button type="button" class="settings-segmented-option" data-value="oldest">Eski → Yeni</button>
-      </div>
-    </div>
-
-    <div class="qhavuz-filter-popup-section">
-      <span class="qhavuz-filter-popup-label">Sınav Türü</span>
-      <div class="settings-segmented qhavuz-filter-track-segmented" id="qhavuzFilterTrackSegmented">
-        <div class="settings-segmented-slider" id="qhavuzFilterTrackSlider"></div>
-        <button type="button" class="settings-segmented-option is-active" data-value="all">Tümü</button>
-        <button type="button" class="settings-segmented-option" data-value="tyt">TYT</button>
-        <button type="button" class="settings-segmented-option" data-value="ayt">AYT</button>
-      </div>
-    </div>
-
-    <div class="qhavuz-filter-popup-section">
-      <span class="qhavuz-filter-popup-label">Kaynak</span>
-      <button type="button" class="qhavuz-filter-source-btn" id="qhavuzFilterSourceBtn">
-        <span class="qhavuz-filter-source-btn-label" id="qhavuzFilterSourceBtnLabel">Tümü</span>
-        <svg class="qhavuz-filter-source-btn-chevron" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
-      </button>
-    </div>
-
-    <div class="qhavuz-filter-popup-section">
-      <span class="qhavuz-filter-popup-label">Ders</span>
-      <div class="qhavuz-filter-subjects" id="qhavuzFilterSubjects"></div>
-    </div>
-
-    <button type="button" class="qhavuz-filter-popup-reset" id="qhavuzFilterPopupReset">Filtreleri sıfırla</button>
-  </div>
-</div>
-
-<!-- Soru Havuzu: "Kaynak" filtresine dokununca üstte açılan "Eklenen
-     Kaynaklar" pop-up'ı. Gündelik sayfasındaki Kategoriler pop-up'ıyla
-     (bkz. #page8GroupsBackdrop) aynı kalıbı kullanır: beyaz kart üzerinde
-     yapışkan etiket (chip) bulutu. Liste, Soru Ekle pop-up'ında "Kaynak"
-     alanına o ana kadar yazılmış tüm kaynak isimlerinden (tekrarsız)
-     türetilir; kullanıcı yeni bir kaynak burada YAZAMAZ, sadece daha önce
-     yazılmış olanlar arasından seçer. -->
-<div class="settings-confirm-backdrop" id="qhavuzSourceBackdrop">
-  <div class="page11-modal-card page8-groups-modal-card">
-    <div class="exam-resources-header">
-      <div class="page11-modal-heading">
-        <span class="page11-modal-title">Eklenen Kaynaklar</span>
-        <span class="page11-modal-subtitle">Soru eklerken yazdığın kaynaklardan birini seç</span>
-      </div>
-      <button type="button" class="delete-btn exam-resources-close" id="qhavuzSourceCloseBtn" aria-label="Kapat">×</button>
-    </div>
-    <div class="page8-groups-chip-list" id="qhavuzSourceChipList"></div>
-  </div>
-</div>
-
-<!-- Soru Havuzu: "Seç" modunda bir/birden çok soru işaretleyip "Paket
-     Oluştur"a basınca önce burada isim sorulur; Sayfa 8'deki "Yeni
-     Kategori" pop-up'ıyla (bkz. #page8NameBackdrop) birebir aynı kalıp. -->
-<div class="settings-confirm-backdrop" id="qhavuzPackageNameBackdrop">
-  <div class="page8-name-card">
-    <span class="page8-name-title">Yeni Soru Paketi</span>
-    <input type="text" class="page8-name-field-input" id="qhavuzPackageNameInput" maxlength="30" placeholder="Paket adı">
-    <div class="settings-confirm-actions">
-      <button type="button" class="settings-confirm-cancel" id="qhavuzPackageNameCancel">Vazgeç</button>
-      <button type="button" class="page11-modal-confirm" id="qhavuzPackageNameConfirm">Oluştur</button>
-    </div>
-  </div>
-</div>
-
-<!-- Soru Havuzu: "Seç" modunda soru işaretleyip "Paket Oluştur"a basınca,
-     zaten en az bir paket varsa önce burada sorulur: seçili sorular var
-     olan paketlerden birine mi eklensin, yoksa yeni bir paket mi
-     oluşturulsun? En üstteki "+ Yeni Paket Oluştur" satırına dokunulursa
-     yukarıdaki #qhavuzPackageNameBackdrop açılır; var olan bir paket
-     satırına dokunulursa seçili sorular doğrudan o paketin sonuna
-     eklenir (zaten pakette olanlar tekrar eklenmez). Hiç paket yoksa bu
-     seçici hiç açılmaz, doğrudan isim pop-up'ı açılır. -->
-<div class="page9-add-backdrop" id="qhavuzAddToPackageBackdrop">
-  <div class="page9-add-card">
-    <div class="page9-add-header">
-      <div class="page9-add-heading">
-        <span class="page9-add-title">Pakete Ekle</span>
-        <span class="page9-add-subtitle" id="qhavuzAddToPackageSubtitle"></span>
-      </div>
-      <button type="button" class="delete-btn page9-add-close" id="qhavuzAddToPackageClose" aria-label="Kapat">×</button>
-    </div>
-    <div class="qhavuz-package-list" id="qhavuzAddToPackageList"></div>
-  </div>
-</div>
-
-<!-- Soru Havuzu: "Paketlerim" butonuna basılınca açılan geniş pop-up
-     sayfası. Önce oluşturulan tüm paketlerin bir listesi görünür
-     (#qhavuzPackageListSection); bir pakete dokununca, aynı sayfa
-     içinde, o paketin sorularını Soru Havuzu'ndaki AYNI kart tasarımıyla
-     (.qhavuz-grid/.qhavuz-card, bkz. renderQhavuzPackageDetailGrid)
-     gösteren detay görünümüne geçilir (#qhavuzPackageDetailSection);
-     orada "Test Oluştur" butonu da bulunur. Bir pakete basılı tutmak
-     (ya da sağ tıklamak), aynı liste görünümündeyken, aşağıdaki
-     #qhavuzPackageContextMenu'yü açar. -->
-<div class="page9-add-backdrop" id="qhavuzPackagesBackdrop">
-  <div class="page9-add-card">
-    <div class="page9-add-header">
-      <div class="page9-add-heading">
-        <span class="page9-add-title" id="qhavuzPackagesTitle">Paketlerim</span>
-        <span class="page9-add-subtitle" id="qhavuzPackagesSubtitle"></span>
-      </div>
-      <button type="button" class="delete-btn page9-add-close" id="qhavuzPackagesClose" aria-label="Kapat">×</button>
-    </div>
-
-    <div class="qhavuz-package-list-section" id="qhavuzPackageListSection">
-      <div class="qhavuz-package-list" id="qhavuzPackageList"></div>
-    </div>
-
-    <div class="qhavuz-package-detail-section is-hidden" id="qhavuzPackageDetailSection">
-      <div class="qhavuz-package-detail-toolbar">
-        <button type="button" class="qhavuz-package-back-btn" id="qhavuzPackageBackBtn">‹ Paketlerim</button>
-        <button type="button" class="add-task-btn qhavuz-test-start-btn qhavuz-package-test-btn" id="qhavuzPackageTestBtn">Test Oluştur</button>
-      </div>
-      <div class="qhavuz-grid" id="qhavuzPackageDetailGrid"></div>
-    </div>
-  </div>
-</div>
-
-<!-- Soru Havuzu: "Paketlerim" listesinde bir pakete basılı tutunca (veya
-     sağ tıklanınca) açılan bağlam menüsü. Aynı .qhavuz-context-menu
-     bileşeni (bkz. #qhavuzContextMenu) yeniden kullanılıyor, sadece iki
-     seçenekli. -->
-<div class="qhavuz-context-menu" id="qhavuzPackageContextMenu">
-  <button type="button" class="qhavuz-context-menu-item is-neutral" id="qhavuzPackageContextMenuTest">Test Oluştur</button>
-  <button type="button" class="qhavuz-context-menu-item" id="qhavuzPackageContextMenuDelete">Sil</button>
-</div>
-
-<!-- Soru Havuzu: bir paketi silmeden önceki onay pop-up'ı; sorulara
-     dokunmaz, sadece paketin kendisini (isim + soru listesini) siler. -->
-<div class="settings-confirm-backdrop" id="qhavuzPackageDeleteConfirmBackdrop">
-  <div class="settings-confirm-card">
-    <span class="settings-confirm-title">Emin misin?</span>
-    <span class="settings-confirm-desc">Bu soru paketi silinecek. Sorular Soru Havuzu'nda kalmaya devam eder.</span>
-    <div class="settings-confirm-actions">
-      <button type="button" class="settings-confirm-cancel" id="qhavuzPackageDeleteConfirmCancel">Vazgeç</button>
-      <button type="button" class="settings-confirm-confirm" id="qhavuzPackageDeleteConfirmConfirm">Evet, sil</button>
-    </div>
-  </div>
 </div>
 
 <!-- Sayfa 5: Kronometre başlığının yanındaki küçük kare buton ile açılan
@@ -13569,26 +12845,9 @@
   // hızlıca farklı butonlara basılabilir.
   let pageTransitionTimer = null;
 
-  // Güvenlik önlemi: bir pop-up/tam ekran panel kapanırken kendi kilit
-  // sınıfını body'den kaldırmayı unutursa (ör. bir hata ya da beklenmeyen
-  // bir akış yüzünden), bu iz body'de takılı kalıp SONRAKİ sayfalarda da
-  // kaydırmayı/scroll'u kilitli bırakabilir. Kullanıcı normal bir sayfaya
-  // her geçiş yaptığında bu olası kilit sınıflarını temizleyerek, tek bir
-  // unutulmuş satırın tüm uygulamanın kaymasını durdurmasını engelliyoruz.
-  const BODY_LOCK_CLASSES = [
-    'has-modal-open', 'is-wheel-open', 'is-laps-open', 'is-page10-open',
-    'is-calendar-open', 'is-patterns-open', 'is-exam-detail-open',
-    'is-analytics-open', 'is-zero-error-open', 'is-qhavuz-test-open'
-  ];
-  const clearStaleBodyLocks = () => {
-    BODY_LOCK_CLASSES.forEach((cls) => document.body.classList.remove(cls));
-  };
-
   const goToPage = (id) => {
     const nextPage = document.getElementById(id);
     if (!nextPage || nextPage === activePage) return;
-
-    clearStaleBodyLocks();
 
     const prevPage = activePage;
     activePage = nextPage;
@@ -21595,20 +20854,11 @@
   const qhavuzState = (savedQhavuz && Array.isArray(savedQhavuz.items))
     ? savedQhavuz
     : { items: [] };
-  // Soru paketleri (bkz. "Paketlerim") de aynı kalıcı durumun bir parçası;
-  // eski kayıtlarda bu alan hiç yoktu, o yüzden eksikse burada tamamlanır.
-  if (!Array.isArray(qhavuzState.packages)) qhavuzState.packages = [];
 
   const saveQhavuzState = () => saveAppState({ questionPool: qhavuzState });
 
   const qhavuzGrid = document.getElementById('qhavuzGrid');
   const qhavuzEditBtn = document.getElementById('qhavuzEditBtn');
-  const qhavuzSelectModeBtn = document.getElementById('qhavuzSelectModeBtn');
-  const qhavuzSelectBar = document.getElementById('qhavuzSelectBar');
-  const qhavuzSelectBarCount = document.getElementById('qhavuzSelectBarCount');
-  const qhavuzSelectBarPackageBtn = document.getElementById('qhavuzSelectBarPackageBtn');
-  const qhavuzSelectBarTestBtn = document.getElementById('qhavuzSelectBarTestBtn');
-  const qhavuzPackagesBtn = document.getElementById('qhavuzPackagesBtn');
   const qhavuzLightboxBackdrop = document.getElementById('qhavuzLightboxBackdrop');
   const qhavuzLightboxImg = document.getElementById('qhavuzLightboxImg');
   const qhavuzLightboxClose = document.getElementById('qhavuzLightboxClose');
@@ -21651,22 +20901,6 @@
     ? Array.from(qhavuzFilterTrackSegmented.querySelectorAll('.settings-segmented-option'))
     : [];
   const qhavuzFilterSubjectsEl = document.getElementById('qhavuzFilterSubjects');
-  const qhavuzFilterBtn = document.getElementById('qhavuzFilterBtn');
-  const qhavuzFilterBtnBadge = document.getElementById('qhavuzFilterBtnBadge');
-  const qhavuzFilterBackdrop = document.getElementById('qhavuzFilterBackdrop');
-  const qhavuzFilterPopupClose = document.getElementById('qhavuzFilterPopupClose');
-  const qhavuzFilterPopupSubtitle = document.getElementById('qhavuzFilterPopupSubtitle');
-  const qhavuzFilterPopupReset = document.getElementById('qhavuzFilterPopupReset');
-  const qhavuzSortSegmented = document.getElementById('qhavuzSortSegmented');
-  const qhavuzSortSlider = document.getElementById('qhavuzSortSlider');
-  const qhavuzSortOptions = qhavuzSortSegmented
-    ? Array.from(qhavuzSortSegmented.querySelectorAll('.settings-segmented-option'))
-    : [];
-  const qhavuzFilterSourceBtn = document.getElementById('qhavuzFilterSourceBtn');
-  const qhavuzFilterSourceBtnLabel = document.getElementById('qhavuzFilterSourceBtnLabel');
-  const qhavuzSourceBackdrop = document.getElementById('qhavuzSourceBackdrop');
-  const qhavuzSourceCloseBtn = document.getElementById('qhavuzSourceCloseBtn');
-  const qhavuzSourceChipList = document.getElementById('qhavuzSourceChipList');
 
   // Pop-up artık tek seferde değil, adım adım ilerliyor: 0) görseli kırp,
   // 1) sınav türü + ders, 2) doğru cevap. qhavuzAddStep hangi adımda
@@ -22133,9 +21367,6 @@
 
   const setQhavuzEditMode = (on) => {
     qhavuzEditMode = on;
-    // Düzenleme ve seçim modu aynı anda açık olamaz (ikisi de kartın aynı
-    // köşesini kullanıyor); biri açılınca diğeri kapanır.
-    if (on && qhavuzSelectMode) setQhavuzSelectMode(false);
     qhavuzGrid.classList.toggle('is-edit-mode', on);
     qhavuzEditBtn.classList.toggle('is-active', on);
     qhavuzEditBtn.setAttribute('aria-pressed', on ? 'true' : 'false');
@@ -22143,53 +21374,6 @@
   };
 
   qhavuzEditBtn.addEventListener('click', () => setQhavuzEditMode(!qhavuzEditMode));
-
-  // ---- Soru Havuzu: Seçim modu ("Seç") ----
-  // "Seç" butonuna basılınca kartların sağ üst köşesinde onay kutuları
-  // belirir; kullanıcı istediği kadar soruyu işaretleyip ekranın altında
-  // beliren çubuktan "Paket Oluştur" ya da "Test Oluştur"a basabilir.
-  // Seçilen soruların id'leri bir Set'te tutulur (qhavuzSelectedIds).
-  let qhavuzSelectMode = false;
-  let qhavuzSelectedIds = new Set();
-
-  const qhavuzUpdateSelectBar = () => {
-    const count = qhavuzSelectedIds.size;
-    if (qhavuzSelectBar) qhavuzSelectBar.classList.toggle('is-visible', qhavuzSelectMode);
-    if (qhavuzSelectBarCount) {
-      qhavuzSelectBarCount.textContent = count === 1 ? '1 soru seçili' : `${count} soru seçili`;
-    }
-    if (qhavuzSelectBarPackageBtn) qhavuzSelectBarPackageBtn.disabled = count === 0;
-    if (qhavuzSelectBarTestBtn) qhavuzSelectBarTestBtn.disabled = count === 0;
-  };
-
-  const setQhavuzSelectMode = (on) => {
-    qhavuzSelectMode = on;
-    if (on && qhavuzEditMode) setQhavuzEditMode(false);
-    if (!on) qhavuzSelectedIds = new Set();
-    qhavuzGrid.classList.toggle('is-select-mode', on);
-    if (qhavuzSelectModeBtn) {
-      qhavuzSelectModeBtn.classList.toggle('is-on', on);
-      qhavuzSelectModeBtn.setAttribute('aria-pressed', on ? 'true' : 'false');
-    }
-    qhavuzUpdateSelectBar();
-    // Seçili durum kartların üzerindeki onay kutusuna da yansısın diye
-    // (ör. mod kapatılınca tüm işaretler sıfırlanmış görünsün) ızgara
-    // yeniden çizilir.
-    renderQhavuzGrid();
-  };
-
-  if (qhavuzSelectModeBtn) qhavuzSelectModeBtn.addEventListener('click', () => setQhavuzSelectMode(!qhavuzSelectMode));
-
-  const qhavuzToggleSelected = (itemId) => {
-    if (qhavuzSelectedIds.has(itemId)) qhavuzSelectedIds.delete(itemId);
-    else qhavuzSelectedIds.add(itemId);
-    qhavuzUpdateSelectBar();
-    const refs = qhavuzCardEls[itemId];
-    if (refs && refs.card) refs.card.classList.toggle('is-selected', qhavuzSelectedIds.has(itemId));
-    if (refs && refs.selectBox) refs.selectBox.classList.toggle('is-checked', qhavuzSelectedIds.has(itemId));
-  };
-
-  const qhavuzGetSelectedItems = () => qhavuzState.items.filter((it) => qhavuzSelectedIds.has(it.id));
 
   // ---- Ortak: büyütülmüş soru görselinde iki parmakla yakınlaştırma ve
   // sürükleyerek gezinme (pinch-zoom + pan). Sayfa genelinde pinch/çift
@@ -22597,7 +21781,6 @@
   // olmayan bir ders çip olarak karşımıza çıkıp kafa karıştırmaz.
   let qhavuzFilterTrack = 'all';
   let qhavuzFilterSubject = 'all';
-  let qhavuzFilterBook = 'all';
 
   // translateX(idx * %100) kullanıyoruz (offsetWidth/offsetLeft yerine):
   // böylece Soru Havuzu sekmesi henüz ekranda görünür olmasa bile
@@ -22623,13 +21806,8 @@
       subjects.push(it.subject);
     });
 
-    // Ders, Kaynak'ın aksine sınav türüne SIKI SIKIYA bağlıdır: TYT ve
-    // AYT'nin ders listeleri birbirinden bağımsızdır (ör. AYT'deki
-    // "Matematik" ile TYT'deki "Matematik" aynı isme sahip olsa da farklı
-    // sorulardır). Bu yüzden seçili ders, yeni türde hiç yoksa (ör.
-    // AYT'de "Matematik" seçiliyken TYT'ye geçildi) otomatik "Tümü"ne
-    // döner — aksi halde TYT listesinde hiç TYT sorusu olmayan bir
-    // "Matematik" çipi hayalet gibi görünmeye devam ederdi.
+    // Seçili ders artık bu türde hiç soru barındırmıyorsa (soruları
+    // silinmiş ya da tür değiştirilmiş olabilir) filtre otomatik sıfırlanır.
     if (qhavuzFilterSubject !== 'all' && !subjects.includes(qhavuzFilterSubject)) {
       qhavuzFilterSubject = 'all';
     }
@@ -22663,205 +21841,20 @@
     subjects.forEach((name) => makeChip(name, name));
   };
 
-  // ---- Soru Havuzu: "Kaynak" filtresi ----
-  // Kaynak listesi, elle bir yerden tanımlanmıyor: Soru Ekle pop-up'ında
-  // "Kaynak" alanına o ana kadar yazılmış tüm değerlerden (tekrarsız)
-  // türetiliyor. Liste de tıpkı ders çipleri gibi, o an seçili sınav
-  // türü + ders filtresine göre daralıyor; böylece sadece görünen
-  // sorularla eşleşen kaynaklar listelenir. Seçili kaynak bu daralmış
-  // listede yoksa (tür/ders değiştiği için) KENDİLİĞİNDEN sıfırlanmaz —
-  // kullanıcı ancak "Filtreleri sıfırla"ya basarsa temizlenir; görünür/
-  // tıklanabilir kalması için listeye ayrıca ekleniyor (bkz. aşağı).
-  const qhavuzGetRelevantItemsForSource = () => qhavuzState.items.filter(
-    (it) => (qhavuzFilterTrack === 'all' || it.track === qhavuzFilterTrack)
-      && (qhavuzFilterSubject === 'all' || it.subject === qhavuzFilterSubject)
-  );
-
-  const qhavuzUpdateSourceBtnLabel = () => {
-    if (qhavuzFilterSourceBtnLabel) qhavuzFilterSourceBtnLabel.textContent = qhavuzFilterBook === 'all' ? 'Tümü' : qhavuzFilterBook;
-    if (qhavuzFilterSourceBtn) qhavuzFilterSourceBtn.classList.toggle('has-value', qhavuzFilterBook !== 'all');
-  };
-
-  const qhavuzBuildSourceChipList = () => {
-    if (!qhavuzSourceChipList) return;
-    qhavuzSourceChipList.innerHTML = '';
-
-    const seen = new Set();
-    const books = [];
-    qhavuzGetRelevantItemsForSource().forEach((it) => {
-      if (!it.book || seen.has(it.book)) return;
-      seen.add(it.book);
-      books.push(it.book);
-    });
-    if (qhavuzFilterBook !== 'all' && !seen.has(qhavuzFilterBook)) {
-      books.push(qhavuzFilterBook);
-    }
-    books.sort((a, b) => a.localeCompare(b, 'tr'));
-
-    const makeChip = (label, value) => {
-      const chip = document.createElement('button');
-      chip.type = 'button';
-      chip.className = 'qhavuz-filter-chip';
-      chip.style.setProperty('--qhavuz-chip-color', 'var(--accent-color, #ff90e8)');
-      chip.textContent = label;
-      chip.classList.toggle('is-active', qhavuzFilterBook === value);
-      chip.addEventListener('click', () => {
-        qhavuzFilterBook = value;
-        qhavuzUpdateSourceBtnLabel();
-        closeQhavuzSourceBackdrop();
-        qhavuzUpdateFilterBtnState();
-        renderQhavuzGrid();
-      });
-      qhavuzSourceChipList.appendChild(chip);
-    };
-
-    makeChip('Tümü', 'all');
-
-    if (!books.length) {
-      const empty = document.createElement('span');
-      empty.className = 'page8-groups-empty';
-      empty.textContent = 'Soru eklerken henüz kaynak yazılmamış.';
-      qhavuzSourceChipList.appendChild(empty);
-      return;
-    }
-
-    books.forEach((name) => makeChip(name, name));
-  };
-
-  const closeQhavuzSourceBackdrop = () => {
-    if (qhavuzSourceBackdrop) qhavuzSourceBackdrop.classList.remove('is-open');
-  };
-
-  const openQhavuzSourceBackdrop = () => {
-    if (!qhavuzSourceBackdrop) return;
-    qhavuzBuildSourceChipList();
-    qhavuzSourceBackdrop.classList.add('is-open');
-  };
-
-  if (qhavuzFilterSourceBtn) qhavuzFilterSourceBtn.addEventListener('click', openQhavuzSourceBackdrop);
-  if (qhavuzSourceCloseBtn) qhavuzSourceCloseBtn.addEventListener('click', closeQhavuzSourceBackdrop);
-  if (qhavuzSourceBackdrop) {
-    qhavuzSourceBackdrop.addEventListener('click', (e) => {
-      if (e.target === qhavuzSourceBackdrop) closeQhavuzSourceBackdrop();
-    });
-  }
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && qhavuzSourceBackdrop && qhavuzSourceBackdrop.classList.contains('is-open')) {
-      closeQhavuzSourceBackdrop();
-    }
-  });
-
   qhavuzFilterTrackOptions.forEach((btn) => {
     btn.addEventListener('click', () => {
       const value = btn.dataset.value;
       if (value === qhavuzFilterTrack) return;
       qhavuzFilterTrack = value;
-      // Tür değişse bile ders/kaynak seçimi KENDİLİĞİNDEN sıfırlanmaz;
-      // kullanıcı ancak "Filtreleri sıfırla"ya basarsa temizlenir. Seçili
-      // ders/kaynak yeni türde hiç geçmiyorsa liste sadece boş sonuç
-      // döner, bu da beklenen bir davranıştır.
+      // Tür değişince, yeni türde geçerli olmayan bir ders seçili kalmasın
+      // diye ders filtresi "Tümü"ne döner (qhavuzBuildFilterSubjectChips
+      // zaten bunu kontrol eder, ama açıkça sıfırlamak daha öngörülebilir).
+      qhavuzFilterSubject = 'all';
       qhavuzFilterTrackOptions.forEach((b) => b.classList.toggle('is-active', b === btn));
       qhavuzFilterMoveSlider();
       renderQhavuzGrid();
     });
   });
-
-  // ---- Soru Havuzu: Tarihe göre sıralama ----
-  // "Yeni → Eski" (varsayılan) en son eklenen soruyu en başta gösterir,
-  // "Eski → Yeni" ise ekleme sırasını tersine çevirir. ts alanı her soru
-  // eklendiğinde Date.now() ile damgalanıyor (bkz. qhavuzState.items.unshift).
-  let qhavuzSortOrder = 'newest';
-
-  const qhavuzSortMoveSlider = () => {
-    if (!qhavuzSortSlider) return;
-    const idx = Math.max(0, qhavuzSortOptions.findIndex((b) => b.dataset.value === qhavuzSortOrder));
-    qhavuzSortSlider.style.transform = `translateX(${idx * 100}%)`;
-  };
-
-  qhavuzSortOptions.forEach((btn) => {
-    btn.addEventListener('click', () => {
-      const value = btn.dataset.value;
-      if (value === qhavuzSortOrder) return;
-      qhavuzSortOrder = value;
-      qhavuzSortOptions.forEach((b) => b.classList.toggle('is-active', b === btn));
-      qhavuzSortMoveSlider();
-      renderQhavuzGrid();
-    });
-  });
-
-  // ---- Soru Havuzu: filtre butonundaki rozet ----
-  // Herhangi bir filtre/sıralama varsayılandan farklıysa buton vurgu
-  // rengine boyanır ve kaç filtrenin aktif olduğunu gösteren küçük bir
-  // sayı rozeti belirir; kullanıcı pop-up'ı açmadan aktif filtre olup
-  // olmadığını anlayabilir.
-  const qhavuzUpdateFilterBtnState = () => {
-    if (!qhavuzFilterBtn) return;
-    let activeCount = 0;
-    if (qhavuzFilterTrack !== 'all') activeCount += 1;
-    if (qhavuzFilterSubject !== 'all') activeCount += 1;
-    if (qhavuzFilterBook !== 'all') activeCount += 1;
-    if (qhavuzSortOrder !== 'newest') activeCount += 1;
-    qhavuzFilterBtn.classList.toggle('has-active-filters', activeCount > 0);
-    if (qhavuzFilterBtnBadge) {
-      qhavuzFilterBtnBadge.textContent = String(activeCount);
-      qhavuzFilterBtnBadge.classList.toggle('is-hidden', activeCount === 0);
-    }
-  };
-
-  // ---- Soru Havuzu: filtre/sıralama pop-up'ının açılıp kapanması ----
-  const closeQhavuzFilterPopup = () => {
-    if (qhavuzFilterBackdrop) qhavuzFilterBackdrop.classList.remove('is-open');
-  };
-
-  const openQhavuzFilterPopup = () => {
-    if (!qhavuzFilterBackdrop) return;
-    if (qhavuzFilterPopupSubtitle) {
-      const count = qhavuzState.items.length;
-      qhavuzFilterPopupSubtitle.textContent = count === 1 ? '1 soru' : `${count} soru`;
-    }
-    qhavuzBuildFilterSubjectChips();
-    qhavuzUpdateSourceBtnLabel();
-    qhavuzFilterBackdrop.classList.add('is-open');
-    requestAnimationFrame(() => {
-      qhavuzFilterMoveSlider();
-      qhavuzSortMoveSlider();
-    });
-  };
-
-  if (qhavuzFilterBtn) qhavuzFilterBtn.addEventListener('click', openQhavuzFilterPopup);
-  if (qhavuzFilterPopupClose) qhavuzFilterPopupClose.addEventListener('click', closeQhavuzFilterPopup);
-  if (qhavuzFilterBackdrop) {
-    qhavuzFilterBackdrop.addEventListener('click', (e) => {
-      if (e.target === qhavuzFilterBackdrop) closeQhavuzFilterPopup();
-    });
-  }
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && qhavuzFilterBackdrop && qhavuzFilterBackdrop.classList.contains('is-open')) {
-      closeQhavuzFilterPopup();
-    }
-  });
-  window.addEventListener('resize', () => {
-    if (qhavuzFilterBackdrop && qhavuzFilterBackdrop.classList.contains('is-open')) {
-      qhavuzFilterMoveSlider();
-      qhavuzSortMoveSlider();
-    }
-  });
-
-  if (qhavuzFilterPopupReset) {
-    qhavuzFilterPopupReset.addEventListener('click', () => {
-      qhavuzFilterTrack = 'all';
-      qhavuzFilterSubject = 'all';
-      qhavuzFilterBook = 'all';
-      qhavuzSortOrder = 'newest';
-      qhavuzFilterTrackOptions.forEach((b) => b.classList.toggle('is-active', b.dataset.value === 'all'));
-      qhavuzSortOptions.forEach((b) => b.classList.toggle('is-active', b.dataset.value === 'newest'));
-      qhavuzFilterMoveSlider();
-      qhavuzSortMoveSlider();
-      qhavuzBuildFilterSubjectChips();
-      qhavuzUpdateSourceBtnLabel();
-      renderQhavuzGrid();
-    });
-  }
 
   // ---- Soru Havuzu: silme onay pop-up'ı ----
   // × butonuyla silme artık anında olmuyor; hem düzenleme modundaki ×
@@ -22985,27 +21978,13 @@
 
   const renderQhavuzGrid = () => {
     closeQhavuzContextMenu();
-    // Pop-up kapalıyken de ders çiplerini güncel tutuyoruz ki pop-up her
-    // açıldığında (openQhavuzFilterPopup içindeki ayrıca çağrı sayesinde)
-    // anında doğru listeyle karşılaşılsın; ekstra maliyeti yok çünkü liste
-    // boyutları zaten çok küçük. Not: bu artık seçili ders/kaynağı
-    // KENDİLİĞİNDEN sıfırlamıyor — sadece çip listesini günceller.
     qhavuzBuildFilterSubjectChips();
-    qhavuzUpdateSourceBtnLabel();
-    qhavuzUpdateFilterBtnState();
 
-    const filteredItems = qhavuzState.items
-      .filter((item) => {
-        if (qhavuzFilterTrack !== 'all' && item.track !== qhavuzFilterTrack) return false;
-        if (qhavuzFilterSubject !== 'all' && item.subject !== qhavuzFilterSubject) return false;
-        if (qhavuzFilterBook !== 'all' && item.book !== qhavuzFilterBook) return false;
-        return true;
-      })
-      .sort((a, b) => {
-        const tsA = typeof a.ts === 'number' ? a.ts : 0;
-        const tsB = typeof b.ts === 'number' ? b.ts : 0;
-        return qhavuzSortOrder === 'oldest' ? tsA - tsB : tsB - tsA;
-      });
+    const filteredItems = qhavuzState.items.filter((item) => {
+      if (qhavuzFilterTrack !== 'all' && item.track !== qhavuzFilterTrack) return false;
+      if (qhavuzFilterSubject !== 'all' && item.subject !== qhavuzFilterSubject) return false;
+      return true;
+    });
 
     qhavuzGrid.innerHTML = '';
     qhavuzCardEls = {};
@@ -23069,22 +22048,6 @@
 
       card.appendChild(delBtn);
 
-      // ---- Seçim modu onay kutusu ----
-      const selectBox = document.createElement('button');
-      selectBox.type = 'button';
-      selectBox.className = 'qhavuz-card-select';
-      selectBox.setAttribute('aria-label', 'Soruyu seç');
-      selectBox.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5 5L20 6"/></svg>';
-      if (qhavuzSelectedIds.has(item.id)) {
-        selectBox.classList.add('is-checked');
-        card.classList.add('is-selected');
-      }
-      selectBox.addEventListener('click', (e) => {
-        e.stopPropagation();
-        qhavuzToggleSelected(item.id);
-      });
-      card.appendChild(selectBox);
-
       let checkEl = null;
       if (item.solved) {
         checkEl = document.createElement('span');
@@ -23094,7 +22057,7 @@
         thumb.appendChild(checkEl);
       }
 
-      qhavuzCardEls[item.id] = { card, thumb, checkEl, selectBox };
+      qhavuzCardEls[item.id] = { card, thumb, checkEl };
 
       // ---- Basılı tutunca "Sil" bağlam menüsü ----
       // Düzenleme moduna girmeden de bir soruyu silebilmek için, karta
@@ -23117,7 +22080,7 @@
       };
 
       card.addEventListener('pointerdown', (e) => {
-        if (qhavuzEditMode || qhavuzSelectMode) return;
+        if (qhavuzEditMode) return;
         if (e.target.closest('.qhavuz-card-delete')) return;
         if (e.pointerType === 'mouse' && e.button !== 0) return;
         qhavuzLongPressTriggered = false;
@@ -23146,22 +22109,15 @@
       // Masaüstünde sağ tıklama, tarayıcının kendi sağ-tık menüsü yerine
       // aynı bağlam menüsünü açar.
       card.addEventListener('contextmenu', (e) => {
-        if (qhavuzEditMode || qhavuzSelectMode) return;
+        if (qhavuzEditMode) return;
         e.preventDefault();
         openQhavuzContextMenu(item.id, e.clientX, e.clientY);
       });
 
       // Silme butonu haricinde karta dokununca soru görseli büyük açılır;
       // basılı tutma bağlam menüsünü tetiklediyse bu tıklama yok sayılır.
-      // Seçim modundayken ise görsel büyümez, dokunma doğrudan seçimi
-      // açıp kapatır (onay kutusuna ayrıca dokunmaya gerek kalmaz).
       card.addEventListener('click', (e) => {
         if (e.target.closest('.qhavuz-card-delete')) return;
-        if (qhavuzSelectMode) {
-          if (e.target.closest('.qhavuz-card-select')) return;
-          qhavuzToggleSelected(item.id);
-          return;
-        }
         if (qhavuzLongPressTriggered) {
           qhavuzLongPressTriggered = false;
           return;
@@ -23184,7 +22140,6 @@
   // script bloklarının çalışmış olmasını garantiliyoruz.
   document.addEventListener('DOMContentLoaded', () => {
     qhavuzFilterMoveSlider();
-    qhavuzSortMoveSlider();
     renderQhavuzGrid();
   });
 
@@ -23558,520 +22513,6 @@
 
   qhavuzTestBackBtn.addEventListener('click', exitQhavuzTest);
   qhavuzTestCloseBtn.addEventListener('click', exitQhavuzTest);
-
-  // ---------- Soru Havuzu: Seçili sorulardan Test / Paket oluşturma ----------
-  // "Seç" modunda işaretlenen sorular startQhavuzTest'e doğrudan verilerek
-  // (Test Modu'ndaki branş seçim akışı atlanarak) test başlatılabilir, ya da
-  // isim verilip bir "Soru Paketi" olarak kalıcı şekilde saklanabilir.
-  const qhavuzGetPackageItems = (pkg) => pkg.questionIds
-    .map((id) => qhavuzState.items.find((it) => it.id === id))
-    .filter(Boolean);
-
-  if (qhavuzSelectBarTestBtn) {
-    qhavuzSelectBarTestBtn.addEventListener('click', () => {
-      const items = qhavuzGetSelectedItems();
-      if (!items.length) return;
-      const label = items.length === 1 ? '1 Soru' : `${items.length} Soru`;
-      setQhavuzSelectMode(false);
-      startQhavuzTest(items, label);
-    });
-  }
-
-  // ---- Yeni paket isim pop-up'ı (Sayfa 8'deki "Yeni Kategori" ile aynı
-  //      kalıp: settings-confirm-backdrop + page8-name-card). ----
-  const qhavuzPackageNameBackdrop = document.getElementById('qhavuzPackageNameBackdrop');
-  const qhavuzPackageNameInput = document.getElementById('qhavuzPackageNameInput');
-  const qhavuzPackageNameCancel = document.getElementById('qhavuzPackageNameCancel');
-  const qhavuzPackageNameConfirm = document.getElementById('qhavuzPackageNameConfirm');
-
-  const closeQhavuzPackageNamePopup = () => {
-    if (qhavuzPackageNameBackdrop) qhavuzPackageNameBackdrop.classList.remove('is-open');
-  };
-
-  const openQhavuzPackageNamePopup = () => {
-    if (!qhavuzPackageNameBackdrop || !qhavuzPackageNameInput) return;
-    qhavuzPackageNameInput.value = '';
-    qhavuzPackageNameInput.placeholder = `Paket ${qhavuzState.packages.length + 1}`;
-    qhavuzPackageNameBackdrop.classList.add('is-open');
-    requestAnimationFrame(() => qhavuzPackageNameInput.focus());
-  };
-
-  const confirmQhavuzPackageNamePopup = () => {
-    const items = qhavuzGetSelectedItems();
-    if (!items.length) { closeQhavuzPackageNamePopup(); return; }
-    const typed = qhavuzPackageNameInput ? qhavuzPackageNameInput.value.trim() : '';
-    const pkg = {
-      id: 'paket-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7),
-      name: typed || `Paket ${qhavuzState.packages.length + 1}`,
-      questionIds: items.map((it) => it.id),
-      ts: Date.now()
-    };
-    qhavuzState.packages.push(pkg);
-    saveQhavuzState();
-    closeQhavuzPackageNamePopup();
-    setQhavuzSelectMode(false);
-    showAppToast(`"${pkg.name}" paketi oluşturuldu.`);
-  };
-
-  if (qhavuzPackageNameCancel) qhavuzPackageNameCancel.addEventListener('click', closeQhavuzPackageNamePopup);
-  if (qhavuzPackageNameBackdrop) {
-    qhavuzPackageNameBackdrop.addEventListener('click', (e) => {
-      if (e.target === qhavuzPackageNameBackdrop) closeQhavuzPackageNamePopup();
-    });
-  }
-  if (qhavuzPackageNameConfirm) qhavuzPackageNameConfirm.addEventListener('click', confirmQhavuzPackageNamePopup);
-  if (qhavuzPackageNameInput) {
-    qhavuzPackageNameInput.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') { e.preventDefault(); confirmQhavuzPackageNamePopup(); }
-      else if (e.key === 'Escape') { e.preventDefault(); closeQhavuzPackageNamePopup(); }
-    });
-  }
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && qhavuzPackageNameBackdrop && qhavuzPackageNameBackdrop.classList.contains('is-open')) {
-      closeQhavuzPackageNamePopup();
-    }
-  });
-
-  // ---- Var olan bir pakete ekleme / yeni paket seçici ----
-  // "Paket Oluştur"a basılınca, eğer daha önce oluşturulmuş en az bir
-  // paket varsa önce bu seçici açılır: en üstte "+ Yeni Paket Oluştur"
-  // satırı, altında var olan paketlerin listesi (en yeni en üstte). Var
-  // olan bir paket seçilirse, o anki seçili sorular (zaten pakette
-  // olanlar hariç) o paketin sonuna eklenir. Hiç paket yoksa seçici hiç
-  // açılmaz, doğrudan yukarıdaki isim pop-up'ı ("Yeni Soru Paketi")
-  // açılır — böylece ilk paketi oluştururken davranış değişmemiş olur.
-  const qhavuzAddToPackageBackdrop = document.getElementById('qhavuzAddToPackageBackdrop');
-  const qhavuzAddToPackageClose = document.getElementById('qhavuzAddToPackageClose');
-  const qhavuzAddToPackageSubtitle = document.getElementById('qhavuzAddToPackageSubtitle');
-  const qhavuzAddToPackageList = document.getElementById('qhavuzAddToPackageList');
-
-  const closeQhavuzAddToPackagePopup = () => {
-    if (qhavuzAddToPackageBackdrop) qhavuzAddToPackageBackdrop.classList.remove('is-open');
-  };
-
-  const addSelectedItemsToPackage = (pkg) => {
-    const items = qhavuzGetSelectedItems();
-    if (!items.length) return;
-    const existingIds = new Set(pkg.questionIds);
-    let addedCount = 0;
-    items.forEach((it) => {
-      if (!existingIds.has(it.id)) {
-        pkg.questionIds.push(it.id);
-        existingIds.add(it.id);
-        addedCount += 1;
-      }
-    });
-    saveQhavuzState();
-    closeQhavuzAddToPackagePopup();
-    setQhavuzSelectMode(false);
-    if (addedCount > 0) {
-      const label = addedCount === 1 ? '1 soru' : `${addedCount} soru`;
-      showAppToast(`${label} "${pkg.name}" paketine eklendi.`);
-    } else {
-      showAppToast(`Seçili sorular zaten "${pkg.name}" paketinde.`);
-    }
-  };
-
-  const renderQhavuzAddToPackageList = () => {
-    if (!qhavuzAddToPackageList) return;
-    qhavuzAddToPackageList.innerHTML = '';
-
-    const newRow = document.createElement('div');
-    newRow.className = 'qhavuz-package-row';
-    const newThumb = document.createElement('div');
-    newThumb.className = 'qhavuz-package-row-thumb is-new';
-    newThumb.innerHTML = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>';
-    const newInfo = document.createElement('div');
-    newInfo.className = 'qhavuz-package-row-info';
-    const newName = document.createElement('span');
-    newName.className = 'qhavuz-package-row-name';
-    newName.textContent = 'Yeni Paket Oluştur';
-    newInfo.appendChild(newName);
-    newRow.appendChild(newThumb);
-    newRow.appendChild(newInfo);
-    newRow.addEventListener('click', () => {
-      closeQhavuzAddToPackagePopup();
-      openQhavuzPackageNamePopup();
-    });
-    qhavuzAddToPackageList.appendChild(newRow);
-
-    qhavuzState.packages.slice().reverse().forEach((pkg) => {
-      const items = qhavuzGetPackageItems(pkg);
-      const row = document.createElement('div');
-      row.className = 'qhavuz-package-row';
-
-      const thumb = document.createElement('div');
-      thumb.className = 'qhavuz-package-row-thumb';
-      if (items[0]) {
-        const img = document.createElement('img');
-        img.alt = pkg.name;
-        thumb.appendChild(img);
-        resolveImageSrc(items[0].image).then((url) => { if (url) img.src = url; });
-      }
-
-      const info = document.createElement('div');
-      info.className = 'qhavuz-package-row-info';
-      const name = document.createElement('span');
-      name.className = 'qhavuz-package-row-name';
-      name.textContent = pkg.name;
-      const count = document.createElement('span');
-      count.className = 'qhavuz-package-row-count';
-      count.textContent = items.length === 1 ? '1 soru' : `${items.length} soru`;
-      info.appendChild(name);
-      info.appendChild(count);
-
-      row.appendChild(thumb);
-      row.appendChild(info);
-      row.addEventListener('click', () => addSelectedItemsToPackage(pkg));
-      qhavuzAddToPackageList.appendChild(row);
-    });
-  };
-
-  const openQhavuzAddToPackagePopup = () => {
-    const items = qhavuzGetSelectedItems();
-    if (!items.length) return;
-    if (!qhavuzState.packages.length) {
-      // Henüz hiç paket yok: seçiciyi göstermek yerine doğrudan yeni
-      // paket ismi pop-up'ını açıyoruz.
-      openQhavuzPackageNamePopup();
-      return;
-    }
-    if (!qhavuzAddToPackageBackdrop) return;
-    if (qhavuzAddToPackageSubtitle) {
-      qhavuzAddToPackageSubtitle.textContent = items.length === 1 ? '1 soru seçili' : `${items.length} soru seçili`;
-    }
-    renderQhavuzAddToPackageList();
-    qhavuzAddToPackageBackdrop.classList.add('is-open');
-  };
-
-  if (qhavuzAddToPackageClose) qhavuzAddToPackageClose.addEventListener('click', closeQhavuzAddToPackagePopup);
-  if (qhavuzAddToPackageBackdrop) {
-    qhavuzAddToPackageBackdrop.addEventListener('click', (e) => {
-      if (e.target === qhavuzAddToPackageBackdrop) closeQhavuzAddToPackagePopup();
-    });
-  }
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && qhavuzAddToPackageBackdrop && qhavuzAddToPackageBackdrop.classList.contains('is-open')) {
-      closeQhavuzAddToPackagePopup();
-    }
-  });
-
-  if (qhavuzSelectBarPackageBtn) {
-    qhavuzSelectBarPackageBtn.addEventListener('click', () => {
-      if (!qhavuzGetSelectedItems().length) return;
-      openQhavuzAddToPackagePopup();
-    });
-  }
-
-  // ---------- Soru Havuzu: "Paketlerim" pop-up'ı ----------
-  const qhavuzPackagesBackdrop = document.getElementById('qhavuzPackagesBackdrop');
-  const qhavuzPackagesClose = document.getElementById('qhavuzPackagesClose');
-  const qhavuzPackagesTitle = document.getElementById('qhavuzPackagesTitle');
-  const qhavuzPackagesSubtitle = document.getElementById('qhavuzPackagesSubtitle');
-  const qhavuzPackageListSection = document.getElementById('qhavuzPackageListSection');
-  const qhavuzPackageList = document.getElementById('qhavuzPackageList');
-  const qhavuzPackageDetailSection = document.getElementById('qhavuzPackageDetailSection');
-  const qhavuzPackageBackBtn = document.getElementById('qhavuzPackageBackBtn');
-  const qhavuzPackageTestBtn = document.getElementById('qhavuzPackageTestBtn');
-  const qhavuzPackageDetailGrid = document.getElementById('qhavuzPackageDetailGrid');
-  let qhavuzActivePackageId = null;
-
-  // Paket detay ızgarası, Soru Havuzu ana ızgarasıyla (renderQhavuzGrid)
-  // BİREBİR AYNI kart görünümünü (.qhavuz-grid/.qhavuz-card/.qhavuz-thumb/
-  // .qhavuz-card-track-ribbon/.qhavuz-card-subject) kullanır; sadece
-  // düzenleme/seçim/silme davranışları yok, dokununca sadece görsel büyük
-  // açılır (openQhavuzLightbox).
-  const renderQhavuzPackageDetailGrid = (pkg) => {
-    if (!qhavuzPackageDetailGrid) return;
-    qhavuzPackageDetailGrid.innerHTML = '';
-    const items = qhavuzGetPackageItems(pkg);
-    if (!items.length) {
-      const empty = document.createElement('div');
-      empty.className = 'qhavuz-empty';
-      empty.textContent = 'Bu pakette görüntülenecek soru kalmadı.';
-      qhavuzPackageDetailGrid.appendChild(empty);
-      return;
-    }
-    items.forEach((item) => {
-      const card = document.createElement('div');
-      card.className = 'qhavuz-card';
-
-      const thumb = document.createElement('div');
-      thumb.className = 'qhavuz-thumb';
-      const img = document.createElement('img');
-      img.alt = item.subject + ' sorusu';
-      thumb.appendChild(img);
-      resolveImageSrc(item.image).then((url) => { if (url) img.src = url; });
-
-      if (item.track && PAGE9_TRACK_LABELS[item.track]) {
-        const ribbon = document.createElement('span');
-        ribbon.className = 'qhavuz-card-track-ribbon is-' + item.track;
-        ribbon.textContent = PAGE9_TRACK_LABELS[item.track];
-        thumb.appendChild(ribbon);
-      }
-
-      const info = document.createElement('div');
-      info.className = 'qhavuz-card-info';
-      const subjectBadge = document.createElement('span');
-      subjectBadge.className = 'qhavuz-card-subject';
-      subjectBadge.style.background = qhavuzSubjectColor(item.subject);
-      subjectBadge.textContent = item.subject;
-      info.appendChild(subjectBadge);
-
-      card.appendChild(thumb);
-      card.appendChild(info);
-      card.addEventListener('click', () => openQhavuzLightbox(item));
-      qhavuzPackageDetailGrid.appendChild(card);
-    });
-  };
-
-  const showQhavuzPackageListView = () => {
-    qhavuzActivePackageId = null;
-    if (qhavuzPackageListSection) qhavuzPackageListSection.classList.remove('is-hidden');
-    if (qhavuzPackageDetailSection) qhavuzPackageDetailSection.classList.add('is-hidden');
-    if (qhavuzPackagesTitle) qhavuzPackagesTitle.textContent = 'Paketlerim';
-    if (qhavuzPackagesSubtitle) qhavuzPackagesSubtitle.textContent = '';
-  };
-
-  const showQhavuzPackageDetailView = (pkg) => {
-    qhavuzActivePackageId = pkg.id;
-    const count = qhavuzGetPackageItems(pkg).length;
-    if (qhavuzPackagesTitle) qhavuzPackagesTitle.textContent = pkg.name;
-    if (qhavuzPackagesSubtitle) qhavuzPackagesSubtitle.textContent = count === 1 ? '1 soru' : `${count} soru`;
-    if (qhavuzPackageListSection) qhavuzPackageListSection.classList.add('is-hidden');
-    if (qhavuzPackageDetailSection) qhavuzPackageDetailSection.classList.remove('is-hidden');
-    renderQhavuzPackageDetailGrid(pkg);
-  };
-
-  const renderQhavuzPackageList = () => {
-    if (!qhavuzPackageList) return;
-    qhavuzPackageList.innerHTML = '';
-
-    if (!qhavuzState.packages.length) {
-      const empty = document.createElement('span');
-      empty.className = 'qhavuz-package-empty';
-      empty.textContent = "Henüz soru paketi oluşturmadın. Soru Havuzu'nda \"Seç\" ile soru işaretleyip paket oluşturabilirsin.";
-      qhavuzPackageList.appendChild(empty);
-      return;
-    }
-
-    qhavuzState.packages.slice().reverse().forEach((pkg) => {
-      const items = qhavuzGetPackageItems(pkg);
-      const row = document.createElement('div');
-      row.className = 'qhavuz-package-row';
-
-      const thumb = document.createElement('div');
-      thumb.className = 'qhavuz-package-row-thumb';
-      if (items[0]) {
-        const img = document.createElement('img');
-        img.alt = pkg.name;
-        thumb.appendChild(img);
-        resolveImageSrc(items[0].image).then((url) => { if (url) img.src = url; });
-      }
-
-      const info = document.createElement('div');
-      info.className = 'qhavuz-package-row-info';
-      const name = document.createElement('span');
-      name.className = 'qhavuz-package-row-name';
-      name.textContent = pkg.name;
-      const count = document.createElement('span');
-      count.className = 'qhavuz-package-row-count';
-      count.textContent = items.length === 1 ? '1 soru' : `${items.length} soru`;
-      info.appendChild(name);
-      info.appendChild(count);
-
-      const chevron = document.createElement('span');
-      chevron.className = 'qhavuz-package-row-chevron';
-      chevron.innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>';
-
-      row.appendChild(thumb);
-      row.appendChild(info);
-      row.appendChild(chevron);
-
-      // ---- Basılı tutunca (ya da sağ tıklayınca) bağlam menüsü ----
-      let pkgLongPressTimer = null;
-      let pkgLongPressStartX = 0;
-      let pkgLongPressStartY = 0;
-      let pkgLongPressTriggered = false;
-      const cancelPkgLongPress = () => {
-        if (pkgLongPressTimer) { clearTimeout(pkgLongPressTimer); pkgLongPressTimer = null; }
-      };
-      row.addEventListener('pointerdown', (e) => {
-        if (e.pointerType === 'mouse' && e.button !== 0) return;
-        pkgLongPressTriggered = false;
-        pkgLongPressStartX = e.clientX;
-        pkgLongPressStartY = e.clientY;
-        cancelPkgLongPress();
-        pkgLongPressTimer = setTimeout(() => {
-          pkgLongPressTimer = null;
-          pkgLongPressTriggered = true;
-          if (navigator.vibrate) navigator.vibrate(12);
-          openQhavuzPackageContextMenu(pkg.id, e.clientX, e.clientY);
-        }, 480);
-      });
-      row.addEventListener('pointermove', (e) => {
-        if (!pkgLongPressTimer) return;
-        const dx = e.clientX - pkgLongPressStartX;
-        const dy = e.clientY - pkgLongPressStartY;
-        if (Math.hypot(dx, dy) > 10) cancelPkgLongPress();
-      });
-      row.addEventListener('pointerup', cancelPkgLongPress);
-      row.addEventListener('pointercancel', cancelPkgLongPress);
-      row.addEventListener('pointerleave', cancelPkgLongPress);
-      row.addEventListener('contextmenu', (e) => {
-        e.preventDefault();
-        openQhavuzPackageContextMenu(pkg.id, e.clientX, e.clientY);
-      });
-      row.addEventListener('click', () => {
-        if (pkgLongPressTriggered) { pkgLongPressTriggered = false; return; }
-        showQhavuzPackageDetailView(pkg);
-      });
-
-      qhavuzPackageList.appendChild(row);
-    });
-  };
-
-  const openQhavuzPackagesPopup = () => {
-    if (!qhavuzPackagesBackdrop) return;
-    showQhavuzPackageListView();
-    renderQhavuzPackageList();
-    qhavuzPackagesBackdrop.classList.add('is-open');
-  };
-
-  const closeQhavuzPackagesPopup = () => {
-    if (qhavuzPackagesBackdrop) qhavuzPackagesBackdrop.classList.remove('is-open');
-  };
-
-  if (qhavuzPackagesBtn) qhavuzPackagesBtn.addEventListener('click', openQhavuzPackagesPopup);
-  if (qhavuzPackagesClose) qhavuzPackagesClose.addEventListener('click', closeQhavuzPackagesPopup);
-  if (qhavuzPackagesBackdrop) {
-    qhavuzPackagesBackdrop.addEventListener('click', (e) => {
-      if (e.target === qhavuzPackagesBackdrop) closeQhavuzPackagesPopup();
-    });
-  }
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && qhavuzPackagesBackdrop && qhavuzPackagesBackdrop.classList.contains('is-open')) {
-      closeQhavuzPackagesPopup();
-    }
-  });
-  if (qhavuzPackageBackBtn) qhavuzPackageBackBtn.addEventListener('click', showQhavuzPackageListView);
-
-  if (qhavuzPackageTestBtn) {
-    qhavuzPackageTestBtn.addEventListener('click', () => {
-      const pkg = qhavuzState.packages.find((p) => p.id === qhavuzActivePackageId);
-      if (!pkg) return;
-      const items = qhavuzGetPackageItems(pkg);
-      if (!items.length) return;
-      closeQhavuzPackagesPopup();
-      startQhavuzTest(items, pkg.name);
-    });
-  }
-
-  // ---- Paket bağlam menüsü: "Test Oluştur" / "Sil" ----
-  // Konumlandırma mantığı ana soru bağlam menüsüyle (openQhavuzContextMenu)
-  // birebir aynıdır; ayrı bir DOM elemanı (#qhavuzPackageContextMenu)
-  // kullandığı için burada tekrarlanır.
-  const qhavuzPackageContextMenu = document.getElementById('qhavuzPackageContextMenu');
-  const qhavuzPackageContextMenuTest = document.getElementById('qhavuzPackageContextMenuTest');
-  const qhavuzPackageContextMenuDelete = document.getElementById('qhavuzPackageContextMenuDelete');
-  let qhavuzPackageContextMenuPkgId = null;
-
-  const closeQhavuzPackageContextMenu = () => {
-    qhavuzPackageContextMenuPkgId = null;
-    if (qhavuzPackageContextMenu) qhavuzPackageContextMenu.classList.remove('is-open');
-  };
-
-  function openQhavuzPackageContextMenu(pkgId, x, y) {
-    if (!qhavuzPackageContextMenu) return;
-    qhavuzPackageContextMenuPkgId = pkgId;
-    const GAP = 26;
-    const GUESS_WIDTH = 140;
-    const GUESS_HEIGHT = 90;
-    qhavuzPackageContextMenu.style.left = `${x - GUESS_WIDTH / 2}px`;
-    qhavuzPackageContextMenu.style.top = `${Math.max(8, y - GAP - GUESS_HEIGHT)}px`;
-    qhavuzPackageContextMenu.classList.add('is-open');
-    requestAnimationFrame(() => {
-      if (!qhavuzPackageContextMenu.classList.contains('is-open')) return;
-      const rect = qhavuzPackageContextMenu.getBoundingClientRect();
-      let adjLeft = x - rect.width / 2;
-      let adjTop = y - GAP - rect.height;
-      if (adjTop < 8) adjTop = y + GAP;
-      if (adjLeft + rect.width > window.innerWidth - 8) adjLeft = window.innerWidth - 8 - rect.width;
-      if (adjLeft < 8) adjLeft = 8;
-      qhavuzPackageContextMenu.style.left = `${adjLeft}px`;
-      qhavuzPackageContextMenu.style.top = `${adjTop}px`;
-    });
-  }
-
-  if (qhavuzPackageContextMenuTest) {
-    qhavuzPackageContextMenuTest.addEventListener('click', () => {
-      const pkgId = qhavuzPackageContextMenuPkgId;
-      closeQhavuzPackageContextMenu();
-      const pkg = qhavuzState.packages.find((p) => p.id === pkgId);
-      if (!pkg) return;
-      const items = qhavuzGetPackageItems(pkg);
-      if (!items.length) return;
-      closeQhavuzPackagesPopup();
-      startQhavuzTest(items, pkg.name);
-    });
-  }
-
-  if (qhavuzPackageContextMenuDelete) {
-    qhavuzPackageContextMenuDelete.addEventListener('click', () => {
-      const pkgId = qhavuzPackageContextMenuPkgId;
-      closeQhavuzPackageContextMenu();
-      if (pkgId) openQhavuzPackageDeleteConfirm(pkgId);
-    });
-  }
-
-  document.addEventListener('pointerdown', (e) => {
-    if (qhavuzPackageContextMenu && qhavuzPackageContextMenu.classList.contains('is-open') && !qhavuzPackageContextMenu.contains(e.target)) {
-      closeQhavuzPackageContextMenu();
-    }
-  });
-  window.addEventListener('scroll', closeQhavuzPackageContextMenu, true);
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') closeQhavuzPackageContextMenu();
-  });
-
-  // ---- Paket silme onayı ----
-  const qhavuzPackageDeleteConfirmBackdrop = document.getElementById('qhavuzPackageDeleteConfirmBackdrop');
-  const qhavuzPackageDeleteConfirmCancel = document.getElementById('qhavuzPackageDeleteConfirmCancel');
-  const qhavuzPackageDeleteConfirmConfirm = document.getElementById('qhavuzPackageDeleteConfirmConfirm');
-  let qhavuzPendingPackageDeleteId = null;
-
-  const closeQhavuzPackageDeleteConfirm = () => {
-    qhavuzPendingPackageDeleteId = null;
-    if (qhavuzPackageDeleteConfirmBackdrop) qhavuzPackageDeleteConfirmBackdrop.classList.remove('is-open');
-  };
-
-  function openQhavuzPackageDeleteConfirm(pkgId) {
-    qhavuzPendingPackageDeleteId = pkgId;
-    if (qhavuzPackageDeleteConfirmBackdrop) qhavuzPackageDeleteConfirmBackdrop.classList.add('is-open');
-  }
-
-  if (qhavuzPackageDeleteConfirmCancel) qhavuzPackageDeleteConfirmCancel.addEventListener('click', closeQhavuzPackageDeleteConfirm);
-  if (qhavuzPackageDeleteConfirmBackdrop) {
-    qhavuzPackageDeleteConfirmBackdrop.addEventListener('click', (e) => {
-      if (e.target === qhavuzPackageDeleteConfirmBackdrop) closeQhavuzPackageDeleteConfirm();
-    });
-  }
-  if (qhavuzPackageDeleteConfirmConfirm) {
-    qhavuzPackageDeleteConfirmConfirm.addEventListener('click', () => {
-      const pkgId = qhavuzPendingPackageDeleteId;
-      closeQhavuzPackageDeleteConfirm();
-      if (!pkgId) return;
-      qhavuzState.packages = qhavuzState.packages.filter((p) => p.id !== pkgId);
-      saveQhavuzState();
-      if (qhavuzActivePackageId === pkgId) showQhavuzPackageListView();
-      renderQhavuzPackageList();
-    });
-  }
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && qhavuzPackageDeleteConfirmBackdrop && qhavuzPackageDeleteConfirmBackdrop.classList.contains('is-open')) {
-      closeQhavuzPackageDeleteConfirm();
-    }
-  });
 </script>
 
 <script>
