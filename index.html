@@ -2238,10 +2238,32 @@
      kaydırma efekti değil, kutunun sabit kenar şeklidir — bu yüzden
      içerik kaydıkça diş deseni her zaman aynı ekran konumunda sabit
      kalır. */
-  .page8-scroll {
+  /* iOS Safari'de "clip-path" ile "overflow-y: auto" AYNI elemanda
+     birlikte bulunduğunda parmakla kaydırma tamamen devre dışı kalıyor
+     (bilinen bir WebKit davranışı/hatası) — sayfa görsel olarak
+     kaydırılabilir görünse de dokunuşlar tarayıcı tarafından işlenmiyordu.
+     Çözüm: dişli/zigzag kenar şeklini (clip-path) kaydırma yapan elemandan
+     ayırıp, onu SARMALAYAN ve kendisi kaydırılmayan bu dış kutuya taşıdık.
+     Görsel kırpma (kenar şekli) aynı kalıyor, ama artık gerçek dokunarak
+     kaydırma işini üstlenen .page8-scroll elemanının üzerinde clip-path
+     yok; bu yüzden iOS'ta tekrar kaydırılabilir hale geliyor. */
+  .page8-scroll-clip {
     width: 100%;
     flex: 1 1 auto;
     min-height: 0;
+    overflow: hidden;
+    clip-path: polygon(
+      0.0% 0, 4.167% 6px, 8.333% 0, 12.5% 6px, 16.667% 0, 20.833% 6px,
+      25.0% 0, 29.167% 6px, 33.333% 0, 37.5% 6px, 41.667% 0, 45.833% 6px,
+      50.0% 0, 54.167% 6px, 58.333% 0, 62.5% 6px, 66.667% 0, 70.833% 6px,
+      75.0% 0, 79.167% 6px, 83.333% 0, 87.5% 6px, 91.667% 0, 95.833% 6px,
+      100.0% 0, 100% 100%, 0% 100%
+    );
+  }
+
+  .page8-scroll {
+    width: 100%;
+    height: 100%;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -2252,13 +2274,6 @@
     -ms-overflow-style: none;
     box-sizing: border-box;
     padding: 0.9rem 24px calc(96px + env(safe-area-inset-bottom));
-    clip-path: polygon(
-      0.0% 0, 4.167% 6px, 8.333% 0, 12.5% 6px, 16.667% 0, 20.833% 6px,
-      25.0% 0, 29.167% 6px, 33.333% 0, 37.5% 6px, 41.667% 0, 45.833% 6px,
-      50.0% 0, 54.167% 6px, 58.333% 0, 62.5% 6px, 66.667% 0, 70.833% 6px,
-      75.0% 0, 79.167% 6px, 83.333% 0, 87.5% 6px, 91.667% 0, 95.833% 6px,
-      100.0% 0, 100% 100%, 0% 100%
-    );
   }
 
   .page8-scroll::-webkit-scrollbar {
@@ -3682,7 +3697,8 @@
   }
 
   .qhavuz-tear-line {
-    flex: 1 1 auto;
+    flex: 1 1 0;
+    min-width: 0;
     height: 2.5px;
     /* border-top: dashed yerine sabit desenli bir arka plan kullanılıyor:
        border-dashed, tire uzunluğunu elemanın toplam genişliğine göre
@@ -3699,6 +3715,21 @@
       transparent 10px
     );
     opacity: 0.4;
+  }
+
+  /* Sağdaki çizgi (kalemin sağında kalan parça): deseni ters yönden
+     (soldan değil sağdan) başlatıyoruz. Böylece olası eksik/yarım tire
+     artık dış kenarda değil kalemin yanında kalıyor; yani sol
+     parçadaki gibi kaleme bitişik tam bir tireyle başlıyor, dış uçtaki
+     tire ile kaleme bitişik tire yer değiştirmiş oluyor. */
+  .qhavuz-tear-line:last-of-type {
+    background-image: repeating-linear-gradient(
+      to left,
+      currentColor 0,
+      currentColor 6px,
+      transparent 6px,
+      transparent 10px
+    );
   }
 
   .qhavuz-tear-pencil {
@@ -3764,20 +3795,24 @@
      .qhavuz-filter-popup-section'larıyla eklenecek. */
   .qhavuz-toolbar {
     display: flex;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     gap: 0.5rem;
     width: 100%;
   }
 
   .qhavuz-filter-btn {
     position: relative;
+    flex: 1 1 0;
+    min-width: 0;
     display: inline-flex;
     align-items: center;
-    gap: 0.4rem;
-    padding: 0.5rem 0.9rem;
+    justify-content: center;
+    gap: 0.3rem;
+    padding: 0.5rem 0.5rem;
     font-family: "Space Grotesk", sans-serif;
     font-weight: 800;
-    font-size: 0.85rem;
+    font-size: 0.8rem;
+    white-space: nowrap;
     color: #000;
     background-color: #fff;
     border: 3px solid #000;
@@ -3785,6 +3820,15 @@
     box-shadow: 3px 3px 0px 0px #000;
     cursor: pointer;
     transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.2s ease;
+  }
+
+  .qhavuz-filter-btn span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .qhavuz-filter-btn svg {
+    flex: 0 0 auto;
   }
 
   .qhavuz-filter-btn:active {
@@ -3809,6 +3853,7 @@
   }
 
   .qhavuz-filter-btn-badge {
+    flex: 0 0 auto;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -12243,16 +12288,18 @@
       </div>
     </div>
 
-    <div class="page8-scroll" id="page8Scroll">
-      <div class="page8-wrap">
-        <div class="page8-view" id="page8TasksView">
-          <div class="page8-group-list" id="page8CategoryList"></div>
-          <button type="button" class="add-task-btn page8-add-group-btn" id="page8AddCategoryBtn">+ Kategori</button>
-        </div>
+    <div class="page8-scroll-clip">
+      <div class="page8-scroll" id="page8Scroll">
+        <div class="page8-wrap">
+          <div class="page8-view" id="page8TasksView">
+            <div class="page8-group-list" id="page8CategoryList"></div>
+            <button type="button" class="add-task-btn page8-add-group-btn" id="page8AddCategoryBtn">+ Kategori</button>
+          </div>
 
-        <div class="page8-view is-hidden" id="page8RoutinesView">
-          <div class="page8-group-list" id="page8RoutineGroupList"></div>
-          <button type="button" class="add-task-btn page8-add-group-btn" id="page8AddRoutineGroupBtn">+ Rutin Grubu</button>
+          <div class="page8-view is-hidden" id="page8RoutinesView">
+            <div class="page8-group-list" id="page8RoutineGroupList"></div>
+            <button type="button" class="add-task-btn page8-add-group-btn" id="page8AddRoutineGroupBtn">+ Rutin Grubu</button>
+          </div>
         </div>
       </div>
     </div>
