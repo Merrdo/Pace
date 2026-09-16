@@ -3682,7 +3682,8 @@
   }
 
   .qhavuz-tear-line {
-    flex: 1 1 auto;
+    flex: 1 1 0;
+    min-width: 0;
     height: 2.5px;
     /* border-top: dashed yerine sabit desenli bir arka plan kullanılıyor:
        border-dashed, tire uzunluğunu elemanın toplam genişliğine göre
@@ -3699,6 +3700,21 @@
       transparent 10px
     );
     opacity: 0.4;
+  }
+
+  /* Sağdaki çizgi (kalemin sağında kalan parça): deseni ters yönden
+     (soldan değil sağdan) başlatıyoruz. Böylece olası eksik/yarım tire
+     artık dış kenarda değil kalemin yanında kalıyor; yani sol
+     parçadaki gibi kaleme bitişik tam bir tireyle başlıyor, dış uçtaki
+     tire ile kaleme bitişik tire yer değiştirmiş oluyor. */
+  .qhavuz-tear-line:last-of-type {
+    background-image: repeating-linear-gradient(
+      to left,
+      currentColor 0,
+      currentColor 6px,
+      transparent 6px,
+      transparent 10px
+    );
   }
 
   .qhavuz-tear-pencil {
@@ -3764,20 +3780,24 @@
      .qhavuz-filter-popup-section'larıyla eklenecek. */
   .qhavuz-toolbar {
     display: flex;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     gap: 0.5rem;
     width: 100%;
   }
 
   .qhavuz-filter-btn {
     position: relative;
+    flex: 1 1 0;
+    min-width: 0;
     display: inline-flex;
     align-items: center;
-    gap: 0.4rem;
-    padding: 0.5rem 0.9rem;
+    justify-content: center;
+    gap: 0.3rem;
+    padding: 0.5rem 0.5rem;
     font-family: "Space Grotesk", sans-serif;
     font-weight: 800;
-    font-size: 0.85rem;
+    font-size: 0.8rem;
+    white-space: nowrap;
     color: #000;
     background-color: #fff;
     border: 3px solid #000;
@@ -3785,6 +3805,15 @@
     box-shadow: 3px 3px 0px 0px #000;
     cursor: pointer;
     transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.2s ease;
+  }
+
+  .qhavuz-filter-btn span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .qhavuz-filter-btn svg {
+    flex: 0 0 auto;
   }
 
   .qhavuz-filter-btn:active {
@@ -3809,6 +3838,7 @@
   }
 
   .qhavuz-filter-btn-badge {
+    flex: 0 0 auto;
     display: inline-flex;
     align-items: center;
     justify-content: center;
