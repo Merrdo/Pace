@@ -10460,24 +10460,23 @@
       max-width: 1120px;
     }
 
-    /* Geniş ekranda liste kaydırılmaz/ölçeklenmez: içerik (.settings-page)
-       eşit iki sütunlu grid'i ve makas hizasına ayarlanmış gap'i sayesinde
-       doğal boyutuyla bu kutuya sığar; sabit, kayan/kayan-ölçekli olmayan
-       bir ekran. Dikey boşluklar (hero/scroll padding, kart/satır içi
-       boşluklar, sütun arası gap) clamp() ile ekran yüksekliğine (vh) göre
-       hafifçe daralır; böylece kısa boylu (dizüstü) ekranlarda kartların
-       altı kesilmeden sığar, uzun boylu ekranlarda ise gereksiz sıkışmaz.
-       Yazı boyutları sabit kalır (okunabilirlik/"kalite" korunur), sadece
-       boşluklar daralır. */
+    /* Ayar sayfasına yeni bölümler eklendikçe (ör. "Gündelik") içerik geniş
+       ekranda da sığmayabilir; bu yüzden liste artık sabit/kayan-ölçekli
+       olmayan bir kutuya SIKIŞTIRILMIYOR, gerektiğinde dikeyde kayabiliyor
+       (mobildeki .settings-scroll temel kuralındaki overflow-y:auto ve
+       overscroll-behavior:contain buradan itibaren geçerli kalıyor).
+       Dikey boşluklar (hero/scroll padding, kart/satır içi boşluklar,
+       sütun arası gap) yine de clamp() ile ekran yüksekliğine (vh) göre
+       hafifçe daralır; böylece kısa boylu (dizüstü) ekranlarda içerik
+       gereksiz yere kaymaz, sadece gerçekten sığmadığında kayar. */
     /* Alt boşluk, yanal panelin (.sidebar-nav) "bottom: 16px" ile aynı sabit
        16px değerine ayarlandı; böylece kartların alt kenarı panelin alt
        kenarıyla (her ikisi de ekranın en altından 16px yukarıda) tam
-       hizalanır. */
+       hizalanır — liste kaymadığı sürece. */
     .settings-scroll {
       align-items: stretch;
-      padding: clamp(0.8rem, 2.4dvh, 1.8rem) 40px 16px;
-      overflow: hidden;
-      touch-action: none;
+      padding: clamp(0.8rem, 2.4dvh, 1.8rem) 40px calc(16px + env(safe-area-inset-bottom));
+      touch-action: pan-y;
     }
 
     .settings-page {
@@ -10495,19 +10494,13 @@
          Böylece Görünüm kartının üst kenarı Takvim ile, alt kenarı da Veri
          ile bire bir hizalanır (bkz. kullanıcının elle çizdiği kılavuz). */
       align-items: stretch;
-      /* Grid'in kendisi, .settings-scroll'daki (flex column) boş kalan tüm
-         dikey alanı doldursun; böylece Takvim/Veri sütunundaki son kart
-         (Veri) ile onunla span'lenen Görünüm kartının alt kenarı, tam
-         olarak .settings-scroll'un alt kenarına (= yanal panelin "bottom:
-         16px" değeriyle aynı hizaya) dayanır. */
-      flex: 1 1 auto;
-      min-height: 0;
-      /* Sağ sütunda Takvim üstte, boşluk varsa Veri aşağı itilir: ilk satır
-         (Takvim) üstte, kalan boşluk Takvim-Veri arasına eklenir, Veri'nin
-         alt kenarı grid'in (=.settings-scroll'un) alt kenarına yapışık
-         kalır. Görünüm de bu iki satırı kapladığından üst-alt hizası
-         bozulmadan aynı şekilde geriliyor. */
-      align-content: space-between;
+      /* Artık grid, boş kalan alanı doldurmak için zorla gerilmiyor (bkz.
+         yukarıdaki .settings-scroll notu): doğal içerik yüksekliğini alır,
+         bölüm sayısı arttıkça (ör. yeni "Gündelik" kartı) boyu büyür ve
+         gerektiğinde .settings-scroll'un kendisi kayar. "start" ile üstten
+         hizalı kalır; sağdaki sütun (Takvim/Gündelik/Veri) ile soldaki
+         Görünüm kartının üst kenarları yine birebir hizalı durur. */
+      align-content: start;
       /* Sütun arası (yatay) boşluk, .settings-tear'daki makas ikonunun
          kapladığı yatay alanla (8px boşluk + 15px ikon + 8px boşluk = 31px,
          ~2rem) eşleşecek şekilde sabit tutuldu; satır arası (dikey) boşluk
@@ -10518,15 +10511,16 @@
       margin: 0 auto;
     }
 
-    /* Sıra: 1) Görünüm 2) Takvim 3) Veri — .settings-page'in üç doğrudan
-       .settings-section çocuğu bu sırayla gelir (bkz. HTML). Görünüm sol
-       sütunda tek başına, iki satırlık boşluğu kaplayacak şekilde durur;
-       Takvim ve Veri sağ sütunda alt alta dizilir. */
+    /* Sıra: 1) Görünüm 2) Takvim 3) Gündelik 4) Veri — .settings-page'in
+       dört doğrudan .settings-section çocuğu bu sırayla gelir (bkz. HTML).
+       Görünüm sol sütunda tek başına, sağdaki üç satırlık boşluğu (Takvim +
+       Gündelik + Veri) kaplayacak şekilde durur; diğer üçü sağ sütunda alt
+       alta dizilir. */
     .settings-page > .settings-section:nth-child(1) {
       grid-column: 1;
-      grid-row: 1 / span 2;
+      grid-row: 1 / span 3;
       /* Kart içi dolgu/satır aralığı sıkı (kompakt) kalmaya devam ediyor,
-         ama section'ın kendisi yine sağdaki Takvim+Veri'nin toplam
+         ama section'ın kendisi yine sağdaki Takvim+Gündelik+Veri'nin toplam
          yüksekliğine geriliyor; kartın altındaki fazla boşluk aşağıda
          .settings-card üzerindeki justify-content:space-between ile
          satır aralarına dağıtılıyor, böylece Görünüm'ün alt kenarı
@@ -10545,6 +10539,11 @@
     .settings-page > .settings-section:nth-child(3) {
       grid-column: 2;
       grid-row: 2;
+    }
+
+    .settings-page > .settings-section:nth-child(4) {
+      grid-column: 2;
+      grid-row: 3;
     }
 
     .settings-section {
