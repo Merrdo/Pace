@@ -9806,6 +9806,16 @@
     max-width: 360px;
   }
 
+  /* Dar ekranda (tek sütun akışı) sağ-sütun sarmalayıcısı sadece geniş
+     ekran grid'i için var; burada kendi gap/flex'ini devralıp görünmez bir
+     kap gibi davranır, böylece Takvim/Gündelik/Veri kartları diğerleriyle
+     birebir aynı tek sütunda, aynı boşluklarla art arda akar. */
+  .settings-col-right {
+    display: flex;
+    flex-direction: column;
+    gap: inherit;
+  }
+
   .settings-title {
     font-family: "Playfair Display", "Archivo Expanded", "Space Grotesk", serif;
     font-weight: 800;
@@ -10481,64 +10491,51 @@
 
     .settings-page {
       display: grid;
-      /* Eşit iki sütun: sol (Görünüm) ve sağ (Takvim/Veri) sütunları tam
-         yarı yarıya bölünüyor ki aradaki dikiş, üstteki kesikli çizginin
+      /* Eşit iki sütun: sol (Görünüm) ve sağ (Takvim/Gündelik/Veri) sütunları
+         tam yarı yarıya bölünüyor ki aradaki dikiş, üstteki kesikli çizginin
          iki eşit yarısını ayıran makas ikonuyla birebir aynı noktaya
          denk gelsin (bkz. kullanıcının elle çizdiği kılavuz: Görünüm'ün
-         sağ kenarı makasın soluna, Takvim/Veri'nin sol kenarı makasın
-         sağına oturmalı). */
+         sağ kenarı makasın soluna, Takvim/Gündelik/Veri'nin sol kenarı
+         makasın sağına oturmalı). */
       grid-template-columns: 1fr 1fr;
-      /* "start" yerine "stretch": sağ sütunda üst üste duran Takvim + Veri
-         kartlarının toplam yüksekliği (+ aralarındaki gap) neyse, soldaki
-         Görünüm kartının grid alanı TAM olarak o yüksekliğe eşitlenir.
-         Böylece Görünüm kartının üst kenarı Takvim ile, alt kenarı da Veri
-         ile bire bir hizalanır (bkz. kullanıcının elle çizdiği kılavuz). */
-      align-items: stretch;
-      /* Artık grid, boş kalan alanı doldurmak için zorla gerilmiyor (bkz.
-         yukarıdaki .settings-scroll notu): doğal içerik yüksekliğini alır,
-         bölüm sayısı arttıkça (ör. yeni "Gündelik" kartı) boyu büyür ve
-         gerektiğinde .settings-scroll'un kendisi kayar. "start" ile üstten
-         hizalı kalır; sağdaki sütun (Takvim/Gündelik/Veri) ile soldaki
-         Görünüm kartının üst kenarları yine birebir hizalı durur. */
+      /* Sağdaki üç kart artık kendi bağımsız sarmalayıcısı (.settings-col-right)
+         içinde, TEK bir grid hücresinde akıyor; grid'in kendisi artık sadece
+         1 satırlı (sol: Görünüm, sağ: sarmalayıcının tamamı). Bu yüzden
+         "stretch" yerine "start" kullanıyoruz: iki sütun da üstten hizalı
+         durur ama biri diğerinin doğal yüksekliğine zorla GERİLMEZ. Eskiden
+         (3 ayrı satıra bölünmüş sağ sütunla) "stretch" kullanıldığında, sol
+         taraftaki uzun Görünüm kartı satır yüksekliğini belirliyor, kısa
+         Takvim kartı da o yüksekliğe gerilip altında koca bir boşluk
+         bırakıyor, bu da Gündelik/Veri'nin ekranın çok aşağısına düşmesine
+         yol açıyordu. Artık sağ sütunun kendi iç boşlukları (gap) kendi
+         akışını belirliyor, sol sütundan bağımsız. */
+      align-items: start;
+      /* Grid, boş kalan alanı doldurmak için zorla gerilmiyor: doğal içerik
+         yüksekliğini alır, gerektiğinde .settings-scroll'un kendisi kayar. */
       align-content: start;
       /* Sütun arası (yatay) boşluk, .settings-tear'daki makas ikonunun
          kapladığı yatay alanla (8px boşluk + 15px ikon + 8px boşluk = 31px,
-         ~2rem) eşleşecek şekilde sabit tutuldu; satır arası (dikey) boşluk
-         ise ekran yüksekliğine göre daralıp kartların taşmasını önlüyor. */
-      gap: clamp(0.9rem, 2.6dvh, 1.8rem) 2rem;
+         ~2rem) eşleşecek şekilde sabit tutuldu. */
+      column-gap: 2rem;
       max-width: 1040px;
       width: 100%;
       margin: 0 auto;
     }
 
-    /* Sıra: 1) Görünüm 2) Takvim 3) Gündelik 4) Veri — .settings-page'in
-       dört doğrudan .settings-section çocuğu bu sırayla gelir (bkz. HTML).
-       Görünüm sol sütunda, sağdaki üç kart alt alta dizilirken kendi doğal
-       (içeriği kadar) boyunda durur. Önceki sürümde Görünüm, sağdaki üç
-       kartın TOPLAM yüksekliğine zorla gerilip aradaki farkı kart içi
-       satırlar arasına (justify-content:space-between ile) dağıtıyordu;
-       üçüncü bir kart (Gündelik) eklenince bu fark çok büyüyüp Görünüm
-       kartının içinde "Tam ekran" ile "Kart Renkleri" arasında kocaman,
-       kopuk duran boş bir alan bırakıyordu. Artık zorlama kaldırıldı: her
-       iki sütun da üstten hizalı, kendi içeriği kadar yer kaplıyor. */
+    /* Görünüm solda; Takvim/Gündelik/Veri'nin tamamını taşıyan sarmalayıcı
+       (.settings-col-right) sağda — ikisi de tek satırda, üstten hizalı. */
     .settings-page > .settings-section:nth-child(1) {
       grid-column: 1;
       grid-row: 1;
     }
 
-    .settings-page > .settings-section:nth-child(2) {
+    .settings-page > .settings-col-right {
       grid-column: 2;
       grid-row: 1;
-    }
-
-    .settings-page > .settings-section:nth-child(3) {
-      grid-column: 2;
-      grid-row: 2;
-    }
-
-    .settings-page > .settings-section:nth-child(4) {
-      grid-column: 2;
-      grid-row: 3;
+      /* Sağ sütunun kendi kartları arası (dikey) boşluğu, önceki grid'in
+         satır boşluğuyla aynı kalsın diye eşitlendi; ekran yüksekliğine
+         göre hafifçe daralır. */
+      gap: clamp(0.9rem, 2.6dvh, 1.8rem);
     }
 
     .settings-section {
@@ -12061,6 +12058,7 @@
         </div>
       </div>
 
+      <div class="settings-col-right">
       <div class="settings-section">
         <span class="settings-section-label">Takvim</span>
         <div class="settings-card">
@@ -12125,6 +12123,7 @@
             <button type="button" class="settings-danger-btn" id="settingsResetBtn">Sıfırla</button>
           </div>
         </div>
+      </div>
       </div>
 
     </div>
