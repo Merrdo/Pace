@@ -4969,6 +4969,18 @@
     display: none;
   }
 
+  /* Telefonda araç paneli (Görsel Yükle/Test Modu satırı, Paketlerim,
+     Filtrele & Sırala) tek dikey akışta durur; önceden aralarında boşluk
+     tanımlı değildi (yalnızca .qhavuz-actions-secondary'de EKSİ bir
+     margin vardı), bu da satırların birbirine yapışık/üst üste binmiş
+     görünmesine yol açıyordu. Artık panel flex sütun olarak akıyor ve
+     görünür satırlar arasına eşit, pozitif bir boşluk (gap) konuyor. */
+  .qhavuz-toolbar {
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+  }
+
   /* ---- Soru Havuzu: 3) Soru seçerek Test/Paket oluşturma ----
      "Soru Seç" ikon butonu (kesim çizgisindeki kalemle aynı dilde) ve
      "Paketlerim" butonu (ikinci aksiyon satırı). */
@@ -4979,7 +4991,7 @@
   }
 
   .qhavuz-actions-secondary {
-    margin-top: -0.35rem;
+    margin-top: 0;
   }
 
   .qhavuz-packages-btn {
@@ -11213,10 +11225,42 @@
     flex-shrink: 0;
   }
 
-  /* .calendar-nav-btn temel biçimi (beyaz zemin/siyah çerçeve) Sayfa
-     9/10'daki tarih oklarıyla paylaşılıyor; burada #page-6 ID'siyle
+  /* .calendar-nav-btn temel biçimi: beyaz zemin, 3px siyah çerçeve,
+     katı gölge — Sayfa 9/10'daki tarih oklarının (.page9-date-btn /
+     .page10-date-btn) asıl görünümü budur. Önceden bu temel kural hiç
+     tanımlanmamıştı, bu yüzden butonlar tarayıcının varsayılan (çok
+     küçük, biçimsiz) buton görünümüne düşüyordu. #page-6 ID'siyle
      ölçeklenip sadece Takvim'de çerçevesiz/hayalet bir görünüme
      çevriliyor, diğer sayfalar etkilenmiyor. */
+  .calendar-nav-btn {
+    flex-shrink: 0;
+    width: 2.3rem;
+    height: 2.3rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    background-color: #fff;
+    border: 3px solid #000;
+    border-radius: 50%;
+    box-shadow: 3px 3px 0px 0px #000;
+    color: #121212;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease, color 0.5s ease;
+  }
+
+  .calendar-nav-btn:hover {
+    transform: translate(-1px, -1px);
+    box-shadow: 4px 4px 0px 0px #000;
+  }
+
+  .calendar-nav-btn:active,
+  .calendar-nav-btn.is-pressed {
+    transform: translate(1px, 1px);
+    box-shadow: 1px 1px 0px 0px #000;
+    background-color: var(--accent-color, #ff90e8);
+  }
+
   #page-6 .calendar-nav-btn {
     width: 2.1rem;
     height: 2.1rem;
