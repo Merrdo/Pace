@@ -1880,6 +1880,664 @@
     border-bottom: 1px dashed rgba(127, 127, 127, 0.35);
   }
 
+  /* =====================================================================
+     Spor Modu: Egzersizlerim (kütüphaneden seçerek veya özel olarak
+     egzersiz ekleme). Sayfa 5'teki kronometreyle aynı brutalist görsel
+     dili kullanır: kalın siyah çerçeve, sert gölge, "Space Grotesk" /
+     "Archivo Expanded" fontları, turuncu (#ff4d2e) vurgu rengi. Bu üç
+     ekran (liste, ekleme, detay) kasıtlı olarak açık/koyu temadan
+     bağımsız, sabit beyaz kart zeminiyle çizilir — tıpkı kronometre
+     butonları gibi kendi kimliğini korur. ===================================================================== */
+  .exlib-page {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    padding: calc(20px + env(safe-area-inset-top)) 18px calc(18px + env(safe-area-inset-bottom));
+    gap: 0.9rem;
+  }
+
+  .exlib-header {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+    flex-shrink: 0;
+  }
+
+  .exlib-eyebrow {
+    font-family: "Space Grotesk", sans-serif;
+    font-weight: 700;
+    font-size: 0.7rem;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: #ff4d2e;
+  }
+
+  .exlib-title {
+    font-family: "Archivo Expanded", "Playfair Display", sans-serif;
+    font-weight: 800;
+    font-size: clamp(1.4rem, 6vw, 1.8rem);
+    text-transform: uppercase;
+    letter-spacing: 0.01em;
+    color: var(--theme-text, #f2f2f7);
+    transition: color 0.5s ease;
+  }
+
+  .exlib-list {
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+    padding-bottom: 90px;
+  }
+
+  .exlib-empty {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    gap: 0.3rem;
+    flex: 1;
+    font-family: "Space Grotesk", sans-serif;
+    font-size: 0.92rem;
+    color: var(--theme-text, #f2f2f7);
+    opacity: 0.55;
+    padding-bottom: 90px;
+  }
+
+  .exlib-empty.is-visible {
+    display: flex;
+  }
+
+  .exlib-card {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    width: 100%;
+    text-align: left;
+    background: #fff;
+    color: #121212;
+    border: 3px solid #121212;
+    border-radius: 1.1em;
+    box-shadow: 4px 4px 0px 0px #000;
+    padding: 0.75rem 0.85rem;
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  .exlib-card:active {
+    transform: translate(2px, 2px);
+    box-shadow: 2px 2px 0px 0px #000;
+  }
+
+  .exlib-card-main {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+  }
+
+  .exlib-card-name {
+    font-family: "Archivo Expanded", sans-serif;
+    font-weight: 800;
+    font-size: 1rem;
+    letter-spacing: 0.005em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .exlib-card-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+  }
+
+  .exlib-card-badge {
+    font-family: "Space Grotesk", sans-serif;
+    font-weight: 700;
+    font-size: 0.72rem;
+    letter-spacing: 0.02em;
+    color: #fff;
+    background: #ff4d2e;
+    border: 2px solid #121212;
+    border-radius: 0.6em;
+    padding: 0.15rem 0.5rem;
+  }
+
+  .exlib-card-badge.is-cat {
+    background: #121212;
+  }
+
+  .exlib-card-chevron {
+    flex-shrink: 0;
+    opacity: 0.6;
+  }
+
+  .exlib-add-fab {
+    position: absolute;
+    right: 18px;
+    bottom: calc(96px + env(safe-area-inset-bottom));
+    width: 54px;
+    height: 54px;
+    border-radius: 50%;
+    background: #ff4d2e;
+    color: #fff;
+    border: 3px solid #121212;
+    box-shadow: 4px 4px 0px 0px #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    z-index: 3;
+  }
+
+  .exlib-add-fab:active {
+    transform: translate(2px, 2px);
+    box-shadow: 2px 2px 0px 0px #000;
+  }
+
+  #page-sport-exercises {
+    position: relative;
+  }
+
+  /* ---------- Egzersiz Ekle sayfası (kütüphane + form) ---------- */
+  #page-sport-exercise-add,
+  #page-sport-exercise-detail {
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
+    padding: calc(44px + env(safe-area-inset-top)) 18px calc(22px + env(safe-area-inset-bottom));
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+  }
+
+  body.is-exercise-add-open .navbar,
+  body.is-exercise-detail-open .navbar {
+    opacity: 0;
+    transform: translateY(28px);
+  }
+
+  body.is-exercise-add-open .navbar .wrapper,
+  body.is-exercise-detail-open .navbar .wrapper {
+    pointer-events: none;
+  }
+
+  .exadd-search-wrap {
+    margin-top: 0.6rem;
+  }
+
+  .exadd-search-input {
+    width: 100%;
+    font-family: "Space Grotesk", sans-serif;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #121212;
+    background: #fff;
+    border: 3px solid #121212;
+    border-radius: 1em;
+    padding: 0.7rem 0.9rem;
+    box-shadow: 4px 4px 0px 0px #000;
+  }
+
+  .exadd-search-input::placeholder {
+    color: #8a8a8a;
+    font-weight: 500;
+  }
+
+  .exadd-custom-btn {
+    margin-top: 0.7rem;
+    width: 100%;
+    font-family: "Space Grotesk", sans-serif;
+    font-weight: 800;
+    font-size: 0.92rem;
+    color: #fff;
+    background: #121212;
+    border: 3px solid #121212;
+    border-radius: 1em;
+    box-shadow: 4px 4px 0px 0px #ff4d2e;
+    padding: 0.75rem 1rem;
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  .exadd-custom-btn:active {
+    transform: translate(2px, 2px);
+    box-shadow: 2px 2px 0px 0px #ff4d2e;
+  }
+
+  .exadd-categories {
+    margin-top: 0.9rem;
+    display: flex;
+    gap: 0.4rem;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 0.2rem;
+  }
+
+  .exadd-chip {
+    flex-shrink: 0;
+    font-family: "Space Grotesk", sans-serif;
+    font-weight: 700;
+    font-size: 0.78rem;
+    color: #121212;
+    background: #fff;
+    border: 2.5px solid #121212;
+    border-radius: 2em;
+    padding: 0.35rem 0.85rem;
+    cursor: pointer;
+  }
+
+  .exadd-chip.is-active {
+    background: #ff4d2e;
+    color: #fff;
+  }
+
+  .exadd-library-list {
+    margin-top: 0.8rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+    padding-bottom: 40px;
+  }
+
+  .exadd-lib-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    width: 100%;
+    text-align: left;
+    background: #fff;
+    border: 2.5px solid #121212;
+    border-radius: 0.9em;
+    padding: 0.6rem 0.8rem;
+    cursor: pointer;
+  }
+
+  .exadd-lib-item-name {
+    font-family: "Archivo Expanded", sans-serif;
+    font-weight: 800;
+    font-size: 0.92rem;
+    color: #121212;
+  }
+
+  .exadd-lib-item-cat {
+    font-family: "Space Grotesk", sans-serif;
+    font-weight: 600;
+    font-size: 0.72rem;
+    color: #ff4d2e;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  .exadd-lib-empty {
+    display: none;
+    text-align: center;
+    font-family: "Space Grotesk", sans-serif;
+    font-size: 0.88rem;
+    color: var(--theme-text, #f2f2f7);
+    opacity: 0.55;
+    padding: 1.4rem 0;
+  }
+
+  .exadd-lib-empty.is-visible {
+    display: block;
+  }
+
+  .exadd-library,
+  .exadd-form {
+    display: none;
+    flex-direction: column;
+  }
+
+  .exadd-library.is-visible,
+  .exadd-form.is-visible {
+    display: flex;
+  }
+
+  .exadd-field {
+    margin-top: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+
+  .exadd-label {
+    font-family: "Space Grotesk", sans-serif;
+    font-weight: 700;
+    font-size: 0.78rem;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    color: var(--theme-text, #f2f2f7);
+    opacity: 0.7;
+    transition: color 0.5s ease;
+  }
+
+  .exadd-input,
+  .exadd-textarea {
+    width: 100%;
+    font-family: "Space Grotesk", sans-serif;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #121212;
+    background: #fff;
+    border: 3px solid #121212;
+    border-radius: 0.9em;
+    padding: 0.65rem 0.85rem;
+    box-shadow: 3px 3px 0px 0px #000;
+  }
+
+  .exadd-textarea {
+    min-height: 110px;
+    resize: vertical;
+    font-weight: 500;
+    line-height: 1.4;
+  }
+
+  .exadd-row {
+    display: flex;
+    gap: 0.7rem;
+  }
+
+  .exadd-row .exadd-field {
+    flex: 1;
+    margin-top: 0;
+  }
+
+  .exadd-segmented {
+    display: flex;
+    border: 3px solid #121212;
+    border-radius: 0.9em;
+    overflow: hidden;
+    box-shadow: 3px 3px 0px 0px #000;
+  }
+
+  .exadd-segmented-btn {
+    flex: 1;
+    text-align: center;
+    padding: 0.6rem 0.5rem;
+    font-family: "Space Grotesk", sans-serif;
+    font-weight: 700;
+    font-size: 0.85rem;
+    background: #fff;
+    color: #121212;
+    cursor: pointer;
+  }
+
+  .exadd-segmented-btn + .exadd-segmented-btn {
+    border-left: 3px solid #121212;
+  }
+
+  .exadd-segmented-btn.is-active {
+    background: #ff4d2e;
+    color: #fff;
+  }
+
+  .exadd-duration-row {
+    display: none;
+    gap: 0.7rem;
+  }
+
+  .exadd-duration-row.is-visible {
+    display: flex;
+  }
+
+  .exadd-reps-field.is-hidden {
+    display: none;
+  }
+
+  .exadd-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.55rem;
+    margin-top: 0.5rem;
+  }
+
+  .exadd-image-thumb {
+    position: relative;
+    width: 72px;
+    height: 72px;
+    border-radius: 0.8em;
+    border: 3px solid #121212;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+
+  .exadd-image-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .exadd-image-remove {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: #121212;
+    color: #fff;
+    border: 2px solid #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    font-weight: 800;
+    cursor: pointer;
+  }
+
+  .exadd-image-add-btn {
+    width: 72px;
+    height: 72px;
+    flex-shrink: 0;
+    border-radius: 0.8em;
+    border: 3px dashed #121212;
+    background: transparent;
+    color: var(--theme-text, #f2f2f7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    opacity: 0.75;
+  }
+
+  .exadd-save-btn {
+    margin-top: 1.4rem;
+    margin-bottom: 30px;
+    width: 100%;
+    font-family: "Archivo Expanded", sans-serif;
+    font-weight: 800;
+    font-size: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    color: #fff;
+    background: #ff4d2e;
+    border: 3px solid #121212;
+    border-radius: 1em;
+    box-shadow: 5px 5px 0px 0px #000;
+    padding: 0.9rem 1rem;
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  .exadd-save-btn:active {
+    transform: translate(2px, 2px);
+    box-shadow: 2px 2px 0px 0px #000;
+  }
+
+  .exadd-name-hint {
+    font-family: "Space Grotesk", sans-serif;
+    font-size: 0.72rem;
+    color: #d0392a;
+    opacity: 0;
+    height: 0;
+    overflow: hidden;
+    transition: opacity 0.2s ease;
+  }
+
+  .exadd-name-hint.is-visible {
+    opacity: 1;
+    height: auto;
+    margin-top: -0.2rem;
+  }
+
+  /* ---------- Egzersiz Detay sayfası ---------- */
+  .exdetail-chip {
+    align-self: flex-start;
+    font-family: "Space Grotesk", sans-serif;
+    font-weight: 700;
+    font-size: 0.72rem;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    color: #fff;
+    background: #ff4d2e;
+    border: 2px solid #121212;
+    border-radius: 0.6em;
+    padding: 0.2rem 0.6rem;
+    margin-top: 0.6rem;
+  }
+
+  .exdetail-title {
+    margin-top: 0.5rem;
+    font-family: "Archivo Expanded", "Playfair Display", sans-serif;
+    font-weight: 800;
+    font-size: clamp(1.3rem, 6vw, 1.7rem);
+    color: var(--theme-text, #f2f2f7);
+    transition: color 0.5s ease;
+  }
+
+  .exdetail-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.9rem;
+  }
+
+  .exdetail-badge {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.1rem;
+    min-width: 78px;
+    background: #fff;
+    color: #121212;
+    border: 3px solid #121212;
+    border-radius: 0.9em;
+    box-shadow: 3px 3px 0px 0px #000;
+    padding: 0.5rem 0.7rem;
+  }
+
+  .exdetail-badge-value {
+    font-family: "Archivo Expanded", sans-serif;
+    font-weight: 800;
+    font-size: 1.05rem;
+  }
+
+  .exdetail-badge-label {
+    font-family: "Space Grotesk", sans-serif;
+    font-weight: 600;
+    font-size: 0.65rem;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    opacity: 0.6;
+  }
+
+  .exdetail-section-title {
+    margin-top: 1.3rem;
+    font-family: "Space Grotesk", sans-serif;
+    font-weight: 700;
+    font-size: 0.78rem;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    color: var(--theme-text, #f2f2f7);
+    opacity: 0.7;
+    transition: color 0.5s ease;
+  }
+
+  .exdetail-desc {
+    margin-top: 0.5rem;
+    font-family: "Space Grotesk", sans-serif;
+    font-size: 0.92rem;
+    line-height: 1.55;
+    color: var(--theme-text, #f2f2f7);
+    opacity: 0.9;
+    transition: color 0.5s ease;
+    white-space: pre-wrap;
+  }
+
+  .exdetail-desc-empty {
+    opacity: 0.5;
+    font-style: italic;
+  }
+
+  .exdetail-images {
+    margin-top: 0.6rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+  }
+
+  .exdetail-image {
+    width: 108px;
+    height: 108px;
+    border-radius: 1em;
+    border: 3px solid #121212;
+    overflow: hidden;
+  }
+
+  .exdetail-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .exdetail-actions {
+    margin-top: 1.6rem;
+    margin-bottom: 30px;
+    display: flex;
+    gap: 0.7rem;
+  }
+
+  .exdetail-edit-btn,
+  .exdetail-delete-btn {
+    flex: 1;
+    font-family: "Space Grotesk", sans-serif;
+    font-weight: 800;
+    font-size: 0.88rem;
+    border: 3px solid #121212;
+    border-radius: 1em;
+    padding: 0.75rem 1rem;
+    cursor: pointer;
+    box-shadow: 4px 4px 0px 0px #000;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  .exdetail-edit-btn:active,
+  .exdetail-delete-btn:active {
+    transform: translate(2px, 2px);
+    box-shadow: 2px 2px 0px 0px #000;
+  }
+
+  .exdetail-edit-btn {
+    background: #fff;
+    color: #121212;
+  }
+
+  .exdetail-delete-btn {
+    background: #121212;
+    color: #ff5c5c;
+  }
+
   .home-hero {
     display: flex;
     align-items: center;
@@ -9159,18 +9817,38 @@
     gap: 0.45rem;
   }
 
-  /* Kronometre başlığının yanındaki seçili ders etiketi: kendi rengiyle
-     (JS tarafından inline style.color olarak atanır) ve eğik punto ile
-     gösterilir. Ders seçili değilken JS bunu display:none yapar. */
+  /* Kronometre başlığının yanındaki seçili ders etiketi.
+     ESKİDEN: sadece kendi rengiyle boyanmış eğik (italic) düz yazıydı.
+     İki sorunu vardı: (1) italic harfler sağa yatık olduğu için, kutunun
+     "overflow:hidden" kenarı son harfin sağ ucunu gerçekten kırpıyordu
+     (ekran görüntüsündeki "kesik" görünüm); (2) ders rengi WHEEL_PALETTE
+     içinden geldiği için (bkz. stopwatchSubjectsColorFor) hem çok açık
+     hem çok koyu tonlar olabiliyor — sabit yazı rengiyle bazı arka plan
+     temalarında (ör. açık renkli "Krem" teması üstünde açık mor) neredeyse
+     görünmez kalıyordu.
+     ÇÖZÜM: düz metin yerine, uygulamanın geri kalanındaki brutalist çip
+     diliyle (kalın siyah kenarlık + katı gölge + hap biçimi, bkz.
+     .settings-color-chip / .qhavuz-filter-chip) eşleşen küçük bir rozet.
+     Artık ders rengi metin rengi değil, rozetin ARKA PLANI oluyor; yazı
+     rengi ise JS tarafından (getReadableTextColor ile) o arka planın açık
+     mı koyu mu olduğuna göre otomatik siyah/beyaz seçiliyor. Böylece
+     etiket, sayfanın kendi teması ne olursa olsun (kendi küçük "adası"
+     sayesinde) her zaman okunaklı kalıyor; sağdaki iç dolgu (padding) da
+     harflerin artık asla kırpılmamasını garanti ediyor. */
   .stopwatch-subject-tag {
     font-family: "Space Grotesk", sans-serif;
-    font-style: italic;
-    font-weight: 700;
-    font-size: 0.85rem;
+    font-weight: 800;
+    font-size: 0.72rem;
+    letter-spacing: 0.01em;
+    line-height: 1.3;
     max-width: 42vw;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    padding: 0.28rem 0.7rem;
+    border: 2px solid #000;
+    border-radius: 999px;
+    box-shadow: 2px 2px 0px 0px #000;
   }
 
   .stopwatch-title-secret-btn {
@@ -12115,6 +12793,9 @@
 
     .stopwatch-subject-tag {
       font-size: clamp(1.1rem, 1vw + 0.9rem, 1.5rem);
+      padding: 0.32rem 0.9rem;
+      border-width: 3px;
+      box-shadow: 3px 3px 0px 0px #000;
     }
 
     .stopwatch-history-btn {
@@ -12751,13 +13432,153 @@
     </div>
   </section>
 
-  <!-- Spor Modu: Egzersizler sekmesi. -->
+  <!-- Spor Modu: Egzersizler sekmesi. Kullanıcının kendi egzersiz
+       kütüphanesi: hazır egzersiz havuzundan seçerek ya da tamamen özel
+       olarak eklediği egzersizler burada alt alta listelenir (bkz.
+       initExerciseLibrary script bölümü). -->
   <section class="page" id="page-sport-exercises">
-    <div class="sport-page-placeholder">
-      <span class="sport-page-placeholder-title">Egzersizler</span>
-      <span class="sport-page-placeholder-soon">Şimdilik yakında</span>
+    <div class="exlib-page">
+      <div class="exlib-header">
+        <span class="exlib-eyebrow">SPOR MODU</span>
+        <h1 class="exlib-title">Egzersizlerim</h1>
+      </div>
+      <div class="exlib-list" id="exlibList"></div>
+      <div class="exlib-empty" id="exlibEmpty">
+        <span>Henüz egzersiz eklemedin.</span>
+        <span>Eklemek için sağ alttaki + düğmesine dokun.</span>
+      </div>
+    </div>
+    <button type="button" class="exlib-add-fab" id="exlibAddFab" aria-label="Egzersiz ekle">
+      <svg viewBox="0 0 24 24" width="24" height="24"><path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>
+    </button>
+  </section>
+
+  <!-- Spor Modu: Egzersiz Ekle/Düzenle sayfası. Alt nav bar'da kendi
+       sekmesi yok; Egzersizlerim sayfasındaki + düğmesinden veya bir
+       egzersizin detayındaki "Düzenle" düğmesinden açılır (Turlarım/
+       Takvim ile aynı açma/kapama deseni). İki iç görünümü vardır:
+       önce kütüphaneden seçim (exaddLibraryView), sonra detay formu
+       (exaddFormView). -->
+  <section class="page" id="page-sport-exercise-add">
+    <div class="calendar-topbar">
+      <button type="button" class="calendar-back-btn" id="exAddBackBtn" aria-label="Geri dön">
+        <svg viewBox="0 0 24 24" width="18" height="18">
+          <path d="M15 4l-8 8 8 8" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+      <span class="calendar-topbar-title" id="exAddTopTitle">Egzersiz Ekle</span>
+      <div class="calendar-topbar-spacer"></div>
+    </div>
+
+    <!-- Görünüm 1: hazır egzersiz kütüphanesi + arama + kategori filtresi -->
+    <div class="exadd-library is-visible" id="exaddLibraryView">
+      <div class="exadd-search-wrap">
+        <input type="text" class="exadd-search-input" id="exaddSearchInput" placeholder="Egzersiz ara...">
+      </div>
+      <button type="button" class="exadd-custom-btn" id="exaddCustomBtn">+ Özel Egzersiz Ekle</button>
+      <div class="exadd-categories" id="exaddCategories"></div>
+      <div class="exadd-library-list" id="exaddLibraryList"></div>
+      <div class="exadd-lib-empty" id="exaddLibEmpty">Aramanla eşleşen egzersiz bulunamadı.</div>
+    </div>
+
+    <!-- Görünüm 2: seçilen/özel egzersizin detay formu -->
+    <div class="exadd-form" id="exaddFormView">
+      <div class="exadd-field">
+        <span class="exadd-label">Egzersiz İsmi</span>
+        <input type="text" class="exadd-input" id="exaddNameInput" placeholder="ör. Bench Press" maxlength="60">
+        <span class="exadd-name-hint" id="exaddNameHint">Lütfen bir egzersiz ismi gir.</span>
+      </div>
+
+      <div class="exadd-field">
+        <span class="exadd-label">Nasıl Ölçülecek?</span>
+        <div class="exadd-segmented">
+          <div class="exadd-segmented-btn is-active" id="exaddModeRepsBtn">Set / Tekrar</div>
+          <div class="exadd-segmented-btn" id="exaddModeTimedBtn">Süreli</div>
+        </div>
+      </div>
+
+      <div class="exadd-row">
+        <div class="exadd-field">
+          <span class="exadd-label">Set Sayısı</span>
+          <input type="number" class="exadd-input" id="exaddSetsInput" min="1" max="20" inputmode="numeric" value="3">
+        </div>
+        <div class="exadd-field exadd-reps-field" id="exaddRepsField">
+          <span class="exadd-label">Tekrar Sayısı</span>
+          <input type="number" class="exadd-input" id="exaddRepsInput" min="1" max="200" inputmode="numeric" value="10">
+        </div>
+      </div>
+
+      <div class="exadd-row exadd-duration-row" id="exaddDurationRow">
+        <div class="exadd-field">
+          <span class="exadd-label">Süre (dakika)</span>
+          <input type="number" class="exadd-input" id="exaddDurationMinInput" min="0" max="120" inputmode="numeric" value="0">
+        </div>
+        <div class="exadd-field">
+          <span class="exadd-label">Süre (saniye)</span>
+          <input type="number" class="exadd-input" id="exaddDurationSecInput" min="0" max="59" inputmode="numeric" value="30">
+        </div>
+      </div>
+
+      <div class="exadd-field">
+        <span class="exadd-label">Egzersiz Nasıl Yapılır?</span>
+        <textarea class="exadd-textarea" id="exaddDescInput" placeholder="Hareketi adım adım anlat..."></textarea>
+      </div>
+
+      <div class="exadd-field">
+        <span class="exadd-label">Görsel Ekle (isteğe bağlı)</span>
+        <div class="exadd-images" id="exaddImages">
+          <button type="button" class="exadd-image-add-btn" id="exaddImageAddBtn" aria-label="Görsel ekle">
+            <svg viewBox="0 0 24 24" width="22" height="22"><path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
+          </button>
+        </div>
+        <input type="file" accept="image/*" multiple class="qhavuz-file-input" id="exaddImageInput">
+      </div>
+
+      <button type="button" class="exadd-save-btn" id="exaddSaveBtn">Kaydet</button>
     </div>
   </section>
+
+  <!-- Spor Modu: kaydedilen bir egzersizin detay sayfası. Egzersizlerim
+       listesindeki bir karta dokunulunca açılır. -->
+  <section class="page" id="page-sport-exercise-detail">
+    <div class="calendar-topbar">
+      <button type="button" class="calendar-back-btn" id="exDetailBackBtn" aria-label="Geri dön">
+        <svg viewBox="0 0 24 24" width="18" height="18">
+          <path d="M15 4l-8 8 8 8" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+      <span class="calendar-topbar-title">Egzersiz</span>
+      <div class="calendar-topbar-spacer"></div>
+    </div>
+
+    <span class="exdetail-chip" id="exDetailCategory">ÖZEL</span>
+    <h1 class="exdetail-title" id="exDetailName">-</h1>
+
+    <div class="exdetail-badges" id="exDetailBadges"></div>
+
+    <span class="exdetail-section-title">Nasıl Yapılır?</span>
+    <p class="exdetail-desc" id="exDetailDesc">-</p>
+
+    <div class="exdetail-images" id="exDetailImages"></div>
+
+    <div class="exdetail-actions">
+      <button type="button" class="exdetail-edit-btn" id="exDetailEditBtn">Düzenle</button>
+      <button type="button" class="exdetail-delete-btn" id="exDetailDeleteBtn">Sil</button>
+    </div>
+  </section>
+
+  <!-- Egzersiz silme onayı: Ayarlar'daki sıfırlama onayıyla aynı
+       brutalist stil, kendi id'siyle genel amaçlı kullanılıyor. -->
+  <div class="settings-confirm-backdrop" id="exDeleteConfirmBackdrop">
+    <div class="settings-confirm-card">
+      <span class="settings-confirm-title">Emin misin?</span>
+      <span class="settings-confirm-desc">Bu egzersiz kalıcı olarak silinecek.</span>
+      <div class="settings-confirm-actions">
+        <button type="button" class="settings-confirm-cancel" id="exDeleteConfirmCancel">Vazgeç</button>
+        <button type="button" class="settings-confirm-confirm" id="exDeleteConfirmConfirm">Evet, sil</button>
+      </div>
+    </div>
+  </div>
 
   <!-- Spor Modu: Antrenman sekmesi. -->
   <section class="page" id="page-sport-workout">
@@ -12998,7 +13819,7 @@
 
       <div class="sport-stopwatch-controls">
         <button type="button" class="sport-stopwatch-btn sport-stopwatch-lap-btn is-hidden" id="sportStopwatchLapBtn">Tur</button>
-        <button type="button" class="sport-stopwatch-btn sport-stopwatch-reset-btn is-hidden" id="sportStopwatchResetBtn">Sıfırla</button>
+        <button type="button" class="sport-stopwatch-btn sport-stopwatch-reset-btn is-hidden" id="sportStopwatchResetBtn">Yakında</button>
       </div>
 
       <div class="sport-stopwatch-laps" id="sportStopwatchLaps"></div>
@@ -14832,6 +15653,8 @@
     'page-camera-packages': 'page-camera',
     'page-camera-package-detail': 'page-camera',
     'page-patterns': 'page-settings',
+    'page-sport-exercise-add': 'page-sport-exercises',
+    'page-sport-exercise-detail': 'page-sport-exercises',
   };
 
   const moveSidebarSlider = (item) => {
@@ -16593,6 +17416,15 @@
   // fonksiyonu (stopwatchSubjectsColorFor) bu script'ten SONRA gelen bir
   // script bloğunda tanımlanır; henüz hazır değilse varsayılan bir renkle
   // gösterilir, o script yüklendiğinde tekrar çağrılarak düzeltilir.
+  //
+  // NOT: Renk artık YAZI rengi değil, rozetin ARKA PLAN rengi olarak
+  // uygulanıyor (bkz. .stopwatch-subject-tag CSS'indeki hap/rozet
+  // tasarımı). Ders rengi WHEEL_PALETTE'ten geldiği için hem çok açık
+  // hem çok koyu tonlar olabiliyor; getReadableTextColor (tema
+  // script'inde tanımlı) o arka planın açık mı koyu mu olduğuna bakıp
+  // yazıyı otomatik siyah/beyaz seçerek her zaman okunaklı kalmasını
+  // sağlıyor. Bu da henüz tanımlanmamış olabileceğinden aynı şekilde
+  // typeof ile kontrol ediliyor; hazır değilse siyah yazıya düşülür.
   const renderStopwatchSubjectTag = () => {
     const el = document.getElementById('stopwatchSubjectTag');
     if (!el) return;
@@ -16611,7 +17443,8 @@
         color = stopwatchSubjectsColorFor(stopwatchActiveSubject.track, stopwatchActiveSubject.name, idx >= 0 ? idx : 0);
       } catch (err) { /* renk fonksiyonları henüz hazır değilse varsayılan renk kalır */ }
     }
-    el.style.color = color;
+    el.style.backgroundColor = color;
+    el.style.color = (typeof getReadableTextColor === 'function') ? getReadableTextColor(color) : '#000000';
   };
 
   // Seçili dersi değiştirir (veya null ile kaldırır): önce eski dersin o ana
@@ -26747,6 +27580,492 @@
       if (tag !== 'INPUT' && tag !== 'TEXTAREA') return;
       setTimeout(scrollFocusedIntoView, 320);
     });
+  })();
+</script>
+
+<script>
+  // ============================================================
+  // Spor Modu: Egzersizlerim
+  // ------------------------------------------------------------
+  // Kullanıcı, hazır bir egzersiz havuzundan seçerek ya da tamamen
+  // özel bir egzersiz tanımlayarak kendi listesini oluşturur. Her
+  // egzersiz için: isim, set sayısı, (tekrarlı ise) tekrar sayısı
+  // veya (süreli ise) süre, hareketin nasıl yapıldığını anlatan bir
+  // metin ve isteğe bağlı görseller kaydedilir. Veriler diğer her şey
+  // gibi APP_STATE üzerinden localStorage'a yazılır; görseller ise
+  // (yedekleme bölümünde tanımlanan) storeImageAndGetRef/resolveImageSrc
+  // yardımcılarıyla IndexedDB'de tutulur. Bu script dosyanın en sonunda
+  // yer alır ki APP_STATE, saveAppState, showAppToast, goToPage ve tüm
+  // görsel yardımcı fonksiyonları (storeImageAndGetRef vb.) çağrıldığı
+  // anda zaten tanımlanmış olsun.
+  // ============================================================
+  (function initExerciseLibrary() {
+    const listEl = document.getElementById('exlibList');
+    const emptyEl = document.getElementById('exlibEmpty');
+    const addFab = document.getElementById('exlibAddFab');
+    if (!listEl || !addFab) return; // bu sayfa yoksa sessizce çık
+
+    // ---- Hazır egzersiz kütüphanesi (kategori + varsayılan açıklama) ----
+    const EXERCISE_LIBRARY = [
+      { name: 'Bench Press', category: 'Göğüs', description: 'Sırt üstü uzan, barı omuz genişliğinden biraz daha geniş kavra. Barı kontrollü şekilde göğse indir, ardından kollarını tam kilitlemeden yukarı it.' },
+      { name: 'Şınav', category: 'Göğüs', description: 'Ellerin omuz genişliğinde, vücudun baştan ayağa düz bir çizgi oluştursun. Göğsün yere yaklaşana kadar in, sonra kollarını iterek başlangıç pozisyonuna dön.' },
+      { name: 'Dumbbell Fly', category: 'Göğüs', description: 'Sırt üstü uzan, dirseklerde hafif kırık, dumbbell\'ları göğsün üstünde tut. Kollarını yanlara doğru geniş bir yay çizerek indir, sonra aynı yoldan göğüste birleştir.' },
+      { name: 'Dips', category: 'Göğüs', description: 'Paralel barlarda vücudunu kollarınla yukarıda tut. Dirsekleri bükerek gövdeni kontrollü indir, göğsün gerildiğini hisset, sonra kollarını iterek yukarı çık.' },
+      { name: 'Barfiks (Pull-up)', category: 'Sırt', description: 'Barı omuzdan geniş kavra, avuç içleri ileriye baksın. Çenen barın üzerine çıkana kadar kendini çek, ardından kontrollü şekilde in.' },
+      { name: 'Lat Pulldown', category: 'Sırt', description: 'Barı geniş kavra, göğsünü hafif öne it. Barı köprücük kemiğine doğru çekerken kürek kemiklerini birleştir, sonra kontrollü bırak.' },
+      { name: 'Barbell Row', category: 'Sırt', description: 'Gövdeni öne eğ, dizlerin hafif kırık. Barı karnına doğru çekerken dirseklerini geriye götür, kürek kemiklerini sık.' },
+      { name: 'Deadlift', category: 'Sırt', description: 'Ayaklar kalça genişliğinde, bar kaval kemiğine yakın. Sırtını düz tutarak kalça ve dizden kalk, barı bacaklarına yakın sürükle.' },
+      { name: 'Squat', category: 'Bacak', description: 'Ayaklar omuz genişliğinde, göğüs dik. Kalçanı geriye vererek dizler ayak ucunu geçmeyecek şekilde çök, topuklardan iterek kalk.' },
+      { name: 'Lunge', category: 'Bacak', description: 'Bir adım öne çık, arka diz yere yaklaşana kadar iki dizi de büküp in. Ön ayağın topuğundan iterek başlangıç pozisyonuna dön.' },
+      { name: 'Leg Press', category: 'Bacak', description: 'Ayaklarını platformda omuz genişliğinde yerleştir. Dizlerini kontrollü büküp platformu göğsüne yaklaştır, sonra bacaklarını tam kilitlemeden it.' },
+      { name: 'Calf Raise', category: 'Bacak', description: 'Ayak uçlarının üzerinde dur, topuklarını olabildiğince yukarı kaldır, tepede kısa bir süre bekle, sonra yavaşça in.' },
+      { name: 'Omuz Press', category: 'Omuz', description: 'Dumbbell\'ları omuz hizasında tut. Kollarını başının üzerinde tam kilitlemeden birleştirene kadar it, sonra kontrollü indir.' },
+      { name: 'Lateral Raise', category: 'Omuz', description: 'Kollarını hafif kırık şekilde yanlara, omuz hizasına kadar kaldır. Tepede kısa dur, sonra yavaşça indir.' },
+      { name: 'Face Pull', category: 'Omuz', description: 'Kabloyu yüz hizasında, dirsekleri yukarıda tutarak yüzüne doğru çek, kürek kemiklerini sık, sonra kontrollü bırak.' },
+      { name: 'Arnold Press', category: 'Omuz', description: 'Dumbbell\'ları avuç içleri sana bakacak şekilde omuz hizasında başlat. İterken bileklerini dışa çevirerek tepede avuç içleri öne baksın.' },
+      { name: 'Biceps Curl', category: 'Kol', description: 'Dirsekleri gövdene sabit tutarak dumbbell\'ları omuzlarına doğru kaldır, tepede sık, sonra kontrollü indir.' },
+      { name: 'Triceps Pushdown', category: 'Kol', description: 'Dirsekleri gövdene sabit tutarak kabloyu aşağı it, kollarını tam açana kadar it, sonra kontrollü bırak.' },
+      { name: 'Hammer Curl', category: 'Kol', description: 'Dumbbell\'ları çekiç tutuşuyla (avuç içleri birbirine bakar) kaldır, dirsekleri sabit tut, sonra kontrollü indir.' },
+      { name: 'Skull Crusher', category: 'Kol', description: 'Sırt üstü uzan, barı yukarıda tut. Yalnızca dirseklerden bükerek barı alnına doğru indir, sonra kollarını iterek başa dön.' },
+      { name: 'Mekik (Crunch)', category: 'Karın', description: 'Sırt üstü uzan, dizler kırık. Omuzlarını yerden kaldırarak karnını sık, sonra kontrollü şekilde geri in.' },
+      { name: 'Plank', category: 'Karın', description: 'Dirsekler ve ayak uçları üzerinde, vücut baştan ayağa düz bir çizgi oluşturacak şekilde pozisyon al ve bu duruşu koru.' },
+      { name: 'Bacak Kaldırma', category: 'Karın', description: 'Sırt üstü uzan, bacaklarını düz tutarak yukarı kaldır, tepede kısa dur, sonra kontrollü şekilde indir.' },
+      { name: 'Russian Twist', category: 'Karın', description: 'Yere otur, gövdeni hafif geriye yasla, bacakları yerden kaldır ve gövdeni sağa sola çevirerek karnını çalıştır.' },
+      { name: 'Koşu Bandı', category: 'Kardiyo', description: 'Rahat bir tempoda ısınarak başla, ardından hedeflediğin süre boyunca sabit bir hızda koş ya da yürü.' },
+      { name: 'İp Atlama', category: 'Kardiyo', description: 'İpi bileklerinden çevir, ayak uçlarınla hafifçe zıpla, ritmi bozmadan devam et.' },
+      { name: 'Burpee', category: 'Kardiyo', description: 'Çömel, ellerini yere koy, bacaklarını arkaya at, bir şınav çek, tekrar çömel ve zıplayarak kalk.' },
+      { name: 'Jumping Jack', category: 'Kardiyo', description: 'Ayakta dur, aynı anda kollarını yukarı kaldırıp bacaklarını yanlara aç, sonra başlangıç pozisyonuna dön.' },
+    ];
+
+    // ---- Depolanan egzersizler (APP_STATE üzerinden) ----
+    const getExercises = () => {
+      if (!Array.isArray(APP_STATE.sportExercises)) APP_STATE.sportExercises = [];
+      return APP_STATE.sportExercises;
+    };
+
+    const persistExercises = () => saveAppState({ sportExercises: getExercises() });
+
+    const formatDuration = (totalSeconds) => {
+      const s = Math.max(0, Math.round(totalSeconds || 0));
+      const m = Math.floor(s / 60);
+      const rem = s % 60;
+      return `${m}:${String(rem).padStart(2, '0')}`;
+    };
+
+    // ---- Egzersizlerim listesi ----
+    const renderExerciseList = () => {
+      const exercises = getExercises();
+      listEl.innerHTML = '';
+      emptyEl.classList.toggle('is-visible', exercises.length === 0);
+      exercises.forEach((ex) => {
+        const card = document.createElement('button');
+        card.type = 'button';
+        card.className = 'exlib-card';
+        const metricBadge = ex.unit === 'timed'
+          ? `${ex.sets} Set × ${formatDuration(ex.durationSeconds)}`
+          : `${ex.sets} Set × ${ex.reps} Tekrar`;
+        card.innerHTML = `
+          <div class="exlib-card-main">
+            <span class="exlib-card-name"></span>
+            <div class="exlib-card-meta">
+              <span class="exlib-card-badge is-cat"></span>
+              <span class="exlib-card-badge"></span>
+            </div>
+          </div>
+          <svg class="exlib-card-chevron" viewBox="0 0 24 24" width="16" height="16"><path d="M9 4l8 8-8 8" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        `;
+        card.querySelector('.exlib-card-name').textContent = ex.name;
+        card.querySelectorAll('.exlib-card-badge')[0].textContent = ex.category || 'Özel';
+        card.querySelectorAll('.exlib-card-badge')[1].textContent = metricBadge;
+        card.addEventListener('click', () => openDetailPage(ex.id));
+        listEl.appendChild(card);
+      });
+    };
+
+    // ---- Egzersiz Ekle sayfası: görünüm/adım yönetimi ----
+    const addBackBtn = document.getElementById('exAddBackBtn');
+    const addTopTitle = document.getElementById('exAddTopTitle');
+    const libraryView = document.getElementById('exaddLibraryView');
+    const formView = document.getElementById('exaddFormView');
+    const searchInput = document.getElementById('exaddSearchInput');
+    const customBtn = document.getElementById('exaddCustomBtn');
+    const categoriesEl = document.getElementById('exaddCategories');
+    const libraryListEl = document.getElementById('exaddLibraryList');
+    const libEmptyEl = document.getElementById('exaddLibEmpty');
+
+    const nameInput = document.getElementById('exaddNameInput');
+    const nameHint = document.getElementById('exaddNameHint');
+    const modeRepsBtn = document.getElementById('exaddModeRepsBtn');
+    const modeTimedBtn = document.getElementById('exaddModeTimedBtn');
+    const setsInput = document.getElementById('exaddSetsInput');
+    const repsField = document.getElementById('exaddRepsField');
+    const repsInput = document.getElementById('exaddRepsInput');
+    const durationRow = document.getElementById('exaddDurationRow');
+    const durationMinInput = document.getElementById('exaddDurationMinInput');
+    const durationSecInput = document.getElementById('exaddDurationSecInput');
+    const descInput = document.getElementById('exaddDescInput');
+    const imagesEl = document.getElementById('exaddImages');
+    const imageAddBtn = document.getElementById('exaddImageAddBtn');
+    const imageInput = document.getElementById('exaddImageInput');
+    const saveBtn = document.getElementById('exaddSaveBtn');
+
+    let currentCategoryFilter = 'Tümü';
+    let currentUnit = 'reps';
+    let currentCategory = 'Özel';
+    let editingId = null;       // null = yeni ekleme, dolu = düzenleme
+    let entryFromLibrary = true; // back tuşu form görünümünde nereye dönecek
+    let formImages = [];        // formdaki güncel görsel referansları (idb://...)
+    let originalImages = [];    // düzenlemeye başlarken kayıtlı olan görseller
+
+    const setUnit = (unit) => {
+      currentUnit = unit;
+      modeRepsBtn.classList.toggle('is-active', unit === 'reps');
+      modeTimedBtn.classList.toggle('is-active', unit === 'timed');
+      repsField.classList.toggle('is-hidden', unit === 'timed');
+      durationRow.classList.toggle('is-visible', unit === 'timed');
+    };
+    modeRepsBtn.addEventListener('click', () => setUnit('reps'));
+    modeTimedBtn.addEventListener('click', () => setUnit('timed'));
+
+    // Formdaki görsel önizlemelerini (idb referanslarından) yeniden çizer.
+    const renderFormImages = async () => {
+      const thumbs = formImages.slice();
+      imagesEl.innerHTML = '';
+      for (const ref of thumbs) {
+        const thumb = document.createElement('div');
+        thumb.className = 'exadd-image-thumb';
+        const img = document.createElement('img');
+        img.alt = '';
+        thumb.appendChild(img);
+        const removeBtn = document.createElement('div');
+        removeBtn.className = 'exadd-image-remove';
+        removeBtn.textContent = '×';
+        removeBtn.addEventListener('click', async () => {
+          formImages = formImages.filter((r) => r !== ref);
+          if (!originalImages.includes(ref) && typeof deleteImageRef === 'function') {
+            try { await deleteImageRef(ref); } catch (err) { /* yok say */ }
+          }
+          renderFormImages();
+        });
+        thumb.appendChild(removeBtn);
+        imagesEl.appendChild(thumb);
+        if (typeof resolveImageSrc === 'function') {
+          resolveImageSrc(ref).then((src) => { if (src) img.src = src; });
+        }
+      }
+      imagesEl.appendChild(imageAddBtn);
+    };
+
+    imageAddBtn.addEventListener('click', () => imageInput.click());
+
+    imageInput.addEventListener('change', async () => {
+      const files = Array.from(imageInput.files || []);
+      imageInput.value = '';
+      if (!files.length) return;
+      for (const file of files) {
+        try {
+          const dataUrl = await new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = () => reject(reader.error);
+            reader.readAsDataURL(file);
+          });
+          const compressed = typeof compressImageDataUrl === 'function'
+            ? await compressImageDataUrl(dataUrl)
+            : dataUrl;
+          const ref = typeof storeImageAndGetRef === 'function'
+            ? await storeImageAndGetRef(compressed)
+            : compressed;
+          formImages.push(ref);
+        } catch (err) {
+          console.warn('Egzersiz görseli eklenemedi:', err);
+        }
+      }
+      renderFormImages();
+    });
+
+    // Kaydedilmeden terk edilen forma yeni eklenmiş (henüz kaydedilmemiş)
+    // görselleri IndexedDB'de yalnız/öksüz bırakmamak için siler.
+    const discardUnsavedFormImages = async () => {
+      const toDelete = formImages.filter((ref) => !originalImages.includes(ref));
+      for (const ref of toDelete) {
+        if (typeof deleteImageRef === 'function') {
+          try { await deleteImageRef(ref); } catch (err) { /* yok say */ }
+        }
+      }
+    };
+
+    const showLibraryView = () => {
+      libraryView.classList.add('is-visible');
+      formView.classList.remove('is-visible');
+      addTopTitle.textContent = 'Egzersiz Ekle';
+    };
+
+    const showFormView = ({ name, category, description, images, sets, unit, reps, durationSeconds }, isEdit, exId) => {
+      libraryView.classList.remove('is-visible');
+      formView.classList.add('is-visible');
+      addTopTitle.textContent = isEdit ? 'Egzersizi Düzenle' : 'Egzersiz Detayları';
+
+      editingId = isEdit ? exId : null;
+      entryFromLibrary = !isEdit;
+      currentCategory = category || 'Özel';
+      formImages = Array.isArray(images) ? images.slice() : [];
+      originalImages = isEdit ? formImages.slice() : [];
+
+      nameInput.value = name || '';
+      nameHint.classList.remove('is-visible');
+      descInput.value = description || '';
+      setsInput.value = sets || 3;
+      setUnit(unit === 'timed' ? 'timed' : 'reps');
+      repsInput.value = reps || 10;
+      const dur = durationSeconds || 30;
+      durationMinInput.value = Math.floor(dur / 60);
+      durationSecInput.value = dur % 60;
+      renderFormImages();
+      nameInput.focus();
+    };
+
+    const renderLibraryCategories = () => {
+      const cats = ['Tümü', ...Array.from(new Set(EXERCISE_LIBRARY.map((it) => it.category)))];
+      categoriesEl.innerHTML = '';
+      cats.forEach((cat) => {
+        const chip = document.createElement('div');
+        chip.className = 'exadd-chip' + (cat === currentCategoryFilter ? ' is-active' : '');
+        chip.textContent = cat;
+        chip.addEventListener('click', () => {
+          currentCategoryFilter = cat;
+          renderLibraryCategories();
+          renderLibraryItems();
+        });
+        categoriesEl.appendChild(chip);
+      });
+    };
+
+    const renderLibraryItems = () => {
+      const query = (searchInput.value || '').trim().toLocaleLowerCase('tr');
+      const filtered = EXERCISE_LIBRARY.filter((it) => {
+        const matchesCategory = currentCategoryFilter === 'Tümü' || it.category === currentCategoryFilter;
+        const matchesQuery = !query || it.name.toLocaleLowerCase('tr').includes(query);
+        return matchesCategory && matchesQuery;
+      });
+      libraryListEl.innerHTML = '';
+      libEmptyEl.classList.toggle('is-visible', filtered.length === 0);
+      filtered.forEach((it) => {
+        const row = document.createElement('button');
+        row.type = 'button';
+        row.className = 'exadd-lib-item';
+        row.innerHTML = `<span class="exadd-lib-item-name"></span><span class="exadd-lib-item-cat"></span>`;
+        row.querySelector('.exadd-lib-item-name').textContent = it.name;
+        row.querySelector('.exadd-lib-item-cat').textContent = it.category;
+        row.addEventListener('click', () => {
+          showFormView({ name: it.name, category: it.category, description: it.description, images: [], sets: 3, unit: 'reps', reps: 10, durationSeconds: 30 }, false, null);
+        });
+        libraryListEl.appendChild(row);
+      });
+    };
+
+    searchInput.addEventListener('input', renderLibraryItems);
+    customBtn.addEventListener('click', () => {
+      showFormView({ name: '', category: 'Özel', description: '', images: [], sets: 3, unit: 'reps', reps: 10, durationSeconds: 30 }, false, null);
+    });
+
+    const openAddPage = () => {
+      currentCategoryFilter = 'Tümü';
+      searchInput.value = '';
+      renderLibraryCategories();
+      renderLibraryItems();
+      showLibraryView();
+      document.body.classList.add('is-exercise-add-open');
+      goToPage('page-sport-exercise-add');
+    };
+
+    const closeAddPage = () => {
+      document.body.classList.remove('is-exercise-add-open');
+      goToPage('page-sport-exercises');
+      renderExerciseList();
+    };
+
+    addFab.addEventListener('click', openAddPage);
+
+    addBackBtn.addEventListener('click', async () => {
+      if (formView.classList.contains('is-visible')) {
+        await discardUnsavedFormImages();
+        if (!entryFromLibrary && editingId) {
+          document.body.classList.remove('is-exercise-add-open');
+          openDetailPage(editingId);
+        } else {
+          showLibraryView();
+        }
+      } else {
+        closeAddPage();
+      }
+    });
+
+    saveBtn.addEventListener('click', () => {
+      const name = (nameInput.value || '').trim();
+      if (!name) {
+        nameHint.classList.add('is-visible');
+        nameInput.focus();
+        return;
+      }
+      const sets = Math.max(1, parseInt(setsInput.value, 10) || 1);
+      let reps = 0;
+      let durationSeconds = 0;
+      if (currentUnit === 'timed') {
+        const mins = Math.max(0, parseInt(durationMinInput.value, 10) || 0);
+        const secs = Math.max(0, Math.min(59, parseInt(durationSecInput.value, 10) || 0));
+        durationSeconds = mins * 60 + secs;
+        if (durationSeconds <= 0) durationSeconds = 30;
+      } else {
+        reps = Math.max(1, parseInt(repsInput.value, 10) || 1);
+      }
+      const description = (descInput.value || '').trim();
+      const exercises = getExercises();
+
+      if (editingId) {
+        const idx = exercises.findIndex((it) => it.id === editingId);
+        if (idx !== -1) {
+          exercises[idx] = {
+            ...exercises[idx],
+            name, category: currentCategory, unit: currentUnit, sets, reps, durationSeconds,
+            description, images: formImages.slice(),
+          };
+        }
+      } else {
+        exercises.push({
+          id: `ex_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+          name, category: currentCategory, unit: currentUnit, sets, reps, durationSeconds,
+          description, images: formImages.slice(),
+          createdAt: new Date().toISOString(),
+        });
+      }
+      persistExercises();
+      showAppToast('Egzersiz kaydedildi');
+
+      const savedId = editingId;
+      document.body.classList.remove('is-exercise-add-open');
+      if (savedId) {
+        openDetailPage(savedId);
+      } else {
+        goToPage('page-sport-exercises');
+        renderExerciseList();
+      }
+    });
+
+    // ---- Egzersiz Detay sayfası ----
+    const detailBackBtn = document.getElementById('exDetailBackBtn');
+    const detailCategoryEl = document.getElementById('exDetailCategory');
+    const detailNameEl = document.getElementById('exDetailName');
+    const detailBadgesEl = document.getElementById('exDetailBadges');
+    const detailDescEl = document.getElementById('exDetailDesc');
+    const detailImagesEl = document.getElementById('exDetailImages');
+    const detailEditBtn = document.getElementById('exDetailEditBtn');
+    const detailDeleteBtn = document.getElementById('exDetailDeleteBtn');
+    const deleteConfirmBackdrop = document.getElementById('exDeleteConfirmBackdrop');
+    const deleteConfirmCancel = document.getElementById('exDeleteConfirmCancel');
+    const deleteConfirmConfirm = document.getElementById('exDeleteConfirmConfirm');
+
+    let currentDetailId = null;
+
+    const renderDetail = (ex) => {
+      detailCategoryEl.textContent = (ex.category || 'Özel').toLocaleUpperCase('tr');
+      detailNameEl.textContent = ex.name;
+      detailBadgesEl.innerHTML = '';
+
+      const badges = [{ label: 'SET', value: String(ex.sets) }];
+      if (ex.unit === 'timed') {
+        badges.push({ label: 'SÜRE', value: formatDuration(ex.durationSeconds) });
+      } else {
+        badges.push({ label: 'TEKRAR', value: String(ex.reps) });
+      }
+      badges.forEach((b) => {
+        const el = document.createElement('div');
+        el.className = 'exdetail-badge';
+        el.innerHTML = `<span class="exdetail-badge-value"></span><span class="exdetail-badge-label"></span>`;
+        el.querySelector('.exdetail-badge-value').textContent = b.value;
+        el.querySelector('.exdetail-badge-label').textContent = b.label;
+        detailBadgesEl.appendChild(el);
+      });
+
+      if (ex.description) {
+        detailDescEl.textContent = ex.description;
+        detailDescEl.classList.remove('exdetail-desc-empty');
+      } else {
+        detailDescEl.textContent = 'Bu egzersiz için henüz bir açıklama eklenmedi.';
+        detailDescEl.classList.add('exdetail-desc-empty');
+      }
+
+      detailImagesEl.innerHTML = '';
+      (ex.images || []).forEach((ref) => {
+        const wrap = document.createElement('div');
+        wrap.className = 'exdetail-image';
+        const img = document.createElement('img');
+        img.alt = '';
+        wrap.appendChild(img);
+        detailImagesEl.appendChild(wrap);
+        if (typeof resolveImageSrc === 'function') {
+          resolveImageSrc(ref).then((src) => { if (src) img.src = src; });
+        }
+      });
+    };
+
+    const openDetailPage = (id) => {
+      const ex = getExercises().find((it) => it.id === id);
+      if (!ex) { goToPage('page-sport-exercises'); return; }
+      currentDetailId = id;
+      renderDetail(ex);
+      document.body.classList.add('is-exercise-detail-open');
+      goToPage('page-sport-exercise-detail');
+    };
+    // Dışarıdan (kütüphane listesi/kayıt sonrası) erişilebilmesi için.
+    window.openDetailPage = openDetailPage;
+
+    const closeDetailPage = () => {
+      document.body.classList.remove('is-exercise-detail-open');
+      goToPage('page-sport-exercises');
+      renderExerciseList();
+    };
+
+    detailBackBtn.addEventListener('click', closeDetailPage);
+
+    detailEditBtn.addEventListener('click', () => {
+      const ex = getExercises().find((it) => it.id === currentDetailId);
+      if (!ex) return;
+      document.body.classList.remove('is-exercise-detail-open');
+      document.body.classList.add('is-exercise-add-open');
+      goToPage('page-sport-exercise-add');
+      showFormView(ex, true, ex.id);
+    });
+
+    detailDeleteBtn.addEventListener('click', () => {
+      deleteConfirmBackdrop.classList.add('is-open');
+    });
+    deleteConfirmCancel.addEventListener('click', () => {
+      deleteConfirmBackdrop.classList.remove('is-open');
+    });
+    deleteConfirmBackdrop.addEventListener('click', (e) => {
+      if (e.target === deleteConfirmBackdrop) deleteConfirmBackdrop.classList.remove('is-open');
+    });
+    deleteConfirmConfirm.addEventListener('click', async () => {
+      deleteConfirmBackdrop.classList.remove('is-open');
+      const exercises = getExercises();
+      const idx = exercises.findIndex((it) => it.id === currentDetailId);
+      if (idx === -1) return;
+      const [removed] = exercises.splice(idx, 1);
+      persistExercises();
+      if (removed && Array.isArray(removed.images)) {
+        for (const ref of removed.images) {
+          if (typeof deleteImageRef === 'function') {
+            try { await deleteImageRef(ref); } catch (err) { /* yok say */ }
+          }
+        }
+      }
+      showAppToast('Egzersiz silindi');
+      closeDetailPage();
+    });
+
+    // İlk açılış
+    renderExerciseList();
   })();
 </script>
 
