@@ -1496,58 +1496,11 @@
     color: #f2f2f4;
   }
 
-  body.is-anthracite .calendar-card,
-  body.is-anthracite .calendar-selected-info {
-    background: var(--dark-card-color, #32343a);
-    color: #f2f2f4;
-  }
-
-  body.is-anthracite .calendar-month-label,
-  body.is-anthracite .calendar-day {
-    color: #f2f2f4;
-  }
-
-  body.is-anthracite .calendar-weekday {
-    color: rgba(242, 242, 244, 0.45);
-  }
-
-  body.is-anthracite .calendar-day.is-outside {
-    color: rgba(242, 242, 244, 0.25);
-  }
-
-  /* Hafta sonu (Cmt/Paz) vurgusu koyu modda da korunur: yukarıdaki
-     genel .calendar-day / .calendar-weekday kuralları tüm günleri tek
-     tip açık renge çeviriyordu, bu da açık moddaki kırmızı hafta sonu
-     ayrımını koyu modda görünmez kılıyordu. Aşağıdaki kurallar iki
-     sınıflı (.is-weekend) olduğu için daha spesifik ve üsttekileri
-     ezip hafta sonu rengini geri getiriyor. */
-  body.is-anthracite .calendar-weekday.is-weekend {
-    color: #ff5c72;
-  }
-
-  body.is-anthracite .calendar-day.is-weekend {
-    color: #ff5c72;
-  }
-
-  body.is-anthracite .calendar-day.is-outside.is-weekend {
-    color: rgba(255, 92, 114, 0.4);
-  }
-
-  /* "Bugün" çerçevesi ve hover çerçevesi açık modda siyah olduğu için
-     belirgindi; koyu modda kart zemini de antresite dönünce siyah
-     çerçeve neredeyse görünmez kalıyordu. Koyu moddaki metin rengiyle
-     (#f2f2f4) aynı açık tonu kullanarak kontrastı geri getiriyoruz. */
-  body.is-anthracite .calendar-day:hover {
-    border-color: #f2f2f4;
-  }
-
-  body.is-anthracite .calendar-day.is-today {
-    border-color: #f2f2f4;
-  }
-
-  body.is-anthracite .calendar-day.is-outside:hover {
-    border-color: transparent;
-  }
+  /* Not: Takvim (Sayfa 6) artık kart değil, uçtan uca şeffaf bir yüzey;
+     ay başlığı, gün/hafta içi renkleri var(--theme-text) üzerinden aktif
+     gradyan temaya göre zaten otomatik uyum sağladığından burada ayrı
+     bir "is-anthracite" renk seti gerekmiyor (bkz. .calendar-card,
+     .calendar-month-label, .calendar-day, .calendar-weekday kuralları). */
 
   body.is-anthracite .laps-page-card {
     background: var(--dark-card-color, #32343a);
@@ -4358,6 +4311,16 @@
     gap: 0.8rem;
   }
 
+  /* Telefonda sadece iki kartı (branş listesi + özet) sırayla tutan
+     görünmez bir sarmalayıcı; geniş ekranda bu iki kartı yan yana
+     yerleştiren bir grid'e dönüşür (bkz. aşağıdaki TABLET/GENİŞ EKRAN
+     bölümü). "display: contents" sayesinde telefonda hiçbir görsel/
+     yerleşim etkisi yoktur — kartlar doğrudan .page9-wrap'in flex
+     akışının bir parçasıymış gibi davranır. */
+  .page9-columns {
+    display: contents;
+  }
+
   .page9-subject-list {
     display: flex;
     flex-direction: column;
@@ -4872,6 +4835,13 @@
   }
 
   .qhavuz-subtitle {
+    display: none;
+  }
+
+  /* Araç paneli bölüm etiketleri ("İşlemler", "Filtrele & Sırala") sadece
+     geniş ekran iki-sütunlu düzeninde anlamlı; telefonda tüm butonlar zaten
+     tek bir akışta üst üste durduğu için gereksiz — mobilde gizli kalır. */
+  .qhavuz-toolbar-label {
     display: none;
   }
 
@@ -9378,6 +9348,23 @@
     width: 100%;
   }
 
+  /* Sayfa 11 Detay: özet kartını + toplu işaretleme butonlarını saran
+     sarmalayıcı. Telefonda "display:contents" ile tamamen görünmez kalır
+     (içindeki iki eleman sanki doğrudan .exam-detail-wrap'in çocuğuymuş
+     gibi davranır, mobil düzeni hiç etkilenmez); geniş ekranda ise gerçek
+     bir kutuya dönüşüp tek parça, sabit (sticky) bir sol panel olur
+     (bkz. ilgili @media bloğu). */
+  .exam-detail-sidebar {
+    display: contents;
+  }
+
+  /* Analizlerim sayfasındaki segmented + özet kart + trend grafiği + "0
+     Hata" butonu grubu: aynı "telefonda görünmez sarmalayıcı, geniş
+     ekranda gerçek sticky sütun" kalıbını kullanır (bkz. .exam-detail-sidebar). */
+  .analytics-sidebar {
+    display: contents;
+  }
+
   .exam-detail-bulk-btn {
     flex: 1 1 0;
     display: flex;
@@ -9813,7 +9800,7 @@
   .stopwatch-title-wrap {
     position: relative;
     display: inline-flex;
-    align-items: baseline;
+    align-items: center;
     gap: 0.45rem;
   }
 
@@ -9877,6 +9864,11 @@
     text-align: left;
     color: var(--theme-text, #f2f2f7);
     transition: color 0.5s ease;
+    /* Rozetle (.stopwatch-subject-tag) dikeyde tam hizalansın diye
+       hafif bir aşağı kaydırma: h1'in satır kutusu rozetten biraz daha
+       yukarıda oturuyordu (bkz. kullanıcı geri bildirimi). */
+    position: relative;
+    top: 0.09rem;
   }
 
   /* Başlık ve Geçmiş butonunu aynı üst satırda tutan satır: başlık solda,
@@ -10176,6 +10168,63 @@
   .stopwatch-fullscreen-core {
     position: relative;
     display: block;
+  }
+
+  /* Tam ekranın en altında, ekrana göre (core'un boyutundan/konumundan
+     bağımsız) sabit duran, ortalanmış ders adı. "Havalı" ve okunaklı
+     olsun diye kalın+italik Playfair Display kullanılır (uygulamanın
+     dekoratif başlık fontu, bkz. .settings-title). */
+  .stopwatch-fullscreen-subject {
+    position: fixed;
+    left: 50%;
+    bottom: calc(env(safe-area-inset-bottom) + 3rem);
+    transform: translateX(-50%);
+    width: min(88vw, 520px);
+    text-align: center;
+    font-family: "Playfair Display", "Georgia", serif;
+    font-style: italic;
+    font-weight: 800;
+    font-size: clamp(1.7rem, 8.2vw, 2.7rem);
+    line-height: 1.15;
+    color: var(--theme-text, #f2f2f7);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    pointer-events: none;
+    z-index: 4;
+    opacity: 0;
+    display: none;
+    transition: color 0.5s ease;
+  }
+
+  .stopwatch-fullscreen-subject.is-visible {
+    display: block;
+  }
+
+  /* Tam ekran her açıldığında (Turlarım JS'i .is-visible sınıfını
+     kaldırıp yeniden ekleyerek) bu animasyon baştan oynar: yazı hafifçe
+     bulanık/dağınık harf aralıklarından başlayıp netleşerek, aşağıdan
+     yukarı süzülerek belirir — bir "canlı yazı" hissi verir. */
+  .stopwatch-fullscreen-subject.is-visible {
+    animation: stopwatchSubjectReveal 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.3s both;
+  }
+
+  @keyframes stopwatchSubjectReveal {
+    0% {
+      opacity: 0;
+      transform: translateX(-50%) translateY(16px);
+      filter: blur(7px);
+      letter-spacing: 0.22em;
+    }
+    55% {
+      filter: blur(0);
+    }
+    100% {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+      filter: blur(0);
+      letter-spacing: 0.005em;
+    }
   }
 
   /* Kaydedilen turların listesi: normal akışın DIŞINDA, kutunun hemen
@@ -10952,13 +11001,46 @@
      şekilde ayarlanmıştır. */
   #page-6 {
     flex-direction: column;
-    align-items: center;
+    align-items: stretch;
     justify-content: flex-start;
-    gap: 1.1rem;
-    padding: calc(44px + env(safe-area-inset-top)) 20px calc(22px + env(safe-area-inset-bottom));
+    gap: 1.5rem;
+    padding: calc(20px + env(safe-area-inset-top)) 22px calc(18px + env(safe-area-inset-bottom));
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
+  }
+
+  /* Takvim artık küçük ortalanmış bir kart değil, uçtan uca tam ekran bir
+     yüzey: üst çubuk sadece küçük bir geri okundan ibaret (400px'lik
+     genişlik sınırı kalkar, sola yaslanır). .calendar-back-btn/.calendar-
+     nav-btn diğer sayfalarla (Turlarım, Egzersiz vb.) paylaşılan sınıflar
+     olduğundan burada #page-6 ile ölçeklenip (ID özgüllüğü sayesinde)
+     sadece bu sayfada hayalet/çerçevesiz bir görünüme büründürülür;
+     diğer sayfalardaki aynı sınıfları kullanan düğmeler etkilenmez. */
+  #page-6 .calendar-topbar {
+    max-width: none;
+    justify-content: flex-start;
+  }
+
+  #page-6 .calendar-back-btn {
+    background-color: transparent;
+    border: none;
+    box-shadow: none;
+    color: var(--theme-text, #f2f2f7);
+    transition: color 0.5s ease, background-color 0.15s ease, transform 0.15s ease;
+  }
+
+  #page-6 .calendar-back-btn:hover {
+    transform: none;
+    box-shadow: none;
+    background-color: rgba(127, 127, 127, 0.14);
+  }
+
+  #page-6 .calendar-back-btn:active,
+  #page-6 .calendar-back-btn.is-pressed {
+    transform: scale(0.92);
+    box-shadow: none;
+    background-color: rgba(127, 127, 127, 0.22);
   }
 
   /* Bu çubuğu kullanan tüm sayfalar (#page-6, #page-7, #page-10,
@@ -11086,18 +11168,24 @@
     pointer-events: none;
   }
 
+  /* Kart artık yok: uçtan uca, kendi arka planı olmayan (theme-layer'ın
+     üzerinde şeffaf duran) tam ekran bir düzen. Ay başlığı büyük ve sola
+     yaslı, oklar sağda küçük hayalet düğmeler halinde; gün ızgarası
+     ekranın kalan tüm dikey alanını dolduracak şekilde esner. */
   .calendar-card {
     width: 100%;
-    max-width: 400px;
+    max-width: none;
     box-sizing: border-box;
-    background: #fff;
-    border: 5px solid #000;
-    border-radius: 1.3em;
-    box-shadow: 8px 8px 0px 0px #000;
-    padding: 1.15rem 1.1rem 1.35rem;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    padding: 0;
     display: flex;
     flex-direction: column;
-    gap: 1rem;
+    gap: 1.4rem;
+    flex: 1;
+    min-height: 0;
   }
 
   .calendar-nav {
@@ -11107,136 +11195,169 @@
     gap: 0.75rem;
   }
 
-  .calendar-nav-btn {
-    flex-shrink: 0;
-    width: 2.3rem;
-    height: 2.3rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0;
-    background-color: #fff;
-    border: 3px solid #000;
-    border-radius: 50%;
-    box-shadow: 2px 2px 0px 0px #000;
-    color: #121212;
-    cursor: pointer;
-    transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
-  }
-
-  .calendar-nav-btn:hover {
-    transform: translate(-1px, -1px);
-    box-shadow: 3px 3px 0px 0px #000;
-  }
-
-  .calendar-nav-btn:active,
-  .calendar-nav-btn.is-pressed {
-    transform: translate(1px, 1px);
-    box-shadow: 1px 1px 0px 0px #000;
-    background-color: var(--accent-color, #ff90e8);
-  }
-
   .calendar-month-label {
     font-family: "Space Grotesk", sans-serif;
     font-weight: 800;
-    font-size: 1.15rem;
-    color: #121212;
-    text-align: center;
+    font-size: 2.1rem;
+    letter-spacing: -0.01em;
+    color: var(--theme-text, #f2f2f7);
+    text-align: left;
     text-transform: capitalize;
+    transition: color 0.5s ease;
+  }
+
+  .calendar-nav-btns {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    flex-shrink: 0;
+  }
+
+  /* .calendar-nav-btn temel biçimi (beyaz zemin/siyah çerçeve) Sayfa
+     9/10'daki tarih oklarıyla paylaşılıyor; burada #page-6 ID'siyle
+     ölçeklenip sadece Takvim'de çerçevesiz/hayalet bir görünüme
+     çevriliyor, diğer sayfalar etkilenmiyor. */
+  #page-6 .calendar-nav-btn {
+    width: 2.1rem;
+    height: 2.1rem;
+    background-color: transparent;
+    border: 1.5px solid rgba(127, 127, 127, 0.4);
+    box-shadow: none;
+    color: var(--theme-text, #f2f2f7);
+    transition: color 0.5s ease, background-color 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+  }
+
+  #page-6 .calendar-nav-btn:hover {
+    transform: none;
+    box-shadow: none;
+    background-color: rgba(127, 127, 127, 0.14);
+  }
+
+  #page-6 .calendar-nav-btn:active,
+  #page-6 .calendar-nav-btn.is-pressed {
+    transform: scale(0.9);
+    box-shadow: none;
+    background-color: var(--accent-color, #ff90e8);
+    border-color: var(--accent-color, #ff90e8);
   }
 
   .calendar-weekdays {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
     gap: 0.3rem;
+    flex-shrink: 0;
   }
 
   .calendar-weekday {
     text-align: center;
     font-family: "Archivo Expanded", "Space Grotesk", sans-serif;
     font-weight: 700;
-    font-size: 0.72rem;
-    letter-spacing: 0.01em;
-    color: rgba(18, 18, 18, 0.45);
+    font-size: 0.68rem;
+    letter-spacing: 0.03em;
+    /* Artık sabit beyaz değil; o an aktif temanın yazı rengini (koyu
+       arka planda beyaz, açık arka planda siyah) takip eder, böylece
+       açık temalarda (ör. Bebek Mavisi) okunmaz hale gelmez. */
+    color: var(--theme-text, #f2f2f7);
+    opacity: 0.75;
     text-transform: uppercase;
+    transition: color 0.5s ease;
   }
 
   .calendar-weekday.is-weekend {
-    color: rgba(217, 4, 41, 0.85);
+    /* Hafta sonu kısaltmaları da diğerleri gibi tema rengini kullanır,
+       kırmızı vurgu sadece gün numaralarında (.calendar-day.is-weekend)
+       kalır. */
+    opacity: 0.5;
   }
 
   .calendar-grid {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    gap: 0.35rem;
+    grid-auto-rows: minmax(3.4rem, 1fr);
+    row-gap: 0.1rem;
+    column-gap: 0.1rem;
+    flex: 1;
+    min-height: 0;
   }
 
   .calendar-day {
-    aspect-ratio: 1;
+    width: 2.35rem;
+    height: 2.35rem;
+    align-self: start;
+    justify-self: center;
+    margin-top: 0.3rem;
     display: flex;
     align-items: center;
     justify-content: center;
     font-family: "Space Grotesk", sans-serif;
-    font-weight: 700;
-    font-size: 0.95rem;
-    color: #121212;
+    font-weight: 600;
+    font-size: 1.02rem;
+    color: var(--theme-text, #f2f2f7);
     background: transparent;
-    border-radius: 0.7em;
-    border: 2.5px solid transparent;
+    border-radius: 0.55em;
+    border: 2px solid transparent;
     cursor: pointer;
     transition: transform 0.15s ease, border-color 0.15s ease, background-color 0.15s ease,
       box-shadow 0.15s ease, color 0.15s ease;
   }
 
   .calendar-day:hover {
-    border-color: #000;
+    background-color: rgba(127, 127, 127, 0.14);
   }
 
   .calendar-day.is-weekend {
-    color: #d90429;
+    /* Açık temalarda soluk kalmaması için tema bazlı bir kırmızı
+       tonuna geçildi (bkz. --weekend-color, JS tarafında tema
+       değişince güncelleniyor); varsayılan koyu temadaki eski renk. */
+    color: var(--weekend-color, #ff6b81);
   }
 
   .calendar-day.is-outside {
-    color: rgba(18, 18, 18, 0.25);
+    opacity: 0.25;
     cursor: default;
   }
 
   .calendar-day.is-outside.is-weekend {
-    color: rgba(217, 4, 41, 0.4);
+    color: var(--weekend-color, #ff6b81);
+    opacity: 0.3;
   }
 
   .calendar-day.is-outside:hover {
-    border-color: transparent;
+    background-color: transparent;
   }
 
   .calendar-day.is-today {
-    border-color: #000;
-    font-weight: 900;
+    border-color: var(--theme-text, #f2f2f7);
+    font-weight: 800;
   }
 
   .calendar-day.is-selected {
     background-color: var(--accent-color, #ff90e8);
-    border-color: #000;
-    box-shadow: 2px 2px 0px 0px #000;
-    transform: translate(-1px, -1px);
+    border-color: var(--accent-color, #ff90e8);
+    color: #16171b;
+    font-weight: 800;
+    transform: scale(1.04);
   }
 
   .calendar-selected-info {
     width: 100%;
-    max-width: 400px;
+    max-width: none;
     box-sizing: border-box;
     flex-shrink: 0;
     text-align: center;
-    padding: 0.75rem 1rem;
-    background: #fff;
-    border: 4px solid #000;
-    border-radius: 0.9rem;
-    box-shadow: 4px 4px 0px 0px #000;
+    padding: 0.9rem 1rem calc(0.4rem);
+    background: transparent;
+    border: none;
+    border-top: 1px solid rgba(127, 127, 127, 0.22);
+    border-radius: 0;
+    box-shadow: none;
     font-family: "Space Grotesk", sans-serif;
     font-weight: 700;
-    font-size: 0.9rem;
-    color: #121212;
+    font-size: 0.92rem;
+    color: var(--theme-text, #f2f2f7);
+    opacity: 0.85;
     text-transform: capitalize;
+    transition: color 0.5s ease;
   }
 
   /* ---------- Sayfa 7: "Turlarım" Sayfası ----------
@@ -11422,7 +11543,8 @@
      ekran grid'i için var; burada kendi gap/flex'ini devralıp görünmez bir
      kap gibi davranır, böylece Takvim/Gündelik/Veri kartları diğerleriyle
      birebir aynı tek sütunda, aynı boşluklarla art arda akar. */
-  .settings-col-right {
+  .settings-col-right,
+  .settings-col-left {
     display: flex;
     flex-direction: column;
     gap: inherit;
@@ -12183,11 +12305,23 @@
       margin: 0 auto;
     }
 
-    /* Görünüm solda; Takvim/Gündelik/Veri'nin tamamını taşıyan sarmalayıcı
-       (.settings-col-right) sağda — ikisi de tek satırda, üstten hizalı. */
-    .settings-page > .settings-section:nth-child(1) {
+    /* Görünüm solda (Spor Modu'nun hemen altında); Takvim/Gündelik/Veri'nin
+       tamamını taşıyan sarmalayıcı (.settings-col-right) sağda — ikisi de
+       TEK bir grid satırında, üstten hizalı. Sol sütun da kendi bağımsız
+       sarmalayıcısı (.settings-col-left) içinde aktığı için, sağ sütun ne
+       kadar uzun olursa olsun (Takvim+Gündelik+Veri üst üste), sol sütunun
+       satır yüksekliği buna göre ZORLA büyümez: eskiden ikisi de aynı
+       (grid tarafından paylaşılan) satır izine yerleştirildiğinden, o
+       satırın yüksekliği en uzun içerik olan sağ sütuna göre belirleniyor,
+       Görünüm kartı da bu yüzden Spor Modu'nun hemen altına değil, o dev
+       satırın bittiği yere (ekranda çok daha aşağıya) düşüyordu. Artık her
+       iki sütun da kendi doğal yüksekliğiyle akıyor. */
+    .settings-page > .settings-col-left {
       grid-column: 1;
       grid-row: 1;
+      /* Spor Modu ile Görünüm arasındaki dikey boşluk, sağ sütunun kendi
+         iç boşluğuyla (.settings-col-right gap) aynı tutuldu. */
+      gap: clamp(0.9rem, 2.6dvh, 1.8rem);
     }
 
     .settings-page > .settings-col-right {
@@ -12223,11 +12357,11 @@
        doğal olarak en uzun kart o oluyordu; sadece bu kartın iç
        boşluklarını (kart dolgusu + satır dolgusu) sıkılaştırarak boyunu
        kısaltıyoruz. Diğer kartların ölçüleri değişmiyor. */
-    .settings-page > .settings-section:nth-child(1) .settings-card {
+    .settings-col-left > .settings-section:nth-child(1) .settings-card {
       padding: clamp(0.6rem, 1.6dvh, 1rem) 1.9rem;
     }
 
-    .settings-page > .settings-section:nth-child(1) .settings-row {
+    .settings-col-left > .settings-section:nth-child(1) .settings-row {
       padding: clamp(0.25rem, 0.9dvh, 0.55rem) 0;
     }
 
@@ -12280,6 +12414,607 @@
         transform: translate(-2px, -2px);
         box-shadow: 6px 6px 0px 0px #000;
       }
+    }
+  }
+
+  /* ==========================================================================
+     TABLET / GENİŞ EKRAN: Soru Havuzu (baştan tasarım)
+     ==========================================================================
+     Telefonda tüm kontroller (Görsel Yükle, Test Modu, Paketlerim, Filtrele,
+     Sırala) tek bir dikey akışta kartların ÜSTÜNDE duruyor, bu da geniş
+     ekranda hem yatay alanı boşa harcıyor hem de kullanıcıyı her işlem için
+     yukarı kaydırmaya zorluyor. Masaüstünde sayfa artık Ayarlar'daki gibi
+     iki bağımsız sütuna ayrılıyor: solda sabit genişlikte, kaydırma sırasında
+     yapışık kalan (sticky) bir "araç paneli" (.qhavuz-toolbar) — tüm
+     işlemler, filtre ve sıralama burada, elle her zaman erişilebilir durumda.
+     Sağda ise ekranın kalan tüm genişliğini dolduran, sütun sayısı pencere
+     genişliğine göre otomatik artan/azalan kart ızgarası. Böylece hem ekranın
+     her yeri verimli kullanılıyor hem de sık kullanılan butonlar kartlar
+     arasında kaybolmuyor. */
+  @media (min-width: 768px) and (min-height: 600px) {
+    #page-camera {
+      align-items: stretch;
+    }
+
+    .qhavuz-header {
+      padding: calc(32px + env(safe-area-inset-top)) 40px 0.6rem;
+    }
+
+    .qhavuz-header .qhavuz-title {
+      max-width: 1680px;
+      margin: 0 auto;
+      text-align: left;
+      font-size: clamp(2.4rem, 1.6vw + 2rem, 3.2rem);
+    }
+
+    .qhavuz-tear {
+      max-width: 1720px;
+      padding: 0.4rem 40px 0;
+      gap: 10px;
+    }
+
+    .qhavuz-tear-pencil {
+      width: 36px;
+      height: 36px;
+    }
+
+    .qhavuz-tear-pencil svg {
+      width: 19px;
+      height: 19px;
+    }
+
+    .qhavuz-scroll {
+      align-items: stretch;
+      padding: clamp(0.8rem, 2.4dvh, 1.8rem) 40px calc(24px + env(safe-area-inset-bottom));
+    }
+
+    /* Seçim modu çubuğu artık sağ altta yüzen kompakt bir panel (aşağı
+       bakınız), o yüzden ızgaranın altına eskisi kadar büyük bir boşluk
+       eklemeye gerek yok — sadece son satırın panelin altında kalmaması
+       için makul bir pay bırakılıyor. */
+    .qhavuz-scroll:has(.qhavuz-grid.is-select-mode) {
+      padding-bottom: calc(128px + env(safe-area-inset-bottom));
+    }
+
+    /* İki bağımsız sütun: sol (araç paneli) ve sağ (kart ızgarası) TEK bir
+       grid satırında, üstten hizalı. Ayarlar sayfasındaki aynı hatadan
+       kaçınmak için ikisi de kendi doğal yüksekliğiyle akıyor; sağdaki
+       uzun kart ızgarası solun yüksekliğini ZORLA büyütmüyor. */
+    .qhavuz-wrap {
+      display: grid;
+      grid-template-columns: 296px 1fr;
+      align-items: start;
+      column-gap: 2rem;
+      max-width: 1720px;
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    /* Araç paneli: kaydırma alanının üst kenarına yapışık kalır, böylece
+       kullanıcı yüzlerce soru arasında ne kadar aşağı inerse insin
+       "Görsel Yükle", "Test Modu" ve filtre/sıralama her zaman elinin
+       altında kalır. */
+    .qhavuz-toolbar {
+      grid-column: 1;
+      grid-row: 1;
+      position: sticky;
+      top: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 1.15rem;
+      background: #fff;
+      border: 4px solid #000;
+      border-radius: 1.3em;
+      box-shadow: 6px 6px 0px 0px #000;
+      padding: 1.5rem 1.25rem;
+      box-sizing: border-box;
+      max-height: calc(100dvh - 32px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+      overflow-y: auto;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+
+    .qhavuz-toolbar::-webkit-scrollbar {
+      display: none;
+    }
+
+    body.is-anthracite .qhavuz-toolbar {
+      background-color: var(--dark-card-color, #32343a);
+    }
+
+    .qhavuz-toolbar-label {
+      display: block;
+      font-family: "Playfair Display", "Georgia", serif;
+      font-style: italic;
+      font-weight: 700;
+      font-size: 1.05rem;
+      letter-spacing: 0.01em;
+      color: var(--theme-text, #121212);
+      opacity: 0.8;
+      padding-left: 0.1rem;
+      margin: 0 0 -0.3rem;
+      transition: color 0.5s ease;
+    }
+
+    body.is-anthracite .qhavuz-toolbar-label {
+      color: #f2f2f4;
+    }
+
+    .qhavuz-toolbar-label-filter {
+      margin-top: 0.35rem;
+    }
+
+    /* Butonlar artık yan yana ikili değil, dar dikey panele uygun şekilde
+       tek sütunda, tam genişlikte ve biraz daha uzun boylu — hedef alanı
+       büyüterek tıklamayı kolaylaştırıyor. */
+    .qhavuz-toolbar .qhavuz-actions {
+      flex-direction: column;
+      gap: 0.6rem;
+    }
+
+    .qhavuz-toolbar .qhavuz-actions .add-task-btn {
+      width: 100%;
+      padding-top: 0.85rem;
+      padding-bottom: 0.85rem;
+      font-size: 0.95rem;
+    }
+
+    .qhavuz-toolbar .qhavuz-actions-secondary {
+      margin-top: 0;
+    }
+
+    .qhavuz-filter-bar {
+      gap: 0.6rem;
+    }
+
+    .qhavuz-filter-row {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 0.6rem;
+    }
+
+    .qhavuz-tracksubj-row {
+      width: 100%;
+    }
+
+    .qhavuz-sort-btn {
+      width: 100%;
+      justify-content: center;
+      padding-top: 0.6rem;
+      padding-bottom: 0.6rem;
+    }
+
+    /* Kart ızgarası: sabit 2 sütun yerine, pencere genişliğine göre kendi
+       kendine sütun sayısını artırıp azaltan bir ızgara — ekranın kalan
+       tüm genişliği, kartları germeden en verimli şekilde dolduruluyor. */
+    .qhavuz-grid {
+      grid-column: 2;
+      grid-row: 1;
+      grid-template-columns: repeat(auto-fill, minmax(168px, 1fr));
+      gap: 1.15rem;
+      align-content: start;
+    }
+
+    .qhavuz-card {
+      border-width: 5px;
+      border-radius: 1.25em;
+      box-shadow: 7px 7px 0px 0px #000;
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      .qhavuz-card:hover {
+        transform: translate(-3px, -3px);
+        box-shadow: 10px 10px 0px 0px #000;
+      }
+    }
+
+    .qhavuz-card-subject {
+      font-size: 0.82rem;
+      padding: 0.7rem 0.5rem;
+    }
+
+    /* Seçim modu çubuğu: telefonda ekranın ortasında yüzen bir şeritti;
+       masaüstünde artık sol paneldeki araçlarla çakışmayan, sağ altta
+       duran kompakt bir panel — konumu ve büyüklüğü dışında davranışı
+       (açılma/kapanma animasyonu, butonları) aynen korunuyor. */
+    .qhavuz-select-bar {
+      left: auto;
+      right: calc(32px + env(safe-area-inset-right));
+      bottom: calc(32px + env(safe-area-inset-bottom));
+      transform: translateY(16px);
+      width: 320px;
+      max-width: 320px;
+      border-width: 4px;
+      box-shadow: 7px 7px 0px 0px #000;
+    }
+
+    .qhavuz-select-bar.is-open {
+      transform: translateY(0);
+    }
+  }
+
+  /* ==========================================================================
+     TABLET / GENİŞ EKRAN: Paketlerim + Paket Detayı (baştan tasarım)
+     ==========================================================================
+     Telefonda "Paketlerim" ve paket içeriği sayfaları, .exam-detail-wrap'in
+     400px'lik dar "fiş" sütununda ortalanmış akar — Soru Havuzu'nun eski
+     (tek sütunlu) mobil görünümüyle aynı israfı taşır: geniş ekranda
+     yanlarda boşuna alan kalır. Burada da aynı çözüm uygulanıyor: üst çubuk
+     artık ortalanmış küçük bir başlık değil, sayfanın solunda duran dev bir
+     başlık; kart ızgarası da sabit 2 sütun yerine, Soru Havuzu ızgarasıyla
+     (.qhavuz-grid, yukarıdaki bloğa bakınız) birebir aynı genişlik/boşluk
+     dilini kullanan, pencere genişliğine göre kendi kendine sütun sayısını
+     artırıp azaltan bir ızgaraya dönüşüyor. Paket kartları zaten Soru
+     Havuzu kartlarıyla aynı sınıfı (.qhavuz-card) paylaştığından, kalınlaşmış
+     çerçeve/gölge/hover tepkisi yukarıdaki genel .qhavuz-card kuralından
+     otomatik miras alınır; burada sadece bu iki sayfaya özgü çerçeve/başlık/
+     ızgara genişlikleri düzenleniyor. Paket detay sayfasındaki soru ızgarası
+     (#qhavuzPackageDetailGrid) da zaten .qhavuz-grid sınıfını taşıdığından
+     aynı otomatik ızgarayı kullanır, ayrıca bir şey yapmaya gerek yok. */
+  /* min-height: 600px koşulu eklendi: yatay çevrilmiş bir telefonun genişliği
+     768px'i geçebiliyor ama yüksekliği (kısa kenarı) her zaman ~430-460px'te
+     kalıyor; gerçek tabletlerin yatay yüksekliği ise en az ~744px. Bu sayede
+     telefon yatay modda hep telefon tasarımında kalır, tablet ise hem yatay
+     hem dikeyde (koşullar sağlandığında) kendi tasarımını kullanmaya devam eder. */
+  @media (min-width: 768px) and (min-height: 600px) {
+    #page-camera-packages,
+    #page-camera-package-detail {
+      align-items: stretch;
+      padding: calc(32px + env(safe-area-inset-top)) 40px calc(24px + env(safe-area-inset-bottom));
+    }
+
+    #page-camera-packages .exam-detail-wrap,
+    #page-camera-package-detail .exam-detail-wrap {
+      max-width: 1720px;
+      width: 100%;
+      margin: 0 auto;
+      gap: 1.5rem;
+    }
+
+    #page-camera-packages .calendar-topbar,
+    #page-camera-package-detail .calendar-topbar {
+      max-width: none;
+      justify-content: flex-start;
+      gap: 1.1rem;
+    }
+
+    /* Sola yaslı düzende, başlığı ortalamak için kullanılan sağdaki
+       dengeleme boşluğuna (.calendar-topbar-spacer) artık gerek yok. */
+    #page-camera-packages .calendar-topbar-spacer,
+    #page-camera-package-detail .calendar-topbar-spacer {
+      display: none;
+    }
+
+    #page-camera-packages .calendar-topbar-title,
+    #page-camera-package-detail .calendar-topbar-title {
+      font-size: clamp(2rem, 1.5vw + 1.7rem, 2.8rem);
+    }
+
+    #page-camera-packages .calendar-back-btn,
+    #page-camera-package-detail .calendar-back-btn {
+      width: 3rem;
+      height: 3rem;
+    }
+
+    #page-camera-packages .page11-subtitle {
+      max-width: 62ch;
+      font-size: 1rem;
+    }
+
+    /* Paket ızgarası: sabit 2 sütun yerine Soru Havuzu ızgarasıyla
+       (.qhavuz-grid) aynı auto-fill mantığı. */
+    .qhavuz-packages-grid {
+      grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+      gap: 1.15rem;
+    }
+
+    /* "Test Oluştur" butonu artık sayfanın tüm genişliğine değil, makul
+       bir üst sınıra kadar geniyor; butonun kendisi hâlâ satır içi
+       (inline style="width:100%") olduğundan, onu saran bu kutunun
+       genişliğini kısıtlamak yeterli. */
+    #page-camera-package-detail .qhavuz-package-detail-actions {
+      max-width: 360px;
+    }
+  }
+
+  /* ==========================================================================
+     TABLET / GENİŞ EKRAN: Gündelik (Görevler / Rutinler) — baştan tasarım
+     ==========================================================================
+     Telefonda "Gündelik" tek bir 340px'lik dar sütunda akar: başlık üstte
+     ortalanmış, kategoriler/rutin grupları alt alta TEK sütun halinde
+     dizilir. Bu, az sayıda kategorisi olan kullanıcıda bile ekranın büyük
+     bölümünü boş bırakır; çok kategorisi olan kullanıcıda ise sonu
+     gelmeyen bir dikey kaydırmaya dönüşür — geniş ekranda ikisi de israf.
+
+     Çözüm: sayfa artık Soru Havuzu/Ayarlar'daki gibi geniş, sola yaslı bir
+     başlığa kavuşuyor (başlık + kalem + kategori ikonları solda, Görevler/
+     Rutinler sekmesi sağda, tek satırda). Kategori/rutin grubu kartları ise
+     dikey TEK sütun yerine, Pinterest/Trello tarzı bir "pano"da yan yana
+     akan çoklu-sütun (CSS multi-column) düzenine geçiyor: her kart kendi
+     doğal (içeriğine göre değişen) yüksekliğiyle bir sütuna yerleşir, bir
+     sonraki kart aynı sütunda devam eder ya da sığmıyorsa yeni sütuna
+     kayar. Böylece kısa bir kategoriyle uzun bir kategori yan yana
+     dururken aralarında boşuna boşluk kalmaz — ekranın genişliği kaç
+     kategori sığdırıyorsa o kadar sütun kendiliğinden oluşur. Bu, DOM
+     sırasını ya da JS render mantığını hiç değiştirmeden (kartlar hâlâ
+     #page8CategoryList / #page8RoutineGroupList içine aynı sırayla
+     ekleniyor), salt CSS ile elde ediliyor.
+
+     "+ Kategori" / "+ Rutin Grubu" butonu artık listenin en altında,
+     kaydırmak gerektiren pasif bir buton değil; sağ altta sabit duran,
+     yuvarlak uçlu bir "yüzen eylem butonu" (FAB) — pano ne kadar
+     kaydırılırsa kaydırılsın her zaman elinin altında. İki görünümden
+     (Görevler/Rutinler) sadece aktif olanın FAB'ı DOM'da görünür
+     olduğundan (kapalı görünüm zaten `display:none` ile tamamen gizlenir),
+     ikisi aynı sabit köşede çakışmadan devralınıyor. */
+  /* min-height: 600px koşulu eklendi: yatay çevrilmiş bir telefonun genişliği
+     768px'i geçebiliyor ama yüksekliği (kısa kenarı) her zaman ~430-460px'te
+     kalıyor; gerçek tabletlerin yatay yüksekliği ise en az ~744px. Bu sayede
+     telefon yatay modda hep telefon tasarımında kalır, tablet ise hem yatay
+     hem dikeyde (koşullar sağlandığında) kendi tasarımını kullanmaya devam eder. */
+  @media (min-width: 768px) and (min-height: 600px) {
+    #page-8 {
+      align-items: stretch;
+    }
+
+    /* Başlık artık tek dikey blok değil: solda başlık+ikonlar, sağda
+       Görevler/Rutinler sekmesi olan geniş tek bir satır. Dar tablet
+       genişliklerinde sığmazsa (flex-wrap sayesinde) sekme ikinci satıra
+       düşer, hiçbir öğe kesilmez/taşmaz. */
+    .page8-header {
+      max-width: 1720px;
+      width: 100%;
+      margin: 0 auto;
+      padding: calc(32px + env(safe-area-inset-top)) 40px 1rem;
+      flex-direction: row;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1.1rem 1.6rem;
+    }
+
+    /* Titlebar artık header'ı tek başına kaplamıyor (width:100% mobil
+       değeri iptal edilir); kendi içeriği kadar yer kaplar ki sağında
+       sekmeye yer kalsın. */
+    .page8-titlebar {
+      width: auto;
+      flex: 0 0 auto;
+      gap: 0.9rem;
+    }
+
+    .page8-titlebar h1 {
+      font-size: clamp(2.2rem, 1.6vw + 1.9rem, 3rem);
+    }
+
+    .page8-tear-pencil,
+    .page8-groups-toggle {
+      width: 2.5rem;
+      height: 2.5rem;
+    }
+
+    .page8-tear-pencil svg,
+    .page8-groups-toggle svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    /* Sekme artık header'ın en sağında, sabit/makul bir genişlikte duran
+       bağımsız bir blok (mobildeki gibi tam genişliğe gerilmiyor). Yüksekliği
+       ve punto büyüklüğü zaten yukarıdaki genel .settings-segmented
+       kuralından (bkz. Ayarlar bloğu) miras alınıyor. */
+    .page8-segmented {
+      flex: 0 0 auto;
+      width: 300px;
+    }
+
+    /* Kaydırma alanı artık dar bir sütunu değil, panoyu (kart ızgarasını)
+       ortalıyor; yatay dolgu da diğer geniş-ekran sayfalarıyla aynı 40px. */
+    .page8-scroll {
+      align-items: stretch;
+      /* Üst dolgu, kategorileri başlıktan (ve diş desenli kesim
+         çizgisinden) biraz uzaklaştırıp nefes payı bırakıyor — mobildeki
+         gibi başlığa neredeyse yapışık durmuyorlar. */
+      padding: 1.6rem 40px calc(40px + env(safe-area-inset-bottom));
+      /* Diş deseni, dar mobil kartta ince bir "yırtık kağıt" hissi
+         veriyordu; 340px'lik orijinal 24 dişlik desen burada olduğu gibi
+         kalsaydı her diş ~70px'e çıkıp kaba/iri görünürdü. Geniş panoya
+         uygun, aynı 6px yüksekliğinde ama çok daha SIK (80 diş) bir desenle
+         değiştirildi — genişlik ne olursa olsun diş boyutu mobildekine
+         yakın, ince kalıyor. */
+      clip-path: polygon(
+        0% 0,
+        1.250% 6px,
+        2.500% 0,
+        3.750% 6px,
+        5% 0,
+        6.250% 6px,
+        7.500% 0,
+        8.750% 6px,
+        10% 0,
+        11.250% 6px,
+        12.500% 0,
+        13.750% 6px,
+        15% 0,
+        16.250% 6px,
+        17.500% 0,
+        18.750% 6px,
+        20% 0,
+        21.250% 6px,
+        22.500% 0,
+        23.750% 6px,
+        25% 0,
+        26.250% 6px,
+        27.500% 0,
+        28.750% 6px,
+        30% 0,
+        31.250% 6px,
+        32.500% 0,
+        33.750% 6px,
+        35% 0,
+        36.250% 6px,
+        37.500% 0,
+        38.750% 6px,
+        40% 0,
+        41.250% 6px,
+        42.500% 0,
+        43.750% 6px,
+        45% 0,
+        46.250% 6px,
+        47.500% 0,
+        48.750% 6px,
+        50% 0,
+        51.250% 6px,
+        52.500% 0,
+        53.750% 6px,
+        55% 0,
+        56.250% 6px,
+        57.500% 0,
+        58.750% 6px,
+        60% 0,
+        61.250% 6px,
+        62.500% 0,
+        63.750% 6px,
+        65% 0,
+        66.250% 6px,
+        67.500% 0,
+        68.750% 6px,
+        70% 0,
+        71.250% 6px,
+        72.500% 0,
+        73.750% 6px,
+        75% 0,
+        76.250% 6px,
+        77.500% 0,
+        78.750% 6px,
+        80% 0,
+        81.250% 6px,
+        82.500% 0,
+        83.750% 6px,
+        85% 0,
+        86.250% 6px,
+        87.500% 0,
+        88.750% 6px,
+        90% 0,
+        91.250% 6px,
+        92.500% 0,
+        93.750% 6px,
+        95% 0,
+        96.250% 6px,
+        97.500% 0,
+        98.750% 6px,
+        100% 0,
+        100% 100%,
+        0% 100%
+      );
+    }
+
+    .page8-wrap {
+      max-width: 1720px;
+      width: 100%;
+      margin: 0 auto;
+      gap: 1.4rem;
+    }
+
+    /* ---- Kategori/Rutin Grubu panosu: dikey tek sütun yerine, pencere
+       genişliğine göre kendi kendine çoğalan bir "masonry" (Pinterest
+       tarzı) çoklu-sütun düzeni. Kartlar hâlâ #page8CategoryList /
+       #page8RoutineGroupList içine JS tarafından aynı DOM sırasıyla
+       ekleniyor; sadece kapsayıcının akış yönü column-based olduğundan
+       her kart bulunduğu sütunda üstten aşağı doğru istiflenir, sütun
+       dolunca bir sonraki karta geçilir. gap yerine margin-bottom
+       kullanılıyor çünkü CSS multi-column, flexbox'taki gibi eleman
+       arası dikey boşluğu "gap" ile desteklemiyor. */
+    .page8-group-list {
+      display: block;
+      column-width: 340px;
+      column-gap: 1.3rem;
+    }
+
+    .page8-group-card {
+      /* break-inside:avoid — bir kartın ortadan ikiye bölünüp yarısının
+         bir sütunda, yarısının diğerinde kalmasını engeller; her kart
+         daima tek bir sütunda bütün halde durur. */
+      break-inside: avoid;
+      -webkit-column-break-inside: avoid;
+      margin: 0 0 1.3rem;
+      width: 100%;
+      border-width: 5px;
+      border-radius: 1.3em;
+      box-shadow: 7px 7px 0px 0px #000;
+      transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      .page8-group-card:hover {
+        transform: translate(-2px, -2px);
+        box-shadow: 10px 10px 0px 0px #000;
+      }
+    }
+
+    .page8-group-header {
+      padding: 0.85rem 1rem 0.75rem;
+      gap: 0.7rem;
+    }
+
+    .page8-group-dot {
+      width: 1.45rem;
+      height: 1.45rem;
+    }
+
+    .page8-group-name,
+    .page8-group-name-input {
+      font-size: 1.08rem;
+    }
+
+    .page8-item-list {
+      padding: 0 1rem 1rem;
+      gap: 0.65rem;
+    }
+
+    .page8-item-box {
+      width: 1.45rem;
+      height: 1.45rem;
+    }
+
+    .page8-item-box svg {
+      width: 1rem;
+      height: 1rem;
+    }
+
+    .page8-item-text,
+    .page8-item-input,
+    .page8-item-edit-input {
+      font-size: 0.98rem;
+    }
+
+    /* ---- "+ Kategori" / "+ Rutin Grubu": listenin altında pasif bir
+       buton yerine, sağ altta sabit duran yüzen bir eylem butonu (FAB).
+       Panoyu ne kadar kaydırırsan kaydır her zaman elinin altında kalır.
+       İki görünümden yalnızca aktif olanın FAB'ı görünür olduğundan
+       (kapalı görünüm .page8-view.is-hidden ile tamamen gizlenir), ikisi
+       çakışmadan aynı köşeyi paylaşır. */
+    .page8-add-group-btn {
+      position: fixed;
+      left: auto;
+      right: calc(40px + env(safe-area-inset-right));
+      bottom: calc(40px + env(safe-area-inset-bottom));
+      width: auto;
+      border-radius: 999px;
+      padding: 1rem 1.7rem;
+      font-size: 1rem;
+      box-shadow: 6px 6px 0px 0px #000;
+      z-index: 60;
+    }
+
+    /* Kategoriler/Rutin Grupları pop-up'ı: çok sayıda etiket olduğunda dar
+       340px kutuya sıkışmak yerine, geniş ekranda daha ferah bir ızgarada
+       nefes alır. */
+    .page8-groups-modal-card {
+      max-width: 620px;
+    }
+
+    .page8-groups-chip-list {
+      max-height: 60vh;
     }
   }
 
@@ -12687,6 +13422,39 @@
 
     body.is-sidebar-collapsed .page {
       left: 0;
+      /* Panel kapalıyken sol üstte sabit (fixed) duran .sidebar-toggle-tab
+         (x: 0-34px, y: 26-78px aralığında) ile sayfaların kendi sol üst
+         köşesindeki geri/aksiyon butonları (ör. .calendar-back-btn,
+         #examDetailResourcesBtn) üst üste biniyordu. Bu, özellikle dar/orta
+         genişlikteki "büyük ekran" pencerelerinde (ör. tablet, DeX) ortalanan
+         içerik sol kenara yeterince yakın kaldığı için hemen hemen tüm
+         sayfalarda görülüyordu. Panel kapatıldığında sol tarafta bu sekmeyi
+         net şekilde temizleyen sabit bir nefes payı bırakıyoruz; böylece
+         hangi sayfa açık olursa olsun köşedeki butonlar sekmeyle çakışmaz. */
+      padding-left: 64px;
+    }
+
+    /* #page-11-detail, #page-analytics, #page-zero-error,
+       #page-camera-packages, #page-camera-package-detail ve #page-patterns
+       kendi ID'leri üzerinden tam bir "padding" kısayolu tanımladığından
+       (bkz. ilgili kurallar), yukarıdaki genel ".page" düzeltmesinden daha
+       yüksek özgüllüğe (specificity) sahipler ve onu geçersiz kılarlardı.
+       Aynı sol boşluk düzeltmesini, bu sayfalar için de ID'yi eşleyen daha
+       özgül bir seçiciyle tekrar uyguluyoruz ki panel kapalıyken hiçbiri
+       .sidebar-toggle-tab ile çakışmasın. */
+    body.is-sidebar-collapsed #page-11-detail,
+    body.is-sidebar-collapsed #page-analytics,
+    body.is-sidebar-collapsed #page-zero-error,
+    body.is-sidebar-collapsed #page-camera-packages,
+    body.is-sidebar-collapsed #page-camera-package-detail,
+    body.is-sidebar-collapsed #page-patterns,
+    body.is-sidebar-collapsed #page-sport-exercise-add,
+    body.is-sidebar-collapsed #page-sport-exercise-detail,
+    body.is-sidebar-collapsed #page-camera-test,
+    body.is-sidebar-collapsed #page-6,
+    body.is-sidebar-collapsed #page-7,
+    body.is-sidebar-collapsed #page-10 {
+      padding-left: 64px;
     }
 
     /* ---- Kronometre çalışırken açılan özel yanal panel ----
@@ -12724,6 +13492,345 @@
 
     body.is-anthracite .stopwatch-side-panel-soon {
       color: #f2f2f4;
+    }
+  }
+
+  /* ==========================================================================
+     TABLET / GENİŞ EKRAN: Sayfa 11 (Denemelerim) Yeniden Tasarımı
+     ==========================================================================
+     Telefonda tek sütun, alt alta yığılmış kart listesiydi. 768px ve
+     üzerinde: başlık gerçek bir üst çubuğa dönüşür (büyük başlık solda,
+     ikon butonları sağda), "+ Deneme Ekle" artık tam genişlik değil,
+     kompakt ve sağa yaslı bir buton; deneme kartları akıllı bir ızgarada
+     (grid) yan yana sıralanır. Deneme detay sayfası ise iki sütunlu bir
+     çalışma alanına dönüşür: solda sabit kalan (sticky) özet + toplu
+     işaretleme paneli, sağda branşların ferah bir ızgarası. Görsel dil
+     (kalın siyah çerçeve, sert gölge, yuvarlatılmış köşeler) korunur,
+     sadece ölçekler ve yerleşim büyük ekrana göre genişletilir. */
+  @media (min-width: 768px) and (min-height: 600px) {
+    /* ---- Sayfa 11: Deneme listesi ---- */
+    #page-11.page {
+      align-items: flex-start;
+      padding-top: calc(48px + env(safe-area-inset-top));
+    }
+
+    .page11-wrap {
+      max-width: 1180px;
+      width: 100%;
+      gap: 1.7rem;
+    }
+
+    .page11-header {
+      flex-direction: row;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 1.5rem;
+    }
+
+    .page11-header-top {
+      width: auto;
+    }
+
+    .page11-header h1 {
+      font-family: "Archivo Expanded", "Space Grotesk", sans-serif;
+      font-size: clamp(2.2rem, 2vw + 1.6rem, 3rem);
+      letter-spacing: -0.02em;
+    }
+
+    .page11-subtitle {
+      font-size: 0.95rem;
+      opacity: 0.65;
+    }
+
+    .page11-header-actions {
+      gap: 0.6rem;
+    }
+
+    /* Artık tam genişlik değil: kompakt, sağa yaslı, başlığın altında
+       kendi doğal genişliğinde duran bir eylem butonu. */
+    .page11-add-btn {
+      width: auto;
+      align-self: flex-end;
+      padding: 0.65rem 1.5rem;
+      font-size: 1rem;
+      border-width: 4px;
+    }
+
+    .page11-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      align-items: stretch;
+      gap: 1.2rem;
+    }
+
+    .page11-empty {
+      grid-column: 1 / -1;
+      padding: 3.5rem 0;
+      font-size: 1rem;
+    }
+
+    .page11-exam-card {
+      border-width: 5px;
+      border-radius: 1.4em;
+      box-shadow: 7px 7px 0px 0px #000;
+      padding: 1.3rem 1.4rem;
+      gap: 1.1rem;
+      transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.18s ease;
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      .page11-exam-card:hover {
+        transform: translate(-3px, -3px);
+        box-shadow: 10px 10px 0px 0px #000;
+      }
+    }
+
+    .page11-exam-name {
+      font-size: 1.15rem;
+    }
+
+    .page11-exam-net {
+      font-size: 1.6rem;
+    }
+
+    /* ---- Sayfa 11 Detay: iki sütunlu çalışma alanı ----
+       Not: yatay ortalama, mobildeki gibi #page-11-detail'in kendi
+       align-items:center kuralından geliyor (burada BİLİNÇLİ OLARAK
+       ezilmiyor); böylece yanal panel (sidebar) açık ya da kapalıyken,
+       dar ya da geniş ekranda, .exam-detail-wrap her zaman kendi 1180px'lik
+       kutusunda ortalanmış kalır — panel kapanıp fazladan yer açıldığında
+       içerik sola yapışıp sağda boş, "eksik tasarlanmış" bir alan bırakmaz. */
+    #page-11-detail {
+      padding: calc(48px + env(safe-area-inset-top)) 24px calc(32px + env(safe-area-inset-bottom));
+    }
+
+    #page-11-detail .exam-detail-wrap {
+      max-width: 1180px;
+      width: 100%;
+      display: grid;
+      grid-template-columns: minmax(300px, 360px) 1fr;
+      grid-template-areas:
+        "topbar  topbar"
+        "sidebar subjects";
+      column-gap: 2rem;
+      row-gap: 1.3rem;
+      align-items: start;
+    }
+
+    #page-11-detail .calendar-topbar {
+      grid-area: topbar;
+      max-width: none;
+    }
+
+    #page-11-detail .calendar-topbar-title {
+      font-size: 1.5rem;
+    }
+
+    /* Özet kartı + toplu işaretleme butonları artık TEK bir blok
+       (.exam-detail-sidebar) olarak kaydırma sırasında sol sütunda sabit
+       kalır; aralarında/altında hiç boş alan bırakmaz, sadece kendi
+       içeriği kadar yer kaplar. Sağdaki branş ızgarası bağımsız kayar. */
+    #page-11-detail .exam-detail-sidebar {
+      grid-area: sidebar;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      position: sticky;
+      top: 20px;
+    }
+
+    #page-11-detail .exam-detail-summary-card {
+      padding: 1.7rem 1.6rem;
+      border-width: 5px;
+      border-radius: 1.5em;
+      box-shadow: 9px 9px 0px 0px #000;
+    }
+
+    #page-11-detail .exam-detail-summary-total {
+      font-size: 3.4rem;
+    }
+
+    #page-11-detail .exam-detail-bulk-actions {
+      flex-direction: column;
+    }
+
+    #page-11-detail .exam-detail-bulk-btn {
+      font-size: 0.78rem;
+      padding: 0.65rem 0.6rem;
+    }
+
+    /* Branş kartları artık satır-hizalı bir grid değil, "duvar örgüsü"
+       (masonry) gibi davranan bir sütun akışı: her kart SADECE kendi
+       içeriği kadar (ör. 5 sorulu Din Kültürü küçük, 40 sorulu Matematik
+       büyük) yer kaplar, komşusundaki uzun kartın boyuna göre gereksiz
+       yere uzamaz/boş alan bırakmaz. */
+    #page-11-detail .exam-detail-subject-list {
+      grid-area: subjects;
+      display: block;
+      column-width: 320px;
+      column-gap: 1.1rem;
+    }
+
+    #page-11-detail .exam-detail-subject-card {
+      display: inline-block;
+      vertical-align: top;
+      width: 100%;
+      margin: 0 0 1.1rem;
+      break-inside: avoid;
+      -webkit-column-break-inside: avoid;
+      border-width: 5px;
+      border-radius: 1.3em;
+      box-shadow: 7px 7px 0px 0px #000;
+    }
+
+    #page-11-detail .exam-detail-subject-body {
+      padding: 1.1rem 1.2rem 1.3rem;
+      gap: 0.9rem;
+    }
+
+    #page-11-detail .exam-detail-subject-name {
+      font-size: 1.05rem;
+    }
+
+    #page-11-detail .exam-detail-bubble-grid {
+      grid-template-columns: repeat(auto-fill, minmax(2.4rem, 1fr));
+      gap: 0.5rem;
+    }
+
+    #page-11-detail .exam-detail-bubble {
+      font-size: 0.8rem;
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      #page-11-detail .exam-detail-bubble:hover {
+        transform: translate(-1px, -1px);
+        box-shadow: 3px 3px 0px 0px #000;
+      }
+    }
+
+    /* ---- Analizlerim: iki sütunlu çalışma alanı ----
+       Deneme detayıyla (#page-11-detail) birebir aynı kalıp: solda segmented
+       + özet kart + trend grafiği + "0 Hata Testlerim" butonundan oluşan
+       tek parça, sabit (sticky) bir sütun; sağda branşların "duvar örgüsü"
+       (masonry) gibi davranan bir ızgarası. Telefondaki tek sütun, alt alta
+       yığılmış düzenin JS'i (renderAnalytics, grafik çizimi vb.) hiç
+       değişmeden aynen çalışmaya devam eder. */
+    #page-analytics {
+      padding: calc(48px + env(safe-area-inset-top)) 24px calc(32px + env(safe-area-inset-bottom));
+    }
+
+    #page-analytics .exam-detail-wrap {
+      max-width: 1180px;
+      width: 100%;
+      display: grid;
+      grid-template-columns: minmax(300px, 380px) 1fr;
+      grid-template-areas:
+        "topbar  topbar"
+        "sidebar subjects";
+      column-gap: 2rem;
+      row-gap: 1.3rem;
+      align-items: start;
+    }
+
+    #page-analytics .calendar-topbar {
+      grid-area: topbar;
+      max-width: none;
+    }
+
+    #page-analytics .calendar-topbar-title {
+      font-size: 1.5rem;
+    }
+
+    #page-analytics .analytics-sidebar {
+      grid-area: sidebar;
+      display: flex;
+      flex-direction: column;
+      gap: 1.1rem;
+      position: sticky;
+      top: 20px;
+    }
+
+    #page-analytics .settings-segmented {
+      height: 46px;
+    }
+
+    #page-analytics .settings-segmented-option {
+      font-size: 0.92rem;
+    }
+
+    #page-analytics .exam-detail-summary-card {
+      padding: 1.7rem 1.6rem;
+      border-width: 5px;
+      border-radius: 1.5em;
+      box-shadow: 9px 9px 0px 0px #000;
+    }
+
+    #page-analytics .exam-detail-summary-total {
+      font-size: 3.2rem;
+    }
+
+    #page-analytics .analytics-trend-card {
+      padding: 1.35rem 1.4rem 1.15rem;
+      border-width: 5px;
+      border-radius: 1.5em;
+      box-shadow: 9px 9px 0px 0px #000;
+    }
+
+    #page-analytics .analytics-trend-chart {
+      height: 11rem;
+    }
+
+    #page-analytics .page12-zero-error-btn {
+      padding: 0.95rem 1.2rem;
+      font-size: 1rem;
+    }
+
+    #page-analytics .exam-detail-subject-list {
+      grid-area: subjects;
+      display: block;
+      column-width: 320px;
+      column-gap: 1.1rem;
+    }
+
+    #page-analytics .exam-detail-subject-card {
+      display: inline-block;
+      vertical-align: top;
+      width: 100%;
+      margin: 0 0 1.1rem;
+      break-inside: avoid;
+      -webkit-column-break-inside: avoid;
+      border-width: 5px;
+      border-radius: 1.3em;
+      box-shadow: 7px 7px 0px 0px #000;
+    }
+
+    #page-analytics .exam-detail-subject-body {
+      padding: 1.15rem 1.25rem 1.35rem;
+      gap: 0.9rem;
+    }
+
+    #page-analytics .page9-summary-row-name,
+    #page-analytics .page9-summary-row-count {
+      font-size: 1rem;
+    }
+
+    #page-analytics .page9-summary-bar-track {
+      height: 10px;
+    }
+
+    #page-analytics .analytics-subject-detail {
+      font-size: 0.82rem;
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      #page-analytics .exam-detail-subject-card:hover {
+        transform: translate(-2px, -2px);
+        box-shadow: 9px 9px 0px 0px #000;
+      }
+    }
+
+    #page-analytics .exam-detail-subject-card {
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
   }
 
@@ -12785,17 +13892,18 @@
     .stopwatch-title {
       font-family: "Archivo Expanded", "Space Grotesk", sans-serif;
       font-weight: 800;
-      /* Tablette biraz daha büyük ve iddialı görünsün diye telefon
-         tasarımına dokunmadan sadece bu breakpoint'te büyütüldü. */
-      font-size: clamp(2.75rem, 2.4vw + 2.15rem, 3.9rem);
+      /* Kronometre başlığı etiketten HER ZAMAN belirgin şekilde büyük
+         kalsın diye bir kez daha büyütüldü. */
+      font-size: clamp(4rem, 3.6vw + 3rem, 5.6rem);
       letter-spacing: -0.02em;
     }
 
     .stopwatch-subject-tag {
-      font-size: clamp(1.1rem, 1vw + 0.9rem, 1.5rem);
-      padding: 0.32rem 0.9rem;
-      border-width: 3px;
-      box-shadow: 3px 3px 0px 0px #000;
+      /* Ders etiketi başlığa göre iyice küçültüldü. */
+      font-size: clamp(0.75rem, 0.4vw + 0.65rem, 0.9rem);
+      padding: 0.22rem 0.65rem;
+      border-width: 2px;
+      box-shadow: 2px 2px 0px 0px #000;
     }
 
     .stopwatch-history-btn {
@@ -13111,6 +14219,685 @@
     .countdown-setup.sw-anim-enter {
       opacity: 0;
       transform: translateY(-22px);
+    }
+  }
+
+  /* ==========================================================================
+     TABLET / GENİŞ EKRAN: Sayfa 9 (Soru Takibi) Yeniden Tasarımı
+     ==========================================================================
+     Telefonda tek sütun, alt alta iki kart (branş listesi + özet) olarak
+     kalır. 768px ve üzerinde ise sayfa artık dar bir şerit değil: başlık
+     tam genişlikte üstte büyük bir satır olarak durur, tarih gezinme
+     kendi küçük aracı olarak başlığın sağına yaslanır, ve asıl içerik
+     (branşlar / özet) yan yana iki geniş kart halinde, ekranın verdiği
+     alanı dolduracak şekilde bir grid'e yerleşir. Branş listesi kendi
+     içinde de ikinci bir sütuna bölünerek çok sayıda ders tek ekranda,
+     kaydırmadan görülebilir. Kart dili (kalın çerçeve/gölge) ve JS akışı
+     (goToPage, drag&drop sıralama, düzenleme modu vb.) hiç değişmez —
+     sadece boyut/yerleşim/tipografi ölçekleri büyür. */
+  @media (min-width: 768px) and (min-height: 600px) {
+    #page-9.page {
+      align-items: flex-start;
+      padding-top: calc(48px + env(safe-area-inset-top));
+    }
+
+    .page9-wrap {
+      max-width: 1180px;
+      width: 100%;
+      gap: 1.6rem;
+    }
+
+    /* Başlık artık dar kartla değil, sayfanın tam genişliğiyle "bütün":
+       sol tarafta dev başlık + alt yazı, sağ tarafta düzenle düğmesi ve
+       hemen altında tarih gezinme aracı aynı sütunda alt alta durur. */
+    .page9-header {
+      flex-direction: row;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 1.5rem;
+    }
+
+    .page9-header-top {
+      width: auto;
+      gap: 1rem;
+    }
+
+    .page9-header h1 {
+      font-family: "Archivo Expanded", "Space Grotesk", sans-serif;
+      font-size: clamp(2.3rem, 2.1vw + 1.7rem, 3.1rem);
+      letter-spacing: -0.02em;
+    }
+
+    .page9-subtitle {
+      font-size: 1rem;
+      opacity: 0.65;
+    }
+
+    .page9-header-top .edit-task-btn {
+      width: 2.5rem;
+      height: 2.5rem;
+      flex-shrink: 0;
+    }
+
+    /* Tarih gezinme artık ortalanmış tam genişlikli bir satır değil,
+       başlığın sağına yaslanan, kendi doğal genişliğinde kompakt bir
+       araç. */
+    .page9-date-row {
+      justify-content: flex-end;
+      gap: 0.6rem;
+      flex-shrink: 0;
+      align-self: flex-start;
+      margin-top: 0.3rem;
+    }
+
+    .page9-date-label {
+      flex: 0 0 auto;
+      min-width: 11rem;
+      padding: 0.6rem 1.1rem;
+      font-size: 0.95rem;
+      border-width: 3px;
+      box-shadow: 4px 4px 0px 0px #000;
+    }
+
+    .page9-date-btn {
+      width: 2.4rem;
+      height: 2.4rem;
+      border-radius: 50%;
+    }
+
+    /* Asıl içerik: branş kartı solda (daha geniş), özet kartı sağda
+       (sabit/daha dar bir bant) — ekranın verdiği tüm genişliği,
+       Sayfa 5'teki gibi 1180px'e kadar kullanır. */
+    .page9-columns {
+      display: grid;
+      grid-template-columns: minmax(0, 1.5fr) minmax(320px, 1fr);
+      align-items: start;
+      gap: 1.6rem;
+    }
+
+    .page9-card {
+      padding: 1.5rem 1.5rem 1.7rem;
+      border-width: 5px;
+      border-radius: 1.5em;
+      box-shadow: 8px 8px 0px 0px #000;
+      gap: 1.1rem;
+      transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.18s ease;
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      .page9-card:hover {
+        transform: translate(-2px, -2px);
+        box-shadow: 10px 10px 0px 0px #000;
+      }
+    }
+
+    /* .page9-segmented sınıfı Ayarlar'daki "Hafta başlangıcı", Kronometre'nin
+       "Branşlarım" pop-up'ı ve Soru Havuzu'nun cevap tipi seçicisi
+       tarafından da paylaşılıyor; büyütmeyi yalnızca Soru Takibi'nin
+       kendi TYT/AYT ve Gün/Hafta/Ay seçicilerine uygulamak için #page-9
+       ile sınırlandırıyoruz. */
+    #page-9 .page9-segmented {
+      font-size: 0.95rem;
+    }
+
+    #page-9 .settings-segmented.page9-segmented {
+      height: 2.7rem;
+    }
+
+    /* Branş listesi: kart yeterince genişse (auto-fit) kendini iki
+       sütuna böler; az sayıda ders varsa tek sütunda kalır. Satırlar
+       artık ince bir üst çizgiyle değil, kendi başlarına duran hafif
+       çerçeveli birer "fiş" olarak ayrışır — iki sütunlu ızgarada satır
+       sınırları anlamsızlaşacağından bu daha okunaklı. */
+    .page9-subject-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(238px, 1fr));
+      gap: 0.6rem 0.9rem;
+    }
+
+    .page9-subject-row {
+      border: 2px solid rgba(0, 0, 0, 0.1);
+      border-radius: 1rem;
+      padding: 0.7rem 0.85rem;
+      gap: 0.7rem;
+      transition: border-color 0.15s ease, background-color 0.15s ease, transform 0.15s ease;
+    }
+
+    .page9-subject-row + .page9-subject-row {
+      border-top: 2px solid rgba(0, 0, 0, 0.1);
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      .page9-subject-list:not(.is-edit-mode) .page9-subject-row:hover {
+        border-color: rgba(0, 0, 0, 0.28);
+        background-color: rgba(0, 0, 0, 0.025);
+      }
+    }
+
+    body.is-anthracite .page9-subject-row {
+      border-color: rgba(255, 255, 255, 0.12);
+    }
+
+    body.is-anthracite .page9-subject-row + .page9-subject-row {
+      border-top-color: rgba(255, 255, 255, 0.12);
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      body.is-anthracite .page9-subject-list:not(.is-edit-mode) .page9-subject-row:hover {
+        border-color: rgba(255, 255, 255, 0.3);
+        background-color: rgba(255, 255, 255, 0.04);
+      }
+    }
+
+    .page9-subject-dot {
+      width: 1.3rem;
+      height: 1.3rem;
+    }
+
+    .page9-subject-name {
+      font-size: 0.95rem;
+    }
+
+    .page9-stepper-btn {
+      width: 1.9rem;
+      height: 2.15rem;
+      font-size: 1.05rem;
+    }
+
+    .page9-count-input {
+      width: 2.4rem;
+      height: 2.15rem;
+      font-size: 0.95rem;
+    }
+
+    .page9-add-subject-btn {
+      padding-top: 0.85rem;
+      padding-bottom: 0.85rem;
+      font-size: 0.95rem;
+    }
+
+    /* Özet kartı: daha iri toplam sayı ve daha okunaklı, biraz daha
+       kalın çubuk grafikler. */
+    .page9-summary-total {
+      font-size: 2.6rem;
+    }
+
+    .page9-summary-total span {
+      font-size: 1.05rem;
+    }
+
+    /* .page9-summary-title, Ayarlar'daki "Hafta başlangıcı" etiketiyle de
+       paylaşılıyor; büyütmeyi yalnızca Soru Takibi'nin "Özet" başlığına
+       uygulamak için #page-9 ile sınırlandırıyoruz. */
+    #page-9 .page9-summary-title {
+      font-size: 0.8rem;
+    }
+
+    .page9-summary-range-label {
+      font-size: 0.85rem;
+    }
+
+    .page9-summary-list {
+      gap: 1.1rem;
+    }
+
+    .page9-summary-row-name {
+      font-size: 0.92rem;
+    }
+
+    .page9-summary-row-count {
+      font-size: 0.92rem;
+    }
+
+    .page9-summary-bar-track {
+      height: 11px;
+      border-width: 2.5px;
+    }
+
+    /* "Ders Ekle" pop-up'ı (Soru Takibi'ne özel #page9AddBackdrop):
+       telefondaki dar/tek sütun kart yerine geniş ve iki sütunlu bir
+       ızgara — çok sayıda hazır branş arasında kaydırmadan gezinmeyi
+       kolaylaştırır. Aynı ".page9-add-card/.page9-add-grid" sınıfları
+       başka sayfalardaki (Kronometre "Branşlarım", Soru Havuzu, 0 Hata
+       vb.) pop-up'larda da kullanıldığından, kapsam bilhassa
+       #page9AddBackdrop ile sınırlı tutulur ki o sayfalar etkilenmesin. */
+    #page9AddBackdrop .page9-add-card {
+      max-width: 640px;
+      max-height: 78vh;
+      padding: 1.6rem 1.7rem 1.9rem;
+      border-width: 5px;
+      border-radius: 1.5em;
+      box-shadow: 8px 8px 0px 0px #000;
+    }
+
+    #page9AddBackdrop .page9-add-title {
+      font-size: 1.2rem;
+    }
+
+    #page9AddBackdrop .page9-add-subtitle {
+      font-size: 0.9rem;
+    }
+
+    #page9AddBackdrop .page9-add-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.55rem 0.7rem;
+    }
+
+    #page9AddBackdrop .page9-add-custom-row {
+      margin-top: 1.1rem;
+    }
+  }
+
+  /* ==========================================================================
+     TABLET / GENİŞ EKRAN: 0 Hata Testlerim Sayfası (baştan tasarım)
+     ==========================================================================
+     Telefonda 400px'lik dar bir "fiş" gibi ortalanmış akan branş listesi,
+     geniş ekranda ekranın büyük kısmını boş bırakıyordu. Üst çubuk artık
+     tam genişlikte, branş çipleri de pencereye göre kendini otomatik
+     satırlayan bir ızgarada yan yana diziliyor. Kalın kenarlık + katı
+     gölge dili aynen korunuyor. */
+  @media (min-width: 768px) and (min-height: 600px) {
+    #page-zero-error {
+      align-items: flex-start;
+      padding-top: calc(48px + env(safe-area-inset-top));
+      padding-bottom: calc(32px + env(safe-area-inset-bottom));
+    }
+
+    #page-zero-error .exam-detail-wrap {
+      max-width: 900px;
+      width: 100%;
+      gap: 1.5rem;
+    }
+
+    #page-zero-error .calendar-topbar {
+      max-width: none;
+    }
+
+    #page-zero-error .calendar-topbar-title {
+      font-size: 1.5rem;
+    }
+
+    #page-zero-error .page11-subtitle {
+      font-size: 0.95rem;
+      opacity: 0.65;
+    }
+
+    #page-zero-error .page9-add-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 0.9rem;
+    }
+
+    #page-zero-error .page9-add-chip {
+      padding: 0.95rem 1.1rem;
+      border-width: 3px;
+      border-radius: 0.9rem;
+      box-shadow: 3px 3px 0px 0px #000;
+      transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.18s ease;
+    }
+
+    #page-zero-error .page9-summary-row-dot {
+      width: 1.05rem;
+      height: 1.05rem;
+    }
+
+    #page-zero-error .page9-add-chip-name {
+      font-size: 1rem;
+    }
+
+    #page-zero-error .page9-add-chip-note {
+      font-size: 0.82rem;
+    }
+
+    #page-zero-error .page11-empty {
+      grid-column: 1 / -1;
+      padding: 3.5rem 0;
+      font-size: 1rem;
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      #page-zero-error .page9-add-chip:hover {
+        transform: translate(-2px, -2px);
+        box-shadow: 5px 5px 0px 0px #000;
+      }
+    }
+  }
+
+  /* ==========================================================================
+     TABLET / GENİŞ EKRAN: Soru Çözme Sayfası (#page-camera-test) Yeniden Tasarımı
+     ==========================================================================
+     Bu tam ekran, hem Soru Havuzu'nun Test Modu'nda hem de 0 Hata
+     Testlerim'de yeniden kullanılıyor. Soru görseli her koşulda ekranın
+     TAM ORTASINDA kalmalı; bu yüzden iki sütuna bölünmüyor, telefondaki
+     gibi TEK bir dikey sütun korunuyor — sadece bu sütun artık çok daha
+     geniş. Görsel kutusu kare oranını (aspect-ratio: 1, .qhavuz-test-image
+     kuralında zaten sabit) hiç bozmadan, ekran genişliğiyle orantılı
+     şekilde (clamp ile) büyüyor; içindeki <img> de object-fit: cover ile
+     doldurduğu için hiçbir gerilme/ezilme olmuyor, sadece daha büyük
+     gösteriliyor. Şıklar, açık uçlu cevap alanı ve "Sonraki Soru" butonu
+     görselle BİREBİR AYNI genişliğe hizalanıp onun altında ortalanmış
+     kalıyor ki şıkların konumu görselin genişliğiyle her zaman örtüşsün. */
+  @media (min-width: 768px) and (min-height: 600px) {
+    #page-camera-test {
+      align-items: flex-start;
+      padding-top: calc(48px + env(safe-area-inset-top));
+    }
+
+    .qhavuz-test-wrap {
+      max-width: 760px;
+      width: 100%;
+      gap: 1.5rem;
+    }
+
+    .qhavuz-test-wrap .calendar-topbar {
+      max-width: none;
+    }
+
+    .qhavuz-test-wrap .calendar-topbar-title {
+      font-size: 1.4rem;
+    }
+
+    .qhavuz-test-question {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1.2rem;
+    }
+
+    /* Görsel, şıklar, açık uçlu cevap alanı ve "Sonraki Soru" butonu
+       hepsi AYNI clamp() değerini paylaşır: pencere büyüdükçe hepsi
+       birlikte, aynı oranda genişler ve her zaman tam ortada, aynı
+       hizada kalır. */
+    .qhavuz-test-image,
+    .qhavuz-test-answer-grid,
+    #qhavuzTestOpenAnswer,
+    #qhavuzTestNextBtn {
+      width: clamp(360px, 50vw, 640px);
+      max-width: 100%;
+    }
+
+    .qhavuz-test-subject-badge {
+      font-size: 0.95rem;
+      padding: 0.6rem 1.3rem;
+    }
+
+    .qhavuz-test-answer-grid .qhavuz-add-answer-btn {
+      font-size: 1.2rem;
+    }
+
+    #qhavuzTestOpenAnswerInput {
+      font-size: 1.05rem;
+      padding: 0.95rem 1.1rem;
+    }
+
+    #qhavuzTestFeedback {
+      font-size: 1.2rem;
+    }
+
+    .qhavuz-test-result {
+      max-width: 480px;
+      margin: 0 auto;
+      padding: 3.2rem 2.4rem;
+      border-width: 5px;
+      box-shadow: 8px 8px 0px 0px #000;
+    }
+
+    .qhavuz-test-result-title {
+      font-size: 1.25rem;
+    }
+
+    .qhavuz-test-result-score {
+      font-size: 3.6rem;
+    }
+
+    .qhavuz-test-close-btn {
+      max-width: 260px;
+      margin: 0 auto;
+    }
+  }
+
+  /* ==========================================================================
+     TABLET / GENİŞ EKRAN: "Yeni Deneme" Ekleme Pop-up'ı (#page11AddBackdrop)
+     ==========================================================================
+     Telefonda dar (320px) tek sütunlu bir kart; geniş ekranda kart
+     genişliyor ve "Tarih" ile "Tür" alanları :has() ile hedeflenerek yan
+     yana iki sütuna alınıyor — "Deneme Adı" ve aksiyon butonları yine tam
+     genişlikte kalıyor. Başka pop-up'larda (Kaynaklar, Filtrele) da
+     kullanılan ".page11-modal-card" sınıfı etkilenmesin diye kapsam
+     #page11AddBackdrop ile sınırlı tutuluyor. */
+  @media (min-width: 768px) and (min-height: 600px) {
+    #page11AddBackdrop .page11-modal-card {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      column-gap: 1.1rem;
+      row-gap: 1.15rem;
+      max-width: 480px;
+      padding: 1.9rem 1.9rem 2.1rem;
+      border-width: 5px;
+      border-radius: 1.4em;
+      box-shadow: 8px 8px 0px 0px #000;
+    }
+
+    #page11AddBackdrop .page11-modal-title {
+      grid-column: 1 / -1;
+      font-size: 1.35rem;
+    }
+
+    #page11AddBackdrop .page11-field:has(#page11ExamNameInput) {
+      grid-column: 1 / -1;
+    }
+
+    #page11AddBackdrop .page11-field:has(#page11ExamDateBtn) {
+      grid-column: 1;
+    }
+
+    #page11AddBackdrop .page11-field:has(#page11TypeSegmented) {
+      grid-column: 2;
+    }
+
+    #page11AddBackdrop .page11-modal-actions {
+      grid-column: 1 / -1;
+      margin-top: 0.4rem;
+    }
+
+    #page11AddBackdrop .page11-field-label {
+      font-size: 0.74rem;
+    }
+
+    #page11AddBackdrop .page11-field-input {
+      font-size: 1.02rem;
+      padding: 0.8rem 0.95rem;
+      border-width: 3px;
+    }
+
+    #page11AddBackdrop .settings-segmented {
+      height: 52px;
+    }
+
+    #page11AddBackdrop .settings-segmented-option {
+      font-size: 1rem;
+    }
+
+    #page11AddBackdrop .page11-modal-confirm,
+    #page11AddBackdrop .settings-confirm-cancel {
+      padding: 0.85rem 1.6rem;
+      font-size: 1rem;
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      #page11AddBackdrop .settings-confirm-cancel:hover {
+        transform: translate(-1px, -1px);
+        box-shadow: 4px 4px 0px 0px #000;
+      }
+    }
+  }
+
+  /* ==========================================================================
+     TABLET / GENİŞ EKRAN: Soru Havuzu "Test Modu" Kurulum Pop-up'ı
+     (#qhavuzTestSetupBackdrop) Yeniden Tasarımı
+     ==========================================================================
+     Sayfa 9'un "Ders Ekle" pop-up'ıyla (#page9AddBackdrop) birebir aynı
+     ".page9-add-card/.page9-add-grid" sınıflarını paylaşır; oradaki geniş
+     ekran davranışı (iki sütunlu branş ızgarası, büyütülmüş kart) burada
+     da #qhavuzTestSetupBackdrop'a özel olarak tekrarlanıyor ki diğer
+     ".page9-add-backdrop" kullanımları (Kronometre "Branşlarım" vb.)
+     etkilenmesin. */
+  @media (min-width: 768px) and (min-height: 600px) {
+    #qhavuzTestSetupBackdrop .page9-add-card {
+      max-width: 640px;
+      max-height: 78vh;
+      padding: 1.6rem 1.7rem 1.9rem;
+      border-width: 5px;
+      border-radius: 1.5em;
+      box-shadow: 8px 8px 0px 0px #000;
+    }
+
+    #qhavuzTestSetupBackdrop .page9-add-title {
+      font-size: 1.2rem;
+    }
+
+    #qhavuzTestSetupBackdrop .page9-add-subtitle {
+      font-size: 0.9rem;
+    }
+
+    #qhavuzTestSetupBackdrop .page9-add-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.6rem 0.75rem;
+    }
+
+    #qhavuzTestSetupBackdrop .page9-add-chip {
+      padding: 0.7rem 0.8rem;
+    }
+
+    #qhavuzTestSetupBackdrop .page9-add-confirm {
+      font-size: 1.02rem;
+      padding: 0.95rem 1rem;
+    }
+  }
+
+  /* ==========================================================================
+     TABLET / GENİŞ EKRAN: Mini Oyunlar — Karar Çarkı (#page-4) Baştan Tasarım
+     ==========================================================================
+     Telefonda çark, çevir butonu, sonuç kutusu ve seçenekler kartı tek bir
+     dikey sütunda alt alta akıyordu. Geniş ekranda sayfa; solda sabit
+     genişlikte çark + çevir butonu + sonuç kutusundan oluşan bir sütun,
+     sağda ise ekranın kalan genişliğini dolduran, aynı yüksekliğe gerilmiş
+     "Seçenekler" kartından oluşan iki sütunlu bir ızgaraya dönüşür.
+     Seçenekler listesi artık sabit 118px'e değil, kartın gerçek
+     yüksekliğine göre büyür; yalnızca liste gerçekten taşarsa kendi
+     içinde kayar. Çarkın kendisi, jantı, göbeği ve tüm etkileşimleri
+     (çevirme, JS ile hesaplanan dilim açıları) hiç değişmeden aynen
+     çalışmaya devam eder. */
+  @media (min-width: 768px) and (min-height: 600px) {
+    #page-4 {
+      align-items: flex-start;
+      padding-top: calc(48px + env(safe-area-inset-top));
+      padding-bottom: calc(32px + env(safe-area-inset-bottom));
+    }
+
+    .wheel-page {
+      display: grid;
+      grid-template-columns: minmax(320px, 440px) 1fr;
+      grid-template-areas:
+        "topbar  topbar"
+        "wheel   options"
+        "spin    options"
+        "result  options";
+      column-gap: 2.6rem;
+      row-gap: 1.5rem;
+      align-items: start;
+      max-width: 980px;
+      width: 100%;
+    }
+
+    .wheel-page .calendar-topbar {
+      grid-area: topbar;
+      max-width: none;
+    }
+
+    .wheel-page .calendar-topbar-title {
+      font-size: 1.5rem;
+    }
+
+    .wheel-stage {
+      grid-area: wheel;
+      justify-self: center;
+      width: clamp(320px, 24vw, 440px);
+      height: clamp(320px, 24vw, 440px);
+    }
+
+    .wheel-hub {
+      width: 76px;
+      height: 76px;
+      border-width: 6px;
+      box-shadow: 5px 5px 0px 0px #000;
+      font-size: 1.7rem;
+    }
+
+    #spinBtn {
+      grid-area: spin;
+      justify-self: center;
+    }
+
+    #spinBtn .button_top {
+      padding: 0.85rem 3.4rem;
+      font-size: 1.2rem;
+    }
+
+    .wheel-result {
+      grid-area: result;
+      width: 100%;
+      padding: 0.95rem 1.25rem;
+      font-size: 1.15rem;
+      border-width: 5px;
+      box-shadow: 5px 5px 0px 0px #000;
+    }
+
+    .wheel-options-card {
+      grid-area: options;
+      height: 100%;
+      box-sizing: border-box;
+      padding: 1.5rem 1.5rem 1.6rem;
+      border-width: 5px;
+      border-radius: 1.4em;
+      box-shadow: 8px 8px 0px 0px #000;
+      gap: 1.1rem;
+    }
+
+    .wheel-options-title {
+      font-size: 1.2rem;
+    }
+
+    .wheel-add-btn {
+      padding: 0.55rem 1.05rem;
+      font-size: 0.96rem;
+      border-width: 3px;
+    }
+
+    .wheel-options-scroll {
+      max-height: none;
+      flex: 1 1 auto;
+    }
+
+    .wheel-options-list {
+      gap: 0.75rem;
+    }
+
+    .wheel-option-row {
+      gap: 0.85rem;
+    }
+
+    .wheel-option-dot {
+      width: 1.15rem;
+      height: 1.15rem;
+      border-width: 3px;
+    }
+
+    .wheel-option-text,
+    .wheel-option-input {
+      font-size: 1.08rem;
     }
   }
 </style>
@@ -13724,18 +15511,33 @@
           <div class="stopwatch-header">
             <div class="stopwatch-title-wrap">
               <h1 class="stopwatch-title">Zamanlayıcı</h1>
+              <!-- Kronometre'deki ile birebir aynı etiket sistemi: aynı
+                   "Branşlarım" seçimini (stopwatchActiveSubject) paylaşır,
+                   böylece hangi araçtan seçilirse seçilsin ikisi de aynı
+                   derse süre kaydeder. -->
+              <span class="stopwatch-subject-tag" id="countdownSubjectTag" style="display:none;"></span>
               <!-- Aynı gizli mekanizma: bu yazıya dokununca Kronometre'ye geri döner. -->
               <button type="button" class="stopwatch-title-secret-btn" id="countdownTitleSecretBtn" tabindex="-1" aria-hidden="true"></button>
             </div>
-            <!-- Ayar butonu: dokununca hazır süreler pop-up'ını açar
-                 (bkz. #countdownPresetsBackdrop ve script'teki
-                 openCountdownPresets). -->
-            <button type="button" class="countdown-sound-btn" id="countdownSoundBtn" aria-label="Hazır süreler">
-              <svg viewBox="0 0 24 24" width="18" height="18">
-                <circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1.08-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-            </button>
+            <div class="stopwatch-header-actions">
+              <!-- Kronometre'deki Branşlarım butonuyla birebir aynı: aynı
+                   pop-up'ı açar (openStopwatchSubjects), seçim ikisi
+                   arasında ortak. Artık etikete daha yakın, solda. -->
+              <button type="button" class="page5-icon-btn stopwatch-subjects-btn" id="countdownSubjectsBtn" aria-label="Branşlarım">
+                <svg viewBox="0 0 24 24" width="19" height="19" fill="currentColor">
+                  <path d="M17.63 5.84A2 2 0 0 0 16 5H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h11a2 2 0 0 0 1.63-.84L22 12z"/>
+                </svg>
+              </button>
+              <!-- Ayar butonu: dokununca hazır süreler pop-up'ını açar
+                   (bkz. #countdownPresetsBackdrop ve script'teki
+                   openCountdownPresets). Artık en sağda. -->
+              <button type="button" class="countdown-sound-btn" id="countdownSoundBtn" aria-label="Hazır süreler">
+                <svg viewBox="0 0 24 24" width="18" height="18">
+                  <circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1.08-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0-.33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </button>
+            </div>
           </div>
 
           <div class="countdown-setup" id="countdownSetup">
@@ -13789,6 +15591,17 @@
         <button type="button" class="add-task-btn stopwatch-lap-btn" id="stopwatchLapBtn">Tur</button>
         <div class="stopwatch-laps" id="stopwatchLaps"></div>
       </div>
+
+      <!-- Ekranın en altında, tam ortalanmış, seçili dersin adını gösteren
+           "canlı yazı" hissi veren eğik/kalın büyük etiket. Varsayılan
+           olarak gizlidir; sadece boş bir alana dokunulduğunda Tur
+           butonuyla birlikte belirir ve yine onunla birlikte (3 saniye
+           sonra veya tekrar dokununca) kaybolur (bkz. toggleLapControls /
+           hideLapControlsNow / showStopwatchFullscreenSubject). Her
+           belirişinde .is-visible sınıfı yeniden tetiklenerek giriş
+           animasyonu (bulanıklıktan netliğe, hafifçe yukarı kayarak
+           beliren) baştan oynatılır. -->
+      <span class="stopwatch-fullscreen-subject" id="stopwatchFullscreenSubject"></span>
     </div>
 
     <!-- Sayaç (geri sayım) çalışırken beliren tam ekran görünüm. -->
@@ -13798,6 +15611,10 @@
         <div class="countdown-exit-zone" id="countdownExitZone" role="button" tabindex="0" aria-label="Zamanlayıcıyı duraklat ve tam ekrandan çık"></div>
       </div>
       <span class="countdown-fullscreen-hint" id="countdownFullscreenHint">Duraklatmak için dokun</span>
+
+      <!-- Kronometre'deki tam ekran ders etiketiyle aynı görünüm/mantık;
+           bkz. .stopwatch-fullscreen-subject CSS'i ve showStopwatchFullscreenSubject. -->
+      <span class="stopwatch-fullscreen-subject" id="countdownFullscreenSubject"></span>
     </div>
     </div>
     <!-- ---------- Spor Modu: Kronometre ----------
@@ -13836,23 +15653,23 @@
           <path d="M15 4l-8 8 8 8" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
       </button>
-      <span class="calendar-topbar-title">Takvim</span>
-      <div class="calendar-topbar-spacer"></div>
     </div>
 
     <div class="calendar-card">
       <div class="calendar-nav">
-        <button type="button" class="calendar-nav-btn" id="calendarPrevBtn" aria-label="Önceki ay">
-          <svg viewBox="0 0 24 24" width="15" height="15">
-            <path d="M15 4l-8 8 8 8" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </button>
         <span class="calendar-month-label" id="calendarMonthLabel">Eylül 2026</span>
-        <button type="button" class="calendar-nav-btn" id="calendarNextBtn" aria-label="Sonraki ay">
-          <svg viewBox="0 0 24 24" width="15" height="15">
-            <path d="M9 4l8 8-8 8" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </button>
+        <div class="calendar-nav-btns">
+          <button type="button" class="calendar-nav-btn" id="calendarPrevBtn" aria-label="Önceki ay">
+            <svg viewBox="0 0 24 24" width="14" height="14">
+              <path d="M15 4l-8 8 8 8" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+          <button type="button" class="calendar-nav-btn" id="calendarNextBtn" aria-label="Sonraki ay">
+            <svg viewBox="0 0 24 24" width="14" height="14">
+              <path d="M9 4l8 8-8 8" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+        </div>
       </div>
 
       <div class="calendar-weekdays" id="calendarWeekdays"></div>
@@ -13906,24 +15723,7 @@
 
     <div class="settings-scroll" id="settingsScroll">
     <div class="settings-page">
-      <div class="settings-section">
-        <span class="settings-section-label">Spor Modu</span>
-        <div class="settings-card">
-          <div class="settings-row">
-            <div class="settings-row-text">
-              <span class="settings-row-title">Spor Modu</span>
-              <span class="settings-row-desc">Aktifken alt menüde sadece Ana Sayfa ve Ayarlar kalır, diğer tüm sayfalar gizlenir.</span>
-            </div>
-            <label class="toggle brutal-toggle settings-toggle" id="settingsSportModeToggleWrap">
-              <input type="checkbox" id="settingsSportModeToggle" />
-              <span class="track">
-                <span class="thumb"></span>
-              </span>
-            </label>
-          </div>
-        </div>
-      </div>
-
+      <div class="settings-col-left">
       <div class="settings-section">
         <span class="settings-section-label">Görünüm</span>
         <div class="settings-card">
@@ -14017,6 +15817,25 @@
             </div>
           </button>
         </div>
+      </div>
+
+      <div class="settings-section">
+        <span class="settings-section-label">Spor Modu</span>
+        <div class="settings-card">
+          <div class="settings-row">
+            <div class="settings-row-text">
+              <span class="settings-row-title">Spor Modu</span>
+              <span class="settings-row-desc">Aktifken alt menüde sadece Ana Sayfa ve Ayarlar kalır, diğer tüm sayfalar gizlenir.</span>
+            </div>
+            <label class="toggle brutal-toggle settings-toggle" id="settingsSportModeToggleWrap">
+              <input type="checkbox" id="settingsSportModeToggle" />
+              <span class="track">
+                <span class="thumb"></span>
+              </span>
+            </label>
+          </div>
+        </div>
+      </div>
       </div>
 
       <div class="settings-col-right">
@@ -14312,29 +16131,31 @@
         </button>
       </div>
 
-      <div class="page9-card">
-        <div class="settings-segmented page9-segmented" id="page9TrackSegmented">
-          <div class="settings-segmented-slider" id="page9TrackSlider"></div>
-          <button type="button" class="settings-segmented-option is-active" data-value="tyt">TYT</button>
-          <button type="button" class="settings-segmented-option" data-value="ayt">AYT</button>
-        </div>
-        <div class="page9-subject-list" id="page9SubjectList"></div>
-        <button type="button" class="add-task-btn page9-add-subject-btn" id="page9AddSubjectBtn">+ Ders Ekle</button>
-      </div>
-
-      <div class="page9-card page9-summary-card">
-        <div class="page9-summary-header">
-          <span class="page9-summary-title">Özet</span>
-          <div class="settings-segmented page9-segmented" id="page9RangeSegmented">
-            <div class="settings-segmented-slider" id="page9RangeSlider"></div>
-            <button type="button" class="settings-segmented-option is-active" data-value="day">Gün</button>
-            <button type="button" class="settings-segmented-option" data-value="week">Hafta</button>
-            <button type="button" class="settings-segmented-option" data-value="month">Ay</button>
+      <div class="page9-columns" id="page9Columns">
+        <div class="page9-card">
+          <div class="settings-segmented page9-segmented" id="page9TrackSegmented">
+            <div class="settings-segmented-slider" id="page9TrackSlider"></div>
+            <button type="button" class="settings-segmented-option is-active" data-value="tyt">TYT</button>
+            <button type="button" class="settings-segmented-option" data-value="ayt">AYT</button>
           </div>
-          <span class="page9-summary-range-label" id="page9RangeLabel"></span>
+          <div class="page9-subject-list" id="page9SubjectList"></div>
+          <button type="button" class="add-task-btn page9-add-subject-btn" id="page9AddSubjectBtn">+ Ders Ekle</button>
         </div>
-        <div class="page9-summary-total" id="page9SummaryTotal">0 <span>soru</span></div>
-        <div class="page9-summary-list" id="page9SummaryList"></div>
+
+        <div class="page9-card page9-summary-card">
+          <div class="page9-summary-header">
+            <span class="page9-summary-title">Özet</span>
+            <div class="settings-segmented page9-segmented" id="page9RangeSegmented">
+              <div class="settings-segmented-slider" id="page9RangeSlider"></div>
+              <button type="button" class="settings-segmented-option is-active" data-value="day">Gün</button>
+              <button type="button" class="settings-segmented-option" data-value="week">Hafta</button>
+              <button type="button" class="settings-segmented-option" data-value="month">Ay</button>
+            </div>
+            <span class="page9-summary-range-label" id="page9RangeLabel"></span>
+          </div>
+          <div class="page9-summary-total" id="page9SummaryTotal">0 <span>soru</span></div>
+          <div class="page9-summary-list" id="page9SummaryList"></div>
+        </div>
       </div>
     </div>
   </section>
@@ -14493,39 +16314,41 @@
         </div>
       </div>
 
-      <div class="exam-detail-summary-card">
-        <span class="exam-detail-summary-label">Toplam Net</span>
-        <div class="exam-detail-summary-total" id="examDetailTotalNet">0<span>net</span></div>
-        <span class="exam-detail-summary-meta" id="examDetailMeta"></span>
-        <div class="exam-detail-summary-stats">
-          <div class="exam-detail-stat is-correct">
-            <span class="exam-detail-stat-value" id="examDetailCorrectCount">0</span>
-            <span class="exam-detail-stat-label">Doğru</span>
-          </div>
-          <div class="exam-detail-stat is-wrong">
-            <span class="exam-detail-stat-value" id="examDetailWrongCount">0</span>
-            <span class="exam-detail-stat-label">Yanlış</span>
-          </div>
-          <div class="exam-detail-stat is-blank">
-            <span class="exam-detail-stat-value" id="examDetailBlankCount">0</span>
-            <span class="exam-detail-stat-label">Boş</span>
+      <div class="exam-detail-sidebar">
+        <div class="exam-detail-summary-card">
+          <span class="exam-detail-summary-label">Toplam Net</span>
+          <div class="exam-detail-summary-total" id="examDetailTotalNet">0<span>net</span></div>
+          <span class="exam-detail-summary-meta" id="examDetailMeta"></span>
+          <div class="exam-detail-summary-stats">
+            <div class="exam-detail-stat is-correct">
+              <span class="exam-detail-stat-value" id="examDetailCorrectCount">0</span>
+              <span class="exam-detail-stat-label">Doğru</span>
+            </div>
+            <div class="exam-detail-stat is-wrong">
+              <span class="exam-detail-stat-value" id="examDetailWrongCount">0</span>
+              <span class="exam-detail-stat-label">Yanlış</span>
+            </div>
+            <div class="exam-detail-stat is-blank">
+              <span class="exam-detail-stat-value" id="examDetailBlankCount">0</span>
+              <span class="exam-detail-stat-label">Boş</span>
+            </div>
           </div>
         </div>
-      </div>
 
-      <div class="exam-detail-bulk-actions">
-        <button type="button" class="exam-detail-bulk-btn is-correct" id="examDetailMarkAllBtn">
-          <svg viewBox="0 0 24 24" width="15" height="15">
-            <path d="M4 12.5l5 5L20 6" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-          Tümünü Doğru İşaretle
-        </button>
-        <button type="button" class="exam-detail-bulk-btn is-clear" id="examDetailClearAllBtn">
-          <svg viewBox="0 0 24 24" width="15" height="15">
-            <path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-          Tüm İşaretleri Kaldır
-        </button>
+        <div class="exam-detail-bulk-actions">
+          <button type="button" class="exam-detail-bulk-btn is-correct" id="examDetailMarkAllBtn">
+            <svg viewBox="0 0 24 24" width="15" height="15">
+              <path d="M4 12.5l5 5L20 6" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            Tümünü Doğru İşaretle
+          </button>
+          <button type="button" class="exam-detail-bulk-btn is-clear" id="examDetailClearAllBtn">
+            <svg viewBox="0 0 24 24" width="15" height="15">
+              <path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            Tüm İşaretleri Kaldır
+          </button>
+        </div>
       </div>
 
       <div class="exam-detail-subject-list" id="examDetailSubjectList"></div>
@@ -14549,56 +16372,63 @@
         <span class="calendar-topbar-spacer"></span>
       </div>
 
-      <div class="settings-segmented" id="analyticsTypeSegmented">
-        <div class="settings-segmented-slider" id="analyticsTypeSlider"></div>
-        <button type="button" class="settings-segmented-option is-active" data-value="tyt">TYT</button>
-        <button type="button" class="settings-segmented-option" data-value="ayt">AYT</button>
-      </div>
+      <!-- Segmented + özet kart + trend grafiği + "0 Hata" butonu: telefonda
+           .exam-detail-wrap'in doğrudan çocukları gibi alt alta akar
+           (bkz. .analytics-sidebar { display: contents }), geniş ekranda
+           ise tek parça, sabit (sticky) bir sol sütuna dönüşür — deneme
+           detayındaki (.exam-detail-sidebar) aynı kalıp. -->
+      <div class="analytics-sidebar">
+        <div class="settings-segmented" id="analyticsTypeSegmented">
+          <div class="settings-segmented-slider" id="analyticsTypeSlider"></div>
+          <button type="button" class="settings-segmented-option is-active" data-value="tyt">TYT</button>
+          <button type="button" class="settings-segmented-option" data-value="ayt">AYT</button>
+        </div>
 
-      <div class="exam-detail-summary-card">
-        <span class="exam-detail-summary-label">Ortalama Net</span>
-        <div class="exam-detail-summary-total" id="analyticsAvgNet">0<span>net</span></div>
-        <span class="exam-detail-summary-meta" id="analyticsMeta"></span>
-        <div class="exam-detail-summary-stats">
-          <div class="exam-detail-stat is-correct">
-            <span class="exam-detail-stat-value" id="analyticsBestNet">0</span>
-            <span class="exam-detail-stat-label">En Yüksek</span>
-          </div>
-          <div class="exam-detail-stat is-wrong">
-            <span class="exam-detail-stat-value" id="analyticsWorstNet">0</span>
-            <span class="exam-detail-stat-label">En Düşük</span>
-          </div>
-          <div class="exam-detail-stat is-blank">
-            <span class="exam-detail-stat-value" id="analyticsExamCount">0</span>
-            <span class="exam-detail-stat-label">Deneme</span>
+        <div class="exam-detail-summary-card">
+          <span class="exam-detail-summary-label">Ortalama Net</span>
+          <div class="exam-detail-summary-total" id="analyticsAvgNet">0<span>net</span></div>
+          <span class="exam-detail-summary-meta" id="analyticsMeta"></span>
+          <div class="exam-detail-summary-stats">
+            <div class="exam-detail-stat is-correct">
+              <span class="exam-detail-stat-value" id="analyticsBestNet">0</span>
+              <span class="exam-detail-stat-label">En Yüksek</span>
+            </div>
+            <div class="exam-detail-stat is-wrong">
+              <span class="exam-detail-stat-value" id="analyticsWorstNet">0</span>
+              <span class="exam-detail-stat-label">En Düşük</span>
+            </div>
+            <div class="exam-detail-stat is-blank">
+              <span class="exam-detail-stat-value" id="analyticsExamCount">0</span>
+              <span class="exam-detail-stat-label">Deneme</span>
+            </div>
           </div>
         </div>
-      </div>
 
-      <!-- Denemeler arasındaki net artış/azalışını gösteren, altı gradyanla
-           dolgulu, çizimi animasyonlu alan grafiği. Noktalar üzerine
-           gelince (ya da dokununca) hangi denemeye ait olduğunu ve net
-           değerini gösteren bir ön izleme (tooltip) belirir. -->
-      <div class="analytics-trend-card" id="analyticsTrendCard">
-        <div class="analytics-trend-head">
-          <span class="exam-detail-summary-label">Net Değişimi</span>
-          <span class="analytics-trend-badge" id="analyticsTrendBadge">—</span>
+        <!-- Denemeler arasındaki net artış/azalışını gösteren, altı gradyanla
+             dolgulu, çizimi animasyonlu alan grafiği. Noktalar üzerine
+             gelince (ya da dokununca) hangi denemeye ait olduğunu ve net
+             değerini gösteren bir ön izleme (tooltip) belirir. -->
+        <div class="analytics-trend-card" id="analyticsTrendCard">
+          <div class="analytics-trend-head">
+            <span class="exam-detail-summary-label">Net Değişimi</span>
+            <span class="analytics-trend-badge" id="analyticsTrendBadge">—</span>
+          </div>
+          <div class="analytics-trend-chart-wrap" id="analyticsTrendChartWrap">
+            <svg class="analytics-trend-chart" id="analyticsTrendChart" viewBox="0 0 300 130" preserveAspectRatio="none"></svg>
+            <div class="analytics-trend-tooltip" id="analyticsTrendTooltip"></div>
+          </div>
+          <div class="analytics-trend-labels" id="analyticsTrendLabels"></div>
         </div>
-        <div class="analytics-trend-chart-wrap" id="analyticsTrendChartWrap">
-          <svg class="analytics-trend-chart" id="analyticsTrendChart" viewBox="0 0 300 130" preserveAspectRatio="none"></svg>
-          <div class="analytics-trend-tooltip" id="analyticsTrendTooltip"></div>
-        </div>
-        <div class="analytics-trend-labels" id="analyticsTrendLabels"></div>
-      </div>
 
-      <button type="button" class="add-task-btn qhavuz-test-start-btn page12-zero-error-btn" id="analyticsZeroErrorBtn">
-        <svg class="page12-zero-error-btn-icon" viewBox="0 0 24 24" width="19" height="19" aria-hidden="true">
-          <circle cx="12" cy="12" r="8.6" fill="none" stroke="currentColor" stroke-width="2"/>
-          <circle cx="12" cy="12" r="5" fill="none" stroke="currentColor" stroke-width="2"/>
-          <circle cx="12" cy="12" r="1.5" fill="currentColor"/>
-        </svg>
-        0 Hata Testlerim
-      </button>
+        <button type="button" class="add-task-btn qhavuz-test-start-btn page12-zero-error-btn" id="analyticsZeroErrorBtn">
+          <svg class="page12-zero-error-btn-icon" viewBox="0 0 24 24" width="19" height="19" aria-hidden="true">
+            <circle cx="12" cy="12" r="8.6" fill="none" stroke="currentColor" stroke-width="2"/>
+            <circle cx="12" cy="12" r="5" fill="none" stroke="currentColor" stroke-width="2"/>
+            <circle cx="12" cy="12" r="1.5" fill="currentColor"/>
+          </svg>
+          0 Hata Testlerim
+        </button>
+      </div>
 
       <div class="exam-detail-subject-list" id="analyticsSubjectList"></div>
     </div>
@@ -14906,6 +16736,8 @@
 
     <div class="qhavuz-scroll" id="qhavuzScroll">
       <div class="qhavuz-wrap">
+        <div class="qhavuz-toolbar" id="qhavuzToolbar">
+        <span class="qhavuz-toolbar-label">İşlemler</span>
         <div class="qhavuz-actions">
           <button type="button" class="add-task-btn qhavuz-add-btn" id="qhavuzAddBtn">+ Görsel Yükle</button>
           <button type="button" class="add-task-btn qhavuz-test-start-btn" id="qhavuzTestBtn">Test Modu</button>
@@ -14915,6 +16747,7 @@
         </div>
         <input type="file" accept="image/*" id="qhavuzFileInput" class="qhavuz-file-input">
 
+        <span class="qhavuz-toolbar-label qhavuz-toolbar-label-filter">Filtrele &amp; Sırala</span>
         <div class="qhavuz-filter-bar" id="qhavuzFilterBar">
           <div class="qhavuz-filter-row">
             <div class="qhavuz-source-search-row qhavuz-tracksubj-row">
@@ -14933,10 +16766,12 @@
             </button>
           </div>
         </div>
+        </div>
 
         <div class="qhavuz-grid" id="qhavuzGrid"></div>
       </div>
     </div>
+
 
     <div class="qhavuz-select-bar" id="qhavuzSelectBar">
       <span class="qhavuz-select-bar-count" id="qhavuzSelectCount">0 soru seçildi</span>
@@ -16450,43 +18285,52 @@
       name: 'Orijinal',
       gradient: 'linear-gradient(135deg, #272727 0%, #272727 50%, #272727 100%)',
       color: '#272727',
-      text: '#f2f2f7'
+      text: '#f2f2f7',
+      weekend: '#ff6b81'
     },
     {
       name: 'Koyu',
       gradient: 'linear-gradient(135deg, #121212 0%, #121212 50%, #121212 100%)',
       color: '#121212',
-      text: '#f5f5f5'
+      text: '#f5f5f5',
+      weekend: '#ff6b81'
     },
     {
       name: 'Saf Siyah',
       gradient: 'linear-gradient(135deg, #000000 0%, #000000 50%, #000000 100%)',
       color: '#000000',
-      text: '#f5f5f5'
+      text: '#f5f5f5',
+      weekend: '#ff6b81'
     },
     {
       name: 'Krem',
       gradient: 'linear-gradient(135deg, #f2e8d5 0%, #f2e8d5 50%, #f2e8d5 100%)',
       color: '#f2e8d5',
-      text: '#000000'
+      text: '#000000',
+      /* Açık temalarda pastel kırmızı zor okunduğundan, koyu/doygun
+         bir kırmızıya geçiliyor. */
+      weekend: '#d61f3c'
     },
     {
       name: 'Fildişi',
       gradient: 'linear-gradient(135deg, #F6F4EF 0%, #F6F4EF 50%, #F6F4EF 100%)',
       color: '#F6F4EF',
-      text: '#000000'
+      text: '#000000',
+      weekend: '#d61f3c'
     },
     {
       name: 'Bebek Mavisi',
       gradient: 'linear-gradient(135deg, #A8D8FF 0%, #A8D8FF 50%, #A8D8FF 100%)',
       color: '#A8D8FF',
-      text: '#000000'
+      text: '#000000',
+      weekend: '#d61f3c'
     },
     {
       name: 'Lacivert',
       gradient: 'linear-gradient(135deg, #2B2F4A 0%, #2B2F4A 50%, #2B2F4A 100%)',
       color: '#2B2F4A',
-      text: '#f5f5f5'
+      text: '#f5f5f5',
+      weekend: '#ff6b81'
     }
   ];
 
@@ -16603,6 +18447,7 @@
 
   layerA.style.background = themes[themeIndex].gradient;
   document.documentElement.style.setProperty('--theme-text', themes[themeIndex].text);
+  document.documentElement.style.setProperty('--weekend-color', themes[themeIndex].weekend);
   refreshThemeColorMeta();
 
   const applyNextTheme = () => {
@@ -16614,6 +18459,7 @@
     visibleLayer.classList.remove('is-visible');
 
     document.documentElement.style.setProperty('--theme-text', theme.text);
+    document.documentElement.style.setProperty('--weekend-color', theme.weekend);
     refreshThemeColorMeta();
 
     const temp = visibleLayer;
@@ -16645,6 +18491,7 @@
     visibleLayer.classList.remove('is-visible');
 
     document.documentElement.style.setProperty('--theme-text', theme.text);
+    document.documentElement.style.setProperty('--weekend-color', theme.weekend);
     refreshThemeColorMeta();
 
     const temp = visibleLayer;
@@ -17427,31 +19274,78 @@
   // typeof ile kontrol ediliyor; hazır değilse siyah yazıya düşülür.
   const renderStopwatchSubjectTag = () => {
     const el = document.getElementById('stopwatchSubjectTag');
-    if (!el) return;
-    if (!stopwatchActiveSubject) {
-      el.style.display = 'none';
-      el.textContent = '';
-      return;
-    }
-    el.textContent = stopwatchActiveSubject.name;
-    el.style.display = '';
+    const fsEl = document.getElementById('stopwatchFullscreenSubject');
+    if (fsEl) fsEl.textContent = stopwatchActiveSubject ? stopwatchActiveSubject.name : '';
+    // Zamanlayıcı (Sayaç) sayfasındaki etiket, Kronometre'deki ile AYNI
+    // seçimi (stopwatchActiveSubject) paylaşır; bu yüzden her ikisi de
+    // burada, tek bir yerden, birlikte güncellenir.
+    const cdEl = document.getElementById('countdownSubjectTag');
     let color = '#ff5da2';
-    if (typeof stopwatchSubjectsBuildList === 'function' && typeof stopwatchSubjectsColorFor === 'function') {
+    if (stopwatchActiveSubject && typeof stopwatchSubjectsBuildList === 'function' && typeof stopwatchSubjectsColorFor === 'function') {
       try {
         const entries = stopwatchSubjectsBuildList(stopwatchActiveSubject.track);
         const idx = entries.findIndex((e) => e.name === stopwatchActiveSubject.name);
         color = stopwatchSubjectsColorFor(stopwatchActiveSubject.track, stopwatchActiveSubject.name, idx >= 0 ? idx : 0);
       } catch (err) { /* renk fonksiyonları henüz hazır değilse varsayılan renk kalır */ }
     }
-    el.style.backgroundColor = color;
-    el.style.color = (typeof getReadableTextColor === 'function') ? getReadableTextColor(color) : '#000000';
+    const textColor = (typeof getReadableTextColor === 'function') ? getReadableTextColor(color) : '#000000';
+    [el, cdEl].forEach((tagEl) => {
+      if (!tagEl) return;
+      if (!stopwatchActiveSubject) {
+        tagEl.style.display = 'none';
+        tagEl.textContent = '';
+        return;
+      }
+      tagEl.textContent = stopwatchActiveSubject.name;
+      tagEl.style.display = '';
+      tagEl.style.backgroundColor = color;
+      tagEl.style.color = textColor;
+    });
   };
+
+  // Tam ekran ders adı etiketini gösterir ve giriş animasyonunu baştan
+  // oynatır: .is-visible sınıfı önce kaldırılıp bir "reflow" ile
+  // tarayıcıya stil değişikliğini kesinlikle işlettirilir, sonra tekrar
+  // eklenir — böylece kronometre art arda birkaç kez tam ekrana
+  // alınıp çıkarılsa bile animasyon her seferinde yeniden başlar.
+  // Seçili ders yoksa etiket tamamen gizli kalır.
+  const showStopwatchFullscreenSubject = (targetId) => {
+    const fsEl = document.getElementById(targetId || 'stopwatchFullscreenSubject');
+    if (!fsEl) return;
+    if (!stopwatchActiveSubject || !stopwatchActiveSubject.name) {
+      fsEl.classList.remove('is-visible');
+      return;
+    }
+    fsEl.textContent = stopwatchActiveSubject.name;
+    fsEl.classList.remove('is-visible');
+    void fsEl.offsetWidth; // reflow: animasyonu sıfırlamak için zorunlu
+    fsEl.classList.add('is-visible');
+  };
+
+  const hideStopwatchFullscreenSubject = (targetId) => {
+    const fsEl = document.getElementById(targetId || 'stopwatchFullscreenSubject');
+    if (fsEl) fsEl.classList.remove('is-visible');
+  };
+
+  // Zamanlayıcı (Sayaç) tam ekranındaki ders etiketi için aynı iki
+  // yardımcının kısayolları; countdown script'i bunları çağırır.
+  const showCountdownFullscreenSubject = () => showStopwatchFullscreenSubject('countdownFullscreenSubject');
+  const hideCountdownFullscreenSubject = () => hideStopwatchFullscreenSubject('countdownFullscreenSubject');
 
   // Seçili dersi değiştirir (veya null ile kaldırır): önce eski dersin o ana
   // kadarki payını kaydeder, sonra seçimi günceller ve kalıcı olarak saklar.
   const setActiveStopwatchSubject = (newSubj) => {
     if (stopwatchSubjectsEqual(stopwatchActiveSubject, newSubj)) return;
     flushSubjectSegment(swActiveDayKey, swRunning);
+    // Zamanlayıcı da o an çalışıyorsa, eski derse kadarki payını kaydedip
+    // çalışmaya devam ediyorsa yeni dilimi hemen yeniden başlatır. Bu
+    // fonksiyon countdown script'inden ÖNCE tanımlandığı (ve countdown
+    // değişkenleri `const`/`let` olduğu, `typeof` ile TDZ'de güvenle
+    // sorgulanamadığı) için köprü window.__onCountdownSubjectSwitch
+    // üzerinden kuruluyor; o script yüklenince atanır.
+    if (typeof window.__onCountdownSubjectSwitch === 'function') {
+      window.__onCountdownSubjectSwitch();
+    }
     stopwatchActiveSubject = newSubj;
     saveAppState({ stopwatchSelectedSubject: newSubj });
     renderStopwatchSubjectTag();
@@ -17601,6 +19495,7 @@
   const hideLapControlsNow = () => {
     stopwatchControlsVisible = false;
     stopwatchLapBtn.classList.remove('is-visible');
+    hideStopwatchFullscreenSubject();
     renderLaps();
   };
 
@@ -17613,6 +19508,11 @@
   const toggleLapControls = () => {
     stopwatchControlsVisible = !stopwatchControlsVisible;
     stopwatchLapBtn.classList.toggle('is-visible', stopwatchControlsVisible);
+    if (stopwatchControlsVisible) {
+      showStopwatchFullscreenSubject();
+    } else {
+      hideStopwatchFullscreenSubject();
+    }
     renderLaps();
 
     clearTimeout(lapControlsTimer);
@@ -17772,6 +19672,7 @@
     swRunning = false;
     if (swRafId) cancelAnimationFrame(swRafId);
     document.body.classList.remove('is-stopwatch-running');
+    hideStopwatchFullscreenSubject();
     // Tam ekrandan çıkılınca özel "Yakında" paneli modundan da çıkılır.
     // Panel o an açık duruyorsa (kullanıcı kapatmadan duraklattıysa) önce
     // yumuşakça kapatılır; değilse (zaten kapalıysa) sadece iz bırakan
@@ -17809,6 +19710,7 @@
     stopwatchLaps = [];
     stopwatchControlsVisible = false;
     stopwatchLapBtn.classList.remove('is-visible');
+    hideStopwatchFullscreenSubject();
     clearTimeout(lapControlsTimer);
     clearTimeout(stopwatchHintTimer);
     stopwatchFullscreenHint.classList.remove('is-hidden');
@@ -17849,6 +19751,7 @@
     stopwatchLaps = [];
     stopwatchControlsVisible = false;
     stopwatchLapBtn.classList.remove('is-visible');
+    hideStopwatchFullscreenSubject();
     clearTimeout(lapControlsTimer);
     renderLaps();
     saveStopwatchState();
@@ -18309,6 +20212,54 @@
     return Math.max(0, cdRemainingMs - (performance.now() - cdStartedAt));
   };
 
+  // ---- Zamanlayıcı (Sayaç) için geçen süreyi Kronometre'yle AYNI günlük/
+  // ders bazlı kayıtlara yazma ----
+  // Kronometrede "biriken süre" ileri sayar; Sayaç'ta ise geriye sayılır.
+  // Ama İstatistiklerim'e yazılması gereken şey her iki durumda da aynı:
+  // o an GERÇEKTEN geçmiş olan zaman. Bu yüzden sayaç her "çalışır"
+  // duruma geçtiğinde bir dilim (segment) başlatılır ve durduğunda/
+  // duraklatıldığında o dilimde fiilen geçen gerçek süre (Date.now() farkı,
+  // kalan süre değil) addStopwatchLogMs (günlük genel toplam) ve varsa
+  // seçili derse addStopwatchSubjectLogMs ile eklenir — kronometrenin
+  // kullandığı depolarla birebir aynı (APP_STATE.stopwatchLogs /
+  // stopwatchSubjectLogs), böylece İstatistiklerim (Sayfa 10) hiçbir ek
+  // değişiklik yapılmadan bu süreleri de otomatik olarak gösterir.
+  let cdSegmentStartEpoch = null;
+  let cdSegmentDayKey = null;
+
+  const flushCountdownSubjectSegment = () => {
+    if (cdSegmentStartEpoch === null) return;
+    const dateKey = cdSegmentDayKey || page10DateKey(new Date());
+    const elapsed = Date.now() - cdSegmentStartEpoch;
+    if (elapsed > 0) {
+      addStopwatchLogMs(dateKey, elapsed);
+      if (stopwatchActiveSubject) addStopwatchSubjectLogMs(dateKey, stopwatchActiveSubject, elapsed);
+      if (typeof renderPage10 === 'function') renderPage10();
+    }
+    cdSegmentStartEpoch = null;
+    cdSegmentDayKey = null;
+  };
+
+  // Şu an sayaç çalışıyorsa, henüz kaydedilmemiş (flush edilmemiş) canlı
+  // payını döndürür; İstatistiklerim'in "Bugün" ekranı çalışırken bile
+  // güncel kalsın diye page10LiveTodayMs/page10LiveTodaySubject bunu da
+  // hesaba katar (bkz. aşağıdaki genişletme).
+  const countdownLiveElapsedMs = () => {
+    if (cdSegmentStartEpoch === null) return 0;
+    return Math.max(0, Date.now() - cdSegmentStartEpoch);
+  };
+
+  // setActiveStopwatchSubject (Kronometre script'inde, bu script'ten ÖNCE
+  // tanımlı) ders değiştiğinde bu köprüyü çağırır: sayaç o an çalışıyorsa
+  // eski derse kadarki payı kaydedilir ve yeni dilim hemen başlar.
+  window.__onCountdownSubjectSwitch = () => {
+    flushCountdownSubjectSegment();
+    if (cdRunning) {
+      cdSegmentStartEpoch = Date.now();
+      cdSegmentDayKey = page10DateKey(new Date());
+    }
+  };
+
   const renderCountdownTime = (msOverride) => {
     const text = formatCountdown(typeof msOverride === 'number' ? msOverride : currentCountdownMs());
     countdownTimeEl.textContent = text;
@@ -18334,6 +20285,10 @@
     cdRunning = false;
     cdFinished = true;
     if (cdRafId) cancelAnimationFrame(cdRafId);
+    // Sayaç tam olarak dolduğunda o son dilimin tamamı da (kalan süre
+    // 0'a inene kadar geçen kısım) geçmişe/derse yazılsın diye kronometre
+    // ile aynı "flush" mantığı burada da çağrılır.
+    flushCountdownSubjectSegment();
     cdRemainingMs = 0;
     renderCountdownTime(0);
     clearTimeout(countdownHintTimer);
@@ -18356,6 +20311,11 @@
     stopCountdownFinishSound();
     document.body.classList.remove('is-countdown-running');
     document.body.classList.remove('is-countdown-finished');
+    // finishCountdown zaten flush etti; burada sadece iz kalmasın diye
+    // güvenlik amacıyla sıfırlanıyor.
+    cdSegmentStartEpoch = null;
+    cdSegmentDayKey = null;
+    hideCountdownFullscreenSubject();
     showCountdownSetup();
   };
 
@@ -18377,6 +20337,11 @@
     cdRunning = true;
     cdFinished = false;
     cdStartedAt = performance.now();
+    // Geçen süreyi kaydetmek için yeni bir dilim şimdi başlar (bkz.
+    // flushCountdownSubjectSegment); gün, dilim başladığı anki güne göre
+    // sabitlenir ki gece yarısını geçse bile doğru güne yazılsın.
+    cdSegmentStartEpoch = Date.now();
+    cdSegmentDayKey = page10DateKey(new Date());
     document.body.classList.remove('is-countdown-finished');
     document.body.classList.add('is-countdown-running');
     countdownDisplay.setAttribute('aria-label', 'Zamanlayıcıyı duraklat');
@@ -18389,6 +20354,7 @@
     countdownHintTimer = setTimeout(() => {
       countdownFullscreenHint.classList.add('is-hidden');
     }, 3000);
+    showCountdownFullscreenSubject();
   };
 
   const pauseCountdown = () => {
@@ -18396,10 +20362,13 @@
     cdRemainingMs = currentCountdownMs();
     cdRunning = false;
     if (cdRafId) cancelAnimationFrame(cdRafId);
+    // Duraklatılana kadar fiilen geçen süreyi güne/derse yaz.
+    flushCountdownSubjectSegment();
     document.body.classList.remove('is-countdown-running');
     countdownDisplay.setAttribute('aria-label', 'Zamanlayıcıyı devam ettir');
     countdownHint.textContent = 'Devam etmek için dokun';
     renderCountdownTime();
+    hideCountdownFullscreenSubject();
   };
 
   const toggleCountdown = () => {
@@ -19131,23 +21100,58 @@
   const calendarBackBtn = document.getElementById('calendarBackBtn');
   if (calendarBackBtn) calendarBackBtn.addEventListener('click', closeCalendarPage);
 
-  calendarPrevBtn.addEventListener('click', () => {
+  const goToPrevMonth = () => {
     calendarViewMonth -= 1;
     if (calendarViewMonth < 0) {
       calendarViewMonth = 11;
       calendarViewYear -= 1;
     }
     renderCalendarGrid();
-  });
+  };
 
-  calendarNextBtn.addEventListener('click', () => {
+  const goToNextMonth = () => {
     calendarViewMonth += 1;
     if (calendarViewMonth > 11) {
       calendarViewMonth = 0;
       calendarViewYear += 1;
     }
     renderCalendarGrid();
-  });
+  };
+
+  calendarPrevBtn.addEventListener('click', goToPrevMonth);
+  calendarNextBtn.addEventListener('click', goToNextMonth);
+
+  // Ekranda sağa/sola kaydırarak ay değiştirme: dikey sayfa kaydırmasıyla
+  // karışmasın diye yatay hareket, dikey harekete göre belirgin şekilde
+  // baskın olmalı (ve en az ~45px olmalı).
+  let calSwipeStartX = 0;
+  let calSwipeStartY = 0;
+  let calSwipeActive = false;
+
+  calendarGridEl.addEventListener('touchstart', (e) => {
+    if (e.touches.length !== 1) return;
+    calSwipeStartX = e.touches[0].clientX;
+    calSwipeStartY = e.touches[0].clientY;
+    calSwipeActive = true;
+  }, { passive: true });
+
+  calendarGridEl.addEventListener('touchend', (e) => {
+    if (!calSwipeActive) return;
+    calSwipeActive = false;
+    const touch = e.changedTouches[0];
+    const dx = touch.clientX - calSwipeStartX;
+    const dy = touch.clientY - calSwipeStartY;
+    if (Math.abs(dx) < 45 || Math.abs(dx) < Math.abs(dy) * 1.3) return;
+    if (dx < 0) {
+      goToNextMonth();
+    } else {
+      goToPrevMonth();
+    }
+  }, { passive: true });
+
+  calendarGridEl.addEventListener('touchcancel', () => {
+    calSwipeActive = false;
+  }, { passive: true });
 
   document.addEventListener('keydown', (e) => {
     if (e.key !== 'Escape') return;
@@ -21993,6 +23997,11 @@
   };
 
   if (stopwatchSubjectsBtn) stopwatchSubjectsBtn.addEventListener('click', openStopwatchSubjects);
+  // Zamanlayıcı sayfasındaki Branşlarım butonu da AYNI pop-up'ı ve AYNI
+  // seçimi kullanır (stopwatchActiveSubject); Kronometre'de seçilen ders
+  // Zamanlayıcı'da da görünür, Zamanlayıcı'da seçilen de Kronometre'de.
+  const countdownSubjectsBtnEl = document.getElementById('countdownSubjectsBtn');
+  if (countdownSubjectsBtnEl) countdownSubjectsBtnEl.addEventListener('click', openStopwatchSubjects);
   if (stopwatchSubjectsClose) stopwatchSubjectsClose.addEventListener('click', closeStopwatchSubjects);
   if (stopwatchSubjectsBackdrop) {
     stopwatchSubjectsBackdrop.addEventListener('click', (e) => {
@@ -22192,19 +24201,39 @@
   // seçiliyken ekran her zaman güncel kalır.
   const page10LiveTodayMs = () => {
     const todayKey = page10DateKey(new Date());
-    if (typeof swActiveDayKey === 'undefined' || swActiveDayKey !== todayKey) return 0;
-    return typeof currentElapsedMs === 'function' ? currentElapsedMs() : 0;
+    let ms = 0;
+    if (typeof swActiveDayKey !== 'undefined' && swActiveDayKey === todayKey) {
+      ms += typeof currentElapsedMs === 'function' ? currentElapsedMs() : 0;
+    }
+    // Zamanlayıcı da o an çalışıyorsa (kendi dilimi bugüne aitse), henüz
+    // arşive/güne yazılmamış payı da toplama eklenir; böylece Sayaç
+    // çalışırken bile "Bugün" toplamı canlı olarak güncel kalır.
+    if (typeof cdSegmentDayKey !== 'undefined' && cdSegmentDayKey === todayKey
+      && typeof countdownLiveElapsedMs === 'function') {
+      ms += countdownLiveElapsedMs();
+    }
+    return ms;
   };
 
-  // Şu an kronometre çalışıyor ve bir ders seçiliyse, o dersin henüz
-  // güne yazılmamış (flush edilmemiş) canlı payını döndürür; aksi halde null.
+  // Şu an kronometre YA DA zamanlayıcı çalışıyor ve bir ders seçiliyse, o
+  // dersin henüz güne yazılmamış (flush edilmemiş) canlı payını döndürür;
+  // aksi halde null. İkisi aynı anda çalışamayacağından (kronometre/sayaç
+  // aynı sayfanın iki modu) çakışma olmaz.
   const page10LiveTodaySubject = () => {
     const todayKey = page10DateKey(new Date());
-    if (typeof swActiveDayKey === 'undefined' || swActiveDayKey !== todayKey) return null;
-    if (typeof swRunning === 'undefined' || !swRunning) return null;
-    if (typeof swSubjectSegmentStartEpoch !== 'number' || !stopwatchActiveSubject) return null;
-    const ms = Math.max(0, Date.now() - swSubjectSegmentStartEpoch);
-    return { track: stopwatchActiveSubject.track, name: stopwatchActiveSubject.name, ms };
+    if (typeof swActiveDayKey !== 'undefined' && swActiveDayKey === todayKey
+      && typeof swRunning !== 'undefined' && swRunning
+      && typeof swSubjectSegmentStartEpoch === 'number' && stopwatchActiveSubject) {
+      const ms = Math.max(0, Date.now() - swSubjectSegmentStartEpoch);
+      return { track: stopwatchActiveSubject.track, name: stopwatchActiveSubject.name, ms };
+    }
+    if (typeof cdSegmentDayKey !== 'undefined' && cdSegmentDayKey === todayKey
+      && typeof cdRunning !== 'undefined' && cdRunning
+      && typeof cdSegmentStartEpoch === 'number' && stopwatchActiveSubject) {
+      const ms = Math.max(0, Date.now() - cdSegmentStartEpoch);
+      return { track: stopwatchActiveSubject.track, name: stopwatchActiveSubject.name, ms };
+    }
+    return null;
   };
 
   // Bir güne ait derse göre süre dökümünü hesaplar: kaydedilmiş
