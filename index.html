@@ -9070,14 +9070,45 @@
 
   /* ---------- Sayfa 5: Kronometre ---------- */
 
+  /* DÜZELTME: #page5NormalContent, .page'in (display:flex) doğrudan
+     çocuğu olduğu için bir flex öğesidir ve varsayılan olarak KENDİ
+     GENİŞLİĞİNİ İÇERİĞİNE GÖRE KÜÇÜLTÜR (shrink-to-fit) — konteynerin
+     gerçekte ne kadar boş alanı olduğuna bakmaz. Bu yüzden içindeki
+     .stopwatch-flip-stage'in "width:100%" kuralı, %100'ünü alacağı
+     belirli (definite) bir genişlik bulamıyor ve zincir aşağı doğru
+     da aynı şekilde içeriğe (saat rakamlarının doğal genişliğine)
+     küçülüyordu; sonuçta max-width: 340px sınırına hiç ulaşılmadan
+     kart olması gerekenden çok daha dar kalıyordu (ekran görüntüsünde
+     görülen sıkışmış hâl). display:flex + width:100% vererek bu
+     sarmalayıcıya kendi belirli genişliğini (sayfa dolgusu çıkarılmış
+     tam genişlik) kazandırıyoruz; böylece alttaki tüm "width:100%"
+     zinciri gerçek anlamda %100'e, yani artık kenarlara olabildiğince
+     yaklaşan max-width: 340px'e ulaşabiliyor. align-items:center ile
+     kart yine ortalanmış kalıyor. */
+  #page5NormalContent {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+  }
+
   /* Kronometre <-> Sayaç (geri sayım) geçişini bir kart çevirme (flip)
      animasyonuyla yapan sahne. Perspektif burada, dönen katman (inner)
      ise bunun içinde tanımlanır; gizli başlık butonuna dokununca JS bu
      katmanı 90°'ye döndürür, tam o an (görünmez kenar noktasında) içeriği
-     değiştirir ve geri döndürür — bir kartın çevrilmesi gibi görünür. */
+     değiştirir ve geri döndürür — bir kartın çevrilmesi gibi görünür.
+     max-width burada telefon ekranında kartın alabileceği en geniş
+     hâli belirliyor; #page5NormalContent düzeltmesinden sonra artık
+     bu değere gerçekten ulaşılabiliyor (bkz. yukarıdaki not). Değer
+     eskiden 340px'ti; dar telefonlarda (~342px kullanılabilir alan)
+     zaten neredeyse doluyordu ama daha geniş telefonlarda (ör. Pro
+     Max, ~382px kullanılabilir alan) kartı gereksiz yere dar
+     bırakıyordu. 480px'e çıkararak asıl sınırlayıcıyı her zaman
+     .page'in 24px'lik kenar boşluğu yapıyoruz; kart artık HER telefon
+     genişliğinde kenarlara olabildiğince yaklaşıyor. */
   .stopwatch-flip-stage {
     width: 100%;
-    max-width: 340px;
+    max-width: 480px;
     perspective: 1200px;
   }
 
@@ -9094,7 +9125,7 @@
     align-items: center;
     gap: 1.4rem;
     width: 100%;
-    max-width: 340px;
+    max-width: 480px;
     transition: opacity 0.3s ease, transform 0.3s ease;
   }
 
@@ -9108,7 +9139,7 @@
     align-items: center;
     gap: 1.4rem;
     width: 100%;
-    max-width: 340px;
+    max-width: 480px;
     transition: opacity 0.3s ease, transform 0.3s ease;
   }
 
@@ -15220,8 +15251,26 @@
     enter: { kicker: 'MOD DEĞİŞİYOR', title: 'SPOR MODU' },
     exit: { kicker: 'BİTİŞ ÇİZGİSİ', title: 'NORMAL MODA DÖNÜLÜYOR' },
   };
+
+  // ---------- Üst güvenli alanı (çentik / Dynamic Island şeridi) geçiş
+  // panelinin renkleriyle senkronize etme ----------
+  // Panel ('.sport-transition-panel') giriş ('enter') ve çıkışta ('exit')
+  // farklı vurgu (kenarlık/metin) renkleri kullansa da arka planı HER
+  // ZAMAN aynı sabit koyu tonda (#0a0a0b, bkz. yukarıdaki CSS). Ama üst
+  // güvenli alan sadece <meta name="theme-color"> rengine göre boyandığı
+  // için, panel ekranı tamamen örtse bile çentik/Dynamic Island şeridi
+  // hâlâ o anki temanın (ör. Krem, Lacivert) rengiyle kalıp panelin koyu
+  // tonuyla uyumsuz duruyordu — bütünlük bozuluyordu. Artık panel
+  // oynatılırken üst şeridi de panelin arka planıyla aynı tona getirip,
+  // panel geri çekilmeye başladığı anda (bkz. %78 keyframe noktası,
+  // sportWipe/sportWipeExit) eski tema rengine döndürüyoruz; böylece
+  // çentik de "geçiş perdesi"nin bir parçası gibi görünüyor.
+  const SPORT_TRANSITION_PANEL_COLOR = '#0a0a0b';
+  const SPORT_TRANSITION_UNCOVER_MS = Math.round(SPORT_TRANSITION_MS * 0.78);
+
   let sportTransitionSwapTimer = null;
   let sportTransitionEndTimer = null;
+  let sportTransitionColorRevertTimer = null;
 
   const playSportTransition = (variant, onCovered) => {
     const sportTransition = getSportTransitionEl();
@@ -15242,6 +15291,7 @@
 
     clearTimeout(sportTransitionSwapTimer);
     clearTimeout(sportTransitionEndTimer);
+    clearTimeout(sportTransitionColorRevertTimer);
 
     // Art arda hızlıca tetiklenirse önceki oynatımdan kalan durumu
     // sıfırlayıp (reflow ile) animasyonun her seferinde baştan, aynı
@@ -15254,9 +15304,30 @@
     document.body.classList.add('is-sport-transitioning');
     sportTransition.classList.add('is-playing');
 
+    // Panel ekranı örtmeye BAŞLADIĞI anda üst güvenli alanı da panelin
+    // koyu tonuna çekiyoruz; iOS'un rengi kendi ~480ms'lik yumuşak
+    // geçişiyle (bkz. --theme-transition-duration) solduracağı süre,
+    // panelin tam kaplı kaldığı ~950ms'lik bekleme penceresine rahatça
+    // sığıyor. updateThemeColorMeta henüz tanımlanmamış olabileceğinden
+    // (bu script, temayı yöneten script'ten önce çalışır) varlığını
+    // kontrol ediyoruz — bkz. syncSwatchSelection'daki aynı desen.
+    if (typeof updateThemeColorMeta === 'function') {
+      updateThemeColorMeta(SPORT_TRANSITION_PANEL_COLOR);
+    }
+
     sportTransitionSwapTimer = setTimeout(() => {
       onCovered();
     }, SPORT_TRANSITION_COVER_MS);
+
+    // Panel geri çekilmeye başladığı anda (bkz. %78 keyframe noktası),
+    // üst güvenli alanı da o an aktif olan tema rengine (varsa açık bir
+    // pop-up backdrop'unun harmanlanmış tonu dahil) geri döndürüyoruz;
+    // refreshThemeColorMeta bu hesaplamayı zaten kendisi yapıyor.
+    sportTransitionColorRevertTimer = setTimeout(() => {
+      if (typeof refreshThemeColorMeta === 'function') {
+        refreshThemeColorMeta();
+      }
+    }, SPORT_TRANSITION_UNCOVER_MS);
 
     sportTransitionEndTimer = setTimeout(() => {
       sportTransition.classList.remove('is-playing');
