@@ -27846,6 +27846,11 @@
     });
     window.addEventListener('pageshow', releaseStaleModalLockIfNeeded);
     window.addEventListener('focus', releaseStaleModalLockIfNeeded);
+    // Olay tabanlı kontroller bazı geçişleri (ör. gesture yarıda kesilmesi)
+    // kaçırabileceği için, düşük maliyetli bir aralıkla da düzenli olarak
+    // kontrol ediyoruz; bu sadece bir sınıf kontrolü olduğu için performansa
+    // etkisi yoktur.
+    setInterval(releaseStaleModalLockIfNeeded, 1500);
   })();
 </script>
 
