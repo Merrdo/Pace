@@ -23858,6 +23858,14 @@
   };
 
   const closeExamDetail = () => {
+    // Güvenlik: "Kaynaklar" pop-up'ı (ve galerisi) açık kalmış olabilir
+    // (ör. pop-up açıkken geri butonuna basıldıysa). Kapatılmadan
+    // sayfadan çıkılırsa, pop-up'ın kilitlediği body.has-modal-open
+    // sınıfı hiç kaldırılmadan takılı kalır ve bu da TÜM sayfalardaki
+    // kaydırmayı kalıcı olarak kilitler. O yüzden çıkmadan önce ikisini
+    // de (varsa) zorla kapatıyoruz.
+    if (typeof closeExamResGallery === 'function') closeExamResGallery();
+    if (typeof closeExamResourcesModal === 'function') closeExamResourcesModal();
     document.body.classList.remove('is-exam-detail-open');
     goToPage('page-11');
     renderPage11List();
@@ -27812,6 +27820,32 @@
       if (tag !== 'INPUT' && tag !== 'TEXTAREA') return;
       setTimeout(scrollFocusedIntoView, 320);
     });
+  })();
+
+  // ---- Güvenlik ağı: kaydırmayı kilitleyen body.has-modal-open sınıfı
+  // yanlışlıkla takılı kalırsa (bir pop-up, kapatma yolunun dışında bir
+  // şekilde -ör. geri gitme, uygulamanın arka plana alınıp bir jestin
+  // yarıda kesilmesi vb.- açık bırakılırsa) TÜM sayfalardaki kaydırma
+  // kalıcı olarak durur, çünkü bu sınıf body'ye touch-action:none
+  // uyguluyor ve bu, alttaki her kaydırılabilir alanı da etkiliyor.
+  // Uygulama her ön plana döndüğünde, gerçekten açık bir pop-up
+  // (backdrop) yoksa bu kilidi otomatik olarak kaldırıyoruz.
+  (function () {
+    const releaseStaleModalLockIfNeeded = () => {
+      if (!document.body.classList.contains('has-modal-open')) return;
+      const anyBackdropOpen = Array.from(
+        document.querySelectorAll('[id$="Backdrop"]')
+      ).some((el) => el.classList.contains('is-open'));
+      if (!anyBackdropOpen) {
+        document.body.classList.remove('has-modal-open');
+      }
+    };
+
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') releaseStaleModalLockIfNeeded();
+    });
+    window.addEventListener('pageshow', releaseStaleModalLockIfNeeded);
+    window.addEventListener('focus', releaseStaleModalLockIfNeeded);
   })();
 </script>
 
