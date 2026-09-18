@@ -17994,6 +17994,17 @@
       const checkedInput = document.querySelector('.nav-input:checked');
       if (checkedInput) moveSlider(checkedInput);
     }
+
+    // Üst güvenli alanın (çentik/Dynamic Island şeridi) rengini de anında
+    // güncelle: Spor Modu'na girerken düz siyaha, çıkarken o an seçili
+    // olan normal temanın rengine döner. refreshThemeColorMeta, bu
+    // script'ten SONRA gelen bir <script> bloğunda tanımlandığı için
+    // (temalar dizisiyle birlikte), ilk sayfa yüklemesi sırasında henüz
+    // mevcut olmayabilir — bu yüzden varlığını kontrol ediyoruz; o an
+    // tanımlı değilse zaten sayfa ilk yüklendiğinde themes bloğu kendi
+    // refreshThemeColorMeta() çağrısıyla doğru rengi (is-sport-mode
+    // sınıfı hâlâ body üzerindeyken) uygulayacaktır.
+    if (typeof refreshThemeColorMeta === 'function') refreshThemeColorMeta();
   };
 
   if (sportModeToggle) {
@@ -18364,7 +18375,16 @@
 
   const openThemeBackdrops = new Set();
   const refreshThemeColorMeta = () => {
-    const baseColor = themes[themeIndex].color;
+    // Spor Modu aktifken üst güvenli alan (çentik/Dynamic Island şeridi)
+    // her zaman Spor Modu'nun düz siyah zeminiyle (--sm-bg: #000000)
+    // birebir aynı renkte boyanmalı; aksi halde şerit hâlâ o an seçili
+    // olan normal temanın (ör. Fildişi/#F6F4EF) rengiyle kalır ve
+    // ekranın en üstünde, spor modunun tam ekran görünümünü bozan açık
+    // renkli bir şerit olarak göze çarpar. Bu yüzden temel rengi burada
+    // is-sport-mode durumuna göre seçiyoruz.
+    const baseColor = document.body.classList.contains('is-sport-mode')
+      ? '#000000'
+      : themes[themeIndex].color;
     if (openThemeBackdrops.size === 0) {
       updateThemeColorMeta(baseColor);
       return;
