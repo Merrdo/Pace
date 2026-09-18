@@ -7,7 +7,7 @@
 
 <!-- PWA: manifest ve tema rengi -->
 <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#F6F4EF">
+<meta name="theme-color" content="#272727">
 
 <!-- Favicon ve uygulama ikonları -->
 <link rel="icon" href="icons/favicon.ico" sizes="any">
@@ -40,7 +40,7 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Archivo+Expanded:wght@700;800&family=Playfair+Display:ital,wght@0,400;0,700;0,800;1,400;1,700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Expanded:wght@700;800&family=Playfair+Display:ital,wght@0,700;0,800;1,700&family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   * {
     margin: 0;
@@ -691,6 +691,31 @@
     animation: navCameraFlashRays 0.5s ease-out both;
   }
 
+
+  /* ---------- Spor Modu: Alt Nav Bar ----------
+     Spor modu aktifken alttaki pill navbar'da sadece Ana Sayfa ve Ayarlar
+     ikonları kalır; diğer tüm sekmeler (.nav-sport-hide) tamamen kaldırılır.
+     Geriye kalan 2 seçenek, 7'li ızgara yerine yarı yarıya (%50) genişlik
+     paylaşır; kayan gösterge (.nav-slider) de buna göre yeniden ölçeklenir. */
+  body.is-sport-mode .navbar .nav-sport-hide {
+    display: none;
+  }
+
+  body.is-sport-mode .navbar .option {
+    width: calc(100% / 2);
+  }
+
+  body.is-sport-mode .navbar .nav-slider {
+    width: calc((100% - 8px) / 2);
+  }
+
+  /* Tablet/geniş ekran yanal panelinde de aynı sekmeler dışındakiler
+     gizlenir; panel dikey bir liste olduğundan genişlik hesaplaması
+     gerekmez, sadece öğeler listeden kalkar. */
+  body.is-sport-mode .sidebar-nav-item.nav-sport-hide {
+    display: none;
+  }
+
   /* Sayfa adını kısaca gösteren baloncuk: butonun hemen üstünde belirir.
      Hem fareyle üzerine gelince (önizleme) hem de dokunulduğunda (kısa
      süreli, JS ile) görünür olur. */
@@ -839,6 +864,14 @@
     background: var(--accent-color, #ff90e8);
   }
 
+  /* Geçici olarak devre dışı bırakılan anahtarlar (ör. Spor Modu):
+     soluk görünür ve tıklama/etkileşim tamamen engellenir. */
+  .brutal-toggle.is-locked {
+    opacity: 0.4;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+
   /* Anahtar aktif edildiğinde (checked) sayfadaki button_top butonları
      antresit (koyu gri) tonuna geçer — referans görseldeki takvim
      hücrelerinden ilham alındı. Alt katman (--button_outline_color)
@@ -984,15 +1017,21 @@
     stroke: #f2f2f4;
   }
 
-  /* Ana sayfadaki tema/renk paleti düğmesinin ikonu SVG üzerinde sabit
-     siyah (fill/stroke="#000") olarak tanımlı; koyu moddaki (anthracite)
-     siyah kart zemininde görünmez kalmaması için beyaza çeviriyoruz. */
-  body.is-anthracite .home-theme-btn-top svg path {
-    stroke: #f2f2f4;
+  /* Günlük Soru Sayısı widget'ı da diğer beyaz kartlarla aynı antresit
+     tona geçer; sayı/etiket/halka rayı okunaklı kalsın diye açık renge
+     döner (ilerleme rengi accent-color olduğu için değişmez). */
+  body.is-anthracite .home-daily-widget {
+    background-color: var(--dark-card-color, #32343a);
   }
 
-  body.is-anthracite .home-theme-btn-top svg circle {
-    fill: #f2f2f4;
+  body.is-anthracite .home-daily-widget-count,
+  body.is-anthracite .home-daily-widget-label,
+  body.is-anthracite .home-daily-widget-sub {
+    color: #f2f2f4;
+  }
+
+  body.is-anthracite .home-daily-widget-ring-track {
+    stroke: #46484f;
   }
 
   /* Segmented control (Görevler/Rutinler) Ayarlar sayfasındaki gibi
@@ -1085,6 +1124,16 @@
 
   body.is-anthracite .page9-stepper-btn,
   body.is-anthracite .page9-count-input {
+    color: #f2f2f4;
+  }
+
+  body.is-anthracite .page9-goal-step-btn {
+    background-color: var(--dark-card-color, #32343a);
+    border-color: #000;
+    color: #f2f2f4;
+  }
+
+  body.is-anthracite .page9-goal-value {
     color: #f2f2f4;
   }
 
@@ -1311,6 +1360,218 @@
     gap: 1.6rem;
   }
 
+  /* ---------- Spor Modu: Ana Sayfa ----------
+     Spor modu aktifken normal ana sayfa içeriği (#homeContent) tamamen
+     gizlenir, yerine sadece "Şimdilik yakında" yazısı gösterilir. */
+  .home-content-sport {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    max-width: 360px;
+    text-align: center;
+    gap: 0.5rem;
+  }
+
+  .home-sport-soon {
+    font-family: "Playfair Display", "Archivo Expanded", serif;
+    font-style: italic;
+    font-weight: 800;
+    font-size: clamp(1.6rem, 7.5vw, 2.3rem);
+    letter-spacing: 0.01em;
+    color: var(--theme-text, #f2f2f7);
+    transition: color 0.5s ease;
+  }
+
+  /* Planlama sayfası: henüz tasarlanmadığı için topbar'ın altında ortalanmış
+     tek bir "yakında" mesajı gösterir (Spor Modu yer tutucusuyla aynı
+     görsel dil, ama Spor Modu'na bağlı olmadan her zaman görünür). */
+  .planlama-soon-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    width: 100%;
+    padding: 3.5rem 0;
+  }
+
+
+  /* Uygulama logosu ("Pace"): ana sayfanın geri kalan içeriğinden
+     (selamlama/tarih, kartlar vb.) tamamen bağımsız, sayfanın kendi
+     padding'ini de göz ardı ederek ekranın gerçek sol üst köşesine
+     (çentik/Dynamic Island güvenli alanı dahil) sabitlenmiş marka
+     satırı. Cormorant Garamond ile zarif/serif bir başlık. */
+  .home-brand {
+    position: absolute;
+    top: calc(env(safe-area-inset-top) + 18px);
+    left: calc(env(safe-area-inset-left) + 18px);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.05rem;
+    z-index: 1;
+  }
+
+  .home-brand-mark {
+    font-family: "Cormorant Garamond", "Playfair Display", serif;
+    font-weight: 600;
+    font-style: italic;
+    font-size: 2.1rem;
+    line-height: 1;
+    letter-spacing: 0.01em;
+    color: var(--theme-text, #f2f2f7);
+    transition: color 0.5s ease;
+  }
+
+  /* Ana sayfa menüsü butonu: bilerek boş bırakılan Ana Sayfa'nın sağ üst
+     köşesinde duran, küçük ve göze batmayan bir tetikleyici. Eski Ana
+     Sayfa içeriğinin tamamı (#page-home-menu) bu butonla açılır. Logoyla
+     (.home-brand) aynı üst hizaya ve safe-area mantığına sahiptir. */
+  .home-menu-btn {
+    position: absolute;
+    top: calc(env(safe-area-inset-top) + 18px);
+    right: calc(env(safe-area-inset-right) + 18px);
+    width: 2.2rem;
+    height: 2.2rem;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #fff;
+    border: 3px solid #000;
+    border-radius: 50%;
+    box-shadow: 3px 3px 0px 0px #000;
+    cursor: pointer;
+    z-index: 1;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+  }
+
+  .home-menu-btn:hover {
+    transform: translate(-1px, -1px);
+    box-shadow: 4px 4px 0px 0px #000;
+  }
+
+  .home-menu-btn:active {
+    transform: translate(2px, 2px);
+    box-shadow: 1px 1px 0px 0px #000;
+    background-color: var(--accent-color, #ff90e8);
+  }
+
+  /* ---------- Ana Sayfa: Günlük Soru Sayısı widget'ı ----------
+     Soru Takibi'nin verisinden canlı beslenen, dokunulabilir önizleme
+     kartı: dokunulduğunda kullanıcıyı doğrudan Soru Takibi sayfasına
+     (#page-9) götürür (bkz. aşağıdaki click handler). Sol tarafta gün
+     içindeki ilerlemeyi görselleştiren dairesel bir halka + ortasında
+     büyük sayı, sağ tarafta etiket ve alt metin. Diğer kartlarla aynı
+     kalın çerçeve/sert gölge dilini korur ama daha "canlı" hissettirsin
+     diye halka rengi --accent-color ile nabız gibi hafif parlar (bkz.
+     .is-pulsing). */
+  .home-daily-widget {
+    display: flex;
+    align-items: center;
+    gap: 1.1rem;
+    width: 100%;
+    max-width: 320px;
+    padding: 1.1rem 1.3rem;
+    background-color: #fff;
+    border: 4px solid #000;
+    border-radius: 1.4em;
+    box-shadow: 6px 6px 0px 0px #000;
+    cursor: pointer;
+    text-align: left;
+    font: inherit;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+  }
+
+  .home-daily-widget:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 8px 8px 0px 0px #000;
+  }
+
+  .home-daily-widget:active {
+    transform: translate(3px, 3px);
+    box-shadow: 3px 3px 0px 0px #000;
+  }
+
+  .home-daily-widget-ring-wrap {
+    position: relative;
+    width: 84px;
+    height: 84px;
+    flex-shrink: 0;
+  }
+
+  .home-daily-widget-ring {
+    transform: rotate(-90deg);
+  }
+
+  .home-daily-widget-ring-track {
+    fill: none;
+    stroke: #eee;
+    stroke-width: 8;
+  }
+
+  /* Halka artık tek renkte (pembe) değil; her segment o gün soru
+     çözülen bir dersi temsil eder ve o dersin kendi rengiyle çizilir
+     (bkz. refreshHomeDailyQuestionsWidget). Segmentler JS tarafından
+     <g id="homeDailyRingSegments"> içine dinamik olarak eklenir, bu
+     yüzden burada sadece ortak stil (kalınlık, geçiş animasyonu)
+     tanımlanır; renk her segmentte inline stroke ile ayarlanır. */
+  .home-daily-widget-ring-segment {
+    fill: none;
+    stroke-width: 8;
+    transition: stroke-dasharray 0.6s cubic-bezier(0.16, 1, 0.3, 1), stroke-dashoffset 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .home-daily-widget-count-wrap {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .home-daily-widget-count {
+    font-family: "Space Grotesk", sans-serif;
+    font-weight: 800;
+    font-size: 1.6rem;
+    color: #000;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .home-daily-widget-text {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    min-width: 0;
+  }
+
+  .home-daily-widget-label {
+    font-family: "Space Grotesk", sans-serif;
+    font-weight: 800;
+    font-size: 0.98rem;
+    color: #000;
+  }
+
+  .home-daily-widget-sub {
+    font-family: "Space Grotesk", sans-serif;
+    font-weight: 600;
+    font-size: 0.76rem;
+    color: #000;
+    opacity: 0.55;
+    line-height: 1.3;
+  }
+
+  /* Yeni bir soru kaydı girildiğinde halkanın canlı olduğunu hissettiren
+     kısa bir "nabız" efekti (bkz. refreshHomeDailyQuestionsWidget). Her
+     segment kendi rengini JS tarafından ayarlanan "color" (currentColor
+     kaynağı) üzerinden alır, böylece parıltı da o dersin rengiyle olur. */
+  .home-daily-widget.is-pulsing .home-daily-widget-ring-segment {
+    filter: drop-shadow(0 0 4px currentColor);
+  }
+
+
   .home-hero {
     display: flex;
     align-items: center;
@@ -1354,21 +1615,6 @@
 
   /* Tema düğmesi: Uiverse "button_top" 3D basma efektini korur, sadece
      yuvarlak ve ikon boyutuna küçültülmüş bir varyantı. */
-  .home-theme-btn {
-    --button_radius: 50%;
-    width: 3rem;
-    height: 3rem;
-    flex-shrink: 0;
-  }
-
-  .home-theme-btn-top {
-    width: 100%;
-    height: 100%;
-    padding: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
 
   .home-widgets {
     display: grid;
@@ -1444,6 +1690,115 @@
     color: #000;
     opacity: 0.55;
     margin-top: -0.35rem;
+  }
+
+  /* ---------- Ana Sayfa: Hızlı Erişim kartları ----------
+     Antrenman (Spor Modu'na direkt geçiş), Gündelik, Soru Takibi ve
+     Planlama (henüz tasarlanmadı) sayfalarına tek dokunuşla geçiş
+     sağlayan, yatayda yan yana dizili küçük kart şeridi. Kart sayısı
+     ekrana sığmayacak genişliğe ulaşırsa satır kendi içinde yatay
+     kaydırılabilir olur (scrollbar'lar zaten global olarak gizli). */
+  .home-quick-section {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    width: 100%;
+  }
+
+  .home-quick-title {
+    font-family: "Space Grotesk", sans-serif;
+    font-weight: 700;
+    font-size: 0.82rem;
+    letter-spacing: 0.02em;
+    color: var(--theme-text, #f2f2f7);
+    opacity: 0.6;
+    transition: color 0.5s ease;
+  }
+
+  .home-quick-row {
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    gap: 0.7rem;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    /* Kartların basma/hover animasyonlarında kırpılmaması için biraz
+       dikey nefes payı bırakılır. */
+    padding: 0.1rem 0.1rem 0.3rem;
+    margin: -0.1rem -0.1rem -0.3rem;
+  }
+
+  .home-quick-card {
+    flex: 1 0 0;
+    min-width: 4.9rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.45rem;
+    padding: 0.9rem 0.5rem;
+    background-color: #fff;
+    border: 4px solid #000;
+    border-radius: 1.1em;
+    box-shadow: 5px 5px 0px 0px #000;
+    cursor: pointer;
+    text-align: center;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+  }
+
+  .home-quick-card:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 7px 7px 0px 0px #000;
+  }
+
+  .home-quick-card:active {
+    transform: translate(3px, 3px);
+    box-shadow: 2px 2px 0px 0px #000;
+    background-color: var(--accent-color, #ff90e8);
+  }
+
+  /* Geçici olarak devre dışı bırakılan hızlı erişim kartları (ör.
+     Antrenman / Spor Modu): soluk görünür, tıklama tamamen engellenir. */
+  .home-quick-card.is-locked {
+    opacity: 0.4;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+
+  .home-quick-icon-chip {
+    width: 2.4rem;
+    height: 2.4rem;
+    border-radius: 50%;
+    border: 3px solid #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .home-quick-icon-chip-orange {
+    background-color: #ffb347;
+  }
+
+  .home-quick-icon-chip-green {
+    background-color: #9be89b;
+  }
+
+  .home-quick-icon-chip-blue {
+    background-color: #a8d8ff;
+  }
+
+  .home-quick-icon-chip-pink {
+    background-color: var(--accent-color, #ff90e8);
+  }
+
+  .home-quick-label {
+    font-family: "Space Grotesk", sans-serif;
+    font-weight: 700;
+    font-size: 0.72rem;
+    line-height: 1.15;
+    color: #000;
+    white-space: nowrap;
   }
 
   /* ---------- Görev silme butonu (satırın sağında, brutalist stile uyumlu) ---------- */
@@ -1693,6 +2048,7 @@
   #page-4 {
     align-items: flex-start;
     overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
     padding-top: calc(40px + env(safe-area-inset-top));
     padding-bottom: calc(22px + env(safe-area-inset-bottom));
@@ -1952,6 +2308,7 @@
     max-height: 118px;
     overflow-y: auto;
     overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
     padding: 3px 4px;
     margin: -3px -4px;
@@ -2195,6 +2552,7 @@
     flex-direction: column;
     align-items: center;
     overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
     scrollbar-width: none;
     -ms-overflow-style: none;
@@ -2222,6 +2580,7 @@
     padding-top: calc(48px + env(safe-area-inset-top));
     overflow-y: auto;
     overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
     scrollbar-width: none;
     -ms-overflow-style: none;
@@ -2376,7 +2735,6 @@
     width: 100%;
     max-height: 50vh;
     overflow-y: auto;
-    overscroll-behavior: contain;
     box-sizing: border-box;
     padding: 0.15rem;
     scrollbar-width: none;
@@ -3077,6 +3435,81 @@
     width: 100%;
   }
 
+  .page9-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-shrink: 0;
+  }
+
+  /* "Hedef Belirle" butonu: ikon + sayı gösteren kompakt bir hap (pill)
+     buton. Ana Sayfa'daki halkanın "dolu" kabul edeceği günlük soru
+     hedefini açar/kapatır (bkz. page9GoalBackdrop). */
+  .page9-goal-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.5rem 0.8rem;
+    font-size: 0.8rem;
+    white-space: nowrap;
+  }
+
+  /* Günlük Hedef pop-up'ındaki büyük eksi/artı düğmeli seçici: yazım
+     alanı yok, sadece dokunarak (ve basılı tutup hızlandırarak) 5'er
+     5'er ayarlanır (bkz. attachHoldRepeat kullanımı). */
+  .page9-goal-card {
+    align-items: center;
+  }
+
+  .page9-goal-stepper-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1.1rem;
+    margin: 0.3rem 0 0.1rem;
+  }
+
+  .page9-goal-step-btn {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 2.6rem;
+    height: 2.6rem;
+    flex-shrink: 0;
+    border-radius: 50%;
+    border: 3px solid #000;
+    background-color: #fff;
+    font-family: "Space Grotesk", sans-serif;
+    font-size: 1.3rem;
+    font-weight: 800;
+    line-height: 1;
+    color: #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    box-shadow: 3px 3px 0px 0px #000;
+    cursor: pointer;
+    touch-action: manipulation;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+  }
+
+  .page9-goal-step-btn:active,
+  .page9-goal-step-btn.is-pressed {
+    transform: translate(2px, 2px);
+    box-shadow: 1px 1px 0px 0px #000;
+    background-color: var(--accent-color, #ff90e8);
+  }
+
+  .page9-goal-value {
+    min-width: 3.4rem;
+    text-align: center;
+    font-family: "Space Grotesk", sans-serif;
+    font-weight: 800;
+    font-size: 1.8rem;
+    color: #000;
+    font-variant-numeric: tabular-nums;
+  }
+
   .page9-subtitle {
     font-family: "Space Grotesk", sans-serif;
     font-weight: 600;
@@ -3351,6 +3784,7 @@
     max-width: 420px;
     max-height: 82vh;
     overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
     /* Kartın kendisi dikey olarak kaydırılabilir kalsın diye backdrop'un
        "touch-action: none" kısıtlamasını burada geri açıyoruz. */
     touch-action: pan-y;
@@ -3661,6 +4095,18 @@
     display: none;
   }
 
+  /* Araç panelindeki satırlar (Görsel Yükle/Test Modu, Paketlerim,
+     Filtrele & Sırala) mobilde düz bir div içinde alt alta akıyordu ve
+     aralarında hiç boşluk tanımlı değildi (masaüstü/tablet sürümünde
+     .qhavuz-toolbar zaten flex+gap idi, ama bu temel/mobil kural
+     eksikti) — bu yüzden satırlar birbirine yapışık duruyordu. */
+  .qhavuz-toolbar {
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+    width: 100%;
+  }
+
   /* Ayarlar'daki "kesim çizgisi" (.settings-tear) ile aynı kesikli
      çizgi + ortada ikon deseni; burada makas yerine düzenleme kalemi
      var ve gerçekten tıklanabilir (Soru Havuzu düzenleme modunu açar).
@@ -3692,6 +4138,7 @@
     flex-direction: column;
     align-items: center;
     overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
     scrollbar-width: none;
     -ms-overflow-style: none;
@@ -3784,18 +4231,6 @@
     display: none;
   }
 
-  /* Telefonda araç paneli (Görsel Yükle/Test Modu satırı, Paketlerim,
-     Filtrele & Sırala) tek dikey akışta durur; önceden aralarında boşluk
-     tanımlı değildi (yalnızca .qhavuz-actions-secondary'de EKSİ bir
-     margin vardı), bu da satırların birbirine yapışık/üst üste binmiş
-     görünmesine yol açıyordu. Artık panel flex sütun olarak akıyor ve
-     görünür satırlar arasına eşit, pozitif bir boşluk (gap) konuyor. */
-  .qhavuz-toolbar {
-    display: flex;
-    flex-direction: column;
-    gap: 0.85rem;
-  }
-
   /* ---- Soru Havuzu: 3) Soru seçerek Test/Paket oluşturma ----
      "Soru Seç" ikon butonu (kesim çizgisindeki kalemle aynı dilde) ve
      "Paketlerim" butonu (ikinci aksiyon satırı). */
@@ -3805,6 +4240,11 @@
     background-color: var(--accent-color, #ff90e8);
   }
 
+  /* Eskiden burada -0.35rem'lik negatif bir üst boşluk vardı; bu,
+     "Paketlerim" butonunu yukarıdaki satırın üzerine bindirip iç içe
+     görünmesine sebep oluyordu. Satırlar arası boşluk artık üst
+     kapsayıcının (.qhavuz-toolbar) gap'inden geldiği için buna gerek
+     kalmadı. */
   .qhavuz-actions-secondary {
     margin-top: 0;
   }
@@ -4004,7 +4444,6 @@
   .qhavuz-filter-modal-card {
     max-height: 82vh;
     overflow-y: auto;
-    overscroll-behavior: contain;
   }
 
   .qhavuz-filter-modal-card .page8-groups-chip-list {
@@ -4119,7 +4558,7 @@
   .qhavuz-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 0.85rem;
+    gap: 1.6rem 1.1rem;
   }
 
   .qhavuz-empty {
@@ -5064,6 +5503,7 @@
     flex: 1 1 auto;
     min-height: 0;
     overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
   }
 
@@ -5082,6 +5522,7 @@
     max-height: 55vh;
     overflow-y: auto;
     overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
     border: 2.5px solid #000;
     border-radius: 0.8rem;
@@ -5559,6 +6000,7 @@
     gap: 1rem;
     padding: calc(44px + env(safe-area-inset-top)) 20px calc(28px + env(safe-area-inset-bottom));
     overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
     scrollbar-width: none;
     -ms-overflow-style: none;
@@ -6530,6 +6972,7 @@
     gap: 0.42rem;
     max-height: 7.6rem;
     overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
   }
 
@@ -6796,6 +7239,7 @@
     padding-top: calc(48px + env(safe-area-inset-top));
     overflow-y: auto;
     overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
     scrollbar-width: none;
     -ms-overflow-style: none;
@@ -7783,6 +8227,7 @@
     gap: 1rem;
     padding: calc(44px + env(safe-area-inset-top)) 20px calc(28px + env(safe-area-inset-bottom));
     overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
   }
 
@@ -7799,6 +8244,7 @@
     gap: 1rem;
     padding: calc(44px + env(safe-area-inset-top)) 20px calc(28px + env(safe-area-inset-bottom));
     overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
   }
 
@@ -9069,6 +9515,7 @@
     max-width: 300px;
     max-height: 34vh;
     overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
     display: flex;
     flex-direction: column;
@@ -9404,6 +9851,7 @@
     min-height: 0;
     overflow-y: auto;
     overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
     margin: -0.6rem;
     padding: 0.6rem;
@@ -9787,6 +10235,8 @@
   body.is-patterns-open .navbar,
   body.is-exam-detail-open .navbar,
   body.is-wheel-open .navbar,
+  body.is-planlama-open .navbar,
+  body.is-home-menu-open .navbar,
   body.is-calendar-open .navbar,
   body.is-qhavuz-test-open .navbar,
   body.is-page10-open .navbar,
@@ -9802,6 +10252,8 @@
   body.is-patterns-open .navbar .wrapper,
   body.is-exam-detail-open .navbar .wrapper,
   body.is-wheel-open .navbar .wrapper,
+  body.is-planlama-open .navbar .wrapper,
+  body.is-home-menu-open .navbar .wrapper,
   body.is-calendar-open .navbar .wrapper,
   body.is-qhavuz-test-open .navbar .wrapper,
   body.is-page10-open .navbar .wrapper,
@@ -9825,13 +10277,14 @@
     gap: 1.5rem;
     padding: calc(20px + env(safe-area-inset-top)) 22px calc(18px + env(safe-area-inset-bottom));
     overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
   }
 
   /* Takvim artık küçük ortalanmış bir kart değil, uçtan uca tam ekran bir
      yüzey: üst çubuk sadece küçük bir geri okundan ibaret (400px'lik
      genişlik sınırı kalkar, sola yaslanır). .calendar-back-btn/.calendar-
-     nav-btn diğer sayfalarla (Turlarım vb.) paylaşılan sınıflar
+     nav-btn diğer sayfalarla (Turlarım, Egzersiz vb.) paylaşılan sınıflar
      olduğundan burada #page-6 ile ölçeklenip (ID özgüllüğü sayesinde)
      sadece bu sayfada hayalet/çerçevesiz bir görünüme büründürülür;
      diğer sayfalardaki aynı sınıfları kullanan düğmeler etkilenmez. */
@@ -10031,17 +10484,16 @@
     flex-shrink: 0;
   }
 
-  /* .calendar-nav-btn temel biçimi: beyaz zemin, 3px siyah çerçeve,
-     katı gölge — Sayfa 9/10'daki tarih oklarının (.page9-date-btn /
-     .page10-date-btn) asıl görünümü budur. Önceden bu temel kural hiç
-     tanımlanmamıştı, bu yüzden butonlar tarayıcının varsayılan (çok
-     küçük, biçimsiz) buton görünümüne düşüyordu. #page-6 ID'siyle
-     ölçeklenip sadece Takvim'de çerçevesiz/hayalet bir görünüme
-     çevriliyor, diğer sayfalar etkilenmiyor. */
+  /* Tarih gezinme oklarının (Sayfa 6/9/10) ortak temel biçimi: .calendar-back-btn
+     ile aynı nötr-brütalist dil (beyaz zemin, siyah çerçeve/gölge, dairesel).
+     Daha önce bu temel kural tanımlı değildi; sayfa-özel kurallar (ör.
+     .page9-date-btn boyutu, #page-6'nın "hayalet" görünümü) bu temele
+     ekleniyordu ama temel kendisi eksikti, bu yüzden oklar tarayıcının
+     varsayılan, küçük ve stilsiz buton görünümüyle çiziliyordu. */
   .calendar-nav-btn {
     flex-shrink: 0;
-    width: 2.3rem;
-    height: 2.3rem;
+    width: 2.2rem;
+    height: 2.2rem;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -10052,7 +10504,7 @@
     box-shadow: 3px 3px 0px 0px #000;
     color: #121212;
     cursor: pointer;
-    transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease, color 0.5s ease;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
   }
 
   .calendar-nav-btn:hover {
@@ -10067,6 +10519,10 @@
     background-color: var(--accent-color, #ff90e8);
   }
 
+  /* .calendar-nav-btn temel biçimi (beyaz zemin/siyah çerçeve) Sayfa
+     9/10'daki tarih oklarıyla paylaşılıyor; burada #page-6 ID'siyle
+     ölçeklenip sadece Takvim'de çerçevesiz/hayalet bir görünüme
+     çevriliyor, diğer sayfalar etkilenmiyor. */
   #page-6 .calendar-nav-btn {
     width: 2.1rem;
     height: 2.1rem;
@@ -10221,6 +10677,7 @@
     gap: 1.1rem;
     padding: calc(44px + env(safe-area-inset-top)) 20px calc(22px + env(safe-area-inset-bottom));
     overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
   }
 
@@ -10233,6 +10690,7 @@
     justify-content: flex-start;
     padding: calc(44px + env(safe-area-inset-top)) 20px calc(22px + env(safe-area-inset-bottom));
     overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
   }
 
@@ -10333,6 +10791,7 @@
     flex-direction: column;
     align-items: center;
     overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
     scrollbar-width: none;
     -ms-overflow-style: none;
@@ -10488,6 +10947,55 @@
     flex-shrink: 0;
   }
 
+  /* ---------- Spor Modu: Ayarlar Sayfası ----------
+     Spor modu aktifken Ayarlar sayfasının normal içeriği (başlık, kesim
+     çizgisi ve kaydırılabilir kart listesi) tamamen gizlenir; yerine
+     sadece spor modundan çıkmaya yarayan tek bir "Çıkış" butonu gösterilir. */
+  .settings-sport-only {
+    display: none;
+    flex: 1 1 auto;
+    width: 100%;
+    box-sizing: border-box;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+
+  .settings-sport-exit-btn {
+    padding: 0.95rem 2.6rem;
+    font-family: "Space Grotesk", sans-serif;
+    font-weight: 800;
+    font-size: 1.05rem;
+    color: #121212;
+    background-color: #fff;
+    border: 4px solid #000;
+    border-radius: 1em;
+    box-shadow: 6px 6px 0px 0px #000;
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  .settings-sport-exit-btn:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 8px 8px 0px 0px #000;
+  }
+
+  .settings-sport-exit-btn:active {
+    transform: translate(1px, 1px);
+    box-shadow: 3px 3px 0px 0px #000;
+  }
+
+  body.is-sport-mode .settings-hero,
+  body.is-sport-mode .settings-tear,
+  body.is-sport-mode .settings-scroll {
+    display: none;
+  }
+
+  body.is-sport-mode .settings-sport-only {
+    display: flex;
+  }
+
   /* ---------- Renk satırları (Kart rengi / Renk teması / Vurgu rengi):
      artık her biri "Desenler" ile aynı tıklanabilir satır kalıbını kullanıyor
      (bkz. .settings-row-link) — sağda o an seçili rengi gösteren yuvarlak bir
@@ -10597,6 +11105,7 @@
     gap: 1.1rem;
     padding: calc(44px + env(safe-area-inset-top)) 20px calc(22px + env(safe-area-inset-bottom));
     overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
   }
 
@@ -11102,19 +11611,22 @@
       margin: 0 auto;
     }
 
-    /* Görünüm solda; Takvim/Gündelik/Veri'nin tamamını taşıyan sarmalayıcı
-       (.settings-col-right) sağda — ikisi de TEK bir grid satırında, üstten
-       hizalı. Sol sütun da kendi bağımsız sarmalayıcısı (.settings-col-left)
-       içinde aktığı için, sağ sütun ne kadar uzun olursa olsun (Takvim+
-       Gündelik+Veri üst üste), sol sütunun satır yüksekliği buna göre ZORLA
-       büyümez: eskiden ikisi de aynı (grid tarafından paylaşılan) satır
-       izine yerleştirildiğinden, o satırın yüksekliği en uzun içerik olan
-       sağ sütuna göre belirleniyor, Görünüm kartı da bu yüzden hemen altına
-       değil, o dev satırın bittiği yere (ekranda çok daha aşağıya)
-       düşüyordu. Artık her iki sütun da kendi doğal yüksekliğiyle akıyor. */
+    /* Görünüm solda (Spor Modu'nun hemen altında); Takvim/Gündelik/Veri'nin
+       tamamını taşıyan sarmalayıcı (.settings-col-right) sağda — ikisi de
+       TEK bir grid satırında, üstten hizalı. Sol sütun da kendi bağımsız
+       sarmalayıcısı (.settings-col-left) içinde aktığı için, sağ sütun ne
+       kadar uzun olursa olsun (Takvim+Gündelik+Veri üst üste), sol sütunun
+       satır yüksekliği buna göre ZORLA büyümez: eskiden ikisi de aynı
+       (grid tarafından paylaşılan) satır izine yerleştirildiğinden, o
+       satırın yüksekliği en uzun içerik olan sağ sütuna göre belirleniyor,
+       Görünüm kartı da bu yüzden Spor Modu'nun hemen altına değil, o dev
+       satırın bittiği yere (ekranda çok daha aşağıya) düşüyordu. Artık her
+       iki sütun da kendi doğal yüksekliğiyle akıyor. */
     .settings-page > .settings-col-left {
       grid-column: 1;
       grid-row: 1;
+      /* Spor Modu ile Görünüm arasındaki dikey boşluk, sağ sütunun kendi
+         iç boşluğuyla (.settings-col-right gap) aynı tutuldu. */
       gap: clamp(0.9rem, 2.6dvh, 1.8rem);
     }
 
@@ -11304,7 +11816,6 @@
       box-sizing: border-box;
       max-height: calc(100dvh - 32px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
       overflow-y: auto;
-      overscroll-behavior: contain;
       scrollbar-width: none;
       -ms-overflow-style: none;
     }
@@ -11386,7 +11897,7 @@
       grid-column: 2;
       grid-row: 1;
       grid-template-columns: repeat(auto-fill, minmax(168px, 1fr));
-      gap: 1.15rem;
+      gap: 1.6rem 1.15rem;
       align-content: start;
     }
 
@@ -12114,6 +12625,38 @@
 
     .sidebar-nav-item.is-active .nav-icon-gear {
       animation: navGearSpin 0.55s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    /* Spor Modu'na özel sekmeler: aynı keyframe'ler, yanal panelin
+       kendi tetikleyicisiyle (.is-active) yeniden kullanılır. */
+    .sidebar-nav-item.is-active .nav-icon-dumbbell {
+      transform-box: fill-box;
+      transform-origin: center;
+      animation: navDumbbellRep 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    }
+
+    .sidebar-nav-item.is-active .nav-icon-heartbeat .nav-heartbeat-line {
+      stroke-dasharray: 60;
+      stroke-dashoffset: 60;
+      animation: navHeartbeatDraw 0.45s ease-out both;
+    }
+
+    .sidebar-nav-item.is-active .nav-icon-chart .nav-chart-bar {
+      transform-box: fill-box;
+      transform-origin: bottom;
+      animation: navChartBarGrow 0.32s ease-out both;
+    }
+
+    .sidebar-nav-item.is-active .nav-icon-chart .nav-chart-bar:nth-of-type(1) {
+      animation-delay: 0s;
+    }
+
+    .sidebar-nav-item.is-active .nav-icon-chart .nav-chart-bar:nth-of-type(2) {
+      animation-delay: 0.09s;
+    }
+
+    .sidebar-nav-item.is-active .nav-icon-chart .nav-chart-bar:nth-of-type(3) {
+      animation-delay: 0.18s;
     }
 
     /* Panel kapalıyken ekranın solunda asılı duran, tekrar açmaya yarayan
@@ -13679,7 +14222,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: #F6F4EF;
+    background: #272727;
     transition: opacity 0.45s ease, visibility 0.45s ease;
   }
   #app-splash-icon {
@@ -13721,16 +14264,14 @@
     try {
       var raw = localStorage.getItem('takvimim_app_state_v1');
       var saved = raw ? JSON.parse(raw) : null;
-      // Kayıtlı bir tema tercihi yoksa (ilk açılış), varsayılan olarak
-      // Fildişi (index 4) kullanılır.
-      var themeIndex = saved && typeof saved.theme === 'number' ? saved.theme : 4;
-      var color = SPLASH_THEME_COLORS[themeIndex] || SPLASH_THEME_COLORS[4];
+      var themeIndex = saved && typeof saved.theme === 'number' ? saved.theme : 0;
+      var color = SPLASH_THEME_COLORS[themeIndex] || SPLASH_THEME_COLORS[0];
       var splashEl = document.getElementById('app-splash');
       if (splashEl) splashEl.style.background = color;
       var meta = document.querySelector('meta[name="theme-color"]');
       if (meta) meta.setAttribute('content', color);
     } catch (err) {
-      /* localStorage okunamazsa varsayılan fildişi renkte kalır */
+      /* localStorage okunamazsa varsayılan antrasit renkte kalır */
     }
   })();
 </script>
@@ -13802,7 +14343,7 @@
       <span class="sidebar-nav-label">Ana Sayfa</span>
     </button>
 
-    <button type="button" class="sidebar-nav-item" data-page="page-5">
+    <button type="button" class="sidebar-nav-item nav-sport-hide" data-page="page-5">
       <svg class="sidebar-nav-icon nav-icon-stopwatch" viewBox="0 0 24 24">
         <circle cx="12" cy="13" r="8"/>
         <line class="nav-stopwatch-hand" x1="12" y1="9" x2="12" y2="13"/>
@@ -13812,7 +14353,7 @@
       <span class="sidebar-nav-label">Kronometre</span>
     </button>
 
-    <button type="button" class="sidebar-nav-item" data-page="page-8">
+    <button type="button" class="sidebar-nav-item nav-sport-hide" data-page="page-8">
       <svg class="sidebar-nav-icon nav-icon-gunluk" viewBox="0 0 24 24">
         <path d="m3 17 2 2 4-4"/>
         <path d="m3 7 2 2 4-4"/>
@@ -13822,7 +14363,7 @@
       <span class="sidebar-nav-label">Gündelik</span>
     </button>
 
-    <button type="button" class="sidebar-nav-item" data-page="page-camera">
+    <button type="button" class="sidebar-nav-item nav-sport-hide" data-page="page-camera">
       <svg class="sidebar-nav-icon nav-icon-camera" viewBox="0 0 24 24">
         <path d="M3 8.5a1.5 1.5 0 0 1 1.5-1.5h2.4l1.3-1.8a1.5 1.5 0 0 1 1.2-.6h5.2a1.5 1.5 0 0 1 1.2.6l1.3 1.8h2.4A1.5 1.5 0 0 1 21 8.5v9A1.5 1.5 0 0 1 19.5 19h-15A1.5 1.5 0 0 1 3 17.5z"/>
         <circle cx="12" cy="13" r="3.4"/>
@@ -13842,7 +14383,7 @@
       <span class="sidebar-nav-label">Soru Havuzu</span>
     </button>
 
-    <button type="button" class="sidebar-nav-item" data-page="page-9">
+    <button type="button" class="sidebar-nav-item nav-sport-hide" data-page="page-9">
       <svg class="sidebar-nav-icon nav-icon-checklist" viewBox="0 0 24 24">
         <rect x="5" y="5.5" width="14" height="15" rx="2.4"/>
         <rect class="nav-checklist-clip" x="9" y="3" width="6" height="2.5" rx="1"/>
@@ -13851,7 +14392,7 @@
       <span class="sidebar-nav-label">Soru Takibi</span>
     </button>
 
-    <button type="button" class="sidebar-nav-item" data-page="page-11">
+    <button type="button" class="sidebar-nav-item nav-sport-hide" data-page="page-11">
       <svg class="sidebar-nav-icon nav-icon-exam" viewBox="0 0 24 24">
         <rect x="5" y="3" width="14" height="18" rx="2"/>
         <line x1="8" y1="8" x2="16" y2="8"/>
@@ -13896,58 +14437,177 @@
 <div class="app">
 
   <section class="page is-active" id="page-1">
-    <div class="home-content" id="homeContent">
-      <div class="home-hero">
-        <div class="home-hero-text">
-          <span class="home-hero-eyebrow" id="homeGreeting">Merhaba</span>
-          <h1 class="home-hero-title">Pace</h1>
-          <span class="home-hero-date" id="homeDate">—</span>
-        </div>
+    <div class="home-brand">
+      <span class="home-brand-mark">Pace</span>
+    </div>
 
-        <!-- From Uiverse.io by Voxybuns (tema geçiş düğmesi olarak yeniden kullanıldı) -->
-        <button type="button" class="home-theme-btn" id="homeThemeBtn" aria-label="Temayı değiştir">
-          <span class="button_top home-theme-btn-top">
-            <svg viewBox="0 0 24 24" width="20" height="20">
-              <path d="M12 2a10 10 0 1 0 0 20c1.4 0 2-.9 2-2 0-.55-.2-1-.5-1.4-.3-.4-.5-.8-.5-1.3 0-1 .8-1.8 1.8-1.8H16.6c1.9 0 3.4-1.55 3.4-3.5C20 6.5 16.4 2 12 2Z" fill="none" stroke="#000" stroke-width="1.7" stroke-linejoin="round"/>
-              <circle cx="7.6" cy="10.6" r="1.15" fill="#000"/>
-              <circle cx="9.7" cy="6.9" r="1.15" fill="#000"/>
-              <circle cx="14.6" cy="6.9" r="1.15" fill="#000"/>
-              <circle cx="16.6" cy="11" r="1.15" fill="#000"/>
-            </svg>
-          </span>
+    <!-- Ana sayfa artık bilerek boş bırakıldı (serbest tasarım alanı).
+         Eski içeriğin tamamı (Merhaba/tarih, Takvim/Mini Oyunlar
+         widget'ları, Hızlı Erişim kartları) bu küçük butonla açılan
+         ayrı bir sayfaya (#page-home-menu) taşındı. -->
+    <button type="button" class="home-menu-btn" id="homeMenuBtn" aria-label="Menü">
+      <svg viewBox="0 0 24 24" width="18" height="18">
+        <line x1="4" y1="7" x2="20" y2="7" stroke="#000" stroke-width="2.4" stroke-linecap="round"/>
+        <line x1="4" y1="12" x2="20" y2="12" stroke="#000" stroke-width="2.4" stroke-linecap="round"/>
+        <line x1="4" y1="17" x2="20" y2="17" stroke="#000" stroke-width="2.4" stroke-linecap="round"/>
+      </svg>
+    </button>
+
+    <!-- Soru Takibi'nden canlı beslenen, dokunulabilir önizleme widget'ı:
+         bugün çözülen toplam soru sayısını anlık olarak gösterir ve
+         dokunulduğunda Soru Takibi sayfasına (#page-9) yönlendirir. Veri
+         Soru Takibi'nin kendi state'inden (page9State.logs) okunur; o
+         sayfada bir kayıt eklenip/silindiğinde bu widget da anında
+         güncellenir (bkz. refreshHomeDailyQuestionsWidget çağrıları). -->
+    <button type="button" class="home-daily-widget" id="homeDailyQuestionsWidget" data-page="page-9" aria-label="Soru Takibi sayfasına git">
+      <div class="home-daily-widget-ring-wrap">
+        <svg class="home-daily-widget-ring" viewBox="0 0 84 84" width="84" height="84">
+          <circle class="home-daily-widget-ring-track" cx="42" cy="42" r="36"/>
+          <g id="homeDailyRingSegments"></g>
+        </svg>
+        <div class="home-daily-widget-count-wrap">
+          <span class="home-daily-widget-count" id="homeDailyQuestionsCount">0</span>
+        </div>
+      </div>
+      <div class="home-daily-widget-text">
+        <span class="home-daily-widget-label">Bugün Çözülen</span>
+        <span class="home-daily-widget-sub" id="homeDailyQuestionsSub">Henüz soru girilmedi</span>
+      </div>
+    </button>
+
+    <!-- Spor Modu: ana sayfanın normal içeriği yerine gösterilen, tek
+         satırlık yer tutucu içerik. -->
+    <div class="home-content-sport" id="homeContentSport">
+      <span class="home-sport-soon">Şimdilik yakında</span>
+    </div>
+  </section>
+
+  <!-- Ana Sayfa Menüsü: eskiden Ana Sayfa'nın (#page-1) kendisinde duran
+       tüm içerik (Merhaba/tarih, Takvim/Mini Oyunlar widget'ları, Hızlı
+       Erişim kartları) buraya taşındı. Ana sayfadaki küçük menü
+       butonuyla açılıp geri butonuyla Ana Sayfa'ya döner (Mini
+       Oyunlar/Planlama ile aynı açma/kapama deseni). -->
+  <section class="page" id="page-home-menu">
+    <div class="wheel-page">
+      <div class="calendar-topbar">
+        <button type="button" class="calendar-back-btn" id="homeMenuBackBtn" aria-label="Geri dön">
+          <svg viewBox="0 0 24 24" width="18" height="18">
+            <path d="M15 4l-8 8 8 8" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
         </button>
+        <span class="calendar-topbar-title">Menü</span>
+        <div class="calendar-topbar-spacer"></div>
       </div>
 
-      <div class="home-widgets">
-        <button type="button" class="home-widget" id="homeWidgetCalendar">
-          <svg class="home-widget-arrow" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6" fill="none" stroke="#000" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          <span class="home-widget-icon-chip home-widget-icon-chip-blue">
-            <svg viewBox="0 0 24 24" width="24" height="24">
-              <path d="M8 2v4" stroke="#000" stroke-width="2" stroke-linecap="round"/>
-              <path d="M16 2v4" stroke="#000" stroke-width="2" stroke-linecap="round"/>
-              <rect x="3" y="4" width="18" height="18" rx="3" fill="none" stroke="#000" stroke-width="2"/>
-              <path d="M3 10h18" stroke="#000" stroke-width="2"/>
-            </svg>
-          </span>
-          <span class="home-widget-label">Takvim</span>
-          <span class="home-widget-sub">Bugüne git</span>
-        </button>
+      <div class="home-content" id="homeContent">
+        <div class="home-hero">
+          <div class="home-hero-text">
+            <span class="home-hero-eyebrow" id="homeGreeting">Merhaba</span>
+            <span class="home-hero-date" id="homeDate">—</span>
+          </div>
+        </div>
 
-        <button type="button" class="home-widget" id="homeWidgetWheel">
-          <svg class="home-widget-arrow" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6" fill="none" stroke="#000" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          <span class="home-widget-icon-chip home-widget-icon-chip-pink">
-            <svg viewBox="0 0 24 24" width="24" height="24">
-              <rect x="4" y="4" width="16" height="16" rx="4.5" fill="none" stroke="#000" stroke-width="2"/>
-              <circle cx="8.3" cy="8.3" r="1.3" fill="#000"/>
-              <circle cx="15.7" cy="8.3" r="1.3" fill="#000"/>
-              <circle cx="12" cy="12" r="1.3" fill="#000"/>
-              <circle cx="8.3" cy="15.7" r="1.3" fill="#000"/>
-              <circle cx="15.7" cy="15.7" r="1.3" fill="#000"/>
-            </svg>
-          </span>
-          <span class="home-widget-label">Mini Oyunlar</span>
-          <span class="home-widget-sub">Şimdi ne yapsam?</span>
+        <div class="home-widgets">
+          <button type="button" class="home-widget" id="homeWidgetCalendar">
+            <svg class="home-widget-arrow" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6" fill="none" stroke="#000" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span class="home-widget-icon-chip home-widget-icon-chip-blue">
+              <svg viewBox="0 0 24 24" width="24" height="24">
+                <path d="M8 2v4" stroke="#000" stroke-width="2" stroke-linecap="round"/>
+                <path d="M16 2v4" stroke="#000" stroke-width="2" stroke-linecap="round"/>
+                <rect x="3" y="4" width="18" height="18" rx="3" fill="none" stroke="#000" stroke-width="2"/>
+                <path d="M3 10h18" stroke="#000" stroke-width="2"/>
+              </svg>
+            </span>
+            <span class="home-widget-label">Takvim</span>
+            <span class="home-widget-sub">Bugüne git</span>
+          </button>
+
+          <button type="button" class="home-widget" id="homeWidgetWheel">
+            <svg class="home-widget-arrow" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6" fill="none" stroke="#000" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span class="home-widget-icon-chip home-widget-icon-chip-pink">
+              <svg viewBox="0 0 24 24" width="24" height="24">
+                <rect x="4" y="4" width="16" height="16" rx="4.5" fill="none" stroke="#000" stroke-width="2"/>
+                <circle cx="8.3" cy="8.3" r="1.3" fill="#000"/>
+                <circle cx="15.7" cy="8.3" r="1.3" fill="#000"/>
+                <circle cx="12" cy="12" r="1.3" fill="#000"/>
+                <circle cx="8.3" cy="15.7" r="1.3" fill="#000"/>
+                <circle cx="15.7" cy="15.7" r="1.3" fill="#000"/>
+              </svg>
+            </span>
+            <span class="home-widget-label">Mini Oyunlar</span>
+            <span class="home-widget-sub">Şimdi ne yapsam?</span>
+          </button>
+        </div>
+
+        <!-- Hızlı Erişim: Antrenman (Spor Modu), Gündelik, Soru Takibi ve
+             Planlama (henüz tasarlanmadı, "yakında" gösterir) sayfalarına
+             tek dokunuşla geçiş sağlayan, yan yana dizili kart şeridi. -->
+        <div class="home-quick-section">
+          <span class="home-quick-title">Hızlı Erişim</span>
+          <div class="home-quick-row">
+            <button type="button" class="home-quick-card is-locked" id="homeQuickSport" disabled>
+              <span class="home-quick-icon-chip home-quick-icon-chip-orange">
+                <svg viewBox="0 0 24 24" width="20" height="20">
+                  <path d="M6.5 6.5l11 11M4 9l3-3M20 15l-3 3M2.5 10.5l2-2M19.5 15.5l2-2M8 4l1.5 1.5M14.5 18.5L16 20" fill="none" stroke="#000" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+              </span>
+              <span class="home-quick-label">Antrenman</span>
+            </button>
+
+            <button type="button" class="home-quick-card" id="homeQuickGundelik" data-page="page-8">
+              <span class="home-quick-icon-chip home-quick-icon-chip-green">
+                <svg viewBox="0 0 24 24" width="20" height="20">
+                  <path d="M5 12.5l4.5 4.5L19 7" fill="none" stroke="#000" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </span>
+              <span class="home-quick-label">Gündelik</span>
+            </button>
+
+            <button type="button" class="home-quick-card" id="homeQuickSoru" data-page="page-9">
+              <span class="home-quick-icon-chip home-quick-icon-chip-blue">
+                <svg viewBox="0 0 24 24" width="20" height="20">
+                  <rect x="4" y="3" width="16" height="18" rx="2" fill="none" stroke="#000" stroke-width="2"/>
+                  <path d="M8 8h8M8 12h8M8 16h5" stroke="#000" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+              </span>
+              <span class="home-quick-label">Soru Takibi</span>
+            </button>
+
+            <button type="button" class="home-quick-card" id="homeQuickPlanlama" data-page="page-planlama">
+              <span class="home-quick-icon-chip home-quick-icon-chip-pink">
+                <svg viewBox="0 0 24 24" width="20" height="20">
+                  <path d="M8 2v4M16 2v4" stroke="#000" stroke-width="2" stroke-linecap="round"/>
+                  <rect x="3" y="4" width="18" height="18" rx="3" fill="none" stroke="#000" stroke-width="2"/>
+                  <path d="M3 10h18" stroke="#000" stroke-width="2"/>
+                  <circle cx="8" cy="15" r="1.3" fill="#000"/>
+                  <circle cx="12" cy="15" r="1.3" fill="#000"/>
+                  <circle cx="16" cy="15" r="1.3" fill="#000"/>
+                </svg>
+              </span>
+              <span class="home-quick-label">Planlama</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Planlama sayfası: henüz tasarlanmadı, ana sayfadaki Hızlı Erişim
+       kartından geçici olarak sadece "yakında" mesajı gösterir. -->
+  <section class="page" id="page-planlama">
+    <div class="wheel-page">
+      <div class="calendar-topbar">
+        <button type="button" class="calendar-back-btn" id="planlamaBackBtn" aria-label="Geri dön">
+          <svg viewBox="0 0 24 24" width="18" height="18">
+            <path d="M15 4l-8 8 8 8" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
         </button>
+        <span class="calendar-topbar-title">Planlama</span>
+        <div class="calendar-topbar-spacer"></div>
+      </div>
+
+      <div class="planlama-soon-wrap">
+        <span class="home-sport-soon">Şimdilik yakında</span>
       </div>
     </div>
   </section>
@@ -14361,6 +15021,23 @@
         </div>
       </div>
 
+      <div class="settings-section">
+        <span class="settings-section-label">Spor Modu</span>
+        <div class="settings-card">
+          <div class="settings-row">
+            <div class="settings-row-text">
+              <span class="settings-row-title">Spor Modu</span>
+              <span class="settings-row-desc">Aktifken alt menüde sadece Ana Sayfa ve Ayarlar kalır, diğer tüm sayfalar gizlenir.</span>
+            </div>
+            <label class="toggle brutal-toggle settings-toggle is-locked" id="settingsSportModeToggleWrap">
+              <input type="checkbox" id="settingsSportModeToggle" disabled />
+              <span class="track">
+                <span class="thumb"></span>
+              </span>
+            </label>
+          </div>
+        </div>
+      </div>
       </div>
 
       <div class="settings-col-right">
@@ -14434,6 +15111,11 @@
     </div>
     </div>
 
+    <!-- Spor Modu: Ayarlar sayfasının normal içeriği yerine gösterilen,
+         sadece spor modundan çıkmaya yarayan tek buton. -->
+    <div class="settings-sport-only" id="settingsSportOnly">
+      <button type="button" class="settings-sport-exit-btn" id="settingsSportExitBtn">Çıkış</button>
+    </div>
   </section>
 
   <!-- Ayarlar: verileri sıfırlama onay pop-up'ı -->
@@ -14563,6 +15245,24 @@
     </div>
   </div>
 
+  <!-- Soru Takibi: Günlük hedef belirleme pop-up'ı. Ana Sayfa'daki Günlük
+       Soru Sayısı halkasının kaç soruda "tam dolu" görüneceğini belirler.
+       Yazım alanı yok; sadece eksi/artı butonlarıyla 5'er 5'er ayarlanır. -->
+  <div class="settings-confirm-backdrop" id="page9GoalBackdrop">
+    <div class="page8-name-card page9-goal-card">
+      <span class="page8-name-title">Günlük Hedef</span>
+      <div class="page9-goal-stepper-row">
+        <button type="button" class="page9-goal-step-btn" id="page9GoalMinusBtn" aria-label="Hedefi azalt">–</button>
+        <span class="page9-goal-value" id="page9GoalValue">50</span>
+        <button type="button" class="page9-goal-step-btn" id="page9GoalPlusBtn" aria-label="Hedefi artır">+</button>
+      </div>
+      <div class="settings-confirm-actions">
+        <button type="button" class="settings-confirm-cancel" id="page9GoalCancel">Vazgeç</button>
+        <button type="button" class="page11-modal-confirm" id="page9GoalConfirm">Kaydet</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Sayfa 8: Kategoriler / Rutin Grupları pop-up'ı. Başlıktaki etiket
        ikonuna dokununca açılır; aktif sekmeye (Görevler/Rutinler) göre
        eklenmiş her grubu kesikli çerçeveli birer "etiket" (chip) halinde
@@ -14627,12 +15327,22 @@
       <div class="page9-header">
         <div class="page9-header-top">
           <h1>Soru Takibi</h1>
-          <button type="button" class="add-task-btn edit-task-btn" id="page9EditBtn" aria-label="Branşları düzenle" aria-pressed="false">
-            <svg viewBox="0 0 24 24" width="16" height="16">
-              <path d="M4 20l4.5-1 10.2-10.2-3.5-3.5L5 15.5 4 20z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              <path d="M13.3 6.8l3.5 3.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            </svg>
-          </button>
+          <div class="page9-header-actions">
+            <button type="button" class="add-task-btn page9-goal-btn" id="page9GoalBtn" aria-label="Günlük hedef belirle">
+              <svg viewBox="0 0 24 24" width="15" height="15">
+                <circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="2"/>
+                <circle cx="12" cy="12" r="4.5" fill="none" stroke="currentColor" stroke-width="2"/>
+                <circle cx="12" cy="12" r="1.4" fill="currentColor"/>
+              </svg>
+              <span id="page9GoalBtnLabel">Hedef: 50</span>
+            </button>
+            <button type="button" class="add-task-btn edit-task-btn" id="page9EditBtn" aria-label="Branşları düzenle" aria-pressed="false">
+              <svg viewBox="0 0 24 24" width="16" height="16">
+                <path d="M4 20l4.5-1 10.2-10.2-3.5-3.5L5 15.5 4 20z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M13.3 6.8l3.5 3.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+            </button>
+          </div>
         </div>
         <span class="page9-subtitle">Çözdüğün soruları branşına göre kaydet</span>
       </div>
@@ -15762,7 +16472,7 @@
         </svg>
       </div>
     </div>
-    <div class="option">
+    <div class="option nav-sport-hide">
       <input class="nav-input" type="radio" name="nav" value="page-5">
       <div class="nav-btn">
         <span class="nav-tooltip">Kronometre</span>
@@ -15774,7 +16484,7 @@
         </svg>
       </div>
     </div>
-    <div class="option">
+    <div class="option nav-sport-hide">
       <input class="nav-input" type="radio" name="nav" value="page-8">
       <div class="nav-btn">
         <span class="nav-tooltip">Gündelik</span>
@@ -15786,7 +16496,7 @@
         </svg>
       </div>
     </div>
-    <div class="option">
+    <div class="option nav-sport-hide">
       <input class="nav-input" type="radio" name="nav" value="page-camera">
       <div class="nav-btn">
         <span class="nav-tooltip">Soru Havuzu</span>
@@ -15808,7 +16518,7 @@
         </svg>
       </div>
     </div>
-    <div class="option">
+    <div class="option nav-sport-hide">
       <input class="nav-input" type="radio" name="nav" value="page-9">
       <div class="nav-btn">
         <span class="nav-tooltip">Soru Takibi</span>
@@ -15819,7 +16529,7 @@
         </svg>
       </div>
     </div>
-    <div class="option">
+    <div class="option nav-sport-hide">
       <input class="nav-input" type="radio" name="nav" value="page-11">
       <div class="nav-btn">
         <span class="nav-tooltip">Denemelerim</span>
@@ -16200,21 +16910,86 @@
   updateHomeGreeting();
   setInterval(updateHomeGreeting, 60000);
 
-  // ---------- Sayfa 1: Kısayol widget'ları ----------
+  // ---------- Ana Sayfa Menüsü: Kısayol widget'ları ----------
   // Takvim ve Mini Oyunlar artık nav bar'da kendi sekmeleri olmadığından,
   // widget'lar doğrudan o sayfaların kendi aç fonksiyonlarını çağırır
   // (Turlarım/Kronometre Geçmişi'nin Sayfa 5'ten açılmasıyla aynı desen).
+  // Widget'lar artık #page-home-menu içinde olduğundan, önce o sayfayı
+  // kapatıp (is-home-menu-open sınıfını temizleyip) navbar'ı geri getiriyoruz.
   const homeWidgetCalendar = document.getElementById('homeWidgetCalendar');
   const homeWidgetWheel = document.getElementById('homeWidgetWheel');
 
   if (homeWidgetCalendar) {
     homeWidgetCalendar.addEventListener('click', () => {
+      document.body.classList.remove('is-home-menu-open');
       if (typeof openCalendarPage === 'function') openCalendarPage();
     });
   }
   if (homeWidgetWheel) {
     homeWidgetWheel.addEventListener('click', () => {
+      document.body.classList.remove('is-home-menu-open');
       if (typeof openWheelPage === 'function') openWheelPage();
+    });
+  }
+
+  // ---------- Ana Sayfa Menüsü: Hızlı Erişim kartları ----------
+  // Antrenman kartı doğrudan Spor Modu'nu açar (Ayarlar'daki anahtarla
+  // aynı fonksiyon). Gündelik/Soru Takibi kartları normal nav bar
+  // sekmesiymiş gibi davranır: ilgili radio'yu işaretleyip kaydırıcıyı
+  // (alt navbar + tablet paneli) da senkron taşır. Planlama henüz
+  // tasarlanmadığından kendi "yakında" sayfasını açar. Kartlar artık
+  // #page-home-menu içinde olduğundan, her dalda önce o sayfayı kapatıp
+  // (is-home-menu-open sınıfını temizleyip) navbar'ı geri getiriyoruz.
+  const homeQuickSport = document.getElementById('homeQuickSport');
+  if (homeQuickSport) {
+    homeQuickSport.addEventListener('click', () => {
+      document.body.classList.remove('is-home-menu-open');
+      if (typeof setSportMode === 'function') {
+        setSportMode(true);
+        if (typeof saveAppState === 'function') saveAppState({ sportMode: true });
+      }
+    });
+  }
+
+  document.querySelectorAll('.home-quick-card[data-page]').forEach((card) => {
+    if (card.id === 'homeQuickPlanlama') return; // ayrı ele alınıyor, aşağıda
+    card.addEventListener('click', () => {
+      document.body.classList.remove('is-home-menu-open');
+      const pageId = card.dataset.page;
+      const navInput = document.querySelector(`.nav-input[value="${pageId}"]`);
+      if (navInput) {
+        navInput.checked = true;
+        moveSlider(navInput);
+      }
+      goToPage(pageId);
+      if (typeof setActiveSidebarItem === 'function') setActiveSidebarItem(pageId);
+    });
+  });
+
+  // Ana sayfadaki "Bugün Çözülen" (Günlük Soru Sayısı) widget'ı: dokununca
+  // Soru Takibi sayfasına (#page-9) götürür. Aynı yönlendirme mantığı
+  // (nav-input/slider/goToPage/setActiveSidebarItem) yukarıdaki Hızlı
+  // Erişim kartlarıyla tutarlı kalsın diye tekrar kullanılıyor.
+  const homeDailyQuestionsWidgetBtn = document.getElementById('homeDailyQuestionsWidget');
+  if (homeDailyQuestionsWidgetBtn) {
+    homeDailyQuestionsWidgetBtn.addEventListener('click', () => {
+      document.body.classList.remove('is-home-menu-open');
+      const pageId = homeDailyQuestionsWidgetBtn.dataset.page;
+      const navInput = document.querySelector(`.nav-input[value="${pageId}"]`);
+      if (navInput) {
+        navInput.checked = true;
+        moveSlider(navInput);
+      }
+      goToPage(pageId);
+      if (typeof setActiveSidebarItem === 'function') setActiveSidebarItem(pageId);
+    });
+  }
+
+  const homeQuickPlanlama = document.getElementById('homeQuickPlanlama');
+  if (homeQuickPlanlama) {
+    homeQuickPlanlama.addEventListener('click', () => {
+      document.body.classList.remove('is-home-menu-open');
+      if (typeof openPlanlamaPage === 'function') openPlanlamaPage();
     });
   }
 </script>
@@ -16341,6 +17116,77 @@
 </script>
 
 <script>
+  // Ayarlar sayfasındaki "Spor Modu" anahtarı: aktifken alt navbar'da
+  // (ve tablet yanal panelinde) sadece Ana Sayfa ile Ayarlar sekmeleri
+  // kalır, diğer tüm sekmeler kaldırılır; bu iki sayfanın içeriği de
+  // tamamen değişir (bkz. body.is-sport-mode CSS kuralları ve
+  // #homeContentSport / #settingsSportOnly). Durum APP_STATE üzerinden
+  // localStorage'a kaydedilir, böylece bir sonraki girişte kaldığı
+  // yerden (açık/kapalı) yüklenir.
+  const sportModeToggle = document.getElementById('settingsSportModeToggle');
+  const sportModeExitBtn = document.getElementById('settingsSportExitBtn');
+
+  // Spor modu açıldığında, o an navbar'da artık görünmeyen bir sayfada
+  // (ör. Kronometre) durulmasın diye her zaman Ana Sayfa'ya dönülür; hem
+  // alttaki pill navbar'ın hem de (varsa) geniş ekran yanal panelinin
+  // seçili durumu da bununla senkron tutulur.
+  const goToSportHome = () => {
+    const homeNavInput = document.querySelector('.nav-input[value="page-1"]');
+    if (homeNavInput) {
+      homeNavInput.checked = true;
+      moveSlider(homeNavInput);
+    }
+    goToPage('page-1');
+    if (typeof setActiveSidebarItem === 'function') {
+      setActiveSidebarItem('page-1');
+    }
+  };
+
+  const setSportMode = (isOn) => {
+    if (sportModeToggle) sportModeToggle.checked = isOn;
+
+    if (isOn) {
+      document.body.classList.add('is-sport-mode');
+      goToSportHome();
+    } else {
+      document.body.classList.remove('is-sport-mode');
+      // Spor modundan çıkarken navbar 6 sekmelik düzenden 7 sekmelik
+      // normal düzene dönüyor; ama .nav-slider'ın
+      // konumu hâlâ spor modundaki dar ölçüme göre hesaplanmış
+      // transform değerini taşıyor. Sınıf kaldırıldıktan (layout
+      // güncellendikten) hemen sonra, o an seçili olan sekmeye göre
+      // göstergeyi normal genişliklere göre yeniden konumlandırıyoruz.
+      const checkedInput = document.querySelector('.nav-input:checked');
+      if (checkedInput) moveSlider(checkedInput);
+    }
+  };
+
+  if (sportModeToggle) {
+    // Sayfa açılırken daha önce kaydedilmiş bir durum varsa uygula.
+    const initialSportMode = APP_STATE.sportMode === true;
+    sportModeToggle.checked = initialSportMode;
+    if (initialSportMode) {
+      document.body.classList.add('is-sport-mode');
+    }
+
+    sportModeToggle.addEventListener('change', () => {
+      setSportMode(sportModeToggle.checked);
+      saveAppState({ sportMode: sportModeToggle.checked });
+    });
+  }
+
+  // Spor Modu'ndaki Ayarlar sayfasında yer alan tek "Çıkış" butonu:
+  // anahtarı kapatıp normal navigasyona geri döner.
+  if (sportModeExitBtn) {
+    sportModeExitBtn.addEventListener('click', () => {
+      setSportMode(false);
+      saveAppState({ sportMode: false });
+    });
+  }
+</script>
+
+
+<script>
   // Ayarlar sayfasındaki "Tam ekran" anahtarı: Fullscreen API üzerinden
   // tarayıcı arayüzünü (adres çubuğu vb.) gizleyip belgeyi tam ekrana alır.
   // Kullanıcı tam ekrandan Esc/geri tuşuyla veya sistem üzerinden çıkarsa
@@ -16403,62 +17249,10 @@
 </script>
 
 <script>
-  const btn = document.getElementById('homeThemeBtn');
-
-  // Animasyonun her zaman en az bu kadar görünür kalmasını garanti ediyoruz.
-  // Kalem (pen) dokunuşları parmağa göre çok daha kısa sürdüğü için
-  // (video ölçümünde: parmak ~0.57s, kalem ~0.2-0.3s), bu süre olmadan
-  // animasyon tam oturmadan bitiyor ve "farklı" görünüyordu.
-  const MIN_PRESS_MS = 140;
-
-  let pressStartedAt = 0;
-  let releaseTimer = null;
-
-  const press = () => {
-    clearTimeout(releaseTimer);
-    pressStartedAt = performance.now();
-    btn.classList.add('is-pressed');
-  };
-
-  const release = () => {
-    const elapsed = performance.now() - pressStartedAt;
-    const remaining = MIN_PRESS_MS - elapsed;
-    clearTimeout(releaseTimer);
-    if (remaining > 0) {
-      releaseTimer = setTimeout(() => btn.classList.remove('is-pressed'), remaining);
-    } else {
-      btn.classList.remove('is-pressed');
-    }
-  };
-
-  // Basılma anı: parmak, kalem veya fare fark etmeksizin
-  // her zaman aynı sabit süreli (CSS transition: 0.1s) ve aynı minimum
-  // görünürlük süresine (140ms) sahip animasyon oynar.
-  btn.addEventListener('pointerdown', press);
-  btn.addEventListener('pointerup', release);
-  btn.addEventListener('pointercancel', release);
-  btn.addEventListener('pointerleave', release);
-
-  // Hover (üste gelme) efekti SADECE gerçek fare içindir.
-  // Kalem (pen) tarayıcıda "hover destekli" sayılabildiği için
-  // burada pointerType kontrolüyle bilerek dışarıda bırakılıyor.
-  btn.addEventListener('pointerenter', (e) => {
-    if (e.pointerType === 'mouse') {
-      btn.classList.add('can-hover');
-    }
-  });
-  btn.addEventListener('pointerout', () => {
-    btn.classList.remove('can-hover');
-  });
-</script>
-
-<script>
   // Sayfa 1'deki butona her tıklandığında tema (arka plan + yazı rengi) değişir.
   // Toplam 7 tema: orijinal (antresit gri), koyu, saf siyah, krem, fildişi, bebek mavisi ve lacivert.
-  // "Orijinal" referans görseldeki antresit (#272727) tonu; ancak uygulama
-  // ilk açılışta (daha önce kaydedilmiş bir tema tercihi yoksa) artık
-  // Fildişi (#F6F4EF, index 4) rengiyle açılır (bkz. aşağıdaki themeIndex
-  // varsayılanı ve splash ekranı script'i).
+  // "Orijinal" artık referans görseldeki antresit (#272727) tonu; uygulama
+  // ilk açılışta (daha önce kaydedilmiş bir tema tercihi yoksa) bu renkle açılır.
   const themes = [
     {
       name: 'Orijinal',
@@ -16619,9 +17413,8 @@
   const layerA = document.getElementById('themeLayerA');
   const layerB = document.getElementById('themeLayerB');
   // Daha önce seçilmiş bir tema kaydedilmişse (localStorage), uygulama onunla açılır.
-  // Kaydedilmiş bir tercih yoksa (ilk açılış), varsayılan olarak Fildişi (index 4) kullanılır.
   const savedThemeIndex = APP_STATE.theme;
-  let themeIndex = (typeof savedThemeIndex === 'number' && themes[savedThemeIndex]) ? savedThemeIndex : 4;
+  let themeIndex = (typeof savedThemeIndex === 'number' && themes[savedThemeIndex]) ? savedThemeIndex : 0;
   let visibleLayer = layerA;
   let hiddenLayer = layerB;
 
@@ -16681,7 +17474,6 @@
     saveAppState({ theme: themeIndex });
   };
 
-  btn.addEventListener('click', applyNextTheme);
 </script>
 
 <script>
@@ -16792,6 +17584,42 @@
 
   const wheelBackBtn = document.getElementById('wheelBackBtn');
   if (wheelBackBtn) wheelBackBtn.addEventListener('click', closeWheelPage);
+
+  // Planlama: Ana Sayfa'daki Hızlı Erişim kartından açılan, henüz
+  // tasarlanmamış sayfa için geçici "yakında" ekranı. Aynı açma/kapama
+  // deseni (Mini Oyunlar/Takvim ile) kullanılır.
+  const openPlanlamaPage = () => {
+    document.body.classList.add('is-planlama-open'); // nav bar'ı gizler
+    goToPage('page-planlama');
+  };
+
+  const closePlanlamaPage = () => {
+    document.body.classList.remove('is-planlama-open');
+    goToPage('page-1');
+  };
+
+  const planlamaBackBtn = document.getElementById('planlamaBackBtn');
+  if (planlamaBackBtn) planlamaBackBtn.addEventListener('click', closePlanlamaPage);
+
+  // Ana Sayfa Menüsü: Ana Sayfa'nın (#page-1) sağ üst köşesindeki küçük
+  // butonla açılan, eski Ana Sayfa içeriğinin (Merhaba/tarih, Takvim/Mini
+  // Oyunlar widget'ları, Hızlı Erişim kartları) tamamını barındıran ayrı
+  // sayfa. Aynı açma/kapama deseni (Mini Oyunlar/Planlama ile) kullanılır.
+  const openHomeMenuPage = () => {
+    document.body.classList.add('is-home-menu-open'); // nav bar'ı gizler
+    goToPage('page-home-menu');
+  };
+
+  const closeHomeMenuPage = () => {
+    document.body.classList.remove('is-home-menu-open');
+    goToPage('page-1');
+  };
+
+  const homeMenuBtn = document.getElementById('homeMenuBtn');
+  if (homeMenuBtn) homeMenuBtn.addEventListener('click', openHomeMenuPage);
+
+  const homeMenuBackBtn = document.getElementById('homeMenuBackBtn');
+  if (homeMenuBackBtn) homeMenuBackBtn.addEventListener('click', closeHomeMenuPage);
 
   // '#3f5aa8' (TYT) ve '#7452a8' (AYT) soru havuzu kartlarındaki şerit
   // etiketleriyle de eşleşir; bu sayede uygulama genelinde aynı renk
@@ -20864,6 +21692,10 @@
     // "Ders Ekle" pop-up'ında her zaman seçenek olarak listelenir; ilgili
     // ders tamamen silinirse buradan da çıkarılır (hiç eklenmemiş gibi olur).
     customSubjectPool: { tyt: [], ayt: [] },
+    // dailyGoal: Ana Sayfa'daki Günlük Soru Sayısı halkasının "dolu"
+    // kabul edileceği günlük hedef soru sayısı. Soru Takibi sayfasındaki
+    // "Hedef" butonuyla kullanıcı tarafından değiştirilebilir.
+    dailyGoal: 50,
     logs: [] // { id, date:'YYYY-MM-DD', track:'tyt'|'ayt', subjectId, count, ts }
   });
 
@@ -20884,13 +21716,26 @@
   if (!page9State.dayLists || typeof page9State.dayLists !== 'object' || Array.isArray(page9State.dayLists)) {
     page9State.dayLists = {};
   }
+  if (!Number.isFinite(page9State.dailyGoal) || page9State.dailyGoal <= 0) {
+    page9State.dailyGoal = 50;
+  }
   page9State.logs.forEach((log) => {
     const entry = page9State.dayLists[log.date] || (page9State.dayLists[log.date] = { tyt: [], ayt: [] });
     if (!Array.isArray(entry[log.track])) entry[log.track] = [];
     if (!entry[log.track].includes(log.subjectId)) entry[log.track].push(log.subjectId);
   });
 
-  const savePage9State = () => saveAppState({ page9: page9State });
+  // Her kayıt/durum değişikliğinde (soru eklendi/silindi/düzenlendi) hem
+  // veriyi kalıcı hale getirir hem de Ana Sayfa'daki Günlük Soru Sayısı
+  // widget'ını (varsa) anında tazeler; böylece widget gerçek zamanlı
+  // hissettirir, ayrıca bir "yenile" mantığına gerek kalmaz.
+  const savePage9State = () => {
+    saveAppState({ page9: page9State });
+    // NOT: aynı script bloğunda daha aşağıda "const" ile tanımlanan
+    // refreshHomeDailyQuestionsWidget'a doğrudan isimle erişmek TDZ
+    // (temporal dead zone) hatası verir; window üzerinden erişilir.
+    if (typeof window.refreshHomeDailyQuestionsWidget === 'function') window.refreshHomeDailyQuestionsWidget();
+  };
   savePage9State(); // ilk yükleme/sıfırlama sonrası durumu hemen kaydet
 
   // Belirli bir gün + branş için "o gün eklenmiş ders id'leri" dizisini
@@ -20974,6 +21819,105 @@
     ), 0);
   };
 
+  // ---------- Ana Sayfa: Günlük Soru Sayısı widget'ı ----------
+  // Bugün (gerçek takvim günü, Soru Takibi'nde o an gezinilen tarih değil)
+  // için tüm branşlardaki (TYT+AYT) log kayıtlarının toplamını hesaplar.
+  // Halka artık tek renkte dolmuyor: her ders, o gün çözülen soru sayısı
+  // oranında KENDİ renginde bir dilim olarak halkaya eklenir (bkz.
+  // homeDailyRingSegments). Dilimlerin toplam uzunluğu Soru Takibi'ndeki
+  // "Hedef" butonuyla belirlenen günlük hedefe (page9State.dailyGoal)
+  // göre ölçeklenir; hedefe ulaşılınca halka tamamen dolu görünür, geri
+  // kalan (henüz çözülmemiş) kısım boş/gri kalır.
+  const HOME_DAILY_RING_CIRCUMFERENCE = 226.19; // 2 * PI * 36 (bkz. r=36 SVG)
+  const SVG_NS = 'http://www.w3.org/2000/svg';
+  const homeDailyWidget = document.getElementById('homeDailyQuestionsWidget');
+  const homeDailyCountEl = document.getElementById('homeDailyQuestionsCount');
+  const homeDailySubEl = document.getElementById('homeDailyQuestionsSub');
+  const homeDailyRingSegmentsEl = document.getElementById('homeDailyRingSegments');
+
+  // Bir dersin (subjectId) tanımını -isim/renk- TYT ya da AYT listesinde
+  // arar; hangi track'te olduğu widget için önemli değildir.
+  const page9FindSubjectById = (subjectId) => (
+    page9State.subjects.tyt.find((s) => s.id === subjectId)
+    || page9State.subjects.ayt.find((s) => s.id === subjectId)
+    || null
+  );
+
+  const refreshHomeDailyQuestionsWidget = () => {
+    if (!homeDailyWidget) return;
+    const todayKey = page9DateKey(page9StartOfDay(new Date()));
+
+    // Bugünkü logları branşa göre toplar, ilk görülme sırasını da korur
+    // (halka dilimleri bu sıraya göre, en erken çözülen ders 12 yönünden
+    // başlayarak dizilir).
+    const subjectTotalsToday = new Map();
+    const subjectOrderToday = [];
+    page9State.logs.forEach((log) => {
+      if (log.date !== todayKey) return;
+      if (!subjectTotalsToday.has(log.subjectId)) subjectOrderToday.push(log.subjectId);
+      subjectTotalsToday.set(log.subjectId, (subjectTotalsToday.get(log.subjectId) || 0) + log.count);
+    });
+    const todayTotal = Array.from(subjectTotalsToday.values()).reduce((sum, n) => sum + n, 0);
+    const goal = Math.max(1, Number(page9State.dailyGoal) || 1);
+
+    // Mevcut dilimleri temizleyip her ders için ayrı, kendi renginde bir
+    // <circle> ekler. Toplam uzunluk asla çemberi (hedefi) aşmaz; hedef
+    // aşılırsa son dilim tam çemberi doldurup kırpılır (halka "full" kalır).
+    if (homeDailyRingSegmentsEl) {
+      homeDailyRingSegmentsEl.innerHTML = '';
+      let cumulative = 0;
+      subjectOrderToday.forEach((subjectId) => {
+        if (cumulative >= HOME_DAILY_RING_CIRCUMFERENCE) return;
+        const count = subjectTotalsToday.get(subjectId) || 0;
+        if (count <= 0) return;
+        const subject = page9FindSubjectById(subjectId);
+        const color = (subject && subject.color) || '#999';
+        let segLen = (count / goal) * HOME_DAILY_RING_CIRCUMFERENCE;
+        if (cumulative + segLen > HOME_DAILY_RING_CIRCUMFERENCE) {
+          segLen = HOME_DAILY_RING_CIRCUMFERENCE - cumulative;
+        }
+        if (segLen <= 0) return;
+        const circle = document.createElementNS(SVG_NS, 'circle');
+        circle.setAttribute('class', 'home-daily-widget-ring-segment');
+        circle.setAttribute('cx', '42');
+        circle.setAttribute('cy', '42');
+        circle.setAttribute('r', '36');
+        circle.setAttribute('stroke', color);
+        circle.style.color = color;
+        circle.setAttribute('stroke-dasharray', `${segLen} ${HOME_DAILY_RING_CIRCUMFERENCE - segLen}`);
+        circle.setAttribute('stroke-dashoffset', String(-cumulative));
+        homeDailyRingSegmentsEl.appendChild(circle);
+        cumulative += segLen;
+      });
+    }
+
+    if (homeDailyCountEl) homeDailyCountEl.textContent = String(todayTotal);
+    if (homeDailySubEl) {
+      homeDailySubEl.textContent = todayTotal === 0
+        ? 'Henüz soru girilmedi'
+        : (todayTotal >= goal
+          ? 'Günlük hedefe ulaşıldı 🎯'
+          : `${todayTotal}/${goal} · hedefe git`);
+    }
+
+    // Kısa "nabız" efekti: yeni bir kayıt geldiğinde halkanın canlı
+    // olduğunu hissettirir, animasyon bitince sınıf otomatik kaldırılır.
+    homeDailyWidget.classList.add('is-pulsing');
+    clearTimeout(homeDailyWidget._pulseTimer);
+    homeDailyWidget._pulseTimer = setTimeout(() => {
+      homeDailyWidget.classList.remove('is-pulsing');
+    }, 700);
+  };
+  // Ana sayfa Soru Takibi'nden önce çizildiği için ilk boyama burada,
+  // window üzerinden global erişimle yapılır (bkz. savePage9State).
+  window.refreshHomeDailyQuestionsWidget = refreshHomeDailyQuestionsWidget;
+  refreshHomeDailyQuestionsWidget();
+
+  // Gece yarısını geçtiğinde ("bugün" değiştiğinde) widget'ın otomatik
+  // güncellenmesi için düzenli aralıklarla kontrol edilir (dakikada bir,
+  // takvim ikonundaki gün numarasıyla aynı sıklık).
+  setInterval(refreshHomeDailyQuestionsWidget, 60000);
+
   const page9NextColor = (track) => WHEEL_PALETTE[page9State.subjects[track].length % WHEEL_PALETTE.length];
 
   // ---- Ders renkleri: "Ders Ekle" ve "Branşlarım" pop-up'larından
@@ -21052,6 +21996,77 @@
       stepFn();
     });
   };
+
+  // ---------- Soru Takibi: Günlük Hedef pop-up'ı ----------
+  // Ana Sayfa'daki Günlük Soru Sayısı halkasının kaç soruda "tam dolu"
+  // görüneceğini belirler. Serbest yazım yerine sadece eksi/artı
+  // butonlarıyla (basılı tutunca hızlanan attachHoldRepeat ile) 5'er 5'er
+  // ayarlanır; klavye açılmadığı için mobilde daha hızlı ve hatasız.
+  const page9GoalBackdrop = document.getElementById('page9GoalBackdrop');
+  const page9GoalMinusBtn = document.getElementById('page9GoalMinusBtn');
+  const page9GoalPlusBtn = document.getElementById('page9GoalPlusBtn');
+  const page9GoalValueEl = document.getElementById('page9GoalValue');
+  const page9GoalCancel = document.getElementById('page9GoalCancel');
+  const page9GoalConfirm = document.getElementById('page9GoalConfirm');
+  const page9GoalBtn = document.getElementById('page9GoalBtn');
+  const page9GoalBtnLabel = document.getElementById('page9GoalBtnLabel');
+  const PAGE9_GOAL_STEP = 5;
+  const PAGE9_GOAL_MIN = 5;
+  const PAGE9_GOAL_MAX = 500;
+  let page9GoalPending = page9State.dailyGoal;
+
+  const page9RefreshGoalLabel = () => {
+    if (page9GoalBtnLabel) page9GoalBtnLabel.textContent = `Hedef: ${page9State.dailyGoal}`;
+  };
+
+  const page9RenderGoalValue = () => {
+    if (page9GoalValueEl) page9GoalValueEl.textContent = String(page9GoalPending);
+  };
+
+  const closePage9GoalPopup = () => {
+    if (page9GoalBackdrop) page9GoalBackdrop.classList.remove('is-open');
+  };
+
+  const openPage9GoalPopup = () => {
+    if (!page9GoalBackdrop) return;
+    page9GoalPending = page9State.dailyGoal;
+    page9RenderGoalValue();
+    page9GoalBackdrop.classList.add('is-open');
+  };
+
+  const confirmPage9GoalPopup = () => {
+    page9State.dailyGoal = page9GoalPending;
+    page9RefreshGoalLabel();
+    savePage9State();
+    closePage9GoalPopup();
+  };
+
+  if (page9GoalMinusBtn) {
+    attachHoldRepeat(page9GoalMinusBtn, () => {
+      page9GoalPending = Math.max(PAGE9_GOAL_MIN, page9GoalPending - PAGE9_GOAL_STEP);
+      page9RenderGoalValue();
+    });
+  }
+  if (page9GoalPlusBtn) {
+    attachHoldRepeat(page9GoalPlusBtn, () => {
+      page9GoalPending = Math.min(PAGE9_GOAL_MAX, page9GoalPending + PAGE9_GOAL_STEP);
+      page9RenderGoalValue();
+    });
+  }
+  if (page9GoalBtn) page9GoalBtn.addEventListener('click', openPage9GoalPopup);
+  if (page9GoalCancel) page9GoalCancel.addEventListener('click', closePage9GoalPopup);
+  if (page9GoalBackdrop) {
+    page9GoalBackdrop.addEventListener('click', (e) => {
+      if (e.target === page9GoalBackdrop) closePage9GoalPopup();
+    });
+  }
+  if (page9GoalConfirm) page9GoalConfirm.addEventListener('click', confirmPage9GoalPopup);
+  document.addEventListener('keydown', (e) => {
+    if (page9GoalBackdrop && e.key === 'Escape' && page9GoalBackdrop.classList.contains('is-open')) {
+      closePage9GoalPopup();
+    }
+  });
+  page9RefreshGoalLabel(); // ilk boyama
 
   // Seçili tarih + branş için tek bir log kaydını doğrudan istenen sayıya
   // ayarlar (ekleme değil, o günkü toplamı belirleme). count 0 ise kayıt
@@ -23835,14 +24850,6 @@
   };
 
   const closeExamDetail = () => {
-    // Güvenlik: "Kaynaklar" pop-up'ı (ve galerisi) açık kalmış olabilir
-    // (ör. pop-up açıkken geri butonuna basıldıysa). Kapatılmadan
-    // sayfadan çıkılırsa, pop-up'ın kilitlediği body.has-modal-open
-    // sınıfı hiç kaldırılmadan takılı kalır ve bu da TÜM sayfalardaki
-    // kaydırmayı kalıcı olarak kilitler. O yüzden çıkmadan önce ikisini
-    // de (varsa) zorla kapatıyoruz.
-    if (typeof closeExamResGallery === 'function') closeExamResGallery();
-    if (typeof closeExamResourcesModal === 'function') closeExamResourcesModal();
     document.body.classList.remove('is-exam-detail-open');
     goToPage('page-11');
     renderPage11List();
@@ -27797,110 +28804,6 @@
       if (tag !== 'INPUT' && tag !== 'TEXTAREA') return;
       setTimeout(scrollFocusedIntoView, 320);
     });
-  })();
-
-  // ---- Güvenlik ağı: kaydırmayı kilitleyen body.has-modal-open sınıfı
-  // yanlışlıkla takılı kalırsa (bir pop-up, kapatma yolunun dışında bir
-  // şekilde -ör. geri gitme, uygulamanın arka plana alınıp bir jestin
-  // yarıda kesilmesi vb.- açık bırakılırsa) TÜM sayfalardaki kaydırma
-  // kalıcı olarak durur, çünkü bu sınıf body'ye touch-action:none
-  // uyguluyor ve bu, alttaki her kaydırılabilir alanı da etkiliyor.
-  // Uygulama her ön plana döndüğünde, gerçekten açık bir pop-up
-  // (backdrop) yoksa bu kilidi otomatik olarak kaldırıyoruz.
-  // ---- Genel "kaydırma donması" düzeltmesi (bilinen bir iOS WebKit
-  // hatası) ----
-  // Bir kaydırma kutusunun (overflow-y: auto/scroll) içeriği JavaScript
-  // tarafından yeniden çizildiğinde (bir listeye satır eklenmesi/
-  // silinmesi, bir modun açılıp kapanmasıyla kartların yeniden
-  // oluşturulması vb.) iOS Safari bazen o kutunun parmakla kaydırma
-  // durumunu "donuk" bırakıyor: kutu görsel olarak hâlâ taşan bir
-  // liste gibi dursa da dokunuşlara artık tepki vermiyor. Bu, Soru
-  // Havuzu'nda neredeyse her etkileşimde (seçme, işaretleme, silme,
-  // filtre, mod değiştirme) listenin yeniden çizilmesi yüzünden sık
-  // görülüyordu. Her yeniden çizim noktasını tek tek bulup yamamak
-  // yerine, sayfadaki HER içerik değişikliğini genel olarak izleyip,
-  // değişen içeriğe en yakın kaydırılabilir kutuyu kısacık bir
-  // "overflow kapat/aç" hamlesiyle tazeliyoruz; bu, tarayıcıyı
-  // kaydırmayı yeniden hesaplamaya zorlayıp donmayı önlüyor. Görünüşte
-  // hiçbir etkisi yoktur (bir sonraki karede eski haline dönüyor),
-  // sadece tarayıcının iç kaydırma durumunu tazeler.
-  (function () {
-    const isScrollableY = (el) => {
-      const style = window.getComputedStyle(el);
-      return style.overflowY === 'auto' || style.overflowY === 'scroll';
-    };
-
-    const findScrollableAncestor = (node) => {
-      let el = node.nodeType === 1 ? node : node.parentElement;
-      while (el && el !== document.documentElement) {
-        if (isScrollableY(el)) return el;
-        el = el.parentElement;
-      }
-      return null;
-    };
-
-    const nudging = new WeakSet();
-    const nudge = (el) => {
-      if (nudging.has(el)) return;
-      nudging.add(el);
-      const prevInlineOverflowY = el.style.overflowY;
-      el.style.overflowY = 'hidden';
-      // Bir sonraki karede geri alınır; tek bir reflow tetiklemesi yeterli
-      // olduğundan görsel olarak fark edilmez, animasyon/geçişi bozmaz.
-      requestAnimationFrame(() => {
-        el.style.overflowY = prevInlineOverflowY;
-        nudging.delete(el);
-      });
-    };
-
-    let pendingScrollables = new Set();
-    let flushScheduled = false;
-    const flushPending = () => {
-      flushScheduled = false;
-      pendingScrollables.forEach(nudge);
-      pendingScrollables.clear();
-    };
-
-    const scrollFreezeObserver = new MutationObserver((mutations) => {
-      for (const m of mutations) {
-        const scrollable = findScrollableAncestor(m.target);
-        if (scrollable) pendingScrollables.add(scrollable);
-      }
-      if (pendingScrollables.size && !flushScheduled) {
-        flushScheduled = true;
-        requestAnimationFrame(flushPending);
-      }
-    });
-
-    scrollFreezeObserver.observe(document.body, {
-      childList: true,
-      subtree: true,
-      attributes: true,
-      attributeFilter: ['class', 'style']
-    });
-  })();
-
-  (function () {
-    const releaseStaleModalLockIfNeeded = () => {
-      if (!document.body.classList.contains('has-modal-open')) return;
-      const anyBackdropOpen = Array.from(
-        document.querySelectorAll('[id$="Backdrop"]')
-      ).some((el) => el.classList.contains('is-open'));
-      if (!anyBackdropOpen) {
-        document.body.classList.remove('has-modal-open');
-      }
-    };
-
-    document.addEventListener('visibilitychange', () => {
-      if (document.visibilityState === 'visible') releaseStaleModalLockIfNeeded();
-    });
-    window.addEventListener('pageshow', releaseStaleModalLockIfNeeded);
-    window.addEventListener('focus', releaseStaleModalLockIfNeeded);
-    // Olay tabanlı kontroller bazı geçişleri (ör. gesture yarıda kesilmesi)
-    // kaçırabileceği için, düşük maliyetli bir aralıkla da düzenli olarak
-    // kontrol ediyoruz; bu sadece bir sınıf kontrolü olduğu için performansa
-    // etkisi yoktur.
-    setInterval(releaseStaleModalLockIfNeeded, 1500);
   })();
 </script>
 
