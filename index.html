@@ -40,12 +40,19 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Archivo+Expanded:wght@700;800&family=Playfair+Display:ital,wght@0,400;0,700;0,800;1,400;1,700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Expanded:wght@700;800&family=Playfair+Display:ital,wght@0,400;0,700;0,800;1,400;1,700&family=Baloo+2:wght@600;700;800&display=swap" rel="stylesheet">
 <style>
   * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+    /* iOS'ta (özellikle ana ekrana eklenmiş PWA / standalone modda
+       çalışan WKWebView içinde) overflow-y:auto olan kutuların ara sıra
+       dokunuşlara tepkisiz kalıp donması bilinen bir WebKit hatasıdır.
+       Momentum kaydırmayı tüm elemanlarda açıkça etkinleştirmek bu
+       donmanın oluşma sıklığını belirgin şekilde azaltır; aşağıdaki JS
+       tabanlı "genel kaydırma donması düzeltmesi" ile birlikte çalışır. */
+    -webkit-overflow-scrolling: touch;
   }
 
   html, body {
@@ -225,6 +232,40 @@
     color: var(--theme-text, #f2f2f7);
     font-size: 22px;
     transition: color 0.5s ease;
+  }
+
+  /* ---------- Uygulama Logosu (sadece metin) ----------
+     Ana sayfanın sol üst köşesinde duran, uygulamanın adını taşıyan
+     şık bir metin logosu. Uygulamanın zaten "dekoratif başlık fontu"
+     olarak kullandığı kalın+italik Playfair Display ile yazılır (bkz.
+     .stopwatch-fullscreen-subject / .settings-title), böylece diğer
+     "imzalı" başlıklarla aynı kimliği taşır. Sadece #page-1 (ana sayfa)
+     içinde görünür; .page zaten position:absolute+inset:0 olduğundan
+     logo, sayfanın kendi flex ortalamasından etkilenmeden konumlanır. */
+  .app-logo {
+    position: absolute;
+    top: calc(env(safe-area-inset-top) + 16px);
+    left: 22px;
+    width: 150px;
+    height: 52px;
+    overflow: visible;
+    color: var(--theme-text, #1a1a1a);
+    transition: color 0.5s ease;
+    pointer-events: none;
+    z-index: 2;
+    display: block;
+  }
+
+  .app-logo text {
+    font-family: "Baloo 2", "Sabon", sans-serif;
+    font-weight: 700;
+    font-size: 42px;
+    letter-spacing: -0.01em;
+    fill: currentColor;
+    paint-order: stroke fill;
+    stroke: currentColor;
+    stroke-width: 0.4px;
+    stroke-linejoin: round;
   }
 
   /* ---------- Alt Nav Bar ---------- */
@@ -984,6 +1025,52 @@
     stroke: #f2f2f4;
   }
 
+  body.is-anthracite .home-date-widget {
+    background-color: var(--dark-card-color, #32343a);
+    box-shadow: 0 10px 22px -14px rgba(0, 0, 0, 0.5), 0 2px 6px rgba(0, 0, 0, 0.18);
+  }
+
+  body.is-anthracite .home-date-widget-num,
+  body.is-anthracite .home-date-widget-weekday {
+    color: #f2f2f4;
+  }
+
+  body.is-anthracite .home-date-widget-month {
+    color: #a9a9ae;
+  }
+
+  body.is-anthracite .home-live-widget {
+    background-color: var(--dark-card-color, #32343a);
+    box-shadow: 0 14px 28px -16px rgba(0, 0, 0, 0.55), 0 2px 8px rgba(0, 0, 0, 0.2);
+  }
+
+  body.is-anthracite .home-live-widget-count,
+  body.is-anthracite .home-live-widget-title {
+    color: #f2f2f4;
+  }
+
+  body.is-anthracite .home-live-widget-sub {
+    color: #a9a9ae;
+  }
+
+  body.is-anthracite .home-mini-widget {
+    background-color: var(--dark-card-color, #32343a);
+    box-shadow: 0 10px 22px -14px rgba(0, 0, 0, 0.5), 0 2px 6px rgba(0, 0, 0, 0.18);
+  }
+
+  body.is-anthracite .home-mini-widget-icon {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: #f2f2f4;
+  }
+
+  body.is-anthracite .home-mini-widget-title {
+    color: #f2f2f4;
+  }
+
+  body.is-anthracite .home-mini-widget-sub {
+    color: #a9a9ae;
+  }
+
   /* Ana sayfadaki tema/renk paleti düğmesinin ikonu SVG üzerinde sabit
      siyah (fill/stroke="#000") olarak tanımlı; koyu moddaki (anthracite)
      siyah kart zemininde görünmez kalmaması için beyaza çeviriyoruz. */
@@ -1446,6 +1533,291 @@
     margin-top: -0.35rem;
   }
 
+  /* Ana sayfadaki widget'ları (takvim + soru sayacı) dikey olarak, aynı
+     genişlikte ortalayan sarmalayıcı. */
+  .home-widgets-stack {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.9rem;
+    width: min(300px, 82vw);
+  }
+
+  /* Minimalist takvim widget'ı: bugünün tarihini gösteren sade, yuvarlak
+     bir "rozet"; ana sayfadaki diğer kartla aynı yumuşak gölge dilini
+     paylaşır ama daha küçük/kompakttır. */
+  .home-date-widget {
+    display: inline-flex;
+    align-self: flex-start;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.6rem 1.1rem;
+    background-color: #fff;
+    border: none;
+    border-radius: 999px;
+    box-shadow: 0 10px 22px -14px rgba(0, 0, 0, 0.26), 0 2px 6px rgba(0, 0, 0, 0.05);
+    cursor: pointer;
+    text-align: left;
+    font-family: "Space Grotesk", sans-serif;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+  }
+
+  .home-date-widget:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 14px 26px -14px rgba(0, 0, 0, 0.3), 0 2px 6px rgba(0, 0, 0, 0.06);
+  }
+
+  .home-date-widget:active {
+    transform: translateY(0);
+    box-shadow: 0 6px 14px -10px rgba(0, 0, 0, 0.22), 0 1px 4px rgba(0, 0, 0, 0.05);
+  }
+
+  .home-date-widget-num {
+    font-family: "Baloo 2", "Space Grotesk", sans-serif;
+    font-weight: 800;
+    font-size: 1.5rem;
+    line-height: 1;
+    color: #000;
+  }
+
+  .home-date-widget-text {
+    display: flex;
+    flex-direction: column;
+    gap: 0.05rem;
+  }
+
+  .home-date-widget-weekday {
+    font-weight: 700;
+    font-size: 0.8rem;
+    color: #000;
+  }
+
+  .home-date-widget-month {
+    font-weight: 600;
+    font-size: 0.65rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #9a9a9a;
+  }
+
+  /* ---------- Ana sayfa: canlı "Bugün Çözülen Soru" widget'ı ----------
+     Soru Takibi'nin (Sayfa 9) log verisinden anlık hesaplanır; #page-1
+     boş olduğundan sayfanın kendi flex ortalamasıyla ekranın ortasında
+     durur. Sayfanın geri kalanındaki kalın-çizgi/sert-gölge dilinden
+     bilinçli olarak ayrılıp sade, yumuşak gölgeli bir kart olarak
+     tasarlandı (üst kısımdaki tarih rozetiyle aynı sakin dil). */
+  .home-live-widget {
+    display: flex;
+    align-items: center;
+    gap: 1.1rem;
+    width: 100%;
+    padding: 1.15rem 1.35rem;
+    background-color: #fff;
+    border: none;
+    border-radius: 1.4em;
+    box-shadow: 0 14px 28px -16px rgba(0, 0, 0, 0.28), 0 2px 8px rgba(0, 0, 0, 0.06);
+    cursor: pointer;
+    text-align: left;
+    font-family: "Space Grotesk", sans-serif;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+  }
+
+  .home-live-widget:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 18px 32px -16px rgba(0, 0, 0, 0.32), 0 2px 8px rgba(0, 0, 0, 0.07);
+  }
+
+  .home-live-widget:active {
+    transform: translateY(0);
+    box-shadow: 0 8px 18px -12px rgba(0, 0, 0, 0.24), 0 1px 4px rgba(0, 0, 0, 0.05);
+  }
+
+  .home-live-widget-count {
+    flex: none;
+    font-family: "Baloo 2", "Space Grotesk", sans-serif;
+    font-weight: 800;
+    font-size: 2.5rem;
+    line-height: 1;
+    color: #000;
+  }
+
+  .home-live-widget-text {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    min-width: 0;
+  }
+
+  .home-live-widget-title {
+    font-weight: 700;
+    font-size: 1rem;
+    color: #000;
+  }
+
+  .home-live-widget-sub {
+    font-weight: 500;
+    font-size: 0.82rem;
+    color: #9a9a9a;
+  }
+
+  /* Minimalist Mini Oyunlar widget'ı: takvim rozetiyle aynı kompakt/yuvarlak
+     "pill" dilinde, solda ikon-daire + sağda başlık/alt metin. */
+  .home-mini-widget {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    width: 100%;
+    padding: 0.75rem 1.1rem;
+    background-color: #fff;
+    border: none;
+    border-radius: 999px;
+    box-shadow: 0 10px 22px -14px rgba(0, 0, 0, 0.26), 0 2px 6px rgba(0, 0, 0, 0.05);
+    cursor: pointer;
+    text-align: left;
+    font-family: "Space Grotesk", sans-serif;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+  }
+
+  .home-mini-widget:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 14px 26px -14px rgba(0, 0, 0, 0.3), 0 2px 6px rgba(0, 0, 0, 0.06);
+  }
+
+  .home-mini-widget:active {
+    transform: translateY(0);
+    box-shadow: 0 6px 14px -10px rgba(0, 0, 0, 0.22), 0 1px 4px rgba(0, 0, 0, 0.05);
+  }
+
+  .home-mini-widget-icon {
+    flex: none;
+    width: 2.1rem;
+    height: 2.1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background-color: #f5f5f5;
+    color: #000;
+  }
+
+  .home-mini-widget-text {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    min-width: 0;
+  }
+
+  .home-mini-widget-title {
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: #000;
+  }
+
+  .home-mini-widget-sub {
+    font-weight: 500;
+    font-size: 0.76rem;
+    color: #9a9a9a;
+  }
+
+  /* ---------- Ana sayfa yeniden tasarlanırken eski içeriği saklayan
+     küçük buton + çekmece paneli. Ana sayfa (#page-1) artık boş; eski
+     tüm elementler bu küçük butona basılınca açılan panelin içine
+     taşındı, böylece kaybolmadan referans olarak kalıyorlar. ---------- */
+  .home-archive-toggle {
+    position: fixed;
+    top: calc(16px + env(safe-area-inset-top));
+    right: 16px;
+    z-index: 40;
+    width: 2.1rem;
+    height: 2.1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    background-color: #fff;
+    border: 3px solid #000;
+    border-radius: 50%;
+    box-shadow: 3px 3px 0px 0px #000;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .home-archive-toggle svg {
+    width: 1.05rem;
+    height: 1.05rem;
+  }
+
+  .home-archive-toggle:hover {
+    transform: translate(-1px, -1px);
+    box-shadow: 4px 4px 0px 0px #000;
+  }
+
+  .home-archive-toggle:active {
+    transform: translate(2px, 2px);
+    box-shadow: 1px 1px 0px 0px #000;
+  }
+
+  .home-archive-panel {
+    position: fixed;
+    inset: 0;
+    z-index: 39;
+    display: flex;
+    flex-direction: column;
+    background-color: #F6F4EF;
+    transform: translateY(100%);
+    opacity: 0;
+    pointer-events: none;
+    transition: transform 0.28s ease, opacity 0.28s ease;
+    padding: calc(16px + env(safe-area-inset-top)) 24px calc(24px + env(safe-area-inset-bottom));
+    overflow-y: auto;
+  }
+
+  .home-archive-panel.is-open {
+    transform: translateY(0);
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .home-archive-panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    max-width: 360px;
+    margin: 0 auto 1.4rem;
+  }
+
+  .home-archive-panel-title {
+    font-family: "Space Grotesk", sans-serif;
+    font-weight: 800;
+    font-size: 0.95rem;
+    color: #000;
+    opacity: 0.6;
+  }
+
+  .home-archive-panel-close {
+    width: 1.9rem;
+    height: 1.9rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    font-family: "Space Grotesk", sans-serif;
+    font-size: 1.1rem;
+    line-height: 1;
+    font-weight: 800;
+    color: #000;
+    background-color: #fff;
+    border: 3px solid #000;
+    border-radius: 50%;
+    box-shadow: 3px 3px 0px 0px #000;
+    cursor: pointer;
+  }
+
+  .home-archive-panel .home-content {
+    margin: 0 auto;
+  }
+
   /* ---------- Görev silme butonu (satırın sağında, brutalist stile uyumlu) ---------- */
   .delete-btn {
     flex-shrink: 0;
@@ -1687,6 +2059,52 @@
     transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
     pointer-events: none;
     z-index: 1;
+  }
+
+  /* ---------- Mini Oyunlar ana sayfası: tüm mini oyunların listelendiği
+     ara sayfa. Ana sayfadaki widget artık doğrudan karar çarkına değil,
+     buraya açılır; ileride eklenecek yeni oyunlar da bu listeye kart
+     olarak eklenir. #page-4 (karar çarkı) ile aynı üstten hizalı/kaydırılabilir
+     yerleşimi kullanır. */
+  #page-mini-games-hub {
+    align-items: flex-start;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding-top: calc(40px + env(safe-area-inset-top));
+    padding-bottom: calc(22px + env(safe-area-inset-bottom));
+  }
+
+  .minigames-hub-page {
+    display: flex;
+    flex-direction: column;
+    gap: 1.15rem;
+    width: 100%;
+    max-width: 360px;
+  }
+
+  .minigames-hub-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+    width: 100%;
+  }
+
+  /* .home-mini-widget'ın aynısı ama ana sayfadaki tek satırlık pill yerine
+     bir liste elemanı olarak kullanılıyor; sağdaki ok, tıklanabilir bir
+     sonraki sayfa olduğunu belli eder. */
+  .minigames-game-card {
+    position: relative;
+    padding-right: 2.6rem;
+  }
+
+  .minigames-game-card-arrow {
+    position: absolute;
+    top: 50%;
+    right: 1.1rem;
+    transform: translateY(-50%);
+    width: 14px;
+    height: 14px;
+    opacity: 0.3;
   }
 
   /* ---------- Sayfa 4: "Şimdi Ne Yapsam?" karar çarkı ---------- */
@@ -2271,16 +2689,37 @@
   /* Başlık satırın solunda; kalem ve kategori ikonu sağda, aynı
      satırda duruyor. */
   .page8-titlebar h1 {
-    flex: 1 1 auto;
+    display: flex;
+    align-items: center;
+    flex: 0 0 auto;
     min-width: 0;
-    font-family: "Playfair Display", "Archivo Expanded", "Space Grotesk", serif;
-    font-weight: 800;
-    font-size: clamp(1.6rem, 7vw, 2.2rem);
-    letter-spacing: 0.015em;
-    text-transform: uppercase;
-    text-align: left;
+    margin: 0;
+  }
+
+  /* "Gündelik" başlığı artık düz metin değil, Kronometre başlığıyla
+     (bkz. svg.stopwatch-title) aynı dolgun/marka kimliğini taşıyan bir
+     SVG çizim. viewBox oranı sabit kaldığı için genişliği (width)
+     media query'lerde değiştirmek, içindeki yazıyı da orantılı büyütüp
+     küçültüyor; ayrı bir font-size yönetmeye gerek kalmıyor. */
+  .page8-titlebar svg.page8-title-svg {
+    display: block;
+    width: clamp(136px, 37vw, 187px);
+    height: auto;
+    overflow: visible;
     color: var(--theme-text, #fff);
     transition: color 0.5s ease;
+  }
+
+  .page8-titlebar svg.page8-title-svg text {
+    font-family: "Baloo 2", "Space Grotesk", sans-serif;
+    font-weight: 600;
+    font-size: 34px;
+    letter-spacing: -0.01em;
+    fill: currentColor;
+    paint-order: stroke fill;
+    stroke: currentColor;
+    stroke-width: 0.2px;
+    stroke-linejoin: round;
   }
 
   /* ---- Düzenle kalemi ----
@@ -3077,6 +3516,41 @@
     width: 100%;
   }
 
+  .page9-header-top h1.page9-title {
+    display: flex;
+    align-items: center;
+    flex: 0 0 auto;
+    min-width: 0;
+    margin: 0;
+  }
+
+  /* "Soru Takibi" başlığı artık düz metin değil, Kronometre/Gündelik/Soru
+     Havuzu başlıklarıyla (bkz. svg.stopwatch-title, svg.page8-title-svg,
+     svg.qhavuz-title-svg) aynı dolgun/marka kimliğini taşıyan bir SVG
+     çizim. viewBox oranı sabit kaldığı için genişliği (width) media
+     query'lerde değiştirmek, içindeki yazıyı da orantılı büyütüp
+     küçültüyor; ayrı bir font-size yönetmeye gerek kalmıyor. */
+  .page9-header-top svg.page9-title-svg {
+    display: block;
+    width: clamp(150px, 42vw, 195px);
+    height: auto;
+    overflow: visible;
+    color: var(--theme-text, #fff);
+    transition: color 0.5s ease;
+  }
+
+  .page9-header-top svg.page9-title-svg text {
+    font-family: "Baloo 2", "Space Grotesk", sans-serif;
+    font-weight: 600;
+    font-size: 34px;
+    letter-spacing: -0.01em;
+    fill: currentColor;
+    paint-order: stroke fill;
+    stroke: currentColor;
+    stroke-width: 0.2px;
+    stroke-linejoin: round;
+  }
+
   .page9-subtitle {
     font-family: "Space Grotesk", sans-serif;
     font-weight: 600;
@@ -3639,15 +4113,38 @@
   }
 
   .qhavuz-header .qhavuz-title {
+    display: flex;
+    justify-content: center;
     width: 100%;
-    font-family: "Playfair Display", "Archivo Expanded", "Space Grotesk", serif;
-    font-weight: 800;
-    font-size: clamp(1.8rem, 8vw, 2.4rem);
-    letter-spacing: 0.015em;
-    text-transform: uppercase;
-    text-align: center;
+    margin: 0;
     color: var(--theme-text, #fff);
     transition: color 0.5s ease;
+  }
+
+  /* "Soru Havuzu" başlığı artık düz metin değil, Kronometre başlığıyla
+     (bkz. svg.stopwatch-title) aynı dolgun/marka kimliğini taşıyan bir
+     SVG çizim. viewBox oranı sabit kaldığı için genişliği (width)
+     media query'lerde değiştirmek, içindeki yazıyı da orantılı büyütüp
+     küçültüyor; ayrı bir font-size yönetmeye gerek kalmıyor. */
+  .qhavuz-header svg.qhavuz-title-svg {
+    display: block;
+    width: clamp(190px, 53vw, 253px);
+    height: auto;
+    overflow: visible;
+    color: inherit;
+    transition: color 0.5s ease;
+  }
+
+  .qhavuz-header svg.qhavuz-title-svg text {
+    font-family: "Baloo 2", "Space Grotesk", sans-serif;
+    font-weight: 600;
+    font-size: 34px;
+    letter-spacing: -0.01em;
+    fill: currentColor;
+    paint-order: stroke fill;
+    stroke: currentColor;
+    stroke-width: 0.2px;
+    stroke-linejoin: round;
   }
 
   .qhavuz-subtitle {
@@ -6829,6 +7326,42 @@
     width: 100%;
   }
 
+  .page11-header-top h1.page11-title {
+    display: flex;
+    align-items: center;
+    flex: 0 0 auto;
+    min-width: 0;
+    margin: 0;
+  }
+
+  /* "Denemelerim" başlığı artık düz metin değil, Kronometre/Gündelik/Soru
+     Havuzu/Soru Takibi başlıklarıyla (bkz. svg.stopwatch-title,
+     svg.page8-title-svg, svg.qhavuz-title-svg, svg.page9-title-svg) aynı
+     dolgun/marka kimliğini taşıyan bir SVG çizim. viewBox oranı sabit
+     kaldığı için genişliği (width) media query'lerde değiştirmek,
+     içindeki yazıyı da orantılı büyütüp küçültüyor; ayrı bir font-size
+     yönetmeye gerek kalmıyor. */
+  .page11-header-top svg.page11-title-svg {
+    display: block;
+    width: clamp(160px, 45vw, 214px);
+    height: auto;
+    overflow: visible;
+    color: var(--theme-text, #fff);
+    transition: color 0.5s ease;
+  }
+
+  .page11-header-top svg.page11-title-svg text {
+    font-family: "Baloo 2", "Space Grotesk", sans-serif;
+    font-weight: 600;
+    font-size: 34px;
+    letter-spacing: -0.01em;
+    fill: currentColor;
+    paint-order: stroke fill;
+    stroke: currentColor;
+    stroke-width: 0.2px;
+    stroke-linejoin: round;
+  }
+
   /* Düzenle butonunun yanına eklenen "Analizlerim" ikon butonuyla aynı
      satırda, aralarında küçük bir boşlukla dururlar. */
   .page11-header-actions {
@@ -8678,7 +9211,7 @@
     pointer-events: none;
   }
 
-  .stopwatch-title {
+  h1.stopwatch-title {
     font-family: "Space Grotesk", sans-serif;
     font-weight: 800;
     font-size: 1.4rem;
@@ -8690,6 +9223,35 @@
        yukarıda oturuyordu (bkz. kullanıcı geri bildirimi). */
     position: relative;
     top: 0.09rem;
+  }
+
+  /* "Kronometre" başlığı artık düz metin değil, Pace logosuyla aynı
+     dolgun/marka kimliğini taşıyan bir SVG çizim (bkz. .app-logo). Sadece
+     bir tık daha az kalın: daha düşük font ağırlığı ve çok daha ince bir
+     kontur kullanıyor. viewBox oranı sabit kaldığı için genişliği (width)
+     media query'lerde değiştirmek, içindeki yazıyı da orantılı büyütüp
+     küçültüyor; ayrı bir font-size yönetmeye gerek kalmıyor. */
+  svg.stopwatch-title {
+    display: block;
+    width: 168px;
+    height: auto;
+    overflow: visible;
+    color: var(--theme-text, #f2f2f7);
+    transition: color 0.5s ease;
+    position: relative;
+    top: 0.09rem;
+  }
+
+  svg.stopwatch-title text {
+    font-family: "Baloo 2", "Space Grotesk", sans-serif;
+    font-weight: 600;
+    font-size: 34px;
+    letter-spacing: -0.01em;
+    fill: currentColor;
+    paint-order: stroke fill;
+    stroke: currentColor;
+    stroke-width: 0.2px;
+    stroke-linejoin: round;
   }
 
   /* Başlık ve Geçmiş butonunu aynı üst satırda tutan satır: başlık solda,
@@ -10398,31 +10960,57 @@
   }
 
   .settings-title {
-    font-family: "Playfair Display", "Archivo Expanded", "Space Grotesk", serif;
-    font-weight: 800;
-    font-size: clamp(2.1rem, 9.5vw, 2.8rem);
-    letter-spacing: 0.015em;
-    text-transform: uppercase;
-    text-align: center;
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    margin: 0;
     color: var(--theme-text, #f2f2f7);
     transition: color 0.5s ease;
+  }
+
+  /* "Ayarlar" başlığı artık düz metin değil, Kronometre/Gündelik/Soru
+     Havuzu/Soru Takibi/Denemelerim başlıklarıyla (bkz. svg.stopwatch-title,
+     svg.page8-title-svg, svg.qhavuz-title-svg, svg.page9-title-svg,
+     svg.page11-title-svg) aynı dolgun/marka kimliğini taşıyan bir SVG
+     çizim. viewBox oranı sabit kaldığı için genişliği (width) media
+     query'lerde değiştirmek, içindeki yazıyı da orantılı büyütüp
+     küçültüyor; ayrı bir font-size yönetmeye gerek kalmıyor. */
+  .settings-title svg.settings-title-svg {
+    display: block;
+    width: clamp(150px, 42vw, 195px);
+    height: auto;
+    overflow: visible;
+    color: inherit;
+    transition: color 0.5s ease;
+  }
+
+  .settings-title svg.settings-title-svg text {
+    font-family: "Baloo 2", "Space Grotesk", sans-serif;
+    font-weight: 600;
+    font-size: 34px;
+    letter-spacing: -0.01em;
+    fill: currentColor;
+    paint-order: stroke fill;
+    stroke: currentColor;
+    stroke-width: 0.2px;
+    stroke-linejoin: round;
   }
 
   .settings-section {
     display: flex;
     flex-direction: column;
-    gap: 0.7rem;
+    gap: 0.3rem;
   }
 
   .settings-section-label {
-    font-family: "Playfair Display", "Georgia", serif;
-    font-style: italic;
+    font-family: "Baloo 2", "Space Grotesk", sans-serif;
+    font-style: normal;
     font-weight: 700;
     font-size: clamp(1rem, 4.2vw, 1.2rem);
-    letter-spacing: 0.01em;
+    letter-spacing: -0.005em;
     text-transform: none;
     color: var(--theme-text, #f2f2f7);
-    opacity: 0.85;
+    opacity: 1;
     transition: color 0.5s ease;
     padding-left: 0.15rem;
   }
@@ -11016,8 +11604,11 @@
       width: 100%;
       max-width: 1040px;
       margin: 0 auto;
-      text-align: left;
-      font-size: clamp(2.4rem, 1.6vw + 2rem, 3.2rem);
+      justify-content: flex-start;
+    }
+
+    .settings-title svg.settings-title-svg {
+      width: clamp(195px, 9vw + 150px, 275px);
     }
 
     /* Kesik çizgi (tear), başlık ve kartlarla (.settings-title / .settings-page)
@@ -11128,7 +11719,7 @@
     }
 
     .settings-section {
-      gap: clamp(0.4rem, 1.2dvh, 0.7rem);
+      gap: clamp(0.2rem, 0.6dvh, 0.35rem);
     }
 
     .settings-section-label {
@@ -11232,13 +11823,17 @@
 
     .qhavuz-header {
       padding: calc(32px + env(safe-area-inset-top)) 40px 0.6rem;
+      justify-content: flex-start;
     }
 
     .qhavuz-header .qhavuz-title {
       max-width: 1680px;
-      margin: 0 auto;
-      text-align: left;
-      font-size: clamp(2.4rem, 1.6vw + 2rem, 3.2rem);
+      justify-content: flex-start;
+      margin: 0;
+    }
+
+    .qhavuz-header svg.qhavuz-title-svg {
+      width: clamp(253px, 10.5vw + 211px, 337px);
     }
 
     .qhavuz-tear {
@@ -11577,8 +12172,8 @@
       gap: 0.9rem;
     }
 
-    .page8-titlebar h1 {
-      font-size: clamp(2.2rem, 1.6vw + 1.9rem, 3rem);
+    .page8-titlebar svg.page8-title-svg {
+      width: clamp(186px, 8.5vw + 161px, 254px);
     }
 
     .page8-tear-pencil,
@@ -12292,10 +12887,8 @@
       width: auto;
     }
 
-    .page11-header h1 {
-      font-family: "Archivo Expanded", "Space Grotesk", sans-serif;
-      font-size: clamp(2.2rem, 2vw + 1.6rem, 3rem);
-      letter-spacing: -0.02em;
+    .page11-header-top svg.page11-title-svg {
+      width: clamp(214px, 10vw + 165px, 300px);
     }
 
     .page11-subtitle {
@@ -12650,13 +13243,19 @@
       padding-top: 0.2rem;
     }
 
-    .stopwatch-title {
+    h1.stopwatch-title {
       font-family: "Archivo Expanded", "Space Grotesk", sans-serif;
       font-weight: 800;
       /* Kronometre başlığı etiketten HER ZAMAN belirgin şekilde büyük
          kalsın diye bir kez daha büyütüldü. */
       font-size: clamp(4rem, 3.6vw + 3rem, 5.6rem);
       letter-spacing: -0.02em;
+    }
+
+    /* SVG çizim olduğu için sadece kapsayıcı genişliği büyütmek yeterli:
+       viewBox oranı sabit olduğundan yazı da orantılı olarak büyüyor. */
+    svg.stopwatch-title {
+      width: clamp(300px, 26vw + 220px, 420px);
     }
 
     .stopwatch-subject-tag {
@@ -13023,10 +13622,8 @@
       gap: 1rem;
     }
 
-    .page9-header h1 {
-      font-family: "Archivo Expanded", "Space Grotesk", sans-serif;
-      font-size: clamp(2.3rem, 2.1vw + 1.7rem, 3.1rem);
-      letter-spacing: -0.02em;
+    .page9-header-top svg.page9-title-svg {
+      width: clamp(195px, 9vw + 150px, 275px);
     }
 
     .page9-subtitle {
@@ -13896,6 +14493,71 @@
 <div class="app">
 
   <section class="page is-active" id="page-1">
+    <!-- Ana sayfa şimdilik boş: yeniden tasarım için hazırlanıyor.
+         Eski tüm elementler aşağıdaki küçük buton + panel içine taşındı. -->
+    <svg class="app-logo" viewBox="0 0 150 52" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Pace">
+      <text x="2" y="40">Pace</text>
+    </svg>
+
+    <div class="home-widgets-stack">
+      <!-- Minimalist takvim widget'ı: bugünün gün/ay/haftagünü bilgisini
+           gösterir, dakikada bir tazelenir (gece yarısını geçen açık
+           oturumlarda da güncel kalsın diye); tıklanınca Takvim sayfasını
+           (Sayfa 6) açar. -->
+      <button type="button" class="home-date-widget" id="homeCalendarWidget" aria-label="Takvime git">
+        <span class="home-date-widget-num" id="homeCalendarWidgetDay">18</span>
+        <span class="home-date-widget-text">
+          <span class="home-date-widget-weekday" id="homeCalendarWidgetWeekday">Cuma</span>
+          <span class="home-date-widget-month" id="homeCalendarWidgetMonth">EYLÜL</span>
+        </span>
+      </button>
+
+      <!-- Soru Takibi'ndeki (Sayfa 9) günlük log kayıtlarından canlı olarak
+           hesaplanan "bugün çözülen soru" sayacı. Log her eklendiğinde/
+           silindiğinde savePage9State üzerinden anında güncellenir; tıklanınca
+           doğrudan Soru Takibi sekmesini açar. -->
+      <button type="button" class="home-live-widget" id="homeQuestionWidget" aria-label="Soru Takibi'ne git, bugün çözülen soru sayısı">
+        <span class="home-live-widget-count" id="homeQuestionWidgetCount">0</span>
+        <span class="home-live-widget-text">
+          <span class="home-live-widget-title">Bugün Çözülen</span>
+          <span class="home-live-widget-sub" id="homeQuestionWidgetSub">Henüz soru girilmedi</span>
+        </span>
+      </button>
+
+      <!-- Minimalist Mini Oyunlar widget'ı: tıklanınca karar çarkının
+           bulunduğu Mini Oyunlar sayfasını (Sayfa 4) açar. -->
+      <button type="button" class="home-mini-widget" id="homeMiniGamesWidget" aria-label="Mini Oyunlar'a git">
+        <span class="home-mini-widget-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="18" height="18">
+            <rect x="4" y="4" width="16" height="16" rx="4.5" fill="none" stroke="currentColor" stroke-width="2"/>
+            <circle cx="8.3" cy="8.3" r="1.3" fill="currentColor"/>
+            <circle cx="15.7" cy="8.3" r="1.3" fill="currentColor"/>
+            <circle cx="12" cy="12" r="1.3" fill="currentColor"/>
+            <circle cx="8.3" cy="15.7" r="1.3" fill="currentColor"/>
+            <circle cx="15.7" cy="15.7" r="1.3" fill="currentColor"/>
+          </svg>
+        </span>
+        <span class="home-mini-widget-text">
+          <span class="home-mini-widget-title">Mini Oyunlar</span>
+          <span class="home-mini-widget-sub">Şimdi ne yapsam?</span>
+        </span>
+      </button>
+    </div>
+  </section>
+
+  <!-- Ana sayfanın eski hali: sağ üstteki küçük butona basılınca açılan
+       panelin içinde saklanıyor. Ana sayfa yeniden tasarlanana kadar
+       referans olarak burada duruyor. -->
+  <button type="button" class="home-archive-toggle" id="homeArchiveToggle" aria-label="Eski ana sayfayı göster">
+    <svg viewBox="0 0 24 24"><path d="M4 12h16M4 6h16M4 18h16" fill="none" stroke="#000" stroke-width="2.2" stroke-linecap="round"/></svg>
+  </button>
+
+  <div class="home-archive-panel" id="homeArchivePanel">
+    <div class="home-archive-panel-header">
+      <span class="home-archive-panel-title">Eski Ana Sayfa</span>
+      <button type="button" class="home-archive-panel-close" id="homeArchivePanelClose" aria-label="Kapat">×</button>
+    </div>
+
     <div class="home-content" id="homeContent">
       <div class="home-hero">
         <div class="home-hero-text">
@@ -13950,6 +14612,47 @@
         </button>
       </div>
     </div>
+  </div>
+
+  <!-- Mini Oyunlar ana sayfası: ana sayfadaki widget artık doğrudan karar
+       çarkına değil buraya açılır. İleride eklenecek her yeni mini oyun,
+       aşağıdaki listeye bir kart olarak eklenir; kartlara dokununca ilgili
+       oyunun kendi sayfasına (ör. #page-4) geçilir. -->
+  <section class="page" id="page-mini-games-hub">
+    <div class="minigames-hub-page">
+      <div class="calendar-topbar">
+        <button type="button" class="calendar-back-btn" id="miniGamesHubBackBtn" aria-label="Geri dön">
+          <svg viewBox="0 0 24 24" width="18" height="18">
+            <path d="M15 4l-8 8 8 8" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+        <span class="calendar-topbar-title">Mini Oyunlar</span>
+        <div class="calendar-topbar-spacer"></div>
+      </div>
+
+      <div class="minigames-hub-list" id="miniGamesHubList">
+        <button type="button" class="home-mini-widget minigames-game-card" id="miniGameWheelCard" aria-label="Karar Çarkı'nı aç">
+          <span class="home-mini-widget-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="18" height="18">
+              <rect x="4" y="4" width="16" height="16" rx="4.5" fill="none" stroke="currentColor" stroke-width="2"/>
+              <circle cx="8.3" cy="8.3" r="1.3" fill="currentColor"/>
+              <circle cx="15.7" cy="8.3" r="1.3" fill="currentColor"/>
+              <circle cx="12" cy="12" r="1.3" fill="currentColor"/>
+              <circle cx="8.3" cy="15.7" r="1.3" fill="currentColor"/>
+              <circle cx="15.7" cy="15.7" r="1.3" fill="currentColor"/>
+            </svg>
+          </span>
+          <span class="home-mini-widget-text">
+            <span class="home-mini-widget-title">Karar Çarkı</span>
+            <span class="home-mini-widget-sub">Şimdi ne yapsam?</span>
+          </span>
+          <svg class="minigames-game-card-arrow" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6" fill="none" stroke="#000" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+
+        <!-- Yeni mini oyunlar eklendikçe buraya aynı düzende yeni
+             .minigames-game-card butonları eklenecek. -->
+      </div>
+    </div>
   </section>
 
   <section class="page" id="page-4">
@@ -13962,7 +14665,7 @@
             <path d="M15 4l-8 8 8 8" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
         </button>
-        <span class="calendar-topbar-title">Mini Oyunlar</span>
+        <span class="calendar-topbar-title">Karar Çarkı</span>
         <div class="calendar-topbar-spacer"></div>
       </div>
 
@@ -14020,7 +14723,9 @@
           <!-- Başlık solda, Geçmiş butonu sağda: aynı üst satırda yan yana. -->
           <div class="stopwatch-header">
             <div class="stopwatch-title-wrap">
-              <h1 class="stopwatch-title">Kronometre</h1>
+              <svg class="stopwatch-title" viewBox="0 0 210 46" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Kronometre">
+                <text x="1" y="35">Kronometre</text>
+              </svg>
               <!-- Seçili ders etiketi: "Branşlarım" pop-up'ından bir ders
                    seçildiğinde burada, kendi renginde ve eğik punto ile
                    görünür; kronometre verileri bu etikete kaydedilir. -->
@@ -14248,7 +14953,9 @@
   <!-- Sekme 7: Ayarlar sayfası -->
   <section class="page" id="page-settings">
     <div class="settings-hero">
-      <h1 class="settings-title">Ayarlar</h1>
+      <h1 class="settings-title"><svg class="settings-title-svg" viewBox="0 0 165 46" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Ayarlar">
+        <text x="50%" y="35" text-anchor="middle">Ayarlar</text>
+      </svg></h1>
     </div>
 
     <div class="settings-tear" aria-hidden="true">
@@ -14584,7 +15291,9 @@
   <section class="page" id="page-8">
     <div class="page8-header">
       <div class="page8-titlebar">
-        <h1>Gündelik</h1>
+        <h1><svg class="page8-title-svg" viewBox="0 0 178 46" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Gündelik">
+          <text x="1" y="35">Gündelik</text>
+        </svg></h1>
         <button type="button" class="page8-tear-pencil" id="page8EditBtn" aria-label="Düzenle" aria-pressed="false">
           <svg viewBox="0 0 24 24" width="19" height="19" fill="currentColor">
             <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
@@ -14626,7 +15335,9 @@
     <div class="page9-wrap">
       <div class="page9-header">
         <div class="page9-header-top">
-          <h1>Soru Takibi</h1>
+          <h1 class="page9-title"><svg class="page9-title-svg" viewBox="0 0 228 46" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Soru Takibi">
+            <text x="1" y="35">Soru Takibi</text>
+          </svg></h1>
           <button type="button" class="add-task-btn edit-task-btn" id="page9EditBtn" aria-label="Branşları düzenle" aria-pressed="false">
             <svg viewBox="0 0 24 24" width="16" height="16">
               <path d="M4 20l4.5-1 10.2-10.2-3.5-3.5L5 15.5 4 20z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -14774,7 +15485,9 @@
     <div class="page11-wrap">
       <div class="page11-header">
         <div class="page11-header-top">
-          <h1>Denemelerim</h1>
+          <h1 class="page11-title"><svg class="page11-title-svg" viewBox="0 0 250 46" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Denemelerim">
+            <text x="1" y="35">Denemelerim</text>
+          </svg></h1>
           <div class="page11-header-actions">
             <button type="button" class="add-task-btn edit-task-btn" id="page11AnalyticsBtn" aria-label="Analizlerim">
               <svg viewBox="0 0 24 24" width="16" height="16">
@@ -15235,7 +15948,9 @@
        şıkkı işaretlenir, kart olarak listede birikir. -->
   <section class="page" id="page-camera">
     <div class="qhavuz-header">
-      <h1 class="qhavuz-title">Soru Havuzu</h1>
+      <h1 class="qhavuz-title"><svg class="qhavuz-title-svg" viewBox="0 0 224 46" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Soru Havuzu">
+        <text x="50%" y="35" text-anchor="middle">Soru Havuzu</text>
+      </svg></h1>
     </div>
 
     <div class="qhavuz-tear">
@@ -15967,6 +16682,7 @@
   // testi vb.) açıldığında, panelde ait olduğu ana sekmenin vurgulu kalması
   // için eşleme tablosu.
   const SIDEBAR_PARENT_PAGE = {
+    'page-mini-games-hub': 'page-1',
     'page-4': 'page-1',
     'page-6': 'page-1',
     'page-7': 'page-1',
@@ -16200,6 +16916,37 @@
   updateHomeGreeting();
   setInterval(updateHomeGreeting, 60000);
 
+  // ---------- Ana sayfa: minimalist takvim widget'ı ----------
+  // Yukarıdaki HOME_MONTHS_TR/HOME_WEEKDAYS_TR dizilerini kullanarak
+  // bugünün gün/haftagünü/ay bilgisini rozete yazar; aynı dakikalık
+  // tazeleme döngüsüyle güncel kalır. Tıklanınca Takvim sayfasını açar.
+  const homeCalendarWidgetDayEl = document.getElementById('homeCalendarWidgetDay');
+  const homeCalendarWidgetWeekdayEl = document.getElementById('homeCalendarWidgetWeekday');
+  const homeCalendarWidgetMonthEl = document.getElementById('homeCalendarWidgetMonth');
+
+  const updateHomeCalendarWidget = () => {
+    const now = new Date();
+    if (homeCalendarWidgetDayEl) homeCalendarWidgetDayEl.textContent = String(now.getDate());
+    if (homeCalendarWidgetWeekdayEl) homeCalendarWidgetWeekdayEl.textContent = HOME_WEEKDAYS_TR[now.getDay()];
+    if (homeCalendarWidgetMonthEl) homeCalendarWidgetMonthEl.textContent = HOME_MONTHS_TR[now.getMonth()].toUpperCase();
+  };
+  updateHomeCalendarWidget();
+  setInterval(updateHomeCalendarWidget, 60000);
+
+  const homeCalendarWidgetEl = document.getElementById('homeCalendarWidget');
+  if (homeCalendarWidgetEl) {
+    homeCalendarWidgetEl.addEventListener('click', () => {
+      if (typeof openCalendarPage === 'function') openCalendarPage();
+    });
+  }
+
+  const homeMiniGamesWidgetEl = document.getElementById('homeMiniGamesWidget');
+  if (homeMiniGamesWidgetEl) {
+    homeMiniGamesWidgetEl.addEventListener('click', () => {
+      if (typeof openMiniGamesHub === 'function') openMiniGamesHub();
+    });
+  }
+
   // ---------- Sayfa 1: Kısayol widget'ları ----------
   // Takvim ve Mini Oyunlar artık nav bar'da kendi sekmeleri olmadığından,
   // widget'lar doğrudan o sayfaların kendi aç fonksiyonlarını çağırır
@@ -16214,7 +16961,7 @@
   }
   if (homeWidgetWheel) {
     homeWidgetWheel.addEventListener('click', () => {
-      if (typeof openWheelPage === 'function') openWheelPage();
+      if (typeof openMiniGamesHub === 'function') openMiniGamesHub();
     });
   }
 </script>
@@ -16779,16 +17526,37 @@
 
   // "Mini Oyunlar" artık nav bar'da kendi sekmesi olmadığından, Ana
   // Sayfa'daki widget üzerinden açılıp geri butonuyla Ana Sayfa'ya dönen
-  // bağımsız bir sayfa (Takvim/Turlarım ile aynı açma/kapama deseni).
+  // bağımsız bir akış (Takvim/Turlarım ile aynı açma/kapama deseni). Ancak
+  // widget artık doğrudan karar çarkını değil, önce tüm mini oyunların
+  // listelendiği ara sayfayı (#page-mini-games-hub) açıyor; oyunun kendi
+  // sayfasına (#page-4) o listedeki karttan geçiliyor.
+  const openMiniGamesHub = () => {
+    document.body.classList.add('is-wheel-open'); // nav bar'ı gizler
+    goToPage('page-mini-games-hub');
+  };
+
+  const closeMiniGamesHub = () => {
+    document.body.classList.remove('is-wheel-open');
+    goToPage('page-1');
+  };
+
   const openWheelPage = () => {
     document.body.classList.add('is-wheel-open'); // nav bar'ı gizler
     goToPage('page-4');
   };
 
+  // Karar çarkının geri butonu artık Ana Sayfa'ya değil, geldiği Mini
+  // Oyunlar listesine döner; nav bar bu liste sayfasında da gizli kalmaya
+  // devam eder (is-wheel-open kaldırılmaz).
   const closeWheelPage = () => {
-    document.body.classList.remove('is-wheel-open');
-    goToPage('page-1');
+    goToPage('page-mini-games-hub');
   };
+
+  const miniGamesHubBackBtn = document.getElementById('miniGamesHubBackBtn');
+  if (miniGamesHubBackBtn) miniGamesHubBackBtn.addEventListener('click', closeMiniGamesHub);
+
+  const miniGameWheelCard = document.getElementById('miniGameWheelCard');
+  if (miniGameWheelCard) miniGameWheelCard.addEventListener('click', openWheelPage);
 
   const wheelBackBtn = document.getElementById('wheelBackBtn');
   if (wheelBackBtn) wheelBackBtn.addEventListener('click', closeWheelPage);
@@ -20890,8 +21658,42 @@
     if (!entry[log.track].includes(log.subjectId)) entry[log.track].push(log.subjectId);
   });
 
-  const savePage9State = () => saveAppState({ page9: page9State });
+  // ---------- Ana sayfa: canlı "Bugün Çözülen Soru" widget'ı ----------
+  // page9State.logs üzerinden bugünün tarih anahtarına ait kayıtların
+  // count toplamını hesaplayıp ana sayfadaki sayaca yazar. savePage9State
+  // her çağrıldığında (ders eklenince, soru sayısı değişince, silinince)
+  // yeniden hesaplanır, böylece ana sayfaya geçmeden de "canlı" kalır;
+  // ayrıca gece yarısını geçen açık oturumlarda günün değişmesini
+  // yakalamak için dakikada bir de tazelenir.
+  const homeQuestionWidgetCountEl = document.getElementById('homeQuestionWidgetCount');
+  const homeQuestionWidgetSubEl = document.getElementById('homeQuestionWidgetSub');
+  function updateHomeQuestionWidget() {
+    if (!homeQuestionWidgetCountEl) return;
+    const todayKey = page9DateKey(page9StartOfDay(new Date()));
+    const total = page9State.logs.reduce((sum, log) => sum + (log.date === todayKey ? (log.count || 0) : 0), 0);
+    homeQuestionWidgetCountEl.textContent = String(total);
+    if (homeQuestionWidgetSubEl) {
+      homeQuestionWidgetSubEl.textContent = total > 0 ? `${total} soru çözüldü` : 'Henüz soru girilmedi';
+    }
+  }
+
+  const savePage9State = () => { saveAppState({ page9: page9State }); updateHomeQuestionWidget(); };
   savePage9State(); // ilk yükleme/sıfırlama sonrası durumu hemen kaydet
+
+  setInterval(updateHomeQuestionWidget, 60000);
+
+  const homeQuestionWidgetEl = document.getElementById('homeQuestionWidget');
+  if (homeQuestionWidgetEl) {
+    homeQuestionWidgetEl.addEventListener('click', () => {
+      const navInput = document.querySelector('.nav-input[value="page-9"]');
+      if (navInput) {
+        navInput.checked = true;
+        moveSlider(navInput);
+      }
+      goToPage('page-9');
+      setActiveSidebarItem('page-9');
+    });
+  }
 
   // Belirli bir gün + branş için "o gün eklenmiş ders id'leri" dizisini
   // döndürür; yoksa oluşturup state'e bağlar (referans olarak döner, bu
@@ -27878,6 +28680,46 @@
       attributes: true,
       attributeFilter: ['class', 'style']
     });
+
+    // ---- İkinci, ÖNCELİKLİ katman: yukarıdaki mutasyon-tabanlı tazeleme
+    // yalnızca "bir liste yeniden çizildiğinde" devreye giriyor; ama donma
+    // hiçbir DOM değişikliği olmadan da (ör. sade bir kaydırma sırasında,
+    // ya da uygulama arka plana alınıp geri döndüğünde) oluşabiliyor. Bu
+    // yüzden o an EKRANDA GÖRÜNEN her kaydırılabilir kutuyu (aktif sayfa +
+    // açık pop-up'lar) düzenli aralıklarla ve uygulama her ön plana
+    // döndüğünde tarayıp tazeliyoruz; böylece donmanın sebebi ne olursa
+    // olsun (mutasyonlu/mutasyonsuz, arka plan dönüşü, jestin yarıda
+    // kesilmesi vb.) birkaç saniye içinde kendiliğinden düzeliyor ve
+    // kullanıcının uygulamayı yeniden açmasına gerek kalmıyor. */
+    const findVisibleScrollRoots = () => {
+      const roots = [];
+      const activePage = document.querySelector('.page.is-active');
+      if (activePage) roots.push(activePage);
+      // Pop-up'ların büyük kısmı "...Backdrop" id'siyle biter ve açıkken
+      // "is-open" sınıfı taşır (bkz. aşağıdaki has-modal-open güvenlik
+      // ağı); çark renk seçici gibi farklı adlandırılanlar da bu deseni
+      // paylaşıyor, o yüzden tek bir sorguyla hepsini yakalıyoruz.
+      document.querySelectorAll('.is-open').forEach((el) => {
+        if (/backdrop/i.test(el.id) || /backdrop/.test(el.className)) roots.push(el);
+      });
+      return roots;
+    };
+
+    const nudgeAllVisibleScrollables = () => {
+      findVisibleScrollRoots().forEach((root) => {
+        if (isScrollableY(root)) nudge(root);
+        root.querySelectorAll('*').forEach((el) => {
+          if (isScrollableY(el)) nudge(el);
+        });
+      });
+    };
+
+    setInterval(nudgeAllVisibleScrollables, 1500);
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') nudgeAllVisibleScrollables();
+    });
+    window.addEventListener('pageshow', nudgeAllVisibleScrollables);
+    window.addEventListener('focus', nudgeAllVisibleScrollables);
   })();
 
   (function () {
@@ -27901,6 +28743,27 @@
     // kontrol ediyoruz; bu sadece bir sınıf kontrolü olduğu için performansa
     // etkisi yoktur.
     setInterval(releaseStaleModalLockIfNeeded, 1500);
+  })();
+
+  // ---- Eski ana sayfa paneli: sağ üstteki küçük buton, ana sayfa
+  // yeniden tasarlanırken eski tüm içeriği (selamlama, tarih, tema
+  // düğmesi, widget'lar) kaybetmeden saklamak için açılıp kapanan bir
+  // panel gösteriyor. ----
+  (function () {
+    const toggleBtn = document.getElementById('homeArchiveToggle');
+    const panel = document.getElementById('homeArchivePanel');
+    const closeBtn = document.getElementById('homeArchivePanelClose');
+    if (!toggleBtn || !panel) return;
+
+    const openPanel = () => panel.classList.add('is-open');
+    const closePanel = () => panel.classList.remove('is-open');
+
+    toggleBtn.addEventListener('click', () => {
+      if (panel.classList.contains('is-open')) closePanel();
+      else openPanel();
+    });
+
+    if (closeBtn) closeBtn.addEventListener('click', closePanel);
   })();
 </script>
 
