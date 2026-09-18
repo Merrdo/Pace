@@ -48,6 +48,24 @@
     box-sizing: border-box;
   }
 
+  :root {
+    /* Safe-area (çentik/Dynamic Island vb.) boşlukları için değişkenler.
+       Normal modda gerçek env() değerlerini taşırlar; Spor Modu'na
+       geçildiğinde aşağıdaki body.is-sport-mode kuralı bunları 0'a
+       çekerek içeriği engelleyen safe area'yı anında kaldırır. */
+    --sat: env(safe-area-inset-top);
+    --sab: env(safe-area-inset-bottom);
+    --sal: env(safe-area-inset-left);
+    --sar: env(safe-area-inset-right);
+  }
+
+  body.is-sport-mode {
+    --sat: 0px;
+    --sab: 0px;
+    --sal: 0px;
+    --sar: 0px;
+  }
+
   html, body {
     height: 100%;
     width: 100%;
@@ -202,7 +220,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 24px 24px calc(96px + env(safe-area-inset-bottom));
+    padding: 24px 24px calc(96px + var(--sab));
     opacity: 0;
     transform: translateY(10px);
     transition: opacity 0.2s ease, transform 0.2s ease;
@@ -236,7 +254,7 @@
     bottom: 0;
     display: flex;
     justify-content: center;
-    padding: 16px 16px calc(16px + env(safe-area-inset-bottom));
+    padding: 16px 16px calc(16px + var(--sab));
     pointer-events: none;
   }
 
@@ -1870,7 +1888,7 @@
     height: 100%;
     display: flex;
     flex-direction: column;
-    padding: calc(20px + env(safe-area-inset-top)) 18px calc(18px + env(safe-area-inset-bottom));
+    padding: calc(20px + var(--sat)) 18px calc(18px + var(--sab));
     gap: 0.9rem;
   }
 
@@ -1999,7 +2017,7 @@
   .exlib-add-fab {
     position: absolute;
     right: 18px;
-    bottom: calc(96px + env(safe-area-inset-bottom));
+    bottom: calc(96px + var(--sab));
     width: 54px;
     height: 54px;
     border-radius: 50%;
@@ -2030,7 +2048,7 @@
     flex-direction: column;
     align-items: stretch;
     justify-content: flex-start;
-    padding: calc(44px + env(safe-area-inset-top)) 18px calc(22px + env(safe-area-inset-bottom));
+    padding: calc(44px + var(--sat)) 18px calc(22px + var(--sab));
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
@@ -2901,8 +2919,8 @@
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
-    padding-top: calc(40px + env(safe-area-inset-top));
-    padding-bottom: calc(22px + env(safe-area-inset-bottom));
+    padding-top: calc(40px + var(--sat));
+    padding-bottom: calc(22px + var(--sab));
   }
 
   .wheel-page {
@@ -3408,7 +3426,7 @@
     scrollbar-width: none;
     -ms-overflow-style: none;
     box-sizing: border-box;
-    padding: 0.9rem 24px calc(96px + env(safe-area-inset-bottom));
+    padding: 0.9rem 24px calc(96px + var(--sab));
     clip-path: polygon(
       0.0% 0, 4.167% 6px, 8.333% 0, 12.5% 6px, 16.667% 0, 20.833% 6px,
       25.0% 0, 29.167% 6px, 33.333% 0, 37.5% 6px, 41.667% 0, 45.833% 6px,
@@ -3428,7 +3446,7 @@
   #page-9 {
     align-items: flex-start;
     justify-content: flex-start;
-    padding-top: calc(48px + env(safe-area-inset-top));
+    padding-top: calc(48px + var(--sat));
     overflow-y: auto;
     overflow-x: hidden;
     -webkit-overflow-scrolling: touch;
@@ -3467,7 +3485,7 @@
     margin: 0 auto;
     flex: 0 0 auto;
     box-sizing: border-box;
-    padding: calc(18px + env(safe-area-inset-top)) 24px 0.85rem;
+    padding: calc(18px + var(--sat)) 24px 0.85rem;
   }
 
   .page8-titlebar {
@@ -4847,7 +4865,7 @@
     width: 100%;
     flex: 0 0 auto;
     box-sizing: border-box;
-    padding: calc(18px + env(safe-area-inset-top)) 24px 0.4rem;
+    padding: calc(18px + var(--sat)) 24px 0.4rem;
   }
 
   .qhavuz-header .qhavuz-title {
@@ -4909,7 +4927,7 @@
     scrollbar-width: none;
     -ms-overflow-style: none;
     box-sizing: border-box;
-    padding: 0.75rem 24px calc(96px + env(safe-area-inset-bottom));
+    padding: 0.75rem 24px calc(96px + var(--sab));
   }
 
   .qhavuz-scroll::-webkit-scrollbar {
@@ -4921,7 +4939,7 @@
      bu modda kaydırma alanına ekstra alt boşluk eklenip son satırın
      (branş etiketiyle birlikte) çubuğun üstünde tam görünmesi sağlanır. */
   .qhavuz-scroll:has(.qhavuz-grid.is-select-mode) {
-    padding-bottom: calc(216px + env(safe-area-inset-bottom));
+    padding-bottom: calc(216px + var(--sab));
   }
 
   .qhavuz-tear-line {
@@ -5630,7 +5648,7 @@
   .qhavuz-select-bar {
     position: fixed;
     left: 50%;
-    bottom: calc(96px + env(safe-area-inset-bottom));
+    bottom: calc(96px + var(--sab));
     transform: translate(-50%, 16px);
     z-index: 60;
     width: calc(100% - 48px);
@@ -6773,7 +6791,7 @@
     align-items: center;
     justify-content: flex-start;
     gap: 1rem;
-    padding: calc(44px + env(safe-area-inset-top)) 20px calc(28px + env(safe-area-inset-bottom));
+    padding: calc(44px + var(--sat)) 20px calc(28px + var(--sab));
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
@@ -8011,7 +8029,7 @@
   #page-11 {
     align-items: flex-start;
     justify-content: flex-start;
-    padding-top: calc(48px + env(safe-area-inset-top));
+    padding-top: calc(48px + var(--sat));
     overflow-y: auto;
     overflow-x: hidden;
     -webkit-overflow-scrolling: touch;
@@ -9000,7 +9018,7 @@
     align-items: center;
     justify-content: flex-start;
     gap: 1rem;
-    padding: calc(44px + env(safe-area-inset-top)) 20px calc(28px + env(safe-area-inset-bottom));
+    padding: calc(44px + var(--sat)) 20px calc(28px + var(--sab));
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
@@ -9017,7 +9035,7 @@
     align-items: center;
     justify-content: flex-start;
     gap: 1rem;
-    padding: calc(44px + env(safe-area-inset-top)) 20px calc(28px + env(safe-area-inset-bottom));
+    padding: calc(44px + var(--sat)) 20px calc(28px + var(--sab));
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
@@ -10103,8 +10121,8 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: env(safe-area-inset-top) env(safe-area-inset-right)
-      env(safe-area-inset-bottom) env(safe-area-inset-left);
+    padding: var(--sat) var(--sar)
+      var(--sab) var(--sal);
     z-index: 60;
     cursor: pointer;
     opacity: 0;
@@ -10219,7 +10237,7 @@
   .stopwatch-fullscreen-subject {
     position: fixed;
     left: 50%;
-    bottom: calc(env(safe-area-inset-bottom) + 3rem);
+    bottom: calc(var(--sab) + 3rem);
     transform: translateX(-50%);
     width: min(88vw, 520px);
     text-align: center;
@@ -10283,7 +10301,7 @@
      ferah hem de saatin konumundan tamamen bağımsız kalıyor. */
   .stopwatch-laps {
     position: fixed;
-    top: calc(env(safe-area-inset-top) + 1.1rem);
+    top: calc(var(--sat) + 1.1rem);
     left: 50%;
     margin-top: 0;
     width: calc(100% - 3rem);
@@ -10923,8 +10941,8 @@
     align-items: center;
     justify-content: center;
     gap: 0.9rem;
-    padding: env(safe-area-inset-top) env(safe-area-inset-right)
-      env(safe-area-inset-bottom) env(safe-area-inset-left);
+    padding: var(--sat) var(--sar)
+      var(--sab) var(--sal);
     z-index: 60;
     cursor: pointer;
     opacity: 0;
@@ -11046,7 +11064,7 @@
     align-items: stretch;
     justify-content: flex-start;
     gap: 1.5rem;
-    padding: calc(20px + env(safe-area-inset-top)) 22px calc(18px + env(safe-area-inset-bottom));
+    padding: calc(20px + var(--sat)) 22px calc(18px + var(--sab));
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
@@ -11091,7 +11109,7 @@
      "kesim çizgisi" gibi görüp geri butonu + başlığı hemen oraya
      yapıştırmak yerine, üstlerinde 44px'lik ortak bir nefes payı
      bırakır (bkz. bu sayfaların kendi padding-top'undaki
-     "44px + env(safe-area-inset-top)"). Böylece arka plan güvenli
+     "44px + var(--sat)"). Böylece arka plan güvenli
      alana kadar kesintisiz uzarken, başlık da o boşlukla birlikte
      tasarlanmış gibi durur — safe area'ya "çakılmış" hissi vermez. */
   .calendar-topbar {
@@ -11443,7 +11461,7 @@
     align-items: center;
     justify-content: flex-start;
     gap: 1.1rem;
-    padding: calc(44px + env(safe-area-inset-top)) 20px calc(22px + env(safe-area-inset-bottom));
+    padding: calc(44px + var(--sat)) 20px calc(22px + var(--sab));
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
@@ -11456,7 +11474,7 @@
     flex-direction: column;
     align-items: center;
     justify-content: flex-start;
-    padding: calc(44px + env(safe-area-inset-top)) 20px calc(22px + env(safe-area-inset-bottom));
+    padding: calc(44px + var(--sat)) 20px calc(22px + var(--sab));
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
@@ -11542,10 +11560,10 @@
     width: 100%;
     flex: 0 0 auto;
     box-sizing: border-box;
-    /* Üst boşluk azaltıldı: env(safe-area-inset-top) sayesinde Dynamic
+    /* Üst boşluk azaltıldı: var(--sat) sayesinde Dynamic
        Island/çentikli cihazlarda güvenli alanın altında kalmaya devam
        eder, çentiksiz cihazlarda ise başlık daha yukarıda oturur. */
-    padding: calc(28px + env(safe-area-inset-top)) 24px 0.6rem;
+    padding: calc(28px + var(--sat)) 24px 0.6rem;
   }
 
   /* Başlığın altındaki her şey kendi kutusunda kayar; böylece liste
@@ -11564,7 +11582,7 @@
     scrollbar-width: none;
     -ms-overflow-style: none;
     box-sizing: border-box;
-    padding: 1.4rem 24px calc(96px + env(safe-area-inset-bottom));
+    padding: 1.4rem 24px calc(96px + var(--sab));
   }
 
   .settings-scroll::-webkit-scrollbar {
@@ -11871,7 +11889,7 @@
     align-items: center;
     justify-content: flex-start;
     gap: 1.1rem;
-    padding: calc(44px + env(safe-area-inset-top)) 20px calc(22px + env(safe-area-inset-bottom));
+    padding: calc(44px + var(--sat)) 20px calc(22px + var(--sab));
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
@@ -12286,7 +12304,7 @@
     }
 
     .settings-hero {
-      padding: calc(32px + env(safe-area-inset-top)) 40px 0.6rem;
+      padding: calc(32px + var(--sat)) 40px 0.6rem;
     }
 
     .settings-title {
@@ -12342,7 +12360,7 @@
        hizalanır — liste kaymadığı sürece. */
     .settings-scroll {
       align-items: stretch;
-      padding: clamp(0.8rem, 2.4dvh, 1.8rem) 40px calc(16px + env(safe-area-inset-bottom));
+      padding: clamp(0.8rem, 2.4dvh, 1.8rem) 40px calc(16px + var(--sab));
       touch-action: pan-y;
     }
 
@@ -12511,7 +12529,7 @@
     }
 
     .qhavuz-header {
-      padding: calc(32px + env(safe-area-inset-top)) 40px 0.6rem;
+      padding: calc(32px + var(--sat)) 40px 0.6rem;
     }
 
     .qhavuz-header .qhavuz-title {
@@ -12539,7 +12557,7 @@
 
     .qhavuz-scroll {
       align-items: stretch;
-      padding: clamp(0.8rem, 2.4dvh, 1.8rem) 40px calc(24px + env(safe-area-inset-bottom));
+      padding: clamp(0.8rem, 2.4dvh, 1.8rem) 40px calc(24px + var(--sab));
     }
 
     /* Seçim modu çubuğu artık sağ altta yüzen kompakt bir panel (aşağı
@@ -12547,7 +12565,7 @@
        eklemeye gerek yok — sadece son satırın panelin altında kalmaması
        için makul bir pay bırakılıyor. */
     .qhavuz-scroll:has(.qhavuz-grid.is-select-mode) {
-      padding-bottom: calc(128px + env(safe-area-inset-bottom));
+      padding-bottom: calc(128px + var(--sab));
     }
 
     /* İki bağımsız sütun: sol (araç paneli) ve sağ (kart ızgarası) TEK bir
@@ -12582,7 +12600,7 @@
       box-shadow: 6px 6px 0px 0px #000;
       padding: 1.5rem 1.25rem;
       box-sizing: border-box;
-      max-height: calc(100dvh - 32px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+      max-height: calc(100dvh - 32px - var(--sat) - var(--sab));
       overflow-y: auto;
       -webkit-overflow-scrolling: touch;
       overscroll-behavior: contain;
@@ -12695,8 +12713,8 @@
        (açılma/kapanma animasyonu, butonları) aynen korunuyor. */
     .qhavuz-select-bar {
       left: auto;
-      right: calc(32px + env(safe-area-inset-right));
-      bottom: calc(32px + env(safe-area-inset-bottom));
+      right: calc(32px + var(--sar));
+      bottom: calc(32px + var(--sab));
       transform: translateY(16px);
       width: 320px;
       max-width: 320px;
@@ -12736,7 +12754,7 @@
     #page-camera-packages,
     #page-camera-package-detail {
       align-items: stretch;
-      padding: calc(32px + env(safe-area-inset-top)) 40px calc(24px + env(safe-area-inset-bottom));
+      padding: calc(32px + var(--sat)) 40px calc(24px + var(--sab));
     }
 
     #page-camera-packages .exam-detail-wrap,
@@ -12841,7 +12859,7 @@
       max-width: 1720px;
       width: 100%;
       margin: 0 auto;
-      padding: calc(32px + env(safe-area-inset-top)) 40px 1rem;
+      padding: calc(32px + var(--sat)) 40px 1rem;
       flex-direction: row;
       flex-wrap: wrap;
       align-items: center;
@@ -12890,7 +12908,7 @@
       /* Üst dolgu, kategorileri başlıktan (ve diş desenli kesim
          çizgisinden) biraz uzaklaştırıp nefes payı bırakıyor — mobildeki
          gibi başlığa neredeyse yapışık durmuyorlar. */
-      padding: 1.6rem 40px calc(40px + env(safe-area-inset-bottom));
+      padding: 1.6rem 40px calc(40px + var(--sab));
       /* Diş deseni, dar mobil kartta ince bir "yırtık kağıt" hissi
          veriyordu; 340px'lik orijinal 24 dişlik desen burada olduğu gibi
          kalsaydı her diş ~70px'e çıkıp kaba/iri görünürdü. Geniş panoya
@@ -13072,8 +13090,8 @@
     .page8-add-group-btn {
       position: fixed;
       left: auto;
-      right: calc(40px + env(safe-area-inset-right));
-      bottom: calc(40px + env(safe-area-inset-bottom));
+      right: calc(40px + var(--sar));
+      bottom: calc(40px + var(--sab));
       width: auto;
       border-radius: 999px;
       padding: 1rem 1.7rem;
@@ -13146,7 +13164,7 @@
       border-radius: 26px;
       box-shadow: 6px 6px 0 var(--main-color, #121212);
       z-index: 20;
-      padding: calc(20px + env(safe-area-inset-top)) 14px calc(20px + env(safe-area-inset-bottom));
+      padding: calc(20px + var(--sat)) 14px calc(20px + var(--sab));
       gap: 22px;
       transition: transform 0.32s cubic-bezier(0.65, 0, 0.35, 1), opacity 0.25s ease;
       overflow: hidden;
@@ -13486,7 +13504,7 @@
     }
 
     .page {
-      padding: 24px 24px calc(24px + env(safe-area-inset-bottom));
+      padding: 24px 24px calc(24px + var(--sab));
       /* .page absolute konumlandığı ve inset:0 kullandığı için içeriğin
          panelin bıraktığı boşluğa göre ortalanması "left" değerinin
          doğrudan değişmesiyle sağlanır (bkz. yukarıdaki not). Panel
@@ -13587,7 +13605,7 @@
     /* ---- Sayfa 11: Deneme listesi ---- */
     #page-11.page {
       align-items: flex-start;
-      padding-top: calc(48px + env(safe-area-inset-top));
+      padding-top: calc(48px + var(--sat));
     }
 
     .page11-wrap {
@@ -13677,7 +13695,7 @@
        kutusunda ortalanmış kalır — panel kapanıp fazladan yer açıldığında
        içerik sola yapışıp sağda boş, "eksik tasarlanmış" bir alan bırakmaz. */
     #page-11-detail {
-      padding: calc(48px + env(safe-area-inset-top)) 24px calc(32px + env(safe-area-inset-bottom));
+      padding: calc(48px + var(--sat)) 24px calc(32px + var(--sab));
     }
 
     #page-11-detail .exam-detail-wrap {
@@ -13792,7 +13810,7 @@
        yığılmış düzenin JS'i (renderAnalytics, grafik çizimi vb.) hiç
        değişmeden aynen çalışmaya devam eder. */
     #page-analytics {
-      padding: calc(48px + env(safe-area-inset-top)) 24px calc(32px + env(safe-area-inset-bottom));
+      padding: calc(48px + var(--sat)) 24px calc(32px + var(--sab));
     }
 
     #page-analytics .exam-detail-wrap {
@@ -13931,7 +13949,7 @@
        sayfaların (.page) ortalanmış davranışı hiç etkilenmez. */
     #page-5.page {
       align-items: flex-start;
-      padding-top: calc(56px + env(safe-area-inset-top));
+      padding-top: calc(56px + var(--sat));
     }
 
     /* Sahne artık dar bir kart değil, sayfanın (panel sonrası kalan) tüm
@@ -14314,7 +14332,7 @@
   @media (min-width: 768px) and (min-height: 600px) {
     #page-9.page {
       align-items: flex-start;
-      padding-top: calc(48px + env(safe-area-inset-top));
+      padding-top: calc(48px + var(--sat));
     }
 
     .page9-wrap {
@@ -14576,8 +14594,8 @@
   @media (min-width: 768px) and (min-height: 600px) {
     #page-zero-error {
       align-items: flex-start;
-      padding-top: calc(48px + env(safe-area-inset-top));
-      padding-bottom: calc(32px + env(safe-area-inset-bottom));
+      padding-top: calc(48px + var(--sat));
+      padding-bottom: calc(32px + var(--sab));
     }
 
     #page-zero-error .exam-detail-wrap {
@@ -14657,7 +14675,7 @@
   @media (min-width: 768px) and (min-height: 600px) {
     #page-camera-test {
       align-items: flex-start;
-      padding-top: calc(48px + env(safe-area-inset-top));
+      padding-top: calc(48px + var(--sat));
     }
 
     .qhavuz-test-wrap {
@@ -14869,8 +14887,8 @@
   @media (min-width: 768px) and (min-height: 600px) {
     #page-4 {
       align-items: flex-start;
-      padding-top: calc(48px + env(safe-area-inset-top));
-      padding-bottom: calc(32px + env(safe-area-inset-bottom));
+      padding-top: calc(48px + var(--sat));
+      padding-bottom: calc(32px + var(--sab));
     }
 
     .wheel-page {
@@ -17994,17 +18012,6 @@
       const checkedInput = document.querySelector('.nav-input:checked');
       if (checkedInput) moveSlider(checkedInput);
     }
-
-    // Üst güvenli alanın (çentik/Dynamic Island şeridi) rengini de anında
-    // güncelle: Spor Modu'na girerken düz siyaha, çıkarken o an seçili
-    // olan normal temanın rengine döner. refreshThemeColorMeta, bu
-    // script'ten SONRA gelen bir <script> bloğunda tanımlandığı için
-    // (temalar dizisiyle birlikte), ilk sayfa yüklemesi sırasında henüz
-    // mevcut olmayabilir — bu yüzden varlığını kontrol ediyoruz; o an
-    // tanımlı değilse zaten sayfa ilk yüklendiğinde themes bloğu kendi
-    // refreshThemeColorMeta() çağrısıyla doğru rengi (is-sport-mode
-    // sınıfı hâlâ body üzerindeyken) uygulayacaktır.
-    if (typeof refreshThemeColorMeta === 'function') refreshThemeColorMeta();
   };
 
   if (sportModeToggle) {
@@ -18375,16 +18382,7 @@
 
   const openThemeBackdrops = new Set();
   const refreshThemeColorMeta = () => {
-    // Spor Modu aktifken üst güvenli alan (çentik/Dynamic Island şeridi)
-    // her zaman Spor Modu'nun düz siyah zeminiyle (--sm-bg: #000000)
-    // birebir aynı renkte boyanmalı; aksi halde şerit hâlâ o an seçili
-    // olan normal temanın (ör. Fildişi/#F6F4EF) rengiyle kalır ve
-    // ekranın en üstünde, spor modunun tam ekran görünümünü bozan açık
-    // renkli bir şerit olarak göze çarpar. Bu yüzden temel rengi burada
-    // is-sport-mode durumuna göre seçiyoruz.
-    const baseColor = document.body.classList.contains('is-sport-mode')
-      ? '#000000'
-      : themes[themeIndex].color;
+    const baseColor = themes[themeIndex].color;
     if (openThemeBackdrops.size === 0) {
       updateThemeColorMeta(baseColor);
       return;
