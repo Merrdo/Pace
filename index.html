@@ -7,7 +7,7 @@
 
 <!-- PWA: manifest ve tema rengi -->
 <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#272727">
+<meta name="theme-color" content="#F6F4EF">
 
 <!-- Favicon ve uygulama ikonları -->
 <link rel="icon" href="icons/favicon.ico" sizes="any">
@@ -40,7 +40,7 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Archivo+Expanded:wght@700;800&family=Playfair+Display:ital,wght@0,700;0,800;1,700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Expanded:wght@700;800&family=Playfair+Display:ital,wght@0,400;0,700;0,800;1,400;1,700&display=swap" rel="stylesheet">
 <style>
   * {
     margin: 0;
@@ -785,15 +785,14 @@
     display: none;
   }
 
-  /* Spor Modu'nda navbar 6 sekmeye sahiptir (Ana Sayfa, Egzersizler,
-     Antrenman, Kronometre, İstatistikler, Ayarlar); genişlik hesabı buna
-     göre güncellenir. */
+  /* Spor Modu'nda navbar'da sadece 2 sekme kalır: Ana Sayfa ve Ayarlar;
+     genişlik hesabı buna göre güncellenir. */
   body.is-sport-mode .navbar .option {
-    width: calc(100% / 6);
+    width: calc(100% / 2);
   }
 
   body.is-sport-mode .navbar .nav-slider {
-    width: calc((100% - 8px) / 6);
+    width: calc((100% - 8px) / 2);
   }
 
   /* Tablet/geniş ekran yanal panelinde de aynı sekmeler dışındakiler
@@ -807,204 +806,228 @@
     display: none;
   }
 
-  /* ---------- Spor Modu: Sinematik Geçiş Efekti ----------
-     Spor Modu açılırken, ekranı tam kaplayan eğik (skew) bir panel hızla
-     içeri kayıp ekranı örtüyor; örtülüyken asıl sayfa değişimi (navbar +
-     içerik) sessizce arka planda gerçekleşiyor, panel bir süre öylece
-     durup yazının rahatça okunmasına fırsat veriyor, ardından diğer yöne
-     doğru kayıp yeni içeriği ortaya çıkarıyor. Kenarlardaki ince şeritler
-     ve ortadaki ışık patlaması, spor yayınlarındaki "bumper" geçişlerine
-     benzer, premium hissettiren bir kimlik katıyor.
-     Renk: kullanıcının seçtiği vurgu renginden (--accent-color) BAĞIMSIZ,
-     sabit bir "Spor Modu" kimlik rengi (--sport-transition-color)
-     kullanılır; böylece bu geçiş her zaman aynı, kendine özgü görünür. */
-  .sport-transition {
-    --sport-transition-color: #ff4d2e;
-    position: fixed;
-    inset: 0;
-    z-index: 1000000;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-    pointer-events: none;
+  /* ==========================================================
+     Spor Modu: Koyu Tema (Think uygulamasının tasarımı, birebir)
+     ==========================================================
+     Spor modu aktifken kullanıcının seçtiği normal tema (Krem, Lacivert
+     vb.) tamamen devre dışı kalır; yerine Think uygulamasının koyu
+     moduyla AYNI renk paleti ve yazı tipi çifti (okuma metni için serif,
+     arayüz elemanları için sans-serif) uygulanır. Renkler doğrudan
+     Think'in html[data-theme="dark"] kök değişkenlerinden alınmıştır. */
+  body.is-sport-mode {
+    --theme-text: #F3EFE6;
+    --sm-bg: #000000;
+    --sm-ink: #F3EFE6;
+    --sm-ink-soft: #A8A199;
+    --sm-line: #2A2A2A;
+    --sm-accent: #9FB8D1;
+    --sm-accent-rgb: 159, 184, 209;
+    --sm-ink-rgb: 243, 239, 230;
+    background: var(--sm-bg);
   }
 
-  .sport-transition.is-playing {
-    pointer-events: auto;
-  }
-
-  .sport-transition-panel {
-    position: absolute;
-    inset: -20% -35%;
-    background: #0a0a0b;
-    border-left: 8px solid var(--sport-transition-color);
-    border-right: 8px solid var(--sport-transition-color);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
-    gap: 0.4rem;
-    transform: translateX(-145%) skewX(-9deg);
-  }
-
-  .sport-transition.is-playing .sport-transition-panel {
-    animation: sportWipe 1.7s cubic-bezier(0.65, 0, 0.35, 1) forwards;
-  }
-
-  /* Panel ekranı %22'de tam kaplayıp %78'e kadar (yaklaşık 950ms) öylece
-     bekliyor; asıl "okuma süresi" burada gizli — yazı bu bekleme
-     penceresinde net görünür kalıyor. */
-  @keyframes sportWipe {
-    0% { transform: translateX(-145%) skewX(-9deg); }
-    22% { transform: translateX(0%) skewX(-9deg); }
-    78% { transform: translateX(0%) skewX(-9deg); }
-    100% { transform: translateX(145%) skewX(-9deg); }
-  }
-
-  /* ---------- Spor Modu'ndan ÇIKARKEN: ayrı bir "bitiş çizgisi" varyantı ----------
-     Girişteki enerjik, tek renkli "hızlanma" hissinin aksine, çıkışta panel
-     TERS yönden akar (sağdan girip sola çıkar) ve kenarlarında yarış
-     bayrağını çağrıştıran siyah-beyaz dama deseni belirir; renk de sabit
-     "Spor Modu" kimlik renginden, sakin bir gümüş/beyaza döner. Böylece
-     giriş ve çıkış aynı mekanikle ama belirgin şekilde farklı bir "duyguyla"
-     oynar. */
-  .sport-transition-panel.is-exit {
-    --sport-transition-color: #f2f2f2;
-    border-left-color: #111;
-    border-right-color: #111;
-  }
-
-  .sport-transition.is-playing.is-exit .sport-transition-panel {
-    animation-name: sportWipeExit;
-  }
-
-  @keyframes sportWipeExit {
-    0% { transform: translateX(145%) skewX(-9deg); }
-    22% { transform: translateX(0%) skewX(-9deg); }
-    78% { transform: translateX(0%) skewX(-9deg); }
-    100% { transform: translateX(-145%) skewX(-9deg); }
-  }
-
-  .sport-transition-checker {
-    position: absolute;
-    left: 0;
-    right: 0;
-    height: 14px;
-    background-image:
-      linear-gradient(45deg, #111 25%, transparent 25%, transparent 75%, #111 75%),
-      linear-gradient(45deg, #111 25%, #f2f2f2 25%, #f2f2f2 75%, #111 75%);
-    background-size: 14px 14px;
-    background-position: 0 0, 7px 7px;
+  /* Normal temanın arka plan gradyanı/dokusu (.theme-layer / .pattern-layer)
+     spor modunda tamamen kapatılır; yerini düz siyah zemine bırakır. */
+  body.is-sport-mode .theme-layer.is-visible,
+  body.is-sport-mode .pattern-layer {
     opacity: 0;
   }
 
-  .sport-transition-checker-top {
-    top: 0;
+  body.is-sport-mode .app {
+    /* Not: arka plan rengini burada AYRICA vermiyoruz. body.is-sport-mode
+       zaten aynı rengi (--sm-bg) veriyor; .app'a opak bir arka plan
+       verilirse, position:relative + z-index:auto olduğu için boyama
+       sırasında negatif z-index'li .sport-field'in (ışık huzmeleri)
+       ÜSTÜNDE kalıyor ve onu tamamen örtüyordu — huzmeler bu yüzden
+       görünmüyordu. */
+    color: var(--sm-ink);
+    font-family: "Iowan Old Style", "Palatino Linotype", Georgia, "Times New Roman", serif;
   }
 
-  .sport-transition-checker-bottom {
-    bottom: 0;
+  /* ---- Alt Nav Bar: Think'in nav-pill'iyle aynı buzlu-cam, ince
+     çizgili, yumuşak gölgeli görünüm — brutalist siyah kutu/keskin
+     gölge tamamen kaldırılıyor. ---- */
+  body.is-sport-mode .wrapper {
+    --font-color-dark: var(--sm-ink-soft);
+    --font-color-light: var(--sm-ink);
+    background-color: rgba(0, 0, 0, 0.9);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid var(--sm-line);
+    border-radius: 9999px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
   }
 
-  .sport-transition-panel.is-exit .sport-transition-checker {
+  body.is-sport-mode .nav-slider {
+    background-color: rgba(var(--sm-accent-rgb), 0.18);
+    border-radius: 9999px;
+  }
+
+  body.is-sport-mode .nav-tooltip {
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-weight: 600;
+    background-color: var(--sm-ink);
+    color: var(--sm-bg);
+  }
+
+  body.is-sport-mode .nav-tooltip::after {
+    border-top-color: var(--sm-ink);
+  }
+
+  /* ---- Tablet/geniş ekran yanal paneli: aynı koyu/buzlu-cam görünüm. ---- */
+  body.is-sport-mode .sidebar-nav {
+    --bg-color: rgba(0, 0, 0, 0.9);
+    background: rgba(0, 0, 0, 0.9);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid var(--sm-line);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  }
+
+  body.is-sport-mode .sidebar-brand-title,
+  body.is-sport-mode .sidebar-nav-item {
+    color: var(--sm-ink-soft);
+  }
+
+  body.is-sport-mode .sidebar-nav-slider {
+    background-color: rgba(var(--sm-accent-rgb), 0.18);
+  }
+
+  body.is-sport-mode .sidebar-nav-item.is-active {
+    color: var(--sm-ink);
+  }
+
+  /* ---- Işık Huzmesi arka plan deseni (Think'in .field/.ray/.dust
+     kurallarının birebir taşınmış hâli): normalde gizli, sadece spor
+     modunda görünür olur. Renk, Think'teki gibi doğrudan vurgu
+     rengine (--sm-accent-rgb) bağlıdır. ---- */
+  .sport-field {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    overflow: hidden;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+  }
+
+  body.is-sport-mode .sport-field {
     opacity: 1;
   }
 
-  .sport-transition-flare {
+  .sport-ray {
     position: absolute;
-    width: 60vmax;
-    height: 60vmax;
+    top: -35%;
+    height: 170%;
+    background: linear-gradient(180deg,
+      rgba(var(--sm-accent-rgb, 159, 184, 209), 0) 0%,
+      rgba(var(--sm-accent-rgb, 159, 184, 209), 0.16) 34%,
+      rgba(var(--sm-accent-rgb, 159, 184, 209), 0.06) 62%,
+      rgba(var(--sm-accent-rgb, 159, 184, 209), 0) 100%);
+    filter: blur(20px);
+    opacity: 0;
+    transform: rotate(var(--angle));
+    transform-origin: top center;
+    animation: sportRayGlow 11s ease-in-out infinite;
+    will-change: opacity, filter, transform;
+  }
+
+  .sport-ray::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 40%;
+    right: 40%;
+    background: linear-gradient(180deg,
+      rgba(var(--sm-accent-rgb, 159, 184, 209), 0) 0%,
+      rgba(var(--sm-accent-rgb, 159, 184, 209), 0.36) 40%,
+      rgba(var(--sm-accent-rgb, 159, 184, 209), 0.11) 68%,
+      rgba(var(--sm-accent-rgb, 159, 184, 209), 0) 100%);
+    filter: blur(2px);
+  }
+
+  .sport-ray:nth-of-type(1) { left: -6%; width: 230px; --angle: 16deg; animation-delay: 0s; }
+  .sport-ray:nth-of-type(2) { left: 32%; width: 160px; --angle: 11deg; animation-delay: 3.8s; }
+  .sport-ray:nth-of-type(3) { left: 68%; width: 200px; --angle: 19deg; animation-delay: 7.6s; }
+
+  @keyframes sportRayGlow {
+    0%   { opacity: 0;    filter: blur(20px); transform: rotate(var(--angle)); }
+    22%  { opacity: 0.5;  filter: blur(13px); transform: rotate(calc(var(--angle) - 1.2deg)); }
+    50%  { opacity: 0.24; filter: blur(22px); transform: rotate(calc(var(--angle) + 1deg)); }
+    78%  { opacity: 0.5;  filter: blur(13px); transform: rotate(calc(var(--angle) - 0.6deg)); }
+    100% { opacity: 0;    filter: blur(20px); transform: rotate(var(--angle)); }
+  }
+
+  .sport-dust {
+    position: absolute;
+    width: 3px;
+    height: 3px;
     border-radius: 50%;
-    background: radial-gradient(circle, var(--sport-transition-color) 0%, rgba(255, 255, 255, 0) 70%);
+    background: rgba(var(--sm-accent-rgb, 159, 184, 209), 0.75);
+    box-shadow: 0 0 8px 2px rgba(var(--sm-accent-rgb, 159, 184, 209), 0.5);
     opacity: 0;
-    transform: skewX(9deg) scale(0.3);
-    pointer-events: none;
+    animation: sportDustFloat linear infinite;
   }
 
-  .sport-transition.is-playing .sport-transition-flare {
-    animation: sportFlare 1.7s cubic-bezier(0.65, 0, 0.35, 1) forwards;
+  .sport-dust:nth-of-type(4)  { left: 12%; top: 70%; width: 2px;   height: 2px;   animation-duration: 15s; animation-delay: 0s; }
+  .sport-dust:nth-of-type(5)  { left: 24%; top: 82%; width: 4px;   height: 4px;   animation-duration: 18s; animation-delay: 2.4s; }
+  .sport-dust:nth-of-type(6)  { left: 38%; top: 60%; width: 2.5px; height: 2.5px; animation-duration: 13s; animation-delay: 4.8s; }
+  .sport-dust:nth-of-type(7)  { left: 52%; top: 88%; width: 3px;   height: 3px;   animation-duration: 20s; animation-delay: 1.2s; }
+  .sport-dust:nth-of-type(8)  { left: 66%; top: 65%; width: 4px;   height: 4px;   animation-duration: 16s; animation-delay: 6s; }
+  .sport-dust:nth-of-type(9)  { left: 78%; top: 78%; width: 2px;   height: 2px;   animation-duration: 14s; animation-delay: 3.6s; }
+  .sport-dust:nth-of-type(10) { left: 88%; top: 58%; width: 3.5px; height: 3.5px; animation-duration: 19s; animation-delay: 8.4s; }
+
+  @keyframes sportDustFloat {
+    0%   { opacity: 0;    transform: translate(0,0) scale(0.8); }
+    10%  { opacity: 0.9;  transform: translate(1px,-8px) scale(1); }
+    50%  { opacity: 0.45; transform: translate(6px,-55px) scale(1.15); }
+    75%  { opacity: 0.9;  transform: translate(2px,-90px) scale(1); }
+    100% { opacity: 0;    transform: translate(-8px,-120px) scale(0.8); }
   }
 
-  @keyframes sportFlare {
-    0%, 24% { opacity: 0; transform: skewX(9deg) scale(0.3); }
-    34% { opacity: 0.5; transform: skewX(9deg) scale(1); }
-    50%, 100% { opacity: 0; transform: skewX(9deg) scale(1.5); }
+  @media (prefers-reduced-motion: reduce) {
+    .sport-ray { animation: none; opacity: 0.2; transform: rotate(var(--angle)); }
+    .sport-dust { animation: none; opacity: 0.25; }
   }
 
-  .sport-transition-kicker,
-  .sport-transition-title {
-    position: relative;
-    transform: skewX(9deg);
-    text-align: center;
-    opacity: 0;
-    /* Panel kendisi (inset: -20% -35% sayesinde) ekrandan çok daha geniş
-       olduğundan, içindeki metin genişlik sınırı olmadan tek satırda
-       büyüyüp gerçek ekranın (viewport) dışına taşabiliyor ve dıştaki
-       .sport-transition'ın overflow:hidden'ı bunu kırpıyordu — özellikle
-       "NORMAL MODA DÖNÜLÜYOR" gibi uzun çıkış metninde. Genişliği panele
-       göre değil, doğrudan viewport'a (vw) göre sınırlayıp gerektiğinde
-       satır kaydırılmasına izin vererek metnin her zaman ekrana sığmasını
-       garanti ediyoruz. */
-    max-width: 88vw;
-    white-space: normal;
-    overflow-wrap: break-word;
-    word-break: keep-all;
-  }
-
-  .sport-transition-kicker {
-    font-family: "Space Grotesk", sans-serif;
-    font-weight: 700;
-    font-size: 0.8rem;
-    letter-spacing: 0.4em;
+  /* ---- Ana Sayfa yer tutucusu: Think'in "HOŞ GELDİN," başlığıyla
+     BİREBİR aynı font/stil — Iowan Old Style, 400 ağırlık, büyük harf,
+     ince harf aralığı. (Ekran görüntüsündeki başlık, Think'in temel
+     gövde fontunu kullanıyor; Playfair Display DEĞİL.) ---- */
+  body.is-sport-mode .home-sport-soon {
+    font-family: "Iowan Old Style", "Palatino Linotype", Georgia, "Times New Roman", serif;
+    font-style: normal;
+    font-weight: 400;
     text-transform: uppercase;
-    color: var(--sport-transition-color);
+    letter-spacing: 0.01em;
+    color: var(--sm-ink);
   }
 
-  .sport-transition-title {
-    font-family: "Archivo Expanded", "Playfair Display", sans-serif;
-    font-weight: 800;
-    font-size: clamp(2rem, 11vw, 3.4rem);
-    letter-spacing: 0.02em;
-    text-transform: uppercase;
-    color: #fff;
-    line-height: 1.05;
+  /* ---- Ayarlar > Çıkış butonu: brutalist siyah çerçeve/gölge yerine
+     Think'in dolu "ink üstü bg" birincil buton stili (.modal-btn-primary
+     ile birebir aynı renk mantığı). ---- */
+  body.is-sport-mode .settings-sport-exit-btn {
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    color: var(--sm-bg);
+    background-color: var(--sm-ink);
+    border: 1px solid var(--sm-ink);
+    border-radius: 9999px;
+    box-shadow: none;
   }
 
-  /* Çıkış metni ("NORMAL MODA DÖNÜLÜYOR"), giriş metninden ("SPOR MODU")
-     belirgin şekilde daha uzun olduğu için aynı büyük font boyutuyla iki
-     satıra bölünse bile dar ekranlarda taşabiliyordu; bu varyant için
-     biraz daha küçük ve daha dar bir ölçek kullanıyoruz. */
-  .sport-transition-panel.is-exit .sport-transition-title {
-    font-size: clamp(1.5rem, 7.6vw, 2.5rem);
+  body.is-sport-mode .settings-sport-exit-btn:hover {
+    background-color: var(--sm-accent);
+    border-color: var(--sm-accent);
+    transform: translate(0, -2px);
+    box-shadow: 0 8px 18px -6px rgba(var(--sm-accent-rgb), 0.4);
   }
 
-  .sport-transition.is-playing .sport-transition-kicker,
-  .sport-transition.is-playing .sport-transition-title {
-    animation: sportTextIn 1.7s cubic-bezier(0.65, 0, 0.35, 1) forwards;
-  }
-
-  .sport-transition.is-playing .sport-transition-title {
-    animation-delay: 0.04s;
-  }
-
-  /* Yazı %30'da tam görünür olup %70'e kadar (yaklaşık 680ms) net kalıyor;
-     bu, kısa metni bile rahatça okumaya yetecek bir süre. */
-  @keyframes sportTextIn {
-    0%, 20% { opacity: 0; transform: skewX(9deg) translateY(16px) scale(0.9); }
-    30%, 70% { opacity: 1; transform: skewX(9deg) translateY(0) scale(1); }
-    82%, 100% { opacity: 0; transform: skewX(9deg) translateY(-12px) scale(1.04); }
-  }
-
-  /* Örtü ekranı kaplarken altındaki uygulama hafifçe küçülüp bulanıklaşır;
-     bu da geçişe sinematik bir derinlik ve premium bir ağırlık katar. */
-  .app {
-    transition: transform 0.4s ease, filter 0.4s ease;
-  }
-
-  body.is-sport-transitioning .app {
+  body.is-sport-mode .settings-sport-exit-btn:active {
     transform: scale(0.97);
-    filter: blur(2px) brightness(0.85);
+    box-shadow: none;
   }
 
   /* Sayfa adını kısaca gösteren baloncuk: butonun hemen üstünde belirir.
@@ -1819,6 +1842,8 @@
     max-width: 280px;
     max-height: 22vh;
     overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
     margin-top: 0.4rem;
   }
 
@@ -2071,6 +2096,7 @@
     gap: 0.4rem;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
     padding-bottom: 0.2rem;
   }
 
@@ -3560,6 +3586,8 @@
     width: 100%;
     max-height: 50vh;
     overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
     box-sizing: border-box;
     padding: 0.15rem;
     scrollbar-width: none;
@@ -5189,6 +5217,8 @@
   .qhavuz-filter-modal-card {
     max-height: 82vh;
     overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
   }
 
   .qhavuz-filter-modal-card .page8-groups-chip-list {
@@ -12554,6 +12584,8 @@
       box-sizing: border-box;
       max-height: calc(100dvh - 32px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
       overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
       scrollbar-width: none;
       -ms-overflow-style: none;
     }
@@ -14962,7 +14994,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: #272727;
+    background: #F6F4EF;
     transition: opacity 0.45s ease, visibility 0.45s ease;
   }
   #app-splash-icon {
@@ -15004,14 +15036,16 @@
     try {
       var raw = localStorage.getItem('takvimim_app_state_v1');
       var saved = raw ? JSON.parse(raw) : null;
-      var themeIndex = saved && typeof saved.theme === 'number' ? saved.theme : 0;
-      var color = SPLASH_THEME_COLORS[themeIndex] || SPLASH_THEME_COLORS[0];
+      // Kayıtlı bir tema tercihi yoksa (ilk açılış), varsayılan olarak
+      // Fildişi (index 4) kullanılır.
+      var themeIndex = saved && typeof saved.theme === 'number' ? saved.theme : 4;
+      var color = SPLASH_THEME_COLORS[themeIndex] || SPLASH_THEME_COLORS[4];
       var splashEl = document.getElementById('app-splash');
       if (splashEl) splashEl.style.background = color;
       var meta = document.querySelector('meta[name="theme-color"]');
       if (meta) meta.setAttribute('content', color);
     } catch (err) {
-      /* localStorage okunamazsa varsayılan antrasit renkte kalır */
+      /* localStorage okunamazsa varsayılan fildişi renkte kalır */
     }
   })();
 </script>
@@ -15062,6 +15096,23 @@
 <div class="theme-layer" id="themeLayerB"></div>
 <div class="pattern-layer" id="patternLayer"></div>
 
+<!-- Spor Modu: Think uygulamasındaki "Işık Huzmesi" arka plan deseni
+     (yukarıdan süzülen 3 yumuşak ışık huzmesi + yavaşça yükselen toz
+     zerreleri). Sadece body.is-sport-mode aktifken görünür olur (bkz.
+     ilgili CSS kuralları); diğer temalarda tamamen gizlidir. -->
+<div class="sport-field" id="sportField" aria-hidden="true">
+  <span class="sport-ray"></span>
+  <span class="sport-ray"></span>
+  <span class="sport-ray"></span>
+  <span class="sport-dust"></span>
+  <span class="sport-dust"></span>
+  <span class="sport-dust"></span>
+  <span class="sport-dust"></span>
+  <span class="sport-dust"></span>
+  <span class="sport-dust"></span>
+  <span class="sport-dust"></span>
+</div>
+
 <!-- Tablet/geniş ekranda gösterilen sol yanal panel. Telefonda CSS ile
      tamamen gizlenir; alttaki pill navbar ile aynı 7 sayfayı, aynı sırada,
      ikon + isim olarak listeler ve aynı goToPage() akışını tetikler. -->
@@ -15083,21 +15134,21 @@
       <span class="sidebar-nav-label">Ana Sayfa</span>
     </button>
 
-    <button type="button" class="sidebar-nav-item nav-sport-only" data-page="page-sport-exercises">
+    <button type="button" class="sidebar-nav-item nav-sport-only nav-sport-hide" data-page="page-sport-exercises">
       <svg class="sidebar-nav-icon nav-icon-dumbbell" viewBox="0 0 24 24">
         <path d="M17.596 12.768a2 2 0 1 0 2.829-2.829l-1.768-1.767a2 2 0 0 0 2.828-2.829l-2.828-2.828a2 2 0 0 0-2.829 2.828l-1.767-1.768a2 2 0 1 0-2.829 2.829zM2.5 21.5l1.4-1.4M20.1 3.9l1.4-1.4M5.343 21.485a2 2 0 1 0 2.829-2.828l1.767 1.768a2 2 0 1 0 2.829-2.829l-6.364-6.364a2 2 0 1 0-2.829 2.829l1.768 1.767a2 2 0 0 0-2.828 2.829zM9.6 14.4l4.8-4.8"/>
       </svg>
       <span class="sidebar-nav-label">Egzersizler</span>
     </button>
 
-    <button type="button" class="sidebar-nav-item nav-sport-only" data-page="page-sport-workout">
+    <button type="button" class="sidebar-nav-item nav-sport-only nav-sport-hide" data-page="page-sport-workout">
       <svg class="sidebar-nav-icon nav-icon-heartbeat" viewBox="0 0 24 24">
         <path class="nav-heartbeat-line" d="M2 12h2.49a2 2 0 0 0 1.92-1.46l2.35-8.36a.25.25 0 0 1 .48 0l5.52 19.64a.25.25 0 0 0 .48 0l2.35-8.36A2 2 0 0 1 19.52 12H22"/>
       </svg>
       <span class="sidebar-nav-label">Antrenman</span>
     </button>
 
-    <button type="button" class="sidebar-nav-item" data-page="page-5">
+    <button type="button" class="sidebar-nav-item nav-sport-hide" data-page="page-5">
       <svg class="sidebar-nav-icon nav-icon-stopwatch" viewBox="0 0 24 24">
         <circle cx="12" cy="13" r="8"/>
         <line class="nav-stopwatch-hand" x1="12" y1="9" x2="12" y2="13"/>
@@ -15156,7 +15207,7 @@
       <span class="sidebar-nav-label">Denemelerim</span>
     </button>
 
-    <button type="button" class="sidebar-nav-item nav-sport-only" data-page="page-sport-stats">
+    <button type="button" class="sidebar-nav-item nav-sport-only nav-sport-hide" data-page="page-sport-stats">
       <svg class="sidebar-nav-icon nav-icon-chart" viewBox="0 0 24 24">
         <line x1="3.5" y1="20" x2="20.5" y2="20"/>
         <rect class="nav-chart-bar" x="5.3" y="13" width="3.4" height="7" rx="1"/>
@@ -17286,7 +17337,7 @@
         </svg>
       </div>
     </div>
-    <div class="option nav-sport-only">
+    <div class="option nav-sport-only nav-sport-hide">
       <input class="nav-input" type="radio" name="nav" value="page-sport-exercises">
       <div class="nav-btn">
         <span class="nav-tooltip">Egzersizler</span>
@@ -17295,7 +17346,7 @@
         </svg>
       </div>
     </div>
-    <div class="option nav-sport-only">
+    <div class="option nav-sport-only nav-sport-hide">
       <input class="nav-input" type="radio" name="nav" value="page-sport-workout">
       <div class="nav-btn">
         <span class="nav-tooltip">Antrenman</span>
@@ -17304,7 +17355,7 @@
         </svg>
       </div>
     </div>
-    <div class="option">
+    <div class="option nav-sport-hide">
       <input class="nav-input" type="radio" name="nav" value="page-5">
       <div class="nav-btn">
         <span class="nav-tooltip">Kronometre</span>
@@ -17373,7 +17424,7 @@
         </svg>
       </div>
     </div>
-    <div class="option nav-sport-only">
+    <div class="option nav-sport-only nav-sport-hide">
       <input class="nav-input" type="radio" name="nav" value="page-sport-stats">
       <div class="nav-btn">
         <span class="nav-tooltip">İstatistikler</span>
@@ -17906,15 +17957,6 @@
   // yerden (açık/kapalı) yüklenir.
   const sportModeToggle = document.getElementById('settingsSportModeToggle');
   const sportModeExitBtn = document.getElementById('settingsSportExitBtn');
-  // NOT: #sportTransition öğesi, HTML dokümanında bu script'ten çok daha
-  // sonra (</body>'den hemen önce) yer alıyor. Inline <script> etiketleri
-  // belge ayrıştırılırken sırayla çalıştığı için, burada değeri şimdiden
-  // sabit bir değişkene alıp önbelleklersek (const sportTransition =
-  // document.getElementById(...)) o an DOM'da henüz var olmadığından hep
-  // null döner ve animasyon asla oynamaz. Bu yüzden öğeyi önbelleklemek
-  // yerine her kullanımda YENİDEN sorguluyoruz; kullanıcı anahtara
-  // bastığında sayfa tamamen yüklenmiş olacağından öğe artık DOM'dadır.
-  const getSportTransitionEl = () => document.getElementById('sportTransition');
 
   // Spor modu açıldığında, o an navbar'da artık görünmeyen bir sayfada
   // (ör. Kronometre) durulmasın diye her zaman Ana Sayfa'ya dönülür; hem
@@ -17932,137 +17974,25 @@
     }
   };
 
-  // Spor Modu'na GİRERKEN ve ÇIKARKEN oynatılan sinematik "bumper" geçişi:
-  // eğik bir panel önce ekranı tamamen örter, panel ekranı örttüğü sırada
-  // (henüz hiçbir şey görünmezken) asıl sayfa değişimini (onCovered)
-  // sessizce gerçekleştiririz, ardından panel diğer yöne kayıp yeni
-  // içeriği ortaya çıkarır. Süreler, .sport-transition CSS'indeki
-  // @keyframes sportWipe / sportWipeExit ile birebir eşleşecek şekilde
-  // ayarlanmıştır. Panel %22'de ekranı tam kaplayıp %78'e kadar bekliyor
-  // (yaklaşık 950ms); bu bekleme, kısa metni bile rahatça okumaya
-  // yetecek bir pencere açıyor.
-  //
-  // 'enter' ve 'exit' iki ayrı "duyguda" oynar: girişte panel soldan sağa
-  // akar, sabit enerjik "Spor Modu" renginde ve metni "SPOR MODU"'dur;
-  // çıkışta panel TERS yönden (sağdan sola) akar, kenarlarında yarış
-  // bayrağı dama deseni belirir ve rengi sakin bir gümüşe döner — bkz.
-  // .sport-transition-panel.is-exit / @keyframes sportWipeExit.
-  const SPORT_TRANSITION_MS = 1700;
-  const SPORT_TRANSITION_COVER_MS = 380;
-  const SPORT_TRANSITION_TEXT = {
-    enter: { kicker: 'MOD DEĞİŞİYOR', title: 'SPOR MODU' },
-    exit: { kicker: 'BİTİŞ ÇİZGİSİ', title: 'NORMAL MODA DÖNÜLÜYOR' },
-  };
-
-  // ---------- Üst güvenli alanı (çentik / Dynamic Island şeridi) geçiş
-  // panelinin renkleriyle senkronize etme ----------
-  // Panel ('.sport-transition-panel') giriş ('enter') ve çıkışta ('exit')
-  // farklı vurgu (kenarlık/metin) renkleri kullansa da arka planı HER
-  // ZAMAN aynı sabit koyu tonda (#0a0a0b, bkz. yukarıdaki CSS). Ama üst
-  // güvenli alan sadece <meta name="theme-color"> rengine göre boyandığı
-  // için, panel ekranı tamamen örtse bile çentik/Dynamic Island şeridi
-  // hâlâ o anki temanın (ör. Krem, Lacivert) rengiyle kalıp panelin koyu
-  // tonuyla uyumsuz duruyordu — bütünlük bozuluyordu. Artık panel
-  // oynatılırken üst şeridi de panelin arka planıyla aynı tona getirip,
-  // panel geri çekilmeye başladığı anda (bkz. %78 keyframe noktası,
-  // sportWipe/sportWipeExit) eski tema rengine döndürüyoruz; böylece
-  // çentik de "geçiş perdesi"nin bir parçası gibi görünüyor.
-  const SPORT_TRANSITION_PANEL_COLOR = '#0a0a0b';
-  const SPORT_TRANSITION_UNCOVER_MS = Math.round(SPORT_TRANSITION_MS * 0.78);
-
-  let sportTransitionSwapTimer = null;
-  let sportTransitionEndTimer = null;
-  let sportTransitionColorRevertTimer = null;
-
-  const playSportTransition = (variant, onCovered) => {
-    const sportTransition = getSportTransitionEl();
-    if (!sportTransition) {
-      onCovered();
-      return;
-    }
-
-    const panel = sportTransition.querySelector('.sport-transition-panel');
-    const kickerEl = sportTransition.querySelector('.sport-transition-kicker');
-    const titleEl = sportTransition.querySelector('.sport-transition-title');
-    const texts = SPORT_TRANSITION_TEXT[variant] || SPORT_TRANSITION_TEXT.enter;
-    const isExit = variant === 'exit';
-
-    if (kickerEl) kickerEl.textContent = texts.kicker;
-    if (titleEl) titleEl.textContent = texts.title;
-    if (panel) panel.classList.toggle('is-exit', isExit);
-
-    clearTimeout(sportTransitionSwapTimer);
-    clearTimeout(sportTransitionEndTimer);
-    clearTimeout(sportTransitionColorRevertTimer);
-
-    // Art arda hızlıca tetiklenirse önceki oynatımdan kalan durumu
-    // sıfırlayıp (reflow ile) animasyonun her seferinde baştan, aynı
-    // şekilde oynamasını garanti ediyoruz.
-    sportTransition.classList.remove('is-playing');
-    document.body.classList.remove('is-sport-transitioning');
-    void sportTransition.offsetWidth;
-
-    sportTransition.classList.toggle('is-exit', isExit);
-    document.body.classList.add('is-sport-transitioning');
-    sportTransition.classList.add('is-playing');
-
-    // Panel ekranı örtmeye BAŞLADIĞI anda üst güvenli alanı da panelin
-    // koyu tonuna çekiyoruz; iOS'un rengi kendi ~480ms'lik yumuşak
-    // geçişiyle (bkz. --theme-transition-duration) solduracağı süre,
-    // panelin tam kaplı kaldığı ~950ms'lik bekleme penceresine rahatça
-    // sığıyor. updateThemeColorMeta henüz tanımlanmamış olabileceğinden
-    // (bu script, temayı yöneten script'ten önce çalışır) varlığını
-    // kontrol ediyoruz — bkz. syncSwatchSelection'daki aynı desen.
-    if (typeof updateThemeColorMeta === 'function') {
-      updateThemeColorMeta(SPORT_TRANSITION_PANEL_COLOR);
-    }
-
-    sportTransitionSwapTimer = setTimeout(() => {
-      onCovered();
-    }, SPORT_TRANSITION_COVER_MS);
-
-    // Panel geri çekilmeye başladığı anda (bkz. %78 keyframe noktası),
-    // üst güvenli alanı da o an aktif olan tema rengine (varsa açık bir
-    // pop-up backdrop'unun harmanlanmış tonu dahil) geri döndürüyoruz;
-    // refreshThemeColorMeta bu hesaplamayı zaten kendisi yapıyor.
-    sportTransitionColorRevertTimer = setTimeout(() => {
-      if (typeof refreshThemeColorMeta === 'function') {
-        refreshThemeColorMeta();
-      }
-    }, SPORT_TRANSITION_UNCOVER_MS);
-
-    sportTransitionEndTimer = setTimeout(() => {
-      sportTransition.classList.remove('is-playing');
-      document.body.classList.remove('is-sport-transitioning');
-    }, SPORT_TRANSITION_MS + 80);
-  };
-
+  // Spor Modu'na GİRERKEN ve ÇIKARKEN artık herhangi bir geçiş animasyonu
+  // oynatılmıyor; anahtara basılır basılmaz ilgili sınıf/sayfa değişimi
+  // anında uygulanır.
   const setSportMode = (isOn) => {
     if (sportModeToggle) sportModeToggle.checked = isOn;
 
     if (isOn) {
-      // Ekran panelle tamamen örtülene kadar gerçek içerik değişimini
-      // ertele; böylece navbar/sayfa değişimi kullanıcıya hiç görünmeden,
-      // "sahne arkasında" gerçekleşir.
-      playSportTransition('enter', () => {
-        document.body.classList.add('is-sport-mode');
-        goToSportHome();
-      });
+      document.body.classList.add('is-sport-mode');
+      goToSportHome();
     } else {
-      // Çıkışta da aynı şekilde: gerçek geçiş (is-sport-mode kaldırma +
-      // navbar'ın yeniden konumlanması) panel ekranı tam örttüğü anda,
-      // görünmeden gerçekleşir; kullanıcı hiçbir ara kare/zıplama görmez.
-      playSportTransition('exit', () => {
-        document.body.classList.remove('is-sport-mode');
-        // Spor modundan çıkarken navbar 6 sekmelik düzenden 7 sekmelik
-        // normal düzene dönüyor; ama .nav-slider'ın
-        // konumu hâlâ spor modundaki dar ölçüme göre hesaplanmış
-        // transform değerini taşıyor. Sınıf kaldırıldıktan (layout
-        // güncellendikten) hemen sonra, o an seçili olan sekmeye göre
-        // göstergeyi normal genişliklere göre yeniden konumlandırıyoruz.
-        const checkedInput = document.querySelector('.nav-input:checked');
-        if (checkedInput) moveSlider(checkedInput);
-      });
+      document.body.classList.remove('is-sport-mode');
+      // Spor modundan çıkarken navbar 6 sekmelik düzenden 7 sekmelik
+      // normal düzene dönüyor; ama .nav-slider'ın konumu hâlâ spor
+      // modundaki dar ölçüme göre hesaplanmış transform değerini taşıyor.
+      // Sınıf kaldırıldıktan (layout güncellendikten) hemen sonra, o an
+      // seçili olan sekmeye göre göstergeyi normal genişliklere göre
+      // yeniden konumlandırıyoruz.
+      const checkedInput = document.querySelector('.nav-input:checked');
+      if (checkedInput) moveSlider(checkedInput);
     }
   };
 
@@ -18322,8 +18252,10 @@
 <script>
   // Sayfa 1'deki butona her tıklandığında tema (arka plan + yazı rengi) değişir.
   // Toplam 7 tema: orijinal (antresit gri), koyu, saf siyah, krem, fildişi, bebek mavisi ve lacivert.
-  // "Orijinal" artık referans görseldeki antresit (#272727) tonu; uygulama
-  // ilk açılışta (daha önce kaydedilmiş bir tema tercihi yoksa) bu renkle açılır.
+  // "Orijinal" referans görseldeki antresit (#272727) tonu; ancak uygulama
+  // ilk açılışta (daha önce kaydedilmiş bir tema tercihi yoksa) artık
+  // Fildişi (#F6F4EF, index 4) rengiyle açılır (bkz. aşağıdaki themeIndex
+  // varsayılanı ve splash ekranı script'i).
   const themes = [
     {
       name: 'Orijinal',
@@ -18484,8 +18416,9 @@
   const layerA = document.getElementById('themeLayerA');
   const layerB = document.getElementById('themeLayerB');
   // Daha önce seçilmiş bir tema kaydedilmişse (localStorage), uygulama onunla açılır.
+  // Kaydedilmiş bir tercih yoksa (ilk açılış), varsayılan olarak Fildişi (index 4) kullanılır.
   const savedThemeIndex = APP_STATE.theme;
-  let themeIndex = (typeof savedThemeIndex === 'number' && themes[savedThemeIndex]) ? savedThemeIndex : 0;
+  let themeIndex = (typeof savedThemeIndex === 'number' && themes[savedThemeIndex]) ? savedThemeIndex : 4;
   let visibleLayer = layerA;
   let hiddenLayer = layerB;
 
@@ -30141,22 +30074,6 @@
     renderExerciseList();
   })();
 </script>
-
-<!-- Spor Modu'na girerken/çıkarken oynatılan sinematik geçiş efekti. Sayfa
-     içeriğinin geri kalanının en üstünde durur; normalde ekran dışında
-     (görünmez) bekler, sadece .is-playing sınıfı eklendiğinde animasyonla
-     içeri kayar. Girişte enerjik "Spor Modu" renginde, çıkışta ise
-     kenarlarında bir "bitiş çizgisi" (dama deseni) olan, ters yönde akan
-     ayrı bir varyantla oynar (bkz. .sport-transition-panel.is-exit). -->
-<div class="sport-transition" id="sportTransition" aria-hidden="true">
-  <div class="sport-transition-panel" id="sportTransitionPanel">
-    <span class="sport-transition-checker sport-transition-checker-top"></span>
-    <span class="sport-transition-flare"></span>
-    <span class="sport-transition-kicker" id="sportTransitionKicker">MOD DEĞİŞİYOR</span>
-    <span class="sport-transition-title" id="sportTransitionTitle">SPOR MODU</span>
-    <span class="sport-transition-checker sport-transition-checker-bottom"></span>
-  </div>
-</div>
 
 </body>
 </html>
