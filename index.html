@@ -1355,25 +1355,383 @@
     background-color: #ff5c5c;
   }
 
-  /* Ana sayfadaki widget'ları (takvim + soru sayacı + mini oyunlar) dikey
-     olarak, aynı genişlikte ortalayan sarmalayıcı. */
+  /* Ana sayfadaki 3 widget'ın yerleşimi ("bento" düzeni): üstte tam
+     genişlikte büyük "Bugün Çözülen" kartı, altında yan yana iki küçük
+     rozet (takvim + mini oyunlar). Genişlik, sayfanın kendi yan
+     boşluklarına (24px) kadar açılır; böylece sol kenar "Pace" logosuyla
+     hizalanır ve ekran daha dolu/dengeli görünür. Geniş ekranlarda
+     (masaüstü) 26rem'de durur. */
   .home-widgets-stack {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.8rem;
+    width: min(100%, 26rem);
+  }
+
+  /* Ana Sayfa'daki Plan widget'ı: tam genişlikte duran ekstra bir kart,
+     diğer .home-mini-widget rozetleriyle aynı görsel dili kullanır. */
+  .home-new-widget {
+    grid-column: 1 / -1;
+  }
+
+  /* =====================================================================
+     PLAN SAYFASI: referans görseldeki gibi üstte gün şeridi, altında
+     saat aralıklı görev listesi. Uygulamanın genel renk/yazı tipi
+     dilini (Space Grotesk, #F6F4EF zemin, siyah vurgular) korur.
+     ===================================================================== */
+  #page-plan {
+    align-items: flex-start;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding-top: calc(40px + env(safe-area-inset-top));
+    padding-bottom: calc(22px + env(safe-area-inset-bottom));
+  }
+
+  .plan-page {
+    display: flex;
+    flex-direction: column;
+    gap: 1.1rem;
+    width: 100%;
+    max-width: 360px;
+  }
+
+  /* ---- Gün şeridi ---- */
+  .plan-day-strip {
+    display: flex;
+    gap: 0.5rem;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    padding-bottom: 0.2rem;
+  }
+
+  .plan-day-pill {
+    flex: none;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0.9rem;
-    width: min(300px, 82vw);
+    gap: 0.3rem;
+    width: 3.05rem;
+    padding: 0.55rem 0 0.6rem;
+    background-color: #fff;
+    border: none;
+    border-radius: 1.1rem;
+    box-shadow: 0 8px 18px -14px rgba(0, 0, 0, 0.22), 0 1px 4px rgba(0, 0, 0, 0.04);
+    font-family: "Space Grotesk", sans-serif;
+    cursor: pointer;
+    color: #000;
+    transition: transform 0.15s ease, background-color 0.15s ease, color 0.15s ease;
   }
+
+  .plan-day-pill:active {
+    transform: translateY(1px);
+  }
+
+  .plan-day-pill-weekday {
+    font-size: 0.68rem;
+    font-weight: 600;
+    color: #9a9a9a;
+  }
+
+  .plan-day-pill-num {
+    font-size: 1.05rem;
+    font-weight: 800;
+  }
+
+  .plan-day-pill.is-selected {
+    background-color: #000;
+    color: #fff;
+  }
+
+  .plan-day-pill.is-selected .plan-day-pill-weekday {
+    color: #d9d9d9;
+  }
+
+  /* ---- Liste başlığı + "Bugün" butonu ---- */
+  .plan-list-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .plan-list-title {
+    font-family: "Baloo 2", "Space Grotesk", sans-serif;
+    font-weight: 800;
+    font-size: 1.25rem;
+    color: #000;
+  }
+
+  .plan-today-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.4rem 0.85rem;
+    background-color: #fff;
+    border: 1px solid #e3e0d8;
+    border-radius: 999px;
+    font-family: "Space Grotesk", sans-serif;
+    font-weight: 700;
+    font-size: 0.78rem;
+    color: #000;
+    cursor: pointer;
+  }
+
+  .plan-today-btn:active {
+    transform: translateY(1px);
+  }
+
+  /* ---- Görev listesi ---- */
+  .plan-task-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+  }
+
+  .plan-task-row {
+    display: flex;
+    align-items: stretch;
+    gap: 0.6rem;
+  }
+
+  .plan-task-time {
+    flex: none;
+    width: 3.1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 0.1rem;
+    font-family: "Space Grotesk", sans-serif;
+    font-weight: 700;
+    font-size: 0.72rem;
+    color: #6b6b6b;
+    padding-top: 0.1rem;
+  }
+
+  /* Zaman çizgisi (timeline): saat sütunu ile kart arasındaki noktalı
+     dikey çizgi ve her göreve ait yuvarlak işaretçi. */
+  .plan-task-timeline {
+    flex: none;
+    width: 0.9rem;
+    position: relative;
+    display: flex;
+    justify-content: center;
+  }
+
+  .plan-task-timeline::before {
+    content: "";
+    position: absolute;
+    top: 0.2rem;
+    bottom: -0.85rem;
+    left: 50%;
+    width: 1px;
+    background-color: #e3e0d8;
+    transform: translateX(-50%);
+  }
+
+  .plan-task-row:last-child .plan-task-timeline::before {
+    bottom: 50%;
+  }
+
+  .plan-task-timeline-dot {
+    position: relative;
+    z-index: 1;
+    width: 0.55rem;
+    height: 0.55rem;
+    border-radius: 50%;
+    border: 1.5px solid #b9b6ac;
+    background-color: #fdfcfa;
+    margin-top: 0.35rem;
+  }
+
+  .plan-task-row.is-done .plan-task-timeline-dot {
+    border-color: #2f9e5c;
+    background-color: #2f9e5c;
+  }
+
+  .plan-task-card {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    min-width: 0;
+    padding: 0.75rem 0.9rem;
+    background-color: #fff;
+    border: none;
+    border-radius: 1.1rem;
+    box-shadow: 0 8px 18px -14px rgba(0, 0, 0, 0.22), 0 1px 4px rgba(0, 0, 0, 0.04);
+    text-align: left;
+    cursor: pointer;
+    font-family: "Space Grotesk", sans-serif;
+  }
+
+  .plan-task-icon {
+    flex: none;
+    width: 2.3rem;
+    height: 2.3rem;
+    border-radius: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #eef0e9;
+    font-size: 1.1rem;
+  }
+
+  .plan-task-text {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+  }
+
+  .plan-task-name {
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: #000;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .plan-task-sub {
+    font-weight: 500;
+    font-size: 0.74rem;
+    color: #9a9a9a;
+  }
+
+  .plan-task-check {
+    flex: none;
+    width: 1.6rem;
+    height: 1.6rem;
+    border-radius: 50%;
+    border: 2px solid #d8d5cb;
+    background: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #fff;
+    padding: 0;
+  }
+
+  .plan-task-check.is-done {
+    border-color: #2f9e5c;
+    background-color: #2f9e5c;
+  }
+
+  .plan-task-delete {
+    flex: none;
+    width: 1.6rem;
+    height: 1.6rem;
+    border-radius: 50%;
+    border: none;
+    background: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #c9c6bc;
+  }
+
+  .plan-empty-state {
+    display: none;
+    padding: 1.6rem 0.5rem;
+    text-align: center;
+    font-family: "Space Grotesk", sans-serif;
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: #9a9a9a;
+  }
+
+  .plan-empty-state.is-visible {
+    display: block;
+  }
+
+  /* ---- Alt "Yeni Aktivite Ekle" butonu ---- */
+  .plan-add-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    width: 100%;
+    padding: 0.85rem 1rem;
+    background-color: #000;
+    color: #fff;
+    border: none;
+    border-radius: 999px;
+    font-family: "Space Grotesk", sans-serif;
+    font-weight: 700;
+    font-size: 0.95rem;
+    cursor: pointer;
+  }
+
+  .plan-add-btn:active {
+    transform: translateY(1px);
+  }
+
+  /* ---- Ekleme modalındaki ikon seçici (şimdilik işlevsiz) ---- */
+  .plan-icon-picker-btn {
+    width: 2.6rem;
+    height: 2.6rem;
+    border-radius: 0.85rem;
+    border: 1.5px dashed #d8d5cb;
+    background-color: #f7f6f2;
+    color: #9a9a9a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+
+  .plan-time-row {
+    display: flex;
+    gap: 0.7rem;
+  }
+
+  .plan-time-field {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+
+  .plan-modal-feedback {
+    min-height: 1rem;
+    font-family: "Space Grotesk", sans-serif;
+    font-weight: 600;
+    font-size: 0.78rem;
+    color: #d1453b;
+  }
+
+  body.is-anthracite .plan-day-pill,
+  body.is-anthracite .plan-task-card,
+  body.is-anthracite .plan-today-btn {
+    background-color: var(--dark-card-color, #32343a);
+    color: #f2f2f4;
+  }
+
+  body.is-anthracite .plan-day-pill.is-selected {
+    background-color: #f2f2f4;
+    color: #000;
+  }
+
+  body.is-anthracite .plan-task-icon {
+    background-color: rgba(255, 255, 255, 0.08);
+  }
+
 
   /* Minimalist takvim widget'ı: bugünün tarihini gösteren sade, yuvarlak
      bir "rozet"; ana sayfadaki diğer kartla aynı yumuşak gölge dilini
      paylaşır ama daha küçük/kompakttır. */
   .home-date-widget {
-    display: inline-flex;
-    align-self: flex-start;
+    display: flex;
+    align-self: stretch;
     align-items: center;
-    gap: 0.75rem;
-    padding: 0.6rem 1.1rem;
+    justify-content: flex-start;
+    gap: 0.7rem;
+    min-width: 0;
+    min-height: 3.6rem;
+    padding: 0.6rem 1rem;
     background-color: #fff;
     border: none;
     border-radius: 999px;
@@ -1429,14 +1787,20 @@
      bilinçli olarak ayrılıp sade, yumuşak gölgeli bir kart olarak
      tasarlandı (üst kısımdaki tarih rozetiyle aynı sakin dil). */
   .home-live-widget {
+    grid-column: 1 / -1;
     display: flex;
-    align-items: center;
-    gap: 1.1rem;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.9rem;
     width: 100%;
-    padding: 1.15rem 1.35rem;
+    /* Ekran yüksekliğine göre nefes alan, "widget" hissi veren bir kart:
+       kısa telefonlarda ~8.5rem, uzun olanlarda ~11rem'e kadar büyür. */
+    min-height: clamp(8.5rem, 19dvh, 11rem);
+    padding: 1.3rem 1.45rem 1.25rem;
     background-color: #fff;
     border: none;
-    border-radius: 1.4em;
+    border-radius: 1.75rem;
     box-shadow: 0 14px 28px -16px rgba(0, 0, 0, 0.28), 0 2px 8px rgba(0, 0, 0, 0.06);
     cursor: pointer;
     text-align: left;
@@ -1458,8 +1822,9 @@
     flex: none;
     font-family: "Baloo 2", "Space Grotesk", sans-serif;
     font-weight: 800;
-    font-size: 2.5rem;
-    line-height: 1;
+    font-size: clamp(3.6rem, 9dvh, 4.8rem);
+    line-height: 0.9;
+    letter-spacing: -0.02em;
     color: #000;
   }
 
@@ -1480,6 +1845,111 @@
     font-weight: 500;
     font-size: 0.82rem;
     color: #9a9a9a;
+  }
+
+  /* ---------- Ana sayfa widget'ı: hedefe göre "dolum" animasyonu ----------
+     Soru Takibi'nde günlük hedef belirlendiyse (.has-goal) kartın içinde,
+     vurgu renginde bir sıvı alttan yükselir; seviye = bugün çözülen /
+     hedef. Sıvı sadece transform:translateY ile hareket eder (JS tarafı:
+     homeFillTransform) — yerleşimi tetiklemediği için akıcıdır. Üst
+     kenardaki iki dalga katmanı ise saf CSS ile yatayda sürekli kayar.
+     Hedef yoksa katman hiç çizilmez, kart eskisi gibi düz beyaz kalır. */
+  .home-live-widget {
+    position: relative;
+    isolation: isolate;
+  }
+
+  /* Metinler her zaman sıvının üstünde okunur kalsın. */
+  .home-live-widget-count,
+  .home-live-widget-text {
+    position: relative;
+    z-index: 1;
+  }
+
+  .home-live-widget-fill {
+    display: none;
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    border-radius: inherit;
+    overflow: hidden;
+    pointer-events: none;
+    /* Safari'de overflow:hidden + dönüşen çocuk katmanın köşe yuvarlağını
+       bozmasını engeller (gölge bu katmanın dışında, ana butonda kalır). */
+    -webkit-mask-image: -webkit-radial-gradient(white, black);
+  }
+
+  .home-live-widget.has-goal .home-live-widget-fill {
+    display: block;
+  }
+
+  .home-live-widget-liquid {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 100%;
+    background-color: var(--accent-color, #ff90e8);
+    /* Başlangıç/boş durum: tamamen aşağıda, dalga kenarı da gizli. */
+    transform: translateY(calc(100% + 18px));
+    transition: transform 1.5s cubic-bezier(0.22, 1, 0.36, 1);
+    will-change: transform;
+  }
+
+  .home-live-widget-wave {
+    position: absolute;
+    left: 0;
+    bottom: 100%;
+    width: 200%;
+    height: 14px;
+    margin-bottom: -1px;
+    display: block;
+    fill: var(--accent-color, #ff90e8);
+    animation: homeWaveDrift 4.5s linear infinite;
+  }
+
+  .home-live-widget-wave-back {
+    height: 18px;
+    opacity: 0.45;
+    animation-duration: 7s;
+    animation-direction: reverse;
+  }
+
+  /* svg 4 dalga periyodu içerir; %50 kaydırmak tam 2 periyot eder, yani
+     döngü dikişsizdir. */
+  @keyframes homeWaveDrift {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+
+  /* Ana sayfa görünmezken dalgaları oynatma (gereksiz GPU/pil tüketimi). */
+  #page-1:not(.is-active) .home-live-widget-wave {
+    animation-play-state: paused;
+  }
+
+  /* Sıvı yükselince gri alt metin vurgu rengi üstünde okunmaz hale gelirdi. */
+  .home-live-widget.has-goal .home-live-widget-sub {
+    color: rgba(0, 0, 0, 0.6);
+  }
+
+  /* Koyu modda beyaz metinler açık kalıyor; sıvıyı yarı saydam tutarak
+     metnin kontrastını koruyoruz. */
+  body.is-anthracite .home-live-widget-fill {
+    opacity: 0.4;
+  }
+
+  body.is-anthracite .home-live-widget.has-goal .home-live-widget-sub {
+    color: #cfcfd4;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .home-live-widget-wave {
+      animation: none;
+    }
+
+    .home-live-widget-liquid {
+      transition-duration: 0.01s;
+    }
   }
 
   /* Minimalist Mini Oyunlar widget'ı: takvim rozetiyle aynı kompakt/yuvarlak
@@ -1539,6 +2009,40 @@
     font-weight: 500;
     font-size: 0.76rem;
     color: #9a9a9a;
+  }
+
+  /* Ana sayfadaki KÜÇÜLTÜLMÜŞ Mini Oyunlar butonu: ızgaranın yarım
+     hücresine oturan, sadece ikon + başlıktan oluşan kompakt rozet.
+     Alt metin ("Şimdi ne yapsam?") burada gizlenir; Mini Oyunlar
+     sayfasındaki kart (.minigames-game-card) tam boyutlu halini korur.
+     Alt metni geri getirmek için aşağıdaki display:none satırını silmek
+     yeterli. */
+  .home-mini-widget-compact {
+    width: auto;
+    align-self: stretch;
+    min-width: 0;
+    min-height: 3.6rem;
+    gap: 0.6rem;
+    padding: 0.55rem 1rem 0.55rem 0.65rem;
+  }
+
+  .home-mini-widget-compact .home-mini-widget-icon {
+    width: 1.9rem;
+    height: 1.9rem;
+  }
+
+  .home-mini-widget-compact .home-mini-widget-icon svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .home-mini-widget-compact .home-mini-widget-title {
+    font-size: 0.85rem;
+    white-space: nowrap;
+  }
+
+  .home-mini-widget-compact .home-mini-widget-sub {
+    display: none;
   }
 
   /* ---------- Görev silme butonu (satırın sağında, brutalist stile uyumlu) ---------- */
@@ -3792,6 +4296,214 @@
     opacity: 0.5;
     cursor: default;
     pointer-events: none;
+  }
+
+  /* ---------- Sayfa 9: "Hedef Belirle" butonu ve günlük hedef pop-up'ı ----------
+     Buton, tarih satırıyla (.page9-date-label) aynı kalın çerçeve/katı gölge
+     dilinde; hedef belirlenmişse sağında güncel hedefi gösteren vurgu
+     renkli bir rozet çıkar. Pop-up ise "Ders Ekle" pop-up'ının kart ve
+     arka plan bileşenlerini (.page9-add-backdrop/.page9-add-card) paylaşır;
+     yalnızca içindeki eksi/artı ve büyük sayı bölümü bu bloğa aittir. */
+  .page9-goal-btn {
+    -webkit-appearance: none;
+    appearance: none;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    width: 100%;
+    margin: 0;
+    padding: 0.5rem 0.7rem;
+    font-family: "Space Grotesk", sans-serif;
+    font-weight: 800;
+    font-size: 0.88rem;
+    color: #121212;
+    text-align: left;
+    background-color: #fff;
+    border: 3px solid #000;
+    border-radius: 0.85rem;
+    box-shadow: 3px 3px 0px 0px #000;
+    cursor: pointer;
+    touch-action: manipulation;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.2s ease;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .page9-goal-btn:hover {
+      transform: translate(-1px, -1px);
+      box-shadow: 4px 4px 0px 0px #000;
+    }
+  }
+
+  .page9-goal-btn:active {
+    transform: translate(2px, 2px);
+    box-shadow: 1px 1px 0px 0px #000;
+    background-color: var(--accent-color, #ff90e8);
+  }
+
+  .page9-goal-btn-icon {
+    flex: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.7rem;
+    height: 1.7rem;
+    color: #000;
+    background-color: #fff;
+    border: 2.5px solid #000;
+    border-radius: 50%;
+  }
+
+  .page9-goal-btn-label {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .page9-goal-btn-value {
+    flex: none;
+    display: none;
+    padding: 0.15rem 0.55rem;
+    font-size: 0.78rem;
+    color: #121212;
+    background-color: var(--accent-color, #ff90e8);
+    border: 2.5px solid #000;
+    border-radius: 0.6rem;
+  }
+
+  .page9-goal-btn.has-goal .page9-goal-btn-value {
+    display: inline-block;
+  }
+
+  body.is-anthracite .page9-goal-btn {
+    color: #f2f2f4;
+    background-color: var(--dark-card-color, #32343a);
+    border-color: #000;
+  }
+
+  body.is-anthracite .page9-goal-btn:active {
+    color: #121212;
+    background-color: var(--accent-color, #ff90e8);
+  }
+
+  body.is-anthracite .page9-goal-btn-icon {
+    color: #f2f2f4;
+    background-color: var(--dark-card-color, #32343a);
+  }
+
+  body.is-anthracite .page9-goal-btn:active .page9-goal-btn-icon {
+    color: #121212;
+    background-color: var(--accent-color, #ff90e8);
+  }
+
+  /* Pop-up */
+  .page9-goal-card {
+    max-width: 340px;
+  }
+
+  /* Alt başlık kalktığı için başlık, kapatma butonuyla dikey ortalanır. */
+  .page9-goal-card .page9-add-header {
+    align-items: center;
+  }
+
+  .page9-goal-stepper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.9rem;
+    margin: 0.5rem 0 0.2rem;
+  }
+
+  .page9-goal-step-btn {
+    -webkit-appearance: none;
+    appearance: none;
+    box-sizing: border-box;
+    flex: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 3.4rem;
+    height: 3.4rem;
+    margin: 0;
+    padding: 0;
+    color: #000;
+    background-color: #fff;
+    border: 4px solid #000;
+    border-radius: 50%;
+    box-shadow: 4px 4px 0px 0px #000;
+    cursor: pointer;
+    touch-action: manipulation;
+    transition: transform 0.12s ease, box-shadow 0.12s ease, background-color 0.12s ease, opacity 0.2s ease;
+  }
+
+  .page9-goal-step-btn:active,
+  .page9-goal-step-btn.is-pressed {
+    transform: translate(2px, 2px);
+    box-shadow: 2px 2px 0px 0px #000;
+    background-color: var(--accent-color, #ff90e8);
+  }
+
+  /* Sınıra ulaşınca (0 ya da 999) düğme sönükleşir; disabled kullanmıyoruz
+     çünkü basılı tutarken düğme devre dışı kalırsa "bırakma" olayı
+     kaçabilir ve tekrarlayan artış durmayabilir. */
+  .page9-goal-step-btn.is-limit {
+    opacity: 0.35;
+  }
+
+  .page9-goal-value-wrap {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.15rem;
+  }
+
+  .page9-goal-input {
+    width: 100%;
+    padding: 0;
+    text-align: center;
+    font-family: "Baloo 2", "Space Grotesk", sans-serif;
+    font-weight: 800;
+    font-size: 3.2rem;
+    line-height: 1;
+    color: #121212;
+    background: transparent;
+    border: none;
+    -moz-appearance: textfield;
+  }
+
+  .page9-goal-input::-webkit-outer-spin-button,
+  .page9-goal-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  body.is-anthracite .page9-goal-step-btn {
+    color: #f2f2f4;
+    background-color: var(--dark-card-color, #32343a);
+    border-color: #000;
+  }
+
+  body.is-anthracite .page9-goal-step-btn:active,
+  body.is-anthracite .page9-goal-step-btn.is-pressed {
+    color: #121212;
+    background-color: var(--accent-color, #ff90e8);
+  }
+
+  body.is-anthracite .page9-goal-input {
+    color: #f2f2f4;
+  }
+
+  /* Geniş ekranda buton tüm satırı kaplamak yerine kendi doğal genişliğinde
+     (sola yaslı) durur. */
+  @media (min-width: 768px) and (min-height: 600px) {
+    .page9-goal-btn {
+      align-self: flex-start;
+      width: auto;
+      min-width: 17rem;
+      font-size: 0.95rem;
+      padding: 0.6rem 0.85rem;
+    }
   }
 
   /* ---------- Soru Havuzu (eski "Kamera" sekmesi) ----------
@@ -14223,10 +14935,32 @@
     </svg>
 
     <div class="home-widgets-stack">
+      <!-- Soru Takibi'ndeki (Sayfa 9) günlük log kayıtlarından canlı olarak
+           hesaplanan "bugün çözülen soru" sayacı. Log her eklendiğinde/
+           silindiğinde savePage9State üzerinden anında güncellenir; tıklanınca
+           doğrudan Soru Takibi sekmesini açar. Yerleşimde en üstte, tam
+           genişlikte duran ana (hero) karttır. -->
+      <button type="button" class="home-live-widget" id="homeQuestionWidget" aria-label="Soru Takibi'ne git, bugün çözülen soru sayısı">
+        <!-- Dolum animasyonu katmanı: Soru Takibi'nde günlük hedef
+             belirlenmişse (.has-goal) görünür; seviyeyi JS'teki
+             homeFillTransform() ayarlar. -->
+        <span class="home-live-widget-fill" aria-hidden="true">
+          <span class="home-live-widget-liquid" id="homeQuestionWidgetLiquid">
+            <svg class="home-live-widget-wave home-live-widget-wave-back" viewBox="0 0 480 16" preserveAspectRatio="none" focusable="false"><path d="M0 8 Q30 16 60 8 T120 8 T180 8 T240 8 T300 8 T360 8 T420 8 T480 8 V16 H0 Z"/></svg>
+            <svg class="home-live-widget-wave home-live-widget-wave-front" viewBox="0 0 480 16" preserveAspectRatio="none" focusable="false"><path d="M0 8 Q30 0 60 8 T120 8 T180 8 T240 8 T300 8 T360 8 T420 8 T480 8 V16 H0 Z"/></svg>
+          </span>
+        </span>
+        <span class="home-live-widget-count" id="homeQuestionWidgetCount">0</span>
+        <span class="home-live-widget-text">
+          <span class="home-live-widget-title">Bugün Çözülen</span>
+          <span class="home-live-widget-sub" id="homeQuestionWidgetSub">Henüz soru girilmedi</span>
+        </span>
+      </button>
+
       <!-- Minimalist takvim widget'ı: bugünün gün/ay/haftagünü bilgisini
            gösterir, dakikada bir tazelenir (gece yarısını geçen açık
            oturumlarda da güncel kalsın diye); tıklanınca Takvim sayfasını
-           (Sayfa 6) açar. -->
+           (Sayfa 6) açar. Alt satırın sol yarısında durur. -->
       <button type="button" class="home-date-widget" id="homeCalendarWidget" aria-label="Takvime git">
         <span class="home-date-widget-num" id="homeCalendarWidgetDay">18</span>
         <span class="home-date-widget-text">
@@ -14235,21 +14969,9 @@
         </span>
       </button>
 
-      <!-- Soru Takibi'ndeki (Sayfa 9) günlük log kayıtlarından canlı olarak
-           hesaplanan "bugün çözülen soru" sayacı. Log her eklendiğinde/
-           silindiğinde savePage9State üzerinden anında güncellenir; tıklanınca
-           doğrudan Soru Takibi sekmesini açar. -->
-      <button type="button" class="home-live-widget" id="homeQuestionWidget" aria-label="Soru Takibi'ne git, bugün çözülen soru sayısı">
-        <span class="home-live-widget-count" id="homeQuestionWidgetCount">0</span>
-        <span class="home-live-widget-text">
-          <span class="home-live-widget-title">Bugün Çözülen</span>
-          <span class="home-live-widget-sub" id="homeQuestionWidgetSub">Henüz soru girilmedi</span>
-        </span>
-      </button>
-
-      <!-- Minimalist Mini Oyunlar widget'ı: tıklanınca karar çarkının
-           bulunduğu Mini Oyunlar sayfasını (Sayfa 4) açar. -->
-      <button type="button" class="home-mini-widget" id="homeMiniGamesWidget" aria-label="Mini Oyunlar'a git">
+      <!-- Minimalist Mini Oyunlar widget'ı (kompakt): tıklanınca Mini Oyunlar
+           sayfasını açar; alt satırın sağ yarısında durur. -->
+      <button type="button" class="home-mini-widget home-mini-widget-compact" id="homeMiniGamesWidget" aria-label="Mini Oyunlar'a git">
         <span class="home-mini-widget-icon" aria-hidden="true">
           <svg viewBox="0 0 24 24" width="18" height="18">
             <rect x="4" y="4" width="16" height="16" rx="4.5" fill="none" stroke="currentColor" stroke-width="2"/>
@@ -14265,8 +14987,124 @@
           <span class="home-mini-widget-sub">Şimdi ne yapsam?</span>
         </span>
       </button>
+
+      <!-- Plan Sayfası'nı açan widget: diğer iki küçük rozetin altında,
+           tam genişlikte durur. -->
+      <button type="button" class="home-mini-widget home-new-widget" id="homeNewWidget" aria-label="Plan sayfasına git">
+        <span class="home-mini-widget-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="18" height="18">
+            <rect x="3.5" y="5" width="17" height="15" rx="2.5" fill="none" stroke="currentColor" stroke-width="2"/>
+            <path d="M3.5 9.5h17" stroke="currentColor" stroke-width="2"/>
+            <path d="M8 3v4M16 3v4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </span>
+        <span class="home-mini-widget-text">
+          <span class="home-mini-widget-title">Plan</span>
+          <span class="home-mini-widget-sub">Günlük planını oluştur</span>
+        </span>
+      </button>
     </div>
   </section>
+
+  <!-- Plan Sayfası: seçilen gün için saat aralıklı günlük plan/görev
+       listesi. Ana Sayfa'daki "Yeni Özellik" widget'ından açılır; Takvim/
+       Mini Oyunlar ile aynı goToPage + is-wheel-open (nav bar'ı gizleme)
+       akışını kullanır. Görevler tarihe göre APP_STATE içinde saklanır
+       (bkz. aşağıdaki script bloğundaki planPage* fonksiyonları).
+       İkon seçimi şimdilik işlevsiz bir yer tutucu; ileride gerçek bir
+       ikon seçiciyle değiştirilecek. -->
+  <section class="page" id="page-plan">
+    <div class="plan-page">
+      <div class="calendar-topbar">
+        <button type="button" class="calendar-back-btn" id="planBackBtn" aria-label="Geri dön">
+          <svg viewBox="0 0 24 24" width="18" height="18">
+            <path d="M15 4l-8 8 8 8" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+        <span class="calendar-topbar-title">Plan</span>
+        <div class="calendar-topbar-spacer"></div>
+      </div>
+
+      <!-- Haftalık gün şeridi: seçilen tarihi ortada tutan, yatay
+           kaydırılabilir 7 günlük bant. Referans görseldeki Paz-Cmt
+           şeridiyle aynı fikir; JS tarafında bugünden ±birkaç gün
+           üretilir ve dokununca o günün görevleri gösterilir. -->
+      <div class="plan-day-strip" id="planDayStrip"></div>
+
+      <div class="plan-list-header">
+        <span class="plan-list-title">Günlük Plan</span>
+        <button type="button" class="plan-today-btn" id="planTodayBtn">
+          <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
+            <rect x="3.5" y="5" width="17" height="15" rx="2.5" fill="none" stroke="currentColor" stroke-width="2"/>
+            <path d="M3.5 9.5h17" stroke="currentColor" stroke-width="2"/>
+            <path d="M8 3v4M16 3v4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+          Bugün
+        </button>
+      </div>
+
+      <div class="plan-task-list" id="planTaskList">
+        <!-- Görev kartları JS ile buraya render edilir; boşsa
+             #planEmptyState gösterilir (bkz. renderPlanTasks). -->
+      </div>
+
+      <div class="plan-empty-state" id="planEmptyState">
+        Bu gün için henüz görev eklenmedi.
+      </div>
+
+      <button type="button" class="plan-add-btn" id="planAddTaskBtn">
+        <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+          <line x1="12" y1="5" x2="12" y2="19" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/>
+          <line x1="5" y1="12" x2="19" y2="12" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/>
+        </svg>
+        Yeni Aktivite Ekle
+      </button>
+    </div>
+  </section>
+
+  <!-- Plan Sayfası: görev ekleme/düzenleme pop-up'ı. Sayfa 11'in "Yeni
+       Deneme" modalıyla aynı görsel dili (settings-confirm-backdrop +
+       page11-modal-card) kullanır ki yeni bir stil seti eklemeye gerek
+       kalmasın. -->
+  <div class="settings-confirm-backdrop" id="planAddBackdrop">
+    <div class="page11-modal-card">
+      <span class="page11-modal-title" id="planModalTitle">Yeni Aktivite</span>
+
+      <div class="page11-field">
+        <span class="page11-field-label">İkon</span>
+        <!-- Şimdilik işlevsiz yer tutucu: ikon seçimi ileride eklenecek. -->
+        <button type="button" class="plan-icon-picker-btn" id="planIconPickerBtn" aria-label="İkon seç (yakında)">
+          <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+            <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/>
+            <path d="M9 9h.01M15 9h.01M8.5 14.5c1 1 2.2 1.5 3.5 1.5s2.5-.5 3.5-1.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="page11-field">
+        <label class="page11-field-label" for="planTaskNameInput">Görev Adı</label>
+        <input type="text" id="planTaskNameInput" class="page11-field-input" placeholder="Örn. Matematik Çalışma" maxlength="40">
+      </div>
+
+      <div class="page11-field plan-time-row">
+        <div class="plan-time-field">
+          <label class="page11-field-label" for="planStartTimeInput">Başlangıç</label>
+          <input type="time" id="planStartTimeInput" class="page11-field-input">
+        </div>
+        <div class="plan-time-field">
+          <label class="page11-field-label" for="planEndTimeInput">Bitiş</label>
+          <input type="time" id="planEndTimeInput" class="page11-field-input">
+        </div>
+      </div>
+
+      <div class="plan-modal-feedback" id="planModalFeedback"></div>
+
+      <div class="settings-confirm-actions page11-modal-actions">
+        <button type="button" class="settings-confirm-cancel" id="planAddCancelBtn">Vazgeç</button>
+        <button type="button" class="page11-modal-confirm" id="planAddConfirmBtn">Ekle</button>
+      </div>
+    </div>
+  </div>
 
   <!-- Mini Oyunlar ana sayfası: ana sayfadaki widget artık doğrudan karar
        çarkına değil buraya açılır. İleride eklenecek her yeni mini oyun,
@@ -15016,6 +15854,21 @@
         </button>
       </div>
 
+      <!-- Günlük soru hedefi: butona basınca eksi/artı ile hedef belirlenen
+           pop-up açılır. Hedef, ana sayfadaki "Bugün Çözülen" widget'ının
+           dolum seviyesini belirler. -->
+      <button type="button" class="page9-goal-btn" id="page9GoalBtn" aria-label="Günlük soru hedefini belirle">
+        <span class="page9-goal-btn-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="9"/>
+            <circle cx="12" cy="12" r="4.5"/>
+            <circle cx="12" cy="12" r="0.8" fill="currentColor"/>
+          </svg>
+        </span>
+        <span class="page9-goal-btn-label">Hedef Belirle</span>
+        <span class="page9-goal-btn-value" id="page9GoalBtnValue"></span>
+      </button>
+
       <div class="page9-columns" id="page9Columns">
         <div class="page9-card">
           <div class="settings-segmented page9-segmented" id="page9TrackSegmented">
@@ -15756,6 +16609,34 @@
     </div>
 
     <button type="button" class="add-task-btn page9-add-confirm" id="page9AddConfirm">Seçilenleri Ekle</button>
+  </div>
+</div>
+
+<!-- Sayfa 9: "Hedef Belirle" ile açılan günlük soru hedefi pop-up'ı.
+     Eksi/artı düğmeleriyle (basılı tutunca hızlı tekrar eder) ya da sayıya
+     doğrudan yazarak hedef belirlenir; pop-up her kapanışta hedefi kaydeder. -->
+<div class="page9-add-backdrop" id="page9GoalBackdrop">
+  <div class="page9-add-card page9-goal-card" role="dialog" aria-modal="true" aria-labelledby="page9GoalTitle">
+    <div class="page9-add-header">
+      <div class="page9-add-heading">
+        <span class="page9-add-title" id="page9GoalTitle">Günlük Hedef</span>
+      </div>
+      <button type="button" class="delete-btn page9-add-close" id="page9GoalClose" aria-label="Kapat">×</button>
+    </div>
+
+    <div class="page9-goal-stepper">
+      <button type="button" class="page9-goal-step-btn" id="page9GoalMinus" aria-label="Hedefi azalt">
+        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14"/></svg>
+      </button>
+      <div class="page9-goal-value-wrap">
+        <input type="number" inputmode="numeric" class="page9-goal-input" id="page9GoalInput" min="0" max="999" value="0" aria-label="Günlük hedef soru sayısı">
+      </div>
+      <button type="button" class="page9-goal-step-btn" id="page9GoalPlus" aria-label="Hedefi artır">
+        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14M12 5v14"/></svg>
+      </button>
+    </div>
+
+    <button type="button" class="add-task-btn page9-add-confirm" id="page9GoalSave">Kaydet</button>
   </div>
 </div>
 
@@ -16580,6 +17461,14 @@
     });
   }
 
+  // ---------- Ana sayfa: yeni eklenen widget (Plan Sayfası) ----------
+  const homeNewWidgetEl = document.getElementById('homeNewWidget');
+  if (homeNewWidgetEl) {
+    homeNewWidgetEl.addEventListener('click', () => {
+      if (typeof openPlanPage === 'function') openPlanPage();
+    });
+  }
+
 </script>
 
 <script>
@@ -17120,6 +18009,274 @@
 
   const miniGamesHubBackBtn = document.getElementById('miniGamesHubBackBtn');
   if (miniGamesHubBackBtn) miniGamesHubBackBtn.addEventListener('click', closeMiniGamesHub);
+
+  // Ana sayfadaki widget'ın açtığı Plan Sayfası: aynı açma/kapama deseni
+  // (nav bar'ı gizle, geri butonuyla Ana Sayfa'ya dön). Sayfanın içeriği
+  // (gün şeridi, görev listesi, ekleme modalı) aşağıda ayrı bir <script>
+  // bloğunda (bkz. "Plan Sayfası" bölümü) kurulur.
+  const openPlanPage = () => {
+    document.body.classList.add('is-wheel-open'); // nav bar'ı gizler
+    goToPage('page-plan');
+    if (typeof onPlanPageOpen === 'function') onPlanPageOpen();
+  };
+
+  const closePlanPage = () => {
+    document.body.classList.remove('is-wheel-open');
+    goToPage('page-1');
+  };
+
+  const planBackBtn = document.getElementById('planBackBtn');
+  if (planBackBtn) planBackBtn.addEventListener('click', closePlanPage);
+
+  // =====================================================================
+  // PLAN SAYFASI: gün şeridi + saat aralıklı görev listesi.
+  // Veriler APP_STATE.planTasks altında { 'YYYY-MM-DD': [görev, ...] }
+  // biçiminde saklanır; her görev { id, name, start, end, done }.
+  // İkon seçimi şimdilik işlevsiz bir yer tutucu (tüm görevler aynı
+  // nötr ikonu kullanır); ileride gerçek bir ikon seçiciyle değiştirilecek.
+  // =====================================================================
+  (() => {
+    const dayStripEl = document.getElementById('planDayStrip');
+    const taskListEl = document.getElementById('planTaskList');
+    const emptyStateEl = document.getElementById('planEmptyState');
+    const todayBtn = document.getElementById('planTodayBtn');
+    const addTaskBtn = document.getElementById('planAddTaskBtn');
+    const addBackdrop = document.getElementById('planAddBackdrop');
+    const modalTitle = document.getElementById('planModalTitle');
+    const nameInput = document.getElementById('planTaskNameInput');
+    const startInput = document.getElementById('planStartTimeInput');
+    const endInput = document.getElementById('planEndTimeInput');
+    const modalFeedback = document.getElementById('planModalFeedback');
+    const cancelBtn = document.getElementById('planAddCancelBtn');
+    const confirmBtn = document.getElementById('planAddConfirmBtn');
+    const iconPickerBtn = document.getElementById('planIconPickerBtn');
+    if (!dayStripEl || !taskListEl) return;
+
+    const WEEKDAYS_SHORT = ['Paz', 'Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt'];
+
+    const toDateKey = (date) => {
+      const y = date.getFullYear();
+      const m = String(date.getMonth() + 1).padStart(2, '0');
+      const d = String(date.getDate()).padStart(2, '0');
+      return `${y}-${m}-${d}`;
+    };
+
+    let selectedDateKey = toDateKey(new Date());
+    let editingTaskId = null; // dolu ise "Yeni Aktivite" modalı düzenleme modunda
+
+    const getTasksForDate = (dateKey) => {
+      if (!APP_STATE.planTasks) APP_STATE.planTasks = {};
+      if (!Array.isArray(APP_STATE.planTasks[dateKey])) APP_STATE.planTasks[dateKey] = [];
+      return APP_STATE.planTasks[dateKey];
+    };
+
+    const sortTasks = (tasks) => {
+      tasks.sort((a, b) => (a.start || '').localeCompare(b.start || ''));
+    };
+
+    // ---- Gün şeridi: bugünden -3 / +3 gün ----
+    const renderDayStrip = () => {
+      dayStripEl.innerHTML = '';
+      const base = new Date();
+      base.setHours(0, 0, 0, 0);
+      for (let offset = -3; offset <= 3; offset += 1) {
+        const d = new Date(base);
+        d.setDate(base.getDate() + offset);
+        const key = toDateKey(d);
+        const pill = document.createElement('button');
+        pill.type = 'button';
+        pill.className = 'plan-day-pill' + (key === selectedDateKey ? ' is-selected' : '');
+        pill.innerHTML = `
+          <span class="plan-day-pill-weekday">${WEEKDAYS_SHORT[d.getDay()]}</span>
+          <span class="plan-day-pill-num">${d.getDate()}</span>
+        `;
+        pill.addEventListener('click', () => {
+          selectedDateKey = key;
+          renderDayStrip();
+          renderPlanTasks();
+        });
+        dayStripEl.appendChild(pill);
+      }
+    };
+
+    // ---- Görev listesi ----
+    const renderPlanTasks = () => {
+      const tasks = getTasksForDate(selectedDateKey);
+      sortTasks(tasks);
+      taskListEl.innerHTML = '';
+
+      if (tasks.length === 0) {
+        if (emptyStateEl) emptyStateEl.classList.add('is-visible');
+        return;
+      }
+      if (emptyStateEl) emptyStateEl.classList.remove('is-visible');
+
+      tasks.forEach((task) => {
+        const row = document.createElement('div');
+        row.className = 'plan-task-row' + (task.done ? ' is-done' : '');
+
+        row.innerHTML = `
+          <div class="plan-task-time">
+            <span>${task.start || '--:--'}</span>
+            <span>${task.end || '--:--'}</span>
+          </div>
+          <div class="plan-task-timeline">
+            <span class="plan-task-timeline-dot"></span>
+          </div>
+          <button type="button" class="plan-task-card" data-task-id="${task.id}">
+            <span class="plan-task-icon" aria-hidden="true">•</span>
+            <span class="plan-task-text">
+              <span class="plan-task-name"></span>
+              <span class="plan-task-sub">${task.start || '--:--'} - ${task.end || '--:--'}</span>
+            </span>
+          </button>
+          <button type="button" class="plan-task-check${task.done ? ' is-done' : ''}" data-task-id="${task.id}" aria-label="Tamamlandı olarak işaretle">
+            ${task.done ? '<svg viewBox="0 0 24 24" width="12" height="12"><polyline points="5 13 10 18 19 7" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>' : ''}
+          </button>
+          <button type="button" class="plan-task-delete" data-task-id="${task.id}" aria-label="Görevi sil">
+            <svg viewBox="0 0 24 24" width="14" height="14"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+          </button>
+        `;
+        // Görev adını textContent ile yazıyoruz ki kullanıcı girdisi HTML
+        // olarak yorumlanmasın (XSS'e karşı güvenli).
+        row.querySelector('.plan-task-name').textContent = task.name;
+
+        row.querySelector('.plan-task-card').addEventListener('click', () => openTaskModal(task.id));
+        row.querySelector('.plan-task-check').addEventListener('click', (e) => {
+          e.stopPropagation();
+          toggleTaskDone(task.id);
+        });
+        row.querySelector('.plan-task-delete').addEventListener('click', (e) => {
+          e.stopPropagation();
+          deleteTask(task.id);
+        });
+
+        taskListEl.appendChild(row);
+      });
+    };
+
+    const toggleTaskDone = (taskId) => {
+      const tasks = getTasksForDate(selectedDateKey);
+      const task = tasks.find((t) => t.id === taskId);
+      if (!task) return;
+      task.done = !task.done;
+      saveAppState({ planTasks: APP_STATE.planTasks });
+      renderPlanTasks();
+    };
+
+    const deleteTask = (taskId) => {
+      const tasks = getTasksForDate(selectedDateKey);
+      const idx = tasks.findIndex((t) => t.id === taskId);
+      if (idx === -1) return;
+      tasks.splice(idx, 1);
+      saveAppState({ planTasks: APP_STATE.planTasks });
+      renderPlanTasks();
+    };
+
+    // ---- Ekleme/düzenleme modalı ----
+    const openTaskModal = (taskId) => {
+      editingTaskId = taskId || null;
+      if (modalFeedback) modalFeedback.textContent = '';
+
+      if (editingTaskId) {
+        const task = getTasksForDate(selectedDateKey).find((t) => t.id === editingTaskId);
+        if (modalTitle) modalTitle.textContent = 'Aktiviteyi Düzenle';
+        if (nameInput) nameInput.value = task ? task.name : '';
+        if (startInput) startInput.value = task ? (task.start || '') : '';
+        if (endInput) endInput.value = task ? (task.end || '') : '';
+        if (confirmBtn) confirmBtn.textContent = 'Kaydet';
+      } else {
+        if (modalTitle) modalTitle.textContent = 'Yeni Aktivite';
+        if (nameInput) nameInput.value = '';
+        if (startInput) startInput.value = '';
+        if (endInput) endInput.value = '';
+        if (confirmBtn) confirmBtn.textContent = 'Ekle';
+      }
+
+      if (addBackdrop) {
+        addBackdrop.classList.add('is-open');
+        document.body.classList.add('has-modal-open');
+      }
+      if (nameInput) setTimeout(() => nameInput.focus(), 50);
+    };
+
+    const closeTaskModal = () => {
+      if (addBackdrop) addBackdrop.classList.remove('is-open');
+      document.body.classList.remove('has-modal-open');
+      editingTaskId = null;
+    };
+
+    const saveTaskFromModal = () => {
+      const name = nameInput ? nameInput.value.trim() : '';
+      const start = startInput ? startInput.value : '';
+      const end = endInput ? endInput.value : '';
+
+      if (!name) {
+        if (modalFeedback) modalFeedback.textContent = 'Görev adı boş olamaz.';
+        return;
+      }
+      if (start && end && end <= start) {
+        if (modalFeedback) modalFeedback.textContent = 'Bitiş saati başlangıçtan sonra olmalı.';
+        return;
+      }
+
+      const tasks = getTasksForDate(selectedDateKey);
+
+      if (editingTaskId) {
+        const task = tasks.find((t) => t.id === editingTaskId);
+        if (task) {
+          task.name = name;
+          task.start = start;
+          task.end = end;
+        }
+      } else {
+        tasks.push({
+          id: (window.crypto && window.crypto.randomUUID) ? window.crypto.randomUUID() : `task-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+          name,
+          start,
+          end,
+          done: false,
+        });
+      }
+
+      saveAppState({ planTasks: APP_STATE.planTasks });
+      closeTaskModal();
+      renderPlanTasks();
+    };
+
+    if (addTaskBtn) addTaskBtn.addEventListener('click', () => openTaskModal(null));
+    if (cancelBtn) cancelBtn.addEventListener('click', closeTaskModal);
+    if (confirmBtn) confirmBtn.addEventListener('click', saveTaskFromModal);
+    if (addBackdrop) {
+      addBackdrop.addEventListener('click', (e) => {
+        if (e.target === addBackdrop) closeTaskModal();
+      });
+    }
+    // İkon seçici şimdilik işlevsiz: ileride bir seçici pop-up açacak.
+    if (iconPickerBtn) {
+      iconPickerBtn.addEventListener('click', () => {
+        if (typeof showAppToast === 'function') showAppToast('İkon seçimi yakında eklenecek');
+      });
+    }
+    if (todayBtn) {
+      todayBtn.addEventListener('click', () => {
+        selectedDateKey = toDateKey(new Date());
+        renderDayStrip();
+        renderPlanTasks();
+      });
+    }
+
+    // Ana Sayfa'daki widget her açıldığında (openPlanPage), seçili günü
+    // bugüne sıfırlayıp listeyi tazeler.
+    window.onPlanPageOpen = () => {
+      selectedDateKey = toDateKey(new Date());
+      renderDayStrip();
+      renderPlanTasks();
+    };
+
+    renderDayStrip();
+    renderPlanTasks();
+  })();
 
   const miniGameWheelCard = document.getElementById('miniGameWheelCard');
   if (miniGameWheelCard) miniGameWheelCard.addEventListener('click', openWheelPage);
@@ -21198,7 +22355,11 @@
     // "Ders Ekle" pop-up'ında her zaman seçenek olarak listelenir; ilgili
     // ders tamamen silinirse buradan da çıkarılır (hiç eklenmemiş gibi olur).
     customSubjectPool: { tyt: [], ayt: [] },
-    logs: [] // { id, date:'YYYY-MM-DD', track:'tyt'|'ayt', subjectId, count, ts }
+    logs: [], // { id, date:'YYYY-MM-DD', track:'tyt'|'ayt', subjectId, count, ts }
+    // dailyGoal: "Hedef Belirle" ile seçilen günlük soru hedefi (0 = hedef
+    // yok). Ana sayfadaki "Bugün Çözülen" widget'ının dolum seviyesini
+    // (bugünkü toplam / dailyGoal) belirler.
+    dailyGoal: 0
   });
 
   const savedPage9 = APP_STATE.page9;
@@ -21224,6 +22385,10 @@
     if (!entry[log.track].includes(log.subjectId)) entry[log.track].push(log.subjectId);
   });
 
+  // Eski kayıtlarda "dailyGoal" yoktu; geçersiz/negatif değerler de 0 (hedef
+  // yok) sayılır, üst sınır 999'dur.
+  page9State.dailyGoal = Math.max(0, Math.min(999, parseInt(page9State.dailyGoal, 10) || 0));
+
   // ---------- Ana sayfa: canlı "Bugün Çözülen Soru" widget'ı ----------
   // page9State.logs üzerinden bugünün tarih anahtarına ait kayıtların
   // count toplamını hesaplayıp ana sayfadaki sayaca yazar. savePage9State
@@ -21233,13 +22398,91 @@
   // yakalamak için dakikada bir de tazelenir.
   const homeQuestionWidgetCountEl = document.getElementById('homeQuestionWidgetCount');
   const homeQuestionWidgetSubEl = document.getElementById('homeQuestionWidgetSub');
+  const homeQuestionWidgetEl = document.getElementById('homeQuestionWidget');
+  const homeQuestionLiquidEl = document.getElementById('homeQuestionWidgetLiquid');
+  const homePageEl = document.getElementById('page-1');
+
+  // ---- Dolum animasyonu ----
+  // Soru Takibi'nde günlük hedef (page9State.dailyGoal) belirlendiyse widget
+  // içindeki sıvı, "bugün çözülen / hedef" oranı kadar dolar. Ana sayfa her
+  // görünür olduğunda sıvı boştan hedef seviyeye doğru yeniden yükselir;
+  // ana sayfadayken oran değişirse (ör. gece yarısı sıfırlanması) mevcut
+  // seviyeden yeni seviyeye kayar.
+  let homeFillTarget = 0;       // hedeflenen doluluk oranı (0..1)
+  let homeFillReplayTimer = null;
+
+  // Oran 0 iken dalga kenarı da kartın altında gizli kalsın diye ekstra pay.
+  const homeFillTransform = (ratio) => (
+    `translateY(calc(${((1 - ratio) * 100).toFixed(2)}%${ratio <= 0 ? ' + 18px' : ''}))`
+  );
+
+  // Sıvıyı animasyonsuz, anında verilen orana getirir.
+  const homeFillJump = (ratio) => {
+    if (!homeQuestionLiquidEl) return;
+    homeQuestionLiquidEl.style.transition = 'none';
+    homeQuestionLiquidEl.style.transform = homeFillTransform(ratio);
+    void homeQuestionLiquidEl.offsetHeight; // düzeni zorla: geçiş bir sonraki değişiklikte başlasın
+    homeQuestionLiquidEl.style.transition = '';
+  };
+
+  // Sıvıyı bulunduğu seviyeden verilen orana animasyonla götürür.
+  const homeFillAnimateTo = (ratio) => {
+    if (!homeQuestionLiquidEl) return;
+    homeQuestionLiquidEl.style.transform = homeFillTransform(ratio);
+  };
+
+  // Boştan güncel hedef orana doğru baştan doldurur. Sayfa geçiş
+  // animasyonu (200ms) bitmeden başlamasın diye kısa bir gecikme var.
+  const homeFillReplay = () => {
+    clearTimeout(homeFillReplayTimer);
+    homeFillJump(0);
+    homeFillReplayTimer = setTimeout(() => homeFillAnimateTo(homeFillTarget), 220);
+  };
+
+  // page9State.logs üzerinden bugünün tarih anahtarına ait kayıtların
+  // count toplamını hesaplayıp ana sayfadaki sayaca yazar. savePage9State
+  // her çağrıldığında (ders eklenince, soru sayısı değişince, hedef
+  // değişince, silinince) yeniden hesaplanır, böylece ana sayfaya geçmeden
+  // de "canlı" kalır; ayrıca gece yarısını geçen açık oturumlarda günün
+  // değişmesini yakalamak için dakikada bir de tazelenir.
   function updateHomeQuestionWidget() {
     if (!homeQuestionWidgetCountEl) return;
     const todayKey = page9DateKey(page9StartOfDay(new Date()));
     const total = page9State.logs.reduce((sum, log) => sum + (log.date === todayKey ? (log.count || 0) : 0), 0);
+    const goal = Math.max(0, parseInt(page9State.dailyGoal, 10) || 0);
+    const ratio = goal > 0 ? Math.min(1, total / goal) : 0;
+
     homeQuestionWidgetCountEl.textContent = String(total);
+
     if (homeQuestionWidgetSubEl) {
-      homeQuestionWidgetSubEl.textContent = total > 0 ? `${total} soru çözüldü` : 'Henüz soru girilmedi';
+      let subText;
+      if (goal > 0) {
+        if (total > goal) subText = `Hedef aşıldı, +${total - goal} soru`;
+        else if (total === goal) subText = 'Hedef tamamlandı';
+        else if (total > 0) subText = `Hedef ${goal} soru (%${Math.floor(ratio * 100)})`;
+        else subText = `Hedef ${goal} soru`;
+      } else {
+        subText = total > 0 ? `${total} soru çözüldü` : 'Henüz soru girilmedi';
+      }
+      homeQuestionWidgetSubEl.textContent = subText;
+    }
+
+    if (homeQuestionWidgetEl) {
+      homeQuestionWidgetEl.classList.toggle('has-goal', goal > 0);
+      homeQuestionWidgetEl.classList.toggle('is-goal-complete', goal > 0 && total >= goal);
+      homeQuestionWidgetEl.setAttribute(
+        'aria-label',
+        `Soru Takibi'ne git, bugün ${total} soru çözüldü` + (goal > 0 ? `, günlük hedef ${goal} soru` : '')
+      );
+    }
+
+    // Oran değiştiyse ve ana sayfa şu an görünüyorsa sıvıyı yeni seviyeye
+    // kaydır. Ana sayfa görünmüyorsa sadece hedef oranı saklanır; sayfa
+    // tekrar açıldığında animasyon zaten baştan oynatılır.
+    const changed = ratio !== homeFillTarget;
+    homeFillTarget = ratio;
+    if (changed && homePageEl && homePageEl.classList.contains('is-active')) {
+      homeFillAnimateTo(ratio);
     }
   }
 
@@ -21248,7 +22491,18 @@
 
   setInterval(updateHomeQuestionWidget, 60000);
 
-  const homeQuestionWidgetEl = document.getElementById('homeQuestionWidget');
+  // Uygulama ana sayfada açılıyorsa dolumu açılışta bir kez oynat; sonraki
+  // her ana sayfa ziyaretinde de (sayfa "is-active" olduğunda) baştan oynar.
+  if (homePageEl) {
+    let homeWasActive = homePageEl.classList.contains('is-active');
+    if (homeWasActive) homeFillReplay();
+    new MutationObserver(() => {
+      const active = homePageEl.classList.contains('is-active');
+      if (active && !homeWasActive) homeFillReplay();
+      homeWasActive = active;
+    }).observe(homePageEl, { attributes: true, attributeFilter: ['class'] });
+  }
+
   if (homeQuestionWidgetEl) {
     homeQuestionWidgetEl.addEventListener('click', () => {
       const navInput = document.querySelector('.nav-input[value="page-9"]');
@@ -22119,6 +23373,99 @@
   };
 
   page9AddSubjectBtn.addEventListener('click', openPage9AddPopup);
+
+  // ---------- Günlük soru hedefi ("Hedef Belirle") ----------
+  // Buton, eksi/artı ile hedef belirlenen bir pop-up açar. Hedef
+  // page9State.dailyGoal içinde saklanır (0 = hedef yok) ve kaydedildiği
+  // anda savePage9State -> updateHomeQuestionWidget üzerinden ana sayfadaki
+  // "Bugün Çözülen" widget'ının dolum seviyesine yansır. Eksi/artı basılı
+  // tutulunca, ders satırlarındaki sayaçla aynı attachHoldRepeat ile hızlıca
+  // tekrar eder. Adım 5'tir (PAGE9_GOAL_STEP); 47 gibi elle yazılmış bir
+  // değerden artınca/azalınca en yakın 5'in katına oturur.
+  const PAGE9_GOAL_STEP = 5;
+  const PAGE9_GOAL_MAX = 999;
+
+  const page9GoalBtn = document.getElementById('page9GoalBtn');
+  const page9GoalBtnValue = document.getElementById('page9GoalBtnValue');
+  const page9GoalBackdrop = document.getElementById('page9GoalBackdrop');
+  const page9GoalClose = document.getElementById('page9GoalClose');
+  const page9GoalMinus = document.getElementById('page9GoalMinus');
+  const page9GoalPlus = document.getElementById('page9GoalPlus');
+  const page9GoalInput = document.getElementById('page9GoalInput');
+  const page9GoalSave = document.getElementById('page9GoalSave');
+
+  const page9ClampGoal = (value) => Math.max(0, Math.min(PAGE9_GOAL_MAX, parseInt(value, 10) || 0));
+
+  // Sayfadaki butonun etiketi/rozeti: hedef varsa "50 soru" rozeti görünür.
+  const renderPage9GoalBtn = () => {
+    const goal = page9ClampGoal(page9State.dailyGoal);
+    page9GoalBtn.classList.toggle('has-goal', goal > 0);
+    page9GoalBtnValue.textContent = goal > 0 ? `${goal} soru` : '';
+    page9GoalBtn.setAttribute(
+      'aria-label',
+      goal > 0 ? `Günlük soru hedefini değiştir, şu an ${goal} soru` : 'Günlük soru hedefini belirle'
+    );
+  };
+
+  // Pop-up içindeki sayı ve sınır göstergeleri. Kullanıcı
+  // sayıyı yazarken (skipInput) kutunun içeriğine dokunulmaz.
+  const renderPage9GoalPopup = (skipInput) => {
+    const draft = page9ClampGoal(page9GoalInput.value);
+    if (!skipInput) page9GoalInput.value = String(draft);
+    page9GoalMinus.classList.toggle('is-limit', draft <= 0);
+    page9GoalPlus.classList.toggle('is-limit', draft >= PAGE9_GOAL_MAX);
+  };
+
+  const page9GoalStepBy = (direction) => {
+    const current = page9ClampGoal(page9GoalInput.value);
+    const next = direction > 0
+      ? (Math.floor(current / PAGE9_GOAL_STEP) + 1) * PAGE9_GOAL_STEP
+      : (Math.ceil(current / PAGE9_GOAL_STEP) - 1) * PAGE9_GOAL_STEP;
+    page9GoalInput.value = String(page9ClampGoal(next));
+    renderPage9GoalPopup();
+  };
+
+  attachHoldRepeat(page9GoalMinus, () => page9GoalStepBy(-1), { interval: 70 });
+  attachHoldRepeat(page9GoalPlus, () => page9GoalStepBy(1), { interval: 70 });
+
+  page9GoalInput.addEventListener('input', () => renderPage9GoalPopup(true));
+  page9GoalInput.addEventListener('change', () => renderPage9GoalPopup());
+  page9GoalInput.addEventListener('blur', () => renderPage9GoalPopup());
+  page9GoalInput.addEventListener('focus', () => page9GoalInput.select());
+  page9GoalInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') { e.preventDefault(); page9GoalInput.blur(); }
+  });
+
+  const openPage9GoalPopup = () => {
+    page9GoalInput.value = String(page9ClampGoal(page9State.dailyGoal));
+    renderPage9GoalPopup();
+    page9GoalBackdrop.classList.add('is-open');
+  };
+
+  // Pop-up hangi yoldan kapanırsa kapansın (Kaydet, ×, dış tıklama,
+  // Escape) seçilen hedef kaydedilir; "Ders Ekle" pop-up'ıyla aynı mantık.
+  const closePage9GoalPopup = () => {
+    if (!page9GoalBackdrop.classList.contains('is-open')) return;
+    const next = page9ClampGoal(page9GoalInput.value);
+    if (next !== page9ClampGoal(page9State.dailyGoal)) {
+      page9State.dailyGoal = next;
+      savePage9State();
+    }
+    renderPage9GoalBtn();
+    page9GoalBackdrop.classList.remove('is-open');
+  };
+
+  page9GoalBtn.addEventListener('click', openPage9GoalPopup);
+  page9GoalSave.addEventListener('click', closePage9GoalPopup);
+  page9GoalClose.addEventListener('click', closePage9GoalPopup);
+  page9GoalBackdrop.addEventListener('click', (e) => {
+    if (e.target === page9GoalBackdrop) closePage9GoalPopup();
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && page9GoalBackdrop.classList.contains('is-open')) closePage9GoalPopup();
+  });
+
+  renderPage9GoalBtn();
 
 
   // ---- TYT/AYT sekmesi ----
