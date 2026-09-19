@@ -2074,12 +2074,17 @@
      (.home-date-widget vb.) aynı sakin dili paylaşır: çerçevesiz, beyaz
      zemin, yumuşak/dağınık gölge, tam yuvarlak (pill) kenarlar. */
   .relax-add-btn {
-    /* Artık ekrana sabit (fixed) değil: görev listesinin hemen altında,
-       normal akışta durur ve sayfayla birlikte kayar; böylece hiçbir
-       görevin (ör. saat aralığının) üstüne binmez. Listenin sonuna
-       kadar kaydırınca sağ altta görünür. */
+    /* Normal akışta, görev listesinin hemen altında durur ve sayfayla
+       birlikte kayar (görevlerin üstüne binmez). Tek fark başlangıç
+       konumu: sayfa henüz kaymayacak kadar kısayken margin-top:auto
+       butonu sayfanın en altına (sağ alt köşeye) yerleştirir. Görevler
+       eklenip listenin alt ucu butona ulaşınca buton görevlerin altında
+       aşağı itilir; sayfa dolup kaydırılabilir olunca margin-top:auto
+       sıfırlanır ve buton doğrudan listenin sonundaki yerinde durur
+       (en sona kaydırınca sağ altta görünür). */
     position: relative;
     align-self: flex-end;
+    margin-top: auto;
     margin-bottom: 0.6rem;
     height: 3.1rem;
     flex-shrink: 0;
@@ -15975,7 +15980,7 @@
       <div class="relax-tasks-items" id="relaxTasksItems"></div>
     </div>
 
-    <!-- Listenin altında, sayfayla birlikte kayan "Görev Ekle" butonu -->
+    <!-- Listenin altında, sayfayla birlikte kayan "Görev Ekle" butonu; sayfa kısayken sağ altta durur (bkz. .relax-add-btn) -->
     <button type="button" class="relax-add-btn" id="relaxAddBtn" aria-label="Görev ekle">
       <svg viewBox="0 0 24 24" width="18" height="18">
         <path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
