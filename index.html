@@ -1907,6 +1907,44 @@
     gap: 1.1rem;
     width: 100%;
     flex-shrink: 0;
+    /* Sayfa aşağı kaydırılınca "Planlayıcı" başlığı yukarı doğru kayıp
+       kaybolur, takvim şeridi ise üstte (güvenli alanın hemen altında,
+       sayfanın kendi üst boşluğuyla aynı hizada) sabit kalır; en yukarı
+       kaydırınca başlık kendiliğinden geri görünür. #page-relax zaten
+       kaydırma kutusu olduğundan position:sticky doğrudan çalışır. */
+    position: sticky;
+    /* top:0 → sabitlenme çizgisi, kaydırma kutusunun kendi üst iç boşluğunun
+       (padding-top: 20px + güvenli alan) hemen altıdır; ayrıca ekleme yapmaya gerek yok. */
+    top: 0;
+    z-index: 40;
+    --relax-stick: 0;
+  }
+
+  /* Sabitlenen şeridin arkasındaki "zemin": altından kayan görevlerin
+     takvimle üst üste binip okunmasını engeller. Şerit yerinde dururken
+     (kaydırma 0) tamamen saydamdır; kaydırma ilerledikçe JS (bkz.
+     "Takvim şeridi sabitleme" bloğu) --relax-stick değişkenini 0→1
+     arasında artırır ve zemin, başlığı yumuşakça örterek belirir. Üstte
+     ekranın en tepesine kadar (güvenli alan dahil), altta ise hafif
+     bulanık/solan bir kenarla biter. Rengi aktif temadan (--theme-bg)
+     gelir; yarı saydam + blur olduğundan seçili desen de sezilir. */
+  .relax-calendar::before {
+    content: '';
+    position: absolute;
+    left: -22px;
+    right: -22px;
+    top: calc(-1 * (20px + env(safe-area-inset-top)));
+    bottom: -16px;
+    z-index: -1;
+    pointer-events: none;
+    opacity: var(--relax-stick, 0);
+    background-color: var(--theme-bg, #F6F4EF);
+    background-color: color-mix(in srgb, var(--theme-bg, #F6F4EF) 97%, transparent);
+    -webkit-backdrop-filter: blur(14px);
+    backdrop-filter: blur(14px);
+    -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 16px), transparent);
+    mask-image: linear-gradient(to bottom, #000 calc(100% - 16px), transparent);
+    transition: background-color var(--theme-transition-duration) var(--theme-transition-easing);
   }
 
   .relax-calendar-header {
@@ -15872,7 +15910,7 @@
        geçilir; geri butonuyla Ana Sayfa'ya dönülür. -->
   <section class="page" id="page-relax">
     <div class="calendar-topbar">
-      <span class="calendar-topbar-title">Planyacı</span>
+      <span class="calendar-topbar-title">Planlayıcı</span>
     </div>
 
     <!-- Minimalist hafta şeridi: gün adı + sayısı JS'te (renderRelaxCalendarWeek)
@@ -18731,6 +18769,7 @@
 
   layerA.style.background = themes[themeIndex].gradient;
   document.documentElement.style.setProperty('--theme-text', themes[themeIndex].text);
+  document.documentElement.style.setProperty('--theme-bg', themes[themeIndex].color);
   document.documentElement.style.setProperty('--weekend-color', themes[themeIndex].weekend);
   refreshThemeColorMeta();
 
@@ -18743,6 +18782,7 @@
     visibleLayer.classList.remove('is-visible');
 
     document.documentElement.style.setProperty('--theme-text', theme.text);
+    document.documentElement.style.setProperty('--theme-bg', theme.color);
     document.documentElement.style.setProperty('--weekend-color', theme.weekend);
     refreshThemeColorMeta();
 
@@ -18775,6 +18815,7 @@
     visibleLayer.classList.remove('is-visible');
 
     document.documentElement.style.setProperty('--theme-text', theme.text);
+    document.documentElement.style.setProperty('--theme-bg', theme.color);
     document.documentElement.style.setProperty('--weekend-color', theme.weekend);
     refreshThemeColorMeta();
 
@@ -21463,6 +21504,31 @@
   };
 
   renderRelaxCalendarWeek();
+
+  // ---------- "Planlayıcı": takvim şeridi sabitleme ----------
+  // Takvim şeridinin kendisi CSS ile (position:sticky) üstte sabit kalır;
+  // burada sadece sabitlenen şeridin arkasındaki zeminin (.relax-calendar::before)
+  // kaydırmayla birlikte yumuşakça belirmesi için 0→1 arası bir ilerleme
+  // değeri (--relax-stick) yazılır. En üstteyken 0 (zemin görünmez, başlık
+  // ve şerit normal görünür), RAMP_PX kadar kaydırınca 1 olur.
+  (() => {
+    const pageEl = document.getElementById('page-relax');
+    const calEl = pageEl && pageEl.querySelector('.relax-calendar');
+    if (!pageEl || !calEl) return;
+    const RAMP_PX = 36;
+    let queued = false;
+    const update = () => {
+      queued = false;
+      const p = Math.max(0, Math.min(1, pageEl.scrollTop / RAMP_PX));
+      calEl.style.setProperty('--relax-stick', p.toFixed(3));
+    };
+    pageEl.addEventListener('scroll', () => {
+      if (queued) return;
+      queued = true;
+      requestAnimationFrame(update);
+    }, { passive: true });
+    update();
+  })();
 
   const goToPrevMonth = () => {
     calendarViewMonth -= 1;
