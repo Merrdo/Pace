@@ -1310,6 +1310,13 @@
     background-color: var(--accent-color, #ff90e8);
   }
 
+  /* "Görev Ekle" yazısı bastığında pembe zemin üzerinde okunaklı kalsın
+     diye (diğer ikon-only butonlardan farklı olarak burada metin var). */
+  body.is-anthracite .relax-add-btn:active,
+  body.is-anthracite .relax-add-btn.is-pressed {
+    color: #16171b;
+  }
+
   /* Kronometre / Zamanlayıcı sayfası: aynı sorun (body.is-anthracite'ın
      genel kart rengi kuralı, öğenin kendi basma/aktif pembe vurgusunu
      eziyor) sayaç ayar butonunda, dk/sn adım butonlarında ve Hazır
@@ -1845,6 +1852,12 @@
     overscroll-behavior: contain;
   }
 
+  /* Geri butonu artık yok: üst çubukta tek eleman (başlık) kaldığından,
+     onu ortalamak için bu sayfaya özel justify-content:center. */
+  #page-relax .calendar-topbar {
+    justify-content: center;
+  }
+
   /* Minimalist hafta şeridi: üstte "19 Eylül 2026 ›" başlığı, altında
      Pazartesi başlangıçlı 7 günlük gün adı + tarih sütunu. Renkler
      uygulamanın geri kalanıyla aynı tema değişkenlerini (--theme-text,
@@ -1865,20 +1878,20 @@
     display: flex;
     align-items: baseline;
     gap: 0.4rem;
-    font-family: "Space Grotesk", sans-serif;
+    font-family: "Baloo 2", "Space Grotesk", sans-serif;
   }
 
   .relax-calendar-date {
-    font-weight: 800;
-    font-size: 1.55rem;
+    font-weight: 700;
+    font-size: 1.4rem;
     letter-spacing: -0.01em;
     color: var(--theme-text, #1a1a1a);
     transition: color 0.5s ease;
   }
 
   .relax-calendar-year {
-    font-weight: 800;
-    font-size: 1.55rem;
+    font-weight: 700;
+    font-size: 1.4rem;
     letter-spacing: -0.01em;
     color: var(--accent-color, #ff90e8);
   }
@@ -1904,7 +1917,7 @@
     background: none;
     border: none;
     cursor: pointer;
-    font-family: "Space Grotesk", sans-serif;
+    font-family: "Baloo 2", "Space Grotesk", sans-serif;
   }
 
   .relax-calendar-day-label {
@@ -1923,10 +1936,10 @@
     height: 2.15rem;
     border-radius: 50%;
     border: 2px solid transparent;
-    font-weight: 700;
+    font-weight: 600;
     font-size: 1rem;
     color: var(--theme-text, #1a1a1a);
-    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease, transform 0.15s ease;
+    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
   }
 
   .relax-calendar-day-cell:active .relax-calendar-day-num {
@@ -1935,8 +1948,9 @@
 
   .relax-calendar-day-cell.is-selected .relax-calendar-day-num {
     background-color: var(--accent-color, #ff90e8);
-    border-color: var(--accent-color, #ff90e8);
+    border-color: transparent;
     color: #16171b;
+    box-shadow: 0 8px 16px -8px rgba(0, 0, 0, 0.35);
     transform: scale(1.04);
   }
 
@@ -1948,41 +1962,810 @@
     font-family: "Baloo 2", "Space Grotesk", sans-serif;
   }
 
-  /* ---------- "Rahatla" sayfası: sağ altta sabit duran, şimdilik
-     işlevsiz yuvarlak "+" butonu (ileride bir eylem bağlanacak). Diğer
-     ikon butonlarıyla (.calendar-back-btn/.delete-btn) aynı brütalist
-     dil: beyaz zemin, kalın siyah çerçeve, katı gölge. */
+  /* ---------- "Rahatla" sayfası: sağ altta sabit duran "Görev Ekle"
+     butonu. Sayfanın geri kalanındaki kalın-çizgi/sert-gölge (brütalist)
+     dilinden bilinçli olarak ayrılıp, ana sayfadaki widget'larla
+     (.home-date-widget vb.) aynı sakin dili paylaşır: çerçevesiz, beyaz
+     zemin, yumuşak/dağınık gölge, tam yuvarlak (pill) kenarlar. */
   .relax-add-btn {
     position: fixed;
     right: calc(24px + env(safe-area-inset-right));
     bottom: calc(24px + env(safe-area-inset-bottom));
-    width: 3.4rem;
-    height: 3.4rem;
+    height: 3.1rem;
     flex-shrink: 0;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 0;
+    gap: 0.45rem;
+    padding: 0 1.3rem;
     background-color: #fff;
-    border: 3px solid #000;
-    border-radius: 50%;
-    box-shadow: 4px 4px 0px 0px #000;
+    border: none;
+    border-radius: 999px;
+    box-shadow: 0 10px 24px -12px rgba(0, 0, 0, 0.32), 0 2px 6px rgba(0, 0, 0, 0.06);
     color: #121212;
+    font-family: "Baloo 2", "Space Grotesk", sans-serif;
+    font-weight: 700;
+    font-size: 0.92rem;
     cursor: pointer;
     z-index: 60;
-    transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease, color 0.2s ease;
+  }
+
+  .relax-add-btn svg {
+    flex-shrink: 0;
   }
 
   .relax-add-btn:hover {
-    transform: translate(-1px, -1px);
-    box-shadow: 5px 5px 0px 0px #000;
+    transform: translateY(-2px);
+    box-shadow: 0 14px 28px -12px rgba(0, 0, 0, 0.36), 0 2px 6px rgba(0, 0, 0, 0.07);
   }
 
   .relax-add-btn:active,
   .relax-add-btn.is-pressed {
-    transform: translate(1px, 1px);
-    box-shadow: 1px 1px 0px 0px #000;
+    transform: translateY(0) scale(0.97);
+    box-shadow: 0 6px 14px -10px rgba(0, 0, 0, 0.28), 0 1px 4px rgba(0, 0, 0, 0.05);
     background-color: var(--accent-color, #ff90e8);
+    color: #16171b;
+  }
+
+  /* ---------- "Rahatla" (Planyacı) sayfası: Seçilen Görevler listesi ----------
+     Seçilen gün için "Yeni Aktivite" ile eklenen görevler burada,
+     başlangıç saatine göre YUKARIDAN AŞAĞIYA sıralanır. Her satırın solunda
+     görevin ikonunu taşıyan yuvarlak bir "işaretçi" (.relax-task-marker)
+     durur. Ardışık iki işaretçi arasına, tam olarak bir dairenin merkezinden
+     çıkıp bir sonrakinin merkezine giren kalın, renk geçişli bir çizgi
+     (.relax-task-connector-line) çizilir — bu çizginin uçları dairelerin
+     İÇİNDE kalır (dairenin katı arka planı üstüne biner), böylece çizgi
+     gerçekten bir daireden çıkıp diğerine giriyormuş gibi görünür. Bu
+     çizgiler konum/uzunluk olarak JS'te (drawRelaxTaskConnectors, bkz.
+     aşağıdaki "Planyacı: Yeni Aktivite" script bloğu) her satırın gerçek
+     yüksekliğine göre hesaplanır; salt CSS ile (metin uzunluğu değişken
+     olduğu için) hizası tutturulamayacağından piksel bazlı ölçüm kullanılır.
+     Sayfanın kendi rengi olmadığından (bkz. #page-relax yorumu) burada da
+     kart/zemin rengi kullanılmaz; sadece tema metin/accent değişkenleri
+     üzerinden açık/koyu moda ve seçilen vurgu rengine otomatik uyum sağlanır. */
+  /* NOT (gerçek zamanlı ilerleme güncellemesi): İşaretçiler artık içi boş
+     (halka) başlayıp cihaz saatine göre yukarıdan aşağıya dolduğundan,
+     çizgiler dairelerin merkezinden değil ALT/ÜST kenarları arasında çizilir
+     (bkz. drawRelaxTaskConnectors). */
+  .relax-tasks-list {
+    position: relative;
+    width: 100%;
+    flex-shrink: 0;
+  }
+
+  /* Bağlantı çizgilerinin çizildiği, tıklanamaz katman. Negatif z-index
+     sayesinde, altındaki (pozisyonlanmamış, normal akıştaki) .relax-tasks-items
+     içeriği — yani daireler — HER ZAMAN bu çizgilerin üstünde durur; çizgi
+     uçları böylece dairelerin arkasında/içinde gizlenmiş olur. */
+  .relax-tasks-connectors {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+  }
+
+  /* GERÇEK ZAMANLI İLERLEME: Çizgi artık iki katmandan oluşur — soluk bir
+     "iz" (.relax-task-connector-track) ve cihaz saatine göre yukarıdan
+     aşağıya dolan asıl renkli katman (.relax-task-connector-fill). Dolgu,
+     clip-path: inset(...) ile kırpılarak açılır; JS (bkz. applyRelaxProgress)
+     bu değeri her saniye günceller, CSS transition ile akıcı ilerler. */
+  .relax-task-connector-line {
+    position: absolute;
+    width: 3px;
+    border-radius: 999px;
+    overflow: hidden;
+  }
+
+  .relax-task-connector-track,
+  .relax-task-connector-fill {
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+  }
+
+  .relax-task-connector-track {
+    opacity: 0.22;
+  }
+
+  .relax-task-connector-fill {
+    clip-path: inset(0 0 100% 0);
+    will-change: clip-path;
+  }
+
+  .relax-tasks-items {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .relax-tasks-empty {
+    text-align: center;
+    padding: 0.6rem 0 0.4rem;
+    font-family: "Baloo 2", "Space Grotesk", sans-serif;
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: var(--theme-text, #1a1a1a);
+    opacity: 0.4;
+    transition: color 0.5s ease;
+  }
+
+  .relax-task-item {
+    display: flex;
+    align-items: stretch;
+    gap: 1rem;
+    padding-bottom: 1.6rem;
+  }
+
+  /* Son satırda alttaki boşluğa gerek yok (bağlanacak bir sonraki işaretçi yok). */
+  .relax-task-item:last-child {
+    padding-bottom: 0;
+  }
+
+  /* İşaretçiyi ortalayan dar sütun. */
+  .relax-task-rail {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 3.4rem;
+  }
+
+  /* GERÇEK ZAMANLI İLERLEME: İşaretçi "boş" başlar — arka planı yoktur
+     (sayfanın kendi arka planı görünür), sadece görev renginde ince bir halka
+     çizgisi ve tema metin renginde (açık modda siyah, koyu modda beyaz) ikon
+     vardır. Görevin saati (başlangıç → bitiş) ilerledikçe .relax-task-marker-fill
+     katmanı (dolu görev rengi + okunur siyah/beyaz ikon) yukarıdan aşağıya
+     açılır. Halka border ile değil ::before içinde inset gölgeyle çizilir;
+     dolgu katmanı dairenin TAMAMINI kapladığından kenarlarda boşluk/çizgi
+     kalmaz. Görev tamamen bitince .is-done sınıfı gölgeyi ekler. */
+  .relax-task-marker {
+    --mk-color: var(--accent-color, #ff90e8);
+    --mk-on: #16171b;
+    position: relative;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 3.4rem;
+    height: 3.4rem;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: none;
+    color: var(--theme-text, #1a1a1a);
+    overflow: hidden;
+    transition: box-shadow 0.4s ease, color 0.5s ease;
+  }
+
+  .relax-task-marker::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    box-shadow: inset 0 0 0 2.5px var(--mk-color);
+    pointer-events: none;
+  }
+
+  .relax-task-marker.is-done {
+    box-shadow: 0 8px 16px -10px rgba(0, 0, 0, 0.4);
+  }
+
+  .relax-task-marker-fill {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--mk-color);
+    color: var(--mk-on);
+    clip-path: inset(0 0 100% 0);
+    will-change: clip-path;
+  }
+
+  .relax-task-marker svg {
+    width: 19px;
+    height: 19px;
+  }
+
+  .relax-task-content {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding-top: 0.1rem;
+  }
+
+  .relax-task-top-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.6rem;
+  }
+
+  .relax-task-name {
+    font-family: "Baloo 2", "Space Grotesk", sans-serif;
+    font-weight: 700;
+    font-size: 1.18rem;
+    color: var(--theme-text, #1a1a1a);
+    overflow-wrap: anywhere;
+    transition: color 0.5s ease;
+  }
+
+  .relax-task-time {
+    flex-shrink: 0;
+    font-family: "Baloo 2", "Space Grotesk", sans-serif;
+    font-weight: 600;
+    font-size: 0.88rem;
+    color: var(--theme-text, #1a1a1a);
+    opacity: 0.5;
+    transition: color 0.5s ease;
+  }
+
+  /* =====================================================================
+     "Yeni Aktivite" tam ekran sayfası (Planyacı)
+     Referans tasarıma göre yeniden yazıldı: üstte "İptal" hapı + ortada
+     başlık; altında ikon halkası + (süre özeti / görev adı) + renk
+     noktası; ardından tarih satırı, dikey "Zaman" çarkı, "Çalışılacak
+     Süre" segmentli kontrolü ve altta sabit büyük "Ekle" butonu.
+     Açık/koyu (anthracite) mod ve seçilen vurgu rengi (--accent-color)
+     desteklenir. Alttan yukarı kayarak açılır.
+     ===================================================================== */
+  .task-add-overlay {
+    --ta-accent: var(--accent-color, #ff90e8);
+    --ta-color: var(--ta-accent);
+    --ta-on-accent: #16171b;
+    --ta-bg: #f6f4ef;
+    --ta-card: #ffffff;
+    --ta-track: rgba(22, 23, 27, 0.07);
+    --ta-chip: #ffffff;
+    --ta-text: #16171b;
+    --ta-muted: rgba(22, 23, 27, 0.48);
+    --ta-line: rgba(22, 23, 27, 0.09);
+    /* Üst blok renkleri: varsayılan sade görünüm; renk seçilince JS bunları
+       seçilen renge (ve okunur yazı rengine) göre geçersiz kılar. */
+    --ta-head-bg: transparent;
+    --ta-head-fg: var(--ta-text);
+    --ta-head-muted: var(--ta-muted);
+    --ta-head-chip: var(--ta-chip);
+    --ta-head-line: var(--ta-line);
+    --ta-ring: var(--ta-color);
+    --ta-ring-fill: var(--ta-bg);
+    --ta-glow: 0.32;
+    --ta-underline-op: 0.55;
+    --ta-row: 2.75rem;
+    --ta-gutter: max(22px, calc((100% - 30rem) / 2));
+    --ta-font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    --ta-title-font: "Baloo 2", "Space Grotesk", sans-serif;
+
+    position: fixed;
+    inset: 0;
+    z-index: 80;
+    display: flex;
+    background-color: var(--ta-bg);
+    font-family: var(--ta-font);
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(100%);
+    transition: transform 0.42s cubic-bezier(0.19, 1, 0.22, 1), opacity 0.32s ease;
+  }
+
+  body.is-anthracite .task-add-overlay {
+    --ta-bg: #1c1c20;
+    --ta-card: #26272c;
+    --ta-track: #3a3b42;
+    --ta-chip: #2b2c32;
+    --ta-text: #ffffff;
+    --ta-muted: #8b8b93;
+    --ta-line: rgba(255, 255, 255, 0.07);
+  }
+
+  .task-add-overlay.is-open {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
+  }
+
+  .task-add-sheet {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+
+  /* ---------- Üst çubuk: "İptal" + ortada başlık ---------- */
+  .task-add-top {
+    flex-shrink: 0;
+    background-color: var(--ta-head-bg);
+    transition: background-color 0.35s ease;
+  }
+
+  /* Renk seçilmiş: üst blok (güvenli alan dahil) o renkle dolar. */
+  .task-add-overlay.has-color {
+    --ta-head-line: transparent;
+    --ta-ring: var(--ta-head-fg);
+    --ta-ring-fill: var(--ta-head-chip);
+    --ta-glow: 0;
+    --ta-underline-op: 0.75;
+  }
+
+  .task-add-overlay.has-color .task-add-cancel-btn {
+    box-shadow: none;
+  }
+
+  .task-add-topbar {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    flex-shrink: 0;
+    padding: calc(14px + env(safe-area-inset-top)) var(--ta-gutter) 12px;
+  }
+
+  .task-add-cancel-btn {
+    justify-self: start;
+    height: 2.4rem;
+    padding: 0 1.15rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--ta-head-chip);
+    border: none;
+    border-radius: 999px;
+    box-shadow: 0 8px 18px -12px rgba(0, 0, 0, 0.3), 0 1px 4px rgba(0, 0, 0, 0.05);
+    color: var(--ta-head-fg);
+    font-family: var(--ta-title-font);
+    font-weight: 700;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+  }
+
+  body.is-anthracite .task-add-cancel-btn {
+    box-shadow: none;
+  }
+
+  .task-add-cancel-btn:active {
+    transform: scale(0.94);
+  }
+
+  .task-add-topbar-title {
+    font-family: var(--ta-title-font);
+    font-weight: 700;
+    font-size: 1.05rem;
+    color: var(--ta-head-muted);
+    transition: color 0.3s ease;
+  }
+
+  /* ---------- Başlık bloğu: ikon halkası / süre özeti + ad / renk ---------- */
+  .task-add-head-wrap {
+    flex-shrink: 0;
+    border-bottom: 1px solid var(--ta-head-line);
+  }
+
+  .task-add-head {
+    display: flex;
+    flex-direction: column;
+    padding: 6px var(--ta-gutter) 18px;
+  }
+
+  .task-add-head-row {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .task-add-ring {
+    position: relative;
+    isolation: isolate;
+    flex-shrink: 0;
+    width: 4.1rem;
+    height: 4.1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    background: none;
+    border: 2.5px solid var(--ta-ring);
+    border-radius: 50%;
+    color: var(--ta-head-fg);
+    cursor: pointer;
+    transition: transform 0.2s ease, border-color 0.25s ease, color 0.3s ease;
+  }
+
+  /* İç dolgu: parıltının (::before) halkanın içine sızmasını engeller. */
+  .task-add-ring::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: 50%;
+    background: var(--ta-ring-fill);
+    transition: background-color 0.3s ease;
+  }
+
+  .task-add-ring::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: 50%;
+    background: var(--ta-color);
+    filter: blur(14px);
+    opacity: var(--ta-glow);
+    transition: background-color 0.25s ease;
+  }
+
+  .task-add-ring:active {
+    transform: scale(0.94);
+  }
+
+  .task-add-head-main {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .task-add-name-wrap {
+    position: relative;
+    padding-bottom: 0.3rem;
+  }
+
+  .task-add-name-wrap::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 2px;
+    border-radius: 2px;
+    background: var(--ta-ring);
+    opacity: var(--ta-underline-op);
+    transition: opacity 0.2s ease, background-color 0.25s ease;
+  }
+
+  .task-add-name-wrap:focus-within::after {
+    opacity: 1;
+  }
+
+  .task-add-name-wrap.is-shaking {
+    animation: task-add-shake 0.4s ease;
+  }
+
+  @keyframes task-add-shake {
+    0%, 100% { transform: translateX(0); }
+    20% { transform: translateX(-6px); }
+    40% { transform: translateX(6px); }
+    60% { transform: translateX(-4px); }
+    80% { transform: translateX(4px); }
+  }
+
+  .task-add-name-input {
+    width: 100%;
+    border: none;
+    outline: none;
+    background: none;
+    padding: 0;
+    font-family: var(--ta-title-font);
+    font-weight: 800;
+    font-size: 1.55rem;
+    line-height: 1.35;
+    color: var(--ta-head-fg);
+    -webkit-user-select: text;
+    user-select: text;
+  }
+
+  .task-add-name-input::placeholder {
+    color: var(--ta-head-muted);
+    opacity: 0.8;
+  }
+
+  /* ---------- Adım adım akış: İkon → Renk → Zaman ----------
+     Alt alanda aynı anda yalnızca aktif adım görünür; adım değişince
+     hafifçe yukarı kayarak belirir. "Ekle" butonu sadece son adımda. */
+  .task-add-step {
+    display: none;
+    flex-direction: column;
+    gap: 1.1rem;
+  }
+
+  .task-add-step.is-active {
+    display: flex;
+    animation: task-add-step-in 0.38s cubic-bezier(0.19, 1, 0.22, 1);
+  }
+
+  @keyframes task-add-step-in {
+    from { opacity: 0; transform: translateY(14px); }
+    to { opacity: 1; transform: none; }
+  }
+
+  /* Alt buton alanı: İkon/Renk adımında yalnızca bir seçim yapılınca
+     (data-ready="1") "Sürdür" ile belirir; Zaman adımında "Ekle" görünür. */
+  .task-add-footer {
+    display: none;
+  }
+
+  .task-add-overlay[data-step="time"] .task-add-footer,
+  .task-add-overlay[data-ready="1"] .task-add-footer {
+    display: block;
+    animation: task-add-step-in 0.38s cubic-bezier(0.19, 1, 0.22, 1);
+  }
+
+  .task-add-overlay[data-step="time"] .task-add-submit-continue,
+  .task-add-overlay:not([data-step="time"]) .task-add-submit-save {
+    display: none;
+  }
+
+  .task-add-icon-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(3.6rem, 1fr));
+    gap: 0.7rem;
+    margin-top: 0.5rem;
+  }
+
+  .task-add-color-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(3rem, 1fr));
+    gap: 1rem 0.5rem;
+    justify-items: center;
+    padding: 0.5rem 0 0.25rem;
+  }
+
+  .task-add-icon-btn {
+    width: 100%;
+    height: 3.6rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    background: var(--ta-track);
+    border: none;
+    border-radius: 1.1rem;
+    color: var(--ta-text);
+    cursor: pointer;
+    transition: transform 0.15s ease, background-color 0.15s ease, color 0.15s ease;
+  }
+
+  .task-add-icon-btn:active {
+    transform: scale(0.92);
+  }
+
+  .task-add-icon-btn.is-selected {
+    background: var(--ta-accent);
+    color: var(--ta-on-accent);
+  }
+
+  .task-add-color-swatch {
+    width: 2.7rem;
+    height: 2.7rem;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 0.9rem;
+    box-shadow: inset 0 0 0 1px rgba(128, 128, 128, 0.25);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  .task-add-color-swatch:active {
+    transform: scale(0.9);
+  }
+
+  .task-add-color-swatch.is-selected {
+    transform: scale(1.1);
+    box-shadow: 0 0 0 2.5px var(--ta-card), 0 0 0 4.5px var(--task-swatch-color, #16171b);
+  }
+
+  .task-add-color-swatch-check {
+    opacity: 0;
+    transition: opacity 0.15s ease;
+  }
+
+  .task-add-color-swatch.is-selected .task-add-color-swatch-check {
+    opacity: 1;
+  }
+
+  /* ---------- Kaydırılabilir gövde ---------- */
+  .task-add-scroll {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 20px var(--ta-gutter) 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 1.1rem;
+  }
+
+  .task-add-card {
+    flex-shrink: 0;
+    padding: 1.2rem 1.2rem 1.25rem;
+    background: var(--ta-card);
+    border-radius: 1.6rem;
+  }
+
+  .task-add-card-title {
+    margin-bottom: 0.45rem;
+    font-family: var(--ta-title-font);
+    font-weight: 800;
+    font-size: 1.05rem;
+    color: var(--ta-text);
+  }
+
+  /* ---- Tarih satırı: dokununca (görünmez) native tarih seçici açılır ---- */
+  .task-add-date-row {
+    position: relative;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    padding: 0.8rem 1.3rem 0.8rem 0.8rem;
+    background: var(--ta-card);
+    border-radius: 1.6rem;
+    cursor: pointer;
+  }
+
+  .task-add-date-icon {
+    flex-shrink: 0;
+    width: 2.1rem;
+    height: 2.1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--ta-accent);
+    border-radius: 0.65rem;
+    color: var(--ta-on-accent);
+  }
+
+  .task-add-date-text {
+    flex: 1;
+    min-width: 0;
+    font-weight: 700;
+    font-size: 1.05rem;
+    color: var(--ta-text);
+    white-space: nowrap;
+  }
+
+  .task-add-date-rel {
+    flex-shrink: 0;
+    font-weight: 600;
+    font-size: 1rem;
+    color: var(--ta-muted);
+  }
+
+  .task-add-date-input {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    opacity: 0;
+    border: none;
+    background: none;
+    font-size: 16px;
+    cursor: pointer;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+
+  /* ---- Zaman çarkı: dikey, 15 dk adımlı, ortadaki hap seçili aralığı gösterir ---- */
+  .task-add-wheel-wrap {
+    position: relative;
+    height: calc(var(--ta-row) * 5);
+  }
+
+  .task-add-wheel-pill {
+    position: absolute;
+    left: 5%;
+    right: 5%;
+    top: calc(var(--ta-row) * 2);
+    height: var(--ta-row);
+    border-radius: 999px;
+    background: var(--ta-accent);
+    box-shadow: 0 8px 20px -10px var(--ta-accent);
+    pointer-events: none;
+  }
+
+  .task-add-wheel {
+    position: relative;
+    z-index: 1;
+    height: 100%;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scroll-snap-type: y mandatory;
+    padding: calc(var(--ta-row) * 2) 0;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .task-add-wheel-item {
+    height: var(--ta-row);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    scroll-snap-align: center;
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: var(--ta-text);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    cursor: pointer;
+    will-change: opacity, transform;
+  }
+
+  .task-add-wheel-item.is-active {
+    color: var(--ta-on-accent);
+    font-weight: 800;
+  }
+
+  /* ---- Çalışılacak süre: segmentli kontrol ---- */
+  .task-add-seg {
+    display: flex;
+    align-items: center;
+    gap: 0.1rem;
+    padding: 0.3rem;
+    margin-top: 0.75rem;
+    background: var(--ta-track);
+    border-radius: 999px;
+  }
+
+  .task-add-seg-btn {
+    flex: 1 1 auto;
+    padding: 0.7rem 0.35rem;
+    background: none;
+    border: none;
+    border-radius: 999px;
+    color: var(--ta-muted);
+    font-family: var(--ta-font);
+    font-weight: 700;
+    font-size: 0.92rem;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background-color 0.2s ease, color 0.2s ease, transform 0.15s ease;
+  }
+
+  .task-add-seg-btn:active {
+    transform: scale(0.95);
+  }
+
+  .task-add-seg-btn.is-selected {
+    background: var(--ta-accent);
+    color: var(--ta-on-accent);
+  }
+
+  /* ---------- Alt sabit "Ekle" butonu ---------- */
+  .task-add-footer {
+    flex-shrink: 0;
+    padding: 12px var(--ta-gutter) calc(18px + env(safe-area-inset-bottom));
+  }
+
+  .task-add-submit {
+    width: 100%;
+    height: 3.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--ta-accent);
+    border: none;
+    border-radius: 999px;
+    box-shadow: 0 12px 26px -12px var(--ta-accent);
+    color: var(--ta-on-accent);
+    font-family: var(--ta-font);
+    font-weight: 800;
+    font-size: 1.15rem;
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  .task-add-submit:active {
+    transform: scale(0.98);
+    box-shadow: 0 6px 16px -10px var(--ta-accent);
   }
 
   /* ---------- Görev silme butonu (satırın sağında, brutalist stile uyumlu) ---------- */
@@ -14958,13 +15741,7 @@
        geçilir; geri butonuyla Ana Sayfa'ya dönülür. -->
   <section class="page" id="page-relax">
     <div class="calendar-topbar">
-      <button type="button" class="calendar-back-btn" id="relaxBackBtn" aria-label="Geri dön">
-        <svg viewBox="0 0 24 24" width="18" height="18">
-          <path d="M15 4l-8 8 8 8" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      </button>
       <span class="calendar-topbar-title">Planyacı</span>
-      <div class="calendar-topbar-spacer"></div>
     </div>
 
     <!-- Minimalist hafta şeridi: gün adı + sayısı JS'te (renderRelaxCalendarWeek)
@@ -14981,13 +15758,116 @@
       <div class="relax-calendar-week" id="relaxCalendarWeek"></div>
     </div>
 
-    <!-- Şimdilik işlevsiz, sağ altta sabit duran "+" butonu -->
-    <button type="button" class="relax-add-btn" id="relaxAddBtn" aria-label="Ekle">
-      <svg viewBox="0 0 24 24" width="20" height="20">
+    <!-- Seçilen günün görevleri: eklendikçe yukarıdan aşağıya doğru
+         listelenir, aralarındaki dikey çizgi (bkz. .relax-task-connector-line)
+         onları birbirine bağlar. Doldurulması renderRelaxTasksList() ile
+         yapılır (bkz. aşağıdaki "Planyacı: Yeni Aktivite" script bloğu). -->
+    <div class="relax-tasks-list" id="relaxTasksList">
+      <div class="relax-tasks-connectors" id="relaxTasksConnectors" aria-hidden="true"></div>
+      <div class="relax-tasks-items" id="relaxTasksItems"></div>
+    </div>
+
+    <!-- Sağ altta sabit duran "Görev Ekle" butonu -->
+    <button type="button" class="relax-add-btn" id="relaxAddBtn" aria-label="Görev ekle">
+      <svg viewBox="0 0 24 24" width="18" height="18">
         <path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
+      <span>Görev Ekle</span>
     </button>
   </section>
+
+  <!-- "Yeni Aktivite" tam ekran sayfası (Planyacı): #page-relax'teki "Görev
+       Ekle" butonuna basınca alttan yukarı kayarak açılır. Bir .page
+       değil, .app'in dışında duran bağımsız bir "overlay" — böylece normal
+       sayfa geçiş sistemine (goToPage) dokunmadan kendi giriş/çıkış
+       animasyonunu taşıyabiliyor. Tasarım: üstte İptal + başlık, ikon
+       halkası + ad + renk noktası, tarih satırı, dikey Zaman çarkı,
+       Çalışılacak Süre segmentleri ve altta sabit "Ekle" butonu. -->
+  <div class="task-add-overlay" id="taskAddOverlay" role="dialog" aria-modal="true" aria-label="Yeni Aktivite">
+    <div class="task-add-sheet">
+      <!-- Üst blok (güvenli alan + İptal/başlık + ikon/ad): renk seçilince bu blok
+           seçilen renkle boyanır. -->
+      <div class="task-add-top">
+      <div class="task-add-topbar">
+        <button type="button" class="task-add-cancel-btn" id="taskAddCloseBtn">İptal</button>
+        <span class="task-add-topbar-title">Yeni Aktivite</span>
+        <span aria-hidden="true"></span>
+      </div>
+
+      <div class="task-add-head-wrap">
+        <div class="task-add-head">
+          <div class="task-add-head-row">
+            <!-- İkon halkası: basınca akış başa, "İkon" adımına döner -->
+            <button type="button" class="task-add-ring" id="taskAddIconBtn" aria-label="İkonu değiştir">
+              <svg id="taskAddIconMain" viewBox="0 0 24 24" width="30" height="30"></svg>
+            </button>
+
+            <div class="task-add-head-main">
+              <div class="task-add-name-wrap" id="taskAddNameWrap">
+                <input type="text" id="taskAddNameInput" class="task-add-name-input" placeholder="Görev adı" maxlength="40" autocomplete="off" enterkeyhint="done" aria-label="Görev adı">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      </div><!-- /.task-add-top -->
+
+      <div class="task-add-scroll">
+        <!-- ADIM 1 — İkon: sayfa açılınca ilk bu görünür; seçince Renk adımına geçer -->
+        <div class="task-add-step" data-step="icon">
+          <div class="task-add-card">
+            <h3 class="task-add-card-title">İkon seç</h3>
+            <div class="task-add-icon-row" id="taskAddIconRow"></div>
+          </div>
+        </div>
+
+        <!-- ADIM 2 — Renk: seçince Zaman adımına geçer -->
+        <div class="task-add-step" data-step="color">
+          <div class="task-add-card">
+            <h3 class="task-add-card-title">Renk seç</h3>
+            <div class="task-add-color-row" id="taskAddColorRow"></div>
+          </div>
+        </div>
+
+        <!-- ADIM 3 — Zaman: tarih, saat çarkı ve süre; altta "Ekle" butonu -->
+        <div class="task-add-step" data-step="time">
+        <!-- Tarih: dokununca üstündeki görünmez tarih alanı native seçiciyi açar -->
+        <label class="task-add-date-row" for="taskAddDateInput">
+          <span class="task-add-date-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="18" height="18">
+              <rect x="4" y="5.5" width="16" height="14.5" rx="3" fill="none" stroke="currentColor" stroke-width="1.9"/>
+              <path d="M4 10.5h16M8.5 3.5v3.5M15.5 3.5v3.5" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/>
+            </svg>
+          </span>
+          <span class="task-add-date-text" id="taskAddDateText">--</span>
+          <span class="task-add-date-rel" id="taskAddDateRel"></span>
+          <input type="date" class="task-add-date-input" id="taskAddDateInput" aria-label="Tarih seç">
+        </label>
+
+        <!-- Zaman: dikey çark, 15 dk adımlı -->
+        <div class="task-add-card">
+          <h3 class="task-add-card-title">Zaman</h3>
+          <div class="task-add-wheel-wrap">
+            <div class="task-add-wheel-pill" aria-hidden="true"></div>
+            <div class="task-add-wheel" id="taskAddWheel" aria-label="Başlangıç saatini kaydırarak seç"></div>
+          </div>
+        </div>
+
+        <!-- Çalışılacak süre: bitişi belirler -->
+        <div class="task-add-card">
+          <h3 class="task-add-card-title">Çalışılacak Süre</h3>
+          <div class="task-add-seg" id="taskAddDurationRow" role="radiogroup" aria-label="Çalışılacak süre"></div>
+        </div>
+        </div>
+      </div>
+
+      <div class="task-add-footer">
+        <!-- İkon / Renk adımlarında seçim yapılınca "Sürdür", son adımda "Ekle" -->
+        <button type="button" class="task-add-submit task-add-submit-continue" id="taskAddContinueBtn">Sürdür</button>
+        <button type="button" class="task-add-submit task-add-submit-save" id="taskAddSaveBtn">Ekle</button>
+      </div>
+    </div>
+  </div>
 
   <!-- Mini Oyunlar ana sayfası: ana sayfadaki widget artık doğrudan karar
        çarkına değil buraya açılır. İleride eklenecek her yeni mini oyun,
@@ -20407,13 +21287,8 @@
     goToPage('page-relax');
   };
 
-  const closeRelaxPage = () => {
-    document.body.classList.remove('is-calendar-open');
-    goToPage('page-1');
-  };
-
-  const relaxBackBtn = document.getElementById('relaxBackBtn');
-  if (relaxBackBtn) relaxBackBtn.addEventListener('click', closeRelaxPage);
+  // Not: "Planyacı" sayfasında şimdilik geri dönüş yok — sayfa sadece
+  // ana sayfadaki widget'tan açılır, geri butonu/fonksiyonu kaldırıldı.
 
   // ---------- "Rahatla" sayfası: minimalist hafta şeridi ----------
   // Pazartesi başlangıçlı gün adları (HOME_WEEKDAYS_TR Pazar'dan başlıyor,
@@ -20446,15 +21321,19 @@
       cell.type = 'button';
       cell.className = 'relax-calendar-day-cell' + (isToday ? ' is-selected' : '');
       cell.setAttribute('aria-label', `${day.getDate()} ${HOME_MONTHS_TR[day.getMonth()]}`);
+      // Yeni Aktivite sayfası, seçili günü buradan okur (yyyy-mm-dd).
+      cell.dataset.date = `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, '0')}-${String(day.getDate()).padStart(2, '0')}`;
       cell.innerHTML = `
         <span class="relax-calendar-day-label">${RELAX_WEEKDAYS_TR[i]}</span>
         <span class="relax-calendar-day-num">${day.getDate()}</span>
       `;
-      // Şimdilik sadece görsel seçim: tıklanan güne dairesi kayar, veri
-      // veya sayfa değişmez.
+      // Tıklanan güne dairesi kayar; ayrıca o günün "Seçilen Görevler"
+      // listesinin de güncellenmesi için bir olay yayınlanır (dinleyicisi
+      // aşağıdaki "Planyacı: Yeni Aktivite" script bloğunda).
       cell.addEventListener('click', () => {
         relaxCalendarWeekEl.querySelectorAll('.relax-calendar-day-cell').forEach((el) => el.classList.remove('is-selected'));
         cell.classList.add('is-selected');
+        document.dispatchEvent(new CustomEvent('relax:date-changed', { detail: { date: cell.dataset.date } }));
       });
       relaxCalendarWeekEl.appendChild(cell);
     }
@@ -20526,6 +21405,769 @@
 
   renderCalendarGrid();
   updateCalendarSelectedInfo();
+</script>
+
+<!-- ---------- Planyacı: "Yeni Aktivite" tam ekran sayfası ----------
+     Bağımsız bir script bloğu: WHEEL_PALETTE (Karar Çarkı script'inde
+     tanımlı) ve relaxAddBtn (Planyacı script'inde tanımlı) bu noktada
+     zaten çalışmış olduğundan sorunsuz erişilebiliyor. -->
+<script>
+  (function () {
+    const $ = (id) => document.getElementById(id);
+    const overlay = $('taskAddOverlay');
+    const closeBtn = $('taskAddCloseBtn');
+    const saveBtn = $('taskAddSaveBtn');
+    const continueBtn = $('taskAddContinueBtn');
+    const nameInput = $('taskAddNameInput');
+    const nameWrap = $('taskAddNameWrap');
+    const iconBtn = $('taskAddIconBtn');
+    const iconMainSvg = $('taskAddIconMain');
+    const stepEls = overlay.querySelectorAll('.task-add-step');
+    const scrollEl = overlay.querySelector('.task-add-scroll');
+    const iconRow = $('taskAddIconRow');
+    const colorRow = $('taskAddColorRow');
+    const dateInput = $('taskAddDateInput');
+    const dateTextEl = $('taskAddDateText');
+    const dateRelEl = $('taskAddDateRel');
+    const wheel = $('taskAddWheel');
+    const durationRow = $('taskAddDurationRow');
+    const openBtn = $('relaxAddBtn');
+    if (!overlay || !openBtn) return;
+
+    // ---- İkonlar: ilki referans tasarımdaki varsayılan "panel" ikonu; kalanlar
+    // uygulamada zaten kullanılan sidebar/mini-oyun ikonları. ----
+        const TASK_ADD_ICONS = [
+      { id: 'panel', label: 'Ders', svg: '<rect x="4" y="4.5" width="16" height="15" rx="3" fill="none" stroke="currentColor" stroke-width="1.9"/><line x1="12" y1="4.5" x2="12" y2="19.5" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/>' },
+      { id: 'checklist', label: 'Görev', svg: '<rect x="5" y="5.5" width="14" height="15" rx="2.4" fill="none" stroke="currentColor" stroke-width="1.8"/><rect x="9" y="3" width="6" height="2.5" rx="1" fill="none" stroke="currentColor" stroke-width="1.8"/><polyline points="8.3 13 10.8 15.5 15.7 9.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>' },
+      { id: 'gunluk', label: 'Gündelik', svg: '<path d="m3 17 2 2 4-4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="m3 7 2 2 4-4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><line x1="13" y1="6" x2="21" y2="6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><line x1="13" y1="18" x2="21" y2="18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>' },
+      { id: 'stopwatch', label: 'Kronometre', svg: '<circle cx="12" cy="13" r="8" fill="none" stroke="currentColor" stroke-width="1.8"/><line x1="12" y1="9" x2="12" y2="13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><line x1="9" y1="3" x2="15" y2="3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><line x1="12" y1="3" x2="12" y2="5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>' },
+      { id: 'exam', label: 'Deneme', svg: '<rect x="5" y="3" width="14" height="18" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><line x1="8" y1="8" x2="16" y2="8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><line x1="8" y1="12" x2="16" y2="12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><line x1="8" y1="16" x2="13" y2="16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>' },
+      { id: 'gear', label: 'Ayarlar', svg: '<path d="M9.59 3.94a1.1 1.1 0 0 1 1.11-.94h2.6a1.1 1.1 0 0 1 1.11.94l.21 1.28a1.55 1.55 0 0 0 1.03 1.15l.22.1c.5.29 1.1.34 1.62.16l1.22-.46c.51-.19 1.09.02 1.36.5l1.3 2.25c.27.48.16 1.08-.26 1.43l-1 .83a1.6 1.6 0 0 0-.57 1.24v.15c0 .44.21.87.57 1.15l1 .83c.42.35.53.95.26 1.43l-1.3 2.25c-.27.48-.85.7-1.36.5l-1.22-.46a1.55 1.55 0 0 0-1.62.16l-.22.1a1.55 1.55 0 0 0-1.03 1.15l-.21 1.28a1.1 1.1 0 0 1-1.11.94h-2.6a1.1 1.1 0 0 1-1.11-.94l-.21-1.28a1.55 1.55 0 0 0-1.03-1.15l-.22-.1a1.55 1.55 0 0 0-1.62-.16l-1.22.46c-.51.19-1.09-.02-1.36-.5l-1.3-2.25a1.1 1.1 0 0 1 .26-1.43l1-.83c.36-.28.57-.71.57-1.15v-.15c0-.44-.21-.87-.57-1.15l-1-.83a1.1 1.1 0 0 1-.26-1.43l1.3-2.25c.27-.48.85-.7 1.36-.5l1.22.46c.53.18 1.12.13 1.62-.16l.22-.1c.5-.24.88-.66 1.03-1.15z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="1.6"/>' },
+      { id: 'minigames', label: 'Mini Oyun', svg: '<rect x="4" y="4" width="16" height="16" rx="4.5" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="8.3" cy="8.3" r="1.3" fill="currentColor"/><circle cx="15.7" cy="8.3" r="1.3" fill="currentColor"/><circle cx="12" cy="12" r="1.3" fill="currentColor"/><circle cx="8.3" cy="15.7" r="1.3" fill="currentColor"/><circle cx="15.7" cy="15.7" r="1.3" fill="currentColor"/>' },
+      { id: 'analytics', label: 'Analiz', svg: '<path d="M5 19V10M12 19V5M19 19v-7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>' },
+      { id: 'camera', label: 'Kamera', svg: '<path d="M3 8.5a1.5 1.5 0 0 1 1.5-1.5h2.4l1.3-1.8a1.5 1.5 0 0 1 1.2-.6h5.2a1.5 1.5 0 0 1 1.2.6l1.3 1.8h2.4A1.5 1.5 0 0 1 21 8.5v9A1.5 1.5 0 0 1 19.5 19h-15A1.5 1.5 0 0 1 3 17.5z" fill="none" stroke="currentColor" stroke-width="1.7"/><circle cx="12" cy="13" r="3.2" fill="none" stroke="currentColor" stroke-width="1.7"/>' },
+    ];
+
+    const pad2 = (n) => String(n).padStart(2, '0');
+    const MONTHS_SHORT_TR = ['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara'];
+    const DAYS_SHORT_TR = ['Paz', 'Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt']; // getDay(): 0=Paz
+    const ymd = (d) => `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
+    const startOfDay = (d) => { const x = new Date(d); x.setHours(0, 0, 0, 0); return x; };
+
+    // ---------------- Durum ----------------
+    const STEP = 15;                    // çark adımı (dk)
+    const COUNT = (24 * 60) / STEP;     // 96 satır: 00:00 … 23:45
+    const DURATIONS = [30, 45, 60, 90, 120];
+    const DEFAULT_DURATION = 60;
+
+    let selectedIconId = TASK_ADD_ICONS[0].id;
+    let selectedColor = null;           // null = varsayılan (vurgu rengi)
+    let selectedDate = startOfDay(new Date());
+    let selectedIndex = 0;
+    let durationMin = DEFAULT_DURATION;
+    let currentStep = 'icon';           // 'icon' → 'color' → 'time'
+    let iconChosen = false;             // bu oturumda bir ikon seçildi mi
+
+    // "14:30" biçimi (gün taşarsa 24 saate sarar)
+    const fmt = (min) => {
+      const m = ((min % 1440) + 1440) % 1440;
+      return `${pad2(Math.floor(m / 60))}:${pad2(m % 60)}`;
+    };
+
+    // ---------------- İkon / renk seçici ----------------
+    const iconById = (id) => TASK_ADD_ICONS.find((i) => i.id === id) || TASK_ADD_ICONS[0];
+
+    // mark=false: halkada varsayılan ikon görünür ama menüde "seçilmiş" işaretlenmez.
+    const applyIcon = (icon, mark = true) => {
+      selectedIconId = icon.id;
+      iconMainSvg.innerHTML = icon.svg;
+      iconRow.querySelectorAll('.task-add-icon-btn').forEach((el) => {
+        el.classList.toggle('is-selected', mark && el.dataset.id === icon.id);
+      });
+    };
+
+    // ---- Üst blok boyama + durum çubuğu (theme-color) ----
+    // Renk seçilince üst blok (güvenli alan dahil) o renkle boyanır; yazı /
+    // ikon rengi, rengin parlaklığına göre okunur (koyu ya da beyaz) seçilir.
+    const hexToRgb = (hex) => {
+      let h = String(hex).replace('#', '');
+      if (h.length === 3) h = h.split('').map((c) => c + c).join('');
+      const n = parseInt(h, 16);
+      return { r: (n >> 16) & 255, g: (n >> 8) & 255, b: n & 255 };
+    };
+
+    const themeMeta = document.querySelector('meta[name="theme-color"]');
+    const HEAD_VARS = ['--ta-head-bg', '--ta-head-fg', '--ta-head-muted', '--ta-head-chip'];
+
+    // Tarayıcının üst güvenli alanı yalnızca <meta name="theme-color"> ile
+    // boyandığından, renk seçiliyken onu da o renge çekiyoruz; kapanınca /
+    // renk sıfırlanınca uygulamanın kendi tema mantığı geri yükler.
+    const restoreThemeMeta = () => {
+      try {
+        if (typeof refreshThemeColorMeta === 'function') refreshThemeColorMeta();
+      } catch (e) { /* yoksay */ }
+    };
+
+    const applyHeadTint = (color) => {
+      if (!color) {
+        overlay.classList.remove('has-color');
+        HEAD_VARS.forEach((v) => overlay.style.removeProperty(v));
+        restoreThemeMeta();
+        return;
+      }
+      const { r, g, b } = hexToRgb(color);
+      const yiq = (r * 299 + g * 587 + b * 114) / 1000;
+      const darkText = yiq >= 150;
+      const fg = darkText ? '22, 23, 27' : '255, 255, 255';
+      overlay.style.setProperty('--ta-head-bg', color);
+      overlay.style.setProperty('--ta-head-fg', `rgb(${fg})`);
+      overlay.style.setProperty('--ta-head-muted', `rgba(${fg}, 0.62)`);
+      overlay.style.setProperty('--ta-head-chip', darkText ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.22)');
+      overlay.classList.add('has-color');
+      if (themeMeta) themeMeta.setAttribute('content', color);
+    };
+
+    const applyColor = (color) => {
+      selectedColor = color;
+      applyHeadTint(color);
+      if (color) {
+        overlay.style.setProperty('--ta-color', color);
+      } else {
+        overlay.style.removeProperty('--ta-color');
+      }
+      colorRow.querySelectorAll('.task-add-color-swatch').forEach((el) => {
+        el.classList.toggle('is-selected', !!color && el.dataset.color === color);
+      });
+    };
+
+    const renderIcons = () => {
+      if (iconRow.childElementCount) return;
+      TASK_ADD_ICONS.forEach((icon) => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'task-add-icon-btn';
+        btn.dataset.id = icon.id;
+        btn.setAttribute('aria-label', icon.label);
+        btn.innerHTML = `<svg viewBox="0 0 24 24" width="24" height="24">${icon.svg}</svg>`;
+        btn.addEventListener('click', () => {
+          applyIcon(icon);
+          iconChosen = true;
+          updateReady();
+        });
+        iconRow.appendChild(btn);
+      });
+    };
+
+    const renderColors = () => {
+      if (colorRow.childElementCount) return;
+      const palette = (typeof WHEEL_PALETTE !== 'undefined' && WHEEL_PALETTE.length)
+        ? WHEEL_PALETTE
+        : ['#ff90e8', '#ffd23f', '#6ec6ff', '#ff5c5c', '#8fe3a0', '#c9a6ff'];
+      palette.forEach((color) => {
+        const swatch = document.createElement('button');
+        swatch.type = 'button';
+        swatch.className = 'task-add-color-swatch';
+        swatch.dataset.color = color;
+        swatch.style.background = color;
+        swatch.style.setProperty('--task-swatch-color', color);
+        swatch.setAttribute('aria-label', color);
+        swatch.innerHTML = '<span class="task-add-color-swatch-check">✓</span>';
+        swatch.addEventListener('click', () => {
+          applyColor(color);
+          updateReady();
+        });
+        colorRow.appendChild(swatch);
+      });
+    };
+
+    // ---------------- Adım geçişleri ----------------
+    // Açılış: İkon → (ikon seçilince) Renk → (renk seçilince) Zaman.
+    // Üstteki ikon halkasına basmak akışı tekrar "İkon" adımına döndürür.
+    // "Sürdür" butonu: İkon adımında bir ikon, Renk adımında bir renk
+    // seçilmişse görünür (CSS: [data-ready="1"]).
+    const updateReady = () => {
+      const ready = (currentStep === 'icon' && iconChosen) || (currentStep === 'color' && !!selectedColor);
+      overlay.dataset.ready = ready ? '1' : '0';
+    };
+
+    const goToStep = (step) => {
+      currentStep = step;
+      overlay.dataset.step = step;
+      updateReady();
+      stepEls.forEach((el) => el.classList.toggle('is-active', el.dataset.step === step));
+      if (scrollEl) scrollEl.scrollTop = 0;
+      if (nameInput) nameInput.blur();
+      if (step === 'time') {
+        // Zaman adımı o ana kadar gizliydi; görünür olunca çarkı ölçüp
+        // seçili saate getir.
+        requestAnimationFrame(() => {
+          measureRow();
+          scrollToIndex(selectedIndex, true);
+          paint();
+        });
+      }
+    };
+
+    iconBtn.addEventListener('click', () => {
+      if (currentStep !== 'icon') goToStep('icon');
+    });
+
+    continueBtn.addEventListener('click', () => {
+      if (currentStep === 'icon') goToStep('color');
+      else if (currentStep === 'color') goToStep('time');
+    });
+
+    // ---------------- Tarih ----------------
+    const relativeDayLabel = (d) => {
+      const diff = Math.round((startOfDay(d) - startOfDay(new Date())) / 86400000);
+      if (diff === 0) return 'Bugün';
+      if (diff === 1) return 'Yarın';
+      if (diff === -1) return 'Dün';
+      return diff > 0 ? `${diff} gün sonra` : `${-diff} gün önce`;
+    };
+
+    const applyDate = (d) => {
+      selectedDate = startOfDay(d);
+      dateInput.value = ymd(selectedDate);
+      dateTextEl.textContent = `${selectedDate.getDate()} ${MONTHS_SHORT_TR[selectedDate.getMonth()]} ${selectedDate.getFullYear()} ${DAYS_SHORT_TR[selectedDate.getDay()]}`;
+      dateRelEl.textContent = relativeDayLabel(selectedDate);
+    };
+
+    const onDatePicked = () => {
+      const parts = (dateInput.value || '').split('-').map(Number);
+      if (parts.length === 3 && parts.every((n) => Number.isFinite(n))) {
+        applyDate(new Date(parts[0], parts[1] - 1, parts[2]));
+      } else {
+        applyDate(selectedDate); // boş bırakıldıysa eskisine dön
+      }
+    };
+    dateInput.addEventListener('change', onDatePicked);
+    dateInput.addEventListener('input', onDatePicked);
+    // Masaüstü tarayıcılarda alanın her yerine basınca seçici açılsın.
+    dateInput.addEventListener('click', () => {
+      try { if (dateInput.showPicker) dateInput.showPicker(); } catch (e) { /* yoksay */ }
+    });
+
+    // ---------------- Zaman çarkı ----------------
+    const items = [];
+    let rowPx = 0;
+    let activeEl = null;
+    let raf = 0;
+
+    const updateLabels = () => {
+      const startMin = selectedIndex * STEP;
+      if (!items.length) return;
+      const next = items[selectedIndex];
+      if (activeEl && activeEl !== next) {
+        activeEl.classList.remove('is-active');
+        activeEl.textContent = fmt(Number(activeEl.dataset.min));
+      }
+      activeEl = next;
+      activeEl.classList.add('is-active');
+      activeEl.textContent = `${fmt(startMin)}–${fmt(startMin + durationMin)}`;
+    };
+
+    const scrollToIndex = (i, instant) => {
+      wheel.scrollTo({ top: i * rowPx, behavior: instant ? 'auto' : 'smooth' });
+    };
+
+    const paint = () => {
+      raf = 0;
+      if (!rowPx) return;
+      const f = wheel.scrollTop / rowPx;
+      for (let i = 0; i < COUNT; i += 1) {
+        const d = Math.abs(i - f);
+        // Merkezden uzaklaştıkça solar ve hafifçe küçülür.
+        const op = d <= 1 ? 1 - d * 0.3 : Math.max(0.12, 0.7 - (d - 1) * 0.4);
+        const sc = 1 - Math.min(d, 2) * 0.05;
+        const s = items[i].style;
+        s.opacity = op.toFixed(3);
+        s.transform = `scale(${sc.toFixed(3)})`;
+      }
+      const idx = Math.max(0, Math.min(COUNT - 1, Math.round(f)));
+      if (idx !== selectedIndex) {
+        selectedIndex = idx;
+        updateLabels();
+      }
+    };
+
+    const schedulePaint = () => { if (!raf) raf = requestAnimationFrame(paint); };
+
+    const buildWheel = () => {
+      if (items.length) return;
+      const frag = document.createDocumentFragment();
+      for (let i = 0; i < COUNT; i += 1) {
+        const el = document.createElement('div');
+        el.className = 'task-add-wheel-item';
+        el.dataset.min = String(i * STEP);
+        el.textContent = fmt(i * STEP);
+        el.addEventListener('click', () => scrollToIndex(i, false));
+        items.push(el);
+        frag.appendChild(el);
+      }
+      wheel.appendChild(frag);
+      wheel.addEventListener('scroll', schedulePaint, { passive: true });
+    };
+
+    const measureRow = () => {
+      // offsetHeight: transform (ölçek) etkisinden bağımsız gerçek satır yüksekliği.
+      const h = items[0] ? items[0].offsetHeight : 0;
+      if (h) rowPx = h;
+    };
+
+    // ---------------- Süre segmentleri ----------------
+    const renderDurations = () => {
+      if (durationRow.childElementCount) return;
+      DURATIONS.forEach((m) => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'task-add-seg-btn';
+        btn.dataset.minutes = String(m);
+        btn.setAttribute('role', 'radio');
+        btn.textContent = `${m} dk`;
+        btn.addEventListener('click', () => {
+          applyDuration(m);
+        });
+        durationRow.appendChild(btn);
+      });
+    };
+
+    const applyDuration = (m) => {
+      durationMin = m;
+      durationRow.querySelectorAll('.task-add-seg-btn').forEach((el) => {
+        const on = Number(el.dataset.minutes) === m;
+        el.classList.toggle('is-selected', on);
+        el.setAttribute('aria-checked', String(on));
+      });
+      updateLabels();
+    };
+
+    // ---------------- Aç / kapat / kaydet ----------------
+    // Her açılışta form sıfırlanır: İptal = vazgeç. Tarih, Planyacı hafta
+    // şeridinde seçili gün varsa o gündür; yoksa bugün.
+    const prepareForm = () => {
+      renderIcons();
+      renderColors();
+      renderDurations();
+      buildWheel();
+      measureRow();
+
+      nameInput.value = '';
+      iconChosen = false;
+      applyIcon(TASK_ADD_ICONS[0], false);
+      applyColor(null);
+      goToStep('icon');
+
+      const cell = document.querySelector('#relaxCalendarWeek .relax-calendar-day-cell.is-selected');
+      let day = new Date();
+      if (cell && cell.dataset.date) {
+        const p = cell.dataset.date.split('-').map(Number);
+        if (p.length === 3 && p.every((n) => Number.isFinite(n))) day = new Date(p[0], p[1] - 1, p[2]);
+      }
+      applyDate(day);
+
+      const now = new Date();
+      selectedIndex = Math.round((now.getHours() * 60 + now.getMinutes()) / STEP) % COUNT;
+      applyDuration(DEFAULT_DURATION);
+    };
+
+    const openTaskAddOverlay = () => {
+      prepareForm();
+      // Not: body.has-modal-open kilidi kullanılmıyor — bu sayfa zaten tam
+      // ekran ve opak olduğundan arkadaki içerik dokunuşları alamıyor.
+      overlay.classList.add('is-open');
+      // Not: ad alanına otomatik odaklanmıyor — klavye açılınca alttaki
+      // ikon menüsü kapanırdı; adı yazmak için üstteki alana dokunulur.
+    };
+
+    const closeTaskAddOverlay = () => {
+      overlay.classList.remove('is-open');
+      restoreThemeMeta(); // üst güvenli alan rengi uygulamanın temasına dönsün
+      if (nameInput) nameInput.blur();
+    };
+
+    openBtn.addEventListener('click', openTaskAddOverlay);
+    closeBtn.addEventListener('click', closeTaskAddOverlay);
+    nameInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') { e.preventDefault(); nameInput.blur(); }
+    });
+
+    // ---------- Planyacı: Seçilen Görevler listesi ----------
+    // "Ekle"ye basılan her görev, tarihine göre APP_STATE üzerinden
+    // localStorage'a kaydedilir (uygulamanın geri kalanıyla aynı
+    // saveAppState mekanizması). Seçili günün listesi başlangıç saatine
+    // göre yukarıdan aşağıya sıralanıp çizilir; ardışık iki görev
+    // arasına, bir dairenin merkezinden çıkıp bir sonrakinin merkezine
+    // giren, renk geçişli (gradient) bir bağlantı çizgisi eklenir (bkz.
+    // drawRelaxTaskConnectors). Çizgi uçları dairelerin arkasında kaldığı
+    // için gerçekten bir daireden çıkıp diğerine giriyormuş gibi görünür.
+    const RELAX_TASKS_STATE_KEY = 'relaxTasks';
+    const RELAX_CONNECTOR_WIDTH = 3; // .relax-task-connector-line ile aynı genişlik (px)
+    const tasksListEl = $('relaxTasksList');
+    const tasksItemsEl = $('relaxTasksItems');
+    const tasksConnectorsEl = $('relaxTasksConnectors');
+    let relaxLastMarkerRefs = [];
+
+    const getRelaxTasksByDate = () => {
+      const stored = APP_STATE[RELAX_TASKS_STATE_KEY];
+      return (stored && typeof stored === 'object') ? stored : {};
+    };
+
+    // "Yeni Aktivite" formunun kendisiyle aynı mantık (bkz. prepareForm):
+    // seçili gün, hafta şeridindeki .is-selected hücreden okunur; hiçbiri
+    // seçili değilse bugüne düşülür.
+    const getSelectedRelaxDateStr = () => {
+      const cell = document.querySelector('#relaxCalendarWeek .relax-calendar-day-cell.is-selected');
+      if (cell && cell.dataset.date) return cell.dataset.date;
+      return ymd(startOfDay(new Date()));
+    };
+
+    const findTaskAddIcon = (iconId) => TASK_ADD_ICONS.find((i) => i.id === iconId) || TASK_ADD_ICONS[0];
+
+    // ---------- Gerçek zamanlı ilerleme (cihaz saatine göre) ----------
+    // Liste yukarıdan aşağıya tek bir "zincir" gibi dolar:
+    //   daire 0 → çizgi 0 → daire 1 → çizgi 1 → ... → son daire
+    // • Daire i, görevin başlangıç → bitiş saati arasında yukarıdan aşağıya dolar.
+    // • Çizgi i, görev i'nin bitişi → görev i+1'in başlangıcı arasında dolar.
+    // Zaman, gün + saat olarak mutlak (ms) hesaplandığı için geçmiş günler
+    // tamamen dolu, gelecek günler tamamen boş görünür; bugün ise canlıdır.
+    // Modlar:
+    //   'instant' → geçişsiz, anında doğru duruma getir (yeniden çizimde)
+    //   'tick'    → 1 sn'lik lineer geçişle akıcı ilerlet (her saniye)
+    //   playRelaxIntro → sayfa açılınca boştan güncel duruma yukarıdan aşağıya süpür
+    const RELAX_TICK_MS = 1000;
+    const RELAX_INTRO_MIN_MS = 700;
+    const RELAX_INTRO_MAX_MS = 1800;
+    const RELAX_INTRO_SPEED = 450; // px/sn (süpürme hızı)
+    const relaxPageEl = $('page-relax');
+    let relaxSegments = [];        // [{ fillEl, markerEl?, len, from, to }]
+    let relaxTickTimer = null;
+    let relaxIntroTimer = null;
+    let relaxIntroPlaying = false;
+
+    const relaxClamp01 = (v) => (v < 0 ? 0 : (v > 1 ? 1 : v));
+    const relaxClipFor = (p) => `inset(0 0 ${((1 - p) * 100).toFixed(3)}% 0)`;
+    const relaxPrefersReducedMotion = () => !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+    const isRelaxPageActive = () => !!relaxPageEl && relaxPageEl.classList.contains('is-active');
+
+    const relaxRangeProgress = (t, from, to) => {
+      if (!Number.isFinite(from) || !Number.isFinite(to)) return 0;
+      if (to <= from) return t >= to ? 1 : 0;
+      return relaxClamp01((t - from) / (to - from));
+    };
+
+    // "YYYY-MM-DD" + "HH:MM" → yerel saatle mutlak ms.
+    const relaxTimeToMs = (dateStr, hhmm) => {
+      const d = String(dateStr || '').split('-').map(Number);
+      const t = String(hhmm || '').split(':').map(Number);
+      if (d.length !== 3 || t.length < 2 || d.concat(t).some((n) => !Number.isFinite(n))) return NaN;
+      return new Date(d[0], d[1] - 1, d[2], t[0], t[1], 0, 0).getTime();
+    };
+
+    const relaxTaskRangeMs = (task, dateStr) => {
+      const startMs = relaxTimeToMs(dateStr, task.start);
+      let endMs;
+      if (Number.isFinite(task.durationMinutes) && task.durationMinutes > 0) {
+        endMs = startMs + task.durationMinutes * 60000;
+      } else {
+        endMs = relaxTimeToMs(dateStr, task.end);
+        if (endMs <= startMs) endMs += 24 * 60 * 60 * 1000; // gece yarısını aşan görev
+      }
+      return { startMs, endMs };
+    };
+
+    const applyRelaxProgress = (mode) => {
+      const isTick = mode === 'tick';
+      const now = Date.now();
+      // 'tick'te 1 sn ilerisini hedefle: geçiş bitince dolgu tam o anın değerinde olur.
+      const target = isTick ? now + RELAX_TICK_MS : now;
+
+      if (!isTick) {
+        clearTimeout(relaxIntroTimer);
+        relaxIntroPlaying = false;
+      }
+
+      relaxSegments.forEach((seg) => {
+        const p = relaxRangeProgress(target, seg.from, seg.to);
+        seg.fillEl.style.transition = isTick ? `clip-path ${RELAX_TICK_MS}ms linear` : 'none';
+        seg.fillEl.style.clipPath = relaxClipFor(p);
+        if (seg.markerEl) seg.markerEl.classList.toggle('is-done', p >= 1);
+      });
+    };
+
+    // Sayfa açılınca: her şeyi boşalt, sonra yukarıdan aşağıya güncel duruma
+    // kadar süpür. Süpürme süresi, doldurulacak toplam uzunlukla orantılıdır;
+    // her parça (daire/çizgi) kendi payı kadar gecikme + süreyle sırayla dolar.
+    const playRelaxIntro = (delayMs = 0) => {
+      clearTimeout(relaxIntroTimer);
+      if (!relaxSegments.length) { relaxIntroPlaying = false; return; }
+      if (relaxPrefersReducedMotion()) { applyRelaxProgress('instant'); return; }
+
+      relaxIntroPlaying = true;
+      relaxSegments.forEach((seg) => {
+        seg.fillEl.style.transition = 'none';
+        seg.fillEl.style.clipPath = relaxClipFor(0);
+        if (seg.markerEl) seg.markerEl.classList.remove('is-done');
+      });
+      void (tasksListEl && tasksListEl.offsetWidth); // reflow: başlangıç durumu kesinleşsin
+
+      const sweep = () => {
+        const now = Date.now();
+        const items = relaxSegments.map((seg) => ({ seg, p: relaxRangeProgress(now, seg.from, seg.to) }));
+        const total = items.reduce((sum, it) => sum + it.seg.len * it.p, 0);
+        if (total <= 0) { relaxIntroPlaying = false; return; }
+
+        const dur = Math.min(RELAX_INTRO_MAX_MS, Math.max(RELAX_INTRO_MIN_MS, (total / RELAX_INTRO_SPEED) * 1000));
+        let cum = 0;
+        items.forEach(({ seg, p }) => {
+          const part = seg.len * p;
+          if (part <= 0) return;
+          const delay = (cum / total) * dur;
+          const d = (part / total) * dur;
+          seg.fillEl.style.transition = `clip-path ${d.toFixed(0)}ms linear ${delay.toFixed(0)}ms`;
+          seg.fillEl.style.clipPath = relaxClipFor(p);
+          cum += part;
+        });
+        relaxIntroTimer = setTimeout(() => {
+          relaxIntroPlaying = false;
+          applyRelaxProgress('tick');
+        }, dur + 60);
+      };
+
+      if (delayMs > 0) relaxIntroTimer = setTimeout(sweep, delayMs);
+      else sweep();
+    };
+
+    const relaxTick = () => {
+      if (relaxIntroPlaying || document.hidden) return;
+      applyRelaxProgress('tick');
+    };
+    const startRelaxTicker = () => {
+      if (!relaxTickTimer) relaxTickTimer = setInterval(relaxTick, RELAX_TICK_MS);
+    };
+    const stopRelaxTicker = () => {
+      if (relaxTickTimer) { clearInterval(relaxTickTimer); relaxTickTimer = null; }
+    };
+
+    // Ardışık iki işaretçi arasına (piksel bazlı, gerçek layout ölçümüyle) bir
+    // çizgi çizer. İşaretçiler artık içi boş/şeffaf başladığından çizgi,
+    // dairenin ALT kenarından çıkıp bir sonrakinin ÜST kenarına girer (1px
+    // binme, halkanın altında gizli kalır). Aynı ölçüm, ilerleme motorunun
+    // kullandığı segment listesini (daire + çizgi zinciri) de kurar.
+    const drawRelaxTaskConnectors = (markerRefs) => {
+      if (!tasksConnectorsEl || !tasksListEl) return;
+      tasksConnectorsEl.innerHTML = '';
+      relaxSegments = [];
+      if (!markerRefs || !markerRefs.length) return;
+
+      const containerRect = tasksListEl.getBoundingClientRect();
+      for (let i = 0; i < markerRefs.length; i += 1) {
+        const a = markerRefs[i];
+        const rectA = a.el.getBoundingClientRect();
+        relaxSegments.push({ fillEl: a.fillEl, markerEl: a.el, len: rectA.height, from: a.startMs, to: a.endMs });
+
+        const b = markerRefs[i + 1];
+        if (!b) break;
+        const rectB = b.el.getBoundingClientRect();
+        const centerXA = rectA.left + rectA.width / 2 - containerRect.left;
+        const centerYA = rectA.top + rectA.height / 2 - containerRect.top;
+        const centerXB = rectB.left + rectB.width / 2 - containerRect.left;
+        const centerYB = rectB.top + rectB.height / 2 - containerRect.top;
+
+        const yStart = centerYA + rectA.height / 2 - 1;
+        const yEnd = centerYB - rectB.height / 2 + 1;
+        const height = yEnd - yStart;
+        if (height <= 0) continue;
+
+        // Bir görevin renginden bir sonrakinin rengine yumuşak geçiş.
+        const gradient = `linear-gradient(to bottom, ${a.color}, ${b.color})`;
+
+        const line = document.createElement('div');
+        line.className = 'relax-task-connector-line';
+        line.style.left = `${((centerXA + centerXB) / 2) - (RELAX_CONNECTOR_WIDTH / 2)}px`;
+        line.style.top = `${yStart}px`;
+        line.style.height = `${height}px`;
+
+        const track = document.createElement('span');
+        track.className = 'relax-task-connector-track';
+        track.style.background = gradient;
+        const fill = document.createElement('span');
+        fill.className = 'relax-task-connector-fill';
+        fill.style.background = gradient;
+        line.appendChild(track);
+        line.appendChild(fill);
+        tasksConnectorsEl.appendChild(line);
+
+        // Çizgi, görev i bitince başlar; görev i+1 başlayınca tamamen dolmuş olur.
+        relaxSegments.push({ fillEl: fill, len: height, from: a.endMs, to: Math.max(b.startMs, a.endMs) });
+      }
+      applyRelaxProgress('instant');
+    };
+
+    const renderRelaxTasksList = (introDelayMs = 0) => {
+      if (!tasksListEl || !tasksItemsEl) return;
+      const dateStr = getSelectedRelaxDateStr();
+      const byDate = getRelaxTasksByDate();
+      const tasks = (Array.isArray(byDate[dateStr]) ? byDate[dateStr].slice() : [])
+        // Başlangıç saatine göre yukarıdan aşağıya sırala.
+        .sort((a, b) => (a.start || '').localeCompare(b.start || ''));
+
+      tasksItemsEl.innerHTML = '';
+      relaxLastMarkerRefs = [];
+      relaxSegments = [];
+      clearTimeout(relaxIntroTimer);
+      relaxIntroPlaying = false;
+
+      if (!tasks.length) {
+        const empty = document.createElement('div');
+        empty.className = 'relax-tasks-empty';
+        empty.textContent = 'Bu gün için henüz görev eklenmedi';
+        tasksItemsEl.appendChild(empty);
+        if (tasksConnectorsEl) tasksConnectorsEl.innerHTML = '';
+        return;
+      }
+
+      const markerRefs = [];
+
+      tasks.forEach((task) => {
+        const icon = findTaskAddIcon(task.icon);
+        const markerColor = task.color || 'var(--accent-color, #ff90e8)';
+        const markerTextColor = task.color ? getReadableTextColor(task.color) : '#16171b';
+        const range = relaxTaskRangeMs(task, dateStr);
+
+        const item = document.createElement('div');
+        item.className = 'relax-task-item';
+
+        const rail = document.createElement('div');
+        rail.className = 'relax-task-rail';
+
+        // Boş katman (halka + renkli ikon) + üstünde zamanla açılan dolu katman.
+        const marker = document.createElement('span');
+        marker.className = 'relax-task-marker';
+        marker.style.setProperty('--mk-color', markerColor);
+        marker.style.setProperty('--mk-on', markerTextColor);
+        const iconSvg = `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" aria-hidden="true">${icon.svg}</svg>`;
+        marker.innerHTML = `${iconSvg}<span class="relax-task-marker-fill" aria-hidden="true">${iconSvg}</span>`;
+        rail.appendChild(marker);
+        markerRefs.push({
+          el: marker,
+          fillEl: marker.querySelector('.relax-task-marker-fill'),
+          color: markerColor,
+          startMs: range.startMs,
+          endMs: range.endMs,
+        });
+
+        const content = document.createElement('div');
+        content.className = 'relax-task-content';
+        const topRow = document.createElement('div');
+        topRow.className = 'relax-task-top-row';
+        const nameEl = document.createElement('span');
+        nameEl.className = 'relax-task-name';
+        nameEl.textContent = task.name || '';
+        const timeEl = document.createElement('span');
+        timeEl.className = 'relax-task-time';
+        timeEl.textContent = (task.start && task.end) ? `${task.start} – ${task.end}` : '';
+        topRow.appendChild(nameEl);
+        topRow.appendChild(timeEl);
+        content.appendChild(topRow);
+
+        item.appendChild(rail);
+        item.appendChild(content);
+        tasksItemsEl.appendChild(item);
+      });
+
+      relaxLastMarkerRefs = markerRefs;
+      // Öğeler DOM'a eklendikten SONRA, gerçek (ölçülmüş) konumlarına göre çizilir;
+      // bu adım ilerlemeyi de anında doğru duruma getirir.
+      drawRelaxTaskConnectors(markerRefs);
+      // Sayfa şu an görünürse boştan güncel duruma yukarıdan aşağıya süpür.
+      if (isRelaxPageActive()) playRelaxIntro(introDelayMs);
+    };
+
+    const addRelaxTask = (task) => {
+      const byDate = getRelaxTasksByDate();
+      const dayList = Array.isArray(byDate[task.date]) ? byDate[task.date].slice() : [];
+      dayList.push(Object.assign({
+        id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+      }, task));
+      byDate[task.date] = dayList;
+      saveAppState({ [RELAX_TASKS_STATE_KEY]: byDate });
+    };
+
+    // Hafta şeridinde farklı bir gün seçildiğinde listeyi o güne göre tazele.
+    document.addEventListener('relax:date-changed', () => renderRelaxTasksList());
+
+    // Pencere boyutu/yönü değişince (ör. döndürme) çizgileri yeni
+    // ölçülere göre yeniden çiz; liste zaten yeniden oluşturulmadığı için
+    // sadece ölçüm tazelenir.
+    let relaxConnectorResizeTimer = null;
+    window.addEventListener('resize', () => {
+      if (relaxConnectorResizeTimer) clearTimeout(relaxConnectorResizeTimer);
+      relaxConnectorResizeTimer = setTimeout(() => drawRelaxTaskConnectors(relaxLastMarkerRefs), 120);
+    });
+
+    // Yazı tipi (Baloo 2) geç yüklenirse satır yükseklikleri kayabilir;
+    // font hazır olunca ölçümü bir kez tazele.
+    if (window.document.fonts && window.document.fonts.ready) {
+      window.document.fonts.ready.then(() => drawRelaxTaskConnectors(relaxLastMarkerRefs)).catch(() => {});
+    }
+
+    saveBtn.addEventListener('click', () => {
+      const name = nameInput.value.trim();
+      if (!name) {
+        // Ad boşsa kaydetme; alanı salla ve odakla.
+        nameWrap.classList.remove('is-shaking');
+        void nameWrap.offsetWidth; // animasyonu yeniden başlat
+        nameWrap.classList.add('is-shaking');
+        nameInput.focus({ preventScroll: true });
+        return;
+      }
+      const startMin = selectedIndex * STEP;
+      const newTask = {
+        name,
+        icon: selectedIconId,
+        color: selectedColor,
+        date: ymd(selectedDate),
+        start: fmt(startMin),
+        end: fmt(startMin + durationMin),
+        durationMinutes: durationMin,
+      };
+      // Görev APP_STATE'e (localStorage) kaydedilir; ayrıca ileride başka
+      // bir bileşenin dinleyebilmesi için aynı olay da yayınlanmaya devam eder.
+      addRelaxTask(newTask);
+      document.dispatchEvent(new CustomEvent('task-add:save', { detail: newTask }));
+      renderRelaxTasksList(320); // "Yeni Aktivite" sayfası kapanırken süpürme biraz gecikmeli başlar
+      closeTaskAddOverlay();
+    });
+
+    // ---------- Rahatla sayfası açılınca canlı ilerlemeyi başlat ----------
+    // Sayfa (goToPage ile) aktif olunca: dolguyu boştan güncel saate kadar
+    // süpür ve saniyelik güncellemeyi başlat. Sayfadan çıkınca pil/CPU
+    // harcamamak için zamanlayıcıyı durdur.
+    if (relaxPageEl && 'MutationObserver' in window) {
+      let relaxWasActive = isRelaxPageActive();
+      new MutationObserver(() => {
+        const active = isRelaxPageActive();
+        if (active === relaxWasActive) return;
+        relaxWasActive = active;
+        if (active) {
+          playRelaxIntro(150); // sayfa geçiş animasyonu bitsin
+          startRelaxTicker();
+        } else {
+          stopRelaxTicker();
+          clearTimeout(relaxIntroTimer);
+          relaxIntroPlaying = false;
+        }
+      }).observe(relaxPageEl, { attributes: true, attributeFilter: ['class'] });
+    }
+
+    // Uygulama arka plandan dönünce (saat ilerlemiş olabilir) hemen eşitle.
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden && isRelaxPageActive() && !relaxIntroPlaying) applyRelaxProgress('tick');
+    });
+
+    renderRelaxTasksList();
+  })();
 </script>
 
 <script>
