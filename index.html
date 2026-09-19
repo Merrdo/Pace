@@ -28286,6 +28286,39 @@
     });
     window.addEventListener('pageshow', nudgeAllVisibleScrollables);
     window.addEventListener('focus', nudgeAllVisibleScrollables);
+
+    // ---- ÜÇÜNCÜ, EN KRİTİK katman: yukarıdaki iki katman (mutasyon +
+    // periyodik tazeleme) donmayı ancak GERİYE DÖNÜK, en fazla 1.5 saniye
+    // gecikmeyle yakalıyor. Kullanıcı tam donmanın olduğu anda parmağını
+    // bastığında bu gecikme "hiç tepki vermiyor" hissi yaratmaya yetiyor.
+    // Bu yüzden asıl düzeltmeyi, dokunuşun/tekerleğin BAŞLADIĞI ANDA,
+    // SENKRON olarak (bir sonraki karede değil, hemen şimdi) yapıyoruz:
+    // parmak/işaretçi bir kaydırma kutusuna değdiği anda o kutunun
+    // overflow durumunu anında zorla tazeliyoruz, böylece iOS'un dokunuşu
+    // "kaydırılamaz" olarak yanlış değerlendirmiş olma ihtimaline karşı
+    // her jest kendi başına garantiye alınmış oluyor. requestAnimationFrame
+    // yerine senkron reflow (offsetHeight okuma) kullanılıyor ki tazeleme
+    // jest başlamadan önce kesin olarak tamamlanmış olsun.
+    const nudgeSync = (el) => {
+      const prev = el.style.overflowY;
+      el.style.overflowY = 'hidden';
+      // offsetHeight okumak tarayıcıyı senkron reflow yapmaya zorlar;
+      // böylece bir sonraki karede değil, HEMEN şimdi tazelenmiş olur.
+      void el.offsetHeight;
+      el.style.overflowY = prev;
+    };
+
+    const nudgeOnGestureStart = (e) => {
+      const scrollable = findScrollableAncestor(e.target);
+      if (scrollable) nudgeSync(scrollable);
+    };
+
+    // passive: true -> preventDefault çağrılmadığından tarayıcının kendi
+    // dokunma/kaydırma davranışını hiçbir şekilde geciktirmez ya da
+    // engellemez, sadece tazeleme işlemini tetikler.
+    document.addEventListener('touchstart', nudgeOnGestureStart, { passive: true, capture: true });
+    document.addEventListener('pointerdown', nudgeOnGestureStart, { passive: true, capture: true });
+    document.addEventListener('wheel', nudgeOnGestureStart, { passive: true, capture: true });
   })();
 
   (function () {
