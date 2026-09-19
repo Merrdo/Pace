@@ -1887,10 +1887,43 @@
     overscroll-behavior: contain;
   }
 
-  /* Geri butonu artık yok: üst çubukta tek eleman (başlık) kaldığından,
-     onu ortalamak için bu sayfaya özel justify-content:center. */
+  /* Üst çubuk: solda standart geri butonu, ortada başlık, sağda aynı
+     boyutta boş bir dengeleme kutusu (.calendar-topbar-spacer) — böylece
+     başlık geri butonuna rağmen tam ortada kalır. */
   #page-relax .calendar-topbar {
-    justify-content: center;
+    justify-content: space-between;
+  }
+
+  /* Geri butonu bu sayfanın sade diline uyar (Takvim sayfasındaki #page-6
+     ile aynı "hayalet" görünüm): beyaz zemin, siyah çerçeve ve katı gölge
+     yok; sadece tema yazı renginde bir ok. Basılınca yumuşak gri bir daire
+     belirir. Ok, tarih başlığıyla aynı sol hizada dursun diye buton sola
+     optik olarak kaydırılır; başlığın ortada kalması için sağdaki boş
+     dengeleme kutusuna aynı miktarda ters kaydırma verilir. */
+  #page-relax .calendar-back-btn {
+    margin-left: -10px;
+    background-color: transparent;
+    border: none;
+    box-shadow: none;
+    color: var(--theme-text, #f2f2f7);
+    transition: color 0.5s ease, background-color 0.15s ease, transform 0.15s ease;
+  }
+
+  #page-relax .calendar-topbar-spacer {
+    margin-right: -10px;
+  }
+
+  #page-relax .calendar-back-btn:hover {
+    transform: none;
+    box-shadow: none;
+    background-color: rgba(127, 127, 127, 0.14);
+  }
+
+  #page-relax .calendar-back-btn:active,
+  #page-relax .calendar-back-btn.is-pressed {
+    transform: scale(0.92);
+    box-shadow: none;
+    background-color: rgba(127, 127, 127, 0.22);
   }
 
   /* Minimalist hafta şeridi: üstte "19 Eylül 2026 ›" başlığı, altında
@@ -15910,7 +15943,13 @@
        geçilir; geri butonuyla Ana Sayfa'ya dönülür. -->
   <section class="page" id="page-relax">
     <div class="calendar-topbar">
+      <button type="button" class="calendar-back-btn" id="relaxBackBtn" aria-label="Geri dön">
+        <svg viewBox="0 0 24 24" width="18" height="18">
+          <path d="M15 4l-8 8 8 8" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
       <span class="calendar-topbar-title">Planlayıcı</span>
+      <div class="calendar-topbar-spacer"></div>
     </div>
 
     <!-- Minimalist hafta şeridi: gün adı + sayısı JS'te (renderRelaxCalendarWeek)
@@ -21448,11 +21487,20 @@
   // açılır, geri butonuyla Ana Sayfa'ya döner. Sayfa içeriği şimdilik boş.
   const openRelaxPage = () => {
     document.body.classList.add('is-calendar-open'); // nav bar'ı gizler
+    // Sayfa her açılışta en üstten başlasın (başlık + sabitlenmemiş takvim).
+    const relaxScrollEl = document.getElementById('page-relax');
+    if (relaxScrollEl) relaxScrollEl.scrollTop = 0;
     goToPage('page-relax');
   };
 
-  // Not: "Planyacı" sayfasında şimdilik geri dönüş yok — sayfa sadece
-  // ana sayfadaki widget'tan açılır, geri butonu/fonksiyonu kaldırıldı.
+  // Geri butonu: Takvim ile aynı şekilde nav bar'ı geri getirip Ana Sayfa'ya döner.
+  const closeRelaxPage = () => {
+    document.body.classList.remove('is-calendar-open');
+    goToPage('page-1');
+  };
+
+  const relaxBackBtn = document.getElementById('relaxBackBtn');
+  if (relaxBackBtn) relaxBackBtn.addEventListener('click', closeRelaxPage);
 
   // ---------- "Rahatla" sayfası: minimalist hafta şeridi ----------
   // Pazartesi başlangıçlı gün adları (HOME_WEEKDAYS_TR Pazar'dan başlıyor,
