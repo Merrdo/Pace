@@ -1713,12 +1713,13 @@
   .home-relax-widget {
     grid-column: 1 / -1;
     display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    gap: 1.1rem;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 1.3rem;
     width: 100%;
     min-height: clamp(7.5rem, 16dvh, 9.5rem);
-    padding: 1rem 1.1rem 1.15rem;
+    padding: 1.1rem 1.3rem;
     background-color: #fff;
     border: none;
     border-radius: 1.75rem;
@@ -1739,12 +1740,6 @@
     box-shadow: 0 8px 18px -12px rgba(0, 0, 0, 0.24), 0 1px 4px rgba(0, 0, 0, 0.05);
   }
 
-  .home-relax-widget-top {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-
   .home-relax-widget-moon {
     flex: none;
     width: 2.1rem;
@@ -1757,57 +1752,97 @@
     color: #000;
   }
 
-  /* Tamamlama dairesi: ince gri çerçeveli boş bir daire, diğer kartlardaki
-     vurgu rengini kullanır. İşaretlenince (.is-checked) içi vurgu
-     renkleriyle dolar ve bir onay işareti belirir; tıklaması kartın kendi
-     tıklamasından ayrı tutulur (bkz. JS: stopPropagation). */
-  .home-relax-widget-check {
-    flex: none;
-    width: 1.5rem;
-    height: 1.5rem;
-    border-radius: 50%;
-    border: 1.6px solid #d8d8dc;
-    background-color: transparent;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: background-color 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
-  }
-
-  .home-relax-widget-check svg {
-    opacity: 0;
-    transform: scale(0.6);
-    transition: opacity 0.15s ease, transform 0.15s ease;
-  }
-
-  .home-relax-widget-check.is-checked {
-    background-color: var(--accent-color, #ff90e8);
-    border-color: var(--accent-color, #ff90e8);
-    transform: scale(1.04);
-  }
-
-  .home-relax-widget-check.is-checked svg {
-    opacity: 1;
-    transform: scale(1);
-  }
-
+  /* Sağ taraf: yazı alanı (üstte küçük saat/durum, altında büyük görev adı). */
   .home-relax-widget-bottom {
+    flex: 1;
     display: flex;
     flex-direction: column;
-    gap: 0.15rem;
+    justify-content: center;
+    gap: 0.1rem;
+    min-width: 0;
   }
 
+  /* Yazılar Planyacı sayfasındaki görev satırıyla aynı yazı tipi (Baloo 2). */
   .home-relax-widget-time {
-    font-weight: 500;
-    font-size: 0.85rem;
+    font-family: "Baloo 2", "Space Grotesk", sans-serif;
+    font-weight: 600;
+    font-size: 0.88rem;
+    line-height: 1.2;
     color: #9a9a9a;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .home-relax-widget-title {
+    font-family: "Baloo 2", "Space Grotesk", sans-serif;
     font-weight: 700;
-    font-size: 1.15rem;
+    font-size: 1.6rem;
+    line-height: 1.15;
     color: #000;
+    overflow-wrap: anywhere;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+  }
+
+  /* ---- Canlı görev işaretçisi (Planyacı'daki .relax-task-marker ile aynı
+     dolum animasyonu; burada kart üzerinde durduğu için renkleri kart
+     rengine göre ayarlanır). ---- */
+  .home-relax-widget-lead {
+    position: relative;
+    display: flex;
+    --hw-line: #8a8a90;
+  }
+
+  /* Referanstaki gibi işaretçinin üstünden ve altından geçen ince çizgi. */
+  .home-relax-widget-lead::before,
+  .home-relax-widget-lead::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    width: 3px;
+    margin-left: -1.5px;
+    border-radius: 999px;
+    opacity: 0.32;
+    pointer-events: none;
+  }
+
+  .home-relax-widget-lead {
+    flex: none;
+  }
+
+  .home-relax-widget-lead::before {
+    bottom: calc(100% - 1px);
+    height: 1.1rem;
+    background: var(--hw-line);
+  }
+
+  .home-relax-widget-lead::after {
+    top: calc(100% - 1px);
+    height: 1.1rem;
+    background: linear-gradient(to bottom, var(--hw-line), transparent);
+  }
+
+  .home-relax-widget .relax-task-marker {
+    width: 3.6rem;
+    height: 3.6rem;
+    color: #000;
+  }
+
+  .home-relax-widget .relax-task-marker svg {
+    width: 21px;
+    height: 21px;
+  }
+
+  .home-relax-widget .relax-task-marker-letter {
+    font-size: 1.5rem;
+  }
+
+  .home-relax-widget .home-relax-widget-moon {
+    width: 3.6rem;
+    height: 3.6rem;
   }
 
   /* Anahtar (koyu mod) açıkken diğer ana sayfa kartlarıyla aynı antresit
@@ -1822,15 +1857,15 @@
     color: #f2f2f4;
   }
 
-  body.is-anthracite .home-relax-widget-check {
-    border-color: rgba(255, 255, 255, 0.35);
-  }
-
   body.is-anthracite .home-relax-widget-time {
     color: #a9a9ae;
   }
 
   body.is-anthracite .home-relax-widget-title {
+    color: #f2f2f4;
+  }
+
+  body.is-anthracite .home-relax-widget .relax-task-marker {
     color: #f2f2f4;
   }
 
@@ -2168,6 +2203,15 @@
     height: 19px;
   }
 
+  /* İkonsuz görevlerde ikon yerine adın baş harfi: görev adıyla (.relax-task-name)
+     aynı yazı tipi ve punto. */
+  .relax-task-marker-letter {
+    font-family: "Baloo 2", "Space Grotesk", sans-serif;
+    font-weight: 700;
+    font-size: 1.18rem;
+    line-height: 1;
+  }
+
   .relax-task-content {
     flex: 1;
     min-width: 0;
@@ -2216,6 +2260,10 @@
     --ta-accent: var(--accent-color, #ff90e8);
     --ta-color: var(--ta-accent);
     --ta-on-accent: #16171b;
+    /* --ta-bg: yalnızca yedek değer. Sayfa açılırken JS (syncThemeBase) bunu
+       uygulamanın O ANKİ tema arka plan rengiyle (themes[themeIndex].color)
+       geçersiz kılar; böylece bu sayfa kart renginde değil, uygulamanın
+       arka planında görünür. */
     --ta-bg: #f6f4ef;
     --ta-card: #ffffff;
     --ta-track: rgba(22, 23, 27, 0.07);
@@ -2226,10 +2274,14 @@
     /* Üst blok renkleri: varsayılan sade görünüm; renk seçilince JS bunları
        seçilen renge (ve okunur yazı rengine) göre geçersiz kılar. */
     --ta-head-bg: transparent;
-    --ta-head-fg: var(--ta-text);
-    --ta-head-muted: var(--ta-muted);
+    /* Sayfa düzeyindeki (kart dışı) yazılar uygulamanın tema metin rengini
+       izler (--ta-page-*, JS'ten gelir); yedek olarak kart yazı renkleri. */
+    --ta-head-fg: var(--ta-page-fg, var(--ta-text));
+    --ta-head-muted: var(--ta-page-muted, var(--ta-muted));
     --ta-head-chip: var(--ta-chip);
-    --ta-head-line: var(--ta-line);
+    --ta-head-line: var(--ta-page-line, var(--ta-line));
+    /* "İptal" hapı kart renginde durur; yazısı kart yazı rengindedir. */
+    --ta-cancel-fg: var(--ta-text);
     --ta-ring: var(--ta-color);
     --ta-ring-fill: var(--ta-bg);
     --ta-glow: 0.32;
@@ -2289,6 +2341,7 @@
     --ta-ring-fill: var(--ta-head-chip);
     --ta-glow: 0;
     --ta-underline-op: 0.75;
+    --ta-cancel-fg: var(--ta-head-fg);
   }
 
   .task-add-overlay.has-color .task-add-cancel-btn {
@@ -2314,7 +2367,7 @@
     border: none;
     border-radius: 999px;
     box-shadow: 0 8px 18px -12px rgba(0, 0, 0, 0.3), 0 1px 4px rgba(0, 0, 0, 0.05);
-    color: var(--ta-head-fg);
+    color: var(--ta-cancel-fg);
     font-family: var(--ta-title-font);
     font-weight: 700;
     font-size: 0.95rem;
@@ -2401,6 +2454,25 @@
     transform: scale(0.94);
   }
 
+  /* İkon "Boş" seçilince halkada ikon yerine görev adının baş harfi görünür.
+     Punto/yazı tipi, görev adı alanıyla (.task-add-name-input) birebir aynıdır. */
+  .task-add-ring-letter {
+    display: none;
+    font-family: var(--ta-title-font);
+    font-weight: 800;
+    font-size: 1.55rem;
+    line-height: 1;
+    color: currentColor;
+  }
+
+  .task-add-ring.is-letter .task-add-ring-letter {
+    display: block;
+  }
+
+  .task-add-ring.is-letter svg {
+    display: none;
+  }
+
   .task-add-head-main {
     flex: 1;
     min-width: 0;
@@ -2460,6 +2532,35 @@
   .task-add-name-input::placeholder {
     color: var(--ta-head-muted);
     opacity: 0.8;
+    transition: color 0.25s ease, opacity 0.25s ease;
+  }
+
+  /* İkon "Boş" seçilip ad henüz yokken: soluk "Görev adı" yazısı kırmızı
+     parlayıp hafifçe tepki verir (klavye açılmaz). */
+  /* Parıltı ::placeholder'a text-shadow ile DEĞİL, elemanın kendisine
+     drop-shadow filtresiyle verilir: iOS'ta placeholder text-shadow'u
+     dikdörtgen bir "kutu izi" bırakıyordu; drop-shadow ise yalnızca
+     harflerin şeklini izler. */
+  .task-add-name-input {
+    transition: filter 0.25s ease;
+  }
+
+  .task-add-name-wrap.is-nudging .task-add-name-input {
+    transform-origin: left center;
+    animation: task-add-nudge 0.55s ease;
+    filter: drop-shadow(0 0 5px rgba(255, 59, 48, 0.85)) drop-shadow(0 0 12px rgba(255, 59, 48, 0.5));
+  }
+
+  .task-add-name-wrap.is-nudging .task-add-name-input::placeholder {
+    color: #ff3b30;
+    opacity: 1;
+  }
+
+  @keyframes task-add-nudge {
+    0%, 100% { transform: translateX(0) scale(1); }
+    25% { transform: translateX(-3px) scale(1.03); }
+    50% { transform: translateX(3px) scale(1.03); }
+    75% { transform: translateX(-2px) scale(1.01); }
   }
 
   /* ---------- Adım adım akış: İkon → Renk → Zaman ----------
@@ -2569,6 +2670,32 @@
 
   .task-add-color-swatch.is-selected .task-add-color-swatch-check {
     opacity: 1;
+  }
+
+  /* "Boş" seçeneği (ikon ve renk): üstü çizili daire. */
+  .task-add-color-swatch--empty {
+    background: var(--ta-track);
+    color: var(--ta-text);
+    --task-swatch-color: var(--ta-text);
+  }
+
+  .task-add-color-swatch--empty svg {
+    display: block;
+  }
+
+  /* Ad girmeye yönlendiren ipucu (ikon "Boş" seçilip ad henüz yokken). */
+  .task-add-hint {
+    display: none;
+    margin-top: 0.85rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    line-height: 1.35;
+    color: var(--ta-muted);
+  }
+
+  .task-add-hint.is-visible {
+    display: block;
+    animation: task-add-step-in 0.3s cubic-bezier(0.19, 1, 0.22, 1);
   }
 
   /* ---------- Kaydırılabilir gövde ---------- */
@@ -15663,21 +15790,21 @@
            basılınca sadece işaretlenir (görsel), kartın geri kalanına
            basılınca boş bir sayfaya (#page-relax) geçilir. -->
       <button type="button" class="home-relax-widget" id="homeRelaxWidget" aria-label="Rahatla'ya git">
-        <span class="home-relax-widget-top">
-          <span class="home-relax-widget-moon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" width="16" height="16">
-              <path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5Z" fill="currentColor"/>
-            </svg>
-          </span>
-          <span class="home-relax-widget-check" id="homeRelaxWidgetCheck" role="checkbox" aria-checked="false" aria-label="Tamamlandı olarak işaretle">
-            <svg viewBox="0 0 24 24" width="12" height="12">
-              <path d="M4 12.5l5 5L20 6.5" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
+        <!-- Sol: canlı işaretçi (JS: syncHomeRelaxWidget) — şu an süren ya da en yakın
+             sonraki görevin dolum animasyonu; görev yoksa ay ikonu. Üstteki/alttaki
+             ince çizgiler Planyacı'daki zaman çizgisini anımsatır. Sağ: yazılar. -->
+        <span class="home-relax-widget-lead" id="homeRelaxWidgetLead">
+          <span id="homeRelaxWidgetSlot">
+            <span class="home-relax-widget-moon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="22" height="22">
+                <path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5Z" fill="currentColor"/>
+              </svg>
+            </span>
           </span>
         </span>
         <span class="home-relax-widget-bottom">
-          <span class="home-relax-widget-time">22:00</span>
-          <span class="home-relax-widget-title">Rahatla</span>
+          <span class="home-relax-widget-time" id="homeRelaxWidgetTime">Yaklaşan görev yok</span>
+          <span class="home-relax-widget-title" id="homeRelaxWidgetTitle">Rahatla</span>
         </span>
       </button>
 
@@ -15800,6 +15927,8 @@
             <!-- İkon halkası: basınca akış başa, "İkon" adımına döner -->
             <button type="button" class="task-add-ring" id="taskAddIconBtn" aria-label="İkonu değiştir">
               <svg id="taskAddIconMain" viewBox="0 0 24 24" width="30" height="30"></svg>
+              <!-- İkon "Boş" seçilince ikonun yerine adın baş harfi gösterilir -->
+              <span class="task-add-ring-letter" id="taskAddIconLetter" aria-hidden="true"></span>
             </button>
 
             <div class="task-add-head-main">
@@ -15818,6 +15947,7 @@
           <div class="task-add-card">
             <h3 class="task-add-card-title">İkon seç</h3>
             <div class="task-add-icon-row" id="taskAddIconRow"></div>
+            <p class="task-add-hint" id="taskAddIconHint">İkon yerine görev adının baş harfi kullanılacak. Devam etmek için yukarıya görev adını yaz.</p>
           </div>
         </div>
 
@@ -18225,20 +18355,9 @@
   }
 
   // ---------- Ana sayfa: "Rahatla" widget'ı ----------
-  // Daireye (homeRelaxWidgetCheck) basınca sadece görsel olarak işaretlenir
-  // (şimdilik hiçbir veri kaydedilmiyor); bu tıklama stopPropagation ile
-  // kartın kendi tıklamasına ulaşmaz. Kartın geri kalanına basılınca boş
-  // "Rahatla" sayfası açılır.
+  // Karta basılınca Planyacı ("Rahatla") sayfası açılır. İçerik canlı olarak
+  // Planyacı script bloğundaki syncHomeRelaxWidget tarafından doldurulur.
   const homeRelaxWidgetEl = document.getElementById('homeRelaxWidget');
-  const homeRelaxWidgetCheckEl = document.getElementById('homeRelaxWidgetCheck');
-
-  if (homeRelaxWidgetCheckEl) {
-    homeRelaxWidgetCheckEl.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const isChecked = homeRelaxWidgetCheckEl.classList.toggle('is-checked');
-      homeRelaxWidgetCheckEl.setAttribute('aria-checked', isChecked ? 'true' : 'false');
-    });
-  }
 
   if (homeRelaxWidgetEl) {
     homeRelaxWidgetEl.addEventListener('click', () => {
@@ -21422,6 +21541,8 @@
     const nameWrap = $('taskAddNameWrap');
     const iconBtn = $('taskAddIconBtn');
     const iconMainSvg = $('taskAddIconMain');
+    const letterEl = $('taskAddIconLetter');
+    const hintEl = $('taskAddIconHint');
     const stepEls = overlay.querySelectorAll('.task-add-step');
     const scrollEl = overlay.querySelector('.task-add-scroll');
     const iconRow = $('taskAddIconRow');
@@ -21453,6 +21574,14 @@
     const DAYS_SHORT_TR = ['Paz', 'Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt']; // getDay(): 0=Paz
     const ymd = (d) => `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
     const startOfDay = (d) => { const x = new Date(d); x.setHours(0, 0, 0, 0); return x; };
+    // İkonsuz görevlerde ikon yerine geçen baş harf (Türkçe büyük harf kurallarıyla: i → İ).
+    const taskInitial = (name) => {
+      const first = Array.from(String(name || '').trim())[0];
+      return first ? first.toLocaleUpperCase('tr-TR') : '';
+    };
+    const escapeHtml = (str) => String(str).replace(/[&<>"']/g, (c) => (
+      { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
+    ));
 
     // ---------------- Durum ----------------
     const STEP = 15;                    // çark adımı (dk)
@@ -21466,7 +21595,9 @@
     let selectedIndex = 0;
     let durationMin = DEFAULT_DURATION;
     let currentStep = 'icon';           // 'icon' → 'color' → 'time'
-    let iconChosen = false;             // bu oturumda bir ikon seçildi mi
+    let iconChosen = false;             // bu oturumda bir ikon (ya da "Boş") seçildi mi
+    let iconEmpty = false;              // "Boş" ikon: halkada adın baş harfi görünür
+    let colorChosen = false;            // renk adımında bir renk (ya da "Boş") seçildi mi
 
     // "14:30" biçimi (gün taşarsa 24 saate sarar)
     const fmt = (min) => {
@@ -21480,9 +21611,28 @@
     // mark=false: halkada varsayılan ikon görünür ama menüde "seçilmiş" işaretlenmez.
     const applyIcon = (icon, mark = true) => {
       selectedIconId = icon.id;
+      iconEmpty = false;
       iconMainSvg.innerHTML = icon.svg;
+      renderRing();
       iconRow.querySelectorAll('.task-add-icon-btn').forEach((el) => {
         el.classList.toggle('is-selected', mark && el.dataset.id === icon.id);
+      });
+    };
+
+    // Halka: ikon ya da (ikon "Boş" ise) adın baş harfi. Ad her değiştiğinde
+    // (yazarken de, sonradan düzenlerken de) harf anında güncellenir.
+    function renderRing() {
+      iconBtn.classList.toggle('is-letter', iconEmpty);
+      letterEl.textContent = iconEmpty ? taskInitial(nameInput.value) : '';
+    }
+
+    // "Boş" ikon: kaydedilen görevde icon = '' olur ve ikon yerine baş harf çizilir.
+    const applyEmptyIcon = () => {
+      selectedIconId = '';
+      iconEmpty = true;
+      renderRing();
+      iconRow.querySelectorAll('.task-add-icon-btn').forEach((el) => {
+        el.classList.toggle('is-selected', el.dataset.id === EMPTY_ID);
       });
     };
 
@@ -21527,8 +21677,9 @@
       if (themeMeta) themeMeta.setAttribute('content', color);
     };
 
-    const applyColor = (color) => {
+    const applyColor = (color, chosen = true) => {
       selectedColor = color;
+      colorChosen = chosen;
       applyHeadTint(color);
       if (color) {
         overlay.style.setProperty('--ta-color', color);
@@ -21538,10 +21689,44 @@
       colorRow.querySelectorAll('.task-add-color-swatch').forEach((el) => {
         el.classList.toggle('is-selected', !!color && el.dataset.color === color);
       });
+      // "Boş" renk: seçili sayılır ama görünüm olduğu gibi (varsayılan) kalır.
+      const emptySwatch = colorRow.querySelector('.task-add-color-swatch--empty');
+      if (emptySwatch) emptySwatch.classList.toggle('is-selected', chosen && !color);
+    };
+
+    const EMPTY_ID = '__empty';
+    const EMPTY_SVG = '<circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="1.8"/><line x1="6.4" y1="17.6" x2="17.6" y2="6.4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>';
+
+    // Ad girmeye yönlendirir: klavye AÇILMAZ; soluk "Görev adı" yazısı kırmızı
+    // parlayıp hafifçe tepki verir (ipucu metni de görünür).
+    let nudgeTimer = null;
+    const promptForName = () => {
+      nameWrap.classList.remove('is-nudging');
+      void nameWrap.offsetWidth; // animasyonu yeniden başlat
+      nameWrap.classList.add('is-nudging');
+      clearTimeout(nudgeTimer);
+      nudgeTimer = setTimeout(() => nameWrap.classList.remove('is-nudging'), 1300);
     };
 
     const renderIcons = () => {
       if (iconRow.childElementCount) return;
+
+      // "Boş" seçeneği (en başta): ikon yerine adın baş harfi kullanılır.
+      const emptyBtn = document.createElement('button');
+      emptyBtn.type = 'button';
+      emptyBtn.className = 'task-add-icon-btn task-add-icon-btn--empty';
+      emptyBtn.dataset.id = EMPTY_ID;
+      emptyBtn.setAttribute('aria-label', 'Boş (ikon yerine adın baş harfi)');
+      emptyBtn.innerHTML = `<svg viewBox="0 0 24 24" width="24" height="24">${EMPTY_SVG}</svg>`;
+      emptyBtn.addEventListener('click', () => {
+        applyEmptyIcon();
+        iconChosen = true;
+        updateReady();
+        // Harf addan geleceği için ad henüz yoksa göz kırpıp yönlendir.
+        if (!nameInput.value.trim()) promptForName();
+      });
+      iconRow.appendChild(emptyBtn);
+
       TASK_ADD_ICONS.forEach((icon) => {
         const btn = document.createElement('button');
         btn.type = 'button';
@@ -21563,6 +21748,18 @@
       const palette = (typeof WHEEL_PALETTE !== 'undefined' && WHEEL_PALETTE.length)
         ? WHEEL_PALETTE
         : ['#ff90e8', '#ffd23f', '#6ec6ff', '#ff5c5c', '#8fe3a0', '#c9a6ff'];
+      // "Boş" seçeneği (en başta): renk seçilmez, olduğu gibi kalır; sadece "Sürdür" belirir.
+      const emptySwatch = document.createElement('button');
+      emptySwatch.type = 'button';
+      emptySwatch.className = 'task-add-color-swatch task-add-color-swatch--empty';
+      emptySwatch.setAttribute('aria-label', 'Boş (renk seçme)');
+      emptySwatch.innerHTML = `<svg viewBox="0 0 24 24" width="22" height="22">${EMPTY_SVG}</svg>`;
+      emptySwatch.addEventListener('click', () => {
+        applyColor(null);
+        updateReady();
+      });
+      colorRow.appendChild(emptySwatch);
+
       palette.forEach((color) => {
         const swatch = document.createElement('button');
         swatch.type = 'button';
@@ -21585,10 +21782,21 @@
     // Üstteki ikon halkasına basmak akışı tekrar "İkon" adımına döndürür.
     // "Sürdür" butonu: İkon adımında bir ikon, Renk adımında bir renk
     // seçilmişse görünür (CSS: [data-ready="1"]).
+    // İkon "Boş" ise baş harf addan geleceği için, ad girilene kadar "Sürdür" belirmez.
+    const nameFilled = () => nameInput.value.trim().length > 0;
     const updateReady = () => {
-      const ready = (currentStep === 'icon' && iconChosen) || (currentStep === 'color' && !!selectedColor);
+      let ready = false;
+      if (currentStep === 'icon') ready = iconChosen && (!iconEmpty || nameFilled());
+      else if (currentStep === 'color') ready = colorChosen;
       overlay.dataset.ready = ready ? '1' : '0';
+      hintEl.classList.toggle('is-visible', currentStep === 'icon' && iconEmpty && !nameFilled());
     };
+
+    // Ad değişince: halkadaki harf güncellenir, "Sürdür" görünürlüğü yeniden hesaplanır.
+    nameInput.addEventListener('input', () => {
+      renderRing();
+      updateReady();
+    });
 
     const goToStep = (step) => {
       currentStep = step;
@@ -21745,7 +21953,27 @@
     // ---------------- Aç / kapat / kaydet ----------------
     // Her açılışta form sıfırlanır: İptal = vazgeç. Tarih, Planyacı hafta
     // şeridinde seçili gün varsa o gündür; yoksa bugün.
+    // Sayfa arka planı = uygulamanın o anki tema arka planı (kart rengi değil).
+    // Kart dışı yazılar da tema metin rengini izler (koyu temada açık, açık temada koyu).
+    const syncThemeBase = () => {
+      let theme = null;
+      try {
+        if (typeof themes !== 'undefined' && typeof themeIndex !== 'undefined') theme = themes[themeIndex];
+      } catch (e) { /* yoksay */ }
+      if (!theme) return;
+      const { r, g, b } = hexToRgb(theme.text);
+      overlay.style.setProperty('--ta-bg', theme.color);
+      overlay.style.setProperty('--ta-page-fg', theme.text);
+      overlay.style.setProperty('--ta-page-muted', `rgba(${r}, ${g}, ${b}, 0.55)`);
+      overlay.style.setProperty('--ta-page-line', `rgba(${r}, ${g}, ${b}, 0.12)`);
+      // Uygulama arka planında desen varsa onu da aynen taşı.
+      const patternEl = document.getElementById('patternLayer');
+      overlay.style.backgroundImage = patternEl ? patternEl.style.backgroundImage : '';
+      overlay.style.backgroundSize = patternEl ? patternEl.style.backgroundSize : '';
+    };
+
     const prepareForm = () => {
+      syncThemeBase();
       renderIcons();
       renderColors();
       renderDurations();
@@ -21754,8 +21982,9 @@
 
       nameInput.value = '';
       iconChosen = false;
+      iconEmpty = false;
       applyIcon(TASK_ADD_ICONS[0], false);
-      applyColor(null);
+      applyColor(null, false);
       goToStep('icon');
 
       const cell = document.querySelector('#relaxCalendarWeek .relax-calendar-day-cell.is-selected');
@@ -22046,7 +22275,12 @@
         marker.className = 'relax-task-marker';
         marker.style.setProperty('--mk-color', markerColor);
         marker.style.setProperty('--mk-on', markerTextColor);
-        const iconSvg = `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" aria-hidden="true">${icon.svg}</svg>`;
+        // icon === '' (ya da null): ikonsuz görev → ikon yerine adın baş harfi. Harf her
+        // çizimde görev adından türetildiği için ad değişirse harf de kendiliğinden değişir.
+        const isLetterTask = task.icon === '' || task.icon === null;
+        const iconSvg = isLetterTask
+          ? `<span class="relax-task-marker-letter" aria-hidden="true">${escapeHtml(taskInitial(task.name))}</span>`
+          : `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" aria-hidden="true">${icon.svg}</svg>`;
         marker.innerHTML = `${iconSvg}<span class="relax-task-marker-fill" aria-hidden="true">${iconSvg}</span>`;
         rail.appendChild(marker);
         markerRefs.push({
@@ -22137,6 +22371,7 @@
       addRelaxTask(newTask);
       document.dispatchEvent(new CustomEvent('task-add:save', { detail: newTask }));
       renderRelaxTasksList(320); // "Yeni Aktivite" sayfası kapanırken süpürme biraz gecikmeli başlar
+      syncHomeRelaxWidget();     // ana sayfadaki canlı widget da yeni görevi hemen görsün
       closeTaskAddOverlay();
     });
 
@@ -22167,6 +22402,181 @@
     });
 
     renderRelaxTasksList();
+
+    // ---------- Ana sayfa: canlı "Rahatla" widget'ı ----------
+    // Şu an süren bir görev varsa (başlangıç ≤ şimdi < bitiş) o gösterilir ve
+    // işaretçisi Planyacı sayfasındaki gibi yukarıdan aşağıya dolar; yoksa en
+    // yakın sonraki görev (boş halka) gösterilir; hiç görev yoksa ay ikonlu
+    // varsayılan görünüm kalır. Tüm günler taranır (yarın/haftaya görev de
+    // "sıradaki" olabilir). Ana sayfa görünürken her saniye ilerler; sayfa
+    // görünür olunca dolum boştan güncel duruma bir kez süpürülür.
+    const homeWidgetEl = $('homeRelaxWidget');
+    const homeSlotEl = $('homeRelaxWidgetSlot');
+    const homeLeadEl = $('homeRelaxWidgetLead');
+    const homeTimeEl = $('homeRelaxWidgetTime');
+    const homeTitleEl = $('homeRelaxWidgetTitle');
+    const homePageEl = $('page-1');
+    const HOME_INTRO_MS = 900;
+    const HOME_MOON_HTML = '<span class="home-relax-widget-moon" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5Z" fill="currentColor"/></svg></span>';
+    let homeShown = null;            // { key, fillEl, from, to }
+    let homeTickTimer = null;
+    let homeIntroTimer = null;
+    let homeIntroPlaying = false;
+
+    // En uygun görevi seç: önce şu an süren (en son başlayan), yoksa en yakın sonraki.
+    const pickHomeTask = () => {
+      const now = Date.now();
+      const byDate = getRelaxTasksByDate();
+      let current = null;
+      let next = null;
+      Object.keys(byDate).forEach((dateStr) => {
+        const list = byDate[dateStr];
+        if (!Array.isArray(list)) return;
+        list.forEach((task) => {
+          const r = relaxTaskRangeMs(task, dateStr);
+          if (!Number.isFinite(r.startMs) || !Number.isFinite(r.endMs)) return;
+          const entry = { task, dateStr, startMs: r.startMs, endMs: r.endMs };
+          if (r.startMs <= now && now < r.endMs) {
+            if (!current || r.startMs > current.startMs) current = entry;
+          } else if (r.startMs > now) {
+            if (!next || r.startMs < next.startMs) next = entry;
+          }
+        });
+      });
+      if (current) return Object.assign({ mode: 'now' }, current);
+      if (next) return Object.assign({ mode: 'next' }, next);
+      return null;
+    };
+
+    const homeTimeLabel = (pick) => {
+      const { task, mode } = pick;
+      if (mode === 'now') return `Şimdi · ${task.start} – ${task.end}`;
+      const d = new Date(pick.startMs);
+      const diff = Math.round((startOfDay(d) - startOfDay(new Date())) / 86400000);
+      const day = diff <= 0 ? '' : (diff === 1 ? 'Yarın ' : `${d.getDate()} ${MONTHS_SHORT_TR[d.getMonth()]} `);
+      return `Sıradaki · ${day}${task.start}`;
+    };
+
+    const applyHomeProgress = (mode) => {
+      if (!homeShown || !homeShown.fillEl) return;
+      const isTick = mode === 'tick';
+      const target = isTick ? Date.now() + RELAX_TICK_MS : Date.now();
+      const p = relaxRangeProgress(target, homeShown.from, homeShown.to);
+      homeShown.fillEl.style.transition = isTick ? `clip-path ${RELAX_TICK_MS}ms linear` : 'none';
+      homeShown.fillEl.style.clipPath = relaxClipFor(p);
+    };
+
+    // Dolum animasyonu: boştan güncel seviyeye yumuşakça süpürülür.
+    const playHomeIntro = (delayMs = 0) => {
+      clearTimeout(homeIntroTimer);
+      if (!homeShown || !homeShown.fillEl) { homeIntroPlaying = false; return; }
+      if (relaxPrefersReducedMotion()) { applyHomeProgress('instant'); return; }
+      homeIntroPlaying = true;
+      homeShown.fillEl.style.transition = 'none';
+      homeShown.fillEl.style.clipPath = relaxClipFor(0);
+      void homeShown.fillEl.offsetWidth; // reflow: başlangıç durumu kesinleşsin
+      homeIntroTimer = setTimeout(() => {
+        if (!homeShown || !homeShown.fillEl) { homeIntroPlaying = false; return; }
+        const p = relaxRangeProgress(Date.now(), homeShown.from, homeShown.to);
+        if (p <= 0) { homeIntroPlaying = false; return; }
+        homeShown.fillEl.style.transition = `clip-path ${HOME_INTRO_MS}ms cubic-bezier(0.22, 1, 0.36, 1)`;
+        homeShown.fillEl.style.clipPath = relaxClipFor(p);
+        homeIntroTimer = setTimeout(() => {
+          homeIntroPlaying = false;
+          applyHomeProgress('tick');
+        }, HOME_INTRO_MS + 60);
+      }, delayMs);
+    };
+
+    // Gösterilecek görev değiştiyse widget'ı yeniden kurar; aynıysa dokunmaz.
+    const syncHomeRelaxWidget = () => {
+      if (!homeWidgetEl || !homeSlotEl) return;
+      const pick = pickHomeTask();
+      const key = pick ? `${pick.task.id || ''}|${pick.dateStr}|${pick.task.start}|${pick.mode}` : 'empty';
+      if (homeShown && homeShown.key === key) return;
+
+      clearTimeout(homeIntroTimer);
+      homeIntroPlaying = false;
+      homeWidgetEl.classList.toggle('is-empty', !pick);
+
+      if (!pick) {
+        homeSlotEl.innerHTML = HOME_MOON_HTML;
+        homeLeadEl.style.removeProperty('--hw-line');
+        homeTimeEl.textContent = 'Yaklaşan görev yok';
+        homeTitleEl.textContent = 'Rahatla';
+        homeWidgetEl.setAttribute('aria-label', "Rahatla'ya git, yaklaşan görev yok");
+        homeShown = { key, fillEl: null, from: NaN, to: NaN };
+        return;
+      }
+
+      const { task } = pick;
+      const color = task.color || 'var(--accent-color, #ff90e8)';
+      const on = task.color ? getReadableTextColor(task.color) : '#16171b';
+      const isLetterTask = task.icon === '' || task.icon === null;
+      const icon = findTaskAddIcon(task.icon);
+      const inner = isLetterTask
+        ? `<span class="relax-task-marker-letter" aria-hidden="true">${escapeHtml(taskInitial(task.name))}</span>`
+        : `<svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" aria-hidden="true">${icon.svg}</svg>`;
+      homeSlotEl.innerHTML = `<span class="relax-task-marker">${inner}<span class="relax-task-marker-fill" aria-hidden="true">${inner}</span></span>`;
+      const markerEl = homeSlotEl.firstElementChild;
+      markerEl.style.setProperty('--mk-color', color);
+      markerEl.style.setProperty('--mk-on', on);
+      homeLeadEl.style.setProperty('--hw-line', color);
+      homeTimeEl.textContent = homeTimeLabel(pick);
+      homeTitleEl.textContent = task.name || '';
+      homeWidgetEl.setAttribute('aria-label', `Rahatla'ya git, ${pick.mode === 'now' ? 'şu an' : 'sıradaki görev'}: ${task.name || ''}`);
+      homeShown = {
+        key,
+        fillEl: markerEl.querySelector('.relax-task-marker-fill'),
+        from: pick.startMs,
+        to: pick.endMs,
+      };
+      applyHomeProgress('instant');
+    };
+
+    const homeTick = () => {
+      if (document.hidden || homeIntroPlaying) return;
+      syncHomeRelaxWidget();
+      applyHomeProgress('tick');
+    };
+    const startHomeTicker = () => {
+      if (!homeTickTimer) homeTickTimer = setInterval(homeTick, RELAX_TICK_MS);
+    };
+    const stopHomeTicker = () => {
+      if (homeTickTimer) { clearInterval(homeTickTimer); homeTickTimer = null; }
+    };
+
+    if (homeWidgetEl && homePageEl) {
+      const isHomeActive = () => homePageEl.classList.contains('is-active');
+      syncHomeRelaxWidget();
+      if (isHomeActive()) { startHomeTicker(); playHomeIntro(350); }
+
+      // Ana sayfa her görünür olduğunda dolum boştan güncel duruma süpürülür.
+      if ('MutationObserver' in window) {
+        let homeWasActive = isHomeActive();
+        new MutationObserver(() => {
+          const active = isHomeActive();
+          if (active === homeWasActive) return;
+          homeWasActive = active;
+          if (active) {
+            syncHomeRelaxWidget();
+            playHomeIntro(200);
+            startHomeTicker();
+          } else {
+            stopHomeTicker();
+            clearTimeout(homeIntroTimer);
+            homeIntroPlaying = false;
+          }
+        }).observe(homePageEl, { attributes: true, attributeFilter: ['class'] });
+      }
+
+      // Uygulama arka plandan dönünce (saat ilerlemiş olabilir) hemen eşitle.
+      document.addEventListener('visibilitychange', () => {
+        if (document.hidden || !isHomeActive()) return;
+        syncHomeRelaxWidget();
+        if (!homeIntroPlaying) applyHomeProgress('tick');
+      });
+    }
   })();
 </script>
 
