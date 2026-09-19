@@ -28175,23 +28175,31 @@
   // uyguluyor ve bu, alttaki her kaydırılabilir alanı da etkiliyor.
   // Uygulama her ön plana döndüğünde, gerçekten açık bir pop-up
   // (backdrop) yoksa bu kilidi otomatik olarak kaldırıyoruz.
-  // ---- Genel "kaydırma donması" düzeltmesi (bilinen bir iOS WebKit
-  // hatası) ----
-  // Bir kaydırma kutusunun (overflow-y: auto/scroll) içeriği JavaScript
-  // tarafından yeniden çizildiğinde (bir listeye satır eklenmesi/
-  // silinmesi, bir modun açılıp kapanmasıyla kartların yeniden
-  // oluşturulması vb.) iOS Safari bazen o kutunun parmakla kaydırma
-  // durumunu "donuk" bırakıyor: kutu görsel olarak hâlâ taşan bir
-  // liste gibi dursa da dokunuşlara artık tepki vermiyor. Bu, Soru
-  // Havuzu'nda neredeyse her etkileşimde (seçme, işaretleme, silme,
-  // filtre, mod değiştirme) listenin yeniden çizilmesi yüzünden sık
-  // görülüyordu. Her yeniden çizim noktasını tek tek bulup yamamak
-  // yerine, sayfadaki HER içerik değişikliğini genel olarak izleyip,
-  // değişen içeriğe en yakın kaydırılabilir kutuyu kısacık bir
-  // "overflow kapat/aç" hamlesiyle tazeliyoruz; bu, tarayıcıyı
-  // kaydırmayı yeniden hesaplamaya zorlayıp donmayı önlüyor. Görünüşte
-  // hiçbir etkisi yoktur (bir sonraki karede eski haline dönüyor),
-  // sadece tarayıcının iç kaydırma durumunu tazeler.
+  // ---- Genel "kaydırma donması" tazelemesi (GÜVENLİ sürüm) ----
+  // ÖNCEKİ SÜRÜMDEKİ HATA (kaydırmanın takılıp kilitlenmesinin asıl sebebi):
+  //  1) MutationObserver 'style' ve 'class' özniteliklerini izliyordu; ama
+  //     "nudge" fonksiyonu kutunun kendi style.overflowY değerini
+  //     değiştirdiği için bu, yeni bir mutasyon üretiyor, o da yeni bir
+  //     "nudge" tetikliyordu => SONSUZ DÖNGÜ. Ölçüm: uygulama boştayken bile
+  //     saniyede ~60 kez (her karede) kaydırma kutularına overflow-y:hidden
+  //     yazılıp geri alınıyordu. Parmak kaydırma sırasında kutu her karede
+  //     "hidden" olduğu için jest iptal oluyor, kaydırma takılıyor/donuyordu.
+  //  2) Ayrıca her 1.5 sn'de bir, ekrandaki TÜM alt elemanlar için
+  //     getComputedStyle çağrılıp overflow kapatılıyordu; bu da hem
+  //     performansı düşürüyor hem de kaydırmayı düzenli aralıklarla
+  //     kesiyordu.
+  // YENİ DAVRANIŞ:
+  //  - Sadece gerçekten eleman eklenip/silinen (childList) değişiklikler
+  //    izlenir; öznitelik değişiklikleri (kendi yazdığımız style dahil)
+  //    izlenmez => döngü oluşamaz. Sayaç gibi sadece metni güncelleyen
+  //    değişiklikler de yok sayılır.
+  //  - Parmak ekrandayken ya da kaydırma sürerken HİÇBİR ŞEYE dokunulmaz;
+  //    tazeleme, kaydırma bittikten sonra ertelenir.
+  //  - Tazeleme aynı karede, eşzamanlı yapılır (overflow'u kapat -> düzeni
+  //    zorla hesaplat -> geri aç); böylece ekranda "hidden" halde bir kare
+  //    bile kalmaz ve kullanıcının dokunuşuyla yarışmaz.
+  //  - Periyodik (setInterval) tarama kaldırıldı; sadece uygulama arka
+  //    plandan ön plana döndüğünde bir kez çalışır.
   (function () {
     const isScrollableY = (el) => {
       const style = window.getComputedStyle(el);
@@ -28207,120 +28215,85 @@
       return null;
     };
 
-    const nudging = new WeakSet();
-    const nudge = (el) => {
-      if (nudging.has(el)) return;
-      nudging.add(el);
-      const prevInlineOverflowY = el.style.overflowY;
+    // ---- Kullanıcı şu an dokunuyor / kaydırıyor mu? ----
+    let touching = false;
+    let lastScrollAt = 0;
+    const SCROLL_IDLE_MS = 350;
+    const opts = { passive: true, capture: true };
+    document.addEventListener('touchstart', () => { touching = true; }, opts);
+    document.addEventListener('touchend', () => { touching = false; }, opts);
+    document.addEventListener('touchcancel', () => { touching = false; }, opts);
+    document.addEventListener('scroll', () => { lastScrollAt = performance.now(); }, opts);
+    const isUserBusy = () => touching || (performance.now() - lastScrollAt) < SCROLL_IDLE_MS;
+
+    // Aynı karede, eşzamanlı tazeleme: ekranda görünür bir "hidden" karesi yok.
+    const refresh = (el) => {
+      const prev = el.style.overflowY;
       el.style.overflowY = 'hidden';
-      // Bir sonraki karede geri alınır; tek bir reflow tetiklemesi yeterli
-      // olduğundan görsel olarak fark edilmez, animasyon/geçişi bozmaz.
-      requestAnimationFrame(() => {
-        el.style.overflowY = prevInlineOverflowY;
-        nudging.delete(el);
-      });
+      void el.offsetHeight; // düzeni zorla yeniden hesaplat
+      el.style.overflowY = prev;
     };
 
-    let pendingScrollables = new Set();
-    let flushScheduled = false;
-    const flushPending = () => {
-      flushScheduled = false;
-      pendingScrollables.forEach(nudge);
-      pendingScrollables.clear();
+    const pending = new Set();
+    let timer = null;
+    const flush = () => {
+      timer = null;
+      if (isUserBusy()) {           // kullanıcı kaydırıyor: sonra tekrar dene
+        timer = setTimeout(flush, SCROLL_IDLE_MS);
+        return;
+      }
+      pending.forEach((el) => { if (el.isConnected) refresh(el); });
+      pending.clear();
+    };
+    const schedule = () => {
+      if (!timer) timer = setTimeout(flush, 120);
     };
 
-    const scrollFreezeObserver = new MutationObserver((mutations) => {
+    const hasElementNodes = (list) => {
+      for (const n of list) if (n.nodeType === 1) return true;
+      return false;
+    };
+
+    new MutationObserver((mutations) => {
       for (const m of mutations) {
+        if (!hasElementNodes(m.addedNodes) && !hasElementNodes(m.removedNodes)) continue;
         const scrollable = findScrollableAncestor(m.target);
-        if (scrollable) pendingScrollables.add(scrollable);
+        if (scrollable) pending.add(scrollable);
       }
-      if (pendingScrollables.size && !flushScheduled) {
-        flushScheduled = true;
-        requestAnimationFrame(flushPending);
-      }
-    });
+      if (pending.size) schedule();
+    }).observe(document.body, { childList: true, subtree: true });
 
-    scrollFreezeObserver.observe(document.body, {
-      childList: true,
-      subtree: true,
-      attributes: true,
-      attributeFilter: ['class', 'style']
-    });
-
-    // ---- İkinci, ÖNCELİKLİ katman: yukarıdaki mutasyon-tabanlı tazeleme
-    // yalnızca "bir liste yeniden çizildiğinde" devreye giriyor; ama donma
-    // hiçbir DOM değişikliği olmadan da (ör. sade bir kaydırma sırasında,
-    // ya da uygulama arka plana alınıp geri döndüğünde) oluşabiliyor. Bu
-    // yüzden o an EKRANDA GÖRÜNEN her kaydırılabilir kutuyu (aktif sayfa +
-    // açık pop-up'lar) düzenli aralıklarla ve uygulama her ön plana
-    // döndüğünde tarayıp tazeliyoruz; böylece donmanın sebebi ne olursa
-    // olsun (mutasyonlu/mutasyonsuz, arka plan dönüşü, jestin yarıda
-    // kesilmesi vb.) birkaç saniye içinde kendiliğinden düzeliyor ve
-    // kullanıcının uygulamayı yeniden açmasına gerek kalmıyor. */
-    const findVisibleScrollRoots = () => {
+    // ---- Uygulama arka plandan dönünce: görünen kaydırma kutularını BİR kez tazele ----
+    const refreshVisibleScrollables = () => {
+      if (isUserBusy()) return;
       const roots = [];
       const activePage = document.querySelector('.page.is-active');
       if (activePage) roots.push(activePage);
-      // Pop-up'ların büyük kısmı "...Backdrop" id'siyle biter ve açıkken
-      // "is-open" sınıfı taşır (bkz. aşağıdaki has-modal-open güvenlik
-      // ağı); çark renk seçici gibi farklı adlandırılanlar da bu deseni
-      // paylaşıyor, o yüzden tek bir sorguyla hepsini yakalıyoruz.
       document.querySelectorAll('.is-open').forEach((el) => {
         if (/backdrop/i.test(el.id) || /backdrop/.test(el.className)) roots.push(el);
       });
-      return roots;
-    };
-
-    const nudgeAllVisibleScrollables = () => {
-      findVisibleScrollRoots().forEach((root) => {
-        if (isScrollableY(root)) nudge(root);
+      roots.forEach((root) => {
+        if (isScrollableY(root)) refresh(root);
         root.querySelectorAll('*').forEach((el) => {
-          if (isScrollableY(el)) nudge(el);
+          if (isScrollableY(el)) refresh(el);
         });
       });
     };
 
-    setInterval(nudgeAllVisibleScrollables, 1500);
     document.addEventListener('visibilitychange', () => {
-      if (document.visibilityState === 'visible') nudgeAllVisibleScrollables();
+      if (document.visibilityState === 'visible') refreshVisibleScrollables();
     });
-    window.addEventListener('pageshow', nudgeAllVisibleScrollables);
-    window.addEventListener('focus', nudgeAllVisibleScrollables);
-
-    // ---- ÜÇÜNCÜ, EN KRİTİK katman: yukarıdaki iki katman (mutasyon +
-    // periyodik tazeleme) donmayı ancak GERİYE DÖNÜK, en fazla 1.5 saniye
-    // gecikmeyle yakalıyor. Kullanıcı tam donmanın olduğu anda parmağını
-    // bastığında bu gecikme "hiç tepki vermiyor" hissi yaratmaya yetiyor.
-    // Bu yüzden asıl düzeltmeyi, dokunuşun/tekerleğin BAŞLADIĞI ANDA,
-    // SENKRON olarak (bir sonraki karede değil, hemen şimdi) yapıyoruz:
-    // parmak/işaretçi bir kaydırma kutusuna değdiği anda o kutunun
-    // overflow durumunu anında zorla tazeliyoruz, böylece iOS'un dokunuşu
-    // "kaydırılamaz" olarak yanlış değerlendirmiş olma ihtimaline karşı
-    // her jest kendi başına garantiye alınmış oluyor. requestAnimationFrame
-    // yerine senkron reflow (offsetHeight okuma) kullanılıyor ki tazeleme
-    // jest başlamadan önce kesin olarak tamamlanmış olsun.
-    const nudgeSync = (el) => {
-      const prev = el.style.overflowY;
-      el.style.overflowY = 'hidden';
-      // offsetHeight okumak tarayıcıyı senkron reflow yapmaya zorlar;
-      // böylece bir sonraki karede değil, HEMEN şimdi tazelenmiş olur.
-      void el.offsetHeight;
-      el.style.overflowY = prev;
-    };
-
-    const nudgeOnGestureStart = (e) => {
-      const scrollable = findScrollableAncestor(e.target);
-      if (scrollable) nudgeSync(scrollable);
-    };
-
-    // passive: true -> preventDefault çağrılmadığından tarayıcının kendi
-    // dokunma/kaydırma davranışını hiçbir şekilde geciktirmez ya da
-    // engellemez, sadece tazeleme işlemini tetikler.
-    document.addEventListener('touchstart', nudgeOnGestureStart, { passive: true, capture: true });
-    document.addEventListener('pointerdown', nudgeOnGestureStart, { passive: true, capture: true });
-    document.addEventListener('wheel', nudgeOnGestureStart, { passive: true, capture: true });
+    window.addEventListener('pageshow', refreshVisibleScrollables);
   })();
 
+  // ---- Güvenlik ağı: kaydırmayı kilitleyen body.has-modal-open sınıfı
+  // yanlışlıkla takılı kalırsa (bir pop-up, kapatma yolunun dışında bir
+  // şekilde -ör. geri gitme, uygulamanın arka plana alınıp bir jestin
+  // yarıda kesilmesi vb.- açık bırakılırsa) TÜM sayfalardaki kaydırma
+  // kalıcı olarak durur, çünkü bu sınıf body'ye touch-action:none
+  // uyguluyor ve bu, alttaki her kaydırılabilir alanı da etkiliyor.
+  // Uygulama her ön plana döndüğünde, gerçekten açık bir pop-up
+  // (backdrop) yoksa bu kilidi otomatik olarak kaldırıyoruz.
   (function () {
     const releaseStaleModalLockIfNeeded = () => {
       if (!document.body.classList.contains('has-modal-open')) return;
