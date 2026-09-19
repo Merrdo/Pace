@@ -1997,15 +1997,19 @@
     font-family: "Baloo 2", "Space Grotesk", sans-serif;
   }
 
-  /* ---------- "Rahatla" sayfası: sağ altta sabit duran "Görev Ekle"
+  /* ---------- "Rahatla" sayfası: listenin altında (sayfayla kayan) "Görev Ekle"
      butonu. Sayfanın geri kalanındaki kalın-çizgi/sert-gölge (brütalist)
      dilinden bilinçli olarak ayrılıp, ana sayfadaki widget'larla
      (.home-date-widget vb.) aynı sakin dili paylaşır: çerçevesiz, beyaz
      zemin, yumuşak/dağınık gölge, tam yuvarlak (pill) kenarlar. */
   .relax-add-btn {
-    position: fixed;
-    right: calc(24px + env(safe-area-inset-right));
-    bottom: calc(24px + env(safe-area-inset-bottom));
+    /* Artık ekrana sabit (fixed) değil: görev listesinin hemen altında,
+       normal akışta durur ve sayfayla birlikte kayar; böylece hiçbir
+       görevin (ör. saat aralığının) üstüne binmez. Listenin sonuna
+       kadar kaydırınca sağ altta görünür. */
+    position: relative;
+    align-self: flex-end;
+    margin-bottom: 0.6rem;
     height: 3.1rem;
     flex-shrink: 0;
     display: flex;
@@ -15894,7 +15898,7 @@
       <div class="relax-tasks-items" id="relaxTasksItems"></div>
     </div>
 
-    <!-- Sağ altta sabit duran "Görev Ekle" butonu -->
+    <!-- Listenin altında, sayfayla birlikte kayan "Görev Ekle" butonu -->
     <button type="button" class="relax-add-btn" id="relaxAddBtn" aria-label="Görev ekle">
       <svg viewBox="0 0 24 24" width="18" height="18">
         <path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
