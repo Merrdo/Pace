@@ -11737,37 +11737,35 @@
     pointer-events: none;
   }
 
-  /* ---------- Sayfa 6: Büyük Takvim Sayfası ----------
-     Diğer sayfalar (.page) gibi tema katmanının (theme-layer) üzerinde
-     şeffaf durur; kendine ait koyu/opak bir zemini veya bulanıklık
-     efekti yoktur — geçiş animasyonu da diğer sayfalarla birebir aynıdır
-     (bkz. .page / .page.is-active / .page.is-leaving). Artık nav bar'da
-     kendi sekmesi var; diğer sekme sayfaları gibi alt nav bar görünür
-     kalır, o yüzden alt padding'i de diğerleriyle aynı (96px) olacak
-     şekilde ayarlanmıştır. */
+  /* ---------- Sayfa 6: Takvim (Planlayıcı diliyle yeniden tasarlandı) ----------
+     Planlayıcı (#page-relax) sayfasındaki tasarım dili ve puntolar birebir
+     kullanılır: tüm yazılar "Baloo 2"; başlık 1.25rem/800, ay + yıl başlığı
+     1.4rem/700 (yıl vurgu renginde), gün adı etiketleri 0.72rem/600, gün
+     rakamları 1rem/600 (2.15rem daire), seçili gün bilgisi 1.18rem/700 +
+     0.88rem/600. Çerçeve/katı gölge yok; sadece tema metin rengi, vurgu
+     rengi, yumuşak gölgeler ve tam yuvarlak (daire/pill) biçimler.
+     Diğer sayfalar (.page) gibi tema katmanının üzerinde şeffaf durur;
+     giriş/çıkış geçişi .page kurallarıyla aynıdır. Animasyonlar aşağıda
+     "Takvim animasyonları" bölümünde toplanmıştır. */
   #page-6 {
     flex-direction: column;
     align-items: stretch;
     justify-content: flex-start;
-    gap: 1.5rem;
+    gap: 1.6rem;
     padding: calc(20px + env(safe-area-inset-top)) 22px calc(18px + env(safe-area-inset-bottom));
     overflow-y: auto;
     overscroll-behavior: contain;
   }
 
-  /* Takvim artık küçük ortalanmış bir kart değil, uçtan uca tam ekran bir
-     yüzey: üst çubuk sadece küçük bir geri okundan ibaret (400px'lik
-     genişlik sınırı kalkar, sola yaslanır). .calendar-back-btn/.calendar-
-     nav-btn diğer sayfalarla (Turlarım vb.) paylaşılan sınıflar
-     olduğundan burada #page-6 ile ölçeklenip (ID özgüllüğü sayesinde)
-     sadece bu sayfada hayalet/çerçevesiz bir görünüme büründürülür;
-     diğer sayfalardaki aynı sınıfları kullanan düğmeler etkilenmez. */
+  /* Üst çubuk Planlayıcı ile aynı: solda hayalet geri butonu, ortada
+     başlık, sağda aynı boyutta boş dengeleme kutusu. */
   #page-6 .calendar-topbar {
     max-width: none;
-    justify-content: flex-start;
+    justify-content: space-between;
   }
 
   #page-6 .calendar-back-btn {
+    margin-left: -10px;
     background-color: transparent;
     border: none;
     box-shadow: none;
@@ -11775,10 +11773,20 @@
     transition: color 0.5s ease, background-color 0.15s ease, transform 0.15s ease;
   }
 
+  #page-6 .calendar-topbar-spacer {
+    margin-right: -10px;
+  }
+
   #page-6 .calendar-back-btn:hover {
     transform: none;
     box-shadow: none;
-    background-color: rgba(127, 127, 127, 0.14);
+  }
+
+  /* Dokunmatik ekranlarda dokunuştan sonra "yapışan" hover görünmesin. */
+  @media (hover: hover) {
+    #page-6 .calendar-back-btn:hover {
+      background-color: rgba(127, 127, 127, 0.14);
+    }
   }
 
   #page-6 .calendar-back-btn:active,
@@ -11786,6 +11794,10 @@
     transform: scale(0.92);
     box-shadow: none;
     background-color: rgba(127, 127, 127, 0.22);
+  }
+
+  #page-6 .calendar-topbar-title {
+    font-family: "Baloo 2", "Space Grotesk", sans-serif;
   }
 
   /* Bu çubuğu kullanan tüm sayfalar (#page-6, #page-7, #page-10,
@@ -11913,10 +11925,11 @@
     pointer-events: none;
   }
 
-  /* Kart artık yok: uçtan uca, kendi arka planı olmayan (theme-layer'ın
-     üzerinde şeffaf duran) tam ekran bir düzen. Ay başlığı büyük ve sola
-     yaslı, oklar sağda küçük hayalet düğmeler halinde; gün ızgarası
-     ekranın kalan tüm dikey alanını dolduracak şekilde esner. */
+  /* Kart yok: uçtan uca, kendi arka planı olmayan (theme-layer'ın
+     üzerinde şeffaf duran) tam ekran bir düzen. Ay başlığı solda, oklar
+     ve "Bugün" hapı sağda; gün ızgarası ekranın kalan dikey alanını
+     dolduracak şekilde esner. Aralıklar Planlayıcı'nın hafta şeridiyle
+     aynı: başlık → gün adları 1.1rem, gün adları → rakamlar 0.5rem. */
   .calendar-card {
     width: 100%;
     max-width: none;
@@ -11928,7 +11941,7 @@
     padding: 0;
     display: flex;
     flex-direction: column;
-    gap: 1.4rem;
+    gap: 0.5rem;
     flex: 1;
     min-height: 0;
   }
@@ -11938,12 +11951,19 @@
     align-items: center;
     justify-content: space-between;
     gap: 0.75rem;
+    margin-bottom: 0.35rem;
   }
 
+  /* "Eylül 2026": ay adı tema metin renginde, yıl vurgu renginde
+     (Planlayıcı'daki "19 Eylül 2026" başlığıyla aynı punto ve renkler). */
   .calendar-month-label {
-    font-family: "Space Grotesk", sans-serif;
-    font-weight: 800;
-    font-size: 2.1rem;
+    display: flex;
+    align-items: baseline;
+    gap: 0.4rem;
+    min-width: 0;
+    font-family: "Baloo 2", "Space Grotesk", sans-serif;
+    font-weight: 700;
+    font-size: 1.4rem;
     letter-spacing: -0.01em;
     color: var(--theme-text, #f2f2f7);
     text-align: left;
@@ -11951,11 +11971,18 @@
     transition: color 0.5s ease;
   }
 
+  .calendar-month-year {
+    color: var(--accent-color, #ff90e8);
+  }
+
   .calendar-nav-btns {
     display: flex;
     align-items: center;
-    gap: 0.55rem;
+    gap: 0.35rem;
     flex-shrink: 0;
+    /* Sağdaki ok, geri butonunun sola kaydırılmasının aynası: okun çizgisi
+       sayfanın sağ kenar boşluğuyla hizalanır. */
+    margin-right: -0.6rem;
   }
 
   /* .calendar-nav-btn temel biçimi: beyaz zemin, 3px siyah çerçeve,
@@ -11994,98 +12021,195 @@
     background-color: var(--accent-color, #ff90e8);
   }
 
+  #page-6 {
+    --cal-ease: cubic-bezier(0.16, 1, 0.3, 1);
+    --cal-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  /* Ay okları: Planlayıcı'nın hayalet geri butonu gibi çerçevesiz; ok
+     vurgu renginde (Planlayıcı başlığındaki ">" ile aynı). Basılınca yumuşak
+     gri daire belirir, ok basılan yöne doğru hafifçe kayar. */
   #page-6 .calendar-nav-btn {
-    width: 2.1rem;
-    height: 2.1rem;
+    width: 2.15rem;
+    height: 2.15rem;
     background-color: transparent;
-    border: 1.5px solid rgba(127, 127, 127, 0.4);
+    border: none;
     box-shadow: none;
-    color: var(--theme-text, #f2f2f7);
-    transition: color 0.5s ease, background-color 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+    color: var(--accent-color, #ff90e8);
+    transition: color 0.5s ease, background-color 0.15s ease, transform 0.15s ease;
   }
 
   #page-6 .calendar-nav-btn:hover {
     transform: none;
     box-shadow: none;
-    background-color: rgba(127, 127, 127, 0.14);
+  }
+
+  @media (hover: hover) {
+    #page-6 .calendar-nav-btn:hover {
+      background-color: rgba(127, 127, 127, 0.14);
+    }
   }
 
   #page-6 .calendar-nav-btn:active,
   #page-6 .calendar-nav-btn.is-pressed {
     transform: scale(0.9);
     box-shadow: none;
-    background-color: var(--accent-color, #ff90e8);
-    border-color: var(--accent-color, #ff90e8);
+    background-color: rgba(127, 127, 127, 0.22);
   }
 
+  #page-6 .calendar-nav-btn svg {
+    transition: transform 0.3s var(--cal-spring);
+  }
+
+  #page-6 #calendarPrevBtn:active svg {
+    transform: translateX(-3px);
+  }
+
+  #page-6 #calendarNextBtn:active svg {
+    transform: translateX(3px);
+  }
+
+  /* "Bugün" hapı: Planlayıcı'daki "Görev Ekle" butonunun dili (beyaz zemin,
+     yumuşak gölge, tam yuvarlak, 0.92rem/700). Sadece bugünden uzaktayken
+     (seçili gün ya da görüntülenen ay bugün değilse) genişleyerek belirir. */
+  .calendar-today-btn {
+    flex-shrink: 0;
+    height: 2.15rem;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    max-width: 0;
+    padding: 0;
+    margin-right: -0.35rem;
+    overflow: hidden;
+    white-space: nowrap;
+    opacity: 0;
+    transform: scale(0.85);
+    pointer-events: none;
+    background-color: #fff;
+    border: none;
+    border-radius: 999px;
+    box-shadow: 0 8px 18px -12px rgba(0, 0, 0, 0.32), 0 2px 6px rgba(0, 0, 0, 0.06);
+    color: #121212;
+    font-family: "Baloo 2", "Space Grotesk", sans-serif;
+    font-weight: 700;
+    font-size: 0.92rem;
+    cursor: pointer;
+    transition:
+      max-width 0.5s var(--cal-ease),
+      padding 0.5s var(--cal-ease),
+      margin 0.5s var(--cal-ease),
+      opacity 0.3s ease,
+      transform 0.5s var(--cal-spring),
+      background-color 0.2s ease,
+      color 0.2s ease;
+  }
+
+  .calendar-today-btn.is-visible {
+    max-width: 7rem;
+    padding: 0 0.95rem;
+    margin-right: 0.1rem;
+    opacity: 1;
+    transform: scale(1);
+    pointer-events: auto;
+  }
+
+  .calendar-today-btn.is-visible:active {
+    transform: scale(0.95);
+    background-color: var(--accent-color, #ff90e8);
+    color: #16171b;
+  }
+
+  .calendar-today-dot {
+    flex-shrink: 0;
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+    background-color: var(--accent-color, #ff90e8);
+  }
+
+  .calendar-today-btn.is-visible:active .calendar-today-dot {
+    background-color: #16171b;
+  }
+
+  /* Gün adı satırı: Planlayıcı'daki .relax-calendar-day-label ile aynı
+     (0.72rem / 600 / %50 opaklık, büyük harf yok). Sütunlar ızgarayla
+     birebir hizalı olsun diye sütun aralığı yok. */
   .calendar-weekdays {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    gap: 0.3rem;
     flex-shrink: 0;
   }
 
   .calendar-weekday {
     text-align: center;
-    font-family: "Archivo Expanded", "Space Grotesk", sans-serif;
-    font-weight: 700;
-    font-size: 0.68rem;
-    letter-spacing: 0.03em;
-    /* Artık sabit beyaz değil; o an aktif temanın yazı rengini (koyu
-       arka planda beyaz, açık arka planda siyah) takip eder, böylece
-       açık temalarda (ör. Bebek Mavisi) okunmaz hale gelmez. */
+    font-family: "Baloo 2", "Space Grotesk", sans-serif;
+    font-weight: 600;
+    font-size: 0.72rem;
     color: var(--theme-text, #f2f2f7);
-    opacity: 0.75;
-    text-transform: uppercase;
+    opacity: 0.5;
     transition: color 0.5s ease;
   }
 
   .calendar-weekday.is-weekend {
-    /* Hafta sonu kısaltmaları da diğerleri gibi tema rengini kullanır,
-       kırmızı vurgu sadece gün numaralarında (.calendar-day.is-weekend)
-       kalır. */
-    opacity: 0.5;
+    color: var(--weekend-color, #ff6b81);
+    opacity: 0.75;
   }
 
+  /* Gün ızgarası: her hücre tüm sütun x satır alanını kaplayan (rahat
+     dokunma alanı) şeffaf bir düğme; görünen daire içindeki
+     .calendar-day-num'dır. Seçili günün vurgu dairesi (.calendar-select-bubble)
+     ızgaranın içinde tek bir eleman olarak durur ve seçim değişince bir
+     günden ötekine kayar. */
   .calendar-grid {
+    position: relative;
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    grid-auto-rows: minmax(3.4rem, 1fr);
-    row-gap: 0.1rem;
-    column-gap: 0.1rem;
+    grid-auto-rows: minmax(3.2rem, 1fr);
     flex: 1;
     min-height: 0;
   }
 
   .calendar-day {
-    width: 2.35rem;
-    height: 2.35rem;
-    align-self: start;
-    justify-self: center;
-    margin-top: 0.3rem;
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 0;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: "Baloo 2", "Space Grotesk", sans-serif;
+  }
+
+  .calendar-day-num {
     display: flex;
     align-items: center;
     justify-content: center;
-    font-family: "Space Grotesk", sans-serif;
-    font-weight: 600;
-    font-size: 1.02rem;
-    color: var(--theme-text, #f2f2f7);
-    background: transparent;
-    border-radius: 0.55em;
+    width: 2.15rem;
+    height: 2.15rem;
+    border-radius: 50%;
     border: 2px solid transparent;
-    cursor: pointer;
-    transition: transform 0.15s ease, border-color 0.15s ease, background-color 0.15s ease,
-      box-shadow 0.15s ease, color 0.15s ease;
+    font-weight: 600;
+    font-size: 1rem;
+    color: var(--theme-text, #f2f2f7);
+    transition: color 0.25s ease, border-color 0.25s ease, background-color 0.15s ease, transform 0.15s ease;
   }
 
-  .calendar-day:hover {
-    background-color: rgba(127, 127, 127, 0.14);
+  .calendar-day:not(:disabled):active .calendar-day-num {
+    transform: scale(0.9);
   }
 
-  .calendar-day.is-weekend {
-    /* Açık temalarda soluk kalmaması için tema bazlı bir kırmızı
-       tonuna geçildi (bkz. --weekend-color, JS tarafında tema
-       değişince güncelleniyor); varsayılan koyu temadaki eski renk. */
+  @media (hover: hover) {
+    .calendar-day:not(:disabled):not(.is-selected):hover .calendar-day-num {
+      background-color: rgba(127, 127, 127, 0.14);
+    }
+  }
+
+  .calendar-day.is-weekend .calendar-day-num {
+    /* Açık temalarda soluk kalmaması için tema bazlı kırmızı ton
+       (bkz. --weekend-color, tema değişince JS güncelliyor). */
     color: var(--weekend-color, #ff6b81);
   }
 
@@ -12095,46 +12219,271 @@
   }
 
   .calendar-day.is-outside.is-weekend {
-    color: var(--weekend-color, #ff6b81);
     opacity: 0.3;
   }
 
-  .calendar-day.is-outside:hover {
-    background-color: transparent;
-  }
-
-  .calendar-day.is-today {
-    border-color: var(--theme-text, #f2f2f7);
-    font-weight: 800;
-  }
-
-  .calendar-day.is-selected {
-    background-color: var(--accent-color, #ff90e8);
+  /* Bugün (seçili değilken): vurgu renginde ince halka — Planlayıcı'daki
+     görev işaretçisinin halkasıyla aynı dil. */
+  .calendar-day.is-today .calendar-day-num {
     border-color: var(--accent-color, #ff90e8);
-    color: #16171b;
-    font-weight: 800;
-    transform: scale(1.04);
+    font-weight: 700;
   }
 
+  /* Seçili gün: dolgu, altındaki kayan daire (bubble) tarafından verilir;
+     rakam okunur koyu renge geçer. */
+  .calendar-day.is-selected .calendar-day-num {
+    border-color: transparent;
+    color: #16171b;
+    font-weight: 700;
+  }
+
+  .calendar-select-bubble {
+    position: absolute;
+    left: 0;
+    top: 0;
+    z-index: 0;
+    pointer-events: none;
+    will-change: transform;
+    transition: transform 0.55s cubic-bezier(0.34, 1.4, 0.64, 1), opacity 0.25s ease;
+  }
+
+  .calendar-select-bubble.is-hidden {
+    opacity: 0;
+  }
+
+  .calendar-select-bubble-dot {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background-color: var(--accent-color, #ff90e8);
+    box-shadow: 0 8px 16px -8px rgba(0, 0, 0, 0.35);
+    transform: scale(1.04);
+    transition: background-color 0.5s ease;
+  }
+
+  /* Seçili gün bilgisi: Planlayıcı'daki görev satırıyla aynı yapı — solda
+     halka işaretçi (içinde gün numarası), yanında gün adı (1.18rem/700) ve
+     tarih (0.88rem/600, %50). Kenarlık/çizgi yok. Satıra dokunmak takvimi
+     bugüne döndürür (eski davranış korunur). */
   .calendar-selected-info {
     width: 100%;
     max-width: none;
     box-sizing: border-box;
     flex-shrink: 0;
-    text-align: center;
-    padding: 0.9rem 1rem calc(0.4rem);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.2rem 0 0.4rem;
     background: transparent;
     border: none;
-    border-top: 1px solid rgba(127, 127, 127, 0.22);
     border-radius: 0;
     box-shadow: none;
-    font-family: "Space Grotesk", sans-serif;
-    font-weight: 700;
-    font-size: 0.92rem;
-    color: var(--theme-text, #f2f2f7);
-    opacity: 0.85;
-    text-transform: capitalize;
+    font-family: "Baloo 2", "Space Grotesk", sans-serif;
+    cursor: pointer;
+  }
+
+  .calendar-info-marker {
+    --mk-color: var(--accent-color, #ff90e8);
+    --mk-on: #16171b;
+    position: relative;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 3.4rem;
+    height: 3.4rem;
+    border-radius: 50%;
+    overflow: hidden;
+    color: var(--theme-text, #1a1a1a);
+    box-shadow: 0 8px 16px -10px rgba(0, 0, 0, 0.4);
     transition: color 0.5s ease;
+  }
+
+  .calendar-info-marker::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    box-shadow: inset 0 0 0 2.5px var(--mk-color);
+    pointer-events: none;
+  }
+
+  .calendar-info-num {
+    font-weight: 700;
+    font-size: 1.18rem;
+    line-height: 1;
+  }
+
+  .calendar-info-fill {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--mk-color);
+    color: var(--mk-on);
+    clip-path: inset(0 0 0 0);
+    transition: background-color 0.5s ease;
+  }
+
+  .calendar-info-content {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding-top: 0.1rem;
+  }
+
+  .calendar-info-top {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.6rem;
+  }
+
+  .calendar-info-name {
+    font-weight: 700;
+    font-size: 1.18rem;
+    color: var(--theme-text, #f2f2f7);
+    overflow-wrap: anywhere;
+    transition: color 0.5s ease;
+  }
+
+  .calendar-info-rel,
+  .calendar-info-sub {
+    font-weight: 600;
+    font-size: 0.88rem;
+    color: var(--theme-text, #f2f2f7);
+    opacity: 0.5;
+    transition: color 0.5s ease;
+  }
+
+  .calendar-info-rel {
+    flex-shrink: 0;
+  }
+
+  /* ---------- Takvim animasyonları ----------
+     Tek bir sahnelenmiş an: sayfa açılınca başlık, gün adları ve alttaki
+     bilgi satırı hafifçe yerine oturur; gün rakamları sol üstten sağ alta
+     doğru dalga gibi belirir; seçili günün dairesi en son yaylanarak
+     "pop" olur. Sonrası hep kullanıcı hareketine yanıttır: ay değişince
+     rakamlar ve başlık gidilen yönden akar, gün seçilince daire bir günden
+     ötekine kayar, bilgi satırındaki işaretçi yukarıdan aşağıya dolar. */
+  @keyframes calSettle {
+    from { opacity: 0; transform: translateY(10px); }
+  }
+
+  @keyframes calDayIn {
+    from { opacity: 0; transform: translate(calc(var(--dir, 0) * 18px), 10px) scale(0.6); }
+  }
+
+  @keyframes calLabelIn {
+    from { opacity: 0; transform: translateX(calc(var(--dir, 0) * 22px)); }
+  }
+
+  @keyframes calBubblePop {
+    from { opacity: 0; transform: scale(0.2); }
+  }
+
+  @keyframes calFillSweep {
+    from { clip-path: inset(0 0 100% 0); }
+    to { clip-path: inset(0 0 0 0); }
+  }
+
+  @keyframes calMarkerPop {
+    0% { transform: scale(0.88); }
+    60% { transform: scale(1.06); }
+    100% { transform: scale(1); }
+  }
+
+  @keyframes calTextIn {
+    from { opacity: 0; transform: translateY(8px); }
+  }
+
+  #page-6.is-active .calendar-topbar-title {
+    animation: calSettle 0.5s var(--cal-ease) 40ms backwards;
+  }
+
+  #page-6.is-active .calendar-nav {
+    animation: calSettle 0.55s var(--cal-ease) 90ms backwards;
+  }
+
+  #page-6.is-active .calendar-weekday {
+    animation: calSettle 0.5s var(--cal-ease) calc(140ms + var(--c, 0) * 28ms) backwards;
+  }
+
+  #page-6.is-active .calendar-selected-info {
+    animation: calSettle 0.6s var(--cal-ease) 480ms backwards;
+  }
+
+  /* Bütün animasyonlar #page-6.is-active altında tanımlıdır: sayfa geçişi
+     (.page.is-leaving → is-active) bitip sayfa görünür olduğunda birlikte
+     başlarlar, böylece sahnelenmiş sıra kaçmaz. Sayfa zaten açıkken (ay
+     değişimi, gün seçimi) yeni oluşan/yeniden oynatılan öğeler hemen animasyon
+     alır.
+     Hücreler JS'te .is-anim ile oluşturulur; gecikme satır/sütuna göre
+     çapraz bir dalga oluşturur. --dir ay değişim yönünü (−1/0/1), --base
+     dalganın başlangıç gecikmesini taşır (ızgaradan miras). */
+  #page-6.is-active .calendar-day.is-anim .calendar-day-num {
+    animation: calDayIn 0.55s var(--cal-ease) calc(var(--base, 170ms) + var(--r, 0) * 42ms + var(--c, 0) * 20ms) backwards;
+  }
+
+  #page-6.is-active .calendar-select-bubble.is-pop .calendar-select-bubble-dot {
+    animation: calBubblePop 0.6s var(--cal-spring) var(--pop-delay, 0ms) backwards;
+  }
+
+  #page-6.is-active .calendar-month-label.is-swap > span {
+    animation: calLabelIn 0.45s var(--cal-ease) backwards;
+  }
+
+  #page-6.is-active .calendar-month-label.is-swap > .calendar-month-year {
+    animation-delay: 60ms;
+  }
+
+  #page-6.is-active .calendar-info-marker.is-sweep {
+    animation: calMarkerPop 0.6s var(--cal-spring) var(--info-delay, 0ms) backwards;
+  }
+
+  #page-6.is-active .calendar-info-marker.is-sweep .calendar-info-fill {
+    animation: calFillSweep 0.6s var(--cal-ease) var(--info-delay, 0ms) both;
+  }
+
+  #page-6.is-active .calendar-info-content.is-swap .calendar-info-name {
+    animation: calTextIn 0.45s var(--cal-ease) var(--info-delay, 0ms) backwards;
+  }
+
+  #page-6.is-active .calendar-info-content.is-swap .calendar-info-rel {
+    animation: calTextIn 0.45s var(--cal-ease) calc(var(--info-delay, 0ms) + 40ms) backwards;
+  }
+
+  #page-6.is-active .calendar-info-content.is-swap .calendar-info-sub {
+    animation: calTextIn 0.45s var(--cal-ease) calc(var(--info-delay, 0ms) + 80ms) backwards;
+  }
+
+  /* Koyu (anthracite) mod: "Bugün" hapı, "Görev Ekle" ile aynı şekilde
+     kart rengine geçer; basılınca vurgu rengi görünür. */
+  body.is-anthracite .calendar-today-btn {
+    background-color: var(--dark-card-color, #32343a);
+    color: #f2f2f4;
+  }
+
+  body.is-anthracite .calendar-today-btn.is-visible:active {
+    background-color: var(--accent-color, #ff90e8);
+    color: #16171b;
+  }
+
+  /* Hareketi azalt: animasyonlar kapanır, geçişler anlık olur. */
+  @media (prefers-reduced-motion: reduce) {
+    #page-6 *,
+    #page-6 *::before,
+    #page-6 *::after {
+      animation: none !important;
+      transition-duration: 0.01s !important;
+    }
   }
 
   /* ---------- Sayfa 7: "Turlarım" Sayfası ----------
@@ -15213,6 +15562,1152 @@
   }
 
   /* ==========================================================================
+     Sayfa 9 (Soru Takibi): SADE YENİDEN TASARIM — Planlayıcı dili
+     ==========================================================================
+     Eski kalın çerçeve + katı gölgeli kart yığını kalktı. Sayfa artık
+     Planlayıcı ve Takvim gibi düz: içerik doğrudan tema zemininde durur,
+     yüzeyler yalnızca yumuşak gri (rgba) ve beyaz "hap" (pill) olarak
+     belirir. Tüm yazılar Baloo 2; metin rengi tema metni, vurgu rengi
+     (accent) sadece asıl eylemde (artı butonu, ilerleme çubuğu, yıl).
+     Akış: başlık → gün seçici → günün toplamı + hedef → TYT/AYT ve ders
+     satırları (büyük eksi/artı) → özet.
+     Bu kurallar #page-9 (ve #page9AddBackdrop / #page9GoalBackdrop)
+     ile kapsamlandığından ortak sınıfları (.page9-*, .settings-segmented,
+     .add-task-btn vb.) kullanan Ayarlar, İstatistik, 0 Hata gibi diğer
+     sayfalar etkilenmez. Bilerek eski kuralların ARDINA konmuştur. */
+  #page-9 {
+    --p9-ease: cubic-bezier(0.16, 1, 0.3, 1);
+    --p9-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+    --p9-soft: rgba(127, 127, 127, 0.14);
+    --p9-soft-press: rgba(127, 127, 127, 0.24);
+    --p9-shadow: 0 10px 24px -12px rgba(0, 0, 0, 0.32), 0 2px 6px rgba(0, 0, 0, 0.06);
+    --p9-font: "Baloo 2", "Space Grotesk", sans-serif;
+  }
+
+  #page-9.page {
+    padding-top: calc(20px + env(safe-area-inset-top));
+  }
+
+  #page-9 .page9-wrap {
+    max-width: 420px;
+    gap: 1.5rem;
+  }
+
+  /* --- Üst çubuk (Planlayıcı gibi): başlık tam ortada. Sol ve sağ hücre
+     eşit (1fr) olduğundan sağdaki düğmenin genişliği başlığı kaydırmaz.
+     Sayfa kaydırılınca çubuk yukarı kayıp kaybolur; en tepede geri görünür. --- */
+  #page-9 .page9-topbar {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    align-items: center;
+    gap: 0.5rem;
+    width: 100%;
+    max-width: none;
+    min-height: 2.6rem;
+  }
+
+  #page-9 .page9-topbar-title {
+    grid-column: 2;
+    margin: 0;
+    font-family: var(--p9-font);
+    font-weight: 800;
+    font-size: 1.25rem;
+    line-height: 1.3;
+    text-align: center;
+    white-space: nowrap;
+  }
+
+  /* Düzenle / Bitti hapı: Planlayıcı'daki "Görev Ekle" ile aynı dil (beyaz,
+     yumuşak gölge, tam yuvarlak). Düzenleme açıkken vurgu rengine dolar,
+     ikon ve metin "Bitti"ye döner. */
+  #page-9 .page9-edit-btn {
+    grid-column: 3;
+    justify-self: end;
+    height: 2.3rem;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0 0.95rem 0 0.8rem;
+    background-color: #fff;
+    border: none;
+    border-radius: 999px;
+    box-shadow: var(--p9-shadow);
+    color: #121212;
+    font-family: var(--p9-font);
+    font-weight: 700;
+    font-size: 0.85rem;
+    white-space: nowrap;
+    cursor: pointer;
+    touch-action: manipulation;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.25s ease, color 0.25s ease;
+  }
+
+  #page-9 .page9-edit-icon-done,
+  #page-9 .page9-edit-label-done {
+    display: none;
+  }
+
+  #page-9 .page9-edit-btn.is-active {
+    background-color: var(--accent-color, #ff90e8);
+    color: #16171b;
+  }
+
+  #page-9 .page9-edit-btn.is-active .page9-edit-icon,
+  #page-9 .page9-edit-btn.is-active .page9-edit-label {
+    display: none;
+  }
+
+  #page-9 .page9-edit-btn.is-active .page9-edit-icon-done {
+    display: block;
+  }
+
+  #page-9 .page9-edit-btn.is-active .page9-edit-label-done {
+    display: inline;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    #page-9 .page9-edit-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 14px 28px -12px rgba(0, 0, 0, 0.36), 0 2px 6px rgba(0, 0, 0, 0.07);
+    }
+  }
+
+  #page-9 .page9-edit-btn:active {
+    transform: scale(0.96);
+    box-shadow: 0 6px 14px -10px rgba(0, 0, 0, 0.28), 0 1px 4px rgba(0, 0, 0, 0.05);
+  }
+
+  body.is-anthracite #page-9 .page9-edit-btn:not(.is-active) {
+    background-color: var(--dark-card-color, #32343a);
+    color: #f2f2f4;
+  }
+
+  /* Çok dar ekranlarda (≤350px) başlıkla çakışmasın diye düğme sadece ikon olur
+     (aria-label yine "Branşları düzenle / Düzenlemeyi bitir" der). */
+  @media (max-width: 350px) {
+    #page-9 .page9-edit-btn {
+      padding: 0 0.8rem;
+    }
+
+    #page-9 .page9-edit-label,
+    #page-9 .page9-edit-btn.is-active .page9-edit-label-done {
+      display: none;
+    }
+  }
+
+  /* --- Gün seçici: solda "19 Eylül 2026" (yıl vurgu renginde) ve altında
+     "Bugün / Dün / N gün önce"; sağda iki ok. --- */
+  /* Planlayıcı'nın hafta şeridi gibi: sayfa aşağı kaydırılınca başlık
+     yukarı kayıp gider, bu satır ise üstte (güvenli alanın hemen altında)
+     sabit kalır. Arkasındaki zemin (::before) kaydırmayla 0→1 belirir
+     (JS: --p9-stick), böylece altından kayan içerik satırla üst üste binip
+     okunmaz. #page-9 kaydırma kutusu olduğundan position:sticky doğrudan çalışır. */
+  #page-9 .page9-date-row {
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    flex-shrink: 0;
+    justify-content: space-between;
+    gap: 0.35rem;
+    --p9-stick: 0;
+  }
+
+  #page-9 .page9-date-row::before {
+    content: '';
+    position: absolute;
+    left: -24px;
+    right: -24px;
+    top: calc(-1 * (20px + env(safe-area-inset-top)));
+    bottom: -16px;
+    z-index: -1;
+    pointer-events: none;
+    opacity: var(--p9-stick, 0);
+    background-color: var(--theme-bg, #F6F4EF);
+    background-color: color-mix(in srgb, var(--theme-bg, #F6F4EF) 97%, transparent);
+    -webkit-backdrop-filter: blur(14px);
+    backdrop-filter: blur(14px);
+    -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 16px), transparent);
+    mask-image: linear-gradient(to bottom, #000 calc(100% - 16px), transparent);
+    transition: background-color var(--theme-transition-duration, 480ms) var(--theme-transition-easing, ease);
+  }
+
+  #page-9 .page9-date-label {
+    order: 0;
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0;
+    padding: 0;
+    text-align: left;
+    background: none;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    font-family: var(--p9-font);
+    font-weight: 700;
+    font-size: 1.4rem;
+    color: var(--theme-text, #f2f2f7);
+    cursor: pointer;
+    transition: color 0.5s ease;
+  }
+
+  #page-9 .page9-date-line {
+    display: flex;
+    align-items: baseline;
+    gap: 0.4rem;
+    letter-spacing: -0.01em;
+  }
+
+  #page-9 .page9-date-year {
+    color: var(--accent-color, #ff90e8);
+  }
+
+  #page-9 .page9-date-rel {
+    font-weight: 600;
+    font-size: 0.88rem;
+    opacity: 0.5;
+  }
+
+  #page-9 .page9-date-label.is-swap .page9-date-line,
+  #page-9 .page9-date-label.is-swap .page9-date-rel {
+    animation: p9SlideIn 0.42s var(--p9-ease) backwards;
+  }
+
+  #page-9 .calendar-nav-btn.page9-date-btn {
+    order: 1;
+    flex-shrink: 0;
+    width: 2.4rem;
+    height: 2.4rem;
+    background-color: transparent;
+    border: none;
+    box-shadow: none;
+    color: var(--accent-color, #ff90e8);
+    transition: color 0.5s ease, background-color 0.15s ease, transform 0.15s ease, opacity 0.2s ease;
+  }
+
+  #page-9 #page9NextDayBtn {
+    order: 2;
+    margin-right: -0.5rem;
+  }
+
+  #page-9 .calendar-nav-btn.page9-date-btn:hover {
+    transform: none;
+    box-shadow: none;
+  }
+
+  @media (hover: hover) {
+    #page-9 .calendar-nav-btn.page9-date-btn:not(:disabled):hover {
+      background-color: var(--p9-soft);
+    }
+  }
+
+  #page-9 .calendar-nav-btn.page9-date-btn:not(:disabled):active {
+    transform: scale(0.9);
+    box-shadow: none;
+    background-color: var(--p9-soft-press);
+  }
+
+  #page-9 .calendar-nav-btn.page9-date-btn:disabled {
+    opacity: 0.3;
+    box-shadow: none;
+    transform: none;
+  }
+
+  /* --- Günün toplamı + hedef --- */
+  #page-9 .page9-hero {
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+  }
+
+  #page-9 .page9-hero-top {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 0.8rem;
+  }
+
+  #page-9 .page9-hero-count {
+    display: flex;
+    align-items: baseline;
+    gap: 0.45rem;
+    min-width: 0;
+  }
+
+  #page-9 .page9-hero-total {
+    font-family: var(--p9-font);
+    font-weight: 800;
+    font-size: 3.2rem;
+    line-height: 1;
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+    color: var(--theme-text, #f2f2f7);
+    transition: color 0.5s ease;
+  }
+
+  #page-9 .page9-hero-total.is-bump {
+    animation: p9Bump 0.32s var(--p9-spring);
+  }
+
+  #page-9 .page9-hero-unit {
+    font-family: var(--p9-font);
+    font-weight: 600;
+    font-size: 0.88rem;
+    color: var(--theme-text, #f2f2f7);
+    opacity: 0.5;
+  }
+
+  /* "Hedef Belirle" / "Hedef 150 soru": Planlayıcı'daki "Görev Ekle" hapı. */
+  #page-9 .page9-goal-btn {
+    flex-shrink: 0;
+    width: auto;
+    height: 2.5rem;
+    gap: 0.45rem;
+    padding: 0 1rem 0 0.8rem;
+    background-color: #fff;
+    border: none;
+    border-radius: 999px;
+    box-shadow: var(--p9-shadow);
+    color: #121212;
+    font-family: var(--p9-font);
+    font-weight: 700;
+    font-size: 0.92rem;
+    white-space: nowrap;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease, color 0.2s ease;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    #page-9 .page9-goal-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 14px 28px -12px rgba(0, 0, 0, 0.36), 0 2px 6px rgba(0, 0, 0, 0.07);
+    }
+  }
+
+  #page-9 .page9-goal-btn:active {
+    transform: scale(0.97);
+    box-shadow: 0 6px 14px -10px rgba(0, 0, 0, 0.28), 0 1px 4px rgba(0, 0, 0, 0.05);
+    background-color: var(--accent-color, #ff90e8);
+    color: #16171b;
+  }
+
+  #page-9 .page9-goal-btn-icon {
+    width: auto;
+    height: auto;
+    background: none;
+    border: none;
+    border-radius: 0;
+    color: inherit;
+  }
+
+  #page-9 .page9-goal-btn-label {
+    flex: 0 1 auto;
+  }
+
+  /* Hedef varsa etiket gizlenir, yerine "Hedef 150 soru" görünür. */
+  #page-9 .page9-goal-btn.has-goal .page9-goal-btn-label {
+    display: none;
+  }
+
+  #page-9 .page9-goal-btn-value {
+    padding: 0;
+    font-size: inherit;
+    color: inherit;
+    background: none;
+    border: none;
+    border-radius: 0;
+  }
+
+  #page-9 .page9-goal-btn-value::before {
+    content: "Hedef ";
+  }
+
+  #page-9 .page9-hero-progress {
+    display: none;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  #page-9 .page9-hero.has-goal .page9-hero-progress {
+    display: flex;
+  }
+
+  #page-9 .page9-hero-bar {
+    height: 0.6rem;
+    border-radius: 999px;
+    background-color: var(--p9-soft);
+    overflow: hidden;
+  }
+
+  #page-9 .page9-hero-bar-fill {
+    display: block;
+    height: 100%;
+    width: 0;
+    border-radius: 999px;
+    background-color: var(--accent-color, #ff90e8);
+    transition: width 0.6s var(--p9-ease), background-color 0.5s ease;
+  }
+
+  #page-9 .page9-hero-note {
+    font-family: var(--p9-font);
+    font-weight: 600;
+    font-size: 0.88rem;
+    color: var(--theme-text, #f2f2f7);
+    opacity: 0.5;
+  }
+
+  #page-9 .page9-hero.is-complete .page9-hero-note {
+    opacity: 0.85;
+  }
+
+  /* --- Bölümler: kart yok, sadece boşluk --- */
+  #page-9 .page9-card {
+    background: none;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    padding: 0;
+    gap: 0.9rem;
+    transform: none;
+  }
+
+  /* TYT/AYT ve Gün/Hafta/Ay: yumuşak gri hap + beyaz kayan seçim. */
+  #page-9 .settings-segmented.page9-segmented {
+    height: 2.6rem;
+    padding: 3px;
+    background: var(--p9-soft);
+    border: none;
+    border-radius: 999px;
+    box-shadow: none;
+    font-size: 0.92rem;
+  }
+
+  #page-9 .page9-segmented .settings-segmented-slider {
+    width: calc((100% - 6px) / 2);
+    border-radius: 999px;
+    background: #fff;
+    box-shadow: 0 4px 10px -4px rgba(0, 0, 0, 0.25), 0 1px 3px rgba(0, 0, 0, 0.08);
+    transition: transform 0.42s var(--p9-spring);
+  }
+
+  #page-9 #page9RangeSegmented .settings-segmented-slider {
+    width: calc((100% - 6px) / 3);
+  }
+
+  #page-9 .page9-segmented .settings-segmented-option {
+    font-family: var(--p9-font);
+    font-weight: 700;
+    font-size: 0.92rem;
+    color: var(--theme-text, #f2f2f7);
+    opacity: 0.6;
+    border-radius: 999px;
+    transition: color 0.25s ease, opacity 0.25s ease;
+  }
+
+  #page-9 .page9-segmented .settings-segmented-option.is-active {
+    color: #121212;
+    opacity: 1;
+  }
+
+  /* --- Ders satırları --- */
+  #page-9 .page9-subject-list {
+    gap: 0.1rem;
+  }
+
+  #page-9 .page9-subject-row {
+    gap: 0.75rem;
+    min-height: 3.4rem;
+    padding: 0.4rem 0;
+    border: none;
+    border-radius: 0.9rem;
+  }
+
+  #page-9 .page9-subject-row + .page9-subject-row {
+    border-top: none;
+  }
+
+  #page-9 .page9-subject-row.is-dragging {
+    background-color: var(--theme-bg, #272727);
+    border-radius: 0.9rem;
+    box-shadow: var(--p9-shadow);
+  }
+
+  #page-9 .page9-subject-row-placeholder {
+    border: 2px dashed var(--p9-soft-press);
+    border-radius: 0.9rem;
+  }
+
+  /* Renk noktası: çerçevesiz, altında yumuşak gölge; dokunma alanı büyütülmüş. */
+  #page-9 .page9-subject-dot {
+    position: relative;
+    width: 0.95rem;
+    height: 0.95rem;
+    border: none;
+    box-shadow: 0 4px 8px -3px rgba(0, 0, 0, 0.35);
+  }
+
+  #page-9 .page9-subject-dot::after {
+    content: "";
+    position: absolute;
+    inset: -0.7rem;
+  }
+
+  #page-9 .page9-subject-name,
+  #page-9 .page9-subject-name-input {
+    font-family: var(--p9-font);
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: var(--theme-text, #f2f2f7);
+    transition: color 0.5s ease;
+  }
+
+  #page-9 .page9-subject-name-input {
+    border-bottom: 2px solid var(--accent-color, #ff90e8);
+  }
+
+  /* Eksi / sayı / artı: büyük dokunma alanları. Eksi sessiz, artı asıl
+     eylem olduğu için vurgu renginde dolu daire. */
+  #page-9 .page9-stepper {
+    align-items: center;
+    gap: 0.1rem;
+    padding: 0.2rem;
+    background-color: var(--p9-soft);
+    border: none;
+    border-radius: 999px;
+    box-shadow: none;
+    overflow: visible;
+  }
+
+  #page-9 .page9-stepper-btn {
+    width: 2.3rem;
+    height: 2.3rem;
+    border-radius: 50%;
+    font-family: var(--p9-font);
+    font-weight: 700;
+    font-size: 1.3rem;
+    color: var(--theme-text, #f2f2f7);
+    background-color: transparent;
+    transition: background-color 0.15s ease, transform 0.15s ease, color 0.5s ease;
+  }
+
+  #page-9 .page9-stepper-btn:first-child,
+  #page-9 .page9-stepper-btn:last-child {
+    border-radius: 50%;
+  }
+
+  #page-9 .page9-stepper-btn:active,
+  #page-9 .page9-stepper-btn.is-pressed {
+    background-color: var(--p9-soft-press);
+    transform: scale(0.92);
+  }
+
+  #page-9 .page9-stepper-plus {
+    background-color: var(--accent-color, #ff90e8);
+    color: #16171b;
+    box-shadow: 0 6px 12px -6px rgba(0, 0, 0, 0.4);
+  }
+
+  #page-9 .page9-stepper-plus:active,
+  #page-9 .page9-stepper-plus.is-pressed {
+    background-color: var(--accent-color, #ff90e8);
+    filter: brightness(0.94);
+  }
+
+  #page-9 .page9-count-input {
+    width: 2.6rem;
+    height: 2.3rem;
+    font-family: var(--p9-font);
+    font-weight: 700;
+    font-size: 1.18rem;
+    color: var(--theme-text, #f2f2f7);
+    border: none;
+    border-radius: 0.6rem;
+    transition: color 0.5s ease;
+  }
+
+  #page-9 .page9-count-input:focus {
+    outline: none;
+    background-color: var(--p9-soft);
+  }
+
+  #page-9 .page9-count-input.is-bump {
+    animation: p9Bump 0.28s var(--p9-spring);
+  }
+
+  /* Düzenleme modundaki sabitle / sil butonları: sessiz gri daireler. */
+  #page-9 .page9-subject-pin,
+  #page-9 .page9-subject-delete {
+    width: 2rem;
+    height: 2rem;
+    margin-right: calc(-2rem - 0.75rem);
+    border: none;
+    border-radius: 50%;
+    box-shadow: none;
+    background-color: var(--p9-soft);
+    color: var(--theme-text, #f2f2f7);
+  }
+
+  #page-9 .page9-subject-delete {
+    font-family: var(--p9-font);
+    font-size: 1.25rem;
+    color: #e5484d;
+    background-color: rgba(229, 72, 77, 0.14);
+  }
+
+  #page-9 .page9-subject-list.is-edit-mode .page9-subject-pin,
+  #page-9 .page9-subject-list.is-edit-mode .page9-subject-delete {
+    margin-right: 0;
+  }
+
+  #page-9 .page9-subject-pin.is-active {
+    background-color: var(--accent-color, #ff90e8);
+    color: #16171b;
+  }
+
+  #page-9 .page9-subject-pin:active,
+  #page-9 .page9-subject-delete:active {
+    transform: scale(0.9);
+    box-shadow: none;
+  }
+
+  /* "Ders Ekle": Planlayıcı'daki "Görev Ekle" hapı. */
+  #page-9 .page9-add-subject-btn {
+    align-self: flex-start;
+    width: auto;
+    height: 2.9rem;
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    margin-top: 0.3rem;
+    padding: 0 1.2rem 0 1rem;
+    background-color: #fff;
+    border: none;
+    border-radius: 999px;
+    box-shadow: var(--p9-shadow);
+    color: #121212;
+    font-family: var(--p9-font);
+    font-weight: 700;
+    font-size: 0.92rem;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease, color 0.2s ease;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    #page-9 .page9-add-subject-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 14px 28px -12px rgba(0, 0, 0, 0.36), 0 2px 6px rgba(0, 0, 0, 0.07);
+    }
+  }
+
+  #page-9 .page9-add-subject-btn:active {
+    transform: scale(0.97);
+    box-shadow: 0 6px 14px -10px rgba(0, 0, 0, 0.28), 0 1px 4px rgba(0, 0, 0, 0.05);
+    background-color: var(--accent-color, #ff90e8);
+    color: #16171b;
+  }
+
+  /* --- Özet --- */
+  #page-9 .page9-summary-card {
+    gap: 1.1rem;
+  }
+
+  #page-9 .page9-summary-header {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: baseline;
+    gap: 0.8rem 0.6rem;
+  }
+
+  #page-9 .page9-summary-title {
+    grid-area: 1 / 1;
+    font-family: var(--p9-font);
+    font-weight: 800;
+    font-size: 1.25rem;
+    letter-spacing: 0;
+    text-transform: none;
+    color: var(--theme-text, #f2f2f7);
+    opacity: 1;
+    transition: color 0.5s ease;
+  }
+
+  #page-9 .page9-summary-range-label {
+    grid-area: 1 / 2;
+    text-align: right;
+    font-family: var(--p9-font);
+    font-weight: 600;
+    font-size: 0.88rem;
+    color: var(--theme-text, #f2f2f7);
+    opacity: 0.5;
+  }
+
+  #page-9 .page9-summary-header .page9-segmented {
+    grid-area: 2 / 1 / 3 / 3;
+  }
+
+  #page-9 .page9-summary-total {
+    font-family: var(--p9-font);
+    font-weight: 800;
+    font-size: 2.6rem;
+    line-height: 1;
+    letter-spacing: -0.02em;
+    color: var(--theme-text, #f2f2f7);
+  }
+
+  #page-9 .page9-summary-total span {
+    font-weight: 600;
+    font-size: 0.92rem;
+    letter-spacing: 0;
+    opacity: 0.5;
+  }
+
+  #page-9 .page9-summary-list {
+    gap: 1.2rem;
+  }
+
+  #page-9 .page9-summary-card.is-day .page9-summary-total,
+  #page-9 .page9-summary-card.is-day .page9-summary-range-label {
+    display: none;
+  }
+
+  #page-9 .page9-summary-group {
+    gap: 0.7rem;
+  }
+
+  #page-9 .page9-summary-group-label {
+    font-family: var(--p9-font);
+    font-weight: 600;
+    font-size: 0.72rem;
+    letter-spacing: 0;
+    text-transform: none;
+    color: var(--theme-text, #f2f2f7);
+    opacity: 0.5;
+  }
+
+  #page-9 .page9-summary-row {
+    gap: 0.4rem;
+  }
+
+  #page-9 .page9-summary-row-name,
+  #page-9 .page9-summary-row-count {
+    font-family: var(--p9-font);
+    font-weight: 700;
+    font-size: 0.98rem;
+    color: var(--theme-text, #f2f2f7);
+  }
+
+  #page-9 .page9-summary-row-dot {
+    width: 0.65rem;
+    height: 0.65rem;
+    border: none;
+  }
+
+  #page-9 .page9-summary-bar-track {
+    height: 0.5rem;
+    border: none;
+    border-radius: 999px;
+    background-color: var(--p9-soft);
+  }
+
+  #page-9 .page9-summary-bar-fill {
+    border-radius: 999px;
+  }
+
+  #page-9 .page9-summary-empty {
+    font-family: var(--p9-font);
+    font-weight: 600;
+    font-size: 0.92rem;
+    color: var(--theme-text, #f2f2f7);
+    opacity: 0.5;
+    padding: 0.4rem 0;
+  }
+
+  /* --- Anthracite: beyaz hap yüzeyler kart rengine geçer (Planlayıcı gibi). --- */
+  body.is-anthracite #page-9 .page9-goal-btn,
+  body.is-anthracite #page-9 .page9-add-subject-btn {
+    background-color: var(--dark-card-color, #32343a);
+    color: #f2f2f4;
+  }
+
+  body.is-anthracite #page-9 .page9-goal-btn:active,
+  body.is-anthracite #page-9 .page9-add-subject-btn:active {
+    background-color: var(--accent-color, #ff90e8);
+    color: #16171b;
+  }
+
+  body.is-anthracite #page-9 .page9-segmented .settings-segmented-slider {
+    background: var(--dark-card-color, #32343a);
+  }
+
+  body.is-anthracite #page-9 .page9-segmented .settings-segmented-option.is-active {
+    color: #f2f2f4;
+  }
+
+  /* --- Animasyonlar: sayfa açılınca bölümler sırayla yerine oturur; gün
+     ya da sekme değişince satırlar tazelenir; sayı değişince küçük bir
+     "pop". Hepsi #page-9.is-active altında: sayfa geçişi bitince başlar. --- */
+  @keyframes p9Settle {
+    from { opacity: 0; transform: translateY(10px); }
+  }
+
+  @keyframes p9RowIn {
+    from { opacity: 0; transform: translateY(8px); }
+  }
+
+  @keyframes p9SlideIn {
+    from { opacity: 0; transform: translateX(calc(var(--dir, 0) * 16px)); }
+  }
+
+  @keyframes p9Bump {
+    0% { transform: scale(1); }
+    45% { transform: scale(1.18); }
+    100% { transform: scale(1); }
+  }
+
+  @keyframes p9BarGrow {
+    from { width: 0; }
+  }
+
+  #page-9.is-active .page9-topbar,
+  #page-9.is-active .page9-date-row,
+  #page-9.is-active .page9-hero,
+  #page-9.is-active .page9-card {
+    animation: p9Settle 0.5s var(--p9-ease) backwards;
+  }
+
+  #page-9.is-active .page9-date-row { animation-delay: 40ms; }
+  #page-9.is-active .page9-hero { animation-delay: 80ms; }
+  #page-9.is-active .page9-card { animation-delay: 130ms; }
+  #page-9.is-active .page9-summary-card { animation-delay: 200ms; }
+
+  #page-9.is-active .page9-hero-bar-fill {
+    animation: p9BarGrow 0.8s var(--p9-ease) 250ms backwards;
+  }
+
+  /* Satır girişi: düzenleme modunda titreme animasyonu (page9Jiggle) devrede
+     olduğundan sadece normal modda. Satırlara inline negatif animation-delay
+     (titreme için) atandığından gecikme !important ile ezilir. */
+  #page-9.is-active .page9-subject-list:not(.is-edit-mode) .page9-subject-row {
+    animation: p9RowIn 0.4s var(--p9-ease) backwards;
+    animation-delay: calc(var(--i, 0) * 40ms + 160ms) !important;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    #page-9 *,
+    #page-9 *::before,
+    #page-9 *::after {
+      animation: none !important;
+      transition-duration: 0.01s !important;
+    }
+  }
+
+  /* --- Tablet / geniş ekran: iki sütun korunur; sütunlar yumuşak yüzey. --- */
+  @media (min-width: 768px) and (min-height: 600px) {
+    #page-9 .page9-wrap {
+      max-width: 1040px;
+      gap: 1.8rem;
+    }
+
+    #page-9.page {
+      padding-top: calc(20px + env(safe-area-inset-top));
+    }
+
+    #page-9 .page9-date-row {
+      justify-content: flex-start;
+      align-self: stretch;
+      margin-top: 0;
+      gap: 0.3rem;
+    }
+
+    #page-9 .page9-date-label {
+      flex: 0 0 auto;
+      min-width: 0;
+      margin-right: 0.6rem;
+    }
+
+    #page-9 #page9NextDayBtn {
+      margin-right: 0;
+    }
+
+    #page-9 .page9-hero {
+      max-width: 30rem;
+    }
+
+    /* Eski tablet kuralı hedef butonuna min-width: 17rem veriyordu. */
+    #page-9 .page9-goal-btn {
+      min-width: 0;
+      padding: 0 1rem 0 0.8rem;
+      font-size: 0.95rem;
+    }
+
+    #page-9 .page9-card {
+      padding: 1.6rem;
+      border-radius: 1.8rem;
+      background: rgba(127, 127, 127, 0.08);
+    }
+
+    #page-9 .page9-subject-list {
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 0.3rem 1rem;
+    }
+
+    #page-9 .page9-subject-row {
+      padding: 0.45rem 0.7rem;
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      #page-9 .page9-subject-list:not(.is-edit-mode) .page9-subject-row:hover {
+        background-color: var(--p9-soft);
+        border: none;
+      }
+    }
+
+    #page-9 .settings-segmented.page9-segmented {
+      height: 2.8rem;
+    }
+
+    #page-9 .page9-summary-total {
+      font-size: 3rem;
+    }
+
+    #page-9 .page9-summary-title {
+      font-size: 1.4rem;
+    }
+  }
+
+  /* ---------- Sayfa 9 pop-up'ları (Ders Ekle + Günlük Hedef) ----------
+     Sayfa düzleşince pop-up'lar da aynı dile geçti: kalın çerçeve ve katı
+     gölge yerine yumuşak, tam yuvarlak köşeli beyaz kart; hap düğmeler.
+     Aynı .page9-add-* sınıflarını paylaşan Kronometre "Branşlarım", Soru
+     Havuzu, 0 Hata pop-up'ları etkilenmesin diye yalnızca bu iki kimliğe
+     (#page9AddBackdrop / #page9GoalBackdrop) uygulanır. */
+  #page9AddBackdrop .page9-add-card,
+  #page9GoalBackdrop .page9-add-card {
+    background: #fff;
+    color: #121212;
+    border: none;
+    border-radius: 1.8rem;
+    box-shadow: 0 30px 60px -20px rgba(0, 0, 0, 0.45), 0 4px 12px rgba(0, 0, 0, 0.08);
+    padding: 1.3rem 1.3rem 1.4rem;
+    font-family: "Baloo 2", "Space Grotesk", sans-serif;
+  }
+
+  body.is-anthracite #page9AddBackdrop .page9-add-card,
+  body.is-anthracite #page9GoalBackdrop .page9-add-card {
+    background: var(--dark-card-color, #32343a);
+    color: #f2f2f4;
+  }
+
+  #page9AddBackdrop .page9-add-title,
+  #page9GoalBackdrop .page9-add-title {
+    font-family: "Baloo 2", "Space Grotesk", sans-serif;
+    font-weight: 800;
+    font-size: 1.25rem;
+  }
+
+  #page9AddBackdrop .page9-add-subtitle {
+    font-family: "Baloo 2", "Space Grotesk", sans-serif;
+    font-weight: 600;
+    font-size: 0.88rem;
+  }
+
+  #page9AddBackdrop .page9-add-close,
+  #page9GoalBackdrop .page9-add-close {
+    width: 2.1rem;
+    height: 2.1rem;
+    border: none;
+    border-radius: 50%;
+    box-shadow: none;
+    background-color: rgba(127, 127, 127, 0.16);
+    color: inherit;
+    font-family: "Baloo 2", "Space Grotesk", sans-serif;
+    font-size: 1.3rem;
+  }
+
+  #page9AddBackdrop .page9-add-close:hover,
+  #page9GoalBackdrop .page9-add-close:hover {
+    transform: none;
+    box-shadow: none;
+    background-color: rgba(127, 127, 127, 0.26);
+  }
+
+  #page9AddBackdrop .page9-add-close:active,
+  #page9GoalBackdrop .page9-add-close:active {
+    transform: scale(0.9);
+    box-shadow: none;
+    background-color: rgba(127, 127, 127, 0.32);
+  }
+
+  #page9AddBackdrop .page9-add-selectall {
+    padding: 0.45rem 1rem;
+    font-family: "Baloo 2", "Space Grotesk", sans-serif;
+    font-weight: 700;
+    font-size: 0.85rem;
+    border: none;
+    border-radius: 999px;
+    box-shadow: none;
+    background-color: rgba(127, 127, 127, 0.16);
+  }
+
+  #page9AddBackdrop .page9-add-selectall:active {
+    transform: scale(0.96);
+    box-shadow: none;
+  }
+
+  #page9AddBackdrop .page9-add-selectall.is-active {
+    background-color: var(--accent-color, #ff90e8);
+    color: #16171b;
+  }
+
+  #page9AddBackdrop .page9-add-chip {
+    padding: 0.65rem 0.85rem;
+    border: none;
+    border-radius: 1rem;
+    box-shadow: none;
+  }
+
+  body.is-anthracite #page9AddBackdrop .page9-add-chip {
+    background-color: rgba(255, 255, 255, 0.07);
+  }
+
+  #page9AddBackdrop .page9-add-chip:active {
+    transform: scale(0.99);
+  }
+
+  #page9AddBackdrop .page9-add-chip-box {
+    width: 1.4rem;
+    height: 1.4rem;
+    border: 2px solid rgba(127, 127, 127, 0.45);
+    border-radius: 50%;
+    background-color: transparent;
+    transition: background-color 0.18s ease, border-color 0.18s ease;
+  }
+
+  body.is-anthracite #page9AddBackdrop .page9-add-chip-box {
+    background-color: transparent;
+  }
+
+  #page9AddBackdrop .page9-add-chip.is-selected .page9-add-chip-box {
+    background-color: var(--accent-color, #ff90e8);
+    border-color: var(--accent-color, #ff90e8);
+    color: #16171b;
+  }
+
+  #page9AddBackdrop .page9-add-chip-name {
+    font-family: "Baloo 2", "Space Grotesk", sans-serif;
+    font-weight: 700;
+    font-size: 1rem;
+  }
+
+  #page9AddBackdrop .page9-add-chip-color-dot {
+    border: none;
+    box-shadow: 0 4px 8px -3px rgba(0, 0, 0, 0.35);
+  }
+
+  #page9AddBackdrop .page9-add-chip-color-dot:hover {
+    box-shadow: 0 0 0 4px rgba(127, 127, 127, 0.18), 0 4px 8px -3px rgba(0, 0, 0, 0.35);
+  }
+
+  #page9AddBackdrop .page9-add-chip-delete {
+    border: none;
+    box-shadow: none;
+    background-color: rgba(229, 72, 77, 0.14);
+    color: #e5484d;
+  }
+
+  #page9AddBackdrop .page9-add-custom-input {
+    padding: 0.65rem 1rem;
+    font-family: "Baloo 2", "Space Grotesk", sans-serif;
+    font-weight: 700;
+    font-size: 0.95rem;
+    border: none;
+    border-radius: 999px;
+    box-shadow: inset 0 0 0 2px transparent;
+    transition: box-shadow 0.2s ease;
+  }
+
+  body.is-anthracite #page9AddBackdrop .page9-add-custom-input {
+    background-color: rgba(255, 255, 255, 0.07);
+  }
+
+  #page9AddBackdrop .page9-add-custom-input:focus {
+    box-shadow: inset 0 0 0 2px var(--accent-color, #ff90e8);
+  }
+
+  #page9AddBackdrop .page9-add-custom-btn {
+    width: 2.7rem;
+    height: 2.7rem;
+    border: none;
+    border-radius: 50%;
+    box-shadow: 0 6px 12px -6px rgba(0, 0, 0, 0.4);
+    background-color: var(--accent-color, #ff90e8);
+    color: #16171b;
+    font-family: "Baloo 2", "Space Grotesk", sans-serif;
+  }
+
+  #page9AddBackdrop .page9-add-custom-btn:active {
+    transform: scale(0.92);
+    box-shadow: none;
+  }
+
+  #page9AddBackdrop .page9-add-confirm,
+  #page9GoalBackdrop .page9-add-confirm {
+    height: 3rem;
+    padding: 0 1.4rem;
+    border: none;
+    border-radius: 999px;
+    background-color: var(--accent-color, #ff90e8);
+    color: #16171b;
+    box-shadow: 0 10px 24px -12px rgba(0, 0, 0, 0.35);
+    font-family: "Baloo 2", "Space Grotesk", sans-serif;
+    font-weight: 700;
+    font-size: 1rem;
+  }
+
+  #page9AddBackdrop .page9-add-confirm:hover,
+  #page9GoalBackdrop .page9-add-confirm:hover {
+    transform: none;
+    box-shadow: 0 10px 24px -12px rgba(0, 0, 0, 0.35);
+  }
+
+  #page9AddBackdrop .page9-add-confirm:active,
+  #page9GoalBackdrop .page9-add-confirm:active {
+    transform: scale(0.98);
+    box-shadow: 0 6px 14px -10px rgba(0, 0, 0, 0.3);
+    background-color: var(--accent-color, #ff90e8);
+    filter: brightness(0.94);
+  }
+
+  /* Günlük hedef: büyük sayı + iki yuvarlak düğme (artı vurgu renginde). */
+  #page9GoalBackdrop .page9-goal-step-btn {
+    width: 3.6rem;
+    height: 3.6rem;
+    border: none;
+    box-shadow: none;
+    background-color: rgba(127, 127, 127, 0.16);
+    color: inherit;
+  }
+
+  #page9GoalBackdrop .page9-goal-step-btn:active,
+  #page9GoalBackdrop .page9-goal-step-btn.is-pressed {
+    transform: scale(0.92);
+    box-shadow: none;
+    background-color: rgba(127, 127, 127, 0.3);
+    color: inherit;
+  }
+
+  #page9GoalBackdrop #page9GoalPlus,
+  #page9GoalBackdrop #page9GoalPlus:active,
+  #page9GoalBackdrop #page9GoalPlus.is-pressed {
+    background-color: var(--accent-color, #ff90e8);
+    color: #16171b;
+    box-shadow: 0 8px 16px -8px rgba(0, 0, 0, 0.4);
+  }
+
+  #page9GoalBackdrop .page9-goal-input {
+    font-family: "Baloo 2", "Space Grotesk", sans-serif;
+  }
+
+  /* ==========================================================================
      TABLET / GENİŞ EKRAN: 0 Hata Testlerim Sayfası (baştan tasarım)
      ==========================================================================
      Telefonda 400px'lik dar bir "fiş" gibi ortalanmış akan branş listesi,
@@ -16371,19 +17866,29 @@
           <path d="M15 4l-8 8 8 8" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
       </button>
+      <span class="calendar-topbar-title">Takvim</span>
+      <div class="calendar-topbar-spacer"></div>
     </div>
 
+    <!-- Planlayıcı'nın dilinde: "Eylül 2026" başlığı (yıl vurgu renginde),
+         sağında bugüne dönüş hapı ve ay okları; altında gün adları ve gün
+         ızgarası. Seçili günün dairesi (.calendar-select-bubble) ızgaraya JS
+         ile eklenir ve seçim değişince günler arasında kayar. -->
     <div class="calendar-card">
       <div class="calendar-nav">
-        <span class="calendar-month-label" id="calendarMonthLabel">Eylül 2026</span>
+        <span class="calendar-month-label" id="calendarMonthLabel" aria-live="polite">Eylül 2026</span>
         <div class="calendar-nav-btns">
+          <button type="button" class="calendar-today-btn" id="calendarTodayBtn" aria-label="Bugüne dön" aria-hidden="true" tabindex="-1">
+            <span class="calendar-today-dot" aria-hidden="true"></span>
+            <span>Bugün</span>
+          </button>
           <button type="button" class="calendar-nav-btn" id="calendarPrevBtn" aria-label="Önceki ay">
-            <svg viewBox="0 0 24 24" width="14" height="14">
+            <svg viewBox="0 0 24 24" width="16" height="16">
               <path d="M15 4l-8 8 8 8" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
           </button>
           <button type="button" class="calendar-nav-btn" id="calendarNextBtn" aria-label="Sonraki ay">
-            <svg viewBox="0 0 24 24" width="14" height="14">
+            <svg viewBox="0 0 24 24" width="16" height="16">
               <path d="M9 4l8 8-8 8" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
           </button>
@@ -16394,7 +17899,22 @@
       <div class="calendar-grid" id="calendarGrid"></div>
     </div>
 
-    <div class="calendar-selected-info" id="calendarSelectedInfo"></div>
+    <!-- Seçili gün: Planlayıcı'daki görev satırıyla aynı yapı (halka
+         işaretçi + ad + alt satır). İçerik updateCalendarSelectedInfo() ile
+         doldurulur; satıra dokunmak takvimi bugüne döndürür. -->
+    <div class="calendar-selected-info" id="calendarSelectedInfo">
+      <div class="calendar-info-marker" id="calendarInfoMarker" aria-hidden="true">
+        <span class="calendar-info-num"></span>
+        <span class="calendar-info-fill"><span class="calendar-info-num"></span></span>
+      </div>
+      <div class="calendar-info-content" id="calendarInfoContent" aria-live="polite">
+        <div class="calendar-info-top">
+          <span class="calendar-info-name" id="calendarInfoName"></span>
+          <span class="calendar-info-rel" id="calendarInfoRel"></span>
+        </div>
+        <span class="calendar-info-sub" id="calendarInfoSub"></span>
+      </div>
+    </div>
   </section>
 
   <!-- Sayfa 7: "Turlarım". Sayfa 5'teki "Turlarım" butonuyla açılan,
@@ -16804,19 +18324,23 @@
        bazında hem genel toplamı hem branş dağılımını gösterir. -->
   <section class="page" id="page-9">
     <div class="page9-wrap">
-      <div class="page9-header">
-        <div class="page9-header-top">
-          <h1 class="page9-title"><svg class="page9-title-svg" viewBox="0 0 228 46" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Soru Takibi">
-            <text x="1" y="35">Soru Takibi</text>
-          </svg></h1>
-          <button type="button" class="add-task-btn edit-task-btn" id="page9EditBtn" aria-label="Branşları düzenle" aria-pressed="false">
-            <svg viewBox="0 0 24 24" width="16" height="16">
-              <path d="M4 20l4.5-1 10.2-10.2-3.5-3.5L5 15.5 4 20z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              <path d="M13.3 6.8l3.5 3.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            </svg>
-          </button>
-        </div>
-        <span class="page9-subtitle">Çözdüğün soruları branşına göre kaydet</span>
+      <!-- Planlayıcı ile aynı üst çubuk mantığı: başlık ortada, sayfayla
+           birlikte yukarı kayıp kaybolur; en yukarı kaydırınca geri gelir.
+           Sağdaki hap düğme düzenleme modunu açar/kapatır (Düzenle ↔ Bitti). -->
+      <div class="calendar-topbar page9-topbar">
+        <span class="page9-topbar-side" aria-hidden="true"></span>
+        <h1 class="calendar-topbar-title page9-topbar-title">Soru Takibi</h1>
+        <button type="button" class="page9-edit-btn" id="page9EditBtn" aria-label="Branşları düzenle" aria-pressed="false">
+          <svg class="page9-edit-icon" viewBox="0 0 24 24" width="15" height="15" aria-hidden="true">
+            <path d="M4 20l4.5-1 10.2-10.2-3.5-3.5L5 15.5 4 20z" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M13.3 6.8l3.5 3.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+          </svg>
+          <svg class="page9-edit-icon-done" viewBox="0 0 24 24" width="15" height="15" aria-hidden="true">
+            <path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span class="page9-edit-label">Düzenle</span>
+          <span class="page9-edit-label-done">Bitti</span>
+        </button>
       </div>
 
       <div class="page9-date-row">
@@ -16825,7 +18349,7 @@
             <path d="M15 4l-8 8 8 8" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
         </button>
-        <span class="page9-date-label" id="page9DateLabel">Bugün</span>
+        <span class="page9-date-label" id="page9DateLabel" role="button" tabindex="0" aria-label="Bugüne dön">Bugün</span>
         <button type="button" class="calendar-nav-btn page9-date-btn" id="page9NextDayBtn" aria-label="Sonraki gün">
           <svg viewBox="0 0 24 24" width="16" height="16">
             <path d="M9 4l8 8-8 8" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
@@ -16833,20 +18357,32 @@
         </button>
       </div>
 
-      <!-- Günlük soru hedefi: butona basınca eksi/artı ile hedef belirlenen
-           pop-up açılır. Hedef, ana sayfadaki "Bugün Çözülen" widget'ının
-           dolum seviyesini belirler. -->
-      <button type="button" class="page9-goal-btn" id="page9GoalBtn" aria-label="Günlük soru hedefini belirle">
-        <span class="page9-goal-btn-icon" aria-hidden="true">
-          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="9"/>
-            <circle cx="12" cy="12" r="4.5"/>
-            <circle cx="12" cy="12" r="0.8" fill="currentColor"/>
-          </svg>
-        </span>
-        <span class="page9-goal-btn-label">Hedef Belirle</span>
-        <span class="page9-goal-btn-value" id="page9GoalBtnValue"></span>
-      </button>
+      <!-- Seçili günün toplam soru sayısı + günlük hedef. Hedef butonu
+           (#page9GoalBtn) aynı pop-up'ı açar; hedef varsa altında ilerleme
+           çubuğu görünür (JS: renderPage9Hero). -->
+      <div class="page9-hero" id="page9Hero">
+        <div class="page9-hero-top">
+          <div class="page9-hero-count">
+            <span class="page9-hero-total" id="page9HeroTotal">0</span>
+            <span class="page9-hero-unit">soru</span>
+          </div>
+          <button type="button" class="page9-goal-btn" id="page9GoalBtn" aria-label="Günlük soru hedefini belirle">
+            <span class="page9-goal-btn-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="9"/>
+                <circle cx="12" cy="12" r="4.5"/>
+                <circle cx="12" cy="12" r="0.8" fill="currentColor"/>
+              </svg>
+            </span>
+            <span class="page9-goal-btn-label">Hedef Belirle</span>
+            <span class="page9-goal-btn-value" id="page9GoalBtnValue"></span>
+          </button>
+        </div>
+        <div class="page9-hero-progress">
+          <div class="page9-hero-bar"><span class="page9-hero-bar-fill" id="page9HeroBarFill"></span></div>
+          <span class="page9-hero-note" id="page9HeroNote"></span>
+        </div>
+      </div>
 
       <div class="page9-columns" id="page9Columns">
         <div class="page9-card">
@@ -16856,7 +18392,10 @@
             <button type="button" class="settings-segmented-option" data-value="ayt">AYT</button>
           </div>
           <div class="page9-subject-list" id="page9SubjectList"></div>
-          <button type="button" class="add-task-btn page9-add-subject-btn" id="page9AddSubjectBtn">+ Ders Ekle</button>
+          <button type="button" class="add-task-btn page9-add-subject-btn" id="page9AddSubjectBtn">
+            <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg>
+            <span>Ders Ekle</span>
+          </button>
         </div>
 
         <div class="page9-card page9-summary-card">
@@ -21380,9 +22919,15 @@
   let calendarViewMonth = calendarToday.getMonth();
   let calendarSelectedDate = new Date(calendarToday);
 
-  // Gün başlığı satırını (Pt/Sa/Ça...) o anki hafta başlangıcına göre
+  // Planlayıcı'daki hafta şeridiyle aynı gün kısaltmaları (Pazar başlangıçlı
+  // kanonik dizi; gösterim sırası hafta başlangıcına göre hesaplanır).
+  // Ortak CALENDAR_WEEKDAYS_SHORT_DOW dizisine dokunulmaz: Sayfa 11'in
+  // tarih seçicisi de onu kullanıyor.
+  const CALENDAR_WEEKDAYS_PLANNER_DOW = ['Paz', 'Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt'];
+
+  // Gün başlığı satırını (Pzt/Sal/Çar...) o anki hafta başlangıcına göre
   // baştan çizer; Ayarlar sayfasından hafta başlangıcı değişince tekrar
-  // çağrılır.
+  // çağrılır. --c, açılış animasyonundaki sıralı gecikme için sütun no'sudur.
   const renderCalendarWeekdaysHeader = () => {
     calendarWeekdaysEl.innerHTML = '';
     for (let i = 0; i < 7; i++) {
@@ -21390,7 +22935,8 @@
       const el = document.createElement('span');
       el.className = 'calendar-weekday';
       if (dow === 0 || dow === 6) el.classList.add('is-weekend');
-      el.textContent = CALENDAR_WEEKDAYS_SHORT_DOW[dow];
+      el.style.setProperty('--c', String(i));
+      el.textContent = CALENDAR_WEEKDAYS_PLANNER_DOW[dow];
       calendarWeekdaysEl.appendChild(el);
     }
   };
@@ -21400,9 +22946,113 @@
   const isSameCalendarDate = (a, b) =>
     a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
 
+  // "Bugün / Yarın / Dün / 3 gün sonra" — Yeni Aktivite sayfasındaki
+  // relativeDayLabel ile aynı metinler.
+  const calendarRelativeLabel = (d) => {
+    const day = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    const diff = Math.round((day - calendarToday) / 86400000);
+    if (diff === 0) return 'Bugün';
+    if (diff === 1) return 'Yarın';
+    if (diff === -1) return 'Dün';
+    return diff > 0 ? `${diff} gün sonra` : `${-diff} gün önce`;
+  };
+
+  // CSS animasyonunu (sınıf ekle/çıkar + reflow ile) baştan oynatır.
+  const replayCalendarAnim = (el, cls) => {
+    el.classList.remove(cls);
+    void el.offsetWidth;
+    el.classList.add(cls);
+  };
+
+  const calendarTodayBtn = document.getElementById('calendarTodayBtn');
+  const calendarInfoMarker = document.getElementById('calendarInfoMarker');
+  const calendarInfoContent = document.getElementById('calendarInfoContent');
+  const calendarInfoNumEls = calendarSelectedInfo.querySelectorAll('.calendar-info-num');
+  const calendarInfoNameEl = document.getElementById('calendarInfoName');
+  const calendarInfoRelEl = document.getElementById('calendarInfoRel');
+  const calendarInfoSubEl = document.getElementById('calendarInfoSub');
+
+  // Gidilen yön: −1 önceki ay, 1 sonraki ay, 0 yön yok (sayfa açılışı vb.).
+  // Ay oklarına/kaydırmaya basılınca ilgili fonksiyon bunu ayarlar; ızgara
+  // ve başlık animasyonları bu yöne akar.
+  let calendarSlideDir = 0;
+  let calendarSelectedCell = null;
+  const calendarCellByDay = new Map(); // yalnızca görüntülenen ayın günleri
+  const CALENDAR_WAVE_ROW_MS = 42;
+  const CALENDAR_WAVE_COL_MS = 20;
+
+  // Seçili günün dairesi: ızgaraya eklenen tek bir eleman; seçim değişince
+  // yaylanarak yeni günün üstüne kayar (CSS transition).
+  const calendarBubbleEl = document.createElement('span');
+  calendarBubbleEl.className = 'calendar-select-bubble is-hidden';
+  calendarBubbleEl.setAttribute('aria-hidden', 'true');
+  calendarBubbleEl.innerHTML = '<span class="calendar-select-bubble-dot"></span>';
+
+  // Konum, hücrelerin düzen (offset) ölçülerinden hesaplanır; böylece
+  // hücrelerdeki devam eden giriş animasyonları (transform) ölçümü bozmaz.
+  const placeCalendarBubble = (cell, animate) => {
+    if (!cell) {
+      calendarBubbleEl.classList.add('is-hidden');
+      return;
+    }
+    const num = cell.firstElementChild;
+    const size = num.offsetWidth;
+    const wasHidden = calendarBubbleEl.classList.contains('is-hidden');
+    const jump = !animate || wasHidden; // görünmezken/ilk çizimde kaymadan yerine koy
+    calendarBubbleEl.style.width = `${size}px`;
+    calendarBubbleEl.style.height = `${size}px`;
+    if (jump) calendarBubbleEl.style.transition = 'none';
+    calendarBubbleEl.style.transform =
+      `translate(${cell.offsetLeft + num.offsetLeft}px, ${cell.offsetTop + num.offsetTop}px)`;
+    if (jump) {
+      void calendarBubbleEl.offsetWidth;
+      calendarBubbleEl.style.transition = '';
+    }
+    calendarBubbleEl.classList.remove('is-hidden');
+    if (animate && wasHidden) {
+      calendarBubbleEl.style.setProperty('--pop-delay', '0ms');
+      replayCalendarAnim(calendarBubbleEl, 'is-pop');
+    }
+  };
+
+  // "Bugün" hapı: seçili gün ya da görüntülenen ay bugünden farklıysa görünür.
+  const updateCalendarTodayBtn = () => {
+    const viewingTodayMonth =
+      calendarViewYear === calendarToday.getFullYear() && calendarViewMonth === calendarToday.getMonth();
+    const away = !(viewingTodayMonth && isSameCalendarDate(calendarSelectedDate, calendarToday));
+    calendarTodayBtn.classList.toggle('is-visible', away);
+    calendarTodayBtn.tabIndex = away ? 0 : -1;
+    calendarTodayBtn.setAttribute('aria-hidden', away ? 'false' : 'true');
+  };
+
+  const selectCalendarCell = (cell, date) => {
+    if (!cell || calendarSelectedCell === cell) return;
+    if (calendarSelectedCell) calendarSelectedCell.classList.remove('is-selected');
+    calendarSelectedCell = cell;
+    cell.classList.add('is-selected');
+    calendarSelectedDate = date;
+    placeCalendarBubble(cell, true);
+    updateCalendarSelectedInfo();
+    updateCalendarTodayBtn();
+  };
+
   const renderCalendarGrid = () => {
+    const dir = calendarSlideDir;
+    calendarSlideDir = 0;
+    const waveBase = dir === 0 ? 170 : 30; // sayfa açılışında başlık/gün adları önce oturur
+
     calendarGridEl.innerHTML = '';
-    calendarMonthLabel.textContent = `${CALENDAR_MONTHS[calendarViewMonth]} ${calendarViewYear}`;
+    calendarGridEl.style.setProperty('--dir', String(dir));
+    calendarGridEl.style.setProperty('--base', `${waveBase}ms`);
+    calendarGridEl.appendChild(calendarBubbleEl);
+    calendarSelectedCell = null;
+    calendarCellByDay.clear();
+
+    // Başlık: ay adı tema renginde, yıl vurgu renginde (Planlayıcı başlığı gibi).
+    calendarMonthLabel.style.setProperty('--dir', String(dir));
+    calendarMonthLabel.classList.toggle('is-swap', dir !== 0);
+    calendarMonthLabel.innerHTML =
+      `<span class="calendar-month-name">${CALENDAR_MONTHS[calendarViewMonth]}</span> <span class="calendar-month-year">${calendarViewYear}</span>`;
 
     const firstOfMonth = new Date(calendarViewYear, calendarViewMonth, 1);
     const jsWeekday = firstOfMonth.getDay(); // 0 = Pazar ... 6 = Cumartesi
@@ -21416,9 +23066,10 @@
       const dayNum = i - leadingBlank + 1;
       const cell = document.createElement('button');
       cell.type = 'button';
-      cell.className = 'calendar-day';
+      cell.className = 'calendar-day is-anim';
 
       let cellDate;
+      let inMonth = false;
       if (dayNum < 1) {
         cellDate = new Date(calendarViewYear, calendarViewMonth - 1, daysInPrevMonth + dayNum);
         cell.classList.add('is-outside');
@@ -21429,43 +23080,100 @@
         cell.disabled = true;
       } else {
         cellDate = new Date(calendarViewYear, calendarViewMonth, dayNum);
+        inMonth = true;
       }
 
+      const row = Math.floor(i / 7);
       const columnIndex = i % 7;
+      cell.dataset.r = String(row);
+      cell.dataset.c = String(columnIndex);
+      cell.style.setProperty('--r', String(row));
+      cell.style.setProperty('--c', String(columnIndex));
+
       const columnDow = (columnIndex + calendarWeekStart) % 7; // sütunun gerçek haftanın günü karşılığı
       if (columnDow === 0 || columnDow === 6) cell.classList.add('is-weekend'); // Cumartesi & Pazar
 
-      cell.textContent = cellDate.getDate();
-      if (isSameCalendarDate(cellDate, calendarToday)) cell.classList.add('is-today');
-      if (isSameCalendarDate(cellDate, calendarSelectedDate)) cell.classList.add('is-selected');
+      // Görünen daire içteki span'dır; düğmenin kendisi geniş dokunma alanıdır.
+      const num = document.createElement('span');
+      num.className = 'calendar-day-num';
+      num.textContent = String(cellDate.getDate());
+      cell.appendChild(num);
 
-      if (!cell.disabled) {
-        cell.addEventListener('click', () => {
-          calendarSelectedDate = cellDate;
-          renderCalendarGrid();
-          updateCalendarSelectedInfo();
-        });
+      if (isSameCalendarDate(cellDate, calendarToday)) {
+        cell.classList.add('is-today');
+        cell.setAttribute('aria-current', 'date');
+      }
+
+      if (inMonth) {
+        cell.setAttribute('aria-label', `${cellDate.getDate()} ${CALENDAR_MONTHS[cellDate.getMonth()]}`);
+        calendarCellByDay.set(cellDate.getDate(), cell);
+        if (isSameCalendarDate(cellDate, calendarSelectedDate)) {
+          cell.classList.add('is-selected');
+          calendarSelectedCell = cell;
+        }
+        cell.addEventListener('click', () => selectCalendarCell(cell, cellDate));
       }
 
       calendarGridEl.appendChild(cell);
     }
+
+    // Seçili gün bu ayda ise dairesini yerine koy ve dalganın ucunda "pop" ettir.
+    if (calendarSelectedCell) {
+      const r = Number(calendarSelectedCell.dataset.r);
+      const c = Number(calendarSelectedCell.dataset.c);
+      calendarBubbleEl.style.setProperty('--pop-delay', `${waveBase + r * CALENDAR_WAVE_ROW_MS + c * CALENDAR_WAVE_COL_MS + 40}ms`);
+    }
+    placeCalendarBubble(calendarSelectedCell, false);
+    if (calendarSelectedCell) replayCalendarAnim(calendarBubbleEl, 'is-pop');
+    updateCalendarTodayBtn();
   };
 
-  const updateCalendarSelectedInfo = () => {
-    const dayName = CALENDAR_WEEKDAYS_LONG[(calendarSelectedDate.getDay() + 6) % 7];
-    calendarSelectedInfo.textContent =
-      `${calendarSelectedDate.getDate()} ${CALENDAR_MONTHS[calendarSelectedDate.getMonth()]} ${calendarSelectedDate.getFullYear()}, ${dayName}`;
+  // Izgara boyutu değişirse (döndürme, yan panel açılıp kapanması vb.)
+  // daire kaymadan yeni konumuna oturur.
+  if (typeof ResizeObserver === 'function') {
+    new ResizeObserver(() => placeCalendarBubble(calendarSelectedCell, false)).observe(calendarGridEl);
+  }
+
+  // Alt bilgi satırı: gün numarası (halka işaretçi), gün adı, göreli gün ve
+  // tarih. Her güncellemede işaretçi yukarıdan aşağıya dolar, yazılar
+  // yerine oturur.
+  const updateCalendarSelectedInfo = (delayMs = 0) => {
+    // Sayfa açılışında satırın kendi belirme gecikmesi (480ms) kadar bekler,
+    // böylece işaretçinin dolması satır görünür olunca başlar.
+    calendarSelectedInfo.style.setProperty('--info-delay', `${delayMs}ms`);
+    const d = calendarSelectedDate;
+    const dayName = CALENDAR_WEEKDAYS_LONG[(d.getDay() + 6) % 7];
+    calendarInfoNumEls.forEach((el) => { el.textContent = String(d.getDate()); });
+    calendarInfoNameEl.textContent = dayName;
+    calendarInfoRelEl.textContent = calendarRelativeLabel(d);
+    calendarInfoSubEl.textContent = `${d.getDate()} ${CALENDAR_MONTHS[d.getMonth()]} ${d.getFullYear()}`;
+    replayCalendarAnim(calendarInfoMarker, 'is-sweep');
+    replayCalendarAnim(calendarInfoContent, 'is-swap');
   };
 
-  // Alttaki tarih kutusuna tıklanınca takvim bugüne döner.
-  calendarSelectedInfo.style.cursor = 'pointer';
-  calendarSelectedInfo.addEventListener('click', () => {
+  // Takvimi bugüne döndürür: aynı aydaysak daire bugüne kayar; başka aydaysak
+  // ızgara bugünün olduğu yönden akarak yeniden çizilir.
+  const goToCalendarToday = () => {
+    const todayYear = calendarToday.getFullYear();
+    const todayMonth = calendarToday.getMonth();
+    const sameMonth = calendarViewYear === todayYear && calendarViewMonth === todayMonth;
+    if (sameMonth && isSameCalendarDate(calendarSelectedDate, calendarToday)) return;
+
+    if (sameMonth) {
+      selectCalendarCell(calendarCellByDay.get(calendarToday.getDate()), new Date(calendarToday));
+      return;
+    }
+    const diff = (todayYear * 12 + todayMonth) - (calendarViewYear * 12 + calendarViewMonth);
+    calendarSlideDir = diff > 0 ? 1 : -1;
     calendarSelectedDate = new Date(calendarToday);
-    calendarViewYear = calendarToday.getFullYear();
-    calendarViewMonth = calendarToday.getMonth();
+    calendarViewYear = todayYear;
+    calendarViewMonth = todayMonth;
     renderCalendarGrid();
     updateCalendarSelectedInfo();
-  });
+  };
+
+  calendarSelectedInfo.addEventListener('click', goToCalendarToday);
+  calendarTodayBtn.addEventListener('click', goToCalendarToday);
 
   // "Takvim" artık nav bar'da kendi sekmesi olmadığından, Ana Sayfa'daki
   // widget üzerinden açılıp geri butonuyla Ana Sayfa'ya dönen bağımsız bir
@@ -21473,11 +23181,13 @@
   // Açılışta ay görünümü en son seçilen tarihin ayına döner.
   const openCalendarPage = () => {
     document.body.classList.add('is-calendar-open'); // nav bar'ı gizler
+    const calendarScrollEl = document.getElementById('page-6');
+    if (calendarScrollEl) calendarScrollEl.scrollTop = 0;
     goToPage('page-6');
     calendarViewYear = calendarSelectedDate.getFullYear();
     calendarViewMonth = calendarSelectedDate.getMonth();
     renderCalendarGrid();
-    updateCalendarSelectedInfo();
+    updateCalendarSelectedInfo(480);
   };
 
   const closeCalendarPage = () => {
@@ -21584,6 +23294,7 @@
   })();
 
   const goToPrevMonth = () => {
+    calendarSlideDir = -1;
     calendarViewMonth -= 1;
     if (calendarViewMonth < 0) {
       calendarViewMonth = 11;
@@ -21593,6 +23304,7 @@
   };
 
   const goToNextMonth = () => {
+    calendarSlideDir = 1;
     calendarViewMonth += 1;
     if (calendarViewMonth > 11) {
       calendarViewMonth = 0;
@@ -24448,10 +26160,34 @@
     return dayMonth;
   };
 
+  // Etiket: "19 Eylül 2026" (yıl vurgu renginde) + altında "Bugün / Dün /
+  // N gün önce". Gün değişince etiket, gidilen yönden hafifçe akar.
+  let page9LastRenderedDate = null;
   const page9RenderDateRow = () => {
-    page9DateLabel.textContent = page9FormatDateLabel(page9SelectedDate);
+    const d = page9SelectedDate;
     const today = page9StartOfDay(new Date());
-    page9NextDayBtn.disabled = page9SelectedDate.getTime() >= today.getTime();
+    const diff = Math.round((d - today) / 86400000);
+    let rel;
+    if (diff === 0) rel = 'Bugün';
+    else if (diff === -1) rel = 'Dün';
+    else if (diff === 1) rel = 'Yarın';
+    else rel = diff < 0 ? `${-diff} gün önce` : `${diff} gün sonra`;
+
+    page9DateLabel.innerHTML =
+      `<span class="page9-date-line"><span class="page9-date-main">${d.getDate()} ${MONTHS_TR[d.getMonth()]}</span> <span class="page9-date-year">${d.getFullYear()}</span></span>` +
+      `<span class="page9-date-rel">${rel}</span>`;
+
+    const dir = page9LastRenderedDate === null ? 0 : Math.sign(d.getTime() - page9LastRenderedDate);
+    page9LastRenderedDate = d.getTime();
+    if (dir !== 0) {
+      page9DateLabel.style.setProperty('--dir', String(dir));
+      page9DateLabel.classList.remove('is-swap');
+      void page9DateLabel.offsetWidth;
+      page9DateLabel.classList.add('is-swap');
+    }
+
+    page9NextDayBtn.disabled = d.getTime() >= today.getTime();
+    renderPage9Hero();
   };
 
   // Seçili tarihte, verilen branş için o ana kadar girilmiş toplam soru sayısı.
@@ -24686,7 +26422,7 @@
     const minusBtn = document.createElement('button');
     minusBtn.type = 'button';
     minusBtn.className = 'page9-stepper-btn';
-    minusBtn.textContent = '–';
+    minusBtn.innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14"/></svg>';
     minusBtn.setAttribute('aria-label', 'Sayıyı azalt');
 
     const input = document.createElement('input');
@@ -24700,12 +26436,18 @@
     const plusBtn = document.createElement('button');
     plusBtn.type = 'button';
     plusBtn.className = 'page9-stepper-btn page9-stepper-plus';
-    plusBtn.innerHTML = '<span class="page9-stepper-plus-icon">+</span>';
+    plusBtn.innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14M12 5v14"/></svg>';
     plusBtn.setAttribute('aria-label', 'Sayıyı artır');
 
     const commitCount = (value) => {
+      const previous = input.value;
       const count = Math.max(0, Math.min(999, parseInt(value, 10) || 0));
       input.value = String(count);
+      if (String(count) !== previous) {
+        input.classList.remove('is-bump');
+        void input.offsetWidth;
+        input.classList.add('is-bump');
+      }
       page9SetCount(subject.id, count);
     };
 
@@ -25229,12 +26971,14 @@
     if (!subjects.length) {
       const empty = document.createElement('div');
       empty.className = 'page9-summary-empty';
-      empty.textContent = 'Bu gün için ders eklenmedi.';
+      empty.textContent = 'Bu gün için ders yok. “Ders Ekle” ile başlayabilirsin.';
       page9SubjectList.appendChild(empty);
       return;
     }
-    subjects.forEach((subject) => {
-      page9SubjectList.appendChild(createPage9SubjectCard(subject));
+    subjects.forEach((subject, index) => {
+      const row = createPage9SubjectCard(subject);
+      row.style.setProperty('--i', String(index));
+      page9SubjectList.appendChild(row);
     });
   };
 
@@ -25262,9 +27006,45 @@
 
   const page9ClampGoal = (value) => Math.max(0, Math.min(PAGE9_GOAL_MAX, parseInt(value, 10) || 0));
 
-  // Sayfadaki butonun etiketi/rozeti: hedef varsa "50 soru" rozeti görünür.
+  // Seçili günün toplamı + hedefe ilerleme. Toplam her sayı değişiminde
+  // (renderPage9Summary), gün değişiminde (page9RenderDateRow) ve hedef
+  // değişiminde (renderPage9GoalBtn) tazelenir; ilerleme çubuğu sadece
+  // hedef belirlenmişse görünür (.has-goal).
+  const page9HeroEl = document.getElementById('page9Hero');
+  const page9HeroTotalEl = document.getElementById('page9HeroTotal');
+  const page9HeroBarFill = document.getElementById('page9HeroBarFill');
+  const page9HeroNote = document.getElementById('page9HeroNote');
+  let page9HeroLastTotal = null;
+
+  const renderPage9Hero = () => {
+    if (!page9HeroEl) return;
+    const key = page9DateKey(page9SelectedDate);
+    const total = page9State.logs.reduce((sum, log) => sum + (log.date === key ? (log.count || 0) : 0), 0);
+    const goal = page9ClampGoal(page9State.dailyGoal);
+
+    page9HeroTotalEl.textContent = String(total);
+    if (page9HeroLastTotal !== null && page9HeroLastTotal !== total) {
+      page9HeroTotalEl.classList.remove('is-bump');
+      void page9HeroTotalEl.offsetWidth;
+      page9HeroTotalEl.classList.add('is-bump');
+    }
+    page9HeroLastTotal = total;
+
+    page9HeroEl.classList.toggle('has-goal', goal > 0);
+    page9HeroEl.classList.toggle('is-complete', goal > 0 && total >= goal);
+    if (goal > 0) {
+      const ratio = Math.min(1, total / goal);
+      page9HeroBarFill.style.width = `${Math.round(ratio * 100)}%`;
+      if (total > goal) page9HeroNote.textContent = `Hedef aşıldı, +${total - goal} soru`;
+      else if (total === goal) page9HeroNote.textContent = 'Hedef tamamlandı';
+      else page9HeroNote.textContent = `%${Math.floor(ratio * 100)} · ${goal - total} soru kaldı`;
+    }
+  };
+
+  // Sayfadaki butonun etiketi/rozeti: hedef varsa "Hedef 50 soru" görünür.
   const renderPage9GoalBtn = () => {
     const goal = page9ClampGoal(page9State.dailyGoal);
+    renderPage9Hero();
     page9GoalBtn.classList.toggle('has-goal', goal > 0);
     page9GoalBtnValue.textContent = goal > 0 ? `${goal} soru` : '';
     page9GoalBtn.setAttribute(
@@ -25359,11 +27139,15 @@
 
   // Tarih kutusuna tıklanınca bugüne dön.
   page9DateLabel.style.cursor = 'pointer';
-  page9DateLabel.addEventListener('click', () => {
+  const page9GoToToday = () => {
     page9SelectedDate = page9StartOfDay(new Date());
     page9RenderDateRow();
     renderPage9SubjectList();
     if (page9Range === 'day') renderPage9Summary();
+  };
+  page9DateLabel.addEventListener('click', page9GoToToday);
+  page9DateLabel.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); page9GoToToday(); }
   });
 
   // ---- Özet: Gün/Hafta/Ay sekmesi ----
@@ -25416,7 +27200,12 @@
   // Seçili aralıktaki (gün/hafta/ay) kayıtları toplayıp genel toplamı ve
   // TYT/AYT altında branş bazlı, en çok çözülenden aza doğru sıralı ve
   // çubukla görselleştirilmiş dağılımı çizer.
+  const page9SummaryCardEl = page9SummaryTotal.closest('.page9-summary-card');
   const renderPage9Summary = () => {
+    renderPage9Hero();
+    // "Gün" aralığında toplam ve tarih, sayfanın üstündeki gün başlığı ve
+    // toplam sayısıyla aynı olduğundan gizlenir (sadece branş dağılımı kalır).
+    if (page9SummaryCardEl) page9SummaryCardEl.classList.toggle('is-day', page9Range === 'day');
     const { start, end } = page9GetRangeBounds();
     const startKey = page9DateKey(start);
     const endKey = page9DateKey(end);
@@ -25513,6 +27302,30 @@
   page9RenderDateRow();
   renderPage9SubjectList();
   renderPage9Summary();
+
+  // ---- Gün satırı sabitleme (Planlayıcı'daki hafta şeridiyle aynı) ----
+  // Satırın kendisi CSS ile (position:sticky) üstte sabit kalır; burada
+  // sadece arkasındaki zeminin kaydırmayla yumuşakça belirmesi için 0→1
+  // arası bir ilerleme değeri (--p9-stick) yazılır. En üstteyken 0 (zemin
+  // görünmez, başlık ve satır normal), RAMP_PX kadar kaydırınca 1 olur.
+  (() => {
+    const pageEl = document.getElementById('page-9');
+    const rowEl = pageEl && pageEl.querySelector('.page9-date-row');
+    if (!pageEl || !rowEl) return;
+    const RAMP_PX = 36;
+    let queued = false;
+    const update = () => {
+      queued = false;
+      const p = Math.max(0, Math.min(1, pageEl.scrollTop / RAMP_PX));
+      rowEl.style.setProperty('--p9-stick', p.toFixed(3));
+    };
+    pageEl.addEventListener('scroll', () => {
+      if (queued) return;
+      queued = true;
+      requestAnimationFrame(update);
+    }, { passive: true });
+    update();
+  })();
 </script>
 
 <script>
