@@ -268,6 +268,53 @@
     stroke-linejoin: round;
   }
 
+  /* ---------- Ana sayfa: "Kronometre" metin widget'ı ----------
+     Kart/gölge taşımaz; Pace logosuyla (bkz. .app-logo) tam olarak aynı
+     marka tipografisini paylaşan, sağ üst köşede onun simetriğinde duran
+     canlı bir metin. Süre 0'ken soluk "Kronometre" etiketini, süre varken
+     akan zamanı gösterir; çalışırken hafif nabız animasyonuyla "canlı"
+     olduğunu belli eder. Kısa dokunuş Kronometre sayfasını açar (bkz. JS:
+     openKronometrePageFromHome), metne basılı tutmak onay penceresiyle
+     süreyi sıfırlar (bkz. JS: openStopwatchResetConfirm). */
+  .home-kronometre-widget {
+    position: absolute;
+    top: calc(env(safe-area-inset-top) + 16px);
+    right: 22px;
+    z-index: 2;
+    background: none;
+    border: none;
+    padding: 0.4rem 0 0.4rem 1.2rem;
+    margin: 0;
+    cursor: pointer;
+    text-align: right;
+    font-family: "Baloo 2", "Sabon", sans-serif;
+    font-weight: 700;
+    font-size: 1.3rem;
+    letter-spacing: -0.01em;
+    color: var(--theme-text, #1a1a1a);
+    transition: color 0.5s ease, opacity 0.2s ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .home-kronometre-widget:active {
+    opacity: 0.55;
+  }
+
+  .home-kronometre-widget.is-idle {
+    opacity: 0.4;
+    font-weight: 600;
+    font-size: 1rem;
+  }
+
+  @keyframes homeKronometrePulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.55; }
+  }
+
+  .home-kronometre-widget.is-running {
+    animation: homeKronometrePulse 1.6s ease-in-out infinite;
+  }
+
   /* ---------- Alt Nav Bar ---------- */
 
   .navbar {
@@ -2132,6 +2179,21 @@
     height: 21px;
   }
 
+  /* "Yapıldı" kutlaması (halka dalgaları + parçacıklar) widget'ın 3.6rem'lik
+     işaretçisiyle birebir hizalansın (varsayılan 3.4rem'e göre yazılmıştı). */
+  .home-relax-widget .relax-task-burst {
+    width: 3.6rem;
+    height: 3.6rem;
+    margin-left: -1.8rem;
+  }
+
+  /* Widget'taki tik, işaretçi büyüdüğü için daha belirgin olsun. */
+  .home-relax-widget .relax-task-marker-check {
+    width: 28px;
+    height: 28px;
+    margin: -14px 0 0 -14px;
+  }
+
   .home-relax-widget .relax-task-marker-letter {
     font-size: 1.5rem;
   }
@@ -2608,6 +2670,12 @@
     font-family: "Baloo 2", "Space Grotesk", sans-serif;
     font-weight: 700;
     font-size: 1.18rem;
+    /* Sabit, sayısal bir satır yüksekliği: tanımlanmazsa tarayıcı yazı
+       tipinin kendi "normal" değerini kullanır ve bu, yapıldı-çizgisinin
+       (.relax-task-name-text arka plan çizgisi) hangi yükseklikte
+       göründüğünü de etkiler — sabitlemeyince çizgi bazen tam ortadan
+       geçmeyebiliyordu. */
+    line-height: 1.3;
     color: var(--theme-text, #1a1a1a);
     overflow-wrap: anywhere;
     transition: color 0.5s ease;
@@ -2621,6 +2689,799 @@
     color: var(--theme-text, #1a1a1a);
     opacity: 0.5;
     transition: color 0.5s ease;
+  }
+
+  /* =====================================================================
+     Planlayıcı: görev etkileşimleri — Yapıldı / Düzenle / Sil
+     ---------------------------------------------------------------------
+     • Yuvarlak işaretçiye dokunmak görevi "Yapıldı" yapar: halka dolar, tik
+       kendini çizer, halka dalgası + parçacık patlaması oynar, ad üstü
+       soldan sağa çizilir.
+     • Satıra ya da "⋯" düğmesine dokunmak alttan bir eylem sayfası açar
+       (Yapıldı / Düzenle / Sil). Sil, aynı sayfa içinde ikinci bir onay
+       görünümüne geçer.
+     • Silinen satır kayarak solar, boşluğu yumuşakça kapanır; bağlantı
+       çizgileri o sırada silikleşip yeniden çizilir.
+     ===================================================================== */
+  .relax-task-item {
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  .relax-task-rail {
+    position: relative;
+  }
+
+  /* Basınca hafifçe beliren yumuşak vurgu (satır içeriğinin arkasında). */
+  .relax-task-content {
+    position: relative;
+    isolation: isolate;
+  }
+
+  .relax-task-content::before {
+    content: "";
+    position: absolute;
+    inset: -0.4rem -0.6rem;
+    border-radius: 18px;
+    background: color-mix(in srgb, var(--theme-text, #1a1a1a) 7%, transparent);
+    opacity: 0;
+    transform: scale(0.98);
+    z-index: -1;
+    pointer-events: none;
+    transition: opacity 0.2s ease, transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .relax-task-content:active::before {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  /* Saat + "⋯" düğmesi yan yana, sağ kenara yaslı. */
+  .relax-task-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.1rem;
+    flex-shrink: 0;
+  }
+
+  .relax-task-more {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 1.75rem;
+    height: 1.75rem;
+    margin: 0 -0.45rem 0 0;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    background: transparent;
+    color: var(--theme-text, #1a1a1a);
+    opacity: 0.42;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: opacity 0.2s ease, background-color 0.2s ease, transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), color 0.5s ease;
+  }
+
+  .relax-task-more svg {
+    width: 16px;
+    height: 16px;
+    pointer-events: none;
+  }
+
+  .relax-task-more:active {
+    opacity: 0.95;
+    background: color-mix(in srgb, var(--theme-text, #1a1a1a) 11%, transparent);
+    transform: scale(0.88);
+  }
+
+  .relax-task-more:focus-visible {
+    outline: 2px solid var(--accent-color, #ff90e8);
+    outline-offset: 1px;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .relax-task-more:hover {
+      opacity: 0.85;
+      background: color-mix(in srgb, var(--theme-text, #1a1a1a) 9%, transparent);
+    }
+  }
+
+  /* --- İşaretçi: dokunulabilir ("Yapıldı" düğmesi) --- */
+  .relax-task-item .relax-task-marker {
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition:
+      box-shadow 0.4s ease,
+      color 0.5s ease,
+      transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .relax-task-item .relax-task-marker:active {
+    transform: scale(0.92);
+  }
+
+  .relax-task-item .relax-task-marker:focus-visible {
+    outline: 2px solid var(--accent-color, #ff90e8);
+    outline-offset: 3px;
+  }
+
+  .relax-task-marker.is-popping {
+    animation: relaxMarkerPop 0.62s cubic-bezier(0.34, 1.3, 0.64, 1);
+  }
+
+  @keyframes relaxMarkerPop {
+    0% { transform: scale(1); }
+    28% { transform: scale(0.84); }
+    62% { transform: scale(1.13); }
+    100% { transform: scale(1); }
+  }
+
+  /* Dolu katmandaki ikon, "yapıldı" olunca küçülüp dönerek kaybolur; yerine
+     tik kendini çizer (path'in pathLength="1" değeriyle stroke-dash). */
+  .relax-task-marker-glyph {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.42s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.22s ease;
+  }
+
+  .relax-task-marker .relax-task-marker-check {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 26px;
+    height: 26px;
+    margin: -13px 0 0 -13px;
+    overflow: visible;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2.9;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    pointer-events: none;
+  }
+
+  .relax-task-marker-check path {
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+    transition: stroke-dashoffset 0.22s ease;
+  }
+
+  .relax-task-marker.is-checked .relax-task-marker-glyph {
+    opacity: 0;
+    transform: scale(0.35) rotate(-45deg);
+  }
+
+  .relax-task-marker.is-checked .relax-task-marker-check path {
+    stroke-dashoffset: 0;
+    transition: stroke-dashoffset 0.46s cubic-bezier(0.65, 0, 0.35, 1) 0.2s;
+  }
+
+  /* --- Ad: yapılınca üstü soldan sağa çizilir (her satır parçası ayrı) --- */
+  .relax-task-name-text {
+    background-image: linear-gradient(currentColor, currentColor);
+    background-repeat: no-repeat;
+    /* .relax-task-name'in artık sabit bir line-height'ı olduğu için (bkz.
+       yukarısı) burada tam %50, satırın gerçek dikey ortasına denk gelir;
+       her yazı tipi/tarayıcıda aynı şekilde ortalanır. */
+    background-position: 0 50%;
+    background-size: 0% 2.5px;
+    -webkit-box-decoration-break: clone;
+    box-decoration-break: clone;
+    transition: background-size 0.55s cubic-bezier(0.65, 0, 0.35, 1) 0.14s;
+  }
+
+  .relax-task-item .relax-task-name {
+    transition: color 0.5s ease, opacity 0.45s ease 0.1s;
+  }
+
+  .relax-task-item.is-done .relax-task-name-text {
+    background-size: 100% 2.5px;
+  }
+
+  .relax-task-item.is-done .relax-task-name {
+    opacity: 0.5;
+  }
+
+  .relax-task-item .relax-task-time {
+    transition: color 0.5s ease, opacity 0.45s ease 0.1s;
+  }
+
+  .relax-task-item.is-done .relax-task-time {
+    opacity: 0.28;
+  }
+
+  /* --- "Yapıldı" kutlaması: halka dalgaları + parçacıklar + parıltı --- */
+  .relax-task-burst {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    width: 3.4rem;
+    height: 3.4rem;
+    margin-left: -1.7rem;
+    pointer-events: none;
+    z-index: 3;
+  }
+
+  .relax-task-burst::before {
+    content: "";
+    position: absolute;
+    inset: -34%;
+    border-radius: 50%;
+    background: radial-gradient(circle, color-mix(in srgb, var(--mk-color) 52%, transparent), transparent 64%);
+    opacity: 0;
+    animation: relaxBurstGlow 0.75s ease-out forwards;
+  }
+
+  .relax-task-burst-ring {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    border: 2.5px solid var(--mk-color);
+    opacity: 0;
+    animation: relaxBurstRing 0.85s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  }
+
+  .relax-task-burst-ring.is-late {
+    border-width: 1.5px;
+    animation-delay: 0.13s;
+  }
+
+  .relax-task-burst-dot {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: var(--s, 5px);
+    height: var(--s, 5px);
+    margin: calc(var(--s, 5px) / -2) 0 0 calc(var(--s, 5px) / -2);
+    border-radius: 50%;
+    background: var(--mk-color);
+    opacity: 0;
+    animation: relaxBurstDot 0.85s cubic-bezier(0.16, 1, 0.3, 1) var(--dl, 0ms) forwards;
+  }
+
+  .relax-task-burst-dot:nth-child(4n + 3) {
+    border-radius: 2px;
+    height: calc(var(--s, 5px) * 1.9);
+  }
+
+  .relax-task-burst-dot:nth-child(4n + 1) {
+    background: color-mix(in srgb, var(--mk-color) 45%, #ffffff);
+  }
+
+  @keyframes relaxBurstRing {
+    0% { transform: scale(0.92); opacity: 0.85; }
+    100% { transform: scale(1.55); opacity: 0; }
+  }
+
+  @keyframes relaxBurstGlow {
+    0% { transform: scale(0.6); opacity: 0; }
+    30% { opacity: 1; }
+    100% { transform: scale(1.1); opacity: 0; }
+  }
+
+  @keyframes relaxBurstDot {
+    0% { transform: rotate(var(--a)) translateY(-1.5rem) scale(0.3); opacity: 0; }
+    14% { opacity: 1; }
+    100% { transform: rotate(var(--a)) translateY(calc(-1.5rem - var(--d))) scale(1); opacity: 0; }
+  }
+
+  /* --- Düzenlenen görev: kısa bir vurgu (halka zıplar, satır arkası parlar) --- */
+  .relax-task-item.is-updated .relax-task-marker {
+    animation: relaxMarkerPop 0.7s cubic-bezier(0.34, 1.3, 0.64, 1) 0.35s;
+  }
+
+  .relax-task-item.is-updated .relax-task-content::before {
+    animation: relaxRowFlash 1.7s ease 0.3s both;
+  }
+
+  @keyframes relaxRowFlash {
+    0% { opacity: 0; transform: scale(0.97); background: color-mix(in srgb, var(--accent-color, #ff90e8) 26%, transparent); }
+    22% { opacity: 1; transform: scale(1); background: color-mix(in srgb, var(--accent-color, #ff90e8) 26%, transparent); }
+    100% { opacity: 0; transform: scale(1); background: color-mix(in srgb, var(--accent-color, #ff90e8) 26%, transparent); }
+  }
+
+  /* --- Silme: satır sola kayıp solar, sonra yüksekliği yumuşakça kapanır --- */
+  .relax-task-item.is-removing {
+    pointer-events: none;
+    animation: relaxItemOut 0.32s cubic-bezier(0.5, 0, 0.9, 0.4) forwards;
+  }
+
+  @keyframes relaxItemOut {
+    to { opacity: 0; transform: translateX(-34px) scale(0.96); filter: blur(3px); }
+  }
+
+  .relax-task-item.is-collapsing {
+    transition: height 0.4s cubic-bezier(0.65, 0, 0.35, 1), padding-bottom 0.4s cubic-bezier(0.65, 0, 0.35, 1);
+  }
+
+  .relax-tasks-connectors {
+    transition: opacity 0.38s ease 0.05s;
+  }
+
+  .relax-tasks-connectors.is-settling {
+    opacity: 0;
+    transition-duration: 0.14s;
+    transition-delay: 0s;
+  }
+
+  /* =====================================================================
+     Görev eylem sayfası (alttan açılan): Yapıldı / Düzenle / Sil
+     ===================================================================== */
+  .task-sheet-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 70;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    background: rgba(14, 14, 22, 0);
+    -webkit-backdrop-filter: blur(0px);
+    backdrop-filter: blur(0px);
+    visibility: hidden;
+    pointer-events: none;
+    touch-action: none;
+    transition:
+      background-color 0.38s ease,
+      -webkit-backdrop-filter 0.38s ease,
+      backdrop-filter 0.38s ease,
+      visibility 0s linear 0.5s;
+  }
+
+  .task-sheet-backdrop.is-open {
+    background: rgba(14, 14, 22, 0.42);
+    -webkit-backdrop-filter: blur(7px);
+    backdrop-filter: blur(7px);
+    visibility: visible;
+    pointer-events: auto;
+    transition-delay: 0s;
+  }
+
+  .task-sheet {
+    --ts-bg: #ffffff;
+    --ts-text: #16171b;
+    --ts-muted: rgba(22, 23, 27, 0.5);
+    --ts-tile: rgba(22, 23, 27, 0.05);
+    --ts-tile-strong: rgba(22, 23, 27, 0.1);
+    --ts-task: var(--accent-color, #ff90e8);
+    --ts-on-task: #16171b;
+    --ts-danger: #ff5c5c;
+    position: relative;
+    width: 100%;
+    max-width: 32rem;
+    box-sizing: border-box;
+    padding: 8px 16px calc(20px + env(safe-area-inset-bottom));
+    background: var(--ts-bg);
+    color: var(--ts-text);
+    border-radius: 30px 30px 0 0;
+    box-shadow: 0 -22px 56px -22px rgba(0, 0, 0, 0.5), 0 -2px 12px rgba(0, 0, 0, 0.06);
+    font-family: "Baloo 2", "Space Grotesk", sans-serif;
+    outline: none;
+    transform: translateY(106%);
+    transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+    will-change: transform;
+  }
+
+  /* Sürüklerken/geri yaylanırken altta boşluk görünmesin diye aşağı uzayan zemin. */
+  .task-sheet::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 100%;
+    height: 90px;
+    background: var(--ts-bg);
+  }
+
+  /* Üstte, görevin renginden yumuşak bir ışıma. */
+  .task-sheet::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: 150px;
+    border-radius: 30px 30px 0 0;
+    background: radial-gradient(85% 100% at 50% 0%, color-mix(in srgb, var(--ts-task) 34%, transparent), transparent 72%);
+    opacity: 0.7;
+    pointer-events: none;
+  }
+
+  .task-sheet-backdrop.is-open .task-sheet {
+    transform: translateY(0);
+  }
+
+  .task-sheet.is-dragging {
+    transition: none;
+  }
+
+  body.is-anthracite .task-sheet {
+    --ts-bg: var(--dark-card-color, #32343a);
+    --ts-text: #f2f2f4;
+    --ts-muted: rgba(242, 242, 244, 0.55);
+    --ts-tile: rgba(255, 255, 255, 0.065);
+    --ts-tile-strong: rgba(255, 255, 255, 0.12);
+    box-shadow: 0 -22px 56px -22px rgba(0, 0, 0, 0.75), 0 -1px 0 rgba(255, 255, 255, 0.05);
+  }
+
+  .task-sheet-drag {
+    position: relative;
+    touch-action: none;
+    cursor: grab;
+  }
+
+  .task-sheet-grabber {
+    width: 2.6rem;
+    height: 5px;
+    margin: 4px auto 12px;
+    border-radius: 999px;
+    background: var(--ts-tile-strong);
+  }
+
+  .task-sheet-views {
+    position: relative;
+    display: grid;
+  }
+
+  .task-sheet-view {
+    grid-area: 1 / 1;
+    min-width: 0;
+    transition: opacity 0.28s ease, transform 0.45s cubic-bezier(0.22, 1, 0.36, 1), visibility 0s linear 0s;
+  }
+
+  .task-sheet-view-confirm {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 0.4rem 0.4rem 0;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transform: translateX(28px);
+    transition-delay: 0s, 0s, 0.45s;
+  }
+
+  .task-sheet[data-view="confirm"] .task-sheet-view-main {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transform: translateX(-28px);
+    transition-delay: 0s, 0s, 0.45s;
+  }
+
+  .task-sheet[data-view="confirm"] .task-sheet-view-confirm {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: none;
+    transition-delay: 0.06s, 0.06s, 0s;
+  }
+
+  /* --- Başlık: işaretçi önizlemesi + ad + saat (+ Yapıldı hapı) --- */
+  .task-sheet-head {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+    padding: 0.15rem 0.35rem 1.05rem;
+  }
+
+  .task-sheet-marker {
+    position: relative;
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 3.1rem;
+    height: 3.1rem;
+    border-radius: 50%;
+    background: var(--ts-task);
+    color: var(--ts-on-task);
+    box-shadow: 0 12px 22px -12px var(--ts-task);
+  }
+
+  .task-sheet-marker svg {
+    width: 21px;
+    height: 21px;
+  }
+
+  .task-sheet-marker .relax-task-marker-letter {
+    font-size: 1.25rem;
+  }
+
+  .task-sheet-titles {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.05rem;
+  }
+
+  .task-sheet-name {
+    font-weight: 800;
+    font-size: 1.22rem;
+    line-height: 1.15;
+    overflow-wrap: anywhere;
+  }
+
+  .task-sheet-time {
+    font-weight: 600;
+    font-size: 0.88rem;
+    color: var(--ts-muted);
+  }
+
+  .task-sheet-chip {
+    display: none;
+    flex: none;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.28rem 0.7rem 0.28rem 0.55rem;
+    border-radius: 999px;
+    background: var(--ts-task);
+    color: var(--ts-on-task);
+    font-weight: 700;
+    font-size: 0.78rem;
+  }
+
+  .task-sheet-chip.is-visible {
+    display: inline-flex;
+  }
+
+  .task-sheet-chip svg {
+    width: 12px;
+    height: 12px;
+  }
+
+  /* --- Eylem satırları --- */
+  .task-sheet-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+  }
+
+  .task-sheet-action {
+    --ic-bg: var(--ts-tile-strong);
+    --ic-fg: var(--ts-text);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    gap: 0.95rem;
+    width: 100%;
+    margin: 0;
+    padding: 0.78rem 1rem 0.78rem 0.8rem;
+    border: none;
+    border-radius: 22px;
+    background: var(--ts-tile);
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.2s ease;
+  }
+
+  .task-sheet-backdrop.is-open .task-sheet-action {
+    animation: taskSheetRise 0.55s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+    animation-delay: calc(0.1s + var(--i, 0) * 65ms);
+  }
+
+  @keyframes taskSheetRise {
+    from { opacity: 0; transform: translateY(18px) scale(0.98); }
+    to { opacity: 1; transform: none; }
+  }
+
+  /* Basış noktasından yayılan yumuşak ışık (JS: --rx / --ry). */
+  .task-sheet-action::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at var(--rx, 50%) var(--ry, 50%), color-mix(in srgb, var(--ic-bg) 55%, transparent), transparent 62%);
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    pointer-events: none;
+  }
+
+  .task-sheet-action:active {
+    transform: scale(0.972);
+    background: var(--ts-tile-strong);
+  }
+
+  .task-sheet-action:active::after {
+    opacity: 1;
+    transition-duration: 0.08s;
+  }
+
+  .task-sheet-action:focus-visible {
+    outline: 2px solid var(--ts-task);
+    outline-offset: 2px;
+  }
+
+  .task-sheet-action[data-action="done"] {
+    --ic-bg: var(--ts-task);
+    --ic-fg: var(--ts-on-task);
+  }
+
+  .task-sheet-action[data-action="delete"] {
+    --ic-bg: color-mix(in srgb, var(--ts-danger) 18%, transparent);
+    --ic-fg: var(--ts-danger);
+  }
+
+  .task-sheet-action[data-action="delete"] .task-sheet-action-title {
+    color: var(--ts-danger);
+  }
+
+  .task-sheet-action-ic {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 2.75rem;
+    height: 2.75rem;
+    border-radius: 50%;
+    background: var(--ic-bg);
+    color: var(--ic-fg);
+    transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .task-sheet-action:active .task-sheet-action-ic {
+    transform: scale(0.9) rotate(-6deg);
+  }
+
+  .task-sheet-action-ic svg {
+    width: 21px;
+    height: 21px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2.2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  /* Sayfa açılırken tik kendini çizer. */
+  .task-sheet-action-ic .ts-check path {
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+  }
+
+  .task-sheet-backdrop.is-open .task-sheet-action-ic .ts-check path {
+    stroke-dashoffset: 0;
+    transition: stroke-dashoffset 0.5s cubic-bezier(0.65, 0, 0.35, 1) 0.5s;
+  }
+
+  .task-sheet-action-text {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    line-height: 1.2;
+  }
+
+  .task-sheet-action-title {
+    font-weight: 700;
+    font-size: 1.02rem;
+  }
+
+  .task-sheet-action-sub {
+    margin-top: 0.08rem;
+    font-weight: 600;
+    font-size: 0.8rem;
+    color: var(--ts-muted);
+  }
+
+  /* --- Silme onayı görünümü --- */
+  .task-sheet-confirm-ic {
+    display: grid;
+    place-items: center;
+    width: 3.6rem;
+    height: 3.6rem;
+    margin-bottom: 0.85rem;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--ts-danger) 16%, transparent);
+    color: var(--ts-danger);
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--ts-danger) 30%, transparent);
+  }
+
+  .task-sheet[data-view="confirm"] .task-sheet-confirm-ic {
+    animation: taskSheetWarn 1.1s ease 0.15s both;
+  }
+
+  @keyframes taskSheetWarn {
+    0% { transform: scale(0.6); box-shadow: 0 0 0 0 color-mix(in srgb, var(--ts-danger) 34%, transparent); }
+    35% { transform: scale(1.08); }
+    55% { transform: scale(1); box-shadow: 0 0 0 14px color-mix(in srgb, var(--ts-danger) 0%, transparent); }
+    100% { transform: scale(1); box-shadow: 0 0 0 0 transparent; }
+  }
+
+  .task-sheet-confirm-ic svg {
+    width: 26px;
+    height: 26px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2.1;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .task-sheet-confirm-title {
+    font-weight: 800;
+    font-size: 1.25rem;
+    line-height: 1.2;
+  }
+
+  .task-sheet-confirm-desc {
+    max-width: 19rem;
+    margin-top: 0.3rem;
+    font-weight: 600;
+    font-size: 0.92rem;
+    line-height: 1.35;
+    color: var(--ts-muted);
+    overflow-wrap: anywhere;
+  }
+
+  .task-sheet-confirm-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.6rem;
+    width: 100%;
+    margin-top: 1.25rem;
+  }
+
+  .task-sheet-btn {
+    height: 3.1rem;
+    border: none;
+    border-radius: 999px;
+    background: var(--ts-tile-strong);
+    color: inherit;
+    font-family: inherit;
+    font-weight: 700;
+    font-size: 0.98rem;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.25s ease, filter 0.2s ease;
+  }
+
+  .task-sheet-btn:active {
+    transform: scale(0.95);
+  }
+
+  .task-sheet-btn.is-danger {
+    background: var(--ts-danger);
+    color: #fff;
+    box-shadow: 0 14px 26px -14px var(--ts-danger);
+  }
+
+  .task-sheet-btn.is-danger:active {
+    box-shadow: 0 6px 12px -8px var(--ts-danger);
+    filter: brightness(0.95);
+  }
+
+  .task-sheet-btn:focus-visible {
+    outline: 2px solid var(--ts-task);
+    outline-offset: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .task-sheet,
+    .task-sheet-backdrop,
+    .task-sheet-view,
+    .task-sheet-action,
+    .relax-task-item.is-collapsing {
+      transition-duration: 0.01ms !important;
+      transition-delay: 0s !important;
+    }
+    .task-sheet-backdrop.is-open .task-sheet-action,
+    .task-sheet[data-view="confirm"] .task-sheet-confirm-ic,
+    .relax-task-marker.is-popping,
+    .relax-task-item.is-updated .relax-task-marker,
+    .relax-task-item.is-updated .relax-task-content::before,
+    .relax-task-item.is-removing {
+      animation-duration: 0.01ms !important;
+      animation-delay: 0s !important;
+    }
+    .relax-task-burst { display: none; }
   }
 
   /* =====================================================================
@@ -6029,8 +6890,9 @@
 
     /* Bulanık zemin: en tepedeyken görünmez, satır yapışmaya başlayınca
        (JS: --qh-stick) belirir. Ekranın en üstüne (güvenli alan dahil)
-       kadar uzanır; filtre satırının altında ~12px tam bulanık şerit
-       kalır, ardından 24px boyunca yumuşakça solar. Tam genişlikte olması
+       kadar uzanır; filtre satırının altında ~8px hafif bulanık şerit
+       kalır, ardından 12px boyunca yumuşakça solar (eskiden 36px / 14px
+       blur idi; daha hafif ve kısa hâle getirildi). Tam genişlikte olması
        için 100vw'ya ortalanır. */
     #page-camera .qhavuz-filter-bar::before {
       content: '';
@@ -6039,16 +6901,16 @@
       width: 100vw;
       transform: translateX(-50%);
       top: calc(-1 * var(--qh-stick-top));
-      bottom: -36px;
+      bottom: -20px;
       z-index: -1;
       pointer-events: none;
       opacity: var(--qh-stick, 0);
       background-color: var(--theme-bg, #F6F4EF);
-      background-color: color-mix(in srgb, var(--theme-bg, #F6F4EF) 97%, transparent);
-      -webkit-backdrop-filter: blur(14px);
-      backdrop-filter: blur(14px);
-      -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 24px), transparent);
-      mask-image: linear-gradient(to bottom, #000 calc(100% - 24px), transparent);
+      background-color: color-mix(in srgb, var(--theme-bg, #F6F4EF) 92%, transparent);
+      -webkit-backdrop-filter: blur(8px);
+      backdrop-filter: blur(8px);
+      -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 12px), transparent);
+      mask-image: linear-gradient(to bottom, #000 calc(100% - 12px), transparent);
       transition: background-color var(--theme-transition-duration, 480ms) var(--theme-transition-easing, ease);
     }
 
@@ -6100,6 +6962,55 @@
   #page-camera .qhavuz-filter-bar > .qhavuz-pill:not(.is-active) .qhavuz-pill-label,
   #page-camera .qhavuz-filter-bar > .qhavuz-pill.is-active .qhavuz-pill-label-done {
     display: inline;
+  }
+
+  /* ---- Soru Seç modunda "Düzenle" hapı → kırmızı "Sil" hapı ----
+     Seç açılınca (JS: .is-delete-mode) Düzenle hapı kırmızıya dolar, ikon
+     çöp kutusuna, yazı "Sil"e döner; basınca seçili sorular onay
+     penceresinden sonra silinir. Seçim yokken de kırmızı kalır, basınca
+     hafifçe sallanıp "önce soru seç" der. Telefonda (filtre çubuğundaki
+     küçük hap) ve tablette (üst çubuk) aynı kurallar geçerlidir; #id ile
+     yazıldığı için yukarıdaki genel/koyu mod/telefon kurallarını ezer. */
+  #page-camera #qhavuzEditBtn .qhavuz-pill-icon-trash,
+  #page-camera #qhavuzEditBtn .qhavuz-pill-label-trash {
+    display: none;
+  }
+
+  #page-camera #qhavuzEditBtn.is-delete-mode {
+    background-color: #ff5c5c;
+    color: #fff;
+    animation: qhavuzDeleteIgnite 0.38s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  #page-camera #qhavuzEditBtn.is-delete-mode .qhavuz-pill-icon,
+  #page-camera #qhavuzEditBtn.is-delete-mode .qhavuz-pill-icon-done,
+  #page-camera #qhavuzEditBtn.is-delete-mode .qhavuz-pill-label,
+  #page-camera #qhavuzEditBtn.is-delete-mode .qhavuz-pill-label-done {
+    display: none;
+  }
+
+  #page-camera #qhavuzEditBtn.is-delete-mode .qhavuz-pill-icon-trash {
+    display: block;
+  }
+
+  #page-camera #qhavuzEditBtn.is-delete-mode .qhavuz-pill-label-trash {
+    display: inline;
+  }
+
+  #page-camera #qhavuzEditBtn.is-delete-mode.is-nudge {
+    animation: qhavuzDeleteNudge 0.34s ease;
+  }
+
+  @keyframes qhavuzDeleteIgnite {
+    0% { transform: scale(0.88); }
+    100% { transform: scale(1); }
+  }
+
+  @keyframes qhavuzDeleteNudge {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-3px); }
+    50% { transform: translateX(3px); }
+    75% { transform: translateX(-2px); }
   }
 
   /* Telefonda araç paneli (Görsel Yükle/Test Modu satırı, Paketlerim,
@@ -17840,6 +18751,14 @@
       <text x="2" y="40">Pace</text>
     </svg>
 
+    <!-- Kronometre metin widget'ı: kart değil, Pace logosuyla aynı marka
+         tipografisini taşıyan sade bir metin; sağ üst köşede logonun
+         simetriğinde durur. Kısa dokunuş Kronometre sayfasını (Sayfa 5)
+         açar, basılı tutmak (onay penceresiyle) süreyi sıfırlar. -->
+    <button type="button" class="home-kronometre-widget is-idle" id="homeKronometreWidget" aria-label="Kronometre'ye git; basılı tutunca süreyi sıfırlar">
+      <span id="homeKronometreWidgetText">Kronometre</span>
+    </button>
+
     <div class="home-widgets-stack">
       <!-- "Rahatla" widget'ı: iOS "Structured" widget'ından ilham alınan
            koyu kart. Şimdilik statik (saat sabit "22:00"); daireye
@@ -18057,6 +18976,74 @@
         <!-- İkon / Renk adımlarında seçim yapılınca "Sürdür", son adımda "Ekle" -->
         <button type="button" class="task-add-submit task-add-submit-continue" id="taskAddContinueBtn">Sürdür</button>
         <button type="button" class="task-add-submit task-add-submit-save" id="taskAddSaveBtn">Ekle</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Planlayıcı: bir göreve (satıra ya da "⋯" düğmesine) dokununca alttan açılan
+       eylem sayfası. Ana görünüm: Yapıldı / Düzenle / Sil. "Sil" aynı sayfa
+       içinde ikinci bir onay görünümüne geçer. Aşağı sürükleyerek ya da dışına
+       dokunarak kapanır. İçerik JS'te (openTaskSheet) doldurulur. -->
+  <div class="task-sheet-backdrop" id="taskSheetBackdrop" aria-hidden="true">
+    <div class="task-sheet" id="taskSheet" role="dialog" aria-modal="true" aria-labelledby="taskSheetName" data-view="main" tabindex="-1">
+      <div class="task-sheet-drag" id="taskSheetDrag">
+        <div class="task-sheet-grabber" aria-hidden="true"></div>
+      </div>
+
+      <div class="task-sheet-views">
+        <div class="task-sheet-view task-sheet-view-main">
+          <div class="task-sheet-head task-sheet-drag" id="taskSheetHead">
+            <span class="task-sheet-marker" id="taskSheetMarker" aria-hidden="true"></span>
+            <div class="task-sheet-titles">
+              <span class="task-sheet-name" id="taskSheetName"></span>
+              <span class="task-sheet-time" id="taskSheetTime"></span>
+            </div>
+            <span class="task-sheet-chip" id="taskSheetChip">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              Yapıldı
+            </span>
+          </div>
+
+          <div class="task-sheet-actions">
+            <button type="button" class="task-sheet-action" data-action="done" style="--i:0">
+              <span class="task-sheet-action-ic" id="taskSheetDoneIc"></span>
+              <span class="task-sheet-action-text">
+                <span class="task-sheet-action-title" id="taskSheetDoneTitle">Yapıldı olarak işaretle</span>
+                <span class="task-sheet-action-sub" id="taskSheetDoneSub">Görevi tamamladın mı?</span>
+              </span>
+            </button>
+            <button type="button" class="task-sheet-action" data-action="edit" style="--i:1">
+              <span class="task-sheet-action-ic">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20l4.5-1 10.2-10.2-3.5-3.5L5 15.5 4 20z"/><path d="M13.3 6.8l3.5 3.5"/></svg>
+              </span>
+              <span class="task-sheet-action-text">
+                <span class="task-sheet-action-title">Düzenle</span>
+                <span class="task-sheet-action-sub">Ad, ikon, renk ve saati değiştir</span>
+              </span>
+            </button>
+            <button type="button" class="task-sheet-action" data-action="delete" style="--i:2">
+              <span class="task-sheet-action-ic">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 6h17"/><path d="M8.5 6V4.3a1 1 0 0 1 1-1h5a1 1 0 0 1 1 1V6"/><path d="M6 6l.9 13.2a2 2 0 0 0 2 1.8h6.2a2 2 0 0 0 2-1.8L18 6"/><path d="M10 10.5v6M14 10.5v6"/></svg>
+              </span>
+              <span class="task-sheet-action-text">
+                <span class="task-sheet-action-title">Sil</span>
+                <span class="task-sheet-action-sub">Bu görevi listeden kaldır</span>
+              </span>
+            </button>
+          </div>
+        </div>
+
+        <div class="task-sheet-view task-sheet-view-confirm" aria-live="polite">
+          <span class="task-sheet-confirm-ic" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M3.5 6h17"/><path d="M8.5 6V4.3a1 1 0 0 1 1-1h5a1 1 0 0 1 1 1V6"/><path d="M6 6l.9 13.2a2 2 0 0 0 2 1.8h6.2a2 2 0 0 0 2-1.8L18 6"/><path d="M10 10.5v6M14 10.5v6"/></svg>
+          </span>
+          <span class="task-sheet-confirm-title">Bu görev silinsin mi?</span>
+          <span class="task-sheet-confirm-desc" id="taskSheetConfirmDesc"></span>
+          <div class="task-sheet-confirm-actions">
+            <button type="button" class="task-sheet-btn" data-action="cancel-delete">Vazgeç</button>
+            <button type="button" class="task-sheet-btn is-danger" data-action="confirm-delete">Evet, sil</button>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -19478,8 +20465,15 @@
           <svg class="qhavuz-pill-icon-done" viewBox="0 0 24 24" width="15" height="15" aria-hidden="true">
             <path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
+          <svg class="qhavuz-pill-icon-trash" viewBox="0 0 24 24" width="15" height="15" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 6h18"/>
+            <path d="M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2"/>
+            <path d="M6 6l1 14a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-14"/>
+            <path d="M10 11v6M14 11v6"/>
+          </svg>
           <span class="qhavuz-pill-label">Düzenle</span>
           <span class="qhavuz-pill-label-done">Bitti</span>
+          <span class="qhavuz-pill-label-trash">Sil</span>
         </button>
       </div>
     </div>
@@ -19679,7 +20673,7 @@
 <div class="settings-confirm-backdrop" id="qhavuzDeleteConfirmBackdrop">
   <div class="settings-confirm-card">
     <span class="settings-confirm-title">Emin misin?</span>
-    <span class="settings-confirm-desc">Bu soru havuzdan tamamen silinecek.</span>
+    <span class="settings-confirm-desc" id="qhavuzDeleteConfirmDesc">Bu soru havuzdan tamamen silinecek.</span>
     <div class="settings-confirm-actions">
       <button type="button" class="settings-confirm-cancel" id="qhavuzDeleteConfirmCancel">Vazgeç</button>
       <button type="button" class="settings-confirm-confirm" id="qhavuzDeleteConfirmConfirm">Evet, sil</button>
@@ -20581,10 +21575,17 @@
   // ---------- Ana sayfa: "Rahatla" widget'ı ----------
   // Karta basılınca Planyacı ("Rahatla") sayfası açılır. İçerik canlı olarak
   // Planyacı script bloğundaki syncHomeRelaxWidget tarafından doldurulur.
+  // İstisna: soldaki görev işaretçisine (.relax-task-marker) dokunulursa
+  // sayfaya gitmeden görev doğrudan burada "Yapıldı" yapılır (bkz.
+  // window.toggleHomeRelaxWidgetTask, Planyacı script bloğunda tanımlanır).
   const homeRelaxWidgetEl = document.getElementById('homeRelaxWidget');
 
   if (homeRelaxWidgetEl) {
-    homeRelaxWidgetEl.addEventListener('click', () => {
+    homeRelaxWidgetEl.addEventListener('click', (e) => {
+      if (e.target.closest('.relax-task-marker')) {
+        if (typeof window.toggleHomeRelaxWidgetTask === 'function') window.toggleHomeRelaxWidgetTask();
+        return;
+      }
       if (typeof openRelaxPage === 'function') openRelaxPage();
     });
   }
@@ -24032,6 +25033,8 @@
     let iconChosen = false;             // bu oturumda bir ikon (ya da "Boş") seçildi mi
     let iconEmpty = false;              // "Boş" ikon: halkada adın baş harfi görünür
     let colorChosen = false;            // renk adımında bir renk (ya da "Boş") seçildi mi
+    let editingTask = null;             // { id, dateStr }: form "Düzenle" modunda mı (yoksa yeni görev)
+    const topbarTitleEl = overlay.querySelector('.task-add-topbar-title');
 
     // "14:30" biçimi (gün taşarsa 24 saate sarar)
     const fmt = (min) => {
@@ -24407,6 +25410,10 @@
     };
 
     const prepareForm = () => {
+      editingTask = null;
+      if (topbarTitleEl) topbarTitleEl.textContent = 'Yeni Aktivite';
+      overlay.setAttribute('aria-label', 'Yeni Aktivite');
+      saveBtn.textContent = 'Ekle';
       syncThemeBase();
       renderIcons();
       renderColors();
@@ -24519,6 +25526,13 @@
       return relaxClamp01((t - from) / (to - from));
     };
 
+    // Bir parçanın (daire/çizgi) o anki doluluğu. Kullanıcı "Yapıldı" olarak
+    // işaretlediği görevin dairesi zamandan bağımsız olarak tamamen dolu kalır.
+    const relaxSegProgress = (seg, t) => {
+      if (seg.ref && seg.ref.done) return 1;
+      return relaxRangeProgress(t, seg.from, seg.to);
+    };
+
     // "YYYY-MM-DD" + "HH:MM" → yerel saatle mutlak ms.
     const relaxTimeToMs = (dateStr, hhmm) => {
       const d = String(dateStr || '').split('-').map(Number);
@@ -24551,7 +25565,7 @@
       }
 
       relaxSegments.forEach((seg) => {
-        const p = relaxRangeProgress(target, seg.from, seg.to);
+        const p = relaxSegProgress(seg, target);
         seg.fillEl.style.transition = isTick ? `clip-path ${RELAX_TICK_MS}ms linear` : 'none';
         seg.fillEl.style.clipPath = relaxClipFor(p);
         if (seg.markerEl) seg.markerEl.classList.toggle('is-done', p >= 1);
@@ -24576,7 +25590,7 @@
 
       const sweep = () => {
         const now = Date.now();
-        const items = relaxSegments.map((seg) => ({ seg, p: relaxRangeProgress(now, seg.from, seg.to) }));
+        const items = relaxSegments.map((seg) => ({ seg, p: relaxSegProgress(seg, now) }));
         const total = items.reduce((sum, it) => sum + it.seg.len * it.p, 0);
         if (total <= 0) { relaxIntroPlaying = false; return; }
 
@@ -24627,7 +25641,7 @@
       for (let i = 0; i < markerRefs.length; i += 1) {
         const a = markerRefs[i];
         const rectA = a.el.getBoundingClientRect();
-        relaxSegments.push({ fillEl: a.fillEl, markerEl: a.el, len: rectA.height, from: a.startMs, to: a.endMs });
+        relaxSegments.push({ fillEl: a.fillEl, markerEl: a.el, len: rectA.height, from: a.startMs, to: a.endMs, ref: a });
 
         const b = markerRefs[i + 1];
         if (!b) break;
@@ -24667,11 +25681,70 @@
       applyRelaxProgress('instant');
     };
 
+    // ---------- Görev verisi yardımcıları (düzenle / yapıldı / sil) ----------
+    const genTaskId = () => `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    // Düzenleme sonrası (ya da gün değişince) yeniden çizimde vurgulanacak görev ve
+    // bir sonraki çizim için süpürme gecikmesi (overlay kapanışıyla eşleşsin diye).
+    let pendingHighlightId = null;
+    let pendingIntroDelay = null;
+
+    // Görevi günceller; tarih değiştiyse yeni günün listesine taşır. Konum korunur.
+    const updateRelaxTask = (id, fromDate, patch) => {
+      const byDate = getRelaxTasksByDate();
+      const list = Array.isArray(byDate[fromDate]) ? byDate[fromDate] : [];
+      const idx = list.findIndex((t) => t && t.id === id);
+      if (idx < 0) return null;
+      const task = Object.assign({}, list[idx], patch);
+      const toDate = task.date || fromDate;
+      if (toDate === fromDate) {
+        list[idx] = task;
+      } else {
+        list.splice(idx, 1);
+        if (!list.length) delete byDate[fromDate];
+        if (!Array.isArray(byDate[toDate])) byDate[toDate] = [];
+        byDate[toDate].push(task);
+      }
+      saveAppState({ [RELAX_TASKS_STATE_KEY]: byDate });
+      return task;
+    };
+
+    const removeRelaxTaskById = (id, dateStr) => {
+      const byDate = getRelaxTasksByDate();
+      const list = Array.isArray(byDate[dateStr]) ? byDate[dateStr] : [];
+      const idx = list.findIndex((t) => t && t.id === id);
+      if (idx < 0) return false;
+      list.splice(idx, 1);
+      if (!list.length) delete byDate[dateStr];
+      saveAppState({ [RELAX_TASKS_STATE_KEY]: byDate });
+      return true;
+    };
+
+    const TASK_CHECK_PATH = '<path d="M5.5 12.8l4.2 4.2L18.5 8" pathLength="1"/>';
+
+    // İşaretçi/eylem sayfası için ikon ya da (ikonsuz görevde) adın baş harfi.
+    const taskGlyphHtml = (task, size) => {
+      const isLetterTask = task.icon === '' || task.icon === null;
+      if (isLetterTask) {
+        return `<span class="relax-task-marker-letter" aria-hidden="true">${escapeHtml(taskInitial(task.name))}</span>`;
+      }
+      const icon = findTaskAddIcon(task.icon);
+      return `<svg viewBox="0 0 24 24" width="${size}" height="${size}" fill="none" stroke="currentColor" aria-hidden="true">${icon.svg}</svg>`;
+    };
+
     const renderRelaxTasksList = (introDelayMs = 0) => {
       if (!tasksListEl || !tasksItemsEl) return;
+      if (pendingIntroDelay !== null) {
+        introDelayMs = Math.max(introDelayMs, pendingIntroDelay);
+        pendingIntroDelay = null;
+      }
       const dateStr = getSelectedRelaxDateStr();
       const byDate = getRelaxTasksByDate();
-      const tasks = (Array.isArray(byDate[dateStr]) ? byDate[dateStr].slice() : [])
+      const rawList = Array.isArray(byDate[dateStr]) ? byDate[dateStr] : [];
+      // Eski kayıtlarda id olmayabilir; eylemler id'ye dayandığından tamamla.
+      let idsAdded = false;
+      rawList.forEach((t) => { if (t && !t.id) { t.id = genTaskId(); idsAdded = true; } });
+      if (idsAdded) saveAppState({ [RELAX_TASKS_STATE_KEY]: byDate });
+      const tasks = rawList.slice()
         // Başlangıç saatine göre yukarıdan aşağıya sırala.
         .sort((a, b) => (a.start || '').localeCompare(b.start || ''));
 
@@ -24680,6 +25753,7 @@
       relaxSegments = [];
       clearTimeout(relaxIntroTimer);
       relaxIntroPlaying = false;
+      if (tasksConnectorsEl) tasksConnectorsEl.classList.remove('is-settling');
 
       if (!tasks.length) {
         const empty = document.createElement('div');
@@ -24687,43 +25761,55 @@
         empty.textContent = 'Bu gün için henüz görev eklenmedi';
         tasksItemsEl.appendChild(empty);
         if (tasksConnectorsEl) tasksConnectorsEl.innerHTML = '';
+        pendingHighlightId = null;
         return;
       }
 
       const markerRefs = [];
 
       tasks.forEach((task) => {
-        const icon = findTaskAddIcon(task.icon);
         const markerColor = task.color || 'var(--accent-color, #ff90e8)';
         const markerTextColor = task.color ? getReadableTextColor(task.color) : '#16171b';
         const range = relaxTaskRangeMs(task, dateStr);
+        const isDone = !!task.done;
 
         const item = document.createElement('div');
-        item.className = 'relax-task-item';
+        item.className = 'relax-task-item' + (isDone ? ' is-done' : '');
+        item.dataset.taskId = task.id;
 
         const rail = document.createElement('div');
         rail.className = 'relax-task-rail';
 
         // Boş katman (halka + renkli ikon) + üstünde zamanla açılan dolu katman.
+        // Dolu katmanda ikon ayrı bir sarmalayıcıda durur; "Yapıldı" olunca ikon
+        // kaybolur ve yerine kendini çizen bir tik gelir.
         const marker = document.createElement('span');
-        marker.className = 'relax-task-marker';
+        marker.className = 'relax-task-marker' + (isDone ? ' is-checked' : '');
         marker.style.setProperty('--mk-color', markerColor);
         marker.style.setProperty('--mk-on', markerTextColor);
+        marker.setAttribute('role', 'button');
+        marker.tabIndex = 0;
         // icon === '' (ya da null): ikonsuz görev → ikon yerine adın baş harfi. Harf her
         // çizimde görev adından türetildiği için ad değişirse harf de kendiliğinden değişir.
-        const isLetterTask = task.icon === '' || task.icon === null;
-        const iconSvg = isLetterTask
-          ? `<span class="relax-task-marker-letter" aria-hidden="true">${escapeHtml(taskInitial(task.name))}</span>`
-          : `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" aria-hidden="true">${icon.svg}</svg>`;
-        marker.innerHTML = `${iconSvg}<span class="relax-task-marker-fill" aria-hidden="true">${iconSvg}</span>`;
+        const iconSvg = taskGlyphHtml(task, 14);
+        marker.innerHTML = `${iconSvg}<span class="relax-task-marker-fill" aria-hidden="true"><span class="relax-task-marker-glyph">${iconSvg}</span><svg class="relax-task-marker-check" viewBox="0 0 24 24" aria-hidden="true">${TASK_CHECK_PATH}</svg></span>`;
         rail.appendChild(marker);
-        markerRefs.push({
+
+        const ref = {
+          id: task.id,
+          dateStr,
+          task,
           el: marker,
           fillEl: marker.querySelector('.relax-task-marker-fill'),
+          itemEl: item,
           color: markerColor,
+          onColor: markerTextColor,
           startMs: range.startMs,
           endMs: range.endMs,
-        });
+          done: isDone,
+        };
+        markerRefs.push(ref);
+        setMarkerA11y(ref);
 
         const content = document.createElement('div');
         content.className = 'relax-task-content';
@@ -24731,17 +25817,46 @@
         topRow.className = 'relax-task-top-row';
         const nameEl = document.createElement('span');
         nameEl.className = 'relax-task-name';
-        nameEl.textContent = task.name || '';
+        const nameText = document.createElement('span');
+        nameText.className = 'relax-task-name-text';
+        nameText.textContent = task.name || '';
+        nameEl.appendChild(nameText);
+
+        const meta = document.createElement('span');
+        meta.className = 'relax-task-meta';
         const timeEl = document.createElement('span');
         timeEl.className = 'relax-task-time';
         timeEl.textContent = (task.start && task.end) ? `${task.start} – ${task.end}` : '';
+        const moreBtn = document.createElement('button');
+        moreBtn.type = 'button';
+        moreBtn.className = 'relax-task-more';
+        moreBtn.setAttribute('aria-label', `${task.name || 'Görev'} için seçenekler`);
+        moreBtn.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="5.5" cy="12" r="1.8" fill="currentColor"/><circle cx="12" cy="12" r="1.8" fill="currentColor"/><circle cx="18.5" cy="12" r="1.8" fill="currentColor"/></svg>';
+        meta.appendChild(timeEl);
+        meta.appendChild(moreBtn);
+
         topRow.appendChild(nameEl);
-        topRow.appendChild(timeEl);
+        topRow.appendChild(meta);
         content.appendChild(topRow);
 
         item.appendChild(rail);
         item.appendChild(content);
         tasksItemsEl.appendChild(item);
+
+        // Halkaya dokun → Yapıldı / geri al. Satırın kalanına (ya da "⋯"e) dokun → eylem sayfası.
+        item.addEventListener('click', (e) => {
+          if (e.target.closest('.relax-task-marker')) {
+            toggleTaskDone(ref);
+            return;
+          }
+          openTaskSheet(ref);
+        });
+        marker.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            toggleTaskDone(ref);
+          }
+        });
       });
 
       relaxLastMarkerRefs = markerRefs;
@@ -24750,6 +25865,19 @@
       drawRelaxTaskConnectors(markerRefs);
       // Sayfa şu an görünürse boştan güncel duruma yukarıdan aşağıya süpür.
       if (isRelaxPageActive()) playRelaxIntro(introDelayMs);
+
+      // Az önce düzenlenen görev: süpürme oturduktan sonra kısa bir vurgu.
+      if (pendingHighlightId) {
+        const target = markerRefs.find((r) => r.id === pendingHighlightId);
+        pendingHighlightId = null;
+        if (target) {
+          setTimeout(() => {
+            if (!target.itemEl.isConnected) return;
+            target.itemEl.classList.add('is-updated');
+            setTimeout(() => target.itemEl.classList.remove('is-updated'), 2200);
+          }, introDelayMs + 350);
+        }
+      }
     };
 
     const addRelaxTask = (task) => {
@@ -24761,6 +25889,307 @@
       byDate[task.date] = dayList;
       saveAppState({ [RELAX_TASKS_STATE_KEY]: byDate });
     };
+
+    // =====================================================================
+    // Görev etkileşimleri: Yapıldı · Düzenle · Sil (eylem sayfası + animasyonlar)
+    // =====================================================================
+    const setMarkerA11y = (ref) => {
+      const name = (ref.task && ref.task.name) || 'Görev';
+      ref.el.setAttribute('aria-pressed', ref.done ? 'true' : 'false');
+      ref.el.setAttribute('aria-label', ref.done
+        ? `${name}: yapıldı. Geri almak için dokun`
+        : `${name}: yapıldı olarak işaretle`);
+    };
+
+    // Kutlama: iki halka dalgası + parıltı + renkli parçacıklar (halka etrafında).
+    const spawnTaskBurst = (ref) => {
+      const rail = ref.el && ref.el.parentElement;
+      if (!rail) return;
+      const burst = document.createElement('span');
+      burst.className = 'relax-task-burst';
+      burst.setAttribute('aria-hidden', 'true');
+      burst.style.setProperty('--mk-color', ref.color);
+      let html = '<i class="relax-task-burst-ring"></i><i class="relax-task-burst-ring is-late"></i>';
+      const N = 14;
+      for (let i = 0; i < N; i += 1) {
+        const a = (360 / N) * i + (Math.random() * 14 - 7);
+        const d = 9 + Math.random() * 13;
+        const sz = 4 + Math.random() * 3.2;
+        const dl = Math.round(Math.random() * 90);
+        html += `<i class="relax-task-burst-dot" style="--a:${a.toFixed(1)}deg;--d:${d.toFixed(1)}px;--s:${sz.toFixed(1)}px;--dl:${dl}ms"></i>`;
+      }
+      burst.innerHTML = html;
+      rail.appendChild(burst);
+      setTimeout(() => burst.remove(), 1300);
+    };
+
+    // Görselin (halka, ad, satır) yapıldı durumuna geçişi. animate=false → anında.
+    const paintTaskDone = (ref, animate) => {
+      const done = ref.done;
+      if (ref.itemEl) ref.itemEl.classList.toggle('is-done', done);
+      ref.el.classList.toggle('is-checked', done);
+      setMarkerA11y(ref);
+
+      // Halka: yapıldıysa tamamen dolar; geri alınırsa cihaz saatine göre olması gereken seviyeye döner.
+      const p = done ? 1 : relaxRangeProgress(Date.now(), ref.startMs, ref.endMs);
+      const fancy = animate && !relaxPrefersReducedMotion();
+      ref.fillEl.style.transition = fancy ? 'clip-path 0.7s cubic-bezier(0.22, 1, 0.36, 1)' : 'none';
+      ref.fillEl.style.clipPath = relaxClipFor(p);
+      ref.el.classList.toggle('is-done', p >= 1);
+
+      if (fancy) {
+        ref.el.classList.remove('is-popping');
+        void ref.el.offsetWidth; // animasyonu baştan başlat
+        ref.el.classList.add('is-popping');
+        setTimeout(() => ref.el.classList.remove('is-popping'), 720);
+        if (done) {
+          spawnTaskBurst(ref);
+          if (navigator.vibrate) navigator.vibrate(14);
+        }
+      }
+    };
+
+    const setTaskDone = (ref, done) => {
+      if (!ref || ref.done === done) return;
+      ref.done = done;
+      ref.task.done = done;
+      if (done) ref.task.doneAt = Date.now();
+      else delete ref.task.doneAt;
+      saveAppState({ [RELAX_TASKS_STATE_KEY]: getRelaxTasksByDate() });
+      paintTaskDone(ref, true);
+      syncHomeRelaxWidget(); // ana sayfadaki canlı widget da güncellensin
+    };
+
+    const toggleTaskDone = (ref) => setTaskDone(ref, !ref.done);
+
+    // ---------- Silme: kayarak solar → boşluk kapanır → çizgiler yeniden çizilir ----------
+    const deleteTaskAnimated = (ref) => {
+      removeRelaxTaskById(ref.id, ref.dateStr);
+      syncHomeRelaxWidget();
+      relaxLastMarkerRefs = relaxLastMarkerRefs.filter((r) => r !== ref);
+      relaxSegments = relaxSegments.filter((seg) => seg.ref !== ref);
+
+      const item = ref.itemEl;
+      if (!item || !item.isConnected || relaxPrefersReducedMotion()) {
+        renderRelaxTasksList();
+        return;
+      }
+
+      if (tasksConnectorsEl) tasksConnectorsEl.classList.add('is-settling');
+      item.classList.add('is-removing');
+
+      setTimeout(() => {
+        const h = item.offsetHeight;
+        item.style.boxSizing = 'border-box';
+        item.style.height = `${h}px`;
+        item.style.overflow = 'hidden';
+        void item.offsetHeight;
+        // Son satır silinirse, yeni son satırın alt boşluğu da birlikte kapansın (zıplama olmasın).
+        const prev = item.previousElementSibling;
+        if (prev && !item.nextElementSibling) {
+          prev.style.transition = 'padding-bottom 0.4s cubic-bezier(0.65, 0, 0.35, 1)';
+          prev.style.paddingBottom = '0px';
+        }
+        item.classList.add('is-collapsing');
+        item.style.height = '0px';
+        item.style.paddingBottom = '0px';
+      }, 300);
+
+      setTimeout(() => {
+        item.remove();
+        if (!relaxLastMarkerRefs.length) {
+          renderRelaxTasksList(); // boş durum mesajı
+        } else {
+          drawRelaxTaskConnectors(relaxLastMarkerRefs);
+          if (tasksConnectorsEl) tasksConnectorsEl.classList.remove('is-settling');
+        }
+      }, 740);
+    };
+
+    // ---------- Düzenle: "Yeni Aktivite" sayfasını mevcut görevle doldurup aç ----------
+    const openTaskEditOverlay = (ref) => {
+      const task = ref.task;
+      prepareForm();
+      editingTask = { id: ref.id, dateStr: ref.dateStr };
+      if (topbarTitleEl) topbarTitleEl.textContent = 'Aktiviteyi Düzenle';
+      overlay.setAttribute('aria-label', 'Aktiviteyi düzenle');
+      saveBtn.textContent = 'Kaydet';
+
+      nameInput.value = task.name || '';
+      if (task.icon === '' || task.icon === null) applyEmptyIcon();
+      else applyIcon(iconById(task.icon));
+      iconChosen = true;
+      applyColor(task.color || null, true);
+      renderRing();
+
+      const dp = String(ref.dateStr).split('-').map(Number);
+      if (dp.length === 3 && dp.every((n) => Number.isFinite(n))) applyDate(new Date(dp[0], dp[1] - 1, dp[2]));
+
+      const tp = String(task.start || '').split(':').map(Number);
+      if (tp.length >= 2 && tp.every((n) => Number.isFinite(n))) {
+        selectedIndex = Math.round((tp[0] * 60 + tp[1]) / STEP) % COUNT;
+      }
+      let dur = Number(task.durationMinutes);
+      if (!Number.isFinite(dur) || dur <= 0) {
+        const range = relaxTaskRangeMs(task, ref.dateStr);
+        dur = Math.max(STEP, Math.round((range.endMs - range.startMs) / 60000));
+      }
+      applyDuration(dur);
+
+      // Düzenlerken doğrudan Zaman adımı açılır; ikon halkasına dokunarak ikon/renk de değişir.
+      goToStep('time');
+      overlay.classList.add('is-open');
+    };
+
+    // ---------- Eylem sayfası (alttan açılan) ----------
+    const sheetBackdrop = $('taskSheetBackdrop');
+    const sheetEl = $('taskSheet');
+    const sheetMarkerEl = $('taskSheetMarker');
+    const sheetNameEl = $('taskSheetName');
+    const sheetTimeEl = $('taskSheetTime');
+    const sheetChipEl = $('taskSheetChip');
+    const sheetDoneIc = $('taskSheetDoneIc');
+    const sheetDoneTitle = $('taskSheetDoneTitle');
+    const sheetDoneSub = $('taskSheetDoneSub');
+    const sheetConfirmDesc = $('taskSheetConfirmDesc');
+    let sheetRef = null;
+    let sheetResetTimer = null;
+
+    const CHECK_ICON_SVG = '<svg class="ts-check" viewBox="0 0 24 24" aria-hidden="true"><path d="M5.5 12.8l4.2 4.2L18.5 8" pathLength="1"/></svg>';
+    const UNDO_ICON_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 14L4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg>';
+
+    const openTaskSheet = (ref) => {
+      if (!sheetBackdrop || !sheetEl) return;
+      const task = ref.task;
+      sheetRef = ref;
+      clearTimeout(sheetResetTimer);
+      sheetEl.dataset.view = 'main';
+      sheetEl.style.transform = '';
+      sheetEl.classList.remove('is-dragging');
+      sheetEl.style.setProperty('--ts-task', ref.color);
+      sheetEl.style.setProperty('--ts-on-task', ref.onColor);
+
+      sheetNameEl.textContent = task.name || '';
+      sheetTimeEl.textContent = (task.start && task.end) ? `${task.start} – ${task.end}` : '';
+      sheetMarkerEl.innerHTML = ref.done ? CHECK_ICON_SVG.replace('class="ts-check" ', '') : taskGlyphHtml(task, 21);
+      if (ref.done) sheetMarkerEl.querySelector('svg').setAttribute('style', 'fill:none;stroke:currentColor;stroke-width:2.9;stroke-linecap:round;stroke-linejoin:round');
+      sheetChipEl.classList.toggle('is-visible', ref.done);
+
+      if (ref.done) {
+        sheetDoneIc.innerHTML = UNDO_ICON_SVG;
+        sheetDoneTitle.textContent = 'Yapılmadı olarak işaretle';
+        sheetDoneSub.textContent = 'Tamamlandı işaretini geri al';
+      } else {
+        sheetDoneIc.innerHTML = CHECK_ICON_SVG;
+        sheetDoneTitle.textContent = 'Yapıldı olarak işaretle';
+        sheetDoneSub.textContent = 'Görevi tamamladın mı?';
+      }
+      sheetConfirmDesc.textContent = `“${task.name || 'Bu görev'}” listeden kaldırılacak.`;
+
+      sheetBackdrop.setAttribute('aria-hidden', 'false');
+      sheetBackdrop.classList.remove('is-open');
+      void sheetBackdrop.offsetWidth; // giriş animasyonları baştan oynasın
+      sheetBackdrop.classList.add('is-open');
+      setTimeout(() => { try { sheetEl.focus({ preventScroll: true }); } catch (e) { /* yoksay */ } }, 80);
+    };
+
+    const closeTaskSheet = () => {
+      if (!sheetBackdrop) return;
+      sheetBackdrop.classList.remove('is-open');
+      sheetBackdrop.setAttribute('aria-hidden', 'true');
+      sheetEl.classList.remove('is-dragging');
+      sheetEl.style.transform = '';
+      clearTimeout(sheetResetTimer);
+      // Kapanış animasyonu bitince görünümü ana ekrana döndür (kapanırken titreme olmasın).
+      sheetResetTimer = setTimeout(() => {
+        sheetEl.dataset.view = 'main';
+        sheetRef = null;
+      }, 620);
+    };
+
+    if (sheetBackdrop && sheetEl) {
+      sheetBackdrop.addEventListener('click', (e) => {
+        if (e.target === sheetBackdrop) closeTaskSheet();
+      });
+
+      document.addEventListener('keydown', (e) => {
+        if (e.key !== 'Escape' || !sheetBackdrop.classList.contains('is-open')) return;
+        if (sheetEl.dataset.view === 'confirm') sheetEl.dataset.view = 'main';
+        else closeTaskSheet();
+      });
+
+      // Basış noktasından yayılan ışık için koordinatları yaz.
+      sheetEl.addEventListener('pointerdown', (e) => {
+        const btn = e.target.closest('.task-sheet-action');
+        if (!btn) return;
+        const r = btn.getBoundingClientRect();
+        btn.style.setProperty('--rx', `${e.clientX - r.left}px`);
+        btn.style.setProperty('--ry', `${e.clientY - r.top}px`);
+      });
+
+      sheetEl.addEventListener('click', (e) => {
+        const btn = e.target.closest('[data-action]');
+        const ref = sheetRef;
+        if (!btn || !ref) return;
+        switch (btn.dataset.action) {
+          case 'done':
+            closeTaskSheet();
+            // Sayfa kapanırken değil, satır görünür olunca oynasın.
+            setTimeout(() => toggleTaskDone(ref), 260);
+            break;
+          case 'edit':
+            closeTaskSheet();
+            setTimeout(() => openTaskEditOverlay(ref), 170);
+            break;
+          case 'delete':
+            sheetEl.dataset.view = 'confirm';
+            break;
+          case 'cancel-delete':
+            sheetEl.dataset.view = 'main';
+            break;
+          case 'confirm-delete':
+            closeTaskSheet();
+            setTimeout(() => deleteTaskAnimated(ref), 280);
+            break;
+          default:
+            break;
+        }
+      });
+
+      // Aşağı sürükleyerek kapat (tutamaç + başlık alanından).
+      let drag = null;
+      const onDragStart = (e) => {
+        if (e.pointerType === 'mouse' && e.button !== 0) return;
+        drag = { id: e.pointerId, y0: e.clientY, t0: performance.now(), dy: 0, zone: e.currentTarget };
+        sheetEl.classList.add('is-dragging');
+        try { drag.zone.setPointerCapture(e.pointerId); } catch (err) { /* yoksay */ }
+      };
+      const onDragMove = (e) => {
+        if (!drag || e.pointerId !== drag.id) return;
+        const raw = e.clientY - drag.y0;
+        // Yukarı çekince lastik gibi direnç, aşağı çekince serbest.
+        drag.dy = raw >= 0 ? raw : raw * 0.18;
+        sheetEl.style.transform = `translateY(${drag.dy}px)`;
+      };
+      const onDragEnd = (e) => {
+        if (!drag || e.pointerId !== drag.id) return;
+        const { dy, t0 } = drag;
+        const v = dy / Math.max(1, performance.now() - t0); // px/ms
+        drag = null;
+        sheetEl.classList.remove('is-dragging');
+        if (dy > 110 || (dy > 30 && v > 0.6)) {
+          closeTaskSheet();
+        } else {
+          sheetEl.style.transform = '';
+        }
+      };
+      sheetEl.querySelectorAll('.task-sheet-drag').forEach((zone) => {
+        zone.addEventListener('pointerdown', onDragStart);
+        zone.addEventListener('pointermove', onDragMove);
+        zone.addEventListener('pointerup', onDragEnd);
+        zone.addEventListener('pointercancel', onDragEnd);
+      });
+    }
 
     // Hafta şeridinde farklı bir gün seçildiğinde listeyi o güne göre tazele.
     document.addEventListener('relax:date-changed', () => renderRelaxTasksList());
@@ -24791,6 +26220,39 @@
         return;
       }
       const startMin = selectedIndex * STEP;
+
+      // Düzenleme modu: mevcut görevi güncelle (yapıldı bilgisi ve id korunur).
+      if (editingTask) {
+        const { id, dateStr: fromDate } = editingTask;
+        const patch = {
+          name,
+          icon: selectedIconId,
+          color: selectedColor,
+          date: ymd(selectedDate),
+          start: fmt(startMin),
+          end: fmt(startMin + durationMin),
+          durationMinutes: durationMin,
+        };
+        const updated = updateRelaxTask(id, fromDate, patch);
+        editingTask = null;
+        if (updated) {
+          document.dispatchEvent(new CustomEvent('task-add:update', { detail: updated }));
+          pendingHighlightId = id;
+          pendingIntroDelay = 320; // overlay kapanırken süpürme biraz gecikmeli başlasın
+          if (patch.date !== getSelectedRelaxDateStr()) {
+            // Görev başka güne taşındıysa o güne geç (şeritte görünüyorsa), böylece kaybolmaz.
+            const cell = document.querySelector(`#relaxCalendarWeek .relax-calendar-day-cell[data-date="${patch.date}"]`);
+            if (cell) cell.click();
+            else renderRelaxTasksList(320);
+          } else {
+            renderRelaxTasksList(320);
+          }
+          syncHomeRelaxWidget();
+        }
+        closeTaskAddOverlay();
+        return;
+      }
+
       const newTask = {
         name,
         icon: selectedIconId,
@@ -24849,6 +26311,7 @@
     const homeLeadEl = $('homeRelaxWidgetLead');
     const homeTimeEl = $('homeRelaxWidgetTime');
     const homeTitleEl = $('homeRelaxWidgetTitle');
+    const homeBottomEl = homeWidgetEl ? homeWidgetEl.querySelector('.home-relax-widget-bottom') : null;
     const homePageEl = $('page-1');
     const HOME_INTRO_MS = 900;
     const HOME_MOON_HTML = '<span class="home-relax-widget-moon" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5Z" fill="currentColor"/></svg></span>';
@@ -24856,6 +26319,9 @@
     let homeTickTimer = null;
     let homeIntroTimer = null;
     let homeIntroPlaying = false;
+    let homeSwapPlaying = false;     // toggleHomeRelaxWidgetTask kendi geçişini oynatırken homeTick araya girmesin
+    let homeSwapTimer = null;        // widget'ta görev tamamlanınca: tik/halka animasyonu → yumuşak geçiş → sıradaki görev
+
 
     // En uygun görevi seç: önce şu an süren (en son başlayan), yoksa en yakın sonraki.
     const pickHomeTask = () => {
@@ -24866,14 +26332,20 @@
       Object.keys(byDate).forEach((dateStr) => {
         const list = byDate[dateStr];
         if (!Array.isArray(list)) return;
-        list.forEach((task) => {
+        list.forEach((task, idx) => {
+          if (task && task.done) return; // "Yapıldı" işaretli görev artık şimdi/sıradaki değil
           const r = relaxTaskRangeMs(task, dateStr);
           if (!Number.isFinite(r.startMs) || !Number.isFinite(r.endMs)) return;
-          const entry = { task, dateStr, startMs: r.startMs, endMs: r.endMs };
+          const entry = { task, dateStr, startMs: r.startMs, endMs: r.endMs, idx };
           if (r.startMs <= now && now < r.endMs) {
-            if (!current || r.startMs > current.startMs) current = entry;
+            // Aynı saatte başlayan görevlerde Planlayıcı listesiyle aynı
+            // sırayı kullan: liste stabil sıralandığı için önce eklenen
+            // (küçük idx) her zaman üstte görünür, widget da onu göstersin.
+            if (!current || r.startMs > current.startMs
+              || (r.startMs === current.startMs && idx < current.idx)) current = entry;
           } else if (r.startMs > now) {
-            if (!next || r.startMs < next.startMs) next = entry;
+            if (!next || r.startMs < next.startMs
+              || (r.startMs === next.startMs && idx < next.idx)) next = entry;
           }
         });
       });
@@ -24891,8 +26363,15 @@
       return `Sıradaki · ${day}${task.start}`;
     };
 
+    // Widget'taki görev "Yapıldı" işaretlendiyse (ya da tamamlama animasyonu
+    // oynuyorsa) halka artık zamana değil kullanıcıya bağlıdır: tam dolu kalmalı.
+    // Bu kontrol olmadan gecikmiş bir giriş/tick zamanlayıcısı dolguyu zamana
+    // göre hesaplanan (kısmi/boş) seviyeye geri çekip animasyonu bozuyordu.
+    const isHomeShownDone = () => !!(homeShown && homeShown.pick && homeShown.pick.task && homeShown.pick.task.done);
+
     const applyHomeProgress = (mode) => {
       if (!homeShown || !homeShown.fillEl) return;
+      if (isHomeShownDone()) return;
       const isTick = mode === 'tick';
       const target = isTick ? Date.now() + RELAX_TICK_MS : Date.now();
       const p = relaxRangeProgress(target, homeShown.from, homeShown.to);
@@ -24904,6 +26383,9 @@
     const playHomeIntro = (delayMs = 0) => {
       clearTimeout(homeIntroTimer);
       if (!homeShown || !homeShown.fillEl) { homeIntroPlaying = false; return; }
+      // Görev zaten "Yapıldı" ise ya da tamamlama animasyonu oynuyorsa halkayı
+      // boşaltıp yeniden süpürmek animasyonu bozar: hiç başlatma.
+      if (homeSwapPlaying || isHomeShownDone()) { homeIntroPlaying = false; return; }
       if (relaxPrefersReducedMotion()) { applyHomeProgress('instant'); return; }
       homeIntroPlaying = true;
       homeShown.fillEl.style.transition = 'none';
@@ -24911,20 +26393,26 @@
       void homeShown.fillEl.offsetWidth; // reflow: başlangıç durumu kesinleşsin
       homeIntroTimer = setTimeout(() => {
         if (!homeShown || !homeShown.fillEl) { homeIntroPlaying = false; return; }
+        // Bekleme sırasında kullanıcı görevi tamamladıysa dolguya dokunma.
+        if (homeSwapPlaying || isHomeShownDone()) { homeIntroPlaying = false; return; }
         const p = relaxRangeProgress(Date.now(), homeShown.from, homeShown.to);
         if (p <= 0) { homeIntroPlaying = false; return; }
         homeShown.fillEl.style.transition = `clip-path ${HOME_INTRO_MS}ms cubic-bezier(0.22, 1, 0.36, 1)`;
         homeShown.fillEl.style.clipPath = relaxClipFor(p);
         homeIntroTimer = setTimeout(() => {
           homeIntroPlaying = false;
-          applyHomeProgress('tick');
+          applyHomeProgress('tick'); // görev bu sırada tamamlandıysa applyHomeProgress zaten dokunmaz
         }, HOME_INTRO_MS + 60);
       }, delayMs);
     };
 
     // Gösterilecek görev değiştiyse widget'ı yeniden kurar; aynıysa dokunmaz.
-    const syncHomeRelaxWidget = () => {
+    const syncHomeRelaxWidget = (force = false) => {
       if (!homeWidgetEl || !homeSlotEl) return;
+      // Tamamlama animasyonu (tik + halka dolumu + patlama) oynarken widget'ı
+      // dışarıdan yeniden kurmak animasyonu yarıda keser; geçişin sonunda zaten
+      // güncel duruma eşitlenir. Geçişin kendi çağrısı force=true ile gelir.
+      if (homeSwapPlaying && !force) return;
       const pick = pickHomeTask();
       const key = pick ? `${pick.task.id || ''}|${pick.dateStr}|${pick.task.start}|${pick.mode}` : 'empty';
       if (homeShown && homeShown.key === key) return;
@@ -24939,7 +26427,7 @@
         homeTimeEl.textContent = 'Yaklaşan görev yok';
         homeTitleEl.textContent = 'Rahatla';
         homeWidgetEl.setAttribute('aria-label', "Rahatla'ya git, yaklaşan görev yok");
-        homeShown = { key, fillEl: null, from: NaN, to: NaN };
+        homeShown = { key, fillEl: null, from: NaN, to: NaN, pick: null };
         return;
       }
 
@@ -24951,10 +26439,15 @@
       const inner = isLetterTask
         ? `<span class="relax-task-marker-letter" aria-hidden="true">${escapeHtml(taskInitial(task.name))}</span>`
         : `<svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" aria-hidden="true">${icon.svg}</svg>`;
-      homeSlotEl.innerHTML = `<span class="relax-task-marker">${inner}<span class="relax-task-marker-fill" aria-hidden="true">${inner}</span></span>`;
+      // Ana liste (.relax-task-marker) ile aynı iç yapı: glyph sarmalayıcı +
+      // kendini çizen tik SVG'si, "Yapıldı" olunca aynı animasyon burada da
+      // oynasın diye. Ayrıca işaretçi kendi başına dokunulabilir bir kontrol
+      // olarak işaretlenir (widget'ın geri kalanı Planlayıcı'yı açmaya devam eder).
+      homeSlotEl.innerHTML = `<span class="relax-task-marker" role="button" tabindex="0">${inner}<span class="relax-task-marker-fill" aria-hidden="true"><span class="relax-task-marker-glyph">${inner}</span><svg class="relax-task-marker-check" viewBox="0 0 24 24" aria-hidden="true">${TASK_CHECK_PATH}</svg></span></span>`;
       const markerEl = homeSlotEl.firstElementChild;
       markerEl.style.setProperty('--mk-color', color);
       markerEl.style.setProperty('--mk-on', on);
+      markerEl.setAttribute('aria-label', `${task.name || 'Görev'}: yapıldı olarak işaretle`);
       homeLeadEl.style.setProperty('--hw-line', color);
       homeTimeEl.textContent = homeTimeLabel(pick);
       homeTitleEl.textContent = task.name || '';
@@ -24964,12 +26457,102 @@
         fillEl: markerEl.querySelector('.relax-task-marker-fill'),
         from: pick.startMs,
         to: pick.endMs,
+        pick,
       };
       applyHomeProgress('instant');
     };
 
+    // Widget'taki işaretçiye dokununca (Planlayıcı'yı açmadan) görevi doğrudan
+    // "Yapıldı" yapar. Erken çalışan bir başka script bloğu, widget'ın geri
+    // kalanına dokununca Planlayıcı'yı açan tıklama dinleyicisini taşıyor;
+    // marker'a dokunulduğunda o dinleyici bunun yerine bu global fonksiyonu
+    // çağırır (kapsam farklı olduğu için window üzerinden erişilir).
+    //
+    // Akış: önce tik çizilir + halka dolar + patlama oynar (setTaskDone'un
+    // normalde ANINDA tetiklediği syncHomeRelaxWidget'ı burada BİLEREK
+    // geciktiriyoruz, yoksa DOM anında değişip animasyon hiç görünmeden
+    // kesiliyordu) → kısa bir süre öylece durup animasyon izlensin → widget
+    // içeriği yumuşakça solup kaybolur → sıradaki görev (ya da boş durum)
+    // yerine gelir ve yumuşakça belirir.
+    window.toggleHomeRelaxWidgetTask = () => {
+      if (!homeShown || !homeShown.pick || !homeSlotEl) return;
+      const { task, dateStr, startMs, endMs } = homeShown.pick;
+      if (!task || task.done) return;
+      const markerEl = homeSlotEl.firstElementChild;
+      if (!markerEl) return;
+
+      clearTimeout(homeSwapTimer);
+      homeSwapTimer = null;
+      // Bekleyen dolum/giriş animasyonunu iptal et: aksi halde gecikmeli
+      // zamanlayıcısı dolguyu zamana göre hesaplanan seviyeye geri çekerdi.
+      clearTimeout(homeIntroTimer);
+      homeIntroPlaying = false;
+      homeSwapPlaying = true;
+
+      task.done = true;
+      task.doneAt = Date.now();
+      saveAppState({ [RELAX_TASKS_STATE_KEY]: getRelaxTasksByDate() });
+
+      const ref = {
+        id: task.id,
+        dateStr,
+        task,
+        el: markerEl,
+        fillEl: markerEl.querySelector('.relax-task-marker-fill'),
+        itemEl: null,
+        color: task.color || 'var(--accent-color, #ff90e8)',
+        onColor: task.color ? getReadableTextColor(task.color) : '#16171b',
+        startMs,
+        endMs,
+        done: true,
+      };
+      try {
+        paintTaskDone(ref, true); // tik çizilir + halka dolar + patlama; syncHomeRelaxWidget burada çağrılmıyor
+      } catch (err) { console.warn('Tamamlama animasyonu çizilemedi:', err); }
+
+      // Planlayıcı listesi o an açık/kurulmuşsa hemen tazelensin (widget'tan bağımsız).
+      // Bir hata animasyon zincirini (ve homeSwapPlaying kilidini) asla yarıda bırakmasın.
+      try {
+        if (typeof renderRelaxTasksList === 'function') renderRelaxTasksList();
+      } catch (err) { console.warn('Planlayıcı listesi tazelenemedi:', err); }
+
+      const reduceMotion = relaxPrefersReducedMotion();
+      const HOLD_MS = reduceMotion ? 0 : 1300;  // tik çizimi + halka dolumu + patlama TAMAMEN bitsin
+                                                 // (patlama kendini spawnTaskBurst içinde 1300ms'de kaldırıyor, aynı süreyle eşleştirildi)
+      const FADE_MS = reduceMotion ? 0 : 260;   // içerik yumuşakça kaybolup belirsin
+      const fadeEls = [homeLeadEl, homeBottomEl].filter(Boolean);
+
+      const swapToNextTask = () => {
+        // Güvence: solma başlamadan önce halka kesin olarak %100 dolu ve tik görünür olsun.
+        if (ref.fillEl && ref.fillEl.isConnected) {
+          ref.fillEl.style.transition = 'none';
+          ref.fillEl.style.clipPath = relaxClipFor(1);
+          ref.el.classList.add('is-checked', 'is-done');
+        }
+        fadeEls.forEach((el) => {
+          el.style.transition = reduceMotion ? 'none' : `opacity ${FADE_MS}ms ease`;
+          el.style.opacity = '0';
+        });
+        homeSwapTimer = setTimeout(() => {
+          syncHomeRelaxWidget(true); // içeriği sıradaki göreve (ya da boş duruma) günceller
+          fadeEls.forEach((el) => { el.style.opacity = '0'; });
+          void homeWidgetEl.offsetWidth; // reflow: yeni içerik opacity 0'dan başlasın
+          requestAnimationFrame(() => {
+            fadeEls.forEach((el) => { el.style.opacity = '1'; });
+          });
+          homeSwapTimer = setTimeout(() => {
+            homeSwapPlaying = false; // homeTick'in tekrar devreye girmesine izin ver
+            applyHomeProgress('tick'); // geçiş sırasında kaçırılmış olabilecek saniyeyi telafi et
+            homeSwapTimer = null;
+          }, FADE_MS);
+        }, FADE_MS);
+      };
+
+      homeSwapTimer = setTimeout(swapToNextTask, HOLD_MS);
+    };
+
     const homeTick = () => {
-      if (document.hidden || homeIntroPlaying) return;
+      if (document.hidden || homeIntroPlaying || homeSwapPlaying) return;
       syncHomeRelaxWidget();
       applyHomeProgress('tick');
     };
@@ -25006,7 +26589,7 @@
 
       // Uygulama arka plandan dönünce (saat ilerlemiş olabilir) hemen eşitle.
       document.addEventListener('visibilitychange', () => {
-        if (document.hidden || !isHomeActive()) return;
+        if (document.hidden || !isHomeActive() || homeSwapPlaying) return;
         syncHomeRelaxWidget();
         if (!homeIntroPlaying) applyHomeProgress('tick');
       });
@@ -31463,12 +33046,46 @@
     qhavuzEditBtn.classList.toggle('is-active', on);
     qhavuzEditBtn.setAttribute('aria-pressed', on ? 'true' : 'false');
     qhavuzEditBtn.setAttribute('aria-label', on ? 'Düzenlemeyi bitir' : 'Soruları düzenle');
+    syncQhavuzEditBtn();
     // Düzenleme (silme) modu açılırsa, karışıklık olmasın diye soru seçme
     // modu otomatik kapatılır (aşağıda tanımlı setQhavuzSelectMode).
     if (on && typeof setQhavuzSelectMode === 'function' && qhavuzSelectMode) setQhavuzSelectMode(false);
   };
 
-  qhavuzEditBtn.addEventListener('click', () => setQhavuzEditMode(!qhavuzEditMode));
+  // Soru Seç modu açıkken Düzenle hapı kırmızı "Sil" hapına dönüşür
+  // (bkz. CSS .is-delete-mode). Görünüm/erişilebilirlik etiketi burada
+  // senkronlanır; seçim sayısı değiştikçe updateQhavuzSelectBar da çağırır.
+  function syncQhavuzEditBtn() {
+    if (!qhavuzEditBtn) return;
+    const deleting = qhavuzSelectMode;
+    qhavuzEditBtn.classList.toggle('is-delete-mode', deleting);
+    if (deleting) {
+      const n = qhavuzSelectedIds.size;
+      qhavuzEditBtn.setAttribute('aria-pressed', 'false');
+      qhavuzEditBtn.setAttribute('aria-label', n ? `${n} seçili soruyu sil` : 'Silmek için önce soru seç');
+    } else {
+      qhavuzEditBtn.setAttribute('aria-pressed', qhavuzEditMode ? 'true' : 'false');
+      qhavuzEditBtn.setAttribute('aria-label', qhavuzEditMode ? 'Düzenlemeyi bitir' : 'Soruları düzenle');
+    }
+  }
+
+  qhavuzEditBtn.addEventListener('click', () => {
+    // Seç modunda: seçili soruları, onay penceresinden sonra sil.
+    if (qhavuzSelectMode) {
+      const ids = Array.from(qhavuzSelectedIds);
+      if (!ids.length) {
+        // Hiç soru seçilmemiş: hafifçe salla, silme penceresini açma.
+        qhavuzEditBtn.classList.remove('is-nudge');
+        void qhavuzEditBtn.offsetWidth;
+        qhavuzEditBtn.classList.add('is-nudge');
+        setTimeout(() => qhavuzEditBtn.classList.remove('is-nudge'), 360);
+        return;
+      }
+      openQhavuzDeleteConfirmMany(ids);
+      return;
+    }
+    setQhavuzEditMode(!qhavuzEditMode);
+  });
 
   // ---- Soru Havuzu: "Soru Seç" modu (Test/Paket oluşturma için) ----
   // Düzenleme (silme) modundan bağımsız ayrı bir mod: açıkken kartlara
@@ -31518,6 +33135,7 @@
     if (typeof navWrapper !== 'undefined' && navWrapper) {
       navWrapper.classList.toggle('has-qhavuz-selection', n > 0);
     }
+    syncQhavuzEditBtn();
   };
 
   const setQhavuzSelectMode = (on) => {
@@ -32164,15 +33782,33 @@
   const qhavuzDeleteConfirmBackdrop = document.getElementById('qhavuzDeleteConfirmBackdrop');
   const qhavuzDeleteConfirmCancel = document.getElementById('qhavuzDeleteConfirmCancel');
   const qhavuzDeleteConfirmConfirm = document.getElementById('qhavuzDeleteConfirmConfirm');
+  const qhavuzDeleteConfirmDesc = document.getElementById('qhavuzDeleteConfirmDesc');
+  const QHAVUZ_DELETE_ONE_TEXT = 'Bu soru havuzdan tamamen silinecek.';
   let qhavuzPendingDeleteId = null;
+  // Soru Seç modundaki "Sil" hapından gelen toplu silme için id listesi.
+  let qhavuzPendingDeleteIds = null;
 
   const closeQhavuzDeleteConfirm = () => {
     qhavuzPendingDeleteId = null;
+    qhavuzPendingDeleteIds = null;
     if (qhavuzDeleteConfirmBackdrop) qhavuzDeleteConfirmBackdrop.classList.remove('is-open');
   };
 
   const openQhavuzDeleteConfirm = (itemId) => {
     qhavuzPendingDeleteId = itemId;
+    qhavuzPendingDeleteIds = null;
+    if (qhavuzDeleteConfirmDesc) qhavuzDeleteConfirmDesc.textContent = QHAVUZ_DELETE_ONE_TEXT;
+    if (qhavuzDeleteConfirmBackdrop) qhavuzDeleteConfirmBackdrop.classList.add('is-open');
+  };
+
+  const openQhavuzDeleteConfirmMany = (ids) => {
+    qhavuzPendingDeleteId = null;
+    qhavuzPendingDeleteIds = ids.slice();
+    if (qhavuzDeleteConfirmDesc) {
+      qhavuzDeleteConfirmDesc.textContent = ids.length === 1
+        ? QHAVUZ_DELETE_ONE_TEXT
+        : `Seçtiğin ${ids.length} soru havuzdan tamamen silinecek.`;
+    }
     if (qhavuzDeleteConfirmBackdrop) qhavuzDeleteConfirmBackdrop.classList.add('is-open');
   };
 
@@ -32181,6 +33817,20 @@
     if (!item) return;
     await deleteImageRef(item.image);
     qhavuzState.items = qhavuzState.items.filter((it) => it.id !== itemId);
+    saveQhavuzState();
+    renderQhavuzGrid();
+  };
+
+  // Seçili birden çok soruyu tek seferde siler: görselleri temizler, listeyi
+  // bir kez kaydedip bir kez yeniden çizer.
+  const qhavuzDeleteItemsByIds = async (ids) => {
+    const idSet = new Set(ids);
+    const items = qhavuzState.items.filter((it) => idSet.has(it.id));
+    if (!items.length) return;
+    for (const it of items) {
+      try { await deleteImageRef(it.image); } catch (err) { /* görsel temizlenemese de soru silinsin */ }
+    }
+    qhavuzState.items = qhavuzState.items.filter((it) => !idSet.has(it.id));
     saveQhavuzState();
     renderQhavuzGrid();
   };
@@ -32194,8 +33844,15 @@
   if (qhavuzDeleteConfirmConfirm) {
     qhavuzDeleteConfirmConfirm.addEventListener('click', async () => {
       const id = qhavuzPendingDeleteId;
+      const ids = qhavuzPendingDeleteIds;
       closeQhavuzDeleteConfirm();
-      if (id) await qhavuzDeleteItemById(id);
+      if (ids && ids.length) {
+        await qhavuzDeleteItemsByIds(ids);
+        // Silme bitti: seçim modundan çık (Sil hapı tekrar Düzenle olur).
+        setQhavuzSelectMode(false);
+      } else if (id) {
+        await qhavuzDeleteItemById(id);
+      }
     });
   }
   document.addEventListener('keydown', (e) => {
@@ -34098,6 +35755,101 @@
     setInterval(releaseStaleModalLockIfNeeded, 1500);
   })();
 
+</script>
+
+<script>
+  // ---------- Ana sayfa: "Kronometre" metin widget'ı ----------
+  // Bu script bilerek dosyanın en sonuna konuldu: swRunning, swAccumulatedMs,
+  // currentElapsedMs(), resetStopwatch() ve openStopwatchResetConfirm()
+  // Sayfa 5'in script bloğunda tanımlanıyor; bu blok onlardan SONRA
+  // çalıştığı için o değişken/fonksiyonlara doğrudan isimleriyle erişebilir.
+  const homeKronometreWidgetEl = document.getElementById('homeKronometreWidget');
+  const homeKronometreWidgetTextEl = document.getElementById('homeKronometreWidgetText');
+
+  const formatHomeKronometreTime = (ms) => {
+    const totalSeconds = Math.floor(ms / 1000);
+    const h = Math.floor(totalSeconds / 3600);
+    const m = Math.floor((totalSeconds % 3600) / 60);
+    const s = totalSeconds % 60;
+    const pad = (n) => String(n).padStart(2, '0');
+    return h > 0 ? `${h}:${pad(m)}:${pad(s)}` : `${pad(m)}:${pad(s)}`;
+  };
+
+  const updateHomeKronometreWidget = () => {
+    if (!homeKronometreWidgetEl || !homeKronometreWidgetTextEl) return;
+    if (typeof currentElapsedMs !== 'function') return;
+    const ms = currentElapsedMs();
+    const running = typeof swRunning !== 'undefined' && swRunning;
+    if (ms <= 0) {
+      homeKronometreWidgetTextEl.textContent = 'Kronometre';
+      homeKronometreWidgetEl.classList.add('is-idle');
+      homeKronometreWidgetEl.classList.remove('is-running');
+    } else {
+      homeKronometreWidgetTextEl.textContent = formatHomeKronometreTime(ms);
+      homeKronometreWidgetEl.classList.remove('is-idle');
+      homeKronometreWidgetEl.classList.toggle('is-running', running);
+    }
+  };
+
+  updateHomeKronometreWidget();
+  setInterval(updateHomeKronometreWidget, 1000);
+
+  // Kronometre "Sayfa 5", Takvim/Rahatla gibi ayrı açılan bir alt sayfa değil,
+  // alt nav'daki gerçek bir ana sekme; o yüzden gizli radio'yu işaretleyip
+  // mevcut 'change' dinleyicisini (goToPage + moveSlider) tetikliyoruz ki
+  // nav bar'ın seçili sekmesi ve kayan gösterge de doğru senkron kalsın.
+  const openKronometrePageFromHome = () => {
+    const navInputPage5 = document.querySelector('.nav-input[value="page-5"]');
+    if (navInputPage5 && !navInputPage5.checked) {
+      navInputPage5.checked = true;
+      navInputPage5.dispatchEvent(new Event('change'));
+    } else if (typeof goToPage === 'function') {
+      goToPage('page-5');
+    }
+  };
+
+  if (homeKronometreWidgetEl) {
+    const HOME_KRONOMETRE_LONG_PRESS_MS = 550;
+    let homeKronometrePressTimer = null;
+    let homeKronometreLongPressFired = false;
+
+    const clearHomeKronometrePressTimer = () => {
+      if (homeKronometrePressTimer) {
+        clearTimeout(homeKronometrePressTimer);
+        homeKronometrePressTimer = null;
+      }
+    };
+
+    homeKronometreWidgetEl.addEventListener('pointerdown', () => {
+      homeKronometreLongPressFired = false;
+      clearHomeKronometrePressTimer();
+      homeKronometrePressTimer = setTimeout(() => {
+        homeKronometrePressTimer = null;
+        // Sayfa 5'teki gerçek davranışla aynı kural: Sıfırla, sadece
+        // sayaç DURAKLATILMIŞKEN ve elde biriken bir süre varken çalışır.
+        const running = typeof swRunning !== 'undefined' && swRunning;
+        const hasTime = typeof currentElapsedMs === 'function' && currentElapsedMs() > 0;
+        if (!running && hasTime && typeof openStopwatchResetConfirm === 'function') {
+          homeKronometreLongPressFired = true;
+          openStopwatchResetConfirm();
+        }
+      }, HOME_KRONOMETRE_LONG_PRESS_MS);
+    });
+
+    ['pointerup', 'pointerleave', 'pointercancel'].forEach((evt) => {
+      homeKronometreWidgetEl.addEventListener(evt, clearHomeKronometrePressTimer);
+    });
+
+    homeKronometreWidgetEl.addEventListener('click', (e) => {
+      clearHomeKronometrePressTimer();
+      if (homeKronometreLongPressFired) {
+        homeKronometreLongPressFired = false;
+        e.preventDefault();
+        return;
+      }
+      openKronometrePageFromHome();
+    });
+  }
 </script>
 
 </body>
