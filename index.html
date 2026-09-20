@@ -315,8 +315,8 @@
     height: 54px;
     background-color: var(--main-color);
     border-radius: 16px;
-    transition: transform 0.35s cubic-bezier(0.65, 0, 0.35, 1);
-    will-change: transform;
+    transition: transform 0.35s cubic-bezier(0.65, 0, 0.35, 1), width 0.35s cubic-bezier(0.65, 0, 0.35, 1);
+    will-change: transform, width;
     z-index: 0;
   }
 
@@ -786,6 +786,302 @@
   .nav-tooltip.is-flashing {
     opacity: 1;
     transform: translateX(-50%) translateY(0);
+  }
+
+  /* ---------- Nav bar: Soru Havuzu modu ----------
+     Soru Havuzu açıkken sekme ikonları çubuktan çekilir; aynı pill'in
+     içinde 7 kolonluk ızgara üç bölgeye ayrılır:
+       [ Geri (2 kolon) ] [ Görsel Ekle (3 kolon) ] [ Seç (2 kolon) ]
+     Orta bölgeyi ayrı bir buton olarak üstüne koymak yerine, mevcut
+     seçili-sekme göstergesi (.nav-slider) 3 kolona uzayıp orayı kaplar;
+     yani "buton üstüne buton" yok, çubuğun kendi dili sürüyor. Yan
+     bölgeler çerçevesiz, yalnızca ikon + yazıdan oluşur. */
+  .wrapper.is-qhavuz-mode .nav-slider {
+    width: calc((100% - 8px) * 3 / 7);
+    transform: translateX(66.6667%);
+    transition:
+      transform 0.35s cubic-bezier(0.65, 0, 0.35, 1),
+      width 0.35s cubic-bezier(0.65, 0, 0.35, 1),
+      background-color 0.3s ease;
+  }
+
+  /* Sekme ikonları: çıkarken hafifçe aşağı süzülüp solar (soldan sağa
+     sırayla), geri dönerken kayan gösterge yerine oturduktan sonra belirir. */
+  .nav-btn {
+    transition: opacity 0.22s ease, transform 0.32s cubic-bezier(0.65, 0, 0.35, 1);
+    transition-delay: calc(0.14s + var(--i, 0) * 24ms);
+  }
+
+  .option {
+    transition: visibility 0s linear 0s;
+  }
+
+  .wrapper.is-qhavuz-mode .option {
+    visibility: hidden;
+    pointer-events: none;
+    transition: visibility 0s linear 0.45s;
+  }
+
+  .wrapper.is-qhavuz-mode .nav-btn {
+    opacity: 0;
+    transform: translateY(8px) scale(0.8);
+    transition-delay: calc(var(--i, 0) * 18ms);
+  }
+
+  .nav-actions {
+    position: absolute;
+    top: 4px;
+    left: 4px;
+    right: 4px;
+    height: 54px;
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    z-index: 2;
+    pointer-events: none;
+    visibility: hidden;
+    transition: visibility 0s linear 0.25s;
+  }
+
+  /* İki eylem seti aynı ızgarada üst üste durur; hangisi görünür olacağını
+     wrapper üzerindeki sınıflar belirler:
+       .is-qhavuz-mode                      -> Geri / Görsel Ekle / Seç
+       .is-qhavuz-mode.is-qhavuz-select     -> Vazgeç / Test / Paket
+     Orta bölgedeki koyu zemin (.nav-slider) iki sette de yerinde kalır,
+     yalnızca üstündeki içerik değişir. */
+  .wrapper.is-qhavuz-mode:not(.is-qhavuz-select) .nav-actions-browse,
+  .wrapper.is-qhavuz-mode.is-qhavuz-select .nav-actions-pick {
+    visibility: visible;
+    transition-delay: 0s;
+  }
+
+  .wrapper .nav-action {
+    -webkit-appearance: none;
+    appearance: none;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    height: 100%;
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    border: none;
+    border-radius: 16px;
+    background: transparent;
+    color: var(--font-color-dark);
+    font-family: "Space Grotesk", sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    line-height: 1;
+    cursor: pointer;
+    pointer-events: none;
+    opacity: 0;
+    transform: translateY(8px);
+    transition:
+      opacity 0.2s ease var(--d, 0s),
+      transform 0.35s cubic-bezier(0.65, 0, 0.35, 1) var(--d, 0s),
+      background-color 0.2s ease,
+      color 0.2s ease;
+  }
+
+  .wrapper.is-qhavuz-mode:not(.is-qhavuz-select) .nav-actions-browse .nav-action,
+  .wrapper.is-qhavuz-mode.is-qhavuz-select .nav-actions-pick .nav-action {
+    opacity: 1;
+    transform: none;
+    pointer-events: auto;
+  }
+
+  .wrapper .nav-action-back { --d: 0.14s; }
+  .wrapper .nav-action-add { --d: 0.18s; }
+  .wrapper .nav-action-select { --d: 0.22s; }
+  .wrapper .nav-action-cancel { --d: 0.05s; }
+  .wrapper .nav-action-test { --d: 0.09s; }
+  .wrapper .nav-action-package { --d: 0.13s; }
+
+  /* Yan bölgeler, ortadaki koyu alanla 4px'lik bir nefes payı bırakır;
+     Seç aktifken dolan zemin göstergeye yapışmasın diye. */
+  .wrapper .nav-action-back,
+  .wrapper .nav-action-cancel {
+    grid-column: 1 / 3;
+    margin-right: 4px;
+  }
+
+  .wrapper .nav-action-add,
+  .wrapper .nav-action-test {
+    grid-column: 3 / 6;
+    color: var(--font-color-light);
+  }
+
+  .wrapper .nav-action-select,
+  .wrapper .nav-action-package {
+    grid-column: 6 / 8;
+    margin-left: 4px;
+  }
+
+  .nav-action-icon {
+    width: 22px;
+    height: 22px;
+    flex: 0 0 auto;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 1.9;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    pointer-events: none;
+  }
+
+  .nav-action-label {
+    white-space: nowrap;
+    pointer-events: none;
+  }
+
+  .nav-action-icon,
+  .nav-action-label {
+    transition: transform 0.14s ease;
+  }
+
+  .nav-action:active .nav-action-icon,
+  .nav-action:active .nav-action-label {
+    transform: scale(0.9);
+  }
+
+  .wrapper .nav-action-back:active,
+  .wrapper .nav-action-cancel:active,
+  .wrapper .nav-action-select:active,
+  .wrapper .nav-action-package:active:not(:disabled) {
+    background-color: rgba(128, 128, 128, 0.2);
+  }
+
+  /* Vazgeç: seçimi bırakan, yıkıcı olmayan bir "geri al" eylemi; bu
+     yüzden dolgusuz, Geri / Seç ile aynı sakin dilde durur. Dikkat
+     ortadaki asıl eyleme (Test) kalır: kırmızı blok çubuğu üç farklı
+     yüzeye bölüyordu. */
+  .wrapper .nav-action-cancel {
+    color: var(--font-color-dark);
+  }
+
+  /* Yan bölgeler dar (2 kolon): "Vazgeç" ve "Paketle" yazıları kenara
+     dayanmasın diye ikon-yazı arası biraz kısılır. */
+  .wrapper .nav-action-cancel,
+  .wrapper .nav-action-package {
+    gap: 5px;
+  }
+
+  /* Seçili soru sayısı: "Test" yazısının yanında küçük bir hap. Seçim
+     yokken gizlenir; o durumda Test ve Paket de soluk/pasif kalır. */
+  .nav-action-badge {
+    box-sizing: border-box;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 21px;
+    height: 21px;
+    padding: 0 6px;
+    border-radius: 11px;
+    background-color: var(--font-color-light);
+    color: var(--main-color);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0;
+    pointer-events: none;
+  }
+
+  .nav-action-badge.is-empty {
+    display: none;
+  }
+
+  .wrapper .nav-action:disabled {
+    cursor: default;
+  }
+
+  .wrapper.is-qhavuz-select .nav-actions-pick .nav-action:disabled:not(.nav-action-test) {
+    opacity: 0.38;
+  }
+
+  /* Test (ortadaki koyu blok) — iki durumu var:
+       Boş     : soluk bir "ölü düğme" yerine ne yapılacağını söyleyen ipucu
+                 ("Sorulara dokun") gösterir.
+       Seçili  : blok vurgu (pembe) rengine dolar, oynat ikonu dolu olur,
+                 rozet soru sayısını gösterir. Renk geçişi 0.3s yumuşaktır.
+     .has-qhavuz-selection sınıfını JS (updateQhavuzSelectBar) yönetir. */
+  .nav-action-hint {
+    display: none;
+    white-space: nowrap;
+    color: rgba(255, 255, 255, 0.62);
+    pointer-events: none;
+  }
+
+  .wrapper .nav-action-test:disabled .nav-action-icon,
+  .wrapper .nav-action-test:disabled .nav-action-label {
+    display: none;
+  }
+
+  .wrapper .nav-action-test:disabled .nav-action-hint {
+    display: inline;
+  }
+
+  .wrapper.has-qhavuz-selection .nav-action-test {
+    color: #121212;
+  }
+
+  .wrapper.has-qhavuz-selection .nav-action-test .nav-action-icon {
+    fill: currentColor;
+  }
+
+  .wrapper.is-qhavuz-select.has-qhavuz-selection .nav-slider {
+    background-color: var(--accent-color, #ff90e8);
+  }
+
+  .wrapper.has-qhavuz-selection .nav-action-badge {
+    background-color: #121212;
+    color: #fff;
+  }
+
+  .nav-action:focus-visible {
+    outline: 2px solid var(--accent-color, #ff90e8);
+    outline-offset: -3px;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .wrapper .nav-action-back:hover,
+    .wrapper .nav-action-cancel:hover,
+    .wrapper .nav-action-select:hover,
+    .wrapper .nav-action-package:hover:not(:disabled) {
+      background-color: rgba(128, 128, 128, 0.14);
+    }
+  }
+
+  /* Seç modu açılınca çubuğun içeriği değiştiği için, dikkat çekmesi
+     adına pill kısa ve hafif bir titreme yapar. */
+  @keyframes navQhavuzShake {
+    0%, 100% { transform: translateX(0); }
+    15% { transform: translateX(-3px); }
+    30% { transform: translateX(3px); }
+    45% { transform: translateX(-2px); }
+    60% { transform: translateX(2px); }
+    75% { transform: translateX(-1px); }
+    90% { transform: translateX(1px); }
+  }
+
+  .wrapper.is-shaking {
+    animation: navQhavuzShake 0.42s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .wrapper.is-shaking {
+      animation: none;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .nav-btn,
+    .nav-action,
+    .nav-actions {
+      transition-duration: 0.01s !important;
+      transition-delay: 0s !important;
+    }
   }
 
   /* From Uiverse.io by Voxybuns */
@@ -5463,53 +5759,125 @@
     gap: 1rem;
   }
 
-  /* Başlık artık Ayarlar sayfasındaki (.settings-hero / .settings-title)
-     ile birebir aynı tasarımı ve davranışı kullanıyor: sabit, büyük,
-     kalın, ortalanmış Playfair Display başlığı. Üstte fazla boşluk
-     kalmasın diye üst dolgu ve yazı boyutu Ayarlar'dakinden de biraz
-     daha küçük tutuldu; başlık böylece bir miktar yukarı kayıyor. */
-  .qhavuz-header {
-    display: flex;
-    justify-content: center;
-    width: 100%;
+  /* ---- Üst çubuk: Soru Takibi'ndeki (#page-9 .page9-topbar) tasarım dili
+     ve puntolarla. Başlık tam ortada (Baloo 2, 1.25rem / 800); sağdaki
+     beyaz, yumuşak gölgeli hap "Düzenle" ↔ "Bitti" düzenleme modunu açar
+     kapatır ve modda vurgu rengine dolar. Sol ve sağ hücre eşit (1fr)
+     olduğundan sağdaki düğmeler başlığı kaydırmaz. Eski büyük SVG başlık
+     ve kesikli "kesim çizgisi" kalktı. Çubuk, kart alanının dışında
+     sabit durur; yalnızca .qhavuz-scroll kayar. ---- */
+  #page-camera {
+    --qh-font: "Baloo 2", "Space Grotesk", sans-serif;
+    --qh-shadow: 0 10px 24px -12px rgba(0, 0, 0, 0.32), 0 2px 6px rgba(0, 0, 0, 0.06);
+  }
+
+  .qhavuz-topbar {
     flex: 0 0 auto;
-    box-sizing: border-box;
-    padding: calc(18px + env(safe-area-inset-top)) 24px 0.4rem;
-  }
-
-  .qhavuz-header .qhavuz-title {
-    display: flex;
-    justify-content: center;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    grid-auto-rows: minmax(2.6rem, auto);
+    align-items: center;
+    gap: 0.5rem;
     width: 100%;
+    max-width: 428px;
+    margin: 0 auto;
+    box-sizing: border-box;
+    padding: calc(20px + env(safe-area-inset-top)) 24px 0.5rem;
+  }
+
+  .qhavuz-topbar-title {
+    grid-column: 2;
     margin: 0;
-    color: var(--theme-text, #fff);
+    font-family: var(--qh-font);
+    font-weight: 800;
+    font-size: 1.25rem;
+    line-height: 1.3;
+    text-align: center;
+    white-space: nowrap;
+    color: var(--theme-text, #f2f2f7);
     transition: color 0.5s ease;
   }
 
-  /* "Soru Havuzu" başlığı artık düz metin değil, Kronometre başlığıyla
-     (bkz. svg.stopwatch-title) aynı dolgun/marka kimliğini taşıyan bir
-     SVG çizim. viewBox oranı sabit kaldığı için genişliği (width)
-     media query'lerde değiştirmek, içindeki yazıyı da orantılı büyütüp
-     küçültüyor; ayrı bir font-size yönetmeye gerek kalmıyor. */
-  .qhavuz-header svg.qhavuz-title-svg {
+  .qhavuz-topbar-actions {
+    grid-column: 3;
+    justify-self: end;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  #page-camera .qhavuz-pill {
+    height: 2.3rem;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0 0.95rem 0 0.8rem;
+    background-color: #fff;
+    border: none;
+    border-radius: 999px;
+    box-shadow: var(--qh-shadow);
+    color: #121212;
+    font-family: var(--qh-font);
+    font-weight: 700;
+    font-size: 0.85rem;
+    white-space: nowrap;
+    cursor: pointer;
+    touch-action: manipulation;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.25s ease, color 0.25s ease;
+  }
+
+  #page-camera .qhavuz-pill-icon-done,
+  #page-camera .qhavuz-pill-label-done {
+    display: none;
+  }
+
+  #page-camera .qhavuz-pill.is-active {
+    background-color: var(--accent-color, #ff90e8);
+    color: #16171b;
+  }
+
+  #page-camera .qhavuz-pill.is-active .qhavuz-pill-icon,
+  #page-camera .qhavuz-pill.is-active .qhavuz-pill-label {
+    display: none;
+  }
+
+  #page-camera .qhavuz-pill.is-active .qhavuz-pill-icon-done {
     display: block;
-    width: clamp(190px, 53vw, 253px);
-    height: auto;
-    overflow: visible;
-    color: inherit;
-    transition: color 0.5s ease;
   }
 
-  .qhavuz-header svg.qhavuz-title-svg text {
-    font-family: "Baloo 2", "Space Grotesk", sans-serif;
-    font-weight: 600;
-    font-size: 34px;
-    letter-spacing: -0.01em;
-    fill: currentColor;
-    paint-order: stroke fill;
-    stroke: currentColor;
-    stroke-width: 0.2px;
-    stroke-linejoin: round;
+  #page-camera .qhavuz-pill.is-active .qhavuz-pill-label-done {
+    display: inline;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    #page-camera .qhavuz-pill:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 14px 28px -12px rgba(0, 0, 0, 0.36), 0 2px 6px rgba(0, 0, 0, 0.07);
+    }
+  }
+
+  #page-camera .qhavuz-pill:active {
+    transform: scale(0.96);
+    box-shadow: 0 6px 14px -10px rgba(0, 0, 0, 0.28), 0 1px 4px rgba(0, 0, 0, 0.05);
+  }
+
+  body.is-anthracite #page-camera .qhavuz-pill:not(.is-active) {
+    background-color: var(--dark-card-color, #32343a);
+    color: #f2f2f4;
+  }
+
+  /* Dar ekranlarda (≤374px) başlıkla çakışmasın diye düğme sadece ikon
+     olur (aria-label yine durumu söyler). Başlık Soru Takibi'nden biraz
+     uzun olduğu için eşik 350 yerine 374px. */
+  @media (max-width: 374px) {
+    #page-camera .qhavuz-pill {
+      padding: 0 0.8rem;
+    }
+
+    #page-camera .qhavuz-pill-label,
+    #page-camera .qhavuz-pill.is-active .qhavuz-pill-label-done {
+      display: none;
+    }
   }
 
   .qhavuz-subtitle {
@@ -5523,26 +5891,7 @@
     display: none;
   }
 
-  /* Ayarlar'daki "kesim çizgisi" (.settings-tear) ile aynı kesikli
-     çizgi + ortada ikon deseni; burada makas yerine düzenleme kalemi
-     var ve gerçekten tıklanabilir (Soru Havuzu düzenleme modunu açar).
-     Başlık gibi bu da sabit kalıyor, kendi yatay boşluğunu taşıyor
-     (artık üst kutunun 24px'lik sayfa dolgusuna güvenmiyor). */
-  .qhavuz-tear {
-    flex: 0 0 auto;
-    width: 100%;
-    max-width: 360px;
-    margin: 0 auto;
-    padding: 0.1rem 24px 0;
-    box-sizing: border-box;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    color: var(--theme-text, #fff);
-    transition: color 0.5s ease;
-  }
-
-  /* Başlık+kesim çizgisinin altındaki her şey (Görsel Yükle/Test Modu
+  /* Üst çubuğun altındaki her şey (Görsel Yükle/Test Modu
      butonları, filtre çubuğu, kart ızgarası) artık kendi kutusunda
      kayıyor; böylece yukarı kaydırıldığında öğeler başlığın ARKASINA
      değil, bu kutunun üst kenarında kesilerek kayboluyor. */
@@ -5573,53 +5922,6 @@
     padding-bottom: calc(216px + env(safe-area-inset-bottom));
   }
 
-  .qhavuz-tear-line {
-    flex: 1 1 auto;
-    height: 2.5px;
-    /* border-top: dashed yerine sabit desenli bir arka plan kullanılıyor:
-       border-dashed, tire uzunluğunu elemanın toplam genişliğine göre
-       otomatik ölçeklediği için kalemin sol/sağındaki iki parça farklı
-       genişlikte olduğunda tireler de farklı boyutta görünüyordu.
-       repeating-linear-gradient ile tire+boşluk uzunluğu (6px+4px) her
-       zaman sabit kalır; böylece iki parçadaki tireler de birbirine
-       eşit boyutta olur. */
-    background-image: repeating-linear-gradient(
-      to right,
-      currentColor 0,
-      currentColor 6px,
-      transparent 6px,
-      transparent 10px
-    );
-    opacity: 0.4;
-  }
-
-  .qhavuz-tear-pencil {
-    flex: 0 0 auto;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 30px;
-    height: 30px;
-    padding: 0;
-    border: none;
-    border-radius: 50%;
-    background: none;
-    color: currentColor;
-    opacity: 0.55;
-    cursor: pointer;
-    transition: opacity 0.2s ease, background-color 0.2s ease, color 0.2s ease;
-  }
-
-  .qhavuz-tear-pencil:active {
-    opacity: 0.85;
-  }
-
-  .qhavuz-tear-pencil.is-active {
-    opacity: 1;
-    color: #000;
-    background-color: var(--accent-color, #ff90e8);
-  }
-
   .qhavuz-add-btn {
     width: 100%;
     text-align: center;
@@ -5646,6 +5948,160 @@
     display: none;
   }
 
+  /* Test Modu / Paketlerim grubu: tablette araç panelinin doğal bir
+     parçası olduğundan kutu üretmez (display: contents). Telefon düzeni
+     aşağıdaki medya bloğunda. */
+  .qhavuz-quick-actions {
+    display: contents;
+  }
+
+  /* Telefonda "Görsel Yükle" ve "Soru Seç" nav bar'daki Soru Havuzu
+     moduna taşındı (bkz. .nav-actions). Tablet/geniş ekranda alt nav bar
+     gizli olduğundan bu iki kontrol sayfada görünmeye devam eder. */
+  @media not all and (min-width: 768px) and (min-height: 600px) {
+    /* Telefonda kaydırma kutusu artık sayfanın kendisi (Soru Takibi gibi):
+       üst çubuk (başlık + Düzenle) içerikle birlikte yukarı kayıp gizlenir,
+       en tepeye dönünce geri görünür. Test Modu / Paketlerim de bu akışın
+       parçasıdır ve onlarla birlikte gizlenir; üstte yalnızca Filtrele /
+       Yeni satırı sabit kalır (position: sticky) ve altından kayan kartlar,
+       Soru Takibi'ndeki gün satırı gibi bulanık bir zeminle kesilir. */
+    #page-camera {
+      overflow-y: auto;
+      overflow-x: hidden;
+      overscroll-behavior: contain;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+
+    #page-camera::-webkit-scrollbar {
+      display: none;
+    }
+
+    #page-camera .qhavuz-scroll {
+      flex: 0 0 auto;
+      min-height: auto;
+      overflow: visible;
+    }
+
+    /* Araç panelinin kutusu kalkar; çocukları (hızlı işlemler, filtre
+       satırı) doğrudan .qhavuz-wrap'in akışına girer, böylece sabit filtre
+       satırının kapsayıcısı kartları da içeren uzun .qhavuz-wrap olur. */
+    #page-camera .qhavuz-toolbar {
+      display: contents;
+    }
+
+    /* Test Modu ve Paketlerim: küçültülüp yan yana tek satıra alındı
+       (Görsel Yükle telefonda nav barda olduğundan satırda yalnızca bu
+       ikisi kalır). */
+    #page-camera .qhavuz-quick-actions {
+      display: flex;
+      flex-direction: row;
+      gap: 0.6rem;
+    }
+
+    #page-camera .qhavuz-quick-actions .qhavuz-actions {
+      flex: 1 1 0;
+      min-width: 0;
+      width: auto;
+    }
+
+    #page-camera .qhavuz-quick-actions .add-task-btn {
+      padding: 0.42rem 0.5rem;
+      font-size: 0.92rem;
+      border-width: 3px;
+      border-radius: 0.8rem;
+      box-shadow: 3px 3px 0px 0px #000;
+    }
+
+    #page-camera .qhavuz-quick-actions .add-task-btn:active,
+    #page-camera .qhavuz-quick-actions .add-task-btn.is-pressed {
+      box-shadow: 1px 1px 0px 0px #000;
+    }
+
+    /* Sabit satır: Filtrele / Yeni. Kaydırırken üstte yapışır. */
+    #page-camera .qhavuz-filter-bar {
+      --qh-stick: 0;
+      --qh-stick-top: calc(env(safe-area-inset-top) + 12px);
+      position: sticky;
+      top: var(--qh-stick-top);
+      z-index: 40;
+    }
+
+    /* Bulanık zemin: en tepedeyken görünmez, satır yapışmaya başlayınca
+       (JS: --qh-stick) belirir. Ekranın en üstüne (güvenli alan dahil)
+       kadar uzanır; filtre satırının altında ~12px tam bulanık şerit
+       kalır, ardından 24px boyunca yumuşakça solar. Tam genişlikte olması
+       için 100vw'ya ortalanır. */
+    #page-camera .qhavuz-filter-bar::before {
+      content: '';
+      position: absolute;
+      left: 50%;
+      width: 100vw;
+      transform: translateX(-50%);
+      top: calc(-1 * var(--qh-stick-top));
+      bottom: -36px;
+      z-index: -1;
+      pointer-events: none;
+      opacity: var(--qh-stick, 0);
+      background-color: var(--theme-bg, #F6F4EF);
+      background-color: color-mix(in srgb, var(--theme-bg, #F6F4EF) 97%, transparent);
+      -webkit-backdrop-filter: blur(14px);
+      backdrop-filter: blur(14px);
+      -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 24px), transparent);
+      mask-image: linear-gradient(to bottom, #000 calc(100% - 24px), transparent);
+      transition: background-color var(--theme-transition-duration, 480ms) var(--theme-transition-easing, ease);
+    }
+
+    #page-camera #qhavuzAddBtn,
+    #page-camera #qhavuzSelectBtn {
+      display: none;
+    }
+
+    /* Seçim modunun aksiyonları (Vazgeç / Test / Paket) da nav bar'a
+       taşındı; yüzen çubuk telefonda gösterilmez, kart ızgarasının altına
+       çubuk için ekstra boşluk bırakmaya da gerek kalmaz. Düğmeler DOM'da
+       durur: nav bar düğmeleri aynı işleyicileri onlar üzerinden tetikler. */
+    #qhavuzSelectBar.qhavuz-select-bar {
+      display: none;
+    }
+
+    .qhavuz-scroll:has(.qhavuz-grid.is-select-mode) {
+      padding-bottom: calc(96px + env(safe-area-inset-bottom));
+    }
+  }
+
+  /* ---- Soru Havuzu (telefon): küçültülmüş "Düzenle" hapı ----
+     Telefonda Düzenle hapı, JS ile (bkz. "Düzenle hapının konumu") üst
+     çubuktan alınıp aşağı kaydırınca da ekranda kalan Filtrele bloğunun
+     (.qhavuz-filter-bar, position: sticky) SAĞ ÜST köşesine taşınır.
+     Blok zaten konumlu olduğundan hap, akışı etkilemeden köşeye
+     yerleşir; soru sayısı solda kalır. Blok bulanık zeminle birlikte
+     yapıştığı için hap her zaman erişilebilir durur. Tablette hap üst
+     çubukta kaldığından bu kurallar orada uygulanmaz. */
+  #page-camera .qhavuz-filter-bar > .qhavuz-pill {
+    position: absolute;
+    top: -0.05rem;
+    right: 0;
+    z-index: 1;
+    height: 1.7rem;
+    gap: 0.28rem;
+    padding: 0 0.7rem 0 0.6rem;
+    font-size: 0.72rem;
+  }
+
+  #page-camera .qhavuz-filter-bar > .qhavuz-pill svg {
+    width: 12px;
+    height: 12px;
+    flex: 0 0 auto;
+  }
+
+  /* Başlıkla çakışma riski kalmadığı için yazı dar ekranlarda da görünür
+     (üstteki ≤374px kuralı hapı yalnızca ikona indiriyordu). */
+  #page-camera .qhavuz-filter-bar > .qhavuz-pill:not(.is-active) .qhavuz-pill-label,
+  #page-camera .qhavuz-filter-bar > .qhavuz-pill.is-active .qhavuz-pill-label-done {
+    display: inline;
+  }
+
   /* Telefonda araç paneli (Görsel Yükle/Test Modu satırı, Paketlerim,
      Filtrele & Sırala) tek dikey akışta durur; önceden aralarında boşluk
      tanımlı değildi (yalnızca .qhavuz-actions-secondary'de EKSİ bir
@@ -5659,14 +6115,7 @@
   }
 
   /* ---- Soru Havuzu: 3) Soru seçerek Test/Paket oluşturma ----
-     "Soru Seç" ikon butonu (kesim çizgisindeki kalemle aynı dilde) ve
      "Paketlerim" butonu (ikinci aksiyon satırı). */
-  .qhavuz-select-btn.is-active {
-    opacity: 1;
-    color: #000;
-    background-color: var(--accent-color, #ff90e8);
-  }
-
   .qhavuz-actions-secondary {
     margin-top: 0;
   }
@@ -5693,6 +6142,47 @@
     flex-direction: column;
     gap: 0.55rem;
     width: 100%;
+  }
+
+  /* Soru sayısı: Soru Takibi'ndeki gün toplamıyla (.page9-hero-count) aynı
+     dil, ama küçük — Baloo 2 kalın rakam + soluk birim. Filtre açıkken
+     birim "/ 40 soru" olur (toplamın kaçı gösteriliyor). */
+  .qhavuz-count {
+    display: flex;
+    align-items: baseline;
+    gap: 0.4rem;
+    min-width: 0;
+    padding-left: 0.15rem;
+    line-height: 1;
+  }
+
+  .qhavuz-count-num {
+    font-family: "Baloo 2", "Space Grotesk", sans-serif;
+    font-weight: 800;
+    font-size: 1.6rem;
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+    color: var(--theme-text, #f2f2f7);
+    transition: color 0.5s ease;
+  }
+
+  .qhavuz-count-num.is-bump {
+    animation: p9Bump 0.32s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .qhavuz-count-unit {
+    font-family: "Baloo 2", "Space Grotesk", sans-serif;
+    font-weight: 600;
+    font-size: 0.88rem;
+    color: var(--theme-text, #f2f2f7);
+    opacity: 0.5;
+    transition: color 0.5s ease;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .qhavuz-count-num.is-bump {
+      animation: none;
+    }
   }
 
   .qhavuz-filter-track-segmented#qhavuzFilterTrackSegmented .settings-segmented-slider {
@@ -13535,35 +14025,11 @@
       align-items: stretch;
     }
 
-    .qhavuz-header {
-      padding: calc(32px + env(safe-area-inset-top)) 40px 0.6rem;
-      justify-content: flex-start;
-    }
-
-    .qhavuz-header .qhavuz-title {
-      max-width: 1680px;
-      justify-content: flex-start;
-      margin: 0;
-    }
-
-    .qhavuz-header svg.qhavuz-title-svg {
-      width: clamp(253px, 10.5vw + 211px, 337px);
-    }
-
-    .qhavuz-tear {
+    /* Üst çubuk: başlık ortada kalır (Soru Takibi gibi); sağda Seç ve
+       Düzenle hapları yan yana durur. İçerik genişliğiyle hizalı. */
+    .qhavuz-topbar {
       max-width: 1720px;
-      padding: 0.4rem 40px 0;
-      gap: 10px;
-    }
-
-    .qhavuz-tear-pencil {
-      width: 36px;
-      height: 36px;
-    }
-
-    .qhavuz-tear-pencil svg {
-      width: 19px;
-      height: 19px;
+      padding: calc(24px + env(safe-area-inset-top)) 40px 0.6rem;
     }
 
     .qhavuz-scroll {
@@ -18987,43 +19453,64 @@
        soruların görseli yüklenir, açılan pop-up'ta branş ve doğru cevap
        şıkkı işaretlenir, kart olarak listede birikir. -->
   <section class="page" id="page-camera">
-    <div class="qhavuz-header">
-      <h1 class="qhavuz-title"><svg class="qhavuz-title-svg" viewBox="0 0 224 46" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Soru Havuzu">
-        <text x="50%" y="35" text-anchor="middle">Soru Havuzu</text>
-      </svg></h1>
-    </div>
-
-    <div class="qhavuz-tear">
-      <span class="qhavuz-tear-line" aria-hidden="true"></span>
-      <button type="button" class="qhavuz-tear-pencil qhavuz-select-btn" id="qhavuzSelectBtn" aria-label="Soru seç" aria-pressed="false">
-        <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M9 11l3 3L22 4"/>
-          <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
-        </svg>
-      </button>
-      <button type="button" class="qhavuz-tear-pencil" id="qhavuzEditBtn" aria-label="Soruları düzenle" aria-pressed="false">
-        <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
-          <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
-        </svg>
-      </button>
-      <span class="qhavuz-tear-line" aria-hidden="true"></span>
+    <div class="qhavuz-topbar">
+      <span aria-hidden="true"></span>
+      <h1 class="qhavuz-topbar-title">Soru Havuzu</h1>
+      <div class="qhavuz-topbar-actions">
+        <!-- Seç hapı yalnızca tablet/geniş ekranda görünür; telefonda Seç,
+             nav bar'daki Soru Havuzu modunda durur. -->
+        <button type="button" class="qhavuz-pill" id="qhavuzSelectBtn" aria-label="Soru seç" aria-pressed="false">
+          <svg class="qhavuz-pill-icon" viewBox="0 0 24 24" width="15" height="15" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 11l3 3L22 4"/>
+            <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+          </svg>
+          <svg class="qhavuz-pill-icon-done" viewBox="0 0 24 24" width="15" height="15" aria-hidden="true">
+            <path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span class="qhavuz-pill-label">Seç</span>
+          <span class="qhavuz-pill-label-done">Bitti</span>
+        </button>
+        <button type="button" class="qhavuz-pill" id="qhavuzEditBtn" aria-label="Soruları düzenle" aria-pressed="false">
+          <svg class="qhavuz-pill-icon" viewBox="0 0 24 24" width="15" height="15" aria-hidden="true">
+            <path d="M4 20l4.5-1 10.2-10.2-3.5-3.5L5 15.5 4 20z" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M13.3 6.8l3.5 3.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+          </svg>
+          <svg class="qhavuz-pill-icon-done" viewBox="0 0 24 24" width="15" height="15" aria-hidden="true">
+            <path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span class="qhavuz-pill-label">Düzenle</span>
+          <span class="qhavuz-pill-label-done">Bitti</span>
+        </button>
+      </div>
     </div>
 
     <div class="qhavuz-scroll" id="qhavuzScroll">
       <div class="qhavuz-wrap">
         <div class="qhavuz-toolbar" id="qhavuzToolbar">
         <span class="qhavuz-toolbar-label">İşlemler</span>
-        <div class="qhavuz-actions">
-          <button type="button" class="add-task-btn qhavuz-add-btn" id="qhavuzAddBtn">+ Görsel Yükle</button>
-          <button type="button" class="add-task-btn qhavuz-test-start-btn" id="qhavuzTestBtn">Test Modu</button>
-        </div>
-        <div class="qhavuz-actions qhavuz-actions-secondary">
-          <button type="button" class="add-task-btn qhavuz-packages-btn" id="qhavuzPackagesBtn">Paketlerim</button>
+        <!-- Telefonda Test Modu ve Paketlerim yan yana tek satırdır ve
+             başlıkla birlikte yukarı kayıp gider. Tablette araç panelinin
+             içinde eskisi gibi alt alta akar. -->
+        <div class="qhavuz-quick-actions">
+          <div class="qhavuz-actions">
+            <button type="button" class="add-task-btn qhavuz-add-btn" id="qhavuzAddBtn">+ Görsel Yükle</button>
+            <button type="button" class="add-task-btn qhavuz-test-start-btn" id="qhavuzTestBtn">Test Modu</button>
+          </div>
+          <div class="qhavuz-actions qhavuz-actions-secondary">
+            <button type="button" class="add-task-btn qhavuz-packages-btn" id="qhavuzPackagesBtn">Paketlerim</button>
+          </div>
         </div>
         <input type="file" accept="image/*" id="qhavuzFileInput" class="qhavuz-file-input">
 
         <span class="qhavuz-toolbar-label qhavuz-toolbar-label-filter">Filtrele &amp; Sırala</span>
         <div class="qhavuz-filter-bar" id="qhavuzFilterBar">
+          <!-- Filtreye göre güncellenen soru sayısı. Filtre bloğunun parçası
+               olduğu için telefonda Filtrele / Yeni ile birlikte üstte sabit
+               kalır (JS: updateQhavuzCount). -->
+          <div class="qhavuz-count" id="qhavuzCount" role="status" aria-live="polite">
+            <span class="qhavuz-count-num" id="qhavuzCountNum">0</span>
+            <span class="qhavuz-count-unit" id="qhavuzCountUnit">soru</span>
+          </div>
           <div class="qhavuz-filter-row">
             <div class="qhavuz-source-search-row qhavuz-tracksubj-row">
               <button type="button" class="qhavuz-source-search-btn qhavuz-tracksubj-btn" id="qhavuzFilterBtn" aria-haspopup="dialog">
@@ -19624,6 +20111,61 @@
         </svg>
       </div>
     </div>
+    <!-- Soru Havuzu modu: sekme ikonlarının yerine geçen üç bölge. Orta
+         bölgenin koyu zemini .nav-slider'dır (3 kolona uzar). -->
+    <div class="nav-actions nav-actions-browse" role="group" aria-label="Soru Havuzu işlemleri">
+      <button type="button" class="nav-action nav-action-back" id="navQhavuzBackBtn" aria-label="Ana sayfaya dön">
+        <svg class="nav-action-icon" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M19 12H5"/>
+          <path d="m12 19-7-7 7-7"/>
+        </svg>
+        <span class="nav-action-label">Geri</span>
+      </button>
+      <button type="button" class="nav-action nav-action-add" id="navQhavuzAddBtn" aria-label="Görsel ekle">
+        <svg class="nav-action-icon" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M16 5h6"/>
+          <path d="M19 2v6"/>
+          <path d="M21 11.5V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7.5"/>
+          <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>
+          <circle cx="9" cy="9" r="2"/>
+        </svg>
+        <span class="nav-action-label">Görsel Ekle</span>
+      </button>
+      <button type="button" class="nav-action nav-action-select" id="navQhavuzSelectBtn" aria-label="Soru seç" aria-pressed="false">
+        <svg class="nav-action-icon" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M9 11l3 3L22 4"/>
+          <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+        </svg>
+        <span class="nav-action-label">Seç</span>
+      </button>
+    </div>
+    <!-- Seç modu: aynı ızgara, ikinci eylem seti. -->
+    <div class="nav-actions nav-actions-pick" role="group" aria-label="Seçili sorular için işlemler">
+      <button type="button" class="nav-action nav-action-cancel" id="navQhavuzCancelBtn" aria-label="Seçimden vazgeç">
+        <svg class="nav-action-icon" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M18 6 6 18"/>
+          <path d="m6 6 12 12"/>
+        </svg>
+        <span class="nav-action-label">Vazgeç</span>
+      </button>
+      <button type="button" class="nav-action nav-action-test" id="navQhavuzTestBtn" aria-label="Seçili sorularla test oluştur" disabled>
+        <svg class="nav-action-icon" viewBox="0 0 24 24" aria-hidden="true">
+          <polygon points="6 4 20 12 6 20 6 4"/>
+        </svg>
+        <span class="nav-action-label">Test</span>
+        <span class="nav-action-badge is-empty" id="navQhavuzCountBadge" aria-hidden="true">0</span>
+        <span class="nav-action-hint" aria-hidden="true">Sorulara dokun</span>
+      </button>
+      <button type="button" class="nav-action nav-action-package" id="navQhavuzPackageBtn" aria-label="Seçili sorularla paket oluştur" disabled>
+        <svg class="nav-action-icon" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="m7.5 4.27 9 5.15"/>
+          <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/>
+          <path d="m3.3 7 8.7 5 8.7-5"/>
+          <path d="M12 22V12"/>
+        </svg>
+        <span class="nav-action-label">Paketle</span>
+      </button>
+    </div>
   </div>
 </nav>
 
@@ -19644,6 +20186,44 @@
   const navInputs = document.querySelectorAll('.nav-input');
   const navSlider = document.querySelector('.nav-slider');
   const navOptions = Array.from(document.querySelectorAll('.wrapper .option'));
+  const navWrapper = document.querySelector('.navbar .wrapper');
+  // Sekme ikonlarının solup geri gelirken soldan sağa sırayla kaymasını
+  // sağlayan sıra numarası (CSS'te --i olarak okunur).
+  navOptions.forEach((option, i) => option.style.setProperty('--i', i));
+
+  // Soru Havuzu ve ona bağlı alt sayfalar (test, paketler, paket detayı)
+  // açıkken nav bar "Soru Havuzu modu"ndadır: sekmeler yerine Geri /
+  // Görsel Ekle / Seç bölgeleri görünür. Alt sayfalarda nav bar zaten
+  // gizli olduğu için mod açık kalır; böylece Soru Havuzu'na dönüldüğünde
+  // ikonlar araya girip yanıp sönmez.
+  const QHAVUZ_NAV_PAGES = new Set([
+    'page-camera',
+    'page-camera-test',
+    'page-camera-packages',
+    'page-camera-package-detail',
+  ]);
+
+  // Soru Havuzu betiği, sayfadan çıkılırken açık kalmış seçim/düzenleme
+  // modlarını sıfırlamak için buraya bir işleyici bağlar.
+  const qhavuzNavHooks = { onLeave: null };
+
+  const setNavQhavuzMode = (on) => {
+    if (!navWrapper || navWrapper.classList.contains('is-qhavuz-mode') === on) return;
+    navWrapper.classList.toggle('is-qhavuz-mode', on);
+    if (!on) {
+      navWrapper.classList.remove('is-qhavuz-select');
+      if (qhavuzNavHooks.onLeave) qhavuzNavHooks.onLeave();
+    }
+    if (on) {
+      // Satır içi transform'u temizle; mod sınıfının CSS'i göstergeyi
+      // orta 3 kolona yerleştirsin.
+      navSlider.style.transform = '';
+    } else {
+      // Moddan çıkınca gösterge, işaretli sekmenin altına geri kayar.
+      const checked = document.querySelector('.nav-input:checked');
+      if (checked) moveSlider(checked);
+    }
+  };
 
   // Sayfalar aynı alanda üst üste durur; geçiş sırayla (önce eski sayfa
   // yumuşakça solup gider, o bitince yeni sayfa belirir) yapılır ki
@@ -19662,6 +20242,8 @@
   const goToPage = (id) => {
     const nextPage = document.getElementById(id);
     if (!nextPage || nextPage === activePage) return;
+
+    setNavQhavuzMode(QHAVUZ_NAV_PAGES.has(id));
 
     const prevPage = activePage;
     activePage = nextPage;
@@ -19694,6 +20276,8 @@
   };
 
   const moveSlider = (input) => {
+    // Soru Havuzu modunda gösterge CSS ile orta bölgeye sabitlenir.
+    if (navWrapper && navWrapper.classList.contains('is-qhavuz-mode')) return;
     const option = input.closest('.option');
     const baseLeft = navOptions[0].offsetLeft;
     const offset = option.offsetLeft - baseLeft;
@@ -30902,11 +31486,38 @@
   const qhavuzSelectPackageBtn = document.getElementById('qhavuzSelectPackageBtn');
   const qhavuzSelectTestBtn = document.getElementById('qhavuzSelectTestBtn');
 
+  // Nav bar'daki Soru Havuzu modu düğmeleri (telefon düzeni). Görsel Ekle,
+  // sayfadaki eski "Görsel Yükle" butonunun yerini alır; Seç, başlıktaki
+  // Soru Seç ikonuyla aynı modu açıp kapatır; Geri ana sayfaya döner.
+  const navQhavuzBackBtn = document.getElementById('navQhavuzBackBtn');
+  const navQhavuzAddBtn = document.getElementById('navQhavuzAddBtn');
+  const navQhavuzSelectBtn = document.getElementById('navQhavuzSelectBtn');
+  const navQhavuzCancelBtn = document.getElementById('navQhavuzCancelBtn');
+  const navQhavuzTestBtn = document.getElementById('navQhavuzTestBtn');
+  const navQhavuzPackageBtn = document.getElementById('navQhavuzPackageBtn');
+  const navQhavuzCountBadge = document.getElementById('navQhavuzCountBadge');
+
   const updateQhavuzSelectBar = () => {
     const n = qhavuzSelectedIds.size;
     if (qhavuzSelectCount) qhavuzSelectCount.textContent = `${n} soru seçildi`;
     if (qhavuzSelectPackageBtn) qhavuzSelectPackageBtn.disabled = n === 0;
     if (qhavuzSelectTestBtn) qhavuzSelectTestBtn.disabled = n === 0;
+    if (navQhavuzTestBtn) {
+      navQhavuzTestBtn.disabled = n === 0;
+      navQhavuzTestBtn.setAttribute('aria-label', n ? `${n} soruyla test oluştur` : 'Seçili sorularla test oluştur');
+    }
+    if (navQhavuzPackageBtn) {
+      navQhavuzPackageBtn.disabled = n === 0;
+      navQhavuzPackageBtn.setAttribute('aria-label', n ? `${n} soruyla paket oluştur` : 'Seçili sorularla paket oluştur');
+    }
+    if (navQhavuzCountBadge) {
+      navQhavuzCountBadge.textContent = n;
+      navQhavuzCountBadge.classList.toggle('is-empty', n === 0);
+    }
+    // Seçim varken ortadaki blok vurgu rengine dolar (bkz. .has-qhavuz-selection).
+    if (typeof navWrapper !== 'undefined' && navWrapper) {
+      navWrapper.classList.toggle('has-qhavuz-selection', n > 0);
+    }
   };
 
   const setQhavuzSelectMode = (on) => {
@@ -30919,6 +31530,23 @@
       qhavuzSelectBtn.setAttribute('aria-label', on ? 'Soru seçmeyi bitir' : 'Soru seç');
     }
     if (qhavuzSelectBar) qhavuzSelectBar.classList.toggle('is-open', on);
+    if (typeof navWrapper !== 'undefined' && navWrapper) {
+      const wasSelect = navWrapper.classList.contains('is-qhavuz-select');
+      navWrapper.classList.toggle('is-qhavuz-select', on);
+      // Yalnızca seçim modu AÇILIRKEN titret; kapanışta değil.
+      if (on && !wasSelect) {
+        navWrapper.classList.remove('is-shaking');
+        void navWrapper.offsetWidth; // reflow: animasyonu baştan başlat
+        navWrapper.classList.add('is-shaking');
+        clearTimeout(navWrapper._shakeTimer);
+        navWrapper._shakeTimer = setTimeout(() => navWrapper.classList.remove('is-shaking'), 480);
+      }
+    }
+    if (navQhavuzSelectBtn) {
+      navQhavuzSelectBtn.classList.toggle('is-active', on);
+      navQhavuzSelectBtn.setAttribute('aria-pressed', on ? 'true' : 'false');
+      navQhavuzSelectBtn.setAttribute('aria-label', on ? 'Soru seçmeyi bitir' : 'Soru seç');
+    }
     if (on && qhavuzEditMode) setQhavuzEditMode(false);
     updateQhavuzSelectBar();
     renderQhavuzGrid();
@@ -30926,6 +31554,94 @@
 
   if (qhavuzSelectBtn) qhavuzSelectBtn.addEventListener('click', () => setQhavuzSelectMode(!qhavuzSelectMode));
   if (qhavuzSelectCancelBtn) qhavuzSelectCancelBtn.addEventListener('click', () => setQhavuzSelectMode(false));
+
+  if (navQhavuzSelectBtn) navQhavuzSelectBtn.addEventListener('click', () => setQhavuzSelectMode(!qhavuzSelectMode));
+  if (navQhavuzAddBtn) navQhavuzAddBtn.addEventListener('click', () => qhavuzFileInput.click());
+
+  // Seç modu eylemleri: yüzen çubuğun (tablette hâlâ kullanılan) düğmeleriyle
+  // aynı işleyicileri tetikler; böylece Test/Paket akışı tek yerde kalır.
+  if (navQhavuzCancelBtn) navQhavuzCancelBtn.addEventListener('click', () => setQhavuzSelectMode(false));
+  if (navQhavuzTestBtn) navQhavuzTestBtn.addEventListener('click', () => { if (qhavuzSelectTestBtn) qhavuzSelectTestBtn.click(); });
+  if (navQhavuzPackageBtn) navQhavuzPackageBtn.addEventListener('click', () => { if (qhavuzSelectPackageBtn) qhavuzSelectPackageBtn.click(); });
+
+  // ---- Düzenle hapının konumu ----
+  // Telefonda üst çubuk (başlık + Düzenle) içerikle birlikte yukarı kayıp
+  // gizlendiği için Düzenle hapı, aşağı kaydırınca da görünen sabit
+  // Filtrele bloğunun (.qhavuz-filter-bar) sağ üst köşesine taşınır.
+  // Tablette blok yapışmadığından hap üst çubuktaki eski yerine döner.
+  // Aynı düğüm taşındığı için olay dinleyicileri ve durum (is-active)
+  // olduğu gibi korunur. Ölçüt, CSS'teki telefon düzeniyle birebir aynıdır.
+  (() => {
+    const pageEl = document.getElementById('page-camera');
+    const actionsEl = pageEl && pageEl.querySelector('.qhavuz-topbar-actions');
+    const barEl = pageEl && pageEl.querySelector('.qhavuz-filter-bar');
+    if (!actionsEl || !barEl || !qhavuzEditBtn) return;
+    const mq = window.matchMedia('not all and (min-width: 768px) and (min-height: 600px)');
+    const place = () => {
+      const target = mq.matches ? barEl : actionsEl;
+      if (qhavuzEditBtn.parentElement !== target) target.appendChild(qhavuzEditBtn);
+    };
+    place();
+    if (mq.addEventListener) mq.addEventListener('change', place);
+    else if (mq.addListener) mq.addListener(place);
+  })();
+
+  // ---- Filtrele / Yeni satırı sabitleme: bulanık zemin ilerlemesi ----
+  // Satırın kendisi CSS ile (position: sticky) yapışır; burada sadece
+  // arkasındaki bulanık zeminin kaydırmayla 0→1 belirmesi için --qh-stick
+  // değeri yazılır (Soru Takibi'ndeki --p9-stick ile aynı mantık). Satır
+  // yapıştığında kendi doğal konumu ölçülemediğinden, doğal üst kenarı
+  // önündeki Test Modu/Paketlerim satırının alt kenarı + akış boşluğu
+  // olarak hesaplanır. Tablette satır yapışmaz (position: static); o
+  // durumda değer 0'da tutulur.
+  (() => {
+    const pageEl = document.getElementById('page-camera');
+    const wrapEl = pageEl && pageEl.querySelector('.qhavuz-wrap');
+    const quickEl = pageEl && pageEl.querySelector('.qhavuz-quick-actions');
+    const barEl = pageEl && pageEl.querySelector('.qhavuz-filter-bar');
+    if (!pageEl || !wrapEl || !quickEl || !barEl) return;
+    const RAMP_PX = 36;
+    let queued = false;
+    const update = () => {
+      queued = false;
+      const cs = getComputedStyle(barEl);
+      if (cs.position !== 'sticky') {
+        barEl.style.setProperty('--qh-stick', '0');
+        return;
+      }
+      const stickTop = parseFloat(cs.top) || 0;
+      const gap = parseFloat(getComputedStyle(wrapEl).rowGap) || 0;
+      const naturalTop = quickEl.getBoundingClientRect().bottom - pageEl.getBoundingClientRect().top + gap;
+      const p = Math.max(0, Math.min(1, (stickTop - naturalTop) / RAMP_PX));
+      barEl.style.setProperty('--qh-stick', p.toFixed(3));
+    };
+    const queue = () => {
+      if (queued) return;
+      queued = true;
+      requestAnimationFrame(update);
+    };
+    pageEl.addEventListener('scroll', queue, { passive: true });
+    window.addEventListener('resize', queue);
+    update();
+  })();
+
+  // Soru Havuzu'ndan başka bir sayfaya geçilirken açık kalmış modlar sıfırlanır.
+  qhavuzNavHooks.onLeave = () => {
+    if (qhavuzSelectMode) setQhavuzSelectMode(false);
+    if (qhavuzEditMode) setQhavuzEditMode(false);
+  };
+  if (navQhavuzBackBtn) {
+    navQhavuzBackBtn.addEventListener('click', () => {
+      // Sayfadan çıkarken açık kalmış seçim/düzenleme modları sıfırlansın;
+      // dönüldüğünde soru havuzu temiz bir durumda karşılasın.
+      if (qhavuzSelectMode) setQhavuzSelectMode(false);
+      if (qhavuzEditMode) setQhavuzEditMode(false);
+      const homeInput = document.querySelector('.nav-input[value="page-1"]');
+      if (homeInput) homeInput.checked = true;
+      goToPage('page-1');
+      setActiveSidebarItem('page-1');
+    });
+  }
 
   // ---- Ortak: büyütülmüş soru görselinde iki parmakla yakınlaştırma ve
   // sürükleyerek gezinme (pinch-zoom + pan). Sayfa genelinde pinch/çift
@@ -31708,6 +32424,24 @@
 
   qhavuzUpdateFilterBtn();
 
+  // Filtre bloğundaki soru sayısı: filtreye uyan soru sayısı büyük yazılır;
+  // filtre toplamdan azını gösteriyorsa yanına "/ toplam" eklenir. Sayı
+  // değiştiğinde rakam kısa bir "bump" animasyonu yapar.
+  const qhavuzCountNum = document.getElementById('qhavuzCountNum');
+  const qhavuzCountUnit = document.getElementById('qhavuzCountUnit');
+  let qhavuzLastShownCount = null;
+  const updateQhavuzCount = (shown, total) => {
+    if (!qhavuzCountNum || !qhavuzCountUnit) return;
+    qhavuzCountNum.textContent = shown;
+    qhavuzCountUnit.textContent = shown === total ? 'soru' : `/ ${total} soru`;
+    if (qhavuzLastShownCount !== null && qhavuzLastShownCount !== shown) {
+      qhavuzCountNum.classList.remove('is-bump');
+      void qhavuzCountNum.offsetWidth; // reflow: animasyonu baştan başlat
+      qhavuzCountNum.classList.add('is-bump');
+    }
+    qhavuzLastShownCount = shown;
+  };
+
   const renderQhavuzGrid = () => {
     closeQhavuzContextMenu();
     qhavuzBuildFilterSubjectChips();
@@ -31726,6 +32460,8 @@
       return true;
     });
 
+    updateQhavuzCount(filteredItems.length, qhavuzState.items.length);
+
     // Tarihe göre sırala: eski kayıtlarda "ts" alanı olmayabilir, bunlar
     // 0 kabul edilip en eski konumuna (asc'de en başa, desc'te en sona) düşer.
     filteredItems.sort((a, b) => {
@@ -31740,7 +32476,11 @@
     if (!qhavuzState.items.length) {
       const empty = document.createElement('div');
       empty.className = 'qhavuz-empty';
-      empty.textContent = 'Henüz soru eklemedin. Yukarıdaki butondan bir görsel yükle.';
+      // Telefonda görsel ekleme nav bar'da; geniş ekranda soldaki araç panelinde.
+      const addBtnInNavBar = !window.matchMedia('(min-width: 768px) and (min-height: 600px)').matches;
+      empty.textContent = addBtnInNavBar
+        ? 'Henüz soru eklemedin. Aşağıdaki "Görsel Ekle" butonuyla bir görsel yükle.'
+        : 'Henüz soru eklemedin. Yukarıdaki butondan bir görsel yükle.';
       qhavuzGrid.appendChild(empty);
       return;
     }
