@@ -13914,6 +13914,16 @@
     background-color: var(--bubble-color, var(--accent-color, #ff90e8));
   }
 
+  /* Rulo (odometer) hane bileşeni birden çok yerde kullanılır (sayaç sayfası,
+     ana sayfa kartı); ortak değişkenler burada. --cd-shift / --cd-base
+     değerlerini JS, yazı tipi yüklenince ölçüp günceller. */
+  :root {
+    --cd-ease: cubic-bezier(0.16, 1, 0.3, 1);
+    --cd-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+    --cd-shift: 0em;
+    --cd-base: 0.215;
+  }
+
   /* ---------- Gün Geri Sayımı (tam ekran sayfa) ----------
      Takvimde seçili güne bir kez daha dokunulunca açılır. Sade bir dil:
      tek yazı tipi (Baloo 2), ince ağırlıklı dev rakamlar, kılcal çizgiler
@@ -13933,8 +13943,6 @@
     --cd-ease: cubic-bezier(0.16, 1, 0.3, 1);
     --cd-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
     --cd-font: "Baloo 2", "Space Grotesk", sans-serif;
-    --cd-shift: 0em;   /* JS: rakamları rulo kutusunda dikey ortalar (yazı tipi ölçüsüne göre) */
-    --cd-base: 0.215;  /* JS: rakam taban çizgisinin kutu altından uzaklığı (em) */
     flex-direction: column;
     align-items: stretch;
     justify-content: flex-start;
@@ -14587,6 +14595,48 @@
     background: currentColor;
   }
 
+  /* Süre dolunca gün/saat/dakika/saniye pencerelerinin yerini alan,
+     harfleri tek tek sıçrayarak beliren "Süre Doldu" yazısı. */
+  .cd-done {
+    display: none;
+    align-items: baseline;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0.5em;
+    font-family: var(--cd-font);
+    font-weight: 800;
+    font-size: clamp(2.3rem, 10.5vw, 3.8rem);
+    color: var(--cd-color);
+    letter-spacing: 0.01em;
+  }
+
+  .cd-view.is-done .cd-window,
+  .cd-view.is-done .cd-clock { display: none; }
+
+  .cd-view.is-done .cd-done { display: flex; }
+
+  .cd-done-word { display: inline-flex; }
+
+  .cd-done-word span {
+    display: inline-block;
+    opacity: 0;
+    transform: translateY(0.55em) scale(0.4) rotate(-8deg);
+  }
+
+  .cd-done.is-playing .cd-done-word span {
+    animation: cdDoneLetter 0.7s var(--cd-spring) both;
+  }
+
+  @keyframes cdDoneLetter {
+    0% { opacity: 0; transform: translateY(0.55em) scale(0.4) rotate(-8deg); }
+    55% { opacity: 1; }
+    100% { opacity: 1; transform: translateY(0) scale(1) rotate(0); }
+  }
+
+  @media (min-width: 700px) {
+    .cd-done { font-size: 3.6rem; }
+  }
+
   .cd-status {
     align-self: center;
     padding: 0.4rem 1rem;
@@ -15089,6 +15139,431 @@
     font-weight: 800;
     font-size: 1.2rem;
     color: var(--ts-text);
+  }
+
+  /* ==================== Panel: seçme kipi ==================== */
+  .cd-sheet-item.is-selected .cd-sheet-marker {
+    outline: 2px solid var(--ts-text);
+    outline-offset: 2px;
+  }
+
+  .cd-sheet-tick {
+    width: 1.15rem;
+    height: 1.15rem;
+    color: var(--ts-text);
+  }
+
+  .cd-sheet-foot {
+    display: flex;
+    justify-content: center;
+    padding: 0.5rem 0 0;
+  }
+
+  .cd-sheet-foot[hidden] { display: none; }
+
+  .cd-sheet-clear {
+    padding: 0.6rem 1.1rem;
+    border: none;
+    border-radius: 999px;
+    background: transparent;
+    color: var(--ts-danger);
+    font-family: inherit;
+    font-weight: 700;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+  }
+
+  .cd-sheet-clear:active {
+    background-color: var(--ts-tile);
+    transform: scale(0.97);
+  }
+
+  .cd-sheet-empty-btn {
+    display: block;
+    margin: 1rem auto 0;
+    padding: 0.7rem 1.4rem;
+    border: none;
+    border-radius: 999px;
+    background: var(--accent-color, #ff90e8);
+    color: #16171b;
+    font-family: inherit;
+    font-weight: 800;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+  }
+
+  .cd-sheet-empty-btn:active { transform: scale(0.96); }
+
+  /* ==================== Ana sayfa: "Bugün Çözülen" kartı, çevrilebilir ====================
+     Kart iki yüzlüdür: ön yüz mevcut soru sayacı, arka yüz seçilen sayaç
+     (Gün / Saat / Dakika / Saniye) ya da "Sayaç ekle" alanı. Sağ üstteki
+     değiştirme düğmesi kartı Y ekseninde çevirir; çevirme sırasında kart
+     hafifçe yükselir, üzerinden bir ışık süzülür ve tilt gölgesi geçer. */
+  .home-flip {
+    position: relative;
+    grid-column: 1 / -1;
+    width: 100%;
+    perspective: 1200px;
+    -webkit-perspective: 1200px;
+  }
+
+  .home-flip-inner {
+    position: relative;
+    width: 100%;
+    transform-style: preserve-3d;
+    -webkit-transform-style: preserve-3d;
+    transition: transform 0.95s cubic-bezier(0.3, 0.08, 0.22, 1.12);
+  }
+
+  .home-flip.is-flipped .home-flip-inner { transform: rotateY(180deg); }
+
+  .home-flip .home-live-widget {
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+  }
+
+  .home-flip .home-live-widget:hover { transform: none; }
+
+  .home-flip-back {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    border-radius: 1.75rem;
+    background-color: #fff;
+    box-shadow: 0 14px 28px -16px rgba(0, 0, 0, 0.28), 0 2px 8px rgba(0, 0, 0, 0.06);
+    color: #000;
+    font-family: "Baloo 2", "Space Grotesk", sans-serif;
+    transform: rotateY(180deg);
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+  }
+
+  body.is-anthracite .home-flip-back {
+    background-color: var(--dark-card-color, #32343a);
+    box-shadow: 0 14px 28px -16px rgba(0, 0, 0, 0.55), 0 2px 8px rgba(0, 0, 0, 0.2);
+    color: #f2f2f4;
+  }
+
+  /* Görünmeyen yüz dokunuş almasın. */
+  .home-flip:not(.is-flipped) .home-flip-back,
+  .home-flip.is-flipped .home-live-widget { pointer-events: none; }
+
+  .home-flip-add[hidden],
+  .home-flip-cd[hidden] { display: none; }
+
+  /* --- Arka yüz: "Sayaç ekle" alanı --- */
+  .home-flip-add {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.95rem;
+    padding: 0;
+    border: none;
+    background: none;
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+  }
+
+  .home-flip-add-ic {
+    position: relative;
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 2.7rem;
+    height: 2.7rem;
+    border-radius: 50%;
+    background: var(--accent-color, #ff90e8);
+    color: #16171b;
+    box-shadow: 0 10px 18px -10px var(--accent-color, #ff90e8);
+    transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .home-flip-add:active .home-flip-add-ic { transform: scale(0.9) rotate(90deg); }
+
+  .home-flip-add-ic svg { width: 1.2rem; height: 1.2rem; }
+
+  .home-flip-add-text {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.1rem;
+    text-align: left;
+  }
+
+  .home-flip-add-text b {
+    font-weight: 800;
+    font-size: 1.2rem;
+    line-height: 1.15;
+  }
+
+  .home-flip-add-text small {
+    font-weight: 600;
+    font-size: 0.8rem;
+    line-height: 1.2;
+    color: #9a9a9a;
+  }
+
+  body.is-anthracite .home-flip-add-text small { color: #a9a9ae; }
+
+  /* --- Arka yüz: seçilen sayaç ---
+     Her şey kartın ortasında durur: üstte ad + tarih, altında büyük
+     Gün / Saat / Dakika / Saniye. Rakam boyutu gün hanesi sayısına göre
+     (data-len) ve kart genişliğine göre ölçeklenir; hepsi tek satıra sığar. */
+  .home-flip-cd {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: center;
+    gap: clamp(0.5rem, 1.5dvh, 0.85rem);
+    padding: 0.9rem 1.35rem 1rem;
+    border: none;
+    background: none;
+    color: inherit;
+    font: inherit;
+    text-align: center;
+    cursor: pointer;
+  }
+
+  .home-flip-cd-head {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.05rem;
+    width: 100%;
+    min-width: 0;
+    /* Simetrik boşluk: sağ üstteki düğmeyle çakışmadan tam ortalanır. */
+    padding: 0 2.6rem;
+  }
+
+  .home-flip-cd-nameRow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    max-width: 100%;
+    min-width: 0;
+  }
+
+  .home-flip-cd-dot {
+    flex: none;
+    width: 0.6rem;
+    height: 0.6rem;
+    border-radius: 50%;
+    background: var(--cd-dot, var(--accent-color, #ff90e8));
+  }
+
+  .home-flip-cd-name {
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    font-weight: 800;
+    font-size: 1.12rem;
+    line-height: 1.25;
+  }
+
+  .home-flip-cd-date {
+    max-width: 100%;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    font-weight: 600;
+    font-size: 0.82rem;
+    line-height: 1.3;
+    color: #9a9a9a;
+  }
+
+  body.is-anthracite .home-flip-cd-date { color: #a9a9ae; }
+
+  .home-flip-units {
+    --u-max: 3rem;
+    --u-div: 6.5;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 0.14em;
+    width: 100%;
+    font-size: min(var(--u-max), calc((100vw - 6.2rem) / var(--u-div)));
+    font-weight: 800;
+    line-height: 1.25;
+  }
+
+  .home-flip-units[data-len="3"] { --u-max: 2.75rem; --u-div: 7.1; }
+  .home-flip-units[data-len="4"],
+  .home-flip-units[data-len="5"] { --u-max: 2.4rem; --u-div: 7.7; }
+
+  .home-flip-unit {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+  }
+
+  .home-flip-num {
+    display: inline-flex;
+    font-variant-numeric: tabular-nums lining-nums;
+    /* Rulo kutusunun (1.25em) rakam dışındaki boş payını düzenden çıkarır;
+       rakam yine tamamen kutunun içinde kalır. */
+    margin-block: -0.2em;
+  }
+
+  .home-flip-num .cd-reel { margin-inline: -0.03em; }
+
+  .home-flip-label {
+    margin-top: 0.1rem;
+    font-weight: 700;
+    font-size: 0.74rem;
+    line-height: 1;
+    color: #9a9a9a;
+  }
+
+  body.is-anthracite .home-flip-label { color: #a9a9ae; }
+
+  .home-flip-units .cd-colon { opacity: 0.3; }
+
+  /* Süre dolunca Gün/Saat/Dakika/Saniye rakamlarının yerini alan,
+     harfleri tek tek sıçrayarak beliren "Süre Doldu" yazısı. */
+  .home-flip-done {
+    display: none;
+    align-items: baseline;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0.4em;
+    width: 100%;
+    font-weight: 800;
+    font-size: clamp(1.25rem, 6.2vw, 1.65rem);
+    letter-spacing: 0.01em;
+    color: #ff5c5c;
+  }
+
+  .home-flip-cd.is-done .home-flip-units { display: none; }
+  .home-flip-cd.is-done .home-flip-done { display: flex; }
+
+  .home-flip-done-word { display: inline-flex; }
+
+  .home-flip-done-word span {
+    display: inline-block;
+    opacity: 0;
+    transform: translateY(0.5em) scale(0.4) rotate(-8deg);
+  }
+
+  .home-flip-done.is-playing .home-flip-done-word span {
+    animation: cdDoneLetter 0.7s var(--cd-spring) both;
+  }
+
+  /* --- Değiştirme düğmesi (sağ üst) --- */
+  .home-flip-btn {
+    position: absolute;
+    top: 0.8rem;
+    right: 0.8rem;
+    z-index: 3;
+    display: grid;
+    place-items: center;
+    width: 2.15rem;
+    height: 2.15rem;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    background: rgba(127, 127, 127, 0.14);
+    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(6px);
+    color: rgba(0, 0, 0, 0.62);
+    cursor: pointer;
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.2s ease;
+  }
+
+  body.is-anthracite .home-flip-btn { color: rgba(242, 242, 244, 0.78); }
+
+  .home-flip-btn:active {
+    transform: scale(0.88);
+    background: rgba(127, 127, 127, 0.28);
+  }
+
+  .home-flip-btn:focus-visible {
+    outline: 2px solid var(--accent-color, #ff90e8);
+    outline-offset: 2px;
+  }
+
+  .home-flip-btn svg {
+    width: 1.05rem;
+    height: 1.05rem;
+    transition: transform 0.95s cubic-bezier(0.3, 0.08, 0.22, 1.12);
+  }
+
+  .home-flip.is-flipped .home-flip-btn svg { transform: rotate(180deg); }
+
+  /* --- Çevirme efektleri: yükselme + süzülen ışık + tilt gölgesi --- */
+  .home-flip.is-flipping { animation: homeFlipLift 0.95s cubic-bezier(0.3, 0.08, 0.22, 1); }
+
+  @keyframes homeFlipLift {
+    0%, 100% { transform: scale(1) translateY(0); }
+    42% { transform: scale(1.05) translateY(-5px); }
+  }
+
+  .home-flip-sheen {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    overflow: hidden;
+    border-radius: 1.75rem;
+    pointer-events: none;
+  }
+
+  .home-flip-sheen::before,
+  .home-flip-sheen::after {
+    content: "";
+    position: absolute;
+    opacity: 0;
+  }
+
+  /* Işık bandı: vurgu renginde, soldan sağa süzülür. */
+  .home-flip-sheen::before {
+    top: -15%;
+    bottom: -15%;
+    left: 0;
+    width: 55%;
+    background: linear-gradient(105deg, transparent 0%, color-mix(in srgb, var(--accent-color, #ff90e8) 55%, transparent) 50%, transparent 100%);
+    transform: translateX(-130%) skewX(-14deg);
+  }
+
+  /* Tilt gölgesi: kart yan konuma yaklaştıkça koyulaşıp geri açılır. */
+  .home-flip-sheen::after {
+    inset: 0;
+    background: linear-gradient(90deg, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.16) 50%, rgba(0, 0, 0, 0));
+  }
+
+  body.is-anthracite .home-flip-sheen::after {
+    background: linear-gradient(90deg, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.1) 50%, rgba(255, 255, 255, 0));
+  }
+
+  .home-flip.is-flipping .home-flip-sheen::before { animation: homeFlipSheen 0.95s cubic-bezier(0.4, 0, 0.2, 1); }
+  .home-flip.is-flipping .home-flip-sheen::after { animation: homeFlipShade 0.95s ease-in-out; }
+
+  @keyframes homeFlipSheen {
+    0% { opacity: 0; transform: translateX(-130%) skewX(-14deg); }
+    20% { opacity: 1; }
+    80% { opacity: 1; }
+    100% { opacity: 0; transform: translateX(300%) skewX(-14deg); }
+  }
+
+  @keyframes homeFlipShade {
+    0%, 100% { opacity: 0; }
+    50% { opacity: 1; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .home-flip-inner { transition-duration: 0.01s; }
+    .home-flip.is-flipping,
+    .home-flip.is-flipping .home-flip-sheen::before,
+    .home-flip.is-flipping .home-flip-sheen::after { animation: none; }
   }
 
   /* Hareketi azalt: animasyonlar kapanır, geçişler anlık olur. */
@@ -20003,6 +20478,10 @@
            silindiğinde savePage9State üzerinden anında güncellenir; tıklanınca
            doğrudan Soru Takibi sekmesini açar. Yerleşimde en üstte, tam
            genişlikte duran ana (hero) karttır. -->
+      <!-- Çevrilebilir kart: ön yüz mevcut "Bugün Çözülen" widget'ı, arka yüz
+           seçilen sayaç ya da "Sayaç ekle" alanı. Sağ üstteki düğme kartı çevirir. -->
+      <div class="home-flip" id="homeFlip">
+        <div class="home-flip-inner" id="homeFlipInner">
       <button type="button" class="home-live-widget" id="homeQuestionWidget" aria-label="Soru Takibi'ne git, bugün çözülen soru sayısı">
         <!-- Dolum animasyonu katmanı: Soru Takibi'nde günlük hedef
              belirlenmişse (.has-goal) görünür; seviyeyi JS'teki
@@ -20019,6 +20498,46 @@
           <span class="home-live-widget-sub" id="homeQuestionWidgetSub">Henüz soru girilmedi</span>
         </span>
       </button>
+          <div class="home-flip-back" id="homeFlipBack" aria-hidden="true">
+            <button type="button" class="home-flip-add" id="homeFlipAdd" aria-label="Sayaç ekle">
+              <span class="home-flip-add-ic" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg>
+              </span>
+              <span class="home-flip-add-text">
+                <b>Sayaç ekle</b>
+                <small>Kartta geri sayım göster</small>
+              </span>
+            </button>
+
+            <button type="button" class="home-flip-cd" id="homeFlipCd" hidden aria-label="Sayacı değiştir">
+              <span class="home-flip-cd-head">
+                <span class="home-flip-cd-nameRow">
+                  <span class="home-flip-cd-dot" aria-hidden="true"></span>
+                  <span class="home-flip-cd-name" id="homeFlipCdName"></span>
+                </span>
+                <span class="home-flip-cd-date" id="homeFlipCdDate"></span>
+              </span>
+              <span class="home-flip-units" aria-hidden="true">
+                <span class="home-flip-unit"><span class="home-flip-num" id="homeFlipNumD"></span><span class="home-flip-label">Gün</span></span>
+                <span class="cd-colon"><i></i><i></i></span>
+                <span class="home-flip-unit"><span class="home-flip-num" id="homeFlipNumH"></span><span class="home-flip-label">Saat</span></span>
+                <span class="cd-colon"><i></i><i></i></span>
+                <span class="home-flip-unit"><span class="home-flip-num" id="homeFlipNumM"></span><span class="home-flip-label">Dakika</span></span>
+                <span class="cd-colon"><i></i><i></i></span>
+                <span class="home-flip-unit"><span class="home-flip-num" id="homeFlipNumS"></span><span class="home-flip-label">Saniye</span></span>
+              </span>
+              <span class="home-flip-done" id="homeFlipDoneMsg" aria-hidden="true">
+                <span class="home-flip-done-word"><span>S</span><span>ü</span><span>r</span><span>e</span></span>
+                <span class="home-flip-done-word"><span>D</span><span>o</span><span>l</span><span>d</span><span>u</span></span>
+              </span>
+            </button>
+          </div>
+        </div>
+        <span class="home-flip-sheen" aria-hidden="true"></span>
+        <button type="button" class="home-flip-btn" id="homeFlipBtn" aria-label="Kartı çevir, sayaç göster" aria-pressed="false">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h14"/><path d="M14.5 4.5L18 8l-3.5 3.5"/><path d="M20 16H6"/><path d="M9.5 12.5L6 16l3.5 3.5"/></svg>
+        </button>
+      </div>
 
       <!-- Minimalist takvim widget'ı: bugünün gün/ay/haftagünü bilgisini
            gösterir, dakikada bir tazelenir (gece yarısını geçen açık
@@ -20710,6 +21229,11 @@
         </div>
       </div>
 
+      <div class="cd-done" id="dayCdDoneMsg" aria-hidden="true">
+        <span class="cd-done-word"><span>S</span><span>ü</span><span>r</span><span>e</span></span>
+        <span class="cd-done-word"><span>D</span><span>o</span><span>l</span><span>d</span><span>u</span></span>
+      </div>
+
       <span class="cd-sr" id="dayCdSr"></span>
       <div class="cd-status" id="dayCdStatus"></div>
 
@@ -20746,6 +21270,7 @@
         <span class="cd-sheet-sub" id="cdSheetSub"></span>
       </div>
       <div class="cd-sheet-list" id="cdSheetList"></div>
+      <div class="cd-sheet-foot" id="cdSheetFoot" hidden></div>
     </div>
   </div>
 
@@ -26263,6 +26788,8 @@
   const dayCdNameEl = document.getElementById('dayCdName');
   const dayCdDateEl = document.getElementById('dayCdDate');
   const dayCdStatusEl = document.getElementById('dayCdStatus');
+  const dayCdViewEl = document.getElementById('dayCdView');
+  const dayCdDoneEl = document.getElementById('dayCdDoneMsg');
   const dayCdConfirmEl = document.getElementById('dayCdConfirm');
   const dayCdWindowEl = document.getElementById('dayCdWindow');
   const dayCdStageEl = document.getElementById('dayCdStage');
@@ -26496,6 +27023,25 @@
     dayCdRippleEl.classList.add('is-on');
   };
 
+  // "Süre Doldu" harflerine soldan sağa artan gecikme veriyoruz; böylece
+  // her harf sırayla sıçrayarak beliriyor.
+  dayCdDoneEl.querySelectorAll('.cd-done-word span').forEach((el, i) => {
+    el.style.animationDelay = `${i * 45}ms`;
+  });
+
+  // Süre dolduğunda gün/saat/dakika/saniye pencerelerini gizleyip yerine
+  // "Süre Doldu" yazısını animasyonla gösterir; `animate` false ise
+  // (örn. sayfa açılışında zaten dolmuş bir sayaç varsa) sıçrama olmadan
+  // doğrudan görünür.
+  const dayCdSetDone = (done, animate) => {
+    dayCdViewEl.classList.toggle('is-done', done);
+    if (!done) { dayCdDoneEl.classList.remove('is-playing'); return; }
+    if (!animate) { dayCdDoneEl.classList.add('is-playing'); return; }
+    dayCdDoneEl.classList.remove('is-playing');
+    void dayCdDoneEl.offsetWidth;
+    dayCdDoneEl.classList.add('is-playing');
+  };
+
   const dayCdClearTimers = () => {
     if (dayCdTickTimer) { clearTimeout(dayCdTickTimer); dayCdTickTimer = 0; }
     while (dayCdTimers.length) clearTimeout(dayCdTimers.pop());
@@ -26519,7 +27065,8 @@
     dayCdRenderSr(v);
     if (dayCdWasDone !== v.done) {
       dayCdWasDone = v.done;
-      dayCdStatusEl.textContent = v.done ? 'Süre doldu' : '';
+      dayCdStatusEl.textContent = '';
+      dayCdSetDone(v.done, true);
       if (v.done) dayCdRipple();
     }
     if (!v.done) dayCdTickTimer = setTimeout(dayCdTick, (v.remaining % 1000 || 1000) + 8);
@@ -26533,7 +27080,8 @@
     const str = dayCdStrings(v);
     dayCdBuildDays(str.d.length);
     dayCdWasDone = v.done;
-    dayCdStatusEl.textContent = v.done ? 'Süre doldu' : '';
+    dayCdStatusEl.textContent = '';
+    dayCdSetDone(v.done, true);
     dayCdRenderSr(v);
 
     let order = 0;
@@ -26599,8 +27147,8 @@
       const inkBottom = baseTop + m.actualBoundingBoxDescent;
       const shift = (box / 2 - (inkTop + inkBottom) / 2) / size;
       if (!Number.isFinite(shift) || Math.abs(shift) > 0.4) return;
-      dayCdPageEl.style.setProperty('--cd-shift', `${shift.toFixed(3)}em`);
-      dayCdPageEl.style.setProperty('--cd-base', ((box - baseTop) / size - shift).toFixed(3));
+      document.documentElement.style.setProperty('--cd-shift', `${shift.toFixed(3)}em`);
+      document.documentElement.style.setProperty('--cd-base', ((box - baseTop) / size - shift).toFixed(3));
     } catch (err) { /* ölçüm desteklenmiyorsa varsayılanlar kalır */ }
   };
   dayCdCalibrateFont();
@@ -26754,7 +27302,12 @@
   const cdSheetEl = document.getElementById('cdSheet');
   const cdSheetListEl = document.getElementById('cdSheetList');
   const cdSheetSubEl = document.getElementById('cdSheetSub');
+  const cdSheetTitleEl = document.getElementById('cdSheetTitle');
+  const cdSheetFootEl = document.getElementById('cdSheetFoot');
   let cdSheetResetTimer = null;
+  // Panel iki kipte açılır: 'calendar' (varsayılan: dokun = takvimde güne git,
+  // basılı tut = sil) ve 'pick' (ana sayfa kartı için sayaç seçme).
+  let cdSheetOpts = null;
 
   // Takvimi verilen güne götürür: aynı aydaysa seçim dairesi o güne kayar,
   // başka aydaysa ızgara o yönden akarak yeniden çizilir (goToCalendarToday ile aynı desen).
@@ -26807,8 +27360,17 @@
     showAppToast('Sayaç silindi');
   };
 
+  const CD_SHEET_TICK_SVG =
+    '<svg class="cd-sheet-chev cd-sheet-tick" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
   const renderCdSheet = () => {
+    const pick = !!(cdSheetOpts && cdSheetOpts.mode === 'pick');
+    const selectedKey = pick ? (cdSheetOpts.selectedKey || '') : '';
     cdSheetListEl.innerHTML = '';
+    cdSheetFootEl.hidden = true;
+    cdSheetFootEl.innerHTML = '';
+    cdSheetTitleEl.textContent = pick ? 'Sayaç seç' : 'Sayaçlarım';
+
     const now = Date.now();
     const items = Object.keys(getDayCountdowns()).map((key) => {
       const [y, m, d] = key.split('-').map(Number);
@@ -26820,16 +27382,28 @@
     const past = items.filter((it) => it.target.getTime() <= now).sort((a, b) => b.target - a.target);
     const all = upcoming.concat(past);
 
-    cdSheetSubEl.textContent = all.length ? 'Dokununca güne gider, basılı tutunca silersin' : '';
+    cdSheetSubEl.textContent = !all.length ? ''
+      : pick ? 'Kartta göstermek istediğini seç'
+      : 'Dokununca güne gider, basılı tutunca silersin';
+
     if (!all.length) {
-      cdSheetListEl.innerHTML = '<div class="cd-sheet-empty"><strong>Henüz sayaç yok</strong>Takvimde bir güne iki kez dokunarak kurabilirsin.</div>';
+      cdSheetListEl.innerHTML = '<div class="cd-sheet-empty"><strong>Henüz sayaç yok</strong>Takvimde bir güne iki kez dokunarak kurabilirsin.' +
+        (pick ? '<button type="button" class="cd-sheet-empty-btn" id="cdSheetOpenCal">Takvimi aç</button>' : '') + '</div>';
+      const openCal = document.getElementById('cdSheetOpenCal');
+      if (openCal) {
+        openCal.addEventListener('click', () => {
+          closeCdSheet();
+          setTimeout(() => openCalendarPage(), 240);
+        });
+      }
       return;
     }
 
     all.forEach((it, i) => {
       const key = dayCdKey(it.date);
+      const isSelected = pick && key === selectedKey;
       const row = document.createElement('div');
-      row.className = 'cd-sheet-item';
+      row.className = 'cd-sheet-item' + (isSelected ? ' is-selected' : '');
       row.style.setProperty('--i', String(i));
       row.style.setProperty('--mk', it.cd.color);
       row.style.setProperty('--mk-on', dayCdOnColor(it.cd.color));
@@ -26842,15 +27416,28 @@
           `<span class="cd-sheet-marker" aria-hidden="true">${marker}</span>` +
           '<span class="cd-sheet-body"><span class="cd-sheet-name"></span><span class="cd-sheet-date"></span></span>' +
         '</button>' +
-        `<span class="cd-sheet-end">${DAY_CD_CHEV_SVG}` +
-          '<button type="button" class="cd-sheet-del" tabindex="-1" aria-label="Sayacı sil">Sil</button></span>';
+        `<span class="cd-sheet-end">${isSelected ? CD_SHEET_TICK_SVG : DAY_CD_CHEV_SVG}` +
+          (pick ? '' : '<button type="button" class="cd-sheet-del" tabindex="-1" aria-label="Sayacı sil">Sil</button>') +
+        '</span>';
       const main = row.querySelector('.cd-sheet-main');
       const del = row.querySelector('.cd-sheet-del');
       row.querySelector('.cd-sheet-name').textContent = it.cd.name;
       row.querySelector('.cd-sheet-date').textContent =
         `${dayCdDateText(it.date)}${it.cd.time ? `, ${it.cd.time}` : ''}`;
       main.setAttribute('aria-label',
-        `${it.cd.name}, ${dayCdDateText(it.date)}${parts ? `, ${parts.num} ${parts.unit} kaldı` : ', süre doldu'}. Takvimde göster`);
+        `${it.cd.name}, ${dayCdDateText(it.date)}${parts ? `, ${parts.num} ${parts.unit} kaldı` : ', süre doldu'}. ` +
+        (pick ? (isSelected ? 'Kartta gösteriliyor' : 'Kartta göster') : 'Takvimde göster'));
+
+      if (pick) {
+        // Seçme kipi: dokununca sayaç ana sayfa kartına eklenir.
+        main.addEventListener('click', () => {
+          const opts = cdSheetOpts;
+          closeCdSheet();
+          setTimeout(() => { if (opts && opts.onPick) opts.onPick(key, it); }, 200);
+        });
+        cdSheetListEl.appendChild(row);
+        return;
+      }
 
       // Basılı tutunca sağdaki çentiğin yerine "Sil" gelir.
       let holdTimer = 0;
@@ -26897,10 +27484,22 @@
 
       cdSheetListEl.appendChild(row);
     });
+
+    // Seçme kipinde karttaki sayaç varsa kaldırma seçeneği.
+    if (pick && selectedKey && cdSheetOpts.onClear) {
+      cdSheetFootEl.innerHTML = '<button type="button" class="cd-sheet-clear">Sayacı karttan kaldır</button>';
+      cdSheetFootEl.hidden = false;
+      cdSheetFootEl.querySelector('button').addEventListener('click', () => {
+        const opts = cdSheetOpts;
+        closeCdSheet();
+        setTimeout(() => { if (opts && opts.onClear) opts.onClear(); }, 200);
+      });
+    }
   };
 
-  const openCdSheet = () => {
+  const openCdSheet = (opts) => {
     if (!cdSheetBackdrop || !cdSheetEl) return;
+    cdSheetOpts = opts && opts.mode ? opts : null;
     renderCdSheet();
     clearTimeout(cdSheetResetTimer);
     cdSheetEl.style.transform = '';
@@ -26921,14 +27520,14 @@
     cdSheetEl.classList.remove('is-dragging');
     cdSheetEl.style.transform = '';
     clearTimeout(cdSheetResetTimer);
-    cdSheetResetTimer = setTimeout(() => { cdSheetListEl.innerHTML = ''; }, 620);
+    cdSheetResetTimer = setTimeout(() => { cdSheetListEl.innerHTML = ''; cdSheetFootEl.innerHTML = ''; cdSheetFootEl.hidden = true; cdSheetOpts = null; }, 620);
     if (cdSheetBtn && document.activeElement && cdSheetEl.contains(document.activeElement)) {
       try { cdSheetBtn.focus({ preventScroll: true }); } catch (e) { /* yoksay */ }
     }
   };
 
   if (cdSheetBtn && cdSheetBackdrop && cdSheetEl) {
-    cdSheetBtn.addEventListener('click', openCdSheet);
+    cdSheetBtn.addEventListener('click', () => openCdSheet());
 
     cdSheetBackdrop.addEventListener('click', (e) => {
       if (e.target === cdSheetBackdrop) closeCdSheet();
@@ -38104,6 +38703,216 @@
       openKronometrePageFromHome();
     });
   }
+</script>
+
+<script>
+  // ---------- Ana sayfa: "Bugün Çözülen" kartını çevirme + kartta sayaç ----------
+  // Kartın ön yüzü mevcut soru sayacıdır. Sağ üstteki düğme kartı çevirir; arka
+  // yüzde "Sayaç ekle" alanı vardır, dokununca Takvim'deki Sayaçlarım paneli
+  // seçme kipinde açılır. Seçilen sayaç kartın üzerinde Gün / Saat / Dakika /
+  // Saniye olarak (rulo hanelerle) canlı geri sayar; üstte adı ve tarihi yazar.
+  // Sayaç bileşenleri (cdReel*, openCdSheet, getDayCountdown...) Takvim
+  // script'inde tanımlıdır; bu blok onlardan sonra çalışır.
+  (() => {
+    const flipEl = document.getElementById('homeFlip');
+    const btnEl = document.getElementById('homeFlipBtn');
+    const frontEl = document.getElementById('homeQuestionWidget');
+    const backEl = document.getElementById('homeFlipBack');
+    const addBtn = document.getElementById('homeFlipAdd');
+    const cdBtn = document.getElementById('homeFlipCd');
+    const pageEl = document.getElementById('page-1');
+    if (!flipEl || !btnEl || !frontEl || !backEl || !addBtn || !cdBtn || typeof openCdSheet !== 'function') return;
+
+    const nameEl = document.getElementById('homeFlipCdName');
+    const dateEl = document.getElementById('homeFlipCdDate');
+    const numEls = {
+      d: document.getElementById('homeFlipNumD'),
+      h: document.getElementById('homeFlipNumH'),
+      m: document.getElementById('homeFlipNumM'),
+      s: document.getElementById('homeFlipNumS'),
+    };
+
+    const unitsEl = cdBtn.querySelector('.home-flip-units');
+    const doneEl = document.getElementById('homeFlipDoneMsg');
+    if (doneEl) {
+      doneEl.querySelectorAll('.home-flip-done-word span').forEach((el, i) => {
+        el.style.animationDelay = `${i * 45}ms`;
+      });
+    }
+
+    const KEY_CD = 'homeCardCountdown';
+    const KEY_FACE = 'homeCardFace';
+    const state = {
+      face: APP_STATE[KEY_FACE] === 'back' ? 'back' : 'front',
+      key: typeof APP_STATE[KEY_CD] === 'string' ? APP_STATE[KEY_CD] : '',
+    };
+
+    const reels = { d: [], h: [], m: [], s: [] };
+    const timers = [];
+    let cur = null;          // { date, cd, target(ms) }
+    let tickTimer = 0;
+    let introEnd = 0;
+    let flipTimer = 0;
+    let wasDone = null;
+
+    const pad2 = (n) => String(n).padStart(2, '0');
+    const isVisible = () => state.face === 'back' && !!cur && pageEl.classList.contains('is-active') && !document.hidden;
+
+    const resolve = () => {
+      const parts = String(state.key).split('-').map(Number);
+      if (parts.length !== 3 || parts.some((n) => !Number.isFinite(n))) return null;
+      const date = new Date(parts[0], parts[1] - 1, parts[2]);
+      const cd = getDayCountdown(date);
+      return cd ? { date, cd, target: dayCdTarget(date, cd.time).getTime() } : null;
+    };
+
+    const build = (u, n) => {
+      if (u === 'd') unitsEl.dataset.len = String(Math.min(n, 5));
+      numEls[u].textContent = '';
+      reels[u] = Array.from({ length: n }, () => {
+        const r = cdReelMake();
+        numEls[u].appendChild(r.el);
+        return r;
+      });
+    };
+
+    ['h', 'm', 's'].forEach((u) => build(u, 2));
+
+    const calc = () => {
+      const remaining = cur.target - Date.now();
+      const done = remaining <= 0;
+      const total = done ? 0 : Math.ceil(remaining / 1000);
+      return {
+        remaining, done,
+        d: String(Math.floor(total / 86400)),
+        h: pad2(Math.floor((total % 86400) / 3600)),
+        m: pad2(Math.floor((total % 3600) / 60)),
+        s: pad2(total % 60),
+      };
+    };
+
+    const clearTimers = () => {
+      if (tickTimer) { clearTimeout(tickTimer); tickTimer = 0; }
+      while (timers.length) clearTimeout(timers.pop());
+    };
+
+    const applyDone = (v, animate) => {
+      cdBtn.classList.toggle('is-done', v.done);
+      dateEl.textContent = `${dayCdDateText(cur.date)}${cur.cd.time ? `, ${cur.cd.time}` : ''}`;
+      if (!doneEl) return;
+      if (!v.done) { doneEl.classList.remove('is-playing'); return; }
+      if (!animate) { doneEl.classList.add('is-playing'); return; }
+      doneEl.classList.remove('is-playing');
+      void doneEl.offsetWidth;
+      doneEl.classList.add('is-playing');
+    };
+
+    const tick = () => {
+      tickTimer = 0;
+      if (!cur) return;
+      // Sayaç başka yerden silindiyse kart "Sayaç ekle" haline döner.
+      if (!resolve()) { renderBack(0); return; }
+      if (!isVisible()) return;                       // görünmüyorsa durur; tekrar görününce başlar
+      if (performance.now() < introEnd) { tickTimer = setTimeout(tick, 150); return; }
+      const v = calc();
+      if (reels.d.length !== v.d.length) build('d', v.d.length);
+      ['d', 'h', 'm', 's'].forEach((u) => {
+        v[u].split('').forEach((ch, i) => cdReelSet(reels[u][i], Number(ch), CD_TICK_MS));
+      });
+      if (wasDone !== v.done) { wasDone = v.done; applyDone(v, true); }
+      if (!v.done) tickTimer = setTimeout(tick, (v.remaining % 1000 || 1000) + 8);
+    };
+
+    // Arka yüzü çizer; sayaç varsa haneler soldan sağa dönerek yerine oturur.
+    const renderBack = (delay) => {
+      clearTimers();
+      const r = resolve();
+      addBtn.hidden = !!r;
+      cdBtn.hidden = !r;
+      if (!r) { cur = null; return; }
+      cur = r;
+      cdBtn.style.setProperty('--cd-dot', r.cd.color);
+      nameEl.textContent = r.cd.name;
+      cdBtn.setAttribute('aria-label', `${r.cd.name}, sayacı değiştir`);
+      const v = calc();
+      wasDone = v.done;
+      applyDone(v, true);
+      build('d', v.d.length);
+      if (!isVisible() && state.face !== 'back') return;
+      let order = 0;
+      ['d', 'h', 'm', 's'].forEach((u) => {
+        v[u].split('').forEach((ch, i) => {
+          cdReelIntro(reels[u][i], Number(ch), delay + order * 55, 1300, timers);
+          order += 1;
+        });
+      });
+      const total = delay + order * 55 + 1300;
+      introEnd = performance.now() + total;
+      tickTimer = setTimeout(tick, total + 20);
+    };
+
+    const applyFace = (animate) => {
+      const back = state.face === 'back';
+      flipEl.classList.toggle('is-flipped', back);
+      frontEl.inert = back;
+      backEl.inert = !back;
+      frontEl.setAttribute('aria-hidden', back ? 'true' : 'false');
+      backEl.setAttribute('aria-hidden', back ? 'false' : 'true');
+      btnEl.setAttribute('aria-label', back ? 'Kartı çevir, çözülen soru sayısını göster' : 'Kartı çevir, sayaç göster');
+      btnEl.setAttribute('aria-pressed', back ? 'true' : 'false');
+      if (animate) {
+        flipEl.classList.remove('is-flipping');
+        void flipEl.offsetWidth;
+        flipEl.classList.add('is-flipping');
+        clearTimeout(flipTimer);
+        flipTimer = setTimeout(() => flipEl.classList.remove('is-flipping'), 1000);
+      }
+      if (back) renderBack(animate ? 430 : 250);
+      else { clearTimers(); }
+    };
+
+    const setKey = (key) => {
+      state.key = key;
+      saveAppState({ [KEY_CD]: key });
+    };
+
+    const openPicker = () => {
+      const has = !!resolve();
+      openCdSheet({
+        mode: 'pick',
+        selectedKey: has ? state.key : '',
+        onPick: (key) => { setKey(key); renderBack(120); },
+        onClear: () => { setKey(''); renderBack(0); },
+      });
+    };
+
+    btnEl.addEventListener('click', () => {
+      state.face = state.face === 'back' ? 'front' : 'back';
+      saveAppState({ [KEY_FACE]: state.face });
+      applyFace(true);
+    });
+    addBtn.addEventListener('click', openPicker);
+    cdBtn.addEventListener('click', openPicker);
+
+    // Ana sayfa tekrar göründüğünde / uygulama öne geldiğinde arka yüzü tazele.
+    let wasActive = pageEl.classList.contains('is-active');
+    new MutationObserver(() => {
+      const active = pageEl.classList.contains('is-active');
+      if (active && !wasActive && state.face === 'back') renderBack(300);
+      if (!active) clearTimers();
+      wasActive = active;
+    }).observe(pageEl, { attributes: true, attributeFilter: ['class'] });
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden && state.face === 'back' && pageEl.classList.contains('is-active')) renderBack(0);
+    });
+
+    // Açılışta kayıtlı yüzü animasyonsuz uygula.
+    const innerEl = document.getElementById('homeFlipInner');
+    innerEl.style.transition = 'none';
+    applyFace(false);
+    void innerEl.offsetWidth;
+    innerEl.style.transition = '';
+  })();
 </script>
 
 </body>
