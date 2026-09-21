@@ -10344,6 +10344,13 @@
     pointer-events: auto;
   }
 
+  /* Kilitli denemede silinemediği için düzenleme modunda bile sağ üstteki
+     (soluk, pasif) çarpı görünmesin. Buton DOM'da ve mantık aynen kalır
+     (disabled); yalnızca görsel olarak gizlenir. */
+  .page11-exam-card.is-locked .page11-exam-delete {
+    display: none;
+  }
+
   /* Kilitli deneme kartının sol üst köşesindeki sabit rozet; silme
      rozetinin (sağ üst) aynasıdır, her zaman görünür. */
   .page11-exam-lock-badge {
@@ -11513,6 +11520,7 @@
      buton; add-task-btn ile aynı sert-gölge dilinde ama daha kompakt. */
   .exam-detail-bulk-actions {
     display: flex;
+    flex-wrap: wrap;
     gap: 0.55rem;
     width: 100%;
   }
@@ -11724,6 +11732,42 @@
     color: #121212;
   }
 
+  /* "Sonradan Çözüldü": deneme sırasında boş bırakılmış, denemeden sonra
+     kendi başına çözülmüş soru. Veri tarafında hâlâ "blank" durumundadır
+     (net/boş sayaçlarında boş olarak hesaplanır); yalnızca sarı görünür. */
+  .exam-detail-bubble.is-later {
+    background: #ffd23f;
+    color: #4d3800;
+  }
+
+  /* "Sonradan Çözüldü" modu açıkken sadece boş sorular işaretlenebilir;
+     doğru/yanlış baloncuklar soluklaşarak bunu belli eder. */
+  #page-11-detail.is-later-mode .exam-detail-bubble.is-correct,
+  #page-11-detail.is-later-mode .exam-detail-bubble.is-wrong {
+    opacity: 0.4;
+  }
+
+  /* "Sonradan Çözüldü" anahtarı: toplu butonlarla aynı dil, ama kendi
+     satırında tam genişlikte; aktifken sarı dolgulu ve "basılı" durur. */
+  .exam-detail-bulk-btn.is-later {
+    flex: 1 1 100%;
+  }
+
+  .exam-detail-bulk-btn.is-later svg {
+    color: #b58100;
+  }
+
+  .exam-detail-bulk-btn.is-later[aria-pressed="true"] {
+    background-color: #ffd23f;
+    color: #4d3800;
+    transform: translate(1px, 1px);
+    box-shadow: 1px 1px 0px 0px #000;
+  }
+
+  .exam-detail-bulk-btn.is-later[aria-pressed="true"] svg {
+    color: #4d3800;
+  }
+
   /* ---------- Sayfa 11: anahtar aktifken beyaz yüzeyler antresit tonuna geçer ---------- */
   body.is-anthracite .page11-exam-card,
   body.is-anthracite .page11-modal-card,
@@ -11824,6 +11868,24 @@
   body.is-anthracite .exam-detail-bubble.is-blank {
     background-color: var(--dark-card-color, #32343a);
     color: #f2f2f4;
+  }
+
+  body.is-anthracite .exam-detail-bubble.is-later {
+    background: #ffd23f;
+    color: #4d3800;
+  }
+
+  body.is-anthracite .exam-detail-bulk-btn.is-later[aria-pressed="true"] {
+    background-color: #ffd23f;
+    color: #4d3800;
+  }
+
+  body.is-anthracite .exam-detail-bulk-btn.is-later svg {
+    color: #ffd23f;
+  }
+
+  body.is-anthracite .exam-detail-bulk-btn.is-later[aria-pressed="true"] svg {
+    color: #4d3800;
   }
 
   body.is-anthracite .exam-detail-bubble-photo-btn {
@@ -13170,7 +13232,8 @@
   body.is-qhavuz-test-open .navbar,
   body.is-page10-open .navbar,
   body.is-analytics-open .navbar,
-  body.is-zero-error-open .navbar {
+  body.is-zero-error-open .navbar,
+  body.is-page8-typing .navbar {
     opacity: 0;
     transform: translateY(28px);
   }
@@ -13185,7 +13248,8 @@
   body.is-qhavuz-test-open .navbar .wrapper,
   body.is-page10-open .navbar .wrapper,
   body.is-analytics-open .navbar .wrapper,
-  body.is-zero-error-open .navbar .wrapper {
+  body.is-zero-error-open .navbar .wrapper,
+  body.is-page8-typing .navbar .wrapper {
     pointer-events: none;
   }
 
@@ -13353,6 +13417,219 @@
 
   #examDetailResourcesBtn.has-resources .exam-detail-resources-dot {
     display: block;
+  }
+
+  /* ---------- Sayfa 11 Detay: butonlar satırı + sabit (sticky) başlık ----------
+     Düzen iki ayrı satırdır: 1. satır sadece ikon butonları (solda geri,
+     sağda kilit + "⋯"), 2. satır sadece deneme adı; ad hiçbir butonla
+     yan yana durmaz. Butonlar satırı sayfayla birlikte yukarı kayar; ad
+     satırı ise Soru Takibi'ndeki (#page-9 .page9-date-row) gün satırı
+     gibi üstte (güvenli alanın hemen altında) sabit kalır. Ad Baloo 2 ile,
+     küçük ve ortada yazılır; uzun adlar en fazla 2 satıra kırılır,
+     sonrası "…" olur. Arkasındaki bulanık zemin (::before) kaydırmayla
+     0→1 belirir (JS: --p11d-stick), altından kayan kartlar başlıkla üst
+     üste binip okunmaz. #page-11-detail zaten kaydırma kutusu olduğundan
+     position:sticky doğrudan çalışır. top:-24px → sayfanın 44px'lik üst
+     boşluğunun bir kısmını geri alıp başlığı Soru Takibi'ndeki gibi
+     20px + güvenli alan hizasına yapıştırır. */
+  #page-11-detail {
+    --p11d-stick-y: calc(20px + env(safe-area-inset-top));
+  }
+
+  #page-11-detail .exam-detail-titlebar {
+    position: sticky;
+    top: -24px;
+    z-index: 40;
+    width: 100%;
+    min-height: 2.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    --p11d-stick: 0;
+  }
+
+  #page-11-detail .exam-detail-titlebar::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    width: 100vw;
+    transform: translateX(-50%);
+    /* --p11d-bar-y: başlığın o anki gerçek üst konumu (JS yazar); zemin
+       her zaman sayfanın en üstüne kadar uzanır, ama başlık sabitlenene
+       kadar görünmez (opacity 0), böylece butonların altını kesmez. */
+    top: calc(-1 * var(--p11d-bar-y, var(--p11d-stick-y)));
+    bottom: -14px;
+    z-index: -1;
+    pointer-events: none;
+    opacity: var(--p11d-stick, 0);
+    background-color: var(--theme-bg, #F6F4EF);
+    background-color: color-mix(in srgb, var(--theme-bg, #F6F4EF) 94%, transparent);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+    -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 14px), transparent);
+    mask-image: linear-gradient(to bottom, #000 calc(100% - 14px), transparent);
+    transition: background-color var(--theme-transition-duration, 480ms) var(--theme-transition-easing, ease);
+  }
+
+  #page-11-detail .exam-detail-title {
+    margin: 0;
+    min-width: 0;
+    max-width: 100%;
+    font-family: "Baloo 2", "Space Grotesk", sans-serif;
+    font-weight: 800;
+    font-size: 1.25rem;
+    line-height: 1.2;
+    text-align: center;
+    color: var(--theme-text, #f2f2f7);
+    transition: color 0.5s ease;
+    overflow-wrap: anywhere;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    overflow: hidden;
+  }
+
+  .exam-detail-menu-wrap {
+    position: relative;
+    flex-shrink: 0;
+  }
+
+  #examDetailMenuBtn {
+    position: relative;
+  }
+
+  #examDetailMenuBtn.has-resources .exam-detail-resources-dot {
+    display: block;
+  }
+
+  #examDetailMenuBtn.is-open {
+    transform: translate(1px, 1px);
+    box-shadow: 1px 1px 0px 0px #000;
+    background-color: var(--accent-color, #ff90e8);
+  }
+
+  .exam-detail-menu {
+    position: absolute;
+    top: calc(100% + 0.65rem);
+    right: 0;
+    z-index: 60;
+    min-width: 15.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+    padding: 0.4rem;
+    box-sizing: border-box;
+    background: #fff;
+    border: 3px solid #000;
+    border-radius: 1rem;
+    box-shadow: 5px 5px 0px 0px #000;
+    transform-origin: top right;
+    animation: examDetailMenuIn 0.16s ease-out;
+  }
+
+  .exam-detail-menu[hidden] {
+    display: none;
+  }
+
+  @keyframes examDetailMenuIn {
+    from { opacity: 0; transform: translateY(-4px) scale(0.96); }
+    to { opacity: 1; transform: none; }
+  }
+
+  .exam-detail-menu-item {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    width: 100%;
+    padding: 0.7rem 0.75rem;
+    box-sizing: border-box;
+    font-family: "Space Grotesk", sans-serif;
+    font-weight: 800;
+    font-size: 0.85rem;
+    line-height: 1.15;
+    text-align: left;
+    color: #121212;
+    background: transparent;
+    border: none;
+    border-radius: 0.65rem;
+    cursor: pointer;
+  }
+
+  .exam-detail-menu-item svg {
+    flex-shrink: 0;
+  }
+
+  .exam-detail-menu-item:active {
+    background-color: var(--accent-color, #ff90e8);
+  }
+
+  .exam-detail-menu-item.is-correct svg {
+    color: #0f9d58;
+  }
+
+  .exam-detail-menu-item.is-danger,
+  .exam-detail-menu-item.is-danger svg {
+    color: #c8202f;
+  }
+
+  .exam-detail-menu-item:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+
+  .exam-detail-menu-item .exam-detail-resources-dot {
+    position: static;
+    margin-left: auto;
+    flex-shrink: 0;
+  }
+
+  .exam-detail-menu-sep {
+    height: 2px;
+    margin: 0.25rem 0.4rem;
+    background: #000;
+    opacity: 0.12;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .exam-detail-menu-item:hover {
+      background-color: rgba(0, 0, 0, 0.06);
+    }
+  }
+
+  body.is-anthracite .exam-detail-menu {
+    background: var(--dark-card-color, #32343a);
+  }
+
+  body.is-anthracite .exam-detail-menu-item {
+    color: #f2f2f4;
+  }
+
+  body.is-anthracite .exam-detail-menu-item.is-danger,
+  body.is-anthracite .exam-detail-menu-item.is-danger svg {
+    color: #ff7b7b;
+  }
+
+  body.is-anthracite .exam-detail-menu-item:active {
+    background-color: var(--accent-color, #ff90e8);
+    color: #121212;
+  }
+
+  body.is-anthracite .exam-detail-menu-sep {
+    background: #fff;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    body.is-anthracite .exam-detail-menu-item:hover {
+      background-color: rgba(255, 255, 255, 0.08);
+    }
+  }
+
+  body.is-anthracite #examDetailMenuBtn.is-open {
+    background-color: var(--accent-color, #ff90e8);
   }
 
   /* Soru kutucuklarındaki kamera rozetlerini göster/gizle butonu:
@@ -16437,6 +16714,78 @@
     gap: 0.6rem;
   }
 
+  /* Yedek içe aktarma uyarısı: cihazdaki hangi verilerin yedektekilerle
+     değişeceğini (ve kaybolabileceğini) satır satır gösterir. */
+  .import-confirm-card {
+    max-width: 340px;
+  }
+
+  .import-diff-list {
+    list-style: none;
+    margin: 0 0 0.9rem;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    max-height: 32vh;
+    overflow-y: auto;
+    text-align: left;
+  }
+
+  .import-diff-item {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.15rem 0.6rem;
+    padding: 0.5rem 0.7rem;
+    font-family: "Space Grotesk", sans-serif;
+    font-weight: 700;
+    font-size: 0.82rem;
+    line-height: 1.25;
+    color: #121212;
+    background: #fff;
+    border: 2.5px solid #000;
+    border-radius: 0.7rem;
+  }
+
+  .import-diff-item.is-loss {
+    background: #ffd9d9;
+  }
+
+  .import-diff-counts {
+    font-weight: 800;
+    font-size: 0.78rem;
+    white-space: nowrap;
+  }
+
+  .import-diff-note {
+    display: block;
+    margin: -0.3rem 0 0.9rem;
+    font-family: "Space Grotesk", sans-serif;
+    font-weight: 500;
+    font-size: 0.78rem;
+    line-height: 1.35;
+    color: rgba(18, 18, 18, 0.6);
+  }
+
+  .import-diff-note[hidden] {
+    display: none;
+  }
+
+  body.is-anthracite .import-diff-item {
+    color: #f2f2f4;
+    background: var(--dark-card-color, #32343a);
+  }
+
+  body.is-anthracite .import-diff-item.is-loss {
+    background: rgba(255, 92, 92, 0.28);
+  }
+
+  body.is-anthracite .import-diff-note {
+    color: rgba(242, 242, 244, 0.6);
+  }
+
   .settings-confirm-actions button {
     flex: 1;
     padding: 0.65rem 0.5rem;
@@ -18406,6 +18755,7 @@
       grid-template-columns: minmax(300px, 360px) 1fr;
       grid-template-areas:
         "topbar  topbar"
+        "title   title"
         "sidebar subjects";
       column-gap: 2rem;
       row-gap: 1.3rem;
@@ -18417,8 +18767,19 @@
       max-width: none;
     }
 
-    #page-11-detail .calendar-topbar-title {
-      font-size: 1.5rem;
+    /* Geniş ekranda da aynı düzen: butonlar satırı, altında kendi satırında
+       sabit (sticky) başlık; ad biraz daha büyük yazılır. Sol sütundaki
+       özet paneli de (sticky) başlığın hemen altında durur, altına girmez. */
+    #page-11-detail {
+      --p11d-stick-y: calc(24px + env(safe-area-inset-top));
+    }
+
+    #page-11-detail .exam-detail-titlebar {
+      grid-area: title;
+    }
+
+    #page-11-detail .exam-detail-title {
+      font-size: 1.45rem;
     }
 
     /* Özet kartı + toplu işaretleme butonları artık TEK bir blok
@@ -18431,7 +18792,7 @@
       flex-direction: column;
       gap: 1rem;
       position: sticky;
-      top: 20px;
+      top: calc(3.4rem + 1.2rem - 24px);
     }
 
     #page-11-detail .exam-detail-summary-card {
@@ -18452,6 +18813,10 @@
     #page-11-detail .exam-detail-bulk-btn {
       font-size: 0.78rem;
       padding: 0.65rem 0.6rem;
+    }
+
+    #page-11-detail .exam-detail-bulk-btn.is-later {
+      flex: 0 0 auto;
     }
 
     /* Branş kartları artık satır-hizalı bir grid değil, "duvar örgüsü"
@@ -22896,13 +23261,18 @@
   </div>
 
   <!-- Ayarlar: yedek içe aktarma onay pop-up'ı -->
+  <!-- Yalnızca yedek dosyası cihazdaki verilerden farklıysa VE bu fark
+       veri kaybına yol açacaksa açılır (bkz. analyzeBackupDiff). Fark
+       yoksa ya da cihazda kaybolacak bir veri yoksa doğrudan içe aktarılır. -->
   <div class="settings-confirm-backdrop" id="importConfirmBackdrop">
-    <div class="settings-confirm-card">
-      <span class="settings-confirm-title">Emin misin?</span>
-      <span class="settings-confirm-desc">Seçtiğin yedek dosyası, bu cihazdaki mevcut tüm verilerin (görevler, tema, görseller) üzerine yazılacak. Bu işlem geri alınamaz.</span>
+    <div class="settings-confirm-card import-confirm-card" role="alertdialog" aria-labelledby="importConfirmTitle" aria-describedby="importConfirmDesc">
+      <span class="settings-confirm-title" id="importConfirmTitle">Verilerin üzerine yazılacak</span>
+      <span class="settings-confirm-desc" id="importConfirmDesc">Seçtiğin yedek, bu cihazdaki verilerden farklı. Devam edersen aşağıdaki veriler yedektekilerle değiştirilir ve cihazındaki karşılıkları kaybolabilir. Bu işlem geri alınamaz.</span>
+      <ul class="import-diff-list" id="importDiffList"></ul>
+      <span class="import-diff-note" id="importDiffNote" hidden>Tema, çark ve diğer ayarlar da yedektekilerle değişecek.</span>
       <div class="settings-confirm-actions">
         <button type="button" class="settings-confirm-cancel" id="importConfirmCancel">Vazgeç</button>
-        <button type="button" class="settings-confirm-confirm" id="importConfirmConfirm">Evet, içe aktar</button>
+        <button type="button" class="settings-confirm-confirm" id="importConfirmConfirm">Evet, üzerine yaz</button>
       </div>
     </div>
   </div>
@@ -22981,6 +23351,20 @@
       <div class="settings-confirm-actions">
         <button type="button" class="settings-confirm-cancel" id="lapsClearConfirmCancel">Vazgeç</button>
         <button type="button" class="settings-confirm-confirm" id="lapsClearConfirmConfirm">Evet, sil</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sayfa 11 Detay: "Tümünü Doğru İşaretle" / "Tüm İşaretleri Kaldır"
+       toplu işlemleri için onay pop-up'ı (metin ve buton yazısı işleme göre
+       JS ile doldurulur). -->
+  <div class="settings-confirm-backdrop" id="examBulkConfirmBackdrop">
+    <div class="settings-confirm-card" role="alertdialog" aria-labelledby="examBulkConfirmTitle" aria-describedby="examBulkConfirmDesc">
+      <span class="settings-confirm-title" id="examBulkConfirmTitle">Emin misin?</span>
+      <span class="settings-confirm-desc" id="examBulkConfirmDesc"></span>
+      <div class="settings-confirm-actions">
+        <button type="button" class="settings-confirm-cancel" id="examBulkConfirmCancel">Vazgeç</button>
+        <button type="button" class="settings-confirm-confirm" id="examBulkConfirmConfirm">Evet</button>
       </div>
     </div>
   </div>
@@ -23301,22 +23685,8 @@
               <path d="M15 4l-8 8 8 8" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
           </button>
-          <button type="button" class="calendar-back-btn" id="examDetailResourcesBtn" aria-label="Cevap anahtarı ve video çözümü ekle">
-            <svg viewBox="0 0 256 256" width="18" height="18">
-              <path fill="currentColor" d="M216.57 39.43a80 80 0 0 0-132.66 81.35L28.69 176A15.86 15.86 0 0 0 24 187.31V216a16 16 0 0 0 16 16h32a8 8 0 0 0 8-8v-16h16a8 8 0 0 0 8-8v-16h16a8 8 0 0 0 5.66-2.34l9.56-9.57A79.7 79.7 0 0 0 160 176h.1a80 80 0 0 0 56.47-136.57M224 98.1c-1.09 34.09-29.75 61.86-63.89 61.9H160a63.7 63.7 0 0 1-23.65-4.51a8 8 0 0 0-8.84 1.68L116.69 168H96a8 8 0 0 0-8 8v16H72a8 8 0 0 0-8 8v16H40v-28.69l58.83-58.82a8 8 0 0 0 1.68-8.84A63.7 63.7 0 0 1 96 95.92c0-34.14 27.81-62.8 61.9-63.89A64 64 0 0 1 224 98.1M192 76a12 12 0 1 1-12-12a12 12 0 0 1 12 12"/>
-            </svg>
-            <span class="exam-detail-resources-dot" id="examDetailResourcesDot"></span>
-          </button>
         </div>
-        <span class="calendar-topbar-title" id="examDetailTitle">Deneme</span>
         <div class="calendar-topbar-right-group">
-          <button type="button" class="calendar-back-btn" id="examDetailPhotoToggleBtn" aria-label="Soru görsellerini gizle" aria-pressed="true">
-            <svg viewBox="0 0 24 24" width="18" height="18">
-              <path d="M4 8h3l1.6-2.2h6.8L17 8h3a1 1 0 0 1 1 1v9.5a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              <circle cx="12" cy="13.2" r="3" fill="none" stroke="currentColor" stroke-width="2"/>
-              <line class="exam-detail-photo-toggle-slash" x1="3" y1="4" x2="21" y2="20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            </svg>
-          </button>
           <button type="button" class="calendar-back-btn" id="examDetailLockBtn" aria-label="Denemeyi kilitle" aria-pressed="false">
             <svg viewBox="0 0 24 24" width="18" height="18">
               <rect x="5" y="10.5" width="14" height="9.5" rx="2" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
@@ -23325,12 +23695,64 @@
               <circle cx="12" cy="14.7" r="1.3" fill="currentColor"/>
             </svg>
           </button>
-          <button type="button" class="calendar-back-btn is-danger" id="examDetailDeleteBtn" aria-label="Denemeyi sil">
-            <svg viewBox="0 0 24 24" width="18" height="18">
-              <path d="M4 7h16M9.5 7V4.8a1.3 1.3 0 0 1 1.3-1.3h2.4a1.3 1.3 0 0 1 1.3 1.3V7M6.5 7l.9 12.4A2 2 0 0 0 9.4 21h5.2a2 2 0 0 0 2-1.6L17.5 7M10.2 11v6M13.8 11v6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </button>
+
+          <!-- Diğer tüm işlemler tek bir "⋯" menüsünde toplanır: Kaynaklar,
+               görsel rozetlerini göster/gizle, toplu işaretleme ve silme.
+               Butonların id'leri aynı kaldığı için tüm mantık (kilit,
+               aria-pressed, işaretçi nokta) olduğu gibi çalışmaya devam eder. -->
+          <div class="exam-detail-menu-wrap" id="examDetailMenuWrap">
+            <button type="button" class="calendar-back-btn" id="examDetailMenuBtn" aria-label="Diğer işlemler" aria-haspopup="menu" aria-expanded="false">
+              <svg viewBox="0 0 24 24" width="18" height="18">
+                <circle cx="5.5" cy="12" r="2" fill="currentColor"/>
+                <circle cx="12" cy="12" r="2" fill="currentColor"/>
+                <circle cx="18.5" cy="12" r="2" fill="currentColor"/>
+              </svg>
+              <span class="exam-detail-resources-dot" id="examDetailMenuDot"></span>
+            </button>
+            <div class="exam-detail-menu" id="examDetailMenu" role="menu" hidden>
+              <button type="button" class="exam-detail-menu-item" id="examDetailResourcesBtn" role="menuitem" aria-label="Cevap anahtarı ve video çözümü ekle">
+                <svg viewBox="0 0 256 256" width="18" height="18">
+                  <path fill="currentColor" d="M216.57 39.43a80 80 0 0 0-132.66 81.35L28.69 176A15.86 15.86 0 0 0 24 187.31V216a16 16 0 0 0 16 16h32a8 8 0 0 0 8-8v-16h16a8 8 0 0 0 8-8v-16h16a8 8 0 0 0 5.66-2.34l9.56-9.57A79.7 79.7 0 0 0 160 176h.1a80 80 0 0 0 56.47-136.57M224 98.1c-1.09 34.09-29.75 61.86-63.89 61.9H160a63.7 63.7 0 0 1-23.65-4.51a8 8 0 0 0-8.84 1.68L116.69 168H96a8 8 0 0 0-8 8v16H72a8 8 0 0 0-8 8v16H40v-28.69l58.83-58.82a8 8 0 0 0 1.68-8.84A63.7 63.7 0 0 1 96 95.92c0-34.14 27.81-62.8 61.9-63.89A64 64 0 0 1 224 98.1M192 76a12 12 0 1 1-12-12a12 12 0 0 1 12 12"/>
+                </svg>
+                <span class="exam-detail-menu-label">Cevap Anahtarı &amp; Video</span>
+                <span class="exam-detail-resources-dot" id="examDetailResourcesDot"></span>
+              </button>
+              <button type="button" class="exam-detail-menu-item" id="examDetailPhotoToggleBtn" role="menuitem" aria-label="Soru görsellerini gizle" aria-pressed="true">
+                <svg viewBox="0 0 24 24" width="18" height="18">
+                  <path d="M4 8h3l1.6-2.2h6.8L17 8h3a1 1 0 0 1 1 1v9.5a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <circle cx="12" cy="13.2" r="3" fill="none" stroke="currentColor" stroke-width="2"/>
+                  <line class="exam-detail-photo-toggle-slash" x1="3" y1="4" x2="21" y2="20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+                <span class="exam-detail-menu-label" id="examDetailPhotoToggleLabel">Soru görsellerini gizle</span>
+              </button>
+              <button type="button" class="exam-detail-menu-item is-correct" id="examDetailMarkAllBtn" role="menuitem">
+                <svg viewBox="0 0 24 24" width="18" height="18">
+                  <path d="M4 12.5l5 5L20 6" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span class="exam-detail-menu-label">Tümünü Doğru İşaretle</span>
+              </button>
+              <button type="button" class="exam-detail-menu-item" id="examDetailClearAllBtn" role="menuitem">
+                <svg viewBox="0 0 24 24" width="18" height="18">
+                  <path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span class="exam-detail-menu-label">Tüm İşaretleri Kaldır</span>
+              </button>
+              <div class="exam-detail-menu-sep" role="separator"></div>
+              <button type="button" class="exam-detail-menu-item is-danger" id="examDetailDeleteBtn" role="menuitem" aria-label="Denemeyi sil">
+                <svg viewBox="0 0 24 24" width="18" height="18">
+                  <path d="M4 7h16M9.5 7V4.8a1.3 1.3 0 0 1 1.3-1.3h2.4a1.3 1.3 0 0 1 1.3 1.3V7M6.5 7l.9 12.4A2 2 0 0 0 9.4 21h5.2a2 2 0 0 0 2-1.6L17.5 7M10.2 11v6M13.8 11v6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span class="exam-detail-menu-label">Denemeyi Sil</span>
+              </button>
+            </div>
+          </div>
         </div>
+      </div>
+
+      <!-- Deneme adı: butonlarla yan yana değil, kendi satırında; kaydırınca
+           üstte sabit kalır (bkz. .exam-detail-titlebar). -->
+      <div class="exam-detail-titlebar" id="examDetailTitleBar">
+        <h1 class="exam-detail-title" id="examDetailTitle">Deneme</h1>
       </div>
 
       <div class="exam-detail-sidebar">
@@ -23355,17 +23777,12 @@
         </div>
 
         <div class="exam-detail-bulk-actions">
-          <button type="button" class="exam-detail-bulk-btn is-correct" id="examDetailMarkAllBtn">
+          <button type="button" class="exam-detail-bulk-btn is-later" id="examDetailLaterBtn" aria-pressed="false" aria-label="Sonradan çözüldü modu: boş soruları sarı işaretle">
             <svg viewBox="0 0 24 24" width="15" height="15">
-              <path d="M4 12.5l5 5L20 6" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+              <circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="2.4"/>
+              <path d="M12 7.5V12l3 2" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
-            Tümünü Doğru İşaretle
-          </button>
-          <button type="button" class="exam-detail-bulk-btn is-clear" id="examDetailClearAllBtn">
-            <svg viewBox="0 0 24 24" width="15" height="15">
-              <path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-            Tüm İşaretleri Kaldır
+            Sonradan Çözüldü
           </button>
         </div>
       </div>
@@ -35058,6 +35475,26 @@
     savePage11State();
   };
 
+  // ---- "Sonradan Çözüldü" işareti ----
+  // Deneme sırasında boş bırakılmış, denemeden sonra kendi başına
+  // çözülmüş sorular. Soru durumu (answers) hâlâ 'blank' kalır, bu yüzden
+  // net/boş hesapları hiç değişmez (deneme esnasında boştu); bu işaret
+  // yalnızca sarı görünüm içindir. exam.later[subjectKey][idx] = true
+  // şeklinde seyrek bir haritada tutulur; eski denemelerde alan yoktur.
+  const page11IsLater = (exam, subjectKey, idx) => !!(
+    exam.later && exam.later[subjectKey] && exam.later[subjectKey][idx]
+  );
+
+  const page11SetLater = (exam, subjectKey, idx, on) => {
+    if (on) {
+      if (!exam.later || typeof exam.later !== 'object') exam.later = {};
+      if (!exam.later[subjectKey] || typeof exam.later[subjectKey] !== 'object') exam.later[subjectKey] = {};
+      exam.later[subjectKey][idx] = true;
+    } else if (exam.later && exam.later[subjectKey]) {
+      delete exam.later[subjectKey][idx];
+    }
+  };
+
   const page11FormatNet = (n) => {
     const rounded = Math.round(n * 100) / 100;
     return (Number.isInteger(rounded) ? rounded.toFixed(0) : rounded.toFixed(2)).replace('.', ',');
@@ -35466,8 +35903,86 @@
   const page11DetailSection = document.getElementById('page-11-detail');
   const examDetailMarkAllBtn = document.getElementById('examDetailMarkAllBtn');
   const examDetailClearAllBtn = document.getElementById('examDetailClearAllBtn');
+  const examDetailLaterBtn = document.getElementById('examDetailLaterBtn');
+  const examDetailMenuWrap = document.getElementById('examDetailMenuWrap');
+  const examDetailMenuBtn = document.getElementById('examDetailMenuBtn');
+  const examDetailMenu = document.getElementById('examDetailMenu');
+  const examDetailPhotoToggleLabel = document.getElementById('examDetailPhotoToggleLabel');
 
   let page11ActiveExamId = null;
+
+  // ---- Sabit başlık: bulanık zeminin kaydırmayla belirmesi ----
+  // Başlık satırının kendisi CSS ile (position:sticky) üstte sabit kalır; burada
+  // sadece arkasındaki zeminin yumuşakça belirmesi için 0→1 arası bir
+  // ilerleme değeri (--p11d-stick) yazılır (Soru Takibi'ndeki gün satırıyla
+  // aynı yöntem). En üstteyken 0, RAMP_PX kadar kaydırınca 1 olur.
+  const examDetailTopbar = document.getElementById('examDetailTitleBar');
+  const PAGE11_STICK_RAMP_PX = 24;
+  let page11StickQueued = false;
+  const page11UpdateStick = () => {
+    page11StickQueued = false;
+    const pageRect = page11DetailSection.getBoundingClientRect();
+    const barY = examDetailTopbar.getBoundingClientRect().top - pageRect.top;
+    // Başlığın sabitlendiği çizgi: sayfanın üst iç boşluğu + sticky top değeri.
+    const stuckY = (parseFloat(getComputedStyle(page11DetailSection).paddingTop) || 0)
+      + (parseFloat(getComputedStyle(examDetailTopbar).top) || 0);
+    // Başlık sabitlenme çizgisine RAMP_PX kadar yaklaşınca zemin belirmeye
+    // başlar, sabitlendiğinde tam görünür. Sabitlenmeden önce görünmediği
+    // için yukarıdaki buton satırının altı kesilmez; butonlar başlığın
+    // altına girerken yumuşakça kaybolur.
+    const p = Math.max(0, Math.min(1, 1 - (barY - stuckY) / PAGE11_STICK_RAMP_PX));
+    examDetailTopbar.style.setProperty('--p11d-stick', p.toFixed(3));
+    examDetailTopbar.style.setProperty('--p11d-bar-y', `${barY.toFixed(1)}px`);
+  };
+  page11DetailSection.addEventListener('scroll', () => {
+    if (page11StickQueued) return;
+    page11StickQueued = true;
+    requestAnimationFrame(page11UpdateStick);
+  }, { passive: true });
+
+  window.addEventListener('resize', () => {
+    if (page11DetailSection.classList.contains('is-active')) page11UpdateStick();
+  });
+
+  // ---- "⋯" menüsü ----
+  // Kaynaklar, görsel rozetleri göster/gizle, toplu işaretleme ve silme
+  // butonları bu açılır menünün içinde durur. Menü dışına dokununca, Esc'e
+  // basınca ya da bir işlem seçilince kapanır.
+  const page11SetMenuOpen = (open) => {
+    examDetailMenu.hidden = !open;
+    examDetailMenuBtn.classList.toggle('is-open', open);
+    examDetailMenuBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+  };
+
+  examDetailMenuBtn.addEventListener('click', () => {
+    page11SetMenuOpen(examDetailMenu.hidden);
+  });
+
+  examDetailMenu.addEventListener('click', (e) => {
+    if (e.target.closest('.exam-detail-menu-item')) page11SetMenuOpen(false);
+  });
+
+  document.addEventListener('click', (e) => {
+    if (!examDetailMenu.hidden && !examDetailMenuWrap.contains(e.target)) page11SetMenuOpen(false);
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !examDetailMenu.hidden) page11SetMenuOpen(false);
+  });
+
+  // "Sonradan Çözüldü" modu: sadece ekrandaki geçici bir mod (kaydedilmez).
+  // Açıkken boş bir soruya dokunmak onu sarı işaretler / işareti kaldırır.
+  let page11LaterMode = false;
+
+  const page11ApplyLaterModeUI = () => {
+    examDetailLaterBtn.setAttribute('aria-pressed', page11LaterMode ? 'true' : 'false');
+    page11DetailSection.classList.toggle('is-later-mode', page11LaterMode);
+  };
+
+  examDetailLaterBtn.addEventListener('click', () => {
+    page11LaterMode = !page11LaterMode;
+    page11ApplyLaterModeUI();
+  });
 
   // ---- Deneme kilidi ----
   // Kilitli bir denemede hiçbir işlem yapılamaz: sorular işaretlenemez,
@@ -35480,7 +35995,7 @@
     examDetailLockBtn.setAttribute('aria-pressed', locked ? 'true' : 'false');
     examDetailLockBtn.setAttribute('aria-label', locked ? 'Kilidi kaldır' : 'Denemeyi kilitle');
     page11DetailSection.classList.toggle('is-locked', locked);
-    [examDetailMarkAllBtn, examDetailClearAllBtn, examDetailDeleteBtn, examDetailResourcesBtn].forEach((btn) => {
+    [examDetailMarkAllBtn, examDetailClearAllBtn, examDetailLaterBtn, examDetailDeleteBtn, examDetailResourcesBtn].forEach((btn) => {
       btn.disabled = locked;
     });
   };
@@ -35510,6 +36025,8 @@
     const current = exam.answers[subjectKey][index];
     const nextIdx = (PAGE11_BUBBLE_STATES.indexOf(current) + 1) % PAGE11_BUBBLE_STATES.length;
     exam.answers[subjectKey][index] = PAGE11_BUBBLE_STATES[nextIdx];
+    // Soru artık boş değilse "sonradan çözüldü" işareti anlamını yitirir.
+    if (exam.answers[subjectKey][index] !== 'blank') page11SetLater(exam, subjectKey, index, false);
     savePage11State();
   };
 
@@ -35550,8 +36067,9 @@
     if (!bubble) { renderExamDetail(); return; }
 
     const state = exam.answers[subject.key][idx];
-    bubble.classList.remove('is-correct', 'is-wrong', 'is-blank');
+    bubble.classList.remove('is-correct', 'is-wrong', 'is-blank', 'is-later');
     if (state === 'correct' || state === 'wrong') bubble.classList.add(`is-${state}`);
+    else if (state === 'blank' && page11IsLater(exam, subject.key, idx)) bubble.classList.add('is-later');
 
     const photo = page11GetPhoto(exam, subject.key, idx);
     let photoBtn = bubble.querySelector('.exam-detail-bubble-photo-btn');
@@ -35588,6 +36106,7 @@
     if (!exam) return;
 
     examDetailTitle.textContent = exam.name;
+    examDetailTitle.title = exam.name;
     examDetailMeta.textContent = `${page11FormatDate(exam.date)} · ${PAGE11_TYPE_LABELS[exam.type] || 'TYT'}`;
 
     const result = page11ComputeExam(exam);
@@ -35638,9 +36157,19 @@
         bubble.type = 'button';
         bubble.className = 'exam-detail-bubble';
         if (state === 'correct' || state === 'wrong') bubble.classList.add(`is-${state}`);
+        else if (state === 'blank' && page11IsLater(exam, subject.key, idx)) bubble.classList.add('is-later');
         bubble.textContent = String(idx + 1);
         bubble.setAttribute('aria-label', `${subject.name} soru ${idx + 1}`);
         bubble.addEventListener('click', () => {
+          // "Sonradan Çözüldü" modu açıkken tıklama doğru/yanlış/boş
+          // döngüsünü değil, yalnızca BOŞ sorunun sarı işaretini açıp kapatır.
+          if (page11LaterMode) {
+            if (exam.locked || exam.answers[subject.key][idx] !== 'blank') return;
+            page11SetLater(exam, subject.key, idx, !page11IsLater(exam, subject.key, idx));
+            savePage11State();
+            page11UpdateBubbleUI(exam, subject, idx);
+            return;
+          }
           page11CycleBubble(exam, subject.key, idx);
           page11UpdateBubbleUI(exam, subject, idx);
         });
@@ -35680,6 +36209,9 @@
     Object.keys(exam.answers).forEach((subjectKey) => {
       exam.answers[subjectKey] = exam.answers[subjectKey].map(() => state);
     });
+    // Toplu işlemde tüm sorular aynı duruma çekildiği için "sonradan
+    // çözüldü" işaretleri de sıfırlanır.
+    exam.later = {};
     savePage11State();
   };
 
@@ -35693,6 +36225,7 @@
       'aria-label',
       visible ? 'Soru görsellerini gizle' : 'Soru görsellerini göster'
     );
+    examDetailPhotoToggleLabel.textContent = visible ? 'Soru görsellerini gizle' : 'Soru görsellerini göster';
     page11DetailSection.classList.toggle('is-photo-icons-hidden', !visible);
   };
 
@@ -35704,10 +36237,17 @@
 
   const openExamDetail = (examId) => {
     page11ActiveExamId = examId;
+    page11SetMenuOpen(false);
+    page11DetailSection.scrollTop = 0;
+    page11LaterMode = false;
+    page11ApplyLaterModeUI();
     renderExamDetail();
     page11ApplyPhotoToggleUI();
     document.body.classList.add('is-exam-detail-open'); // nav bar'ı gizler
     goToPage('page-11-detail');
+    // Sayfa görünür olduktan sonra (geçiş animasyonu bitince de) ölç.
+    requestAnimationFrame(page11UpdateStick);
+    setTimeout(page11UpdateStick, 450);
   };
 
   const closeExamDetail = () => {
@@ -35719,24 +36259,77 @@
     // de (varsa) zorla kapatıyoruz.
     if (typeof closeExamResGallery === 'function') closeExamResGallery();
     if (typeof closeExamResourcesModal === 'function') closeExamResourcesModal();
+    page11SetMenuOpen(false);
+    if (typeof closeExamBulkConfirm === 'function') closeExamBulkConfirm();
     document.body.classList.remove('is-exam-detail-open');
     goToPage('page-11');
     renderPage11List();
   };
   examDetailBackBtn.addEventListener('click', closeExamDetail);
 
+  // ---- Toplu işaretleme onayı ----
+  // "Tümünü Doğru İşaretle" ve "Tüm İşaretleri Kaldır" denemedeki tüm
+  // işaretleri tek dokunuşla değiştirdiği (ve geri alınamadığı) için önce
+  // onay pop-up'ı gösterilir; yalnızca "Evet" denirse uygulanır.
+  const examBulkConfirmBackdrop = document.getElementById('examBulkConfirmBackdrop');
+  const examBulkConfirmDesc = document.getElementById('examBulkConfirmDesc');
+  const examBulkConfirmCancel = document.getElementById('examBulkConfirmCancel');
+  const examBulkConfirmConfirm = document.getElementById('examBulkConfirmConfirm');
+  let page11PendingBulk = null;
+
+  const closeExamBulkConfirm = () => {
+    page11PendingBulk = null;
+    examBulkConfirmBackdrop.classList.remove('is-open');
+  };
+
+  const openExamBulkConfirm = (desc, confirmLabel, onConfirm) => {
+    examBulkConfirmDesc.textContent = desc;
+    examBulkConfirmConfirm.textContent = confirmLabel;
+    page11PendingBulk = onConfirm;
+    examBulkConfirmBackdrop.classList.add('is-open');
+  };
+
+  examBulkConfirmCancel.addEventListener('click', closeExamBulkConfirm);
+  examBulkConfirmBackdrop.addEventListener('click', (e) => {
+    if (e.target === examBulkConfirmBackdrop) closeExamBulkConfirm();
+  });
+  examBulkConfirmConfirm.addEventListener('click', () => {
+    const action = page11PendingBulk;
+    closeExamBulkConfirm();
+    if (action) action();
+  });
+
+  const page11ConfirmBulk = (state, desc, confirmLabel) => {
+    const examId = page11ActiveExamId;
+    const exam = page11State.exams.find((it) => it.id === examId);
+    if (!exam || exam.locked) return;
+    openExamBulkConfirm(desc, confirmLabel, () => {
+      // Onay beklenirken deneme silinmiş/kilitlenmiş olabilir; tekrar doğrula.
+      const current = page11State.exams.find((it) => it.id === examId);
+      if (!current || current.locked) return;
+      page11SetAllBubbles(current, state);
+      renderExamDetail();
+    });
+  };
+
   examDetailMarkAllBtn.addEventListener('click', () => {
     const exam = page11State.exams.find((it) => it.id === page11ActiveExamId);
     if (!exam) return;
-    page11SetAllBubbles(exam, 'correct');
-    renderExamDetail();
+    page11ConfirmBulk(
+      'correct',
+      `"${exam.name}" denemesindeki tüm sorular doğru olarak işaretlenecek. Mevcut yanlış, boş ve "sonradan çözüldü" işaretlerin silinecek.`,
+      'Evet, işaretle'
+    );
   });
 
   examDetailClearAllBtn.addEventListener('click', () => {
     const exam = page11State.exams.find((it) => it.id === page11ActiveExamId);
     if (!exam) return;
-    page11SetAllBubbles(exam, 'blank');
-    renderExamDetail();
+    page11ConfirmBulk(
+      'blank',
+      `"${exam.name}" denemesindeki tüm işaretler (doğru, yanlış, sonradan çözüldü) kaldırılacak ve tüm sorular boş olacak. Eklediğin görseller silinmez.`,
+      'Evet, kaldır'
+    );
   });
 
   examDetailDeleteBtn.addEventListener('click', () => {
@@ -35788,10 +36381,16 @@
 
   const page11UpdateResourcesIndicator = () => {
     const exam = page11State.exams.find((it) => it.id === page11ActiveExamId);
-    if (!exam) { examDetailResourcesBtn.classList.remove('has-resources'); return { hasAnswerKey: false }; }
+    if (!exam) {
+      examDetailResourcesBtn.classList.remove('has-resources');
+      examDetailMenuBtn.classList.remove('has-resources');
+      return { hasAnswerKey: false };
+    }
     const res = page11GetResources(exam);
     const hasAnswerKey = res.answerKeyImages.length > 0 || !!res.videoLink;
     examDetailResourcesBtn.classList.toggle('has-resources', hasAnswerKey);
+    // "⋯" butonundaki nokta, menünün içinde kaynak olduğunu da haber verir.
+    examDetailMenuBtn.classList.toggle('has-resources', hasAnswerKey);
     return { hasAnswerKey };
   };
 
@@ -39737,25 +40336,30 @@
     }
   };
 
-  // Bir yedek dosyasını (File) okuyup doğrular; geçerliyse mevcut tüm
-  // veriyi bunun üzerine yazar ve sayfayı yeniden yükler. Onay,
-  // çağıran arayüz kodu tarafından (bkz. Ayarlar sayfası) kullanıcıya
-  // sorulduktan sonra bu fonksiyon çağrılmalıdır.
-  const importBackupFromFile = async (file) => {
+  // Bir yedek dosyasını (File) okuyup doğrular; geçerliyse yedek nesnesini
+  // (payload) döndürür, değilse kullanıcıya hata gösterip null döner.
+  const readBackupFile = async (file) => {
     let payload;
     try {
       const text = await file.text();
       payload = JSON.parse(text);
     } catch (err) {
       showAppToast('Dosya okunamadı: geçerli bir yedek dosyası değil.', 'error');
-      return false;
+      return null;
     }
 
-    if (!payload || typeof payload !== 'object' || typeof payload.appState !== 'object') {
+    if (!payload || typeof payload !== 'object' || !payload.appState || typeof payload.appState !== 'object') {
       showAppToast('Geçersiz yedek dosyası.', 'error');
-      return false;
+      return null;
     }
+    return payload;
+  };
 
+  // Doğrulanmış yedeği uygular: görselleri geri yükler, mevcut tüm veriyi
+  // yedektekiyle DEĞİŞTİRİR ve sayfayı yeniden yükler. Bu fonksiyon veriyi
+  // doğrudan ezdiği için, çağıran kod önce farkları denetleyip (bkz.
+  // analyzeBackupDiff) gerekirse kullanıcıdan onay almış olmalıdır.
+  const applyBackupPayload = async (payload) => {
     try {
       const images = payload.images && typeof payload.images === 'object' ? payload.images : {};
       for (const [ref, dataUrl] of Object.entries(images)) {
@@ -39781,6 +40385,190 @@
     }
   };
 
+  // Geriye dönük uyumluluk: dosyayı okuyup doğrudan (onaysız) uygular.
+  const importBackupFromFile = async (file) => {
+    const payload = await readBackupFile(file);
+    if (!payload) return false;
+    return applyBackupPayload(payload);
+  };
+
+  // ---- Yedek ↔ cihaz karşılaştırması (veri kaybı denetimi) ----
+  // İçe aktarma, cihazdaki tüm veriyi yedektekiyle DEĞİŞTİRİR. Bu yüzden
+  // dosya seçilince önce iki taraf karşılaştırılır:
+  //  - Fark yoksa ya da cihazda kaybolacak bir kullanıcı verisi yoksa
+  //    (ör. yeni/boş cihaz) uyarı gösterilmeden doğrudan içe aktarılır.
+  //  - Cihazda, yedekten FARKLI olan gerçek bir kullanıcı verisi varsa
+  //    (görevler, planlayıcı, denemeler, soru takibi, soru havuzu vb.)
+  //    hangi verilerin değişeceği listelenip kullanıcıdan onay istenir.
+  // Tema, çark, geri sayım ön ayarları gibi salt "ayar" alanları uyarıyı
+  // tek başına tetiklemez (bunlar veri kaybı sayılmaz); sadece uyarı zaten
+  // açılıyorsa bir not olarak belirtilir.
+  const importDeepEqual = (a, b) => {
+    if (a === b) return true;
+    if (a === null || b === null || typeof a !== 'object' || typeof b !== 'object') return false;
+    if (Array.isArray(a) !== Array.isArray(b)) return false;
+    if (Array.isArray(a)) {
+      return a.length === b.length && a.every((item, i) => importDeepEqual(item, b[i]));
+    }
+    const keysA = Object.keys(a).filter((k) => a[k] !== undefined);
+    const keysB = Object.keys(b).filter((k) => b[k] !== undefined);
+    return keysA.length === keysB.length
+      && keysA.every((k) => Object.prototype.hasOwnProperty.call(b, k) && importDeepEqual(a[k], b[k]));
+  };
+
+  // Bir değerdeki kayıt sayısı: dizi -> uzunluk; nesne -> içindeki dizilerin
+  // (veya iç içe nesnelerin) toplam eleman sayısı, düz değerler 1 sayılır.
+  const importEntryCount = (value) => {
+    if (Array.isArray(value)) return value.length;
+    if (value && typeof value === 'object') {
+      return Object.values(value).reduce((sum, v) => (
+        sum + ((v && typeof v === 'object') ? importEntryCount(v) : 1)
+      ), 0);
+    }
+    return 0;
+  };
+
+  // Görevler sayfasındaki hazır örnek kayıtlar ("İlk görevini ekle" gibi)
+  // kullanıcı verisi sayılmaz; yeni bir cihazda uyarı çıkmasın diye elenir.
+  const importPage8DefaultTexts = () => {
+    const texts = new Set(['İlk görevini ekle', 'Su iç', '10 dakika yürü']);
+    try {
+      if (typeof PAGE8_DEFAULT_STATE !== 'undefined' && PAGE8_DEFAULT_STATE) {
+        (PAGE8_DEFAULT_STATE.categories || []).forEach((c) => (c.tasks || []).forEach((t) => texts.add(t.text)));
+        (PAGE8_DEFAULT_STATE.routineGroups || []).forEach((g) => (g.routines || []).forEach((r) => texts.add(r.text)));
+      }
+    } catch (err) { /* sabit listeyle devam */ }
+    return texts;
+  };
+
+  const importArr = (v) => (Array.isArray(v) ? v : []);
+
+  // Her bölüm: karşılaştırılacak dilim (pick) ve kullanıcıya gösterilecek
+  // kayıt sayısı (count). count > 0 ise cihazda "gerçek veri var" demektir.
+  const IMPORT_CONTENT_SECTIONS = [
+    {
+      label: 'Görevler ve rutinler',
+      // Rutinlerin "yapıldı" işareti ve sıfırlama tarihi her gün değiştiği
+      // için karşılaştırmaya girmez.
+      pick: (st) => {
+        const p8 = st.page8;
+        if (!p8 || typeof p8 !== 'object') return undefined;
+        return {
+          categories: p8.categories,
+          routineGroups: importArr(p8.routineGroups).map((g) => ({
+            ...g,
+            routines: importArr(g && g.routines).map((r) => {
+              const { done, ...rest } = r || {};
+              return rest;
+            })
+          }))
+        };
+      },
+      count: (st) => {
+        const p8 = st.page8;
+        if (!p8 || typeof p8 !== 'object') return 0;
+        const defaults = importPage8DefaultTexts();
+        let n = 0;
+        importArr(p8.categories).forEach((c) => importArr(c && c.tasks).forEach((t) => { if (!defaults.has(t && t.text)) n += 1; }));
+        importArr(p8.routineGroups).forEach((g) => importArr(g && g.routines).forEach((r) => { if (!defaults.has(r && r.text)) n += 1; }));
+        return n;
+      }
+    },
+    {
+      label: 'Planlayıcı görevleri',
+      pick: (st) => st.relaxTasks,
+      count: (st) => importEntryCount(st.relaxTasks)
+    },
+    {
+      label: 'Gün sayaçları',
+      pick: (st) => st.dayCountdowns,
+      count: (st) => (st.dayCountdowns && typeof st.dayCountdowns === 'object' ? Object.keys(st.dayCountdowns).length : 0)
+    },
+    {
+      label: 'Soru Takibi',
+      pick: (st) => st.page9,
+      count: (st) => {
+        const p9 = st.page9;
+        if (!p9 || typeof p9 !== 'object') return 0;
+        const subj = p9.subjects || {};
+        return importArr(p9.logs).length + importArr(subj.tyt).length + importArr(subj.ayt).length
+          + ((parseInt(p9.dailyGoal, 10) || 0) > 0 ? 1 : 0);
+      }
+    },
+    {
+      label: 'Denemeler',
+      // Renk ve rozet görünürlüğü gibi ayarlar hariç, yalnızca denemeler.
+      pick: (st) => (st.page11 && typeof st.page11 === 'object' ? st.page11.exams : undefined),
+      count: (st) => importArr(st.page11 && st.page11.exams).length
+    },
+    {
+      label: 'Soru Havuzu',
+      pick: (st) => st.questionPool,
+      count: (st) => {
+        const qp = st.questionPool;
+        return qp && typeof qp === 'object' ? importArr(qp.items).length + importArr(qp.packages).length : 0;
+      }
+    },
+    {
+      label: 'Kronometre kayıtları',
+      pick: (st) => ({ logs: st.stopwatchLogs, subjectLogs: st.stopwatchSubjectLogs }),
+      count: (st) => importEntryCount(st.stopwatchLogs) + importEntryCount(st.stopwatchSubjectLogs)
+    }
+  ];
+
+  // Karşılaştırmaya hiç girmeyen (geçici/zaman damgası) anahtarlar.
+  const IMPORT_IGNORED_KEYS = new Set(['updatedAt', 'schemaVersion', 'stopwatch']);
+
+  // Bu anahtarlar yukarıdaki bölümlerin içinde ele alınır; kalan tüm
+  // anahtarlar (tema, çark, renkler, geri sayım ön ayarı vb.) "ayar"dır.
+  const IMPORT_CONTENT_KEYS = new Set([
+    'page8', 'relaxTasks', 'dayCountdowns', 'page9', 'page11', 'questionPool',
+    'stopwatchLogs', 'stopwatchSubjectLogs'
+  ]);
+
+  const analyzeBackupDiff = (deviceState, fileState) => {
+    const dev = (deviceState && typeof deviceState === 'object') ? deviceState : {};
+    const fil = (fileState && typeof fileState === 'object') ? fileState : {};
+
+    const changedSections = [];
+    IMPORT_CONTENT_SECTIONS.forEach((sec) => {
+      let changed = true;
+      let deviceCount = 0;
+      let fileCount = 0;
+      try {
+        changed = !importDeepEqual(sec.pick(dev), sec.pick(fil));
+        deviceCount = sec.count(dev);
+        fileCount = sec.count(fil);
+      } catch (err) {
+        // Bir bölüm okunamazsa güvenli tarafta kal: değişmiş say.
+        console.warn(`Yedek karşılaştırması (${sec.label}) başarısız:`, err);
+        changed = true;
+        deviceCount = 1;
+      }
+      if (!changed) return;
+      changedSections.push({
+        label: sec.label,
+        deviceCount,
+        fileCount,
+        // Cihazda bu bölümde gerçek veri varsa üzerine yazmak veri kaybına
+        // yol açabilir; yoksa kaybedilecek bir şey yoktur.
+        atRisk: deviceCount > 0,
+        // Yedekte cihazdakinden az kayıt varsa kayıp kesindir (vurgulanır).
+        shrinks: fileCount < deviceCount
+      });
+    });
+
+    const allKeys = new Set([...Object.keys(dev), ...Object.keys(fil)]);
+    let settingsChanged = false;
+    allKeys.forEach((k) => {
+      if (IMPORT_IGNORED_KEYS.has(k) || IMPORT_CONTENT_KEYS.has(k)) return;
+      if (!importDeepEqual(dev[k], fil[k])) settingsChanged = true;
+    });
+
+    const atRisk = changedSections.filter((sec) => sec.atRisk);
+    return { atRisk, settingsChanged, hasLoss: atRisk.length > 0 };
+  };
+
   // ---- Ayarlar > Veri: Dışa/İçe aktarma butonlarını bağla ----
   const settingsExportBtn = document.getElementById('settingsExportBtn');
   const settingsImportBtn = document.getElementById('settingsImportBtn');
@@ -39797,44 +40585,116 @@
     settingsImportBtn.addEventListener('click', () => settingsImportFileInput.click());
   }
 
-  // Seçilen dosyayı hemen içe aktarmadan önce, verileri sıfırlamayla aynı
-  // brütalist onay pop-up'ını göster (üzerine yazma geri alınamaz).
-  let pendingImportFile = null;
+  // Seçilen dosya hemen içe aktarılmaz: önce okunup cihazdaki verilerle
+  // karşılaştırılır (bkz. analyzeBackupDiff). Veri kaybına yol açacak bir
+  // fark varsa uyarı pop-up'ı açılır; kullanıcı onaylarsa yedek verilerin
+  // üzerine yazılır, onaylamazsa hiçbir şey değişmez. Kaybolacak veri
+  // yoksa (fark yok / cihaz boş) pop-up gösterilmeden içe aktarılır.
+  let pendingImportPayload = null;
+  const importDiffList = document.getElementById('importDiffList');
+  const importDiffNote = document.getElementById('importDiffNote');
+
+  const closeImportConfirm = () => {
+    pendingImportPayload = null;
+    if (importConfirmBackdrop) importConfirmBackdrop.classList.remove('is-open');
+  };
+
+  const openImportConfirm = (analysis) => {
+    if (importDiffList) {
+      importDiffList.innerHTML = '';
+      analysis.atRisk.forEach((sec) => {
+        const li = document.createElement('li');
+        li.className = 'import-diff-item' + (sec.shrinks ? ' is-loss' : '');
+        const name = document.createElement('span');
+        name.textContent = sec.label;
+        const counts = document.createElement('span');
+        counts.className = 'import-diff-counts';
+        counts.textContent = `Cihaz: ${sec.deviceCount} → Yedek: ${sec.fileCount}`;
+        li.appendChild(name);
+        li.appendChild(counts);
+        importDiffList.appendChild(li);
+      });
+    }
+    if (importDiffNote) importDiffNote.hidden = !analysis.settingsChanged;
+    if (importConfirmBackdrop) importConfirmBackdrop.classList.add('is-open');
+  };
+
+  let importCheckBusy = false;
 
   if (settingsImportFileInput) {
-    settingsImportFileInput.addEventListener('change', () => {
+    settingsImportFileInput.addEventListener('change', async () => {
       const file = settingsImportFileInput.files && settingsImportFileInput.files[0];
       settingsImportFileInput.value = '';
-      if (!file) return;
-      pendingImportFile = file;
-      if (importConfirmBackdrop) importConfirmBackdrop.classList.add('is-open');
+      if (!file || importCheckBusy) return;
+      importCheckBusy = true;
+      try {
+        const payload = await readBackupFile(file);
+        if (!payload) return;
+
+        let deviceState = {};
+        try {
+          const raw = localStorage.getItem(APP_STORAGE_KEY);
+          deviceState = raw ? JSON.parse(raw) : {};
+        } catch (err) {
+          deviceState = APP_STATE;
+        }
+
+        const analysis = analyzeBackupDiff(deviceState, payload.appState);
+        if (!analysis.hasLoss) {
+          // Kaybolacak veri yok (fark yok ya da cihaz boş): doğrudan içe aktar.
+          await applyBackupPayload(payload);
+          return;
+        }
+        pendingImportPayload = payload;
+        openImportConfirm(analysis);
+      } finally {
+        importCheckBusy = false;
+      }
     });
   }
 
   if (importConfirmCancel) {
-    importConfirmCancel.addEventListener('click', () => {
-      pendingImportFile = null;
-      if (importConfirmBackdrop) importConfirmBackdrop.classList.remove('is-open');
-    });
+    importConfirmCancel.addEventListener('click', closeImportConfirm);
   }
 
   if (importConfirmBackdrop) {
     importConfirmBackdrop.addEventListener('click', (e) => {
-      if (e.target === importConfirmBackdrop) {
-        pendingImportFile = null;
-        importConfirmBackdrop.classList.remove('is-open');
-      }
+      if (e.target === importConfirmBackdrop) closeImportConfirm();
     });
   }
 
   if (importConfirmConfirm) {
     importConfirmConfirm.addEventListener('click', async () => {
-      const file = pendingImportFile;
-      pendingImportFile = null;
-      if (importConfirmBackdrop) importConfirmBackdrop.classList.remove('is-open');
-      if (file) await importBackupFromFile(file);
+      const payload = pendingImportPayload;
+      closeImportConfirm();
+      if (payload) await applyBackupPayload(payload);
     });
   }
+
+  // ---- Gündelik: görev yazarken alt nav bar gizlenir ----
+  // Klavye açıkken alt nav bar (position: fixed) klavyenin hemen üstünde
+  // kalıp, yazılmakta olan (özellikle çok satıra uzayan) görev metninin
+  // üzerini örtüyor ve yazılan yazı görünmez oluyordu. Gündelik sayfasında
+  // yeni görev eklerken ya da mevcut görevi düzenlerken (textarea odaktayken)
+  // nav bar, sayaç çalışırken olduğu gibi (bkz. body.is-*-open .navbar)
+  // geçici olarak gizlenir; yazma bitince (odak kalkınca) geri gelir.
+  // Kaydırma ve diğer davranışlara dokunulmaz, yalnızca bir body sınıfı
+  // açılıp kapatılır.
+  (function () {
+    const TYPING_SELECTOR = '.page8-item-input, .page8-item-edit-input';
+    const sync = () => {
+      const el = document.activeElement;
+      const typing = !!(el && el.matches && el.matches(TYPING_SELECTOR));
+      document.body.classList.toggle('is-page8-typing', typing);
+    };
+    document.addEventListener('focusin', sync);
+    // Odak kalkarken yeni aktif eleman bir sonraki turda belli olur.
+    document.addEventListener('focusout', () => setTimeout(sync, 0));
+    // Odaklı alan blur olmadan DOM'dan kalkarsa (liste yeniden çizilirse)
+    // sınıf takılı kalmasın diye emniyet.
+    document.addEventListener('pointerup', () => setTimeout(sync, 0), true);
+    if (window.visualViewport) window.visualViewport.addEventListener('resize', sync);
+  })();
 
   // ---- Klavye açıkken odaklanılan giriş alanını görünür tutma ----
   // Uzun sayfalarda (ör. Gündelik) bir metin kutusuna dokunulduğunda
