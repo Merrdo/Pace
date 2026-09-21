@@ -10344,6 +10344,25 @@
     pointer-events: auto;
   }
 
+  /* Kilitli deneme kartının sol üst köşesindeki sabit rozet; silme
+     rozetinin (sağ üst) aynasıdır, her zaman görünür. */
+  .page11-exam-lock-badge {
+    position: absolute;
+    top: -0.6rem;
+    left: -0.6rem;
+    width: 1.7rem;
+    height: 1.7rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    background-color: #121212;
+    border: 2.5px solid #000;
+    border-radius: 50%;
+    box-shadow: 2px 2px 0px 0px #000;
+    pointer-events: none;
+  }
+
   /* ---------- Sayfa 11: Deneme ekleme pop-up'ı (settings-confirm-backdrop
      ile aynı dil, kendi form alanlarıyla) ---------- */
   .page11-modal-card {
@@ -13355,6 +13374,51 @@
 
   .calendar-back-btn.is-hidden {
     visibility: hidden;
+    pointer-events: none;
+  }
+
+  /* Kilit butonu: varsayılan (kilitsiz) durumda açık asma kilit ikonu
+     görünür; kilitliyken kapalı kilit ikonuna döner ve buton vurgu
+     rengiyle "basılı" görünür (bkz. edit-task-btn.is-active kalıbı). */
+  .exam-detail-lock-shackle-closed {
+    display: none;
+  }
+
+  #examDetailLockBtn[aria-pressed="true"] .exam-detail-lock-shackle-open {
+    display: none;
+  }
+
+  #examDetailLockBtn[aria-pressed="true"] .exam-detail-lock-shackle-closed {
+    display: block;
+  }
+
+  #examDetailLockBtn.is-active {
+    background-color: var(--accent-color, #ff90e8);
+  }
+
+  /* Deneme kilitliyken hiçbir işaretleme/silme/ekleme işlemi yapılamaz;
+     sadece görüntülenebilir. Baloncuk ızgarası ve görsel rozetleri
+     tıklanamaz hale gelir (pointer-events kapatılır, hafifçe soluklaşır);
+     toplu işaretleme, silme ve kaynak ekleme butonları JS tarafında
+     `disabled` yapılır (bkz. page11ApplyExamLockUI). */
+  #page-11-detail.is-locked .exam-detail-bubble-grid {
+    pointer-events: none;
+    opacity: 0.6;
+  }
+
+  #page-11-detail.is-locked .exam-detail-bulk-actions {
+    pointer-events: none;
+  }
+
+  .calendar-back-btn:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+
+  .exam-detail-bulk-btn:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
     pointer-events: none;
   }
 
@@ -23251,6 +23315,14 @@
               <path d="M4 8h3l1.6-2.2h6.8L17 8h3a1 1 0 0 1 1 1v9.5a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
               <circle cx="12" cy="13.2" r="3" fill="none" stroke="currentColor" stroke-width="2"/>
               <line class="exam-detail-photo-toggle-slash" x1="3" y1="4" x2="21" y2="20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </button>
+          <button type="button" class="calendar-back-btn" id="examDetailLockBtn" aria-label="Denemeyi kilitle" aria-pressed="false">
+            <svg viewBox="0 0 24 24" width="18" height="18">
+              <rect x="5" y="10.5" width="14" height="9.5" rx="2" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+              <path class="exam-detail-lock-shackle-open" d="M8 10.5V7a4 4 0 0 1 7.6-1.8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <path class="exam-detail-lock-shackle-closed" d="M8 10.5V7a4 4 0 0 1 8 0v3.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <circle cx="12" cy="14.7" r="1.3" fill="currentColor"/>
             </svg>
           </button>
           <button type="button" class="calendar-back-btn is-danger" id="examDetailDeleteBtn" aria-label="Denemeyi sil">
@@ -35122,8 +35194,10 @@
     delBtn.className = 'delete-btn page11-exam-delete';
     delBtn.textContent = '×';
     delBtn.setAttribute('aria-label', `"${exam.name}" denemesini sil`);
+    delBtn.disabled = !!exam.locked;
     delBtn.addEventListener('click', (e) => {
       e.stopPropagation();
+      if (exam.locked) return;
       openPage8Confirm(exam.name, () => {
         page11State.exams = page11State.exams.filter((it) => it.id !== exam.id);
         savePage11State();
@@ -35137,6 +35211,18 @@
     card.appendChild(main);
     card.appendChild(side);
     card.appendChild(delBtn);
+
+    // Kilitli denemede kartın sol üst köşesinde küçük bir kilit rozeti
+    // belirir; deneme kilitliyken silinemez, işaretlenemez, sadece
+    // detay sayfası görüntülenebilir (bkz. page11ApplyExamLockUI).
+    if (exam.locked) {
+      card.classList.add('is-locked');
+      const lockBadge = document.createElement('span');
+      lockBadge.className = 'page11-exam-lock-badge';
+      lockBadge.setAttribute('aria-label', `"${exam.name}" denemesi kilitli`);
+      lockBadge.innerHTML = '<svg viewBox="0 0 24 24" width="12" height="12"><rect x="5" y="10.5" width="14" height="9.5" rx="2" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><circle cx="12" cy="14.7" r="1.2" fill="currentColor"/></svg>';
+      card.appendChild(lockBadge);
+    }
 
     card.addEventListener('click', () => openExamDetail(exam.id));
 
@@ -35376,11 +35462,37 @@
   const examDetailResourcesBtn = document.getElementById('examDetailResourcesBtn');
   const examDetailDeleteBtn = document.getElementById('examDetailDeleteBtn');
   const examDetailPhotoToggleBtn = document.getElementById('examDetailPhotoToggleBtn');
+  const examDetailLockBtn = document.getElementById('examDetailLockBtn');
   const page11DetailSection = document.getElementById('page-11-detail');
   const examDetailMarkAllBtn = document.getElementById('examDetailMarkAllBtn');
   const examDetailClearAllBtn = document.getElementById('examDetailClearAllBtn');
 
   let page11ActiveExamId = null;
+
+  // ---- Deneme kilidi ----
+  // Kilitli bir denemede hiçbir işlem yapılamaz: sorular işaretlenemez,
+  // görsel eklenip çıkarılamaz, kaynak (cevap anahtarı/video) eklenemez,
+  // toplu işaretleme yapılamaz ve deneme silinemez — yalnızca
+  // görüntülenebilir. Kilidi kaldırınca tüm bu işlemler tekrar açılır.
+  const page11ApplyExamLockUI = (exam) => {
+    const locked = !!(exam && exam.locked);
+    examDetailLockBtn.classList.toggle('is-active', locked);
+    examDetailLockBtn.setAttribute('aria-pressed', locked ? 'true' : 'false');
+    examDetailLockBtn.setAttribute('aria-label', locked ? 'Kilidi kaldır' : 'Denemeyi kilitle');
+    page11DetailSection.classList.toggle('is-locked', locked);
+    [examDetailMarkAllBtn, examDetailClearAllBtn, examDetailDeleteBtn, examDetailResourcesBtn].forEach((btn) => {
+      btn.disabled = locked;
+    });
+  };
+
+  examDetailLockBtn.addEventListener('click', () => {
+    const exam = page11State.exams.find((it) => it.id === page11ActiveExamId);
+    if (!exam) return;
+    exam.locked = !exam.locked;
+    savePage11State();
+    page11ApplyExamLockUI(exam);
+    renderPage11List();
+  });
 
   // Bir sorunun baloncuğuna her tıklandığında tüm branş listesini
   // (yüzlerce baloncuk + fotoğraf rozeti) baştan yaratmak gözle
@@ -35394,6 +35506,7 @@
   // Tek tıklama doğru, 2. tıklama yanlış, 3. tıklama boş, 4. tıklama
   // (yani bir sonraki) işaretsiz eski haline döner.
   const page11CycleBubble = (exam, subjectKey, index) => {
+    if (exam.locked) return;
     const current = exam.answers[subjectKey][index];
     const nextIdx = (PAGE11_BUBBLE_STATES.indexOf(current) + 1) % PAGE11_BUBBLE_STATES.length;
     exam.answers[subjectKey][index] = PAGE11_BUBBLE_STATES[nextIdx];
@@ -35416,6 +35529,7 @@
     photoBtn.innerHTML = PAGE11_PHOTO_CAMERA_ICON;
     photoBtn.addEventListener('click', (e) => {
       e.stopPropagation();
+      if (exam.locked) return;
       const currentPhoto = page11GetPhoto(exam, subjectKey, idx);
       if (currentPhoto) {
         openPage11QuestionModal(exam, subjectKey, idx, null);
@@ -35556,6 +35670,7 @@
     });
 
     page11UpdateResourcesIndicator();
+    page11ApplyExamLockUI(exam);
   };
 
   // Bir denemenin tüm sorularını tek bir duruma (ör. hepsi doğru ya da
