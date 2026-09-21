@@ -4952,7 +4952,9 @@
     scrollbar-width: none;
     -ms-overflow-style: none;
     box-sizing: border-box;
-    padding: 0.9rem 24px calc(96px + env(safe-area-inset-bottom));
+    /* Alt boşluk: sağ alttaki yüzen "Hızlı ekle" butonu ve alt nav bar'ın
+       arkasında son kart kalmasın diye artırıldı. */
+    padding: 0.9rem 24px calc(176px + env(safe-area-inset-bottom));
     clip-path: polygon(
       0.0% 0, 4.167% 6px, 8.333% 0, 12.5% 6px, 16.667% 0, 20.833% 6px,
       25.0% 0, 29.167% 6px, 33.333% 0, 37.5% 6px, 41.667% 0, 45.833% 6px,
@@ -5764,7 +5766,12 @@
   .page8-copy-toast {
     position: fixed;
     left: 50%;
-    bottom: 1.6rem;
+    /* Alt nav bar ve sağ alttaki yüzen "Hızlı ekle" butonunun üstünde
+       kalsın; ikisinin üstüne binmesin. */
+    bottom: calc(176px + env(safe-area-inset-bottom));
+    width: max-content;
+    max-width: calc(100% - 2.4rem);
+    text-align: center;
     z-index: 600;
     padding: 0.55rem 1.1rem;
     background: #121212;
@@ -5817,9 +5824,671 @@
     background: #d32f2f;
   }
 
-  .page8-add-group-btn {
-    width: 100%;
+  /* Kartlar, kaydırılarak (ör. yeni eklenen görevin kartına) getirilirken
+     alt kenarı yüzen butonun/nav barın altında kalmasın. */
+  .page8-group-card {
+    scroll-margin-bottom: 130px;
+  }
+
+  /* ---------- Sayfa 8: Boş durum ---------- */
+  .page8-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 1.7rem 1.2rem;
     text-align: center;
+    border: 3px dashed currentColor;
+    border-radius: 1.1em;
+    color: var(--theme-text, #fff);
+    opacity: 0.85;
+    font-family: "Space Grotesk", sans-serif;
+    break-inside: avoid;
+  }
+
+  .page8-empty-title {
+    font-weight: 800;
+    font-size: 1rem;
+  }
+
+  .page8-empty-text {
+    font-weight: 600;
+    font-size: 0.85rem;
+    opacity: 0.8;
+  }
+
+  /* ---------- Sayfa 8: Hızlı ekle (yuvarlak buton + açılır panel) ----------
+     Tek bir yuvarlak ana buton. İlk dokunuşta yaylanarak açılan yuvarlak
+     mini butonlar (Kategori ekle) belirir; ana buton vurgu rengine
+     dönüşüp simgesini "görev"e çevirir, ona tekrar dokununca hızlı ekle
+     penceresi açılır. Sayfanın İÇİNDE durduğu için sayfa geçişlerinde
+     onunla birlikte solar; pointer-events özellikle değiştirilmiyor
+     (.page kapalıyken none, çocuklar miras alıyor). */
+  .page8-fab-scrim {
+    position: absolute;
+    inset: 0;
+    z-index: 30;
+    background: rgba(18, 18, 28, 0.34);
+    -webkit-backdrop-filter: blur(0px);
+    backdrop-filter: blur(0px);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, backdrop-filter 0.4s ease, -webkit-backdrop-filter 0.4s ease,
+      visibility 0s linear 0.4s;
+  }
+
+  .page8-fab-scrim.is-open {
+    opacity: 1;
+    visibility: visible;
+    -webkit-backdrop-filter: blur(7px);
+    backdrop-filter: blur(7px);
+    transition-delay: 0s;
+  }
+
+  .page8-fab-dock {
+    --fab-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+    position: absolute;
+    z-index: 31;
+    right: max(16px, calc((100% - 340px) / 2 + 2px));
+    bottom: calc(100px + env(safe-area-inset-bottom));
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.85rem;
+    transition: opacity 0.2s ease, transform 0.3s ease;
+  }
+
+  /* Görev yazılırken klavye ekranı kapladığı için gizlenir. */
+  body.is-page8-typing .page8-fab-dock {
+    opacity: 0;
+    transform: translateY(20px);
+    pointer-events: none;
+  }
+
+  .page8-fab-panel {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.75rem;
+    padding-right: 0.375rem; /* 3rem mini butonu 3.75rem ana butonla ortalar */
+    visibility: hidden;
+    transition: visibility 0s linear 0.3s;
+  }
+
+  .page8-fab-panel.is-open {
+    visibility: visible;
+    transition-delay: 0s;
+  }
+
+  .page8-fab-item,
+  .page8-fab-row {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+  }
+
+  /* Etiketler: alt nav'daki "Gündelik" balonuyla aynı koyu hap. */
+  .page8-fab-tip {
+    padding: 0.5rem 0.9rem;
+    border-radius: 999px;
+    background: rgba(18, 18, 18, 0.92);
+    color: #fff;
+    font-family: "Space Grotesk", sans-serif;
+    font-weight: 700;
+    font-size: 0.82rem;
+    letter-spacing: -0.005em;
+    white-space: nowrap;
+    box-shadow: 0 8px 18px -8px rgba(0, 0, 0, 0.55);
+    opacity: 0;
+    transform: translateX(14px) scale(0.92);
+    transform-origin: right center;
+    pointer-events: none;
+    transition: opacity 0.16s ease, transform 0.22s ease;
+  }
+
+  .page8-fab-panel.is-open .page8-fab-tip,
+  .page8-fab-dock.is-open .page8-fab-tip-main {
+    opacity: 1;
+    transform: none;
+    transition: opacity 0.25s ease, transform 0.5s var(--fab-spring);
+    transition-delay: calc(var(--i, 0) * 60ms + 90ms);
+  }
+
+  .page8-fab-dock.is-open .page8-fab-tip-main {
+    transition-delay: 0.16s;
+  }
+
+  .page8-fab-mini,
+  .page8-fab {
+    position: relative;
+    display: grid;
+    place-items: center;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .page8-fab-mini {
+    overflow: hidden;
+    width: 3rem;
+    height: 3rem;
+    background: #fff;
+    color: #121212;
+    box-shadow: 0 12px 24px -10px rgba(0, 0, 0, 0.55), 0 2px 6px rgba(0, 0, 0, 0.16);
+    opacity: 0;
+    transform: translateY(64px) scale(0.3);
+    transition: opacity 0.16s ease, transform 0.24s ease-in, box-shadow 0.25s ease;
+  }
+
+  .page8-fab-panel.is-open .page8-fab-mini {
+    opacity: 1;
+    transform: none;
+    transition: opacity 0.22s ease, transform 0.6s var(--fab-spring), box-shadow 0.25s ease;
+    transition-delay: calc(var(--i, 0) * 60ms);
+  }
+
+  .page8-fab-panel.is-open .page8-fab-mini:active {
+    transform: scale(0.9);
+    transition-duration: 0.15s;
+    transition-delay: 0s;
+  }
+
+  .page8-fab-mini svg {
+    width: 1.3rem;
+    height: 1.3rem;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.9;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  /* ---- Ana buton ---- */
+  .page8-fab {
+    isolation: isolate;
+    width: 3.75rem;
+    height: 3.75rem;
+    background: #121212;
+    color: #fff;
+    box-shadow: 0 16px 30px -12px rgba(0, 0, 0, 0.65), 0 3px 8px rgba(0, 0, 0, 0.25),
+      inset 0 1px 0 rgba(255, 255, 255, 0.16), inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+    transition: transform 0.5s var(--fab-spring), box-shadow 0.35s ease,
+      background-color 0.45s ease, color 0.45s ease;
+  }
+
+  .page8-fab:active {
+    transform: scale(0.9);
+    transition-duration: 0.15s;
+  }
+
+  .page8-fab.is-open {
+    background: var(--accent-color, #ff90e8);
+    color: #121212;
+    transform: scale(1.05);
+    box-shadow: 0 18px 34px -12px rgba(0, 0, 0, 0.55), 0 3px 8px rgba(0, 0, 0, 0.18),
+      inset 0 1px 0 rgba(255, 255, 255, 0.45);
+  }
+
+  .page8-fab.is-open:active {
+    transform: scale(0.95);
+  }
+
+  /* Yüzeyi kırpan katman (ripple ve parlama buraya sığar; halo dışarıda). */
+  .page8-fab-face {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+    border-radius: 50%;
+  }
+
+  .page8-fab-face::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(120% 90% at 28% 8%, rgba(255, 255, 255, 0.22), transparent 55%);
+    pointer-events: none;
+  }
+
+  .page8-fab-glyph {
+    grid-area: 1 / 1;
+    width: 1.65rem;
+    height: 1.65rem;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    transition: transform 0.6s var(--fab-spring), opacity 0.25s ease;
+  }
+
+  .page8-fab-glyph-task {
+    opacity: 0;
+    transform: rotate(-90deg) scale(0.4);
+  }
+
+  .page8-fab.is-open .page8-fab-glyph-plus {
+    opacity: 0;
+    transform: rotate(90deg) scale(0.4);
+  }
+
+  .page8-fab.is-open .page8-fab-glyph-task {
+    opacity: 1;
+    transform: none;
+  }
+
+  /* Açılırken halkadan dışa yayılan tek bir yumuşak dalga. */
+  .page8-fab-halo {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: 50%;
+    background: var(--accent-color, #ff90e8);
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .page8-fab.is-open .page8-fab-halo {
+    animation: page8FabHalo 0.85s cubic-bezier(0.2, 0.7, 0.3, 1);
+  }
+
+  @keyframes page8FabHalo {
+    0% { transform: scale(1); opacity: 0.55; }
+    100% { transform: scale(2.2); opacity: 0; }
+  }
+
+  /* Dokunulan noktadan yayılan ripple (JS ekler). */
+  .page8-ripple {
+    position: absolute;
+    border-radius: 50%;
+    background: currentColor;
+    opacity: 0.26;
+    transform: scale(0);
+    pointer-events: none;
+    animation: page8Ripple 0.65s cubic-bezier(0.2, 0.7, 0.3, 1) forwards;
+  }
+
+  @keyframes page8Ripple {
+    to { transform: scale(1); opacity: 0; }
+  }
+
+  /* Sayfa açılırken buton yaylanarak yerine oturur (tek seferlik). */
+  #page-8.is-active .page8-fab {
+    animation: page8FabIn 0.75s cubic-bezier(0.2, 0.9, 0.3, 1.25) 0.25s backwards;
+  }
+
+  @keyframes page8FabIn {
+    from { transform: scale(0.3) rotate(-60deg); opacity: 0; }
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .page8-fab:not(.is-open):hover {
+      transform: translateY(-3px) scale(1.05);
+      box-shadow: 0 22px 36px -12px rgba(0, 0, 0, 0.6), 0 4px 10px rgba(0, 0, 0, 0.25),
+        inset 0 1px 0 rgba(255, 255, 255, 0.16), inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+    }
+
+    .page8-fab-panel.is-open .page8-fab-mini:hover {
+      transform: translateY(-2px) scale(1.06);
+    }
+  }
+
+  body.is-anthracite .page8-fab:not(.is-open),
+  body.is-anthracite .page8-fab-mini {
+    background: var(--dark-card-color, #32343a);
+    color: #f2f2f4;
+    box-shadow: 0 16px 30px -12px rgba(0, 0, 0, 0.7), 0 2px 6px rgba(0, 0, 0, 0.3),
+      inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+  }
+
+  body.is-anthracite .page8-fab-tip {
+    background: rgba(242, 242, 244, 0.95);
+    color: #121212;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .page8-fab,
+    .page8-fab-mini,
+    .page8-fab-tip,
+    .page8-fab-glyph,
+    .page8-fab-scrim,
+    .page8-quick-card,
+    .page8-quick-chip,
+    .page8-quick-send {
+      transition-duration: 0.01ms !important;
+      transition-delay: 0s !important;
+      animation: none !important;
+    }
+  }
+
+  /* ---------- Sayfa 8: Hızlı ekle penceresi ----------
+     Sade, büyük yuvarlatılmış köşeli beyaz kart; hap biçimli seçenekler,
+     yuvarlak gönder butonu. Açılırken kart yayla iner ve bulanıklıktan
+     netleşir, seçenekler sırayla belirir. Klavye açılınca "Ekle" butonu
+     görünür kalsın diye pencere üstte durur. */
+  .settings-confirm-backdrop.page8-quick-backdrop {
+    align-items: flex-start;
+    padding-top: max(24px, calc(env(safe-area-inset-top) + 9vh));
+    background: rgba(18, 18, 28, 0.4);
+    -webkit-backdrop-filter: blur(7px);
+    backdrop-filter: blur(7px);
+  }
+
+  .page11-modal-card.page8-quick-card {
+    max-width: 344px;
+    gap: 1.1rem;
+    padding: 1.2rem 1.15rem 1.15rem;
+    border: 0;
+    border-radius: 28px;
+    box-shadow: 0 34px 70px -22px rgba(0, 0, 0, 0.6), 0 4px 14px rgba(0, 0, 0, 0.16);
+    transform: translateY(-18px) scale(0.93);
+    filter: blur(6px);
+    opacity: 0;
+    transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.25s ease,
+      filter 0.4s ease;
+  }
+
+  .settings-confirm-backdrop.is-open .page11-modal-card.page8-quick-card {
+    transform: none;
+    filter: none;
+    opacity: 1;
+  }
+
+  .page8-quick-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.7rem;
+  }
+
+  .page8-quick-card .page11-modal-title {
+    font-size: 1.15rem;
+    letter-spacing: -0.015em;
+  }
+
+  .page8-quick-close {
+    flex: 0 0 auto;
+    display: grid;
+    place-items: center;
+    width: 2rem;
+    height: 2rem;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: rgba(18, 18, 18, 0.06);
+    color: #121212;
+    cursor: pointer;
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.2s ease;
+  }
+
+  .page8-quick-close:active {
+    transform: scale(0.88);
+    background: rgba(18, 18, 18, 0.12);
+  }
+
+  .page8-quick-close svg {
+    width: 0.9rem;
+    height: 0.9rem;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2.4;
+    stroke-linecap: round;
+  }
+
+  .page8-quick-card .page11-field {
+    gap: 0.55rem;
+  }
+
+  .page8-quick-card .page11-field-label {
+    font-family: "Space Grotesk", sans-serif;
+    font-weight: 700;
+    font-size: 0.78rem;
+    letter-spacing: 0;
+    text-transform: none;
+    color: rgba(18, 18, 18, 0.5);
+  }
+
+  .page8-quick-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+    max-height: 30vh;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 0.2rem;
+    margin: -0.2rem;
+  }
+
+  .page8-quick-chip {
+    --chip-color: var(--accent-color, #ff90e8);
+    --chip-ink: #000;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    max-width: 100%;
+    padding: 0.5rem 0.95rem 0.5rem 0.8rem;
+    font-family: "Space Grotesk", sans-serif;
+    font-weight: 700;
+    font-size: 0.84rem;
+    color: #121212;
+    background: rgba(18, 18, 18, 0.06);
+    border: 1.5px solid transparent;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.25s ease,
+      color 0.25s ease, box-shadow 0.3s ease, border-color 0.25s ease;
+  }
+
+  .settings-confirm-backdrop.is-open .page8-quick-chip {
+    animation: page8ChipIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) backwards;
+    animation-delay: calc(var(--n, 0) * 40ms + 140ms);
+  }
+
+  @keyframes page8ChipIn {
+    from { opacity: 0; transform: translateY(8px) scale(0.9); }
+  }
+
+  .page8-quick-chip:active {
+    transform: scale(0.94);
+  }
+
+  .page8-quick-chip-dot {
+    flex: 0 0 auto;
+    width: 0.62rem;
+    height: 0.62rem;
+    border-radius: 50%;
+    background: var(--chip-color);
+  }
+
+  .page8-quick-chip-plus,
+  .page8-quick-chip-check {
+    flex: 0 0 auto;
+    width: 0.85rem;
+    height: 0.85rem;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2.6;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .page8-quick-chip-check {
+    display: none;
+  }
+
+  .page8-quick-chip-check path {
+    stroke-dasharray: 26;
+    stroke-dashoffset: 26;
+  }
+
+  .page8-quick-chip-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* Seçili: grubun rengiyle dolar, kendi renginde yumuşak bir ışıma alır,
+     nokta yerine tik çizilerek belirir. */
+  .page8-quick-chip.is-selected {
+    background: var(--chip-color);
+    color: var(--chip-ink);
+    box-shadow: 0 8px 16px -8px var(--chip-color);
+  }
+
+  .page8-quick-chip.is-selected .page8-quick-chip-dot,
+  .page8-quick-chip.is-selected .page8-quick-chip-plus {
+    display: none;
+  }
+
+  .page8-quick-chip.is-selected .page8-quick-chip-check {
+    display: block;
+  }
+
+  .page8-quick-chip.is-selected .page8-quick-chip-check path {
+    animation: page8CheckDraw 0.4s ease 0.05s forwards;
+  }
+
+  @keyframes page8CheckDraw {
+    to { stroke-dashoffset: 0; }
+  }
+
+  .page8-quick-chip-new {
+    background: transparent;
+    border: 1.5px dashed rgba(18, 18, 18, 0.28);
+  }
+
+  .page8-quick-chip-new.is-selected {
+    border-color: transparent;
+  }
+
+  .page8-quick-newname {
+    margin-top: 0.15rem;
+    animation: page8Reveal 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  @keyframes page8Reveal {
+    from { opacity: 0; transform: translateY(-8px) scale(0.97); }
+  }
+
+  .page8-quick-card .page8-name-field-input {
+    background: rgba(18, 18, 18, 0.05);
+    border: 1.5px solid transparent;
+    border-radius: 1.1rem;
+    padding: 0.7rem 0.95rem;
+    font-weight: 600;
+    -webkit-user-select: text;
+    user-select: text;
+    transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.25s ease;
+  }
+
+  .page8-quick-card .page8-name-field-input:focus {
+    background: #fff;
+    border-color: #121212;
+    box-shadow: 0 0 0 4px rgba(18, 18, 18, 0.07);
+  }
+
+  .page8-quick-compose {
+    display: flex;
+    align-items: flex-end;
+    gap: 0.55rem;
+  }
+
+  .page8-quick-card .page8-quick-task {
+    flex: 1 1 auto;
+    min-width: 0;
+    min-height: 2.75rem;
+    max-height: 140px;
+    border-radius: 1.4rem;
+    resize: none;
+    line-height: 1.35;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
+  .page8-quick-send {
+    flex: 0 0 auto;
+    display: grid;
+    place-items: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: #121212;
+    color: #fff;
+    cursor: pointer;
+    box-shadow: 0 10px 20px -8px rgba(0, 0, 0, 0.6);
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.25s ease,
+      background-color 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .page8-quick-send svg {
+    width: 1.2rem;
+    height: 1.2rem;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2.4;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .page8-quick-send:not(:disabled):active {
+    transform: scale(0.88);
+  }
+
+  .page8-quick-send:not(:disabled):active svg {
+    transform: translateY(-2px);
+  }
+
+  .page8-quick-send:disabled {
+    opacity: 0.28;
+    transform: scale(0.88);
+    box-shadow: none;
+    cursor: not-allowed;
+  }
+
+  body.is-anthracite .page8-quick-close {
+    background: rgba(242, 242, 244, 0.1);
+    color: #f2f2f4;
+  }
+
+  body.is-anthracite .page8-quick-card .page11-field-label {
+    color: rgba(242, 242, 244, 0.55);
+  }
+
+  body.is-anthracite .page8-quick-chip {
+    background: rgba(242, 242, 244, 0.08);
+    color: #f2f2f4;
+  }
+
+  body.is-anthracite .page8-quick-chip.is-selected {
+    background: var(--chip-color);
+    color: var(--chip-ink);
+  }
+
+  body.is-anthracite .page8-quick-chip-new:not(.is-selected) {
+    background: transparent;
+    border-color: rgba(242, 242, 244, 0.3);
+  }
+
+  body.is-anthracite .page8-quick-card .page8-name-field-input {
+    background: rgba(242, 242, 244, 0.07);
+  }
+
+  body.is-anthracite .page8-quick-card .page8-name-field-input:focus {
+    background: rgba(242, 242, 244, 0.1);
+    border-color: var(--accent-color, #ff90e8);
+    box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.06);
+  }
+
+  body.is-anthracite .page8-quick-send:not(:disabled) {
+    background: var(--accent-color, #ff90e8);
+    color: #121212;
   }
 
   /* ---------- Sayfa 9: Soru Takibi ----------
@@ -17468,13 +18137,9 @@
      #page8CategoryList / #page8RoutineGroupList içine aynı sırayla
      ekleniyor), salt CSS ile elde ediliyor.
 
-     "+ Kategori" / "+ Rutin Grubu" butonu artık listenin en altında,
-     kaydırmak gerektiren pasif bir buton değil; sağ altta sabit duran,
-     yuvarlak uçlu bir "yüzen eylem butonu" (FAB) — pano ne kadar
-     kaydırılırsa kaydırılsın her zaman elinin altında. İki görünümden
-     (Görevler/Rutinler) sadece aktif olanın FAB'ı DOM'da görünür
-     olduğundan (kapalı görünüm zaten `display:none` ile tamamen gizlenir),
-     ikisi aynı sabit köşede çakışmadan devralınıyor. */
+     Yeni kategori/rutin grubu ve hızlı görev ekleme artık sağ altta sabit
+     duran tek bir "Hızlı ekle" butonundan yapılıyor (bkz. .page8-fab):
+     pano ne kadar kaydırılırsa kaydırılsın her zaman elinin altında. */
   /* min-height: 600px koşulu eklendi: yatay çevrilmiş bir telefonun genişliği
      768px'i geçebiliyor ama yüksekliği (kısa kenarı) her zaman ~430-460px'te
      kalıyor; gerçek tabletlerin yatay yüksekliği ise en az ~744px. Bu sayede
@@ -17542,7 +18207,7 @@
       /* Üst dolgu, kategorileri başlıktan (ve diş desenli kesim
          çizgisinden) biraz uzaklaştırıp nefes payı bırakıyor — mobildeki
          gibi başlığa neredeyse yapışık durmuyorlar. */
-      padding: 1.6rem 40px calc(40px + env(safe-area-inset-bottom));
+      padding: 1.6rem 40px calc(128px + env(safe-area-inset-bottom));
       /* Diş deseni, dar mobil kartta ince bir "yırtık kağıt" hissi
          veriyordu; 340px'lik orijinal 24 dişlik desen burada olduğu gibi
          kalsaydı her diş ~70px'e çıkıp kaba/iri görünürdü. Geniş panoya
@@ -17715,23 +18380,22 @@
       font-size: 0.98rem;
     }
 
-    /* ---- "+ Kategori" / "+ Rutin Grubu": listenin altında pasif bir
-       buton yerine, sağ altta sabit duran yüzen bir eylem butonu (FAB).
-       Panoyu ne kadar kaydırırsan kaydır her zaman elinin altında kalır.
-       İki görünümden yalnızca aktif olanın FAB'ı görünür olduğundan
-       (kapalı görünüm .page8-view.is-hidden ile tamamen gizlenir), ikisi
-       çakışmadan aynı köşeyi paylaşır. */
-    .page8-add-group-btn {
-      position: fixed;
-      left: auto;
+    /* ---- Hızlı ekle butonu: tabletlerde alt nav bar yok (yanal panel var);
+       buton sağ alt köşede, kaydırma alanının sağ kenar boşluğuyla hizalı
+       durur. Panel/pencere davranışı telefonla aynıdır. ---- */
+    .page8-fab-dock {
       right: calc(40px + env(safe-area-inset-right));
       bottom: calc(40px + env(safe-area-inset-bottom));
-      width: auto;
-      border-radius: 999px;
-      padding: 1rem 1.7rem;
-      font-size: 1rem;
-      box-shadow: 6px 6px 0px 0px #000;
-      z-index: 60;
+    }
+
+    /* Tabletlerde alt nav bar yok; bildirim tekrar alt ortada durur. */
+    .page8-copy-toast {
+      bottom: calc(1.6rem + env(safe-area-inset-bottom));
+    }
+
+    .settings-confirm-backdrop.page8-quick-backdrop {
+      align-items: center;
+      padding-top: 24px;
     }
 
     /* Kategoriler/Rutin Grupları pop-up'ı: çok sayıda etiket olduğunda dar
@@ -23394,6 +24058,35 @@
     </div>
   </div>
 
+  <!-- Sayfa 8: Hızlı ekle penceresi. Sağ alttaki yüzen butonun ikinci
+       dokunuşuyla açılır; mevcut kategorilerden biri seçilir ya da "Yeni
+       kategori" ile yeni bir tane oluşturulur, görev yazılıp eklenir.
+       Metinler (Görev/Rutin) JS tarafından aktif sekmeye göre doldurulur. -->
+  <div class="settings-confirm-backdrop page8-quick-backdrop" id="page8QuickBackdrop">
+    <div class="page11-modal-card page8-quick-card" role="dialog" aria-modal="true" aria-labelledby="page8QuickTitle">
+      <div class="page8-quick-head">
+        <span class="page11-modal-title" id="page8QuickTitle">Hızlı görev ekle</span>
+        <button type="button" class="page8-quick-close" id="page8QuickClose" aria-label="Kapat">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        </button>
+      </div>
+      <div class="page11-field">
+        <span class="page11-field-label" id="page8QuickCatLabel">Kategori</span>
+        <div class="page8-quick-chips" id="page8QuickChips" role="radiogroup" aria-labelledby="page8QuickCatLabel"></div>
+        <input type="text" class="page8-name-field-input page8-quick-newname" id="page8QuickNewName" maxlength="24" placeholder="Yeni kategori adı" aria-label="Yeni kategori adı" hidden>
+      </div>
+      <div class="page11-field">
+        <label class="page11-field-label" for="page8QuickTask" id="page8QuickTaskLabel">Görev</label>
+        <div class="page8-quick-compose">
+          <textarea class="page8-name-field-input page8-quick-task" id="page8QuickTask" rows="1" placeholder="Ne yapacaksın?"></textarea>
+          <button type="button" class="page8-quick-send" id="page8QuickConfirm" aria-label="Ekle" disabled>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5M5.5 11.5L12 5l6.5 6.5"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Sayfa 8: Kategoriler / Rutin Grupları pop-up'ı. Başlıktaki etiket
        ikonuna dokununca açılır; aktif sekmeye (Görevler/Rutinler) göre
        eklenmiş her grubu kesikli çerçeveli birer "etiket" (chip) halinde
@@ -23441,13 +24134,38 @@
       <div class="page8-wrap">
         <div class="page8-view" id="page8TasksView">
           <div class="page8-group-list" id="page8CategoryList"></div>
-          <button type="button" class="add-task-btn page8-add-group-btn" id="page8AddCategoryBtn">+ Kategori</button>
         </div>
 
         <div class="page8-view is-hidden" id="page8RoutinesView">
           <div class="page8-group-list" id="page8RoutineGroupList"></div>
-          <button type="button" class="add-task-btn page8-add-group-btn" id="page8AddRoutineGroupBtn">+ Rutin Grubu</button>
         </div>
+      </div>
+    </div>
+
+    <!-- Hızlı ekle: sağ altta yüzen ana buton. İlk dokunuşta eylem paneli
+         açılır (Kategori ekle) ve ana buton "Görev ekle"ye dönüşür; ona
+         tekrar dokununca hızlı görev penceresi açılır (mevcut kategoriden
+         seç ya da yeni kategori oluştur). Aktif sekmeye göre Rutinler için
+         de aynı akışı kullanır. -->
+    <div class="page8-fab-scrim" id="page8FabScrim"></div>
+    <div class="page8-fab-dock" id="page8FabDock">
+      <div class="page8-fab-panel" id="page8FabPanel" role="menu" aria-label="Hızlı ekle" inert>
+        <div class="page8-fab-item" style="--i:0">
+          <span class="page8-fab-tip" id="page8FabAddGroupLabel">Kategori ekle</span>
+          <button type="button" class="page8-fab-mini" id="page8FabAddGroup" role="menuitem" aria-label="Kategori ekle">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M12 10.5v5M9.5 13h5"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="page8-fab-row">
+        <span class="page8-fab-tip page8-fab-tip-main" id="page8FabLabel">Görev ekle</span>
+        <button type="button" class="page8-fab" id="page8Fab" aria-label="Hızlı görev ekle" aria-haspopup="menu" aria-expanded="false">
+          <span class="page8-fab-halo" aria-hidden="true"></span>
+          <span class="page8-fab-face" aria-hidden="true">
+            <svg class="page8-fab-glyph page8-fab-glyph-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+            <svg class="page8-fab-glyph page8-fab-glyph-task" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="5.5"/><path d="M8.6 12.4l2.5 2.5 4.4-5.2"/></svg>
+          </span>
+        </button>
       </div>
     </div>
   </section>
@@ -32431,8 +33149,6 @@
 
   const page8CategoryList = document.getElementById('page8CategoryList');
   const page8RoutineGroupList = document.getElementById('page8RoutineGroupList');
-  const page8AddCategoryBtn = document.getElementById('page8AddCategoryBtn');
-  const page8AddRoutineGroupBtn = document.getElementById('page8AddRoutineGroupBtn');
   const page8EditBtn = document.getElementById('page8EditBtn');
 
   // Düzenleme modu: kalem ikonuna basılınca hem kategori/rutin grubu
@@ -32496,6 +33212,21 @@
     }
   });
 
+  // Liste boşken sayfa bomboş kalmasın: ne yapılacağını söyleyen kısa bir kart.
+  const createPage8Empty = (title, text) => {
+    const box = document.createElement('div');
+    box.className = 'page8-empty';
+    const t = document.createElement('span');
+    t.className = 'page8-empty-title';
+    t.textContent = title;
+    const d = document.createElement('span');
+    d.className = 'page8-empty-text';
+    d.textContent = text;
+    box.appendChild(t);
+    box.appendChild(d);
+    return box;
+  };
+
   const renderPage8Categories = () => {
     page8CategoryList.innerHTML = '';
     page8State.categories.forEach((cat) => {
@@ -32512,6 +33243,9 @@
       });
       page8CategoryList.appendChild(card);
     });
+    if (!page8State.categories.length) {
+      page8CategoryList.appendChild(createPage8Empty('Henüz kategori yok', 'Sağ alttaki butona dokun, ilk görevini ekle.'));
+    }
     if (page8ActiveView === 'tasks') renderPage8GroupsPanel();
   };
 
@@ -32531,6 +33265,9 @@
       });
       page8RoutineGroupList.appendChild(card);
     });
+    if (!page8State.routineGroups.length) {
+      page8RoutineGroupList.appendChild(createPage8Empty('Henüz rutin grubu yok', 'Sağ alttaki butona dokun, ilk rutinini ekle.'));
+    }
     if (page8ActiveView === 'routines') renderPage8GroupsPanel();
   };
 
@@ -32546,6 +33283,50 @@
   const page8GroupsChipList = document.getElementById('page8GroupsChipList');
   let page8GroupsPanelOpen = false;
   let page8ActiveView = 'tasks';
+
+  // Bir grubun kartına kaydırır ve iki kez "kabartıp" vurgular. Hem
+  // Kategoriler pop-up'ındaki etiketler hem de hızlı ekle / yeni kategori
+  // akışları bunu kullanır. `block`: 'start' (etiketten gidişte kartı en
+  // üste getirir) ya da 'nearest' (zaten görünüyorsa kaydırmaz).
+  const page8FocusGroup = (group, block) => {
+    const card = document.getElementById(`page8-group-${group.id}`);
+    if (!card) return;
+    card.scrollIntoView({ behavior: 'smooth', block: block || 'start' });
+
+    // Kaydırma animasyonu (smooth scroll) asenkron sürdüğü için, vurgu
+    // efektini hemen değil, kart gerçekten hedef konuma varıp ekrandaki
+    // pozisyonu art arda birkaç karede sabitlendikten sonra uyguluyoruz.
+    let lastTop = card.getBoundingClientRect().top;
+    let stableFrames = 0;
+    let totalFrames = 0;
+    const maxFrames = 120; // ~2 sn güvenlik sınırı
+
+    const applyHighlight = () => {
+      card.classList.remove('is-highlighted');
+      // Reflow tetikleyerek animasyonun tekrar oynatılabilmesini sağlar.
+      void card.offsetWidth;
+      card.classList.add('is-highlighted');
+      card.addEventListener('animationend', () => card.classList.remove('is-highlighted'), { once: true });
+    };
+
+    const waitForScrollEnd = () => {
+      const top = card.getBoundingClientRect().top;
+      if (Math.abs(top - lastTop) < 0.5) {
+        stableFrames += 1;
+      } else {
+        stableFrames = 0;
+      }
+      lastTop = top;
+      totalFrames += 1;
+
+      if (stableFrames >= 4 || totalFrames >= maxFrames) {
+        applyHighlight();
+        return;
+      }
+      requestAnimationFrame(waitForScrollEnd);
+    };
+    requestAnimationFrame(waitForScrollEnd);
+  };
 
   const renderPage8GroupsPanel = () => {
     const isTasks = page8ActiveView === 'tasks';
@@ -32575,48 +33356,9 @@
 
         chip.appendChild(name);
         chip.addEventListener('click', () => {
-          const card = document.getElementById(`page8-group-${group.id}`);
-          if (!card) return;
+          if (!document.getElementById(`page8-group-${group.id}`)) return;
           setPage8GroupsPanel(false);
-          window.setTimeout(() => {
-            card.scrollIntoView({ behavior: 'smooth', block: 'start' });
-
-            // Kaydırma animasyonu (smooth scroll) asenkron sürdüğü için,
-            // vurgu efektini hemen değil, kart gerçekten hedef konuma
-            // varıp ekrandaki pozisyonu art arda birkaç karede sabitlendikten
-            // sonra uyguluyoruz. Aksi halde efekt, kart henüz kayarken,
-            // tıklanır tıklanmaz başlıyordu.
-            let lastTop = card.getBoundingClientRect().top;
-            let stableFrames = 0;
-            let totalFrames = 0;
-            const maxFrames = 120; // ~2 sn güvenlik sınırı
-
-            const applyHighlight = () => {
-              card.classList.remove('is-highlighted');
-              // Reflow tetikleyerek animasyonun tekrar oynatılabilmesini sağlar.
-              void card.offsetWidth;
-              card.classList.add('is-highlighted');
-              card.addEventListener('animationend', () => card.classList.remove('is-highlighted'), { once: true });
-            };
-
-            const waitForScrollEnd = () => {
-              const top = card.getBoundingClientRect().top;
-              if (Math.abs(top - lastTop) < 0.5) {
-                stableFrames += 1;
-              } else {
-                stableFrames = 0;
-              }
-              lastTop = top;
-              totalFrames += 1;
-
-              if (stableFrames >= 4 || totalFrames >= maxFrames) {
-                applyHighlight();
-                return;
-              }
-              requestAnimationFrame(waitForScrollEnd);
-            };
-            requestAnimationFrame(waitForScrollEnd);
-          }, 180);
+          window.setTimeout(() => page8FocusGroup(group), 180);
         });
         page8GroupsChipList.appendChild(chip);
       });
@@ -32672,6 +33414,7 @@
     const kind = page8PendingNameKind;
     if (!kind) return;
     const typed = page8NameInput.value.trim();
+    let created = null;
 
     if (kind === 'category') {
       const cat = {
@@ -32681,6 +33424,7 @@
         tasks: []
       };
       page8State.categories.push(cat);
+      created = cat;
       renderPage8Categories();
       savePage8State();
     } else {
@@ -32691,15 +33435,16 @@
         routines: []
       };
       page8State.routineGroups.push(grp);
+      created = grp;
       renderPage8RoutineGroups();
       savePage8State();
     }
 
     closePage8NamePopup();
+    // Yeni grup listenin sonuna eklendiği için ekranın dışında kalabilir;
+    // pop-up kapanırken kartına kaydırıp vurgula.
+    if (created) window.setTimeout(() => page8FocusGroup(created, 'nearest'), 320);
   };
-
-  page8AddCategoryBtn.addEventListener('click', () => openPage8NamePopup('category'));
-  page8AddRoutineGroupBtn.addEventListener('click', () => openPage8NamePopup('routine'));
 
   page8NameCancel.addEventListener('click', closePage8NamePopup);
   page8NameBackdrop.addEventListener('click', (e) => {
@@ -32715,6 +33460,280 @@
       closePage8NamePopup();
     }
   });
+
+  // ---- Hızlı ekle: yüzen ana buton (FAB) + açılır panel + hızlı ekle penceresi ----
+  // Akış: ana butona dokun -> üstüne panel açılır (Kategori ekle) ve ana buton
+  // "Görev ekle"ye dönüşür; ona TEKRAR dokun -> hızlı ekle penceresi açılır:
+  // mevcut kategorilerden birini seç ya da yeni kategori oluştur, görevi yaz.
+  // Panelin dışına dokunmak / Esc paneli kapatır. Aktif sekmeye (Görevler /
+  // Rutinler) göre metinler ve hedef liste değişir.
+  const PAGE8_FAB_TEXT = {
+    tasks: {
+      fab: 'Hızlı görev ekle', fabOpen: 'Görev ekle', group: 'Kategori ekle',
+      title: 'Hızlı görev ekle', groupLabel: 'Kategori', newChip: 'Yeni kategori',
+      newPlaceholder: 'Yeni kategori adı', itemLabel: 'Görev', itemPlaceholder: 'Ne yapacaksın?',
+      defaultName: 'Kategori', toast: (n) => `"${n}" kategorisine eklendi`
+    },
+    routines: {
+      fab: 'Hızlı rutin ekle', fabOpen: 'Rutin ekle', group: 'Rutin grubu ekle',
+      title: 'Hızlı rutin ekle', groupLabel: 'Rutin grubu', newChip: 'Yeni grup',
+      newPlaceholder: 'Yeni grup adı', itemLabel: 'Rutin', itemPlaceholder: 'Hangi rutini ekleyelim?',
+      defaultName: 'Rutin Grubu', toast: (n) => `"${n}" grubuna eklendi`
+    }
+  };
+
+  const page8Section = document.getElementById('page-8');
+  const page8Fab = document.getElementById('page8Fab');
+  const page8FabLabel = document.getElementById('page8FabLabel');
+  const page8FabPanel = document.getElementById('page8FabPanel');
+  const page8FabScrim = document.getElementById('page8FabScrim');
+  const page8FabAddGroup = document.getElementById('page8FabAddGroup');
+  const page8FabAddGroupLabel = document.getElementById('page8FabAddGroupLabel');
+  const page8FabDock = document.getElementById('page8FabDock');
+  let page8FabOpen = false;
+
+  // Küçük dokunsal geri bildirim (destekleyen cihazlarda) ve dokunulan
+  // noktadan yayılan ripple; premium his için tüm butonlarda ortak.
+  const page8Haptic = (ms) => { try { if (navigator.vibrate) navigator.vibrate(ms || 6); } catch (e) { /* yoksay */ } };
+  const page8Ripple = (btn, e) => {
+    const host = btn.querySelector('.page8-fab-face') || btn;
+    const r = host.getBoundingClientRect();
+    const size = Math.max(r.width, r.height) * 2;
+    const dot = document.createElement('span');
+    dot.className = 'page8-ripple';
+    dot.style.width = dot.style.height = size + 'px';
+    dot.style.left = (e.clientX - r.left - size / 2) + 'px';
+    dot.style.top = (e.clientY - r.top - size / 2) + 'px';
+    host.appendChild(dot);
+    dot.addEventListener('animationend', () => dot.remove(), { once: true });
+  };
+
+  const page8FabKind = () => (page8ActiveView === 'routines' ? 'routines' : 'tasks');
+
+  const page8SyncFab = () => {
+    const t = PAGE8_FAB_TEXT[page8FabKind()];
+    page8FabLabel.textContent = t.fabOpen;
+    page8FabAddGroupLabel.textContent = t.group;
+    page8FabAddGroup.setAttribute('aria-label', t.group);
+    page8Fab.setAttribute('aria-label', page8FabOpen ? t.fabOpen : t.fab);
+  };
+
+  const setPage8Fab = (open) => {
+    if (open === page8FabOpen) return;
+    page8FabOpen = open;
+    page8Fab.classList.toggle('is-open', open);
+    page8Fab.setAttribute('aria-expanded', open ? 'true' : 'false');
+    page8FabPanel.classList.toggle('is-open', open);
+    page8FabPanel.inert = !open;
+    page8FabScrim.classList.toggle('is-open', open);
+    page8FabDock.classList.toggle('is-open', open);
+    page8SyncFab();
+  };
+
+  const page8FabOnViewChange = () => {
+    setPage8Fab(false);
+    page8SyncFab();
+  };
+
+  // ---- Hızlı ekle penceresi ----
+  const PAGE8_QUICK_NEW = '__new__';
+  const page8QuickBackdrop = document.getElementById('page8QuickBackdrop');
+  const page8QuickTitle = document.getElementById('page8QuickTitle');
+  const page8QuickCatLabel = document.getElementById('page8QuickCatLabel');
+  const page8QuickTaskLabel = document.getElementById('page8QuickTaskLabel');
+  const page8QuickChips = document.getElementById('page8QuickChips');
+  const page8QuickNewName = document.getElementById('page8QuickNewName');
+  const page8QuickTask = document.getElementById('page8QuickTask');
+  const page8QuickConfirm = document.getElementById('page8QuickConfirm');
+  const page8QuickClose = document.getElementById('page8QuickClose');
+  let page8QuickKind = 'tasks';
+  let page8QuickSelected = null;
+  // Her tür için en son eklenen grubu hatırla: bir sonraki hızlı ekleme aynı
+  // kategori önseçili gelsin (arka arkaya birkaç görev eklemek kolaylaşır).
+  const page8QuickLast = { tasks: null, routines: null };
+
+  const page8QuickList = () => (page8QuickKind === 'tasks' ? page8State.categories : page8State.routineGroups);
+  const page8QuickItemsKey = () => (page8QuickKind === 'tasks' ? 'tasks' : 'routines');
+
+  const syncPage8QuickConfirm = () => {
+    page8QuickConfirm.disabled = !page8QuickTask.value.trim();
+  };
+
+  // Yazı uzadıkça kutu büyür (iPhone imleç zıplaması yüzünden bir sonraki
+  // kareye erteleniyor, bkz. startItemTextEdit'teki not).
+  let page8QuickGrowRaf = null;
+  const growPage8QuickTask = () => {
+    page8QuickTask.style.height = 'auto';
+    page8QuickTask.style.height = Math.min(page8QuickTask.scrollHeight + 2, 140) + 'px';
+  };
+
+  const selectPage8Quick = (id, silent) => {
+    page8QuickSelected = id;
+    const isNew = id === PAGE8_QUICK_NEW;
+    page8QuickChips.querySelectorAll('.page8-quick-chip').forEach((chip) => {
+      const on = chip.dataset.id === id;
+      chip.classList.toggle('is-selected', on);
+      chip.setAttribute('aria-checked', on ? 'true' : 'false');
+    });
+    page8QuickNewName.hidden = !isNew;
+    if (!silent) (isNew ? page8QuickNewName : page8QuickTask).focus();
+  };
+
+  const renderPage8QuickChips = () => {
+    const t = PAGE8_FAB_TEXT[page8QuickKind];
+    page8QuickChips.innerHTML = '';
+    const CHECK = '<svg class="page8-quick-chip-check" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12.5l5 5.5 11-13"/></svg>';
+
+    page8QuickList().forEach((group) => {
+      const chip = document.createElement('button');
+      chip.type = 'button';
+      chip.className = 'page8-quick-chip';
+      chip.dataset.id = group.id;
+      chip.setAttribute('role', 'radio');
+      chip.style.setProperty('--n', String(page8QuickChips.children.length));
+      chip.style.setProperty('--chip-color', group.color);
+      chip.style.setProperty('--chip-ink', getReadableTextColor(group.color));
+      chip.innerHTML = '<span class="page8-quick-chip-dot"></span>' + CHECK + '<span class="page8-quick-chip-name"></span>';
+      chip.querySelector('.page8-quick-chip-name').textContent = group.name;
+      chip.addEventListener('click', () => { page8Haptic(5); selectPage8Quick(group.id); });
+      page8QuickChips.appendChild(chip);
+    });
+
+    const add = document.createElement('button');
+    add.type = 'button';
+    add.className = 'page8-quick-chip page8-quick-chip-new';
+    add.dataset.id = PAGE8_QUICK_NEW;
+    add.style.setProperty('--n', String(page8QuickChips.children.length));
+    add.setAttribute('role', 'radio');
+    add.innerHTML = '<svg class="page8-quick-chip-plus" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>' + CHECK + '<span class="page8-quick-chip-name"></span>';
+    add.querySelector('.page8-quick-chip-name').textContent = t.newChip;
+    add.addEventListener('click', () => { page8Haptic(5); selectPage8Quick(PAGE8_QUICK_NEW); });
+    page8QuickChips.appendChild(add);
+  };
+
+  const closePage8Quick = () => {
+    page8QuickBackdrop.classList.remove('is-open');
+    const active = document.activeElement;
+    if (active && page8QuickBackdrop.contains(active)) active.blur();
+  };
+
+  const openPage8Quick = (kind) => {
+    page8QuickKind = kind;
+    const t = PAGE8_FAB_TEXT[kind];
+    page8QuickTitle.textContent = t.title;
+    page8QuickCatLabel.textContent = t.groupLabel;
+    page8QuickTaskLabel.textContent = t.itemLabel;
+    page8QuickNewName.placeholder = t.newPlaceholder;
+    page8QuickNewName.setAttribute('aria-label', t.newPlaceholder);
+    page8QuickTask.placeholder = t.itemPlaceholder;
+    page8QuickNewName.value = '';
+    page8QuickTask.value = '';
+    page8QuickTask.style.height = '';
+
+    renderPage8QuickChips();
+    const list = page8QuickList();
+    const last = list.find((g) => g.id === page8QuickLast[kind]);
+    // Önseçim: en son kullanılan grup, yoksa ilk grup, hiç grup yoksa "Yeni".
+    const initial = last ? last.id : (list.length ? list[0].id : PAGE8_QUICK_NEW);
+    selectPage8Quick(initial, true);
+    syncPage8QuickConfirm();
+
+    page8QuickBackdrop.classList.add('is-open');
+    // Pop-up açılış animasyonu bitmeden odaklanırsa klavye bazı tarayıcılarda
+    // geç açılabiliyor; bir sonraki kareye erteliyoruz.
+    requestAnimationFrame(() => {
+      const chosen = page8QuickChips.querySelector('.page8-quick-chip.is-selected');
+      if (chosen) chosen.scrollIntoView({ block: 'nearest' });
+      (initial === PAGE8_QUICK_NEW ? page8QuickNewName : page8QuickTask).focus();
+    });
+  };
+
+  const commitPage8Quick = () => {
+    const text = page8QuickTask.value.trim();
+    if (!text) { page8QuickTask.focus(); return; }
+
+    const kind = page8QuickKind;
+    const t = PAGE8_FAB_TEXT[kind];
+    const itemsKey = page8QuickItemsKey();
+    const list = page8QuickList();
+
+    let group;
+    if (page8QuickSelected === PAGE8_QUICK_NEW) {
+      group = {
+        id: page8GenId(),
+        name: page8QuickNewName.value.trim() || `${t.defaultName} ${list.length + 1}`,
+        color: page8NextColor(list.length),
+        [itemsKey]: []
+      };
+      list.push(group);
+    } else {
+      group = list.find((g) => g.id === page8QuickSelected);
+    }
+    if (!group) return;
+
+    group[itemsKey].push({ id: page8GenId(), text, done: false });
+    page8QuickLast[kind] = group.id;
+    savePage8State();
+    if (kind === 'tasks') renderPage8Categories(); else renderPage8RoutineGroups();
+
+    closePage8Quick();
+    showPage8Toast(t.toast(group.name));
+    // Klavye kapanıp yerleşim oturduktan sonra eklenen kartı göster.
+    window.setTimeout(() => page8FocusGroup(group, 'nearest'), 320);
+  };
+
+  page8QuickTask.addEventListener('input', () => {
+    syncPage8QuickConfirm();
+    if (page8QuickGrowRaf) cancelAnimationFrame(page8QuickGrowRaf);
+    page8QuickGrowRaf = requestAnimationFrame(growPage8QuickTask);
+  });
+  page8QuickTask.addEventListener('keydown', (e) => {
+    // Enter yeni satır ekler (uygulamanın geri kalanıyla aynı); masaüstünde
+    // Ctrl/Cmd+Enter ile hızlıca eklenebilir.
+    if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) { e.preventDefault(); commitPage8Quick(); }
+  });
+  page8QuickNewName.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') { e.preventDefault(); page8QuickTask.focus(); }
+  });
+  page8QuickConfirm.addEventListener('click', commitPage8Quick);
+  page8QuickClose.addEventListener('click', closePage8Quick);
+  page8QuickBackdrop.addEventListener('click', (e) => {
+    if (e.target === page8QuickBackdrop) closePage8Quick();
+  });
+
+  // ---- Ana buton / panel / arka perde ----
+  page8Fab.addEventListener('click', () => {
+    if (!page8FabOpen) { setPage8Fab(true); return; }
+    // Panel açıkken ana butona tekrar basmak: hızlı görev ekleme.
+    setPage8Fab(false);
+    openPage8Quick(page8FabKind());
+  });
+  page8FabScrim.addEventListener('click', () => setPage8Fab(false));
+  page8FabAddGroup.addEventListener('click', () => {
+    const kind = page8FabKind();
+    setPage8Fab(false);
+    openPage8NamePopup(kind === 'tasks' ? 'category' : 'routine');
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Escape') return;
+    if (page8QuickBackdrop.classList.contains('is-open')) closePage8Quick();
+    else if (page8FabOpen) setPage8Fab(false);
+  });
+
+  // Dokunma efektleri (ripple + hafif titreşim).
+  page8Fab.addEventListener('pointerdown', (e) => { page8Ripple(page8Fab, e); page8Haptic(8); });
+  page8FabAddGroup.addEventListener('pointerdown', (e) => { page8Ripple(page8FabAddGroup, e); page8Haptic(6); });
+
+  // Sayfadan ayrılırken (alt nav / yan panel) açık panel ve pencere kapansın.
+  new MutationObserver(() => {
+    if (!page8Section.classList.contains('is-active')) {
+      setPage8Fab(false);
+      if (page8QuickBackdrop.classList.contains('is-open')) closePage8Quick();
+    }
+  }).observe(page8Section, { attributes: true, attributeFilter: ['class'] });
+
+  page8SyncFab();
 
   // ---- Görevler / Rutinler sekme geçişi (Ayarlar'daki hafta başlangıcı
   //      segmented control'üyle birebir aynı mantık). ----
@@ -32735,6 +33754,8 @@
     page8ActiveView = value;
     setPage8GroupsPanel(false);
     renderPage8GroupsPanel();
+    // Hızlı ekle butonu da sekmeye göre (görev/rutin) metnini değiştirir.
+    page8FabOnViewChange();
   };
 
   page8SegOptions.forEach((btn) => btn.addEventListener('click', () => setPage8View(btn.dataset.value)));
