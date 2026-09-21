@@ -40,6 +40,7 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Archivo+Expanded:wght@700;800&family=Playfair+Display:ital,wght@0,400;0,700;0,800;1,400;1,700&family=Baloo+2:wght@600;700;800&display=swap" rel="stylesheet">
 <style>
   * {
@@ -2159,7 +2160,8 @@
   .home-relax-widget-lead::before {
     bottom: calc(100% - 1px);
     height: 1.1rem;
-    background: var(--hw-line);
+    /* Alttaki çubukla aynı: işaretçiye bitişik uçta dolu, uzak uçta silikleşir. */
+    background: linear-gradient(to top, var(--hw-line), transparent);
   }
 
   .home-relax-widget-lead::after {
@@ -2187,11 +2189,21 @@
     margin-left: -1.8rem;
   }
 
-  /* Widget'taki tik, işaretçi büyüdüğü için daha belirgin olsun. */
-  .home-relax-widget .relax-task-marker-check {
+  /* Widget'taki tik, işaretçi büyüdüğü için daha belirgin olsun ve halkanın
+     tam ortasında dursun. NOT: yukarıdaki ".home-relax-widget .relax-task-marker svg"
+     kuralı (0,2,1) tik SVG'sinin boyutunu 21px'e eziyor ve negatif margin'le
+     birlikte tik sol-üste kayıyordu; bu yüzden burada daha yüksek özgüllük (0,3,0)
+     kullanılıyor ve konum margin yerine transform ile (boyuttan bağımsız) ortalanıyor.
+     Tik yolunun (M5.5 12.8 … 18.5 8) sınır kutusu 24'lük çizim alanında dikeyde
+     12.5'te ortalandığından, optik olarak tam ortada görünmesi için 0.5 birim
+     (28/24 ölçeğinde ≈0.58px) yukarı alınıyor. */
+  .home-relax-widget .relax-task-marker .relax-task-marker-check {
     width: 28px;
     height: 28px;
-    margin: -14px 0 0 -14px;
+    left: 50%;
+    top: 50%;
+    margin: 0;
+    transform: translate(-50%, calc(-50% - 0.58px));
   }
 
   .home-relax-widget .relax-task-marker-letter {
@@ -13877,6 +13889,1208 @@
     color: #16171b;
   }
 
+  /* ---------- Takvim: geri sayım işaretleri ----------
+     Üzerine geri sayım kurulmuş günler, seçilen renkte dolu bir daire
+     olarak işaretlenir. Gün seçiliyken kayan daire (bubble) de o renge
+     boyanır. --cd-color / --cd-on değerleri JS ile hücreye yazılır. */
+  .calendar-day.has-countdown .calendar-day-num {
+    background-color: var(--cd-color);
+    color: var(--cd-on);
+    font-weight: 700;
+  }
+
+  .calendar-day.has-countdown.is-selected .calendar-day-num {
+    background-color: transparent;
+    color: var(--cd-on);
+  }
+
+  @media (hover: hover) {
+    .calendar-day.has-countdown:not(:disabled):not(.is-selected):hover .calendar-day-num {
+      background-color: var(--cd-color);
+    }
+  }
+
+  .calendar-select-bubble .calendar-select-bubble-dot {
+    background-color: var(--bubble-color, var(--accent-color, #ff90e8));
+  }
+
+  /* ---------- Gün Geri Sayımı (tam ekran sayfa) ----------
+     Takvimde seçili güne bir kez daha dokunulunca açılır. Sade bir dil:
+     tek yazı tipi (Baloo 2), ince ağırlıklı dev rakamlar, kılcal çizgiler
+     ve yalnızca küçük vurgularda kullanılan tek bir renk (--cd-color).
+     Üç hali var:
+     • Kurulum formu: ad, isteğe bağlı saat, renk.
+     • Sayaç görünümü (.is-view): gün sayısı "rulo" hanelerle iki çizgi
+       arasındaki pencerede döner; alttaki çizgi geçen süreyi gösterir;
+       altında saat / dakika / saniye.
+     • Sayaçlarım listesi (.is-list). */
+  #page-day-cd {
+    --cd-color: #ff90e8;
+    --cd-on: #16171b;
+    --cd-soft: rgba(255, 144, 232, 0.22);
+    --cd-hair: rgba(127, 127, 127, 0.28);
+    --cd-mist: rgba(127, 127, 127, 0.12);
+    --cd-ease: cubic-bezier(0.16, 1, 0.3, 1);
+    --cd-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+    --cd-font: "Baloo 2", "Space Grotesk", sans-serif;
+    --cd-shift: 0em;   /* JS: rakamları rulo kutusunda dikey ortalar (yazı tipi ölçüsüne göre) */
+    --cd-base: 0.215;  /* JS: rakam taban çizgisinin kutu altından uzaklığı (em) */
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
+    gap: 1.2rem;
+    padding: calc(20px + env(safe-area-inset-top)) 22px calc(18px + env(safe-area-inset-bottom));
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    font-family: var(--cd-font);
+    line-height: 1.3;
+    color: var(--theme-text, #f2f2f7);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* --- Üst çubuk: hayalet butonlar, sessiz başlık --- */
+  #page-day-cd .calendar-topbar {
+    max-width: none;
+    justify-content: space-between;
+  }
+
+  #page-day-cd .calendar-topbar-title {
+    font-family: var(--cd-font);
+    font-weight: 800;
+    font-size: 1.1rem;
+    opacity: 0.85;
+  }
+
+  #page-day-cd .calendar-back-btn {
+    background-color: transparent;
+    border: none;
+    box-shadow: none;
+    color: inherit;
+    transition: color 0.3s ease, background-color 0.15s ease, transform 0.15s ease;
+  }
+
+  #dayCdBackBtn { margin-left: -10px; }
+  #dayCdListBtn { margin-right: -10px; }
+  #page-day-cd .calendar-topbar-spacer { margin-right: -10px; }
+
+  #page-day-cd .calendar-back-btn:hover {
+    transform: none;
+    box-shadow: none;
+  }
+
+  @media (hover: hover) {
+    #page-day-cd .calendar-back-btn:hover {
+      background-color: var(--cd-mist);
+    }
+  }
+
+  #page-day-cd .calendar-back-btn:active,
+  #page-day-cd .calendar-back-btn.is-pressed {
+    transform: scale(0.92);
+    box-shadow: none;
+    background-color: rgba(127, 127, 127, 0.22);
+  }
+
+  #page-day-cd button,
+  #page-day-cd input,
+  #page-day-cd label { font-family: var(--cd-font); }
+
+  #page-day-cd button:focus-visible {
+    outline: 2px solid var(--cd-color);
+    outline-offset: 3px;
+  }
+
+  #page-day-cd:not(.is-view) #dayCdListBtn { display: none; }
+  #page-day-cd.is-view #dayCdSpacer { display: none; }
+
+  /* Ekran okuyucular için görünmez metin */
+  .cd-sr {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  /* Hallerin görünürlüğü */
+  #page-day-cd .cd-view,
+  #page-day-cd .cd-list { display: none; }
+  #page-day-cd.is-view .cd-view { display: flex; }
+  #page-day-cd.is-list .cd-list { display: flex; }
+  #page-day-cd.is-view .cd-form,
+  #page-day-cd.is-list .cd-form { display: none; }
+
+  @keyframes cdFade { from { opacity: 0; } }
+  @keyframes cdRise { from { opacity: 0; transform: translateY(8px); } }
+
+  /* ==================== Kurulum formu ==================== */
+  .cd-form {
+    width: 100%;
+    max-width: 440px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 2.1rem;
+    padding-top: 0.8rem;
+    animation: cdFade 0.5s ease backwards;
+  }
+
+  .cd-form-head {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .cd-form-dot {
+    flex-shrink: 0;
+    width: 0.7rem;
+    height: 0.7rem;
+    border-radius: 50%;
+    background: var(--cd-color);
+    box-shadow: 0 0 0 0.32rem var(--cd-soft);
+    transition: background-color 0.35s ease, box-shadow 0.35s ease;
+  }
+
+  .cd-form-date-main {
+    display: block;
+    font-weight: 800;
+    font-size: 2rem;
+    line-height: 1.1;
+  }
+
+  .cd-form-date-sub {
+    display: block;
+    margin-top: 0.3rem;
+    font-weight: 600;
+    font-size: 0.9rem;
+    opacity: 0.55;
+  }
+
+  .cd-field { position: relative; }
+
+  .cd-field-label {
+    display: block;
+    margin-bottom: 0.3rem;
+    font-weight: 700;
+    font-size: 0.82rem;
+    letter-spacing: 0.01em;
+    opacity: 0.55;
+  }
+
+  .cd-field-label small {
+    margin-left: 0.4rem;
+    font-weight: 500;
+    font-size: 0.78rem;
+    opacity: 0.8;
+  }
+
+  /* Çizgi biçimli girdi: odaklanınca vurgu rengi soldan sağa dolar. */
+  .cd-input-wrap { position: relative; }
+
+  .cd-input {
+    display: block;
+    width: 100%;
+    min-height: 3rem;
+    padding: 0.45rem 0 0.6rem;
+    border: none;
+    border-bottom: 1px solid var(--cd-hair);
+    border-radius: 0;
+    background: transparent;
+    color: inherit;
+    font-family: var(--cd-font);
+    font-weight: 700;
+    font-size: 1.4rem;
+    text-align: left;
+    -webkit-appearance: none;
+    appearance: none;
+    -webkit-user-select: text;
+    user-select: text;
+  }
+
+  .cd-input::placeholder {
+    color: inherit;
+    opacity: 0.28;
+  }
+
+  .cd-field-line {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 2px;
+    background: var(--cd-color);
+    transform: scaleX(0);
+    transform-origin: left center;
+    transition: transform 0.5s var(--cd-ease), background-color 0.35s ease;
+    pointer-events: none;
+  }
+
+  .cd-input:focus ~ .cd-field-line { transform: scaleX(1); }
+
+  /* Saat alanı: iOS/Android yerel saat kutusunun içindeki metin sayfanın yazı
+     tipini yok sayabildiği için değer burada Baloo 2 ile çizilir; yerel alan
+     görünmez bir katman olarak üstte durup dokunmayı yakalar (seçici açılır). */
+  .cd-time-field {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 3rem;
+    padding: 0.45rem 0 0.6rem;
+    border-bottom: 1px solid var(--cd-hair);
+  }
+
+  .cd-time-text {
+    font-family: var(--cd-font);
+    font-weight: 700;
+    font-size: 1.4rem;
+    line-height: 1.3;
+  }
+
+  .cd-time-ic {
+    width: 1.35rem;
+    height: 1.35rem;
+    opacity: 0.55;
+  }
+
+  .cd-time-field .cd-input.cd-time-input {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    margin: 0;
+    padding: 0;
+    border: none;
+    opacity: 0;
+    cursor: pointer;
+  }
+
+  .cd-input.is-shaking { animation: cdShake 0.4s ease; }
+
+  @keyframes cdShake {
+    0%, 100% { transform: translateX(0); }
+    20% { transform: translateX(-6px); }
+    40% { transform: translateX(6px); }
+    60% { transform: translateX(-4px); }
+    80% { transform: translateX(4px); }
+  }
+
+  .cd-switch-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .cd-switch-row .cd-field-label { margin-bottom: 0; }
+
+  .cd-switch {
+    position: relative;
+    flex-shrink: 0;
+    width: 2.9rem;
+    height: 1.7rem;
+    padding: 0;
+    border: none;
+    border-radius: 999px;
+    background: rgba(127, 127, 127, 0.3);
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+
+  .cd-switch-knob {
+    position: absolute;
+    top: 0.2rem;
+    left: 0.2rem;
+    width: 1.3rem;
+    height: 1.3rem;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+    transition: transform 0.4s var(--cd-spring);
+  }
+
+  .cd-switch[aria-checked="true"] { background: var(--cd-color); }
+  .cd-switch[aria-checked="true"] .cd-switch-knob { transform: translateX(1.2rem); }
+
+  .cd-time-wrap {
+    display: grid;
+    grid-template-rows: 0fr;
+    margin-top: 0;
+    transition: grid-template-rows 0.4s var(--cd-ease), margin-top 0.4s var(--cd-ease);
+  }
+
+  .cd-time-wrap.is-open {
+    grid-template-rows: 1fr;
+    margin-top: 0.6rem;
+  }
+
+  .cd-time-inner {
+    min-height: 0;
+    overflow: hidden;
+    padding: 3px;
+    margin: -3px;
+  }
+
+  .cd-time-wrap:not(.is-open) .cd-time-inner { visibility: hidden; }
+
+  .cd-colors {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    justify-items: center;
+    gap: 1.1rem 0.4rem;
+    padding: 8px;
+    margin: -8px;
+    margin-top: 0.4rem;
+  }
+
+  .cd-swatch {
+    position: relative;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.2rem;
+    height: 2.2rem;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    background: var(--sw, #ff90e8);
+    color: var(--sw-on, #16171b);
+    cursor: pointer;
+    transition: transform 0.3s var(--cd-spring);
+  }
+
+  .cd-swatch:active { transform: scale(0.9); }
+
+  .cd-swatch svg {
+    width: 1rem;
+    height: 1rem;
+    opacity: 0;
+    transform: scale(0.4);
+    transition: opacity 0.2s ease, transform 0.3s var(--cd-spring);
+  }
+
+  .cd-swatch.is-selected {
+    outline: 1.5px solid var(--theme-text, #f2f2f7);
+    outline-offset: 3px;
+    animation: cdSwatchPop 0.45s var(--cd-spring);
+  }
+
+  .cd-swatch.is-selected svg {
+    opacity: 1;
+    transform: none;
+  }
+
+  @keyframes cdSwatchPop {
+    from { transform: scale(0.8); }
+  }
+
+  .cd-swatch-custom:not(.has-value) {
+    background: conic-gradient(#ff5f6d, #ffc371, #f9f871, #2ed573, #48dbfb, #6c5ce7, #ff5f6d);
+    color: #fff;
+  }
+
+  .cd-swatch-custom input {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    border: none;
+    opacity: 0;
+    cursor: pointer;
+  }
+
+  .cd-form-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.4rem;
+    margin-top: 0.2rem;
+  }
+
+  .cd-primary-btn {
+    width: 100%;
+    min-height: 3.4rem;
+    padding: 0.9rem 1.2rem;
+    border: none;
+    border-radius: 999px;
+    background: var(--cd-color);
+    color: var(--cd-on);
+    font-family: var(--cd-font);
+    font-weight: 800;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: background-color 0.35s ease, color 0.35s ease, transform 0.2s var(--cd-ease);
+  }
+
+  .cd-primary-btn:active { transform: scale(0.98); }
+
+  .cd-text-danger {
+    align-self: center;
+    padding: 0.7rem 1rem;
+    border: none;
+    background: none;
+    color: #ff3b30;
+    font-family: var(--cd-font);
+    font-weight: 700;
+    font-size: 1rem;
+    cursor: pointer;
+  }
+
+  .cd-text-danger[hidden] { display: none; }
+
+  /* ==================== Sayaç görünümü ==================== */
+  .cd-view {
+    flex: 1;
+    min-height: 0;
+    width: 100%;
+    max-width: 520px;
+    margin: 0 auto;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: center;
+    gap: clamp(1.6rem, 4.6vh, 2.8rem);
+    padding-bottom: 1rem;
+    text-align: center;
+    animation: cdFade 0.5s ease backwards;
+  }
+
+  .cd-title-block {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.45rem;
+  }
+
+  .cd-name {
+    font-weight: 700;
+    font-size: clamp(1.45rem, 6.2vw, 1.9rem);
+    line-height: 1.15;
+    overflow-wrap: anywhere;
+    text-wrap: balance;
+  }
+
+  .cd-date {
+    font-weight: 500;
+    font-size: 0.9rem;
+    opacity: 0.55;
+  }
+
+  /* Pencere: üstte kılcal çizgi, altta geçen süreyi gösteren çizgi.
+     Rakamlar bu iki çizginin arasında döner. */
+  .cd-window {
+    --cd-hero: clamp(5.4rem, 30vw, 8.6rem);
+    border-top: 1px solid var(--cd-hair);
+  }
+
+  .cd-window[data-len="4"] { --cd-hero: clamp(4.4rem, 23vw, 6.8rem); }
+  .cd-window[data-len="5"],
+  .cd-window[data-len="6"] { --cd-hero: clamp(3.4rem, 18vw, 5.4rem); }
+
+  .cd-stage {
+    position: relative;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 0.6rem;
+    font-size: var(--cd-hero);
+    font-weight: 400;
+    line-height: 1.25;
+    cursor: default;
+  }
+
+  .cd-days {
+    display: inline-flex;
+    font-variant-numeric: tabular-nums lining-nums;
+  }
+
+  .cd-days .cd-reel { margin-inline: -0.02em; }
+
+  .cd-days-unit {
+    margin-bottom: calc(var(--cd-hero) * var(--cd-base, 0.215) - 0.2em);
+    font-weight: 500;
+    font-size: 1.05rem;
+    line-height: 1;
+    letter-spacing: 0.01em;
+    opacity: 0.5;
+  }
+
+  /* --- Rulo (odometer) hane ---
+     Her hane, 0-9'un dört kez tekrarlandığı dikey bir şerittir; değer
+     değişince şerit kayar. Üst/alt kenarlar maske ile solar, rakam
+     çizgilerin içine doğru kaybolur. Boyutlar em cinsindendir: yazı boyu
+     (--cd-hero ya da saat boyu) değişince rulo da birlikte ölçeklenir. */
+  .cd-reel {
+    position: relative;
+    display: inline-block;
+    flex: none;
+    width: 0.64em;
+    height: 1.25em;
+    overflow: hidden;
+    letter-spacing: 0;
+    -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 17%, #000 83%, transparent 100%);
+    mask-image: linear-gradient(to bottom, transparent 0, #000 17%, #000 83%, transparent 100%);
+  }
+
+  .cd-reel-strip {
+    position: relative;
+    top: var(--cd-shift, 0em);
+    display: block;
+    transition: transform 0.7s var(--cd-ease);
+  }
+
+  .cd-reel-strip > i {
+    display: block;
+    height: 1.25em;
+    font-style: normal;
+    line-height: 1.25em;
+    text-align: center;
+  }
+
+  /* Geçen süre çizgisi: uçtaki nokta o anki konumu gösterir. */
+  .cd-timeline {
+    position: relative;
+    height: 1px;
+    background: var(--cd-hair);
+  }
+
+  .cd-timeline-fill {
+    position: absolute;
+    left: 0;
+    top: -0.5px;
+    width: 0;
+    height: 2px;
+    border-radius: 2px;
+    background: var(--cd-color);
+    transition: width 1.8s var(--cd-ease), background-color 0.4s ease;
+  }
+
+  .cd-timeline-fill::after {
+    content: "";
+    position: absolute;
+    right: 0;
+    top: 50%;
+    width: 0.55rem;
+    height: 0.55rem;
+    border-radius: 50%;
+    background: var(--cd-color);
+    box-shadow: 0 0 0 0.3rem var(--cd-soft);
+    transform: translate(50%, -50%);
+    animation: cdHalo 3.4s ease-in-out infinite;
+    transition: background-color 0.4s ease;
+  }
+
+  @keyframes cdHalo {
+    0%, 100% { box-shadow: 0 0 0 0.24rem var(--cd-soft); }
+    50% { box-shadow: 0 0 0 0.42rem transparent; }
+  }
+
+  .cd-timeline-caps {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-top: 0.85rem;
+    font-weight: 500;
+    font-size: 0.74rem;
+    letter-spacing: 0.01em;
+    opacity: 0.5;
+  }
+
+  /* Süre dolunca sayının çevresinde yayılan ince halkalar */
+  .cd-ripple {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 0;
+    height: 0;
+    pointer-events: none;
+  }
+
+  .cd-ripple i {
+    position: absolute;
+    left: -6rem;
+    top: -6rem;
+    width: 12rem;
+    height: 12rem;
+    border: 1px solid var(--cd-color);
+    border-radius: 50%;
+    opacity: 0;
+  }
+
+  .cd-ripple.is-on i {
+    animation: cdRipple 2.6s var(--cd-ease) both;
+  }
+
+  .cd-ripple.is-on i:nth-child(2) { animation-delay: 0.26s; }
+  .cd-ripple.is-on i:nth-child(3) { animation-delay: 0.52s; }
+
+  @keyframes cdRipple {
+    0% { opacity: 0.7; transform: scale(0.25); }
+    100% { opacity: 0; transform: scale(2.6); }
+  }
+
+  /* Saat : dakika : saniye */
+  .cd-clock {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 0.4rem;
+    font-size: clamp(2.1rem, 9.4vw, 2.7rem);
+    font-weight: 500;
+    line-height: 1.25;
+  }
+
+  .cd-clock-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.1rem;
+  }
+
+  .cd-clock-num {
+    display: inline-flex;
+    font-variant-numeric: tabular-nums lining-nums;
+  }
+
+  .cd-clock-num .cd-reel { margin-inline: -0.03em; }
+
+  .cd-clock-label {
+    font-weight: 500;
+    font-size: 0.72rem;
+    line-height: 1;
+    letter-spacing: 0.03em;
+    opacity: 0.5;
+  }
+
+  .cd-colon {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.26em;
+    width: 0.3em;
+    height: 1.25em;
+    opacity: 0.32;
+  }
+
+  .cd-colon i {
+    width: 0.085em;
+    height: 0.085em;
+    border-radius: 50%;
+    background: currentColor;
+  }
+
+  .cd-status {
+    align-self: center;
+    padding: 0.4rem 1rem;
+    border-radius: 999px;
+    background: var(--cd-color);
+    color: var(--cd-on);
+    font-weight: 700;
+    font-size: 0.85rem;
+    animation: cdStatusIn 0.6s var(--cd-spring) backwards;
+  }
+
+  .cd-status:empty { display: none; }
+
+  @keyframes cdStatusIn {
+    from { opacity: 0; transform: scale(0.7); }
+  }
+
+  .cd-edit-btn {
+    align-self: center;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.65rem 1.1rem;
+    border: none;
+    border-radius: 999px;
+    background: transparent;
+    color: inherit;
+    font-family: var(--cd-font);
+    font-weight: 600;
+    font-size: 0.9rem;
+    opacity: 0.6;
+    cursor: pointer;
+    transition: opacity 0.2s ease, background-color 0.2s ease, transform 0.2s var(--cd-ease);
+  }
+
+  .cd-edit-btn svg { width: 1.05rem; height: 1.05rem; }
+
+  @media (hover: hover) {
+    .cd-edit-btn:hover {
+      opacity: 1;
+      background-color: var(--cd-mist);
+    }
+  }
+
+  .cd-edit-btn:active {
+    opacity: 1;
+    background-color: var(--cd-mist);
+    transform: scale(0.96);
+  }
+
+  @media (min-width: 700px) {
+    .cd-view { max-width: 600px; }
+    .cd-window { --cd-hero: 10rem; }
+    .cd-window[data-len="4"] { --cd-hero: 8rem; }
+    .cd-window[data-len="5"],
+    .cd-window[data-len="6"] { --cd-hero: 6.2rem; }
+    .cd-clock { font-size: 3rem; }
+  }
+
+  @media (max-height: 700px) {
+    .cd-view { gap: 1.4rem; }
+  }
+
+  @media (orientation: landscape) and (max-height: 520px) {
+    .cd-view { gap: 1rem; padding-bottom: 0.4rem; }
+    .cd-window { --cd-hero: min(6rem, 22vh); }
+    .cd-window[data-len="4"] { --cd-hero: min(5rem, 19vh); }
+    .cd-clock { font-size: 1.9rem; }
+  }
+
+  /* ==================== Sayaçlarım listesi ==================== */
+  .cd-list {
+    width: 100%;
+    max-width: 520px;
+    margin: 0 auto;
+    flex-direction: column;
+    padding-top: 0.4rem;
+  }
+
+  .cd-list-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    width: 100%;
+    padding: 1.05rem 0.1rem;
+    border: none;
+    border-bottom: 1px solid var(--cd-hair);
+    border-radius: 0;
+    background: none;
+    color: inherit;
+    font-family: var(--cd-font);
+    text-align: left;
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+    animation: cdRise 0.55s var(--cd-ease) calc(60ms + var(--i, 0) * 50ms) backwards;
+  }
+
+  .cd-list-item:last-child { border-bottom: none; }
+  .cd-list-item:active { opacity: 0.55; }
+
+  .cd-list-dot {
+    flex-shrink: 0;
+    width: 0.6rem;
+    height: 0.6rem;
+    border-radius: 50%;
+    background: var(--mk);
+  }
+
+  .cd-list-body {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .cd-list-name {
+    font-weight: 600;
+    font-size: 1.05rem;
+    letter-spacing: -0.005em;
+    overflow-wrap: anywhere;
+  }
+
+  .cd-list-date {
+    font-weight: 500;
+    font-size: 0.82rem;
+    opacity: 0.5;
+  }
+
+  .cd-list-count {
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.05rem;
+  }
+
+  .cd-list-num {
+    display: inline-flex;
+    font-size: 1.9rem;
+    font-weight: 600;
+    line-height: 1.25;
+    font-variant-numeric: tabular-nums lining-nums;
+  }
+
+  .cd-list-num .cd-reel { margin-inline: -0.02em; }
+
+  .cd-list-unit {
+    font-weight: 500;
+    font-size: 0.72rem;
+    line-height: 1;
+    letter-spacing: 0.02em;
+    opacity: 0.5;
+  }
+
+  .cd-list-done {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.3rem;
+    color: var(--mk);
+  }
+
+  .cd-list-done svg { width: 1.5rem; height: 1.5rem; }
+  .cd-list-done .cd-list-unit { color: var(--theme-text, #f2f2f7); }
+
+  .cd-list-empty {
+    padding: 22vh 1rem 0;
+    text-align: center;
+    font-weight: 500;
+    font-size: 0.92rem;
+    line-height: 1.5;
+    opacity: 0.55;
+  }
+
+  .cd-list-empty strong {
+    display: block;
+    margin-bottom: 0.3rem;
+    font-weight: 600;
+    font-size: 1.15rem;
+  }
+
+  /* ==================== Silme onayı ==================== */
+  .cd-confirm {
+    position: fixed;
+    inset: 0;
+    z-index: 80; /* Sayaçlarım panelinin (70) üstünde */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: rgba(0, 0, 0, 0.4);
+    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(6px);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+    font-family: "Baloo 2", "Space Grotesk", sans-serif;
+    line-height: 1.3;
+  }
+
+  .cd-confirm.is-open {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .cd-confirm-card {
+    width: 100%;
+    max-width: 300px;
+    padding: 1.6rem 1.4rem 0;
+    overflow: hidden;
+    border-radius: 1.4rem;
+    background: #fff;
+    color: #16171b;
+    text-align: center;
+    transform: translateY(10px) scale(0.97);
+    transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .cd-confirm.is-open .cd-confirm-card { transform: none; }
+
+  body.is-anthracite .cd-confirm-card {
+    background: var(--dark-card-color, #2c2e33);
+    color: #f2f2f4;
+  }
+
+  .cd-confirm-title { font-weight: 700; font-size: 1.1rem; }
+
+  .cd-confirm-text {
+    margin-top: 0.3rem;
+    font-weight: 500;
+    font-size: 0.9rem;
+    opacity: 0.55;
+  }
+
+  .cd-confirm-actions {
+    display: flex;
+    margin: 1.4rem -1.4rem 0;
+    border-top: 1px solid rgba(127, 127, 127, 0.25);
+  }
+
+  .cd-confirm-actions button {
+    flex: 1;
+    padding: 1rem 0.5rem;
+    border: none;
+    border-radius: 0;
+    background: transparent;
+    color: inherit;
+    font-family: inherit;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+  }
+
+  .cd-confirm-actions button + button { border-left: 1px solid rgba(127, 127, 127, 0.25); }
+  .cd-confirm-actions button:active { background-color: rgba(127, 127, 127, 0.14); }
+  .cd-confirm-actions .is-danger { color: #ff3b30; font-weight: 700; }
+
+  @media (prefers-reduced-motion: reduce) {
+    #page-day-cd *,
+    #page-day-cd *::before,
+    #page-day-cd *::after {
+      animation: none !important;
+      transition-duration: 0.01s !important;
+    }
+  }
+
+  /* ==================== Takvim: "Sayaçlarım" butonu ====================
+     Üst çubuğun sağ boşluğunda duran küçük hayalet buton. Takvimin diğer
+     üst çubuk butonlarıyla (#page-6 .calendar-back-btn) aynı görünür. */
+  #page-6 .calendar-back-btn.cal-cd-btn {
+    margin-left: 0;
+    margin-right: -10px;
+  }
+
+  #page-6 .calendar-back-btn.cal-cd-btn svg { overflow: visible; }
+
+  /* ==================== Sayaçlarım paneli (alttan açılan) ====================
+     Planlayıcı'nın eylem sayfasıyla aynı kabuğu (.task-sheet-backdrop /
+     .task-sheet) kullanır; yalnızca içeriği farklıdır. */
+  .cd-sheet { --ts-task: var(--accent-color, #ff90e8); }
+
+  .cd-sheet-head {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+    padding: 0.1rem 0.4rem 0.8rem;
+  }
+
+  .cd-sheet-title {
+    font-weight: 800;
+    font-size: 1.4rem;
+    line-height: 1.2;
+  }
+
+  .cd-sheet-sub {
+    font-weight: 600;
+    font-size: 0.86rem;
+    line-height: 1.3;
+    color: var(--ts-muted);
+  }
+
+  .cd-sheet-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    max-height: min(52vh, 26rem);
+    margin: 0 -0.4rem;
+    padding: 0 0.4rem 0.2rem;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    touch-action: pan-y;
+  }
+
+  .cd-sheet-item {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    width: 100%;
+    padding: 0.55rem 0.5rem;
+    border-radius: 1.4rem;
+    transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.3s ease;
+  }
+
+  .cd-sheet-item:active { transform: scale(0.98); }
+
+  /* Satıra dokunulan alan (işaretçi + ad + tarih) */
+  .cd-sheet-main {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.95rem;
+    padding: 0;
+    border: none;
+    background: none;
+    color: inherit;
+    font-family: inherit;
+    text-align: left;
+    cursor: pointer;
+  }
+
+  .cd-sheet-main:focus-visible {
+    outline: 2px solid var(--mk);
+    outline-offset: 4px;
+    border-radius: 1rem;
+  }
+
+  /* En sağ alan: normalde çentik (>), basılı tutulunca yerini "Sil" alır. */
+  .cd-sheet-end {
+    position: relative;
+    flex: none;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    width: 1rem;
+    height: 2.2rem;
+    transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .cd-sheet-chev {
+    transition: opacity 0.2s ease, transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .cd-sheet-del {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    padding: 0.42rem 0.95rem;
+    border: none;
+    border-radius: 999px;
+    background: var(--ts-danger);
+    color: #fff;
+    font-family: inherit;
+    font-weight: 800;
+    font-size: 0.92rem;
+    line-height: 1.2;
+    cursor: pointer;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(-50%) scale(0.7);
+    transform-origin: right center;
+    transition: opacity 0.2s ease, transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .cd-sheet-del:active { transform: translateY(-50%) scale(0.93); }
+
+  .cd-sheet-del:focus-visible {
+    outline: 2px solid var(--ts-danger);
+    outline-offset: 2px;
+  }
+
+  .cd-sheet-item.is-delete {
+    background-color: color-mix(in srgb, var(--ts-danger) 9%, transparent);
+  }
+
+  .cd-sheet-item.is-delete .cd-sheet-end { width: 3.6rem; }
+
+  .cd-sheet-item.is-delete .cd-sheet-chev {
+    opacity: 0;
+    transform: translateX(10px);
+  }
+
+  .cd-sheet-item.is-delete .cd-sheet-del {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(-50%) scale(1);
+  }
+
+  /* Silinen satır yumuşakça kapanır. */
+  .cd-sheet-item.is-removing {
+    height: 0 !important;
+    margin-bottom: -0.15rem;
+    padding-top: 0;
+    padding-bottom: 0;
+    overflow: hidden;
+    opacity: 0;
+    pointer-events: none;
+    transition: height 0.35s cubic-bezier(0.16, 1, 0.3, 1), padding 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+      margin 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.22s ease;
+  }
+
+  .task-sheet-backdrop.is-open .cd-sheet-item {
+    animation: cdRise 0.5s cubic-bezier(0.16, 1, 0.3, 1) calc(120ms + var(--i, 0) * 45ms) backwards;
+  }
+
+  .cd-sheet-marker {
+    flex: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 3.2rem;
+    height: 3.2rem;
+    border-radius: 50%;
+    background: var(--mk);
+    color: var(--mk-on);
+    box-shadow: 0 10px 18px -12px var(--mk);
+  }
+
+  .cd-sheet-marker b {
+    font-weight: 800;
+    font-size: 1.1rem;
+    line-height: 1;
+  }
+
+  .cd-sheet-marker i {
+    margin-top: 0.05rem;
+    font-style: normal;
+    font-weight: 700;
+    font-size: 0.62rem;
+    line-height: 1;
+    opacity: 0.8;
+  }
+
+  .cd-sheet-marker svg { width: 1.3rem; height: 1.3rem; }
+
+  .cd-sheet-body {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.05rem;
+  }
+
+  .cd-sheet-name {
+    font-weight: 700;
+    font-size: 1.12rem;
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+  }
+
+  .cd-sheet-date {
+    font-weight: 600;
+    font-size: 0.86rem;
+    line-height: 1.3;
+    color: var(--ts-muted);
+  }
+
+  .cd-sheet-chev {
+    flex: none;
+    width: 1rem;
+    height: 1rem;
+    color: var(--ts-muted);
+  }
+
+  .cd-sheet-empty {
+    padding: 1.6rem 0.6rem 1.2rem;
+    text-align: center;
+    font-weight: 600;
+    font-size: 0.95rem;
+    line-height: 1.45;
+    color: var(--ts-muted);
+  }
+
+  .cd-sheet-empty strong {
+    display: block;
+    margin-bottom: 0.2rem;
+    font-weight: 800;
+    font-size: 1.2rem;
+    color: var(--ts-text);
+  }
+
   /* Hareketi azalt: animasyonlar kapanır, geçişler anlık olur. */
   @media (prefers-reduced-motion: reduce) {
     #page-6 *,
@@ -15899,6 +17113,7 @@
     body.is-sidebar-collapsed #page-patterns,
     body.is-sidebar-collapsed #page-camera-test,
     body.is-sidebar-collapsed #page-6,
+    body.is-sidebar-collapsed #page-day-cd,
     body.is-sidebar-collapsed #page-7,
     body.is-sidebar-collapsed #page-10 {
       padding-left: 64px;
@@ -19335,7 +20550,9 @@
         </svg>
       </button>
       <span class="calendar-topbar-title">Takvim</span>
-      <div class="calendar-topbar-spacer"></div>
+      <button type="button" class="calendar-back-btn cal-cd-btn" id="calendarCdBtn" aria-label="Sayaçlarım" title="Sayaçlarım">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13.5" r="7.5"/><path d="M12 9.5v4l2.5 1.5"/><path d="M9.5 3h5"/></svg>
+      </button>
     </div>
 
     <!-- Planlayıcı'nın dilinde: "Eylül 2026" başlığı (yıl vurgu renginde),
@@ -19384,6 +20601,153 @@
       </div>
     </div>
   </section>
+
+  <!-- Takvim: Gün Geri Sayımı. Takvimde seçili güne bir kez daha
+       dokunulunca açılan tam ekran sayfa. Üç hali var:
+       • Kurulum formu (.cd-form): ad, isteğe bağlı saat, renk.
+       • Sayaç görünümü (.is-view): gün sayısı "rulo" (odometer) hanelerle,
+         altında geçen süreyi gösteren ince çizgi, ardından saat/dakika/saniye.
+       • Sayaçlarım listesi (.is-list). -->
+  <section class="page" id="page-day-cd" aria-label="Geri sayım">
+    <div class="calendar-topbar">
+      <button type="button" class="calendar-back-btn" id="dayCdBackBtn" aria-label="Geri dön">
+        <svg viewBox="0 0 24 24" width="20" height="20">
+          <path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+      <span class="calendar-topbar-title" id="dayCdTitle">Geri sayım kur</span>
+      <div class="calendar-topbar-spacer" id="dayCdSpacer"></div>
+      <button type="button" class="calendar-back-btn" id="dayCdListBtn" aria-label="Sayaçlarım">
+        <svg viewBox="0 0 24 24" width="20" height="20"><path d="M8.5 6.5H20 M8.5 12H20 M8.5 17.5H20 M4 6.5h.01 M4 12h.01 M4 17.5h.01" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+
+    <!-- Kurulum formu -->
+    <div class="cd-form" id="dayCdForm">
+      <div class="cd-form-head">
+        <span class="cd-form-dot" aria-hidden="true"></span>
+        <div>
+          <span class="cd-form-date-main" id="dayCdFormDate"></span>
+          <span class="cd-form-date-sub" id="dayCdFormWeekday"></span>
+        </div>
+      </div>
+
+      <div class="cd-field">
+        <label class="cd-field-label" for="dayCdNameInput">Sayaç adı</label>
+        <div class="cd-input-wrap">
+          <input class="cd-input" id="dayCdNameInput" type="text" maxlength="40" placeholder="Örn. Sınav günü" autocomplete="off" autocapitalize="sentences" enterkeyhint="done">
+          <span class="cd-field-line" aria-hidden="true"></span>
+        </div>
+      </div>
+
+      <div class="cd-field">
+        <div class="cd-switch-row">
+          <span class="cd-field-label" id="dayCdTimeLabel">Saat ekle<small>isteğe bağlı</small></span>
+          <button type="button" class="cd-switch" id="dayCdTimeSwitch" role="switch" aria-checked="false" aria-labelledby="dayCdTimeLabel">
+            <span class="cd-switch-knob"></span>
+          </button>
+        </div>
+        <div class="cd-time-wrap" id="dayCdTimeWrap">
+          <div class="cd-time-inner">
+            <div class="cd-input-wrap cd-time-field">
+              <span class="cd-time-text" id="dayCdTimeText" aria-hidden="true">09:00</span>
+              <svg class="cd-time-ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 7.5V12l3 2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <input class="cd-input cd-time-input" id="dayCdTimeInput" type="time" value="09:00" aria-label="Saat">
+              <span class="cd-field-line" aria-hidden="true"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="cd-field">
+        <span class="cd-field-label">Renk</span>
+        <div class="cd-colors" id="dayCdColors"></div>
+      </div>
+
+      <div class="cd-form-actions">
+        <button type="button" class="cd-primary-btn" id="dayCdSaveBtn">Sayacı kur</button>
+        <button type="button" class="cd-text-danger" id="dayCdDeleteBtn" hidden>Sayacı sil</button>
+      </div>
+    </div>
+
+    <!-- Sayaç görünümü: dev gün sayısı iki ince çizgi arasındaki "pencerede"
+         rulo gibi döner; alttaki çizgi aynı zamanda geçen süreyi gösterir. -->
+    <div class="cd-view" id="dayCdView">
+      <div class="cd-title-block">
+        <h2 class="cd-name" id="dayCdName"></h2>
+        <p class="cd-date" id="dayCdDate"></p>
+      </div>
+
+      <div class="cd-window" id="dayCdWindow" data-len="3">
+        <div class="cd-stage" id="dayCdStage">
+          <span class="cd-days" id="dayCdNumD" aria-hidden="true"></span>
+          <span class="cd-days-unit" aria-hidden="true">gün</span>
+          <span class="cd-ripple" id="dayCdRipple" aria-hidden="true"><i></i><i></i><i></i></span>
+        </div>
+        <div class="cd-timeline" id="dayCdTimeline" role="progressbar" aria-label="Geçen süre" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+          <span class="cd-timeline-fill" id="dayCdFill"></span>
+        </div>
+        <div class="cd-timeline-caps" aria-hidden="true">
+          <span id="dayCdCapStart"></span>
+          <span id="dayCdCapEnd"></span>
+        </div>
+      </div>
+
+      <div class="cd-clock" aria-hidden="true">
+        <div class="cd-clock-group">
+          <span class="cd-clock-num" id="dayCdNumH"></span>
+          <span class="cd-clock-label">saat</span>
+        </div>
+        <span class="cd-colon"><i></i><i></i></span>
+        <div class="cd-clock-group">
+          <span class="cd-clock-num" id="dayCdNumM"></span>
+          <span class="cd-clock-label">dakika</span>
+        </div>
+        <span class="cd-colon"><i></i><i></i></span>
+        <div class="cd-clock-group">
+          <span class="cd-clock-num" id="dayCdNumS"></span>
+          <span class="cd-clock-label">saniye</span>
+        </div>
+      </div>
+
+      <span class="cd-sr" id="dayCdSr"></span>
+      <div class="cd-status" id="dayCdStatus"></div>
+
+      <button type="button" class="cd-edit-btn" id="dayCdEditBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9a2.1 2.1 0 0 0-4-4L4 16v4z M13.5 6.5l4 4"/></svg>
+        <span>Düzenle</span>
+      </button>
+    </div>
+
+    <div class="cd-list" id="dayCdList"></div>
+  </section>
+
+  <div class="cd-confirm" id="dayCdConfirm" aria-hidden="true">
+    <div class="cd-confirm-card" role="dialog" aria-modal="true" aria-labelledby="dayCdConfirmTitle">
+      <div class="cd-confirm-title" id="dayCdConfirmTitle">Sayaç silinsin mi?</div>
+      <div class="cd-confirm-text" id="dayCdConfirmText">Bu işlem geri alınamaz.</div>
+      <div class="cd-confirm-actions">
+        <button type="button" id="dayCdConfirmCancel">Vazgeç</button>
+        <button type="button" class="is-danger" id="dayCdConfirmOk">Sil</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Takvim: "Sayaçlarım" paneli. Takvim üst çubuğundaki butonla alttan açılır
+       (Planlayıcı'nın eylem sayfasıyla aynı kabuk). Aşağı sürükleyerek ya da
+       dışına dokunarak kapanır; bir sayaca dokununca takvim o güne gider. -->
+  <div class="task-sheet-backdrop" id="cdSheetBackdrop" aria-hidden="true">
+    <div class="task-sheet cd-sheet" id="cdSheet" role="dialog" aria-modal="true" aria-labelledby="cdSheetTitle" tabindex="-1">
+      <div class="task-sheet-drag">
+        <div class="task-sheet-grabber" aria-hidden="true"></div>
+      </div>
+      <div class="cd-sheet-head task-sheet-drag">
+        <span class="cd-sheet-title" id="cdSheetTitle">Sayaçlarım</span>
+        <span class="cd-sheet-sub" id="cdSheetSub"></span>
+      </div>
+      <div class="cd-sheet-list" id="cdSheetList"></div>
+    </div>
+  </div>
 
   <!-- Sayfa 7: "Turlarım". Sayfa 5'teki "Turlarım" butonuyla açılan,
        kaydedilen turları listeleyen bağımsız sayfa (Sayfa 6/Takvim ile
@@ -21331,6 +22695,7 @@
     'page-mini-games-hub': 'page-1',
     'page-4': 'page-1',
     'page-6': 'page-1',
+    'page-day-cd': 'page-1',
     'page-7': 'page-1',
     'page-10': 'page-5',
     'page-11-detail': 'page-11',
@@ -24519,6 +25884,44 @@
   let calendarViewMonth = calendarToday.getMonth();
   let calendarSelectedDate = new Date(calendarToday);
 
+  // ---------- Gün geri sayımları: veri ----------
+  // Tarih anahtarı (yyyy-mm-dd) -> { name, time: 'HH:MM' | '', color: '#rrggbb' }
+  // APP_STATE üzerinden saklanır; yedeğe dışa/içe aktarmaya otomatik dahildir.
+  const DAY_CD_STATE_KEY = 'dayCountdowns';
+  const dayCdKey = (d) =>
+    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  const dayCdHexOk = (c) => typeof c === 'string' && /^#[0-9a-f]{6}$/i.test(c);
+  const dayCdRgb = (hex) => [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16));
+  // Renk üzerindeki yazı: açık renkte koyu, koyu renkte beyaz.
+  const dayCdOnColor = (hex) => {
+    const [r, g, b] = dayCdRgb(hex);
+    return (0.299 * r + 0.587 * g + 0.114 * b) / 255 > 0.55 ? '#16171b' : '#ffffff';
+  };
+  const dayCdDeepColor = (hex, k = 0.24) =>
+    '#' + dayCdRgb(hex).map((v) => Math.round(v * (1 - k)).toString(16).padStart(2, '0')).join('');
+
+  const getDayCountdowns = () => {
+    const stored = APP_STATE[DAY_CD_STATE_KEY];
+    return stored && typeof stored === 'object' && !Array.isArray(stored) ? stored : {};
+  };
+
+  const getDayCountdown = (d) => {
+    const cd = getDayCountdowns()[dayCdKey(d)];
+    if (!cd || typeof cd !== 'object') return null;
+    return {
+      name: String(cd.name || '').slice(0, 40) || 'Geri sayım',
+      time: /^\d{2}:\d{2}$/.test(cd.time || '') ? cd.time : '',
+      color: dayCdHexOk(cd.color) ? cd.color : '#ff90e8',
+      created: Number.isFinite(cd.createdAt) ? cd.createdAt : 0,
+    };
+  };
+
+  // Hedef an: seçilen gün + (varsa) saat; saat yoksa günün başlangıcı (00:00).
+  const dayCdTarget = (d, time) => {
+    const [hh, mm] = time ? time.split(':').map(Number) : [0, 0];
+    return new Date(d.getFullYear(), d.getMonth(), d.getDate(), hh, mm, 0, 0);
+  };
+
   // Planlayıcı'daki hafta şeridiyle aynı gün kısaltmaları (Pazar başlangıçlı
   // kanonik dizi; gösterim sırası hafta başlangıcına göre hesaplanır).
   // Ortak CALENDAR_WEEKDAYS_SHORT_DOW dizisine dokunulmaz: Sayfa 11'in
@@ -24625,12 +26028,40 @@
     calendarTodayBtn.setAttribute('aria-hidden', away ? 'false' : 'true');
   };
 
+  // Seçili günün kayan dairesi, günde geri sayım varsa onun rengini alır.
+  const syncCalendarBubbleColor = () => {
+    const cd = calendarSelectedCell ? getDayCountdown(calendarSelectedDate) : null;
+    if (cd) calendarBubbleEl.style.setProperty('--bubble-color', cd.color);
+    else calendarBubbleEl.style.removeProperty('--bubble-color');
+  };
+
+  // Geri sayım kurulu günleri seçilen renkte işaretler (yeniden çizim gerekmez).
+  const applyCalendarMarks = () => {
+    calendarCellByDay.forEach((cell, day) => {
+      const date = new Date(calendarViewYear, calendarViewMonth, day);
+      const cd = getDayCountdown(date);
+      const label = `${day} ${CALENDAR_MONTHS[calendarViewMonth]}`;
+      cell.classList.toggle('has-countdown', !!cd);
+      if (cd) {
+        cell.style.setProperty('--cd-color', cd.color);
+        cell.style.setProperty('--cd-on', dayCdOnColor(cd.color));
+        cell.setAttribute('aria-label', `${label}, ${cd.name}`);
+      } else {
+        cell.style.removeProperty('--cd-color');
+        cell.style.removeProperty('--cd-on');
+        cell.setAttribute('aria-label', label);
+      }
+    });
+    syncCalendarBubbleColor();
+  };
+
   const selectCalendarCell = (cell, date) => {
     if (!cell || calendarSelectedCell === cell) return;
     if (calendarSelectedCell) calendarSelectedCell.classList.remove('is-selected');
     calendarSelectedCell = cell;
     cell.classList.add('is-selected');
     calendarSelectedDate = date;
+    syncCalendarBubbleColor();
     placeCalendarBubble(cell, true);
     updateCalendarSelectedInfo();
     updateCalendarTodayBtn();
@@ -24711,7 +26142,14 @@
           cell.classList.add('is-selected');
           calendarSelectedCell = cell;
         }
-        cell.addEventListener('click', () => selectCalendarCell(cell, cellDate));
+        // Seçili güne tekrar dokunulunca geri sayım sayfası açılır.
+        cell.addEventListener('click', () => {
+          if (calendarSelectedCell === cell) {
+            openDayCountdownPage(cellDate);
+            return;
+          }
+          selectCalendarCell(cell, cellDate);
+        });
       }
 
       calendarGridEl.appendChild(cell);
@@ -24723,6 +26161,7 @@
       const c = Number(calendarSelectedCell.dataset.c);
       calendarBubbleEl.style.setProperty('--pop-delay', `${waveBase + r * CALENDAR_WAVE_ROW_MS + c * CALENDAR_WAVE_COL_MS + 40}ms`);
     }
+    applyCalendarMarks();
     placeCalendarBubble(calendarSelectedCell, false);
     if (calendarSelectedCell) replayCalendarAnim(calendarBubbleEl, 'is-pop');
     updateCalendarTodayBtn();
@@ -24746,7 +26185,16 @@
     calendarInfoNumEls.forEach((el) => { el.textContent = String(d.getDate()); });
     calendarInfoNameEl.textContent = dayName;
     calendarInfoRelEl.textContent = calendarRelativeLabel(d);
-    calendarInfoSubEl.textContent = `${d.getDate()} ${CALENDAR_MONTHS[d.getMonth()]} ${d.getFullYear()}`;
+    const dayCd = getDayCountdown(d);
+    const dateText = `${d.getDate()} ${CALENDAR_MONTHS[d.getMonth()]} ${d.getFullYear()}`;
+    calendarInfoSubEl.textContent = dayCd ? `${dateText} · ${dayCd.name}` : dateText;
+    if (dayCd) {
+      calendarInfoMarker.style.setProperty('--mk-color', dayCd.color);
+      calendarInfoMarker.style.setProperty('--mk-on', dayCdOnColor(dayCd.color));
+    } else {
+      calendarInfoMarker.style.removeProperty('--mk-color');
+      calendarInfoMarker.style.removeProperty('--mk-on');
+    }
     replayCalendarAnim(calendarInfoMarker, 'is-sweep');
     replayCalendarAnim(calendarInfoContent, 'is-swap');
   };
@@ -24797,6 +26245,812 @@
 
   const calendarBackBtn = document.getElementById('calendarBackBtn');
   if (calendarBackBtn) calendarBackBtn.addEventListener('click', closeCalendarPage);
+
+  // ---------- Takvim: Gün Geri Sayımı sayfası ----------
+  const dayCdPageEl = document.getElementById('page-day-cd');
+  const dayCdBackBtn = document.getElementById('dayCdBackBtn');
+  const dayCdEditBtn = document.getElementById('dayCdEditBtn');
+  const dayCdDeleteBtn = document.getElementById('dayCdDeleteBtn');
+  const dayCdTitleEl = document.getElementById('dayCdTitle');
+  const dayCdFormDateEl = document.getElementById('dayCdFormDate');
+  const dayCdFormWeekdayEl = document.getElementById('dayCdFormWeekday');
+  const dayCdNameInput = document.getElementById('dayCdNameInput');
+  const dayCdTimeSwitch = document.getElementById('dayCdTimeSwitch');
+  const dayCdTimeWrap = document.getElementById('dayCdTimeWrap');
+  const dayCdTimeInput = document.getElementById('dayCdTimeInput');
+  const dayCdColorsEl = document.getElementById('dayCdColors');
+  const dayCdSaveBtn = document.getElementById('dayCdSaveBtn');
+  const dayCdNameEl = document.getElementById('dayCdName');
+  const dayCdDateEl = document.getElementById('dayCdDate');
+  const dayCdStatusEl = document.getElementById('dayCdStatus');
+  const dayCdConfirmEl = document.getElementById('dayCdConfirm');
+  const dayCdWindowEl = document.getElementById('dayCdWindow');
+  const dayCdStageEl = document.getElementById('dayCdStage');
+  const dayCdRippleEl = document.getElementById('dayCdRipple');
+  const dayCdFillEl = document.getElementById('dayCdFill');
+  const dayCdTimelineEl = document.getElementById('dayCdTimeline');
+  const dayCdCapStartEl = document.getElementById('dayCdCapStart');
+  const dayCdCapEndEl = document.getElementById('dayCdCapEnd');
+  const dayCdSrEl = document.getElementById('dayCdSr');
+  const dayCdListEl = document.getElementById('dayCdList');
+  const dayCdListBtn = document.getElementById('dayCdListBtn');
+
+  const DAY_CD_COLORS = [
+    '#ff90e8', '#ff3b5c', '#ff9f43', '#feca57', '#2ed573', '#1dd1a1',
+    '#48dbfb', '#54a0ff', '#6c5ce7', '#a55eea', '#576574',
+  ];
+  const DAY_CD_CHECK_SVG =
+    '<svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+  let dayCdDate = null;        // düzenlenen / gösterilen gün (Date, 00:00)
+  let dayCdEditing = false;    // formda mevcut bir sayaç düzenleniyor mu?
+  let dayCdColor = DAY_CD_COLORS[0];
+  let dayCdTimeOn = false;
+
+  // Sayfanın renk değişkenleri: form kontrolleri (odak, anahtar, buton) ve
+  // tam ekran görünümün zemini aynı renkten beslenir.
+  const applyDayCdPalette = (color) => {
+    const on = dayCdOnColor(color);
+    const [r, g, b] = dayCdRgb(color);
+    dayCdPageEl.style.setProperty('--cd-color', color);
+    dayCdPageEl.style.setProperty('--cd-on', on);
+    dayCdPageEl.style.setProperty('--cd-soft', `rgba(${r},${g},${b},0.22)`);
+  };
+
+  const dayCdDateText = (d) => `${d.getDate()} ${CALENDAR_MONTHS[d.getMonth()]} ${d.getFullYear()}`;
+  const dayCdWeekdayText = (d) => CALENDAR_WEEKDAYS_LONG[(d.getDay() + 6) % 7];
+
+  // --- Renk seçici ---
+  const renderDayCdSwatches = () => {
+    dayCdColorsEl.innerHTML = '';
+    const current = dayCdColor.toLowerCase();
+    let matched = false;
+    DAY_CD_COLORS.forEach((hex) => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'cd-swatch';
+      btn.style.setProperty('--sw', hex);
+      btn.style.setProperty('--sw-on', dayCdOnColor(hex));
+      btn.setAttribute('aria-label', `Renk ${hex}`);
+      btn.innerHTML = DAY_CD_CHECK_SVG;
+      if (hex === current) { btn.classList.add('is-selected'); matched = true; }
+      btn.addEventListener('click', () => setDayCdColor(hex));
+      dayCdColorsEl.appendChild(btn);
+    });
+
+    // Özel renk: gizli <input type="color"> üzerine dokunulur.
+    const custom = document.createElement('label');
+    custom.className = 'cd-swatch cd-swatch-custom';
+    custom.setAttribute('aria-label', 'Özel renk seç');
+    custom.innerHTML = DAY_CD_CHECK_SVG;
+    const picker = document.createElement('input');
+    picker.type = 'color';
+    picker.value = dayCdColor;
+    if (!matched) {
+      custom.classList.add('has-value', 'is-selected');
+      custom.style.setProperty('--sw', dayCdColor);
+      custom.style.setProperty('--sw-on', dayCdOnColor(dayCdColor));
+    }
+    picker.addEventListener('input', () => {
+      dayCdColor = picker.value;
+      applyDayCdPalette(dayCdColor);
+      dayCdColorsEl.querySelectorAll('.cd-swatch').forEach((el) => el.classList.remove('is-selected'));
+      custom.classList.add('has-value', 'is-selected');
+      custom.style.setProperty('--sw', dayCdColor);
+      custom.style.setProperty('--sw-on', dayCdOnColor(dayCdColor));
+    });
+    custom.appendChild(picker);
+    dayCdColorsEl.appendChild(custom);
+  };
+
+  const setDayCdColor = (hex) => {
+    dayCdColor = hex;
+    applyDayCdPalette(hex);
+    renderDayCdSwatches();
+  };
+
+  const setDayCdTimeOn = (on) => {
+    dayCdTimeOn = on;
+    dayCdTimeSwitch.setAttribute('aria-checked', on ? 'true' : 'false');
+    dayCdTimeWrap.classList.toggle('is-open', on);
+    dayCdTimeInput.tabIndex = on ? 0 : -1;
+  };
+
+  dayCdTimeSwitch.addEventListener('click', () => setDayCdTimeOn(!dayCdTimeOn));
+  dayCdNameInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') { e.preventDefault(); dayCdNameInput.blur(); }
+  });
+
+  // --- Rulo (odometer) hane bileşeni ---
+  // Her hane, 0-9'un dört kez tekrarlandığı dikey bir şerittir. Değer
+  // değişince şerit CSS geçişiyle kayar; geri sayımda hareket hep aynı
+  // yöndedir (yeni hane yukarıdan iner). Şerit üst sınıra yaklaşınca
+  // görünen hane değişmeden sessizce 10 satır aşağı alınır. Açılışta her
+  // hane sıfırdan hedef değere doğru döner (slot makinesi gibi).
+  const CD_LH = 1.25;          // em: hane yüksekliği (CSS'teki .cd-reel ile aynı)
+  const CD_CYCLES = 4;
+  const CD_TICK_MS = 720;      // saniye değişiminde kayma süresi
+  const CD_INTRO_MS = 1500;    // açılışta dönüş süresi
+  const CD_INTRO_STAGGER = 65; // haneler arası gecikme
+
+  const cdReelMake = () => {
+    const el = document.createElement('span');
+    el.className = 'cd-reel';
+    el.setAttribute('aria-hidden', 'true');
+    const strip = document.createElement('span');
+    strip.className = 'cd-reel-strip';
+    let html = '';
+    for (let i = 0; i < CD_CYCLES * 10; i += 1) html += `<i>${i % 10}</i>`;
+    strip.innerHTML = html;
+    el.appendChild(strip);
+    return { el, strip, idx: -1, timer: 0 };
+  };
+
+  // Geçiş olmadan doğrudan konuma atlar (görünen hane değişmez).
+  const cdReelJump = (r, idx) => {
+    r.idx = idx;
+    r.strip.style.transition = 'none';
+    r.strip.style.transform = `translateY(${(-idx * CD_LH).toFixed(3)}em)`;
+    void r.strip.offsetHeight;
+    r.strip.style.transition = '';
+  };
+
+  const cdReelMoveTo = (r, idx, dur) => {
+    clearTimeout(r.timer);
+    r.idx = idx;
+    r.strip.style.transitionDuration = `${dur}ms`;
+    r.strip.style.transform = `translateY(${(-idx * CD_LH).toFixed(3)}em)`;
+    // Geçiş bitince şerit çok yukarı çıktıysa aynı haneyle başa al.
+    r.timer = setTimeout(() => {
+      if (r.idx < 10) cdReelJump(r, r.idx + 10);
+    }, dur + 60);
+  };
+
+  // Geri sayım adımı: haneyi en kısa yoldan (hep aşağı doğru) yeni değere getirir.
+  const cdReelSet = (r, digit, dur) => {
+    if (r.idx < 0) { cdReelJump(r, 10 + digit); return; }
+    const step = ((r.idx % 10) - digit + 10) % 10;
+    if (!step) return;
+    if (r.idx - step < 0) cdReelJump(r, r.idx + 10);
+    cdReelMoveTo(r, r.idx - step, dur);
+  };
+
+  // Açılış: sıfırdan başlayıp en az bir tur dönerek hedefe oturur.
+  const cdReelIntro = (r, digit, delay, dur, bag) => {
+    const end = 10 + digit;
+    const start = Math.ceil(end / 10) * 10 + 10;
+    cdReelJump(r, start);
+    const id = setTimeout(() => cdReelMoveTo(r, end, dur), delay);
+    if (bag) bag.push(id);
+  };
+
+  // --- Sayaç motoru ---
+  const DAY_CD_MONTHS_SHORT = ['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara'];
+  const dayCdShortDate = (d) => `${d.getDate()} ${DAY_CD_MONTHS_SHORT[d.getMonth()]} ${d.getFullYear()}`;
+  const dayCdPad2 = (n) => String(n).padStart(2, '0');
+
+  const dayCdNumEls = {
+    d: document.getElementById('dayCdNumD'),
+    h: document.getElementById('dayCdNumH'),
+    m: document.getElementById('dayCdNumM'),
+    s: document.getElementById('dayCdNumS'),
+  };
+  const dayCdReels = { d: [], h: [], m: [], s: [] };
+  const dayCdTimers = [];      // açılış / liste animasyonlarının zamanlayıcıları
+  let dayCdCurrent = null;     // gösterilen sayaç
+  let dayCdTargetMs = 0;
+  let dayCdStartMs = 0;
+  let dayCdWasDone = null;
+  let dayCdTickTimer = 0;
+  let dayCdIntroEnd = 0;
+
+  const dayCdBuildReels = (u, count) => {
+    const host = dayCdNumEls[u];
+    host.textContent = '';
+    dayCdReels[u] = Array.from({ length: count }, () => {
+      const r = cdReelMake();
+      host.appendChild(r.el);
+      return r;
+    });
+  };
+
+  const dayCdBuildDays = (len) => {
+    dayCdBuildReels('d', len);
+    dayCdWindowEl.dataset.len = String(Math.min(len, 6));
+  };
+
+  ['h', 'm', 's'].forEach((u) => dayCdBuildReels(u, 2));
+
+  const dayCdCalc = () => {
+    const remaining = dayCdTargetMs - Date.now();
+    const done = remaining <= 0;
+    const total = done ? 0 : Math.ceil(remaining / 1000);
+    return {
+      remaining,
+      done,
+      d: Math.floor(total / 86400),
+      h: Math.floor((total % 86400) / 3600),
+      m: Math.floor((total % 3600) / 60),
+      s: total % 60,
+    };
+  };
+
+  const dayCdStrings = (v) => ({ d: String(v.d), h: dayCdPad2(v.h), m: dayCdPad2(v.m), s: dayCdPad2(v.s) });
+
+  const dayCdRenderProgress = (v) => {
+    const span = dayCdTargetMs - dayCdStartMs;
+    const p = v.done ? 1 : span > 0 ? Math.min(1, Math.max(0, 1 - v.remaining / span)) : 0;
+    dayCdFillEl.style.width = `${(p * 100).toFixed(3)}%`;
+    dayCdTimelineEl.setAttribute('aria-valuenow', String(Math.round(p * 100)));
+  };
+
+  const dayCdRenderSr = (v) => {
+    dayCdSrEl.textContent = v.done
+      ? 'Süre doldu'
+      : `${v.d} gün ${v.h} saat ${v.m} dakika ${v.s} saniye kaldı`;
+  };
+
+  const dayCdRipple = () => {
+    dayCdRippleEl.classList.remove('is-on');
+    void dayCdRippleEl.offsetWidth;
+    dayCdRippleEl.classList.add('is-on');
+  };
+
+  const dayCdClearTimers = () => {
+    if (dayCdTickTimer) { clearTimeout(dayCdTickTimer); dayCdTickTimer = 0; }
+    while (dayCdTimers.length) clearTimeout(dayCdTimers.pop());
+  };
+
+  // Saniye başına bir kez çalışır; yalnızca değişen haneler kayar.
+  const dayCdTick = () => {
+    dayCdTickTimer = 0;
+    if (!dayCdCurrent) return;
+    if (performance.now() < dayCdIntroEnd) {   // açılış dönüşü bitsin
+      dayCdTickTimer = setTimeout(dayCdTick, 150);
+      return;
+    }
+    const v = dayCdCalc();
+    const str = dayCdStrings(v);
+    if (dayCdReels.d.length !== str.d.length) dayCdBuildDays(str.d.length);
+    ['d', 'h', 'm', 's'].forEach((u) => {
+      str[u].split('').forEach((ch, i) => cdReelSet(dayCdReels[u][i], Number(ch), CD_TICK_MS));
+    });
+    dayCdRenderProgress(v);
+    dayCdRenderSr(v);
+    if (dayCdWasDone !== v.done) {
+      dayCdWasDone = v.done;
+      dayCdStatusEl.textContent = v.done ? 'Süre doldu' : '';
+      if (v.done) dayCdRipple();
+    }
+    if (!v.done) dayCdTickTimer = setTimeout(dayCdTick, (v.remaining % 1000 || 1000) + 8);
+  };
+
+  // Açılış animasyonu: haneler soldan sağa sırayla dönerek yerine oturur,
+  // çizgi soldan dolar. Sayıya dokunmak animasyonu yeniden oynatır.
+  const dayCdPlayIntro = (delay) => {
+    dayCdClearTimers();
+    const v = dayCdCalc();
+    const str = dayCdStrings(v);
+    dayCdBuildDays(str.d.length);
+    dayCdWasDone = v.done;
+    dayCdStatusEl.textContent = v.done ? 'Süre doldu' : '';
+    dayCdRenderSr(v);
+
+    let order = 0;
+    ['d', 'h', 'm', 's'].forEach((u) => {
+      str[u].split('').forEach((ch, i) => {
+        cdReelIntro(dayCdReels[u][i], Number(ch), delay + order * CD_INTRO_STAGGER, CD_INTRO_MS, dayCdTimers);
+        order += 1;
+      });
+    });
+
+    dayCdFillEl.style.transition = 'none';
+    dayCdFillEl.style.width = '0%';
+    void dayCdFillEl.offsetWidth;
+    dayCdFillEl.style.transition = '';
+    dayCdTimers.push(setTimeout(() => dayCdRenderProgress(dayCdCalc()), delay + 150));
+
+    const total = delay + order * CD_INTRO_STAGGER + CD_INTRO_MS;
+    dayCdIntroEnd = performance.now() + total;
+    dayCdTickTimer = setTimeout(dayCdTick, total + 20);
+  };
+
+  const stopDayCdTimer = () => {
+    dayCdClearTimers();
+    dayCdCurrent = null;
+  };
+
+  const startDayCdTimer = (cd) => {
+    stopDayCdTimer();
+    dayCdCurrent = cd;
+    dayCdTargetMs = dayCdTarget(dayCdDate, cd.time).getTime();
+    dayCdStartMs = cd.created || (dayCdTargetMs - 365 * 86400000);
+    if (dayCdStartMs >= dayCdTargetMs) dayCdStartMs = dayCdTargetMs - 86400000;
+    // Sayfa henüz görünür değilse giriş animasyonu geçiş bitince başlasın.
+    dayCdPlayIntro(dayCdPageEl.classList.contains('is-active') ? 80 : 380);
+  };
+
+  dayCdStageEl.addEventListener('click', () => {
+    if (dayCdCurrent) dayCdPlayIntro(0);
+  });
+
+  // Uygulama arka plandan dönünce zamanlayıcılar gecikmiş olabilir: hemen eşitle.
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState !== 'visible' || !dayCdCurrent) return;
+    if (dayCdTickTimer) { clearTimeout(dayCdTickTimer); dayCdTickTimer = 0; }
+    dayCdTick();
+  });
+
+  // Rakamların rulo kutusundaki dikey konumu ve "gün" yazısının hizası yazı
+  // tipinin ölçülerine (ascent/descent) bağlıdır. Gerçek yazı tipi yüklenince
+  // canvas ile ölçüp iki CSS değişkenine yazıyoruz; böylece rakamlar her
+  // yazı tipinde kutunun tam ortasında durur.
+  const dayCdCalibrateFont = () => {
+    try {
+      const cs = getComputedStyle(dayCdStageEl);
+      const size = 200;
+      const ctx = document.createElement('canvas').getContext('2d');
+      ctx.font = `${cs.fontWeight} ${size}px ${cs.fontFamily}`;
+      const m = ctx.measureText('0');
+      if (!m.fontBoundingBoxAscent) return;
+      const box = CD_LH * size;
+      const baseTop = (box - (m.fontBoundingBoxAscent + m.fontBoundingBoxDescent)) / 2 + m.fontBoundingBoxAscent;
+      const inkTop = baseTop - m.actualBoundingBoxAscent;
+      const inkBottom = baseTop + m.actualBoundingBoxDescent;
+      const shift = (box / 2 - (inkTop + inkBottom) / 2) / size;
+      if (!Number.isFinite(shift) || Math.abs(shift) > 0.4) return;
+      dayCdPageEl.style.setProperty('--cd-shift', `${shift.toFixed(3)}em`);
+      dayCdPageEl.style.setProperty('--cd-base', ((box - baseTop) / size - shift).toFixed(3));
+    } catch (err) { /* ölçüm desteklenmiyorsa varsayılanlar kalır */ }
+  };
+  dayCdCalibrateFont();
+  if (document.fonts) {
+    document.fonts.load('400 100px "Baloo 2"').then(dayCdCalibrateFont).catch(() => {});
+    document.fonts.ready.then(dayCdCalibrateFont);
+  }
+
+  // Saat alanında gösterilen metin (Baloo 2) yerel girdiyle eşit tutulur.
+  const dayCdTimeTextEl = document.getElementById('dayCdTimeText');
+  const syncDayCdTimeText = () => {
+    dayCdTimeTextEl.textContent = dayCdTimeInput.value || '--:--';
+  };
+  dayCdTimeInput.addEventListener('input', syncDayCdTimeText);
+  dayCdTimeInput.addEventListener('change', syncDayCdTimeText);
+
+  // Silme onayı: sayfa içinden (Sayacı sil) ve Takvim'deki Sayaçlarım
+  // panelinden aynı pencereyi kullanır; onaylanınca çalışacak eylem dışarıdan verilir.
+  const dayCdConfirmTextEl = document.getElementById('dayCdConfirmText');
+  let dayCdConfirmAction = null;
+  const openDayCdConfirm = (text, action) => {
+    dayCdConfirmTextEl.textContent = text || 'Bu işlem geri alınamaz.';
+    dayCdConfirmAction = action || null;
+    dayCdConfirmEl.classList.add('is-open');
+  };
+  const closeDayCdConfirm = () => {
+    dayCdConfirmEl.classList.remove('is-open');
+    dayCdConfirmAction = null;
+  };
+
+  // --- Görünümler ---
+  const showDayCdView = (cd) => {
+    dayCdEditing = false;
+    applyDayCdPalette(cd.color);
+    dayCdPageEl.classList.remove('is-list');
+    dayCdPageEl.classList.add('is-view');
+    dayCdTitleEl.textContent = 'Geri sayım';
+    dayCdNameEl.textContent = cd.name;
+    dayCdDateEl.textContent =
+      `${dayCdDateText(dayCdDate)}, ${dayCdWeekdayText(dayCdDate)}${cd.time ? ` ${cd.time}` : ''}`;
+    dayCdCapEndEl.textContent = dayCdShortDate(dayCdDate);
+    dayCdCapStartEl.textContent = cd.created ? dayCdShortDate(new Date(cd.created)) : '';
+    dayCdPageEl.scrollTop = 0;
+    startDayCdTimer(cd);
+  };
+
+  const showDayCdForm = (existing) => {
+    stopDayCdTimer();
+    dayCdEditing = !!existing;
+    dayCdPageEl.classList.remove('is-view', 'is-list');
+    dayCdDeleteBtn.hidden = !existing;
+    dayCdTitleEl.textContent = existing ? 'Sayacı düzenle' : 'Geri sayım kur';
+    dayCdSaveBtn.textContent = existing ? 'Kaydet' : 'Sayacı kur';
+    dayCdFormDateEl.textContent = dayCdDateText(dayCdDate);
+    dayCdFormWeekdayEl.textContent = dayCdWeekdayText(dayCdDate);
+    dayCdNameInput.value = existing ? existing.name : '';
+    dayCdTimeInput.value = existing && existing.time ? existing.time : '09:00';
+    syncDayCdTimeText();
+    setDayCdTimeOn(!!(existing && existing.time));
+    dayCdColor = existing ? existing.color : DAY_CD_COLORS[0];
+    applyDayCdPalette(dayCdColor);
+    renderDayCdSwatches();
+    dayCdPageEl.scrollTop = 0;
+  };
+
+  // --- Sayaçlarım listesi ---
+  const dayCdRemainingParts = (target) => {
+    const ms = target.getTime() - Date.now();
+    if (ms <= 0) return null;
+    const days = Math.floor(ms / 86400000);
+    if (days > 0) return { num: String(days), unit: 'gün' };
+    const hours = Math.floor(ms / 3600000);
+    if (hours > 0) return { num: String(hours), unit: 'saat' };
+    return { num: String(Math.max(1, Math.floor(ms / 60000))), unit: 'dk' };
+  };
+
+  const showDayCdList = () => {
+    stopDayCdTimer();
+    dayCdPageEl.classList.remove('is-view');
+    dayCdPageEl.classList.add('is-list');
+    dayCdTitleEl.textContent = 'Sayaçlarım';
+    dayCdListEl.innerHTML = '';
+    const now = Date.now();
+    const items = Object.keys(getDayCountdowns()).map((key) => {
+      const [y, m, d] = key.split('-').map(Number);
+      const date = new Date(y, m - 1, d);
+      const cd = getDayCountdown(date);
+      return cd && !Number.isNaN(date.getTime()) ? { date, cd, target: dayCdTarget(date, cd.time) } : null;
+    }).filter(Boolean);
+    const upcoming = items.filter((it) => it.target.getTime() > now).sort((a, b) => a.target - b.target);
+    const past = items.filter((it) => it.target.getTime() <= now).sort((a, b) => b.target - a.target);
+    const all = upcoming.concat(past);
+    if (!all.length) {
+      dayCdListEl.innerHTML = '<div class="cd-list-empty"><strong>Henüz sayaç yok</strong>Takvimde bir güne iki kez dokunarak kurabilirsin.</div>';
+    }
+    all.forEach((it, i) => {
+      const row = document.createElement('button');
+      row.type = 'button';
+      row.className = 'cd-list-item';
+      row.style.setProperty('--i', String(i));
+      row.style.setProperty('--mk', it.cd.color);
+
+      const dot = document.createElement('span');
+      dot.className = 'cd-list-dot';
+      const body = document.createElement('span');
+      body.className = 'cd-list-body';
+      const nm = document.createElement('span');
+      nm.className = 'cd-list-name';
+      nm.textContent = it.cd.name;
+      const dt = document.createElement('span');
+      dt.className = 'cd-list-date';
+      dt.textContent = `${dayCdDateText(it.date)}${it.cd.time ? `, ${it.cd.time}` : ''}`;
+      body.append(nm, dt);
+
+      const count = document.createElement('span');
+      const parts = dayCdRemainingParts(it.target);
+      if (parts) {
+        count.className = 'cd-list-count';
+        const num = document.createElement('span');
+        num.className = 'cd-list-num';
+        parts.num.split('').forEach((ch, k) => {
+          const r = cdReelMake();
+          num.appendChild(r.el);
+          cdReelIntro(r, Number(ch), 200 + i * 55 + k * 50, 1100, dayCdTimers);
+        });
+        const unit = document.createElement('span');
+        unit.className = 'cd-list-unit';
+        unit.textContent = parts.unit;
+        const sr = document.createElement('span');
+        sr.className = 'cd-sr';
+        sr.textContent = `${parts.num} ${parts.unit} kaldı`;
+        count.append(num, unit, sr);
+      } else {
+        count.className = 'cd-list-done';
+        count.innerHTML = `${DAY_CD_CHECK_SVG}<span class="cd-list-unit">bitti</span>`;
+      }
+
+      row.append(dot, body, count);
+      row.addEventListener('click', () => {
+        dayCdDate = it.date;
+        showDayCdView(it.cd);
+      });
+      dayCdListEl.appendChild(row);
+    });
+    dayCdPageEl.scrollTop = 0;
+  };
+
+  // ---------- Takvim: "Sayaçlarım" alt paneli ----------
+  const cdSheetBtn = document.getElementById('calendarCdBtn');
+  const cdSheetBackdrop = document.getElementById('cdSheetBackdrop');
+  const cdSheetEl = document.getElementById('cdSheet');
+  const cdSheetListEl = document.getElementById('cdSheetList');
+  const cdSheetSubEl = document.getElementById('cdSheetSub');
+  let cdSheetResetTimer = null;
+
+  // Takvimi verilen güne götürür: aynı aydaysa seçim dairesi o güne kayar,
+  // başka aydaysa ızgara o yönden akarak yeniden çizilir (goToCalendarToday ile aynı desen).
+  const goToCalendarDate = (date) => {
+    const target = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    const y = target.getFullYear();
+    const m = target.getMonth();
+    if (calendarViewYear === y && calendarViewMonth === m) {
+      selectCalendarCell(calendarCellByDay.get(target.getDate()), target);
+      return;
+    }
+    const diff = (y * 12 + m) - (calendarViewYear * 12 + calendarViewMonth);
+    calendarSlideDir = diff > 0 ? 1 : -1;
+    calendarSelectedDate = target;
+    calendarViewYear = y;
+    calendarViewMonth = m;
+    renderCalendarGrid();
+    updateCalendarSelectedInfo();
+  };
+
+  const DAY_CD_CHEV_SVG =
+    '<svg class="cd-sheet-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+  const CD_HOLD_MS = 450;
+
+  const cdSheetClearDeleteMode = (except) => {
+    cdSheetListEl.querySelectorAll('.cd-sheet-item.is-delete').forEach((r) => {
+      if (r === except) return;
+      r.classList.remove('is-delete');
+      const d = r.querySelector('.cd-sheet-del');
+      if (d) d.tabIndex = -1;
+    });
+  };
+
+  // Sayacı siler; takvimdeki işaret ve seçili gün satırı güncellenir, satır kapanır.
+  const deleteCountdownFromSheet = (key, row) => {
+    const all = { ...getDayCountdowns() };
+    if (!(key in all)) return;
+    delete all[key];
+    if (!saveAppState({ [DAY_CD_STATE_KEY]: all })) return;
+    applyCalendarMarks();
+    updateCalendarSelectedInfo(0);
+    row.style.height = `${row.offsetHeight}px`;
+    void row.offsetHeight;
+    row.classList.add('is-removing');
+    setTimeout(() => {
+      row.remove();
+      if (!cdSheetListEl.querySelector('.cd-sheet-item')) renderCdSheet();
+    }, 380);
+    showAppToast('Sayaç silindi');
+  };
+
+  const renderCdSheet = () => {
+    cdSheetListEl.innerHTML = '';
+    const now = Date.now();
+    const items = Object.keys(getDayCountdowns()).map((key) => {
+      const [y, m, d] = key.split('-').map(Number);
+      const date = new Date(y, m - 1, d);
+      const cd = getDayCountdown(date);
+      return cd && !Number.isNaN(date.getTime()) ? { date, cd, target: dayCdTarget(date, cd.time) } : null;
+    }).filter(Boolean);
+    const upcoming = items.filter((it) => it.target.getTime() > now).sort((a, b) => a.target - b.target);
+    const past = items.filter((it) => it.target.getTime() <= now).sort((a, b) => b.target - a.target);
+    const all = upcoming.concat(past);
+
+    cdSheetSubEl.textContent = all.length ? 'Dokununca güne gider, basılı tutunca silersin' : '';
+    if (!all.length) {
+      cdSheetListEl.innerHTML = '<div class="cd-sheet-empty"><strong>Henüz sayaç yok</strong>Takvimde bir güne iki kez dokunarak kurabilirsin.</div>';
+      return;
+    }
+
+    all.forEach((it, i) => {
+      const key = dayCdKey(it.date);
+      const row = document.createElement('div');
+      row.className = 'cd-sheet-item';
+      row.style.setProperty('--i', String(i));
+      row.style.setProperty('--mk', it.cd.color);
+      row.style.setProperty('--mk-on', dayCdOnColor(it.cd.color));
+      const parts = dayCdRemainingParts(it.target);
+      const marker = parts
+        ? `<b>${parts.num}</b><i>${parts.unit}</i>`
+        : DAY_CD_CHECK_SVG;
+      row.innerHTML =
+        '<button type="button" class="cd-sheet-main">' +
+          `<span class="cd-sheet-marker" aria-hidden="true">${marker}</span>` +
+          '<span class="cd-sheet-body"><span class="cd-sheet-name"></span><span class="cd-sheet-date"></span></span>' +
+        '</button>' +
+        `<span class="cd-sheet-end">${DAY_CD_CHEV_SVG}` +
+          '<button type="button" class="cd-sheet-del" tabindex="-1" aria-label="Sayacı sil">Sil</button></span>';
+      const main = row.querySelector('.cd-sheet-main');
+      const del = row.querySelector('.cd-sheet-del');
+      row.querySelector('.cd-sheet-name').textContent = it.cd.name;
+      row.querySelector('.cd-sheet-date').textContent =
+        `${dayCdDateText(it.date)}${it.cd.time ? `, ${it.cd.time}` : ''}`;
+      main.setAttribute('aria-label',
+        `${it.cd.name}, ${dayCdDateText(it.date)}${parts ? `, ${parts.num} ${parts.unit} kaldı` : ', süre doldu'}. Takvimde göster`);
+
+      // Basılı tutunca sağdaki çentiğin yerine "Sil" gelir.
+      let holdTimer = 0;
+      let holdFired = false;
+      let sx = 0;
+      let sy = 0;
+      const cancelHold = () => { clearTimeout(holdTimer); holdTimer = 0; };
+      row.addEventListener('pointerdown', (e) => {
+        if (e.target.closest('.cd-sheet-del')) return;
+        if (e.pointerType === 'mouse' && e.button !== 0) return;
+        holdFired = false;
+        sx = e.clientX;
+        sy = e.clientY;
+        cancelHold();
+        holdTimer = setTimeout(() => {
+          holdTimer = 0;
+          holdFired = true;
+          cdSheetClearDeleteMode(row);
+          row.classList.add('is-delete');
+          del.tabIndex = 0;
+          try { if (navigator.vibrate) navigator.vibrate(12); } catch (err) { /* yoksay */ }
+        }, CD_HOLD_MS);
+      });
+      row.addEventListener('pointermove', (e) => {
+        if (holdTimer && Math.hypot(e.clientX - sx, e.clientY - sy) > 8) cancelHold();
+      });
+      ['pointerup', 'pointercancel', 'pointerleave'].forEach((t) => row.addEventListener(t, cancelHold));
+      row.addEventListener('contextmenu', (e) => e.preventDefault());
+
+      main.addEventListener('click', (e) => {
+        if (holdFired) { holdFired = false; e.preventDefault(); return; }
+        // Silme kipindeyken satıra dokunmak sadece kipi kapatır.
+        if (cdSheetListEl.querySelector('.cd-sheet-item.is-delete')) { cdSheetClearDeleteMode(); return; }
+        closeCdSheet();
+        // Panel kapanırken değil, takvim görünür olunca kaysın.
+        setTimeout(() => goToCalendarDate(it.date), 260);
+      });
+
+      del.addEventListener('click', () => {
+        openDayCdConfirm(`“${it.cd.name}” sayacı silinecek. Bu işlem geri alınamaz.`, () => {
+          deleteCountdownFromSheet(key, row);
+        });
+      });
+
+      cdSheetListEl.appendChild(row);
+    });
+  };
+
+  const openCdSheet = () => {
+    if (!cdSheetBackdrop || !cdSheetEl) return;
+    renderCdSheet();
+    clearTimeout(cdSheetResetTimer);
+    cdSheetEl.style.transform = '';
+    cdSheetEl.classList.remove('is-dragging');
+    cdSheetListEl.scrollTop = 0;
+    cdSheetClearDeleteMode();
+    cdSheetBackdrop.setAttribute('aria-hidden', 'false');
+    cdSheetBackdrop.classList.remove('is-open');
+    void cdSheetBackdrop.offsetWidth; // giriş animasyonları baştan oynasın
+    cdSheetBackdrop.classList.add('is-open');
+    setTimeout(() => { try { cdSheetEl.focus({ preventScroll: true }); } catch (e) { /* yoksay */ } }, 80);
+  };
+
+  const closeCdSheet = () => {
+    if (!cdSheetBackdrop) return;
+    cdSheetBackdrop.classList.remove('is-open');
+    cdSheetBackdrop.setAttribute('aria-hidden', 'true');
+    cdSheetEl.classList.remove('is-dragging');
+    cdSheetEl.style.transform = '';
+    clearTimeout(cdSheetResetTimer);
+    cdSheetResetTimer = setTimeout(() => { cdSheetListEl.innerHTML = ''; }, 620);
+    if (cdSheetBtn && document.activeElement && cdSheetEl.contains(document.activeElement)) {
+      try { cdSheetBtn.focus({ preventScroll: true }); } catch (e) { /* yoksay */ }
+    }
+  };
+
+  if (cdSheetBtn && cdSheetBackdrop && cdSheetEl) {
+    cdSheetBtn.addEventListener('click', openCdSheet);
+
+    cdSheetBackdrop.addEventListener('click', (e) => {
+      if (e.target === cdSheetBackdrop) closeCdSheet();
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && cdSheetBackdrop.classList.contains('is-open')) closeCdSheet();
+    });
+
+    // Aşağı sürükleyerek kapat (tutamaç + başlık alanından).
+    let cdDrag = null;
+    const onCdDragStart = (e) => {
+      if (e.pointerType === 'mouse' && e.button !== 0) return;
+      cdDrag = { id: e.pointerId, y0: e.clientY, t0: performance.now(), dy: 0, zone: e.currentTarget };
+      cdSheetEl.classList.add('is-dragging');
+      try { cdDrag.zone.setPointerCapture(e.pointerId); } catch (err) { /* yoksay */ }
+    };
+    const onCdDragMove = (e) => {
+      if (!cdDrag || e.pointerId !== cdDrag.id) return;
+      const raw = e.clientY - cdDrag.y0;
+      cdDrag.dy = raw >= 0 ? raw : raw * 0.18;
+      cdSheetEl.style.transform = `translateY(${cdDrag.dy}px)`;
+    };
+    const onCdDragEnd = (e) => {
+      if (!cdDrag || e.pointerId !== cdDrag.id) return;
+      const { dy, t0 } = cdDrag;
+      const v = dy / Math.max(1, performance.now() - t0);
+      cdDrag = null;
+      cdSheetEl.classList.remove('is-dragging');
+      if (dy > 110 || (dy > 30 && v > 0.6)) closeCdSheet();
+      else cdSheetEl.style.transform = '';
+    };
+    cdSheetEl.querySelectorAll('.task-sheet-drag').forEach((zone) => {
+      zone.addEventListener('pointerdown', onCdDragStart);
+      zone.addEventListener('pointermove', onCdDragMove);
+      zone.addEventListener('pointerup', onCdDragEnd);
+      zone.addEventListener('pointercancel', onCdDragEnd);
+    });
+  }
+
+  dayCdListBtn.addEventListener('click', showDayCdList);
+
+  const openDayCountdownPage = (date) => {
+    dayCdDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    const cd = getDayCountdown(dayCdDate);
+    if (cd) showDayCdView(cd);
+    else showDayCdForm(null);
+    goToPage('page-day-cd');
+  };
+
+  const closeDayCountdownPage = () => {
+    stopDayCdTimer();
+    dayCdConfirmEl.classList.remove('is-open');
+    if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
+    goToPage('page-6');
+    // Listeden başka bir güne geçildiyse takvim de o güne odaklanır.
+    if (dayCdDate && !isSameCalendarDate(dayCdDate, calendarSelectedDate)) {
+      calendarSelectedDate = new Date(dayCdDate);
+      calendarViewYear = dayCdDate.getFullYear();
+      calendarViewMonth = dayCdDate.getMonth();
+      renderCalendarGrid();
+    }
+    applyCalendarMarks();
+    updateCalendarSelectedInfo(0);
+  };
+
+  const saveDayCd = () => {
+    const name = dayCdNameInput.value.trim();
+    if (!name) {
+      dayCdNameInput.classList.remove('is-shaking');
+      void dayCdNameInput.offsetWidth;
+      dayCdNameInput.classList.add('is-shaking');
+      dayCdNameInput.focus();
+      showAppToast('Sayaca bir isim ver', 'error');
+      return;
+    }
+    const time = dayCdTimeOn && dayCdTimeInput.value ? dayCdTimeInput.value : '';
+    const existing = getDayCountdown(dayCdDate);
+    const isPast = dayCdTarget(dayCdDate, time).getTime() <= Date.now();
+    // Süresi dolmuş bir sayacın yalnızca adı/rengi düzenleniyorsa engelleme.
+    const timeUnchanged = !!existing && existing.time === time;
+    if (isPast && !timeUnchanged) {
+      const isToday = isSameCalendarDate(dayCdDate, new Date());
+      showAppToast(isToday && !time ? 'Bugün için ileri bir saat ekle' : 'Seçilen zaman geçmişte kaldı', 'error');
+      return;
+    }
+    const all = { ...getDayCountdowns() };
+    const keepStart = existing && existing.time === time && existing.created;
+    all[dayCdKey(dayCdDate)] = { name, time, color: dayCdColor, createdAt: keepStart ? existing.created : Date.now() };
+    if (!saveAppState({ [DAY_CD_STATE_KEY]: all })) return;
+    if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
+    showDayCdView(getDayCountdown(dayCdDate));
+    applyCalendarMarks();
+  };
+
+  const deleteDayCd = () => {
+    const all = { ...getDayCountdowns() };
+    delete all[dayCdKey(dayCdDate)];
+    saveAppState({ [DAY_CD_STATE_KEY]: all });
+    closeDayCountdownPage();
+  };
+
+  dayCdSaveBtn.addEventListener('click', saveDayCd);
+  dayCdEditBtn.addEventListener('click', () => showDayCdForm(getDayCountdown(dayCdDate)));
+  dayCdDeleteBtn.addEventListener('click', () => openDayCdConfirm('Bu işlem geri alınamaz.', null));
+  document.getElementById('dayCdConfirmCancel').addEventListener('click', closeDayCdConfirm);
+  document.getElementById('dayCdConfirmOk').addEventListener('click', () => {
+    const action = dayCdConfirmAction;
+    closeDayCdConfirm();
+    if (action) action();
+    else deleteDayCd();
+  });
+  dayCdConfirmEl.addEventListener('click', (e) => {
+    if (e.target === dayCdConfirmEl) closeDayCdConfirm();
+  });
+
+  // Geri: düzenlemedeyken görünüme, aksi halde takvime döner.
+  dayCdBackBtn.addEventListener('click', () => {
+    const existing = getDayCountdown(dayCdDate);
+    if ((dayCdEditing || dayCdPageEl.classList.contains('is-list')) && existing) showDayCdView(existing);
+    else closeDayCountdownPage();
+  });
 
   // "Rahatla" da aynı açma/kapama desenini kullanır: ana sayfadaki widget'tan
   // açılır, geri butonuyla Ana Sayfa'ya döner. Sayfa içeriği şimdilik boş.
