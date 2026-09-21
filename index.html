@@ -16824,7 +16824,12 @@
       font-weight: 700;
       font-size: 1.05rem;
       letter-spacing: 0.01em;
-      color: var(--theme-text, #121212);
+      /* Araç paneli, sayfa temasından bağımsız SABİT bir yüzeydir (beyaz ya
+         da antresit kart). Bu yüzden yazı rengi sayfa arka planına bağlı
+         --theme-text'ten değil, kartın kendi zeminine göre seçilir; aksi
+         halde siyah/koyu temada açık renk yazı beyaz kartın üzerinde
+         görünmez oluyordu. */
+      color: #121212;
       opacity: 0.8;
       padding-left: 0.1rem;
       margin: 0 0 -0.3rem;
@@ -16832,6 +16837,21 @@
     }
 
     body.is-anthracite .qhavuz-toolbar-label {
+      color: #f2f2f4;
+    }
+
+    /* Soru sayısı ("0 soru", "12 / 40 soru"): telefonda doğrudan sayfa
+       arka planında durduğu için --theme-text kullanıyordu; geniş ekranda
+       ise beyaz/antresit araç panelinin İÇİNDE. Aynı sebeple renk kartın
+       zeminine göre sabitlenir — hangi arka plan teması seçilirse seçilsin
+       okunaklı kalır. */
+    .qhavuz-toolbar .qhavuz-count-num,
+    .qhavuz-toolbar .qhavuz-count-unit {
+      color: #121212;
+    }
+
+    body.is-anthracite .qhavuz-toolbar .qhavuz-count-num,
+    body.is-anthracite .qhavuz-toolbar .qhavuz-count-unit {
       color: #f2f2f4;
     }
 
@@ -17717,6 +17737,54 @@
     body.is-sidebar-collapsed #page-7,
     body.is-sidebar-collapsed #page-10 {
       padding-left: 64px;
+    }
+
+    /* ---- Planlayıcı (#page-relax): geri butonu ve başlık ----
+       Sorun 1: #page-relax kendi ID'si üzerinden tam bir "padding" kısayolu
+       tanımladığından (bkz. temel kural), yukarıdaki genel ".page"
+       düzeltmesini (padding-left: 64px) geçersiz kılıyor ve listede de
+       yoktu; panel kapalıyken sol üstteki geri butonu .sidebar-toggle-tab
+       sekmesinin altında kalıyordu. Sol/sağ boşluk artık --relax-pad-l /
+       --relax-pad-r değişkenleriyle tutuluyor; panel kapalıyken sol pay
+       sekmeyi temizleyecek şekilde 64px'e çıkıyor (ve panelin kayma
+       animasyonuyla aynı sürede yumuşakça geçiyor).
+       Sorun 2: Üst çubuk 400px'lik dar bir kutuydu ve başlık bu kutunun
+       ortasındaydı; geniş ekranda sayfanın değil, sol üstteki kutunun
+       ortasında kalıyordu. Üst çubuk artık tam genişlikte; başlık ise akışın
+       dışına alınıp (absolute) sayfanın GERÇEK ortasına konumlanıyor. Sol
+       ve sağ boşluk eşit olmayabileceği (panel kapalıyken 64px / 22px) için
+       başlık, iki payın farkının yarısı kadar kaydırılarak telafi ediliyor;
+       böylece panel açıkken de (panelin sağında kalan alanın ortası), kapalı
+       iken de (tüm ekranın ortası) başlık tam ortada durur. */
+    #page-relax {
+      --relax-pad-l: 22px;
+      --relax-pad-r: 22px;
+      padding-left: var(--relax-pad-l);
+      padding-right: var(--relax-pad-r);
+      transition:
+        left 0.32s cubic-bezier(0.65, 0, 0.35, 1),
+        padding-left 0.32s cubic-bezier(0.65, 0, 0.35, 1),
+        opacity 0.2s ease,
+        transform 0.2s ease;
+    }
+
+    body.is-sidebar-collapsed #page-relax {
+      --relax-pad-l: 64px;
+    }
+
+    #page-relax .calendar-topbar {
+      position: relative;
+      max-width: none;
+    }
+
+    #page-relax .calendar-topbar-title {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(calc(-50% + (var(--relax-pad-r) - var(--relax-pad-l)) / 2), -50%);
+      white-space: nowrap;
+      pointer-events: none;
+      transition: color 0.5s ease, transform 0.32s cubic-bezier(0.65, 0, 0.35, 1);
     }
 
     /* ---- Ana sayfa: "Pace" logosu ↔ panel açma sekmesi ----
