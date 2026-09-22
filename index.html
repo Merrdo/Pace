@@ -10964,6 +10964,17 @@
     color: #121212;
   }
 
+  /* Deneme kilitliyken Kaynaklar pop-up'ı yine de açılıp görseller/link
+     görüntülenebilir ve tıklanabilir kalır; sadece ekleme/düzenleme
+     çipleri (Görsel Ekle, Video Ekle/Düzenle) pasifleşir. */
+  .exam-resources-add-chip:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+    pointer-events: none;
+    box-shadow: 3px 3px 0px 0px #000;
+    transform: none;
+  }
+
   body.is-anthracite .page11-modal-subtitle,
   body.is-anthracite .exam-resources-section-hint {
     color: rgba(242, 242, 244, 0.55);
@@ -25138,7 +25149,9 @@
       </div>
 
       <!-- Adım 2: Doğru cevap. Üstte kırpılan görselin küçük önizlemesi +
-           hangi sınav türü/branş/soru olduğunun özeti (Soru Ekle 3. adımıyla aynı). -->
+           hangi sınav türü/branş/soru olduğunun özeti (Soru Ekle 3. adımıyla aynı).
+           Soru Havuzu'ndaki "Şıklı / Açık Uçlu" cevap türü seçimiyle birebir aynı:
+           açık uçlu seçilirse şık ızgarası yerine yazılı cevap alanı gösterilir. -->
       <div class="qhavuz-add-step is-hidden" id="page11QuestionStepAnswer">
         <div class="qhavuz-add-answer-preview">
           <img id="page11QuestionAnswerPreviewImg" alt="Soru görseli">
@@ -25148,8 +25161,22 @@
           </div>
         </div>
 
-        <span class="qhavuz-add-label">Doğru Cevap</span>
-        <div class="qhavuz-add-answer-grid" id="page11QuestionAnswerGrid"></div>
+        <span class="qhavuz-add-label">Cevap Türü</span>
+        <div class="settings-segmented page9-segmented qhavuz-answer-type-segmented" id="page11QuestionAnswerTypeSegmented">
+          <div class="settings-segmented-slider" id="page11QuestionAnswerTypeSlider"></div>
+          <button type="button" class="settings-segmented-option is-active" data-value="choice">Şıklı</button>
+          <button type="button" class="settings-segmented-option" data-value="open">Açık Uçlu</button>
+        </div>
+
+        <div class="qhavuz-add-answer-mode" id="page11QuestionAnswerModeChoice">
+          <span class="qhavuz-add-label">Doğru Cevap</span>
+          <div class="qhavuz-add-answer-grid" id="page11QuestionAnswerGrid"></div>
+        </div>
+
+        <div class="qhavuz-add-answer-mode is-hidden" id="page11QuestionAnswerModeOpen">
+          <span class="qhavuz-add-label">Yazılı Cevap</span>
+          <input type="text" class="page9-add-custom-input qhavuz-add-answer-text-input" id="page11QuestionAnswerTextInput" placeholder="Cevabı yaz..." maxlength="120">
+        </div>
       </div>
 
     </div>
@@ -35969,22 +35996,41 @@
 
   const EXAM_SUBJECTS = {
     tyt: [
-      { key: 'turkce', name: 'Türkçe', count: 40, color: '#ff90e8' },
-      { key: 'tarih', name: 'Tarih', count: 5, color: '#ffd23f' },
-      { key: 'cografya', name: 'Coğrafya', count: 5, color: '#6ec6ff' },
-      { key: 'felsefe', name: 'Felsefe', count: 5, color: '#ff5c5c' },
-      { key: 'din', name: 'Din', count: 5, color: '#8fe3a0' },
-      { key: 'matematik', name: 'Matematik', count: 40, color: '#c9a6ff' },
-      { key: 'fizik', name: 'Fizik', count: 7, color: '#ffb46e' },
-      { key: 'kimya', name: 'Kimya', count: 7, color: '#9fb8ff' },
-      { key: 'biyoloji', name: 'Biyoloji', count: 6, color: '#ff90e8' }
+      { key: 'turkce', name: 'Türkçe', count: 40, color: '#ff90e8', group: 'turkce' },
+      { key: 'tarih', name: 'Tarih', count: 5, color: '#ffd23f', group: 'sosyal' },
+      { key: 'cografya', name: 'Coğrafya', count: 5, color: '#6ec6ff', group: 'sosyal' },
+      { key: 'felsefe', name: 'Felsefe', count: 5, color: '#ff5c5c', group: 'sosyal' },
+      { key: 'din', name: 'Din', count: 5, color: '#8fe3a0', group: 'sosyal' },
+      { key: 'matematik', name: 'Matematik', count: 40, color: '#c9a6ff', group: 'matematik' },
+      { key: 'fizik', name: 'Fizik', count: 7, color: '#ffb46e', group: 'fen' },
+      { key: 'kimya', name: 'Kimya', count: 7, color: '#9fb8ff', group: 'fen' },
+      { key: 'biyoloji', name: 'Biyoloji', count: 6, color: '#ff90e8', group: 'fen' }
     ],
     ayt: [
-      { key: 'matematik', name: 'Matematik', count: 40, color: '#c9a6ff' },
-      { key: 'fizik', name: 'Fizik', count: 14, color: '#ffb46e' },
-      { key: 'kimya', name: 'Kimya', count: 13, color: '#9fb8ff' },
-      { key: 'biyoloji', name: 'Biyoloji', count: 13, color: '#8fe3a0' }
+      { key: 'matematik', name: 'Matematik', count: 40, color: '#c9a6ff', group: 'matematik' },
+      { key: 'fizik', name: 'Fizik', count: 14, color: '#ffb46e', group: 'fen' },
+      { key: 'kimya', name: 'Kimya', count: 13, color: '#9fb8ff', group: 'fen' },
+      { key: 'biyoloji', name: 'Biyoloji', count: 13, color: '#8fe3a0', group: 'fen' }
     ]
+  };
+
+  // Sosyal Bilimler (Tarih/Coğrafya/Felsefe/Din) ve Fen Bilimleri
+  // (Fizik/Kimya/Biyoloji) gerçek sınavda tek bir test olarak art arda
+  // numaralandırılır: her ders kendi 1'inden değil, aynı grup içindeki
+  // önceki derslerin soru sayısı kadar ileriden başlar (ör. TYT'de Tarih
+  // 1-5, Coğrafya 6-10, Felsefe 11-15, Din 16-20; Fizik 1-7, Kimya 8-14,
+  // Biyoloji 15-20). Türkçe ve Matematik zaten kendi başına tam bir test
+  // olduğundan (group kendi anahtarıyla aynı, tek başına) hep 1'den başlar.
+  const page11SubjectNumberOffset = (type, subjectKey) => {
+    const list = EXAM_SUBJECTS[type] || EXAM_SUBJECTS.tyt;
+    const target = list.find((s) => s.key === subjectKey);
+    if (!target) return 0;
+    let offset = 0;
+    for (const subj of list) {
+      if (subj.key === subjectKey) break;
+      if (subj.group === target.group) offset += subj.count;
+    }
+    return offset;
   };
 
   const PAGE11_TYPE_LABELS = { tyt: 'TYT', ayt: 'AYT' };
@@ -36611,7 +36657,7 @@
     examDetailLockBtn.setAttribute('aria-pressed', locked ? 'true' : 'false');
     examDetailLockBtn.setAttribute('aria-label', locked ? 'Kilidi kaldır' : 'Denemeyi kilitle');
     page11DetailSection.classList.toggle('is-locked', locked);
-    [examDetailMarkAllBtn, examDetailClearAllBtn, examDetailLaterBtn, examDetailDeleteBtn, examDetailResourcesBtn, examDetailBulkAddBtn].forEach((btn) => {
+    [examDetailMarkAllBtn, examDetailClearAllBtn, examDetailLaterBtn, examDetailDeleteBtn, examDetailBulkAddBtn].forEach((btn) => {
       btn.disabled = locked;
     });
   };
@@ -36648,6 +36694,7 @@
 
   const page11CreatePhotoBtn = (exam, subjectKey, idx, subjectName) => {
     const photo = page11GetPhoto(exam, subjectKey, idx);
+    const displayNum = page11SubjectNumberOffset(exam.type, subjectKey) + idx + 1;
     const photoBtn = document.createElement('span');
     photoBtn.className = 'exam-detail-bubble-photo-btn';
     if (photo) photoBtn.classList.add('has-photo');
@@ -36656,8 +36703,8 @@
     photoBtn.setAttribute(
       'aria-label',
       photo
-        ? `${subjectName} soru ${idx + 1} görselini görüntüle`
-        : `${subjectName} soru ${idx + 1} için görsel ekle`
+        ? `${subjectName} soru ${displayNum} görselini görüntüle`
+        : `${subjectName} soru ${displayNum} için görsel ekle`
     );
     photoBtn.innerHTML = PAGE11_PHOTO_CAMERA_ICON;
     photoBtn.addEventListener('click', (e) => {
@@ -36771,14 +36818,15 @@
       grid.className = 'exam-detail-bubble-grid';
 
       page11BubbleEls[subject.key] = [];
+      const subjectNumOffset = page11SubjectNumberOffset(exam.type, subject.key);
       exam.answers[subject.key].forEach((state, idx) => {
         const bubble = document.createElement('button');
         bubble.type = 'button';
         bubble.className = 'exam-detail-bubble';
         if (state === 'correct' || state === 'wrong') bubble.classList.add(`is-${state}`);
         else if (state === 'blank' && page11IsLater(exam, subject.key, idx)) bubble.classList.add('is-later');
-        bubble.textContent = String(idx + 1);
-        bubble.setAttribute('aria-label', `${subject.name} soru ${idx + 1}`);
+        bubble.textContent = String(subjectNumOffset + idx + 1);
+        bubble.setAttribute('aria-label', `${subject.name} soru ${subjectNumOffset + idx + 1}`);
         bubble.addEventListener('click', () => {
           // "Sonradan Çözüldü" modu açıkken tıklama doğru/yanlış/boş
           // döngüsünü değil, yalnızca BOŞ sorunun sarı işaretini açıp kapatır.
@@ -37020,6 +37068,7 @@
   // baştan çizer.
   const renderExamResourcesModal = (exam) => {
     const res = page11GetResources(exam);
+    const locked = !!exam.locked;
 
     examResourcesImageGrid.innerHTML = '';
     res.answerKeyImages.forEach((ref, idx) => {
@@ -37036,8 +37085,12 @@
       removeBtn.className = 'delete-btn exam-resources-thumb-remove';
       removeBtn.textContent = '×';
       removeBtn.setAttribute('aria-label', 'Görseli sil');
+      // Deneme kilitliyken silme butonu pasifleşir; görsele dokunup büyük
+      // halde görüntülemek (aşağıdaki thumb click) her zaman serbesttir.
+      removeBtn.disabled = locked;
       removeBtn.addEventListener('click', async (e) => {
         e.stopPropagation();
+        if (exam.locked) return;
         await deleteImageRef(ref);
         res.answerKeyImages.splice(idx, 1);
         savePage11State();
@@ -37048,21 +37101,29 @@
 
       // Silme butonu haricinde görsele dokununca galeri lightbox'ı,
       // sağa/sola kaydırarak diğer görsellere geçilebilecek şekilde açılır.
+      // Deneme kilitli olsa bile bu görüntüleme her zaman mümkündür.
       thumb.addEventListener('click', () => openExamResGallery(res.answerKeyImages, idx));
 
       examResourcesImageGrid.appendChild(thumb);
     });
 
+    // "+ Görsel Ekle" çipi: kilitliyken pasifleşir (yeni görsel eklenemez).
+    examResourcesAddImageBtn.disabled = locked;
+
     // Video linki: kayıtlı bir link varsa link satırını göster ve chip'i
     // "Düzenle"ye çevir; yoksa link satırını gizle ve chip "Ekle" kalsın.
     // Form her render'da kapatılır (açık kalması gereken tek an, chip'e
     // az önce basıldığı andır ve o zaten renderExamResourcesModal'ı
-    // tetiklemez).
+    // tetiklemez). Deneme kilitliyken video chip'i pasifleşir (form hiç
+    // açılamaz); kayıtlı link varsa satırı ve dokununca açma davranışı
+    // (yeni sekmede) her zaman aktif kalır, yalnızca × (kaldır) pasifleşir.
     const hasVideo = !!res.videoLink;
     examResourcesVideoChipLabel.textContent = hasVideo ? 'Düzenle' : 'Ekle';
+    examResourcesVideoChipBtn.disabled = locked;
     examResourcesVideoLinkRow.classList.toggle('is-hidden', !hasVideo);
     examResourcesVideoLinkText.textContent = hasVideo ? res.videoLink : '';
     examResourcesVideoForm.classList.add('is-hidden');
+    examResourcesVideoRemoveBtn.disabled = locked;
   };
 
   // Pop-up (ve üzerinden açılabilen galerisi) açıkken arka plandaki
@@ -37108,6 +37169,7 @@
     if (!files.length) return;
     const exam = page11State.exams.find((it) => it.id === page11ActiveExamId);
     if (!exam) return;
+    if (exam.locked) return;
     const res = page11GetResources(exam);
 
     for (const file of files) {
@@ -37135,6 +37197,7 @@
   const toggleExamResourcesVideoForm = (forceOpen) => {
     const exam = page11State.exams.find((it) => it.id === page11ActiveExamId);
     if (!exam) return;
+    if (exam.locked) return;
     const res = page11GetResources(exam);
     const willOpen = typeof forceOpen === 'boolean'
       ? forceOpen
@@ -37157,6 +37220,7 @@
   const saveExamResourcesVideoLink = () => {
     const exam = page11State.exams.find((it) => it.id === page11ActiveExamId);
     if (!exam) return;
+    if (exam.locked) return;
     const res = page11GetResources(exam);
     let value = examResourcesVideoInput.value.trim();
     if (value && !/^[a-zA-Z][a-zA-Z0-9+.-]*:\/\//.test(value)) value = `https://${value}`;
@@ -37176,6 +37240,7 @@
     e.stopPropagation();
     const exam = page11State.exams.find((it) => it.id === page11ActiveExamId);
     if (!exam) return;
+    if (exam.locked) return;
     const res = page11GetResources(exam);
     res.videoLink = '';
     savePage11State();
@@ -37290,6 +37355,14 @@
   const page11QuestionAnswerPreviewTrack = document.getElementById('page11QuestionAnswerPreviewTrack');
   const page11QuestionAnswerPreviewSubject = document.getElementById('page11QuestionAnswerPreviewSubject');
   const page11QuestionAnswerGrid = document.getElementById('page11QuestionAnswerGrid');
+  const page11QuestionAnswerTypeSegmented = document.getElementById('page11QuestionAnswerTypeSegmented');
+  const page11QuestionAnswerTypeSlider = document.getElementById('page11QuestionAnswerTypeSlider');
+  const page11QuestionAnswerTypeOptions = page11QuestionAnswerTypeSegmented
+    ? Array.from(page11QuestionAnswerTypeSegmented.querySelectorAll('.settings-segmented-option'))
+    : [];
+  const page11QuestionAnswerModeChoice = document.getElementById('page11QuestionAnswerModeChoice');
+  const page11QuestionAnswerModeOpen = document.getElementById('page11QuestionAnswerModeOpen');
+  const page11QuestionAnswerTextInput = document.getElementById('page11QuestionAnswerTextInput');
   const page11QuestionBack = document.getElementById('page11QuestionBack');
   const page11QuestionConfirm = document.getElementById('page11QuestionConfirm');
   const page11QuestionFileInput = document.getElementById('page11QuestionFileInput');
@@ -37464,10 +37537,64 @@
   // data URL'i ya da (hiç oynatılmadıysa) mevcut referans.
   let page11QuestionPendingImage = null;
   let page11QuestionPendingAnswer = null;
+  let page11QuestionPendingAnswerType = 'choice';
   let page11QuestionOpenToken = 0;
 
   const PAGE11_QUESTION_STEP_SUBTITLES = ['Görseli kırp', 'Doğru cevabı işaretle'];
   const PAGE11_QUESTION_STEP_LABELS = ['İleri', 'Kaydet'];
+
+  const setPage11QuestionAnswerTypeSlider = (value) => {
+    if (!page11QuestionAnswerTypeSlider) return;
+    page11QuestionAnswerTypeSlider.style.transform = value === 'open' ? 'translateX(100%)' : 'translateX(0)';
+  };
+
+  // Şıklı/Açık Uçlu geçişi: Soru Havuzu'ndaki aynı geçişle birebir aynı
+  // mantık — hangi mod aktifse ilgili alan gösterilir, karşı taraf dolu
+  // olduğu sürece diğer moda geçiş kilitlenir (aynı anda iki cevap türü
+  // birden dolu olamaz).
+  const setPage11QuestionAnswerType = (type) => {
+    page11QuestionPendingAnswerType = type;
+    page11QuestionAnswerTypeOptions.forEach((btn) => btn.classList.toggle('is-active', btn.dataset.value === type));
+    setPage11QuestionAnswerTypeSlider(type);
+    if (page11QuestionAnswerModeChoice) page11QuestionAnswerModeChoice.classList.toggle('is-hidden', type !== 'choice');
+    if (page11QuestionAnswerModeOpen) page11QuestionAnswerModeOpen.classList.toggle('is-hidden', type !== 'open');
+    page11UpdateQuestionAnswerTypeLock();
+    page11QuestionSyncNav();
+  };
+
+  const page11UpdateQuestionAnswerTypeLock = () => {
+    const hasChoiceAnswer = !!page11QuestionPendingAnswer;
+    const hasOpenAnswer = !!(page11QuestionAnswerTextInput && page11QuestionAnswerTextInput.value.trim());
+
+    page11QuestionAnswerTypeOptions.forEach((btn) => {
+      if (btn.dataset.value === 'open') {
+        btn.disabled = hasChoiceAnswer && page11QuestionPendingAnswerType !== 'open';
+      } else if (btn.dataset.value === 'choice') {
+        btn.disabled = hasOpenAnswer && page11QuestionPendingAnswerType !== 'choice';
+      }
+    });
+
+    if (page11QuestionAnswerTextInput) {
+      page11QuestionAnswerTextInput.disabled = hasChoiceAnswer && page11QuestionPendingAnswerType !== 'open';
+    }
+    if (page11QuestionAnswerGrid) {
+      page11QuestionAnswerGrid.classList.toggle('is-locked', hasOpenAnswer && page11QuestionPendingAnswerType !== 'choice');
+    }
+  };
+
+  page11QuestionAnswerTypeOptions.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      if (btn.disabled || btn.classList.contains('is-active')) return;
+      setPage11QuestionAnswerType(btn.dataset.value);
+    });
+  });
+
+  if (page11QuestionAnswerTextInput) {
+    page11QuestionAnswerTextInput.addEventListener('input', () => {
+      page11UpdateQuestionAnswerTypeLock();
+      page11QuestionSyncNav();
+    });
+  }
 
   function page11QuestionSyncNav() {
     page11QuestionStepCrop.classList.toggle('is-hidden', page11QuestionStep !== 0);
@@ -37479,10 +37606,24 @@
     page11QuestionSubtitle.textContent = PAGE11_QUESTION_STEP_SUBTITLES[page11QuestionStep];
     page11QuestionBack.classList.toggle('is-hidden', page11QuestionStep === 0);
     page11QuestionConfirm.textContent = PAGE11_QUESTION_STEP_LABELS[page11QuestionStep];
-    // Adım 1: görsel yüklenip kırpıcı hazır olunca; Adım 2: şık seçilince açılır.
-    page11QuestionConfirm.disabled = page11QuestionStep === 0
-      ? !page11QuestionCropper.isReady()
-      : !page11QuestionPendingAnswer;
+    // Adım 1: görsel yüklenip kırpıcı hazır olunca; Adım 2: cevap türüne göre
+    // bir şık seçilince ya da yazılı cevap girilince açılır.
+    if (page11QuestionStep === 0) {
+      page11QuestionConfirm.disabled = !page11QuestionCropper.isReady();
+    } else {
+      const hasChoiceAnswer = !!page11QuestionPendingAnswer;
+      const hasOpenAnswer = !!(page11QuestionAnswerTextInput && page11QuestionAnswerTextInput.value.trim());
+      // Şık VE açık uçlu cevap aynı anda dolu olamaz (segmented anahtar
+      // zaten bunu engeller); ek güvenlik olarak ikisi de doluysa buton
+      // yine de pasif kalır.
+      if (hasChoiceAnswer && hasOpenAnswer) {
+        page11QuestionConfirm.disabled = true;
+      } else {
+        page11QuestionConfirm.disabled = page11QuestionPendingAnswerType === 'choice'
+          ? !hasChoiceAnswer
+          : !hasOpenAnswer;
+      }
+    }
   }
 
   const page11BuildQuestionAnswerGrid = () => {
@@ -37497,6 +37638,7 @@
       btn.addEventListener('click', () => {
         page11QuestionPendingAnswer = letter;
         page11BuildQuestionAnswerGrid();
+        page11UpdateQuestionAnswerTypeLock();
         page11QuestionSyncNav();
       });
       page11QuestionAnswerGrid.appendChild(btn);
@@ -37517,11 +37659,20 @@
     page11QuestionPendingAnswer = (existing && existing.answer) || null;
     page11QuestionStep = 0;
 
+    // Mevcut soru açık uçlu cevaplı kaydedilmişse (şıksız, yazılı cevaplı)
+    // pop-up da o modda açılır; aksi halde varsayılan "Şıklı" moddadır.
+    const existingIsOpen = !!(existing && !existing.answer && existing.answerText);
+    if (page11QuestionAnswerTextInput) {
+      page11QuestionAnswerTextInput.value = existingIsOpen ? existing.answerText : '';
+    }
+    setPage11QuestionAnswerType(existingIsOpen ? 'open' : 'choice');
+
     const subjectDef = (EXAM_SUBJECTS[exam.type] || EXAM_SUBJECTS.tyt).find((subj) => subj.key === subjectKey);
     page11QuestionAnswerPreviewTrack.textContent = PAGE11_TYPE_LABELS[exam.type] || 'TYT';
-    page11QuestionAnswerPreviewSubject.textContent = `${subjectDef ? subjectDef.name : subjectKey} · Soru ${idx + 1}`;
+    page11QuestionAnswerPreviewSubject.textContent = `${subjectDef ? subjectDef.name : subjectKey} · Soru ${page11SubjectNumberOffset(exam.type, subjectKey) + idx + 1}`;
     page11QuestionRemoveBtn.classList.toggle('is-hidden', !existing);
     page11BuildQuestionAnswerGrid();
+    page11UpdateQuestionAnswerTypeLock();
 
     // Kırpma adımı görünür olmadan kutunun genişliği ölçülemez; önce adımı
     // göster, sonra görseli yükle (yüklenince kırpıcı hazır olur ve İleri açılır).
@@ -37545,6 +37696,8 @@
     page11QuestionPendingImage = null;
     page11QuestionPendingAnswer = null;
     page11QuestionStep = 0;
+    if (page11QuestionAnswerTextInput) page11QuestionAnswerTextInput.value = '';
+    setPage11QuestionAnswerType('choice');
     page11QuestionCropper.reset();
     page11QuestionFileInput.value = '';
   };
@@ -37615,7 +37768,12 @@
       return;
     }
 
-    if (!page11QuestionPendingImage || !page11QuestionPendingAnswer) return;
+    const isOpenAnswer = page11QuestionPendingAnswerType === 'open';
+    const openAnswerText = isOpenAnswer && page11QuestionAnswerTextInput
+      ? page11QuestionAnswerTextInput.value.trim()
+      : '';
+    const hasAnswer = isOpenAnswer ? !!openAnswerText : !!page11QuestionPendingAnswer;
+    if (!page11QuestionPendingImage || !hasAnswer) return;
     const { examId, subjectKey, idx } = page11QuestionTarget;
     const exam = page11State.exams.find((it) => it.id === examId);
     if (!exam) return;
@@ -37633,7 +37791,8 @@
     }
     page11SetPhoto(exam, subjectKey, idx, {
       image: imageRef,
-      answer: page11QuestionPendingAnswer,
+      answer: isOpenAnswer ? null : page11QuestionPendingAnswer,
+      answerText: isOpenAnswer ? (openAnswerText || null) : null,
       // Eklenme tarihi ilk eklemede sabitlenir; sonraki düzenlemelerde
       // (fotoğraf/cevap değişse bile) korunur — havuzdaki "Eklenme Tarihi"
       // ile aynı mantık. Açıklama da varsa (Bilgi pop-up'ından girilmiş) taşınır.
@@ -37799,7 +37958,10 @@
       const subjectDef = (EXAM_SUBJECTS[page11BulkExam.type] || EXAM_SUBJECTS.tyt).find((s) => s.key === page11BulkSubjectKey);
       parts.push(subjectDef ? subjectDef.name : page11BulkSubjectKey);
     }
-    if (page11BulkIdx !== null) parts.push(`${page11BulkIdx + 1}. soru`);
+    if (page11BulkIdx !== null) {
+      const offset = page11BulkSubjectKey ? page11SubjectNumberOffset(page11BulkExam.type, page11BulkSubjectKey) : 0;
+      parts.push(`${offset + page11BulkIdx + 1}. soru`);
+    }
     if (page11BulkAnswer) parts.push(`Cevap ${page11BulkAnswer}`);
     else if (page11BulkAnswerText && page11BulkAnswerText.trim()) parts.push(`Cevap: ${page11BulkAnswerText.trim()}`);
     return parts.length ? parts.join(' · ') : 'Branş seç';
@@ -37827,7 +37989,14 @@
     if (page11BulkStep === 0) disabled = !page11BulkCropper.isReady();
     else if (page11BulkStep === 1) disabled = !page11BulkSubjectKey;
     else if (page11BulkStep === 2) disabled = page11BulkIdx === null;
-    else disabled = !page11BulkAnswer && !(page11BulkAnswerText && page11BulkAnswerText.trim());
+    else {
+      // Şık VE açık uçlu cevap aynı anda dolu olamaz: ikisi birden
+      // işaretlenmişse hangisinin geçerli olduğu belirsiz kalır, bu
+      // yüzden "İleri/Ekle" pasifleşir; kullanıcı birini temizlemeli.
+      const hasChoiceAnswer = !!page11BulkAnswer;
+      const hasOpenAnswer = !!(page11BulkAnswerText && page11BulkAnswerText.trim());
+      disabled = (!hasChoiceAnswer && !hasOpenAnswer) || (hasChoiceAnswer && hasOpenAnswer);
+    }
     page11BulkConfirm.disabled = disabled;
   }
 
@@ -37882,6 +38051,7 @@
     const subjectDef = (EXAM_SUBJECTS[page11BulkExam.type] || EXAM_SUBJECTS.tyt).find((s) => s.key === page11BulkSubjectKey);
     if (!subjectDef) return;
     const answers = (page11BulkExam.answers && page11BulkExam.answers[page11BulkSubjectKey]) || [];
+    const numOffset = page11SubjectNumberOffset(page11BulkExam.type, page11BulkSubjectKey);
     // Yalnızca boş bırakılan veya yanlış işaretlenen sorulara görsel
     // eklenebilir; doğru işaretlenmiş sorular bu ızgarada hiç görünmez
     // (yanlışlıkla üzerine görsel eklenmesin diye). Sıra numarası
@@ -37894,8 +38064,8 @@
       const btn = document.createElement('button');
       btn.type = 'button';
       btn.className = 'page11-bulk-number-btn';
-      btn.textContent = String(i + 1);
-      btn.setAttribute('aria-label', `${subjectDef.name} soru ${i + 1}`);
+      btn.textContent = String(numOffset + i + 1);
+      btn.setAttribute('aria-label', `${subjectDef.name} soru ${numOffset + i + 1}`);
       if (page11GetPhoto(page11BulkExam, page11BulkSubjectKey, i)) btn.classList.add('has-photo');
       if (page11BulkIdx === i) btn.classList.add('is-selected');
       btn.addEventListener('click', () => {
@@ -38080,11 +38250,12 @@
       return;
     }
 
-    // Adım 4: doğru cevap işaretlendi (şıkla ve/veya açık uçlu metinle);
-    // kaydet ve kuyruktaki bir sonraki görsele geç. Görsel adım 1'de
-    // zaten kırpılıp saklanmıştı.
+    // Adım 4: doğru cevap işaretlendi (şıkla YA DA açık uçlu metinle, ikisi
+    // birden değil); kaydet ve kuyruktaki bir sonraki görsele geç. Görsel
+    // adım 1'de zaten kırpılıp saklanmıştı.
     const bulkAnswerTextTrimmed = (page11BulkAnswerText && page11BulkAnswerText.trim()) || '';
     if (!page11BulkAnswer && !bulkAnswerTextTrimmed) return;
+    if (page11BulkAnswer && bulkAnswerTextTrimmed) return;
     page11BulkConfirm.disabled = true;
     const imageDataUrl = page11BulkCroppedImage || await page11BulkResolveQueueItem(page11BulkQueueIndex);
     const imageRef = await storeImageAndGetRef(imageDataUrl);
@@ -38175,16 +38346,36 @@
     });
 
     examQLightboxAnswerRow.innerHTML = '';
-    PAGE11_ANSWERS.forEach((letter) => {
-      const btn = document.createElement('button');
-      btn.type = 'button';
-      btn.className = 'qhavuz-lightbox-answer-btn';
-      if (letter === photo.answer) btn.classList.add('is-correct');
-      btn.textContent = letter;
-      btn.disabled = true;
-      btn.setAttribute('aria-label', `Doğru cevap ${letter}`);
-      examQLightboxAnswerRow.appendChild(btn);
-    });
+    // Açık uçlu (yazılı cevaplı, şıksız) sorularda şık ızgarası yerine
+    // sadece girilen cevap metni gösterilir; salt-okunur (bu lightbox'ta
+    // düzenleme yapılamaz, bkz. "Düzenle" butonu).
+    if (!photo.answer && photo.answerText) {
+      const wrap = document.createElement('div');
+      wrap.className = 'qhavuz-lightbox-open-answer';
+
+      const label = document.createElement('span');
+      label.className = 'qhavuz-lightbox-open-answer-label';
+      label.textContent = 'Cevap:';
+      wrap.appendChild(label);
+
+      const text = document.createElement('span');
+      text.className = 'qhavuz-lightbox-open-answer-text';
+      text.textContent = photo.answerText;
+      wrap.appendChild(text);
+
+      examQLightboxAnswerRow.appendChild(wrap);
+    } else {
+      PAGE11_ANSWERS.forEach((letter) => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'qhavuz-lightbox-answer-btn';
+        if (letter === photo.answer) btn.classList.add('is-correct');
+        btn.textContent = letter;
+        btn.disabled = true;
+        btn.setAttribute('aria-label', `Doğru cevap ${letter}`);
+        examQLightboxAnswerRow.appendChild(btn);
+      });
+    }
     // Cevap her açılışta yeniden gizlenmiş (blurlu) başlar.
     examQLightboxReveal.classList.remove('is-hidden');
 
@@ -38213,7 +38404,7 @@
     const subjectName = subjectDef ? subjectDef.name : target.subjectKey;
 
     // Rozet: kaçıncı soru olduğu ("20. soru" biçiminde) + hangi branşa ait olduğu.
-    examQInfoSubjectBadge.textContent = `${target.idx + 1}. soru · ${subjectName}`;
+    examQInfoSubjectBadge.textContent = `${page11SubjectNumberOffset(exam.type, target.subjectKey) + target.idx + 1}. soru · ${subjectName}`;
     examQInfoSubjectBadge.style.background = subjectDef ? page11SubjectColor(exam.type, subjectDef) : '#ff90e8';
 
     // Açıklama, exam kilitli değilse doğrudan yazılıp odaktan çıkınca kaydedilir.
@@ -39058,9 +39249,15 @@
     if (qhavuzAddStep === 1) {
       stepValid = !!(qhavuzPendingTrack && qhavuzPendingSubject);
     } else if (qhavuzAddStep === 2) {
-      stepValid = qhavuzPendingAnswerType === 'choice'
-        ? !!qhavuzPendingAnswer
-        : !!qhavuzAddAnswerTextInput.value.trim();
+      const hasChoiceAnswer = !!qhavuzPendingAnswer;
+      const hasOpenAnswer = !!qhavuzAddAnswerTextInput.value.trim();
+      // Şık VE açık uçlu cevap aynı anda dolu olamaz; segmented anahtar
+      // bunu zaten engeller, burada ek güvenlik olarak tekrar kontrol edilir.
+      if (hasChoiceAnswer && hasOpenAnswer) {
+        stepValid = false;
+      } else {
+        stepValid = qhavuzPendingAnswerType === 'choice' ? hasChoiceAnswer : hasOpenAnswer;
+      }
     }
     qhavuzAddConfirm.disabled = !stepValid;
   };
