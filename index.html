@@ -4952,9 +4952,7 @@
     scrollbar-width: none;
     -ms-overflow-style: none;
     box-sizing: border-box;
-    /* Alt boşluk: sağ alttaki yüzen "Hızlı ekle" butonu ve alt nav bar'ın
-       arkasında son kart kalmasın diye artırıldı. */
-    padding: 0.9rem 24px calc(176px + env(safe-area-inset-bottom));
+    padding: 0.9rem 24px calc(96px + env(safe-area-inset-bottom));
     clip-path: polygon(
       0.0% 0, 4.167% 6px, 8.333% 0, 12.5% 6px, 16.667% 0, 20.833% 6px,
       25.0% 0, 29.167% 6px, 33.333% 0, 37.5% 6px, 41.667% 0, 45.833% 6px,
@@ -5766,12 +5764,7 @@
   .page8-copy-toast {
     position: fixed;
     left: 50%;
-    /* Alt nav bar ve sağ alttaki yüzen "Hızlı ekle" butonunun üstünde
-       kalsın; ikisinin üstüne binmesin. */
-    bottom: calc(176px + env(safe-area-inset-bottom));
-    width: max-content;
-    max-width: calc(100% - 2.4rem);
-    text-align: center;
+    bottom: 1.6rem;
     z-index: 600;
     padding: 0.55rem 1.1rem;
     background: #121212;
@@ -5824,671 +5817,9 @@
     background: #d32f2f;
   }
 
-  /* Kartlar, kaydırılarak (ör. yeni eklenen görevin kartına) getirilirken
-     alt kenarı yüzen butonun/nav barın altında kalmasın. */
-  .page8-group-card {
-    scroll-margin-bottom: 130px;
-  }
-
-  /* ---------- Sayfa 8: Boş durum ---------- */
-  .page8-empty {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.35rem;
-    padding: 1.7rem 1.2rem;
+  .page8-add-group-btn {
+    width: 100%;
     text-align: center;
-    border: 3px dashed currentColor;
-    border-radius: 1.1em;
-    color: var(--theme-text, #fff);
-    opacity: 0.85;
-    font-family: "Space Grotesk", sans-serif;
-    break-inside: avoid;
-  }
-
-  .page8-empty-title {
-    font-weight: 800;
-    font-size: 1rem;
-  }
-
-  .page8-empty-text {
-    font-weight: 600;
-    font-size: 0.85rem;
-    opacity: 0.8;
-  }
-
-  /* ---------- Sayfa 8: Hızlı ekle (yuvarlak buton + açılır panel) ----------
-     Tek bir yuvarlak ana buton. İlk dokunuşta yaylanarak açılan yuvarlak
-     mini butonlar (Kategori ekle) belirir; ana buton vurgu rengine
-     dönüşüp simgesini "görev"e çevirir, ona tekrar dokununca hızlı ekle
-     penceresi açılır. Sayfanın İÇİNDE durduğu için sayfa geçişlerinde
-     onunla birlikte solar; pointer-events özellikle değiştirilmiyor
-     (.page kapalıyken none, çocuklar miras alıyor). */
-  .page8-fab-scrim {
-    position: absolute;
-    inset: 0;
-    z-index: 30;
-    background: rgba(18, 18, 28, 0.34);
-    -webkit-backdrop-filter: blur(0px);
-    backdrop-filter: blur(0px);
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity 0.3s ease, backdrop-filter 0.4s ease, -webkit-backdrop-filter 0.4s ease,
-      visibility 0s linear 0.4s;
-  }
-
-  .page8-fab-scrim.is-open {
-    opacity: 1;
-    visibility: visible;
-    -webkit-backdrop-filter: blur(7px);
-    backdrop-filter: blur(7px);
-    transition-delay: 0s;
-  }
-
-  .page8-fab-dock {
-    --fab-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
-    position: absolute;
-    z-index: 31;
-    right: max(16px, calc((100% - 340px) / 2 + 2px));
-    bottom: calc(100px + env(safe-area-inset-bottom));
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 0.85rem;
-    transition: opacity 0.2s ease, transform 0.3s ease;
-  }
-
-  /* Görev yazılırken klavye ekranı kapladığı için gizlenir. */
-  body.is-page8-typing .page8-fab-dock {
-    opacity: 0;
-    transform: translateY(20px);
-    pointer-events: none;
-  }
-
-  .page8-fab-panel {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 0.75rem;
-    padding-right: 0.375rem; /* 3rem mini butonu 3.75rem ana butonla ortalar */
-    visibility: hidden;
-    transition: visibility 0s linear 0.3s;
-  }
-
-  .page8-fab-panel.is-open {
-    visibility: visible;
-    transition-delay: 0s;
-  }
-
-  .page8-fab-item,
-  .page8-fab-row {
-    display: flex;
-    align-items: center;
-    gap: 0.7rem;
-  }
-
-  /* Etiketler: alt nav'daki "Gündelik" balonuyla aynı koyu hap. */
-  .page8-fab-tip {
-    padding: 0.5rem 0.9rem;
-    border-radius: 999px;
-    background: rgba(18, 18, 18, 0.92);
-    color: #fff;
-    font-family: "Space Grotesk", sans-serif;
-    font-weight: 700;
-    font-size: 0.82rem;
-    letter-spacing: -0.005em;
-    white-space: nowrap;
-    box-shadow: 0 8px 18px -8px rgba(0, 0, 0, 0.55);
-    opacity: 0;
-    transform: translateX(14px) scale(0.92);
-    transform-origin: right center;
-    pointer-events: none;
-    transition: opacity 0.16s ease, transform 0.22s ease;
-  }
-
-  .page8-fab-panel.is-open .page8-fab-tip,
-  .page8-fab-dock.is-open .page8-fab-tip-main {
-    opacity: 1;
-    transform: none;
-    transition: opacity 0.25s ease, transform 0.5s var(--fab-spring);
-    transition-delay: calc(var(--i, 0) * 60ms + 90ms);
-  }
-
-  .page8-fab-dock.is-open .page8-fab-tip-main {
-    transition-delay: 0.16s;
-  }
-
-  .page8-fab-mini,
-  .page8-fab {
-    position: relative;
-    display: grid;
-    place-items: center;
-    padding: 0;
-    border: 0;
-    border-radius: 50%;
-    cursor: pointer;
-    -webkit-tap-highlight-color: transparent;
-  }
-
-  .page8-fab-mini {
-    overflow: hidden;
-    width: 3rem;
-    height: 3rem;
-    background: #fff;
-    color: #121212;
-    box-shadow: 0 12px 24px -10px rgba(0, 0, 0, 0.55), 0 2px 6px rgba(0, 0, 0, 0.16);
-    opacity: 0;
-    transform: translateY(64px) scale(0.3);
-    transition: opacity 0.16s ease, transform 0.24s ease-in, box-shadow 0.25s ease;
-  }
-
-  .page8-fab-panel.is-open .page8-fab-mini {
-    opacity: 1;
-    transform: none;
-    transition: opacity 0.22s ease, transform 0.6s var(--fab-spring), box-shadow 0.25s ease;
-    transition-delay: calc(var(--i, 0) * 60ms);
-  }
-
-  .page8-fab-panel.is-open .page8-fab-mini:active {
-    transform: scale(0.9);
-    transition-duration: 0.15s;
-    transition-delay: 0s;
-  }
-
-  .page8-fab-mini svg {
-    width: 1.3rem;
-    height: 1.3rem;
-    fill: none;
-    stroke: currentColor;
-    stroke-width: 1.9;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-  }
-
-  /* ---- Ana buton ---- */
-  .page8-fab {
-    isolation: isolate;
-    width: 3.75rem;
-    height: 3.75rem;
-    background: #121212;
-    color: #fff;
-    box-shadow: 0 16px 30px -12px rgba(0, 0, 0, 0.65), 0 3px 8px rgba(0, 0, 0, 0.25),
-      inset 0 1px 0 rgba(255, 255, 255, 0.16), inset 0 0 0 1px rgba(255, 255, 255, 0.05);
-    transition: transform 0.5s var(--fab-spring), box-shadow 0.35s ease,
-      background-color 0.45s ease, color 0.45s ease;
-  }
-
-  .page8-fab:active {
-    transform: scale(0.9);
-    transition-duration: 0.15s;
-  }
-
-  .page8-fab.is-open {
-    background: var(--accent-color, #ff90e8);
-    color: #121212;
-    transform: scale(1.05);
-    box-shadow: 0 18px 34px -12px rgba(0, 0, 0, 0.55), 0 3px 8px rgba(0, 0, 0, 0.18),
-      inset 0 1px 0 rgba(255, 255, 255, 0.45);
-  }
-
-  .page8-fab.is-open:active {
-    transform: scale(0.95);
-  }
-
-  /* Yüzeyi kırpan katman (ripple ve parlama buraya sığar; halo dışarıda). */
-  .page8-fab-face {
-    position: absolute;
-    inset: 0;
-    display: grid;
-    place-items: center;
-    overflow: hidden;
-    border-radius: 50%;
-  }
-
-  .page8-fab-face::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: radial-gradient(120% 90% at 28% 8%, rgba(255, 255, 255, 0.22), transparent 55%);
-    pointer-events: none;
-  }
-
-  .page8-fab-glyph {
-    grid-area: 1 / 1;
-    width: 1.65rem;
-    height: 1.65rem;
-    fill: none;
-    stroke: currentColor;
-    stroke-width: 2;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-    transition: transform 0.6s var(--fab-spring), opacity 0.25s ease;
-  }
-
-  .page8-fab-glyph-task {
-    opacity: 0;
-    transform: rotate(-90deg) scale(0.4);
-  }
-
-  .page8-fab.is-open .page8-fab-glyph-plus {
-    opacity: 0;
-    transform: rotate(90deg) scale(0.4);
-  }
-
-  .page8-fab.is-open .page8-fab-glyph-task {
-    opacity: 1;
-    transform: none;
-  }
-
-  /* Açılırken halkadan dışa yayılan tek bir yumuşak dalga. */
-  .page8-fab-halo {
-    position: absolute;
-    inset: 0;
-    z-index: -1;
-    border-radius: 50%;
-    background: var(--accent-color, #ff90e8);
-    opacity: 0;
-    pointer-events: none;
-  }
-
-  .page8-fab.is-open .page8-fab-halo {
-    animation: page8FabHalo 0.85s cubic-bezier(0.2, 0.7, 0.3, 1);
-  }
-
-  @keyframes page8FabHalo {
-    0% { transform: scale(1); opacity: 0.55; }
-    100% { transform: scale(2.2); opacity: 0; }
-  }
-
-  /* Dokunulan noktadan yayılan ripple (JS ekler). */
-  .page8-ripple {
-    position: absolute;
-    border-radius: 50%;
-    background: currentColor;
-    opacity: 0.26;
-    transform: scale(0);
-    pointer-events: none;
-    animation: page8Ripple 0.65s cubic-bezier(0.2, 0.7, 0.3, 1) forwards;
-  }
-
-  @keyframes page8Ripple {
-    to { transform: scale(1); opacity: 0; }
-  }
-
-  /* Sayfa açılırken buton yaylanarak yerine oturur (tek seferlik). */
-  #page-8.is-active .page8-fab {
-    animation: page8FabIn 0.75s cubic-bezier(0.2, 0.9, 0.3, 1.25) 0.25s backwards;
-  }
-
-  @keyframes page8FabIn {
-    from { transform: scale(0.3) rotate(-60deg); opacity: 0; }
-  }
-
-  @media (hover: hover) and (pointer: fine) {
-    .page8-fab:not(.is-open):hover {
-      transform: translateY(-3px) scale(1.05);
-      box-shadow: 0 22px 36px -12px rgba(0, 0, 0, 0.6), 0 4px 10px rgba(0, 0, 0, 0.25),
-        inset 0 1px 0 rgba(255, 255, 255, 0.16), inset 0 0 0 1px rgba(255, 255, 255, 0.05);
-    }
-
-    .page8-fab-panel.is-open .page8-fab-mini:hover {
-      transform: translateY(-2px) scale(1.06);
-    }
-  }
-
-  body.is-anthracite .page8-fab:not(.is-open),
-  body.is-anthracite .page8-fab-mini {
-    background: var(--dark-card-color, #32343a);
-    color: #f2f2f4;
-    box-shadow: 0 16px 30px -12px rgba(0, 0, 0, 0.7), 0 2px 6px rgba(0, 0, 0, 0.3),
-      inset 0 0 0 1px rgba(255, 255, 255, 0.1);
-  }
-
-  body.is-anthracite .page8-fab-tip {
-    background: rgba(242, 242, 244, 0.95);
-    color: #121212;
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .page8-fab,
-    .page8-fab-mini,
-    .page8-fab-tip,
-    .page8-fab-glyph,
-    .page8-fab-scrim,
-    .page8-quick-card,
-    .page8-quick-chip,
-    .page8-quick-send {
-      transition-duration: 0.01ms !important;
-      transition-delay: 0s !important;
-      animation: none !important;
-    }
-  }
-
-  /* ---------- Sayfa 8: Hızlı ekle penceresi ----------
-     Sade, büyük yuvarlatılmış köşeli beyaz kart; hap biçimli seçenekler,
-     yuvarlak gönder butonu. Açılırken kart yayla iner ve bulanıklıktan
-     netleşir, seçenekler sırayla belirir. Klavye açılınca "Ekle" butonu
-     görünür kalsın diye pencere üstte durur. */
-  .settings-confirm-backdrop.page8-quick-backdrop {
-    align-items: flex-start;
-    padding-top: max(24px, calc(env(safe-area-inset-top) + 9vh));
-    background: rgba(18, 18, 28, 0.4);
-    -webkit-backdrop-filter: blur(7px);
-    backdrop-filter: blur(7px);
-  }
-
-  .page11-modal-card.page8-quick-card {
-    max-width: 344px;
-    gap: 1.1rem;
-    padding: 1.2rem 1.15rem 1.15rem;
-    border: 0;
-    border-radius: 28px;
-    box-shadow: 0 34px 70px -22px rgba(0, 0, 0, 0.6), 0 4px 14px rgba(0, 0, 0, 0.16);
-    transform: translateY(-18px) scale(0.93);
-    filter: blur(6px);
-    opacity: 0;
-    transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.25s ease,
-      filter 0.4s ease;
-  }
-
-  .settings-confirm-backdrop.is-open .page11-modal-card.page8-quick-card {
-    transform: none;
-    filter: none;
-    opacity: 1;
-  }
-
-  .page8-quick-head {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 0.7rem;
-  }
-
-  .page8-quick-card .page11-modal-title {
-    font-size: 1.15rem;
-    letter-spacing: -0.015em;
-  }
-
-  .page8-quick-close {
-    flex: 0 0 auto;
-    display: grid;
-    place-items: center;
-    width: 2rem;
-    height: 2rem;
-    padding: 0;
-    border: 0;
-    border-radius: 50%;
-    background: rgba(18, 18, 18, 0.06);
-    color: #121212;
-    cursor: pointer;
-    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.2s ease;
-  }
-
-  .page8-quick-close:active {
-    transform: scale(0.88);
-    background: rgba(18, 18, 18, 0.12);
-  }
-
-  .page8-quick-close svg {
-    width: 0.9rem;
-    height: 0.9rem;
-    fill: none;
-    stroke: currentColor;
-    stroke-width: 2.4;
-    stroke-linecap: round;
-  }
-
-  .page8-quick-card .page11-field {
-    gap: 0.55rem;
-  }
-
-  .page8-quick-card .page11-field-label {
-    font-family: "Space Grotesk", sans-serif;
-    font-weight: 700;
-    font-size: 0.78rem;
-    letter-spacing: 0;
-    text-transform: none;
-    color: rgba(18, 18, 18, 0.5);
-  }
-
-  .page8-quick-chips {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.45rem;
-    max-height: 30vh;
-    overflow-y: auto;
-    overscroll-behavior: contain;
-    padding: 0.2rem;
-    margin: -0.2rem;
-  }
-
-  .page8-quick-chip {
-    --chip-color: var(--accent-color, #ff90e8);
-    --chip-ink: #000;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.45rem;
-    max-width: 100%;
-    padding: 0.5rem 0.95rem 0.5rem 0.8rem;
-    font-family: "Space Grotesk", sans-serif;
-    font-weight: 700;
-    font-size: 0.84rem;
-    color: #121212;
-    background: rgba(18, 18, 18, 0.06);
-    border: 1.5px solid transparent;
-    border-radius: 999px;
-    cursor: pointer;
-    transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.25s ease,
-      color 0.25s ease, box-shadow 0.3s ease, border-color 0.25s ease;
-  }
-
-  .settings-confirm-backdrop.is-open .page8-quick-chip {
-    animation: page8ChipIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) backwards;
-    animation-delay: calc(var(--n, 0) * 40ms + 140ms);
-  }
-
-  @keyframes page8ChipIn {
-    from { opacity: 0; transform: translateY(8px) scale(0.9); }
-  }
-
-  .page8-quick-chip:active {
-    transform: scale(0.94);
-  }
-
-  .page8-quick-chip-dot {
-    flex: 0 0 auto;
-    width: 0.62rem;
-    height: 0.62rem;
-    border-radius: 50%;
-    background: var(--chip-color);
-  }
-
-  .page8-quick-chip-plus,
-  .page8-quick-chip-check {
-    flex: 0 0 auto;
-    width: 0.85rem;
-    height: 0.85rem;
-    fill: none;
-    stroke: currentColor;
-    stroke-width: 2.6;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-  }
-
-  .page8-quick-chip-check {
-    display: none;
-  }
-
-  .page8-quick-chip-check path {
-    stroke-dasharray: 26;
-    stroke-dashoffset: 26;
-  }
-
-  .page8-quick-chip-name {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  /* Seçili: grubun rengiyle dolar, kendi renginde yumuşak bir ışıma alır,
-     nokta yerine tik çizilerek belirir. */
-  .page8-quick-chip.is-selected {
-    background: var(--chip-color);
-    color: var(--chip-ink);
-    box-shadow: 0 8px 16px -8px var(--chip-color);
-  }
-
-  .page8-quick-chip.is-selected .page8-quick-chip-dot,
-  .page8-quick-chip.is-selected .page8-quick-chip-plus {
-    display: none;
-  }
-
-  .page8-quick-chip.is-selected .page8-quick-chip-check {
-    display: block;
-  }
-
-  .page8-quick-chip.is-selected .page8-quick-chip-check path {
-    animation: page8CheckDraw 0.4s ease 0.05s forwards;
-  }
-
-  @keyframes page8CheckDraw {
-    to { stroke-dashoffset: 0; }
-  }
-
-  .page8-quick-chip-new {
-    background: transparent;
-    border: 1.5px dashed rgba(18, 18, 18, 0.28);
-  }
-
-  .page8-quick-chip-new.is-selected {
-    border-color: transparent;
-  }
-
-  .page8-quick-newname {
-    margin-top: 0.15rem;
-    animation: page8Reveal 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-  }
-
-  @keyframes page8Reveal {
-    from { opacity: 0; transform: translateY(-8px) scale(0.97); }
-  }
-
-  .page8-quick-card .page8-name-field-input {
-    background: rgba(18, 18, 18, 0.05);
-    border: 1.5px solid transparent;
-    border-radius: 1.1rem;
-    padding: 0.7rem 0.95rem;
-    font-weight: 600;
-    -webkit-user-select: text;
-    user-select: text;
-    transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.25s ease;
-  }
-
-  .page8-quick-card .page8-name-field-input:focus {
-    background: #fff;
-    border-color: #121212;
-    box-shadow: 0 0 0 4px rgba(18, 18, 18, 0.07);
-  }
-
-  .page8-quick-compose {
-    display: flex;
-    align-items: flex-end;
-    gap: 0.55rem;
-  }
-
-  .page8-quick-card .page8-quick-task {
-    flex: 1 1 auto;
-    min-width: 0;
-    min-height: 2.75rem;
-    max-height: 140px;
-    border-radius: 1.4rem;
-    resize: none;
-    line-height: 1.35;
-    overflow-y: auto;
-    white-space: pre-wrap;
-    word-break: break-word;
-  }
-
-  .page8-quick-send {
-    flex: 0 0 auto;
-    display: grid;
-    place-items: center;
-    width: 2.75rem;
-    height: 2.75rem;
-    padding: 0;
-    border: 0;
-    border-radius: 50%;
-    background: #121212;
-    color: #fff;
-    cursor: pointer;
-    box-shadow: 0 10px 20px -8px rgba(0, 0, 0, 0.6);
-    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.25s ease,
-      background-color 0.3s ease, box-shadow 0.3s ease;
-  }
-
-  .page8-quick-send svg {
-    width: 1.2rem;
-    height: 1.2rem;
-    fill: none;
-    stroke: currentColor;
-    stroke-width: 2.4;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-  }
-
-  .page8-quick-send:not(:disabled):active {
-    transform: scale(0.88);
-  }
-
-  .page8-quick-send:not(:disabled):active svg {
-    transform: translateY(-2px);
-  }
-
-  .page8-quick-send:disabled {
-    opacity: 0.28;
-    transform: scale(0.88);
-    box-shadow: none;
-    cursor: not-allowed;
-  }
-
-  body.is-anthracite .page8-quick-close {
-    background: rgba(242, 242, 244, 0.1);
-    color: #f2f2f4;
-  }
-
-  body.is-anthracite .page8-quick-card .page11-field-label {
-    color: rgba(242, 242, 244, 0.55);
-  }
-
-  body.is-anthracite .page8-quick-chip {
-    background: rgba(242, 242, 244, 0.08);
-    color: #f2f2f4;
-  }
-
-  body.is-anthracite .page8-quick-chip.is-selected {
-    background: var(--chip-color);
-    color: var(--chip-ink);
-  }
-
-  body.is-anthracite .page8-quick-chip-new:not(.is-selected) {
-    background: transparent;
-    border-color: rgba(242, 242, 244, 0.3);
-  }
-
-  body.is-anthracite .page8-quick-card .page8-name-field-input {
-    background: rgba(242, 242, 244, 0.07);
-  }
-
-  body.is-anthracite .page8-quick-card .page8-name-field-input:focus {
-    background: rgba(242, 242, 244, 0.1);
-    border-color: var(--accent-color, #ff90e8);
-    box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.06);
-  }
-
-  body.is-anthracite .page8-quick-send:not(:disabled) {
-    background: var(--accent-color, #ff90e8);
-    color: #121212;
   }
 
   /* ---------- Sayfa 9: Soru Takibi ----------
@@ -9807,6 +9138,287 @@
   body.is-anthracite .page11-question-change-btn {
     background-color: var(--dark-card-color, #32343a);
     color: #f2f2f4;
+  }
+
+  /* ---- Sayfa 11: soru görseli pop-up'ı (Soru Havuzu "Soru Ekle" ile aynı akış) ----
+     Görsel artık önce kırpılıyor/yakınlaştırılıyor (1. adım), ardından doğru cevap
+     işaretleniyor (2. adım). Kırpma kutusu, yakınlaştırma çubuğu, adım çubuğu,
+     önizleme ve şık ızgarası Soru Havuzu'ndaki .qhavuz-* sınıflarını birebir
+     paylaşır; burada yalnızca bu pop-up'a özgü ince ayarlar var. */
+  #page11QuestionBackdrop .qhavuz-add-card {
+    height: min(38rem, 86vh);
+    max-height: 86vh;
+  }
+
+  /* Kırpma adımında kutunun altında "Fotoğrafı Değiştir" / "Kaldır" da var;
+     içerik adım yüksekliğinden uzun olursa .qhavuz-add-body kaydırılır. Kırpma
+     kutusu ise asla ezilmemeli: kırpma hesabı 1:1 kare olduğunu varsayıyor. */
+  #page11QuestionStepCrop {
+    height: auto;
+    min-height: 100%;
+  }
+
+  #page11QuestionStepCrop .qhavuz-crop-box {
+    flex-shrink: 0;
+  }
+
+  #page11QuestionAnswerGrid {
+    margin-right: 0.5rem;
+  }
+
+  .page11-question-tools {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.1rem;
+    /* Butonların katı gölgesi (2px) .qhavuz-add-body'nin kaydırma kutusunda
+       sağdan/alttan kesilmesin diye küçük bir pay. */
+    margin-right: 3px;
+    padding-bottom: 3px;
+  }
+
+  .page11-question-tools .page11-question-change-btn {
+    flex: 1 1 auto;
+    width: auto;
+    margin-top: 0;
+  }
+
+  .page11-question-tools .page11-question-remove-btn {
+    flex: 0 0 auto;
+    width: auto;
+    margin-top: 0;
+    padding: 0.5rem 0.8rem;
+    font-weight: 800;
+    font-size: 0.78rem;
+    text-decoration: none;
+    color: #c62828;
+    background-color: #fff;
+    border: 2.5px solid #000;
+    border-radius: 0.6rem;
+    box-shadow: 2px 2px 0px 0px #000;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  .page11-question-tools .page11-question-remove-btn:active {
+    transform: translate(1px, 1px);
+    box-shadow: 1px 1px 0px 0px #000;
+  }
+
+  .page11-question-tools .page11-question-remove-btn.is-hidden {
+    display: none;
+  }
+
+  body.is-anthracite .page11-question-tools .page11-question-remove-btn {
+    background-color: var(--dark-card-color, #32343a);
+    color: #ff8a8a;
+  }
+
+  /* ---- Sayfa 11: "Toplu Soru Ekle" pop-up'ı ----
+     Kamerayla art arda çekilen ya da galeriden çoklu seçilen görseller
+     kuyruğa alınır; kuyruktaki her görsel için branş/cevap/soru sayısı
+     çipleri ve en sonda kırpma kutusu, Soru Ekle akışındaki ortak
+     .qhavuz-add-* sınıflarını paylaşır; burada yalnızca bu pop-up'a
+     özgü ince ayarlar var. */
+  #page11BulkQuestionBackdrop .qhavuz-add-card {
+    height: min(40rem, 88vh);
+    max-height: 88vh;
+    position: relative;
+  }
+
+  /* Bir soru kaydedilip kuyruktaki bir sonraki görsele geçilirken kısaca
+     görünen, "kaydedildi" onaylı geçiş ekranı; adımların sessizce sıfırlanıp
+     yeniden Branş adımından başlaması kafa karıştırıcı olduğu için eklendi. */
+  .page11-bulk-transition-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.7rem;
+    padding: 1.5rem;
+    background: #fff;
+    border-radius: inherit;
+    text-align: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.22s ease;
+    z-index: 5;
+  }
+
+  .page11-bulk-transition-overlay.is-visible {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .page11-bulk-transition-check {
+    width: 3.4rem;
+    height: 3.4rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #5cd68a;
+    color: #0d3d20;
+    border: 2.5px solid #000;
+    box-shadow: 3px 3px 0px 0px #000;
+    transform: scale(0.6);
+    transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .page11-bulk-transition-overlay.is-visible .page11-bulk-transition-check {
+    transform: scale(1);
+  }
+
+  .page11-bulk-transition-text {
+    font-family: "Space Grotesk", sans-serif;
+    font-weight: 800;
+    font-size: 0.88rem;
+    color: #121212;
+  }
+
+  body.is-anthracite .page11-bulk-transition-overlay {
+    background: var(--dark-card-color, #32343a);
+  }
+
+  body.is-anthracite .page11-bulk-transition-text {
+    color: #f2f2f4;
+  }
+
+  .page11-bulk-progress {
+    display: inline-block;
+    align-self: flex-start;
+    margin-bottom: 0.7rem;
+    padding: 0.14rem 0.55rem;
+    border-radius: 999px;
+    background: #000;
+    color: #fff;
+    font-family: "Space Grotesk", sans-serif;
+    font-weight: 800;
+    font-size: 0.68rem;
+    letter-spacing: 0.04em;
+  }
+
+  .page11-bulk-preview-wrap.is-hidden {
+    display: none;
+  }
+
+  /* Kırpma adımında görsel zaten büyük kırpma kutusunda görünür olduğu
+     için küçük önizleme o adımda gizlenir; branş/soru sayısı/cevap
+     adımlarında tekrar görünür olur ve tıklanınca soru görselini büyük
+     halde açar. */
+  .page11-bulk-preview-wrap {
+    cursor: pointer;
+  }
+  .page11-bulk-preview-wrap:active {
+    opacity: 0.85;
+  }
+
+  .page11-bulk-number-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 0.4rem;
+    /* Butonların katı gölgesi (2px sağa/aşağı) kartın overflow:hidden
+       sınırına değip kesilmesin diye sağda küçük bir boşluk bırakılır
+       (Doğru Cevap ızgarasındaki #page11BulkAnswerGrid ile aynı çözüm). */
+    margin-right: 0.5rem;
+  }
+
+  .page11-bulk-number-btn {
+    position: relative;
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    font-family: "Space Grotesk", sans-serif;
+    font-weight: 800;
+    font-size: 0.8rem;
+    color: #121212;
+    background-color: #f2f2f2;
+    border: 2.5px solid #000;
+    border-radius: 0.55rem;
+    cursor: pointer;
+    box-shadow: 2px 2px 0px 0px #000;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.18s ease, color 0.18s ease;
+  }
+
+  .page11-bulk-number-btn:active {
+    transform: translate(1px, 1px);
+    box-shadow: 1px 1px 0px 0px #000;
+  }
+
+  .page11-bulk-number-btn.is-selected {
+    background-color: #5cd68a;
+    color: #0d3d20;
+  }
+
+  /* Bu soru sayısında daha önceden eklenmiş bir görsel varsa (üzerine
+     yazılacağını hatırlatmak için) köşede küçük turuncu bir nokta belirir. */
+  .page11-bulk-number-btn.has-photo::after {
+    content: '';
+    position: absolute;
+    top: 0.22rem;
+    right: 0.22rem;
+    width: 0.4rem;
+    height: 0.4rem;
+    border-radius: 50%;
+    background: #ffb74d;
+  }
+
+  .page11-bulk-number-btn.is-selected.has-photo::after {
+    background: #0d3d20;
+  }
+
+  #page11BulkStepCrop {
+    height: auto;
+    min-height: 100%;
+  }
+
+  #page11BulkStepCrop .qhavuz-crop-box {
+    flex-shrink: 0;
+  }
+
+  #page11BulkAnswerGrid {
+    margin-right: 0.5rem;
+  }
+
+  body.is-anthracite .page11-bulk-number-btn {
+    background-color: var(--dark-card-color, #32343a);
+    color: #f2f2f4;
+  }
+
+  /* ---- Sayfa 11: soru görseli lightbox'ı ----
+     Soru Havuzu'ndaki lightbox'la (.qhavuz-lightbox-*) aynı kart, aynı 1:1 görsel
+     alanı, aynı iki parmakla yakınlaştırma/sürükleme, aynı "Görmek için Dokun"
+     cevap şeridi ve aynı (i) Bilgi butonu (.qhavuz-lightbox-info, ortak stil).
+     Çözüldü butonunun yerine "Düzenle" (kalem) butonu var; o da lightbox'ı
+     kapatıp kırp/cevap pop-up'ını açar (pop-up lightbox'ın altında kalmasın diye). */
+  .exam-q-lightbox-edit {
+    position: absolute;
+    top: 0.5rem;
+    right: 2.9rem;
+    z-index: 2;
+  }
+
+  .exam-q-lightbox-edit svg {
+    display: block;
+  }
+
+  .exam-q-lightbox-edit.is-hidden {
+    display: none;
+  }
+
+  /* Eski (kırpma özelliğinden önce eklenmiş) görseller kare değil; onları
+     kesmeden, oranını koruyarak göster. Yeni/kırpılmış görseller karedir ve
+     Soru Havuzu'ndaki gibi kutuyu tam doldurur. */
+  .qhavuz-lightbox-img-wrap.is-contain img {
+    object-fit: contain;
+  }
+
+  /* Bilgi pop-up'ı (#examQInfoBackdrop), Soru Havuzu'ndaki gibi lightbox'ın
+     (200) üzerinden açıldığı için kendi katmanını onun üstüne (210) çeker. */
+  #examQInfoBackdrop {
+    z-index: 210;
   }
 
   .qhavuz-test-feedback {
@@ -18137,9 +17749,13 @@
      #page8CategoryList / #page8RoutineGroupList içine aynı sırayla
      ekleniyor), salt CSS ile elde ediliyor.
 
-     Yeni kategori/rutin grubu ve hızlı görev ekleme artık sağ altta sabit
-     duran tek bir "Hızlı ekle" butonundan yapılıyor (bkz. .page8-fab):
-     pano ne kadar kaydırılırsa kaydırılsın her zaman elinin altında. */
+     "+ Kategori" / "+ Rutin Grubu" butonu artık listenin en altında,
+     kaydırmak gerektiren pasif bir buton değil; sağ altta sabit duran,
+     yuvarlak uçlu bir "yüzen eylem butonu" (FAB) — pano ne kadar
+     kaydırılırsa kaydırılsın her zaman elinin altında. İki görünümden
+     (Görevler/Rutinler) sadece aktif olanın FAB'ı DOM'da görünür
+     olduğundan (kapalı görünüm zaten `display:none` ile tamamen gizlenir),
+     ikisi aynı sabit köşede çakışmadan devralınıyor. */
   /* min-height: 600px koşulu eklendi: yatay çevrilmiş bir telefonun genişliği
      768px'i geçebiliyor ama yüksekliği (kısa kenarı) her zaman ~430-460px'te
      kalıyor; gerçek tabletlerin yatay yüksekliği ise en az ~744px. Bu sayede
@@ -18207,7 +17823,7 @@
       /* Üst dolgu, kategorileri başlıktan (ve diş desenli kesim
          çizgisinden) biraz uzaklaştırıp nefes payı bırakıyor — mobildeki
          gibi başlığa neredeyse yapışık durmuyorlar. */
-      padding: 1.6rem 40px calc(128px + env(safe-area-inset-bottom));
+      padding: 1.6rem 40px calc(40px + env(safe-area-inset-bottom));
       /* Diş deseni, dar mobil kartta ince bir "yırtık kağıt" hissi
          veriyordu; 340px'lik orijinal 24 dişlik desen burada olduğu gibi
          kalsaydı her diş ~70px'e çıkıp kaba/iri görünürdü. Geniş panoya
@@ -18380,22 +17996,23 @@
       font-size: 0.98rem;
     }
 
-    /* ---- Hızlı ekle butonu: tabletlerde alt nav bar yok (yanal panel var);
-       buton sağ alt köşede, kaydırma alanının sağ kenar boşluğuyla hizalı
-       durur. Panel/pencere davranışı telefonla aynıdır. ---- */
-    .page8-fab-dock {
+    /* ---- "+ Kategori" / "+ Rutin Grubu": listenin altında pasif bir
+       buton yerine, sağ altta sabit duran yüzen bir eylem butonu (FAB).
+       Panoyu ne kadar kaydırırsan kaydır her zaman elinin altında kalır.
+       İki görünümden yalnızca aktif olanın FAB'ı görünür olduğundan
+       (kapalı görünüm .page8-view.is-hidden ile tamamen gizlenir), ikisi
+       çakışmadan aynı köşeyi paylaşır. */
+    .page8-add-group-btn {
+      position: fixed;
+      left: auto;
       right: calc(40px + env(safe-area-inset-right));
       bottom: calc(40px + env(safe-area-inset-bottom));
-    }
-
-    /* Tabletlerde alt nav bar yok; bildirim tekrar alt ortada durur. */
-    .page8-copy-toast {
-      bottom: calc(1.6rem + env(safe-area-inset-bottom));
-    }
-
-    .settings-confirm-backdrop.page8-quick-backdrop {
-      align-items: center;
-      padding-top: 24px;
+      width: auto;
+      border-radius: 999px;
+      padding: 1rem 1.7rem;
+      font-size: 1rem;
+      box-shadow: 6px 6px 0px 0px #000;
+      z-index: 60;
     }
 
     /* Kategoriler/Rutin Grupları pop-up'ı: çok sayıda etiket olduğunda dar
@@ -24058,35 +23675,6 @@
     </div>
   </div>
 
-  <!-- Sayfa 8: Hızlı ekle penceresi. Sağ alttaki yüzen butonun ikinci
-       dokunuşuyla açılır; mevcut kategorilerden biri seçilir ya da "Yeni
-       kategori" ile yeni bir tane oluşturulur, görev yazılıp eklenir.
-       Metinler (Görev/Rutin) JS tarafından aktif sekmeye göre doldurulur. -->
-  <div class="settings-confirm-backdrop page8-quick-backdrop" id="page8QuickBackdrop">
-    <div class="page11-modal-card page8-quick-card" role="dialog" aria-modal="true" aria-labelledby="page8QuickTitle">
-      <div class="page8-quick-head">
-        <span class="page11-modal-title" id="page8QuickTitle">Hızlı görev ekle</span>
-        <button type="button" class="page8-quick-close" id="page8QuickClose" aria-label="Kapat">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
-        </button>
-      </div>
-      <div class="page11-field">
-        <span class="page11-field-label" id="page8QuickCatLabel">Kategori</span>
-        <div class="page8-quick-chips" id="page8QuickChips" role="radiogroup" aria-labelledby="page8QuickCatLabel"></div>
-        <input type="text" class="page8-name-field-input page8-quick-newname" id="page8QuickNewName" maxlength="24" placeholder="Yeni kategori adı" aria-label="Yeni kategori adı" hidden>
-      </div>
-      <div class="page11-field">
-        <label class="page11-field-label" for="page8QuickTask" id="page8QuickTaskLabel">Görev</label>
-        <div class="page8-quick-compose">
-          <textarea class="page8-name-field-input page8-quick-task" id="page8QuickTask" rows="1" placeholder="Ne yapacaksın?"></textarea>
-          <button type="button" class="page8-quick-send" id="page8QuickConfirm" aria-label="Ekle" disabled>
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5M5.5 11.5L12 5l6.5 6.5"/></svg>
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-
   <!-- Sayfa 8: Kategoriler / Rutin Grupları pop-up'ı. Başlıktaki etiket
        ikonuna dokununca açılır; aktif sekmeye (Görevler/Rutinler) göre
        eklenmiş her grubu kesikli çerçeveli birer "etiket" (chip) halinde
@@ -24134,38 +23722,13 @@
       <div class="page8-wrap">
         <div class="page8-view" id="page8TasksView">
           <div class="page8-group-list" id="page8CategoryList"></div>
+          <button type="button" class="add-task-btn page8-add-group-btn" id="page8AddCategoryBtn">+ Kategori</button>
         </div>
 
         <div class="page8-view is-hidden" id="page8RoutinesView">
           <div class="page8-group-list" id="page8RoutineGroupList"></div>
+          <button type="button" class="add-task-btn page8-add-group-btn" id="page8AddRoutineGroupBtn">+ Rutin Grubu</button>
         </div>
-      </div>
-    </div>
-
-    <!-- Hızlı ekle: sağ altta yüzen ana buton. İlk dokunuşta eylem paneli
-         açılır (Kategori ekle) ve ana buton "Görev ekle"ye dönüşür; ona
-         tekrar dokununca hızlı görev penceresi açılır (mevcut kategoriden
-         seç ya da yeni kategori oluştur). Aktif sekmeye göre Rutinler için
-         de aynı akışı kullanır. -->
-    <div class="page8-fab-scrim" id="page8FabScrim"></div>
-    <div class="page8-fab-dock" id="page8FabDock">
-      <div class="page8-fab-panel" id="page8FabPanel" role="menu" aria-label="Hızlı ekle" inert>
-        <div class="page8-fab-item" style="--i:0">
-          <span class="page8-fab-tip" id="page8FabAddGroupLabel">Kategori ekle</span>
-          <button type="button" class="page8-fab-mini" id="page8FabAddGroup" role="menuitem" aria-label="Kategori ekle">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M12 10.5v5M9.5 13h5"/></svg>
-          </button>
-        </div>
-      </div>
-      <div class="page8-fab-row">
-        <span class="page8-fab-tip page8-fab-tip-main" id="page8FabLabel">Görev ekle</span>
-        <button type="button" class="page8-fab" id="page8Fab" aria-label="Hızlı görev ekle" aria-haspopup="menu" aria-expanded="false">
-          <span class="page8-fab-halo" aria-hidden="true"></span>
-          <span class="page8-fab-face" aria-hidden="true">
-            <svg class="page8-fab-glyph page8-fab-glyph-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
-            <svg class="page8-fab-glyph page8-fab-glyph-task" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="5.5"/><path d="M8.6 12.4l2.5 2.5 4.4-5.2"/></svg>
-          </span>
-        </button>
       </div>
     </div>
   </section>
@@ -24428,6 +23991,13 @@
               <span class="exam-detail-resources-dot" id="examDetailMenuDot"></span>
             </button>
             <div class="exam-detail-menu" id="examDetailMenu" role="menu" hidden>
+              <button type="button" class="exam-detail-menu-item" id="examDetailBulkAddBtn" role="menuitem" aria-label="Birden fazla soru görseli ekle">
+                <svg viewBox="0 0 24 24" width="18" height="18">
+                  <rect x="3" y="5" width="14" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="2"/>
+                  <rect x="7" y="9" width="14" height="10" rx="2" fill="none" stroke="currentColor" stroke-width="2"/>
+                </svg>
+                <span class="exam-detail-menu-label">Toplu Soru Ekle</span>
+              </button>
               <button type="button" class="exam-detail-menu-item" id="examDetailResourcesBtn" role="menuitem" aria-label="Cevap anahtarı ve video çözümü ekle">
                 <svg viewBox="0 0 256 256" width="18" height="18">
                   <path fill="currentColor" d="M216.57 39.43a80 80 0 0 0-132.66 81.35L28.69 176A15.86 15.86 0 0 0 24 187.31V216a16 16 0 0 0 16 16h32a8 8 0 0 0 8-8v-16h16a8 8 0 0 0 8-8v-16h16a8 8 0 0 0 5.66-2.34l9.56-9.57A79.7 79.7 0 0 0 160 176h.1a80 80 0 0 0 56.47-136.57M224 98.1c-1.09 34.09-29.75 61.86-63.89 61.9H160a63.7 63.7 0 0 1-23.65-4.51a8 8 0 0 0-8.84 1.68L116.69 168H96a8 8 0 0 0-8 8v16H72a8 8 0 0 0-8 8v16H40v-28.69l58.83-58.82a8 8 0 0 0 1.68-8.84A63.7 63.7 0 0 1 96 95.92c0-34.14 27.81-62.8 61.9-63.89A64 64 0 0 1 224 98.1M192 76a12 12 0 1 1-12-12a12 12 0 0 1 12 12"/>
@@ -25412,33 +24982,245 @@
 
 <!-- Sayfa 11: bir denemede yanlış/boş bırakılan soruya görsel eklemek
      (veya eklenmiş görseli düzenlemek) için açılan pop-up. Soru
-     Havuzu'ndaki "Soru Ekle" pop-up'ıyla aynı brutalist dili paylaşır;
-     branş burada zaten deneme üzerinden belli olduğu için yalnızca
-     görsel önizleme ve doğru cevap şıkkı gösterilir. -->
+     Havuzu'ndaki "Soru Ekle" pop-up'ıyla AYNI adım adım akışı ve aynı
+     bileşenleri kullanır: 1) görseli kırp (sürükle, iki parmakla ya da
+     çubukla yakınlaştır), 2) doğru cevabı işaretle. Branş burada zaten
+     deneme üzerinden belli olduğu için sınav türü/ders adımı yoktur. -->
 <div class="page9-add-backdrop" id="page11QuestionBackdrop">
   <div class="page9-add-card qhavuz-add-card">
+    <div class="qhavuz-add-steps" id="page11QuestionStepDots" aria-hidden="true">
+      <span class="qhavuz-add-step-dot"></span>
+      <span class="qhavuz-add-step-dot"></span>
+    </div>
+
     <div class="page9-add-header">
       <div class="page9-add-heading">
         <span class="page9-add-title">Soru Görseli</span>
-        <span class="page9-add-subtitle">Doğru cevabı işaretle</span>
+        <span class="page9-add-subtitle" id="page11QuestionSubtitle">Görseli kırp</span>
       </div>
       <button type="button" class="delete-btn page9-add-close" id="page11QuestionClose" aria-label="Kapat">×</button>
     </div>
 
-    <div class="qhavuz-add-preview">
-      <img id="page11QuestionPreviewImg" alt="Soru görseli">
+    <div class="qhavuz-add-body">
+
+      <!-- Adım 1: Görseli kırp (Soru Havuzu ile aynı 1:1 kutu). -->
+      <div class="qhavuz-add-step" id="page11QuestionStepCrop">
+        <div class="qhavuz-crop-box" id="page11QuestionCropBox">
+          <img id="page11QuestionCropImg" alt="Soru görseli" draggable="false">
+        </div>
+        <div class="qhavuz-crop-zoom-row">
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="7"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <input type="range" id="page11QuestionCropZoom" min="100" max="300" value="100" aria-label="Yakınlaştır">
+          <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="7"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            <line x1="11" y1="8" x2="11" y2="14"></line>
+            <line x1="8" y1="11" x2="14" y2="11"></line>
+          </svg>
+        </div>
+        <div class="page11-question-tools">
+          <button type="button" class="page11-question-change-btn" id="page11QuestionChangeBtn">Fotoğrafı Değiştir</button>
+          <button type="button" class="page11-question-remove-btn is-hidden" id="page11QuestionRemoveBtn">Görseli Kaldır</button>
+        </div>
+      </div>
+
+      <!-- Adım 2: Doğru cevap. Üstte kırpılan görselin küçük önizlemesi +
+           hangi sınav türü/branş/soru olduğunun özeti (Soru Ekle 3. adımıyla aynı). -->
+      <div class="qhavuz-add-step is-hidden" id="page11QuestionStepAnswer">
+        <div class="qhavuz-add-answer-preview">
+          <img id="page11QuestionAnswerPreviewImg" alt="Soru görseli">
+          <div class="qhavuz-add-answer-preview-info">
+            <span class="qhavuz-add-answer-preview-track" id="page11QuestionAnswerPreviewTrack"></span>
+            <span class="qhavuz-add-answer-preview-subject" id="page11QuestionAnswerPreviewSubject"></span>
+          </div>
+        </div>
+
+        <span class="qhavuz-add-label">Doğru Cevap</span>
+        <div class="qhavuz-add-answer-grid" id="page11QuestionAnswerGrid"></div>
+      </div>
+
     </div>
 
-    <button type="button" class="page11-question-change-btn" id="page11QuestionChangeBtn">Fotoğrafı Değiştir</button>
-
-    <span class="qhavuz-add-label">Doğru Cevap</span>
-    <div class="qhavuz-add-answer-grid" id="page11QuestionAnswerGrid"></div>
-
-    <button type="button" class="add-task-btn page9-add-confirm" id="page11QuestionConfirm" disabled>Kaydet</button>
-    <button type="button" class="page11-question-remove-btn is-hidden" id="page11QuestionRemoveBtn">Görseli Kaldır</button>
+    <div class="qhavuz-add-nav">
+      <button type="button" class="add-task-btn qhavuz-add-back is-hidden" id="page11QuestionBack">Geri</button>
+      <button type="button" class="add-task-btn page9-add-confirm" id="page11QuestionConfirm" disabled>İleri</button>
+    </div>
   </div>
 </div>
 <input type="file" accept="image/*" id="page11QuestionFileInput" class="qhavuz-file-input">
+
+<!-- Sayfa 11: "Toplu Soru Ekle" pop-up'ı. Kameradan art arda çekilen ya da
+     galeriden çoklu seçilen görseller bir kuyruğa alınır; kuyruktaki HER
+     görsel için sırasıyla 1) görsel yakınlaştırılıp kırpılır, 2) branş,
+     3) soru sayısı seçilir, 4) doğru cevap işaretlenir ve kaydedilir —
+     ardından otomatik olarak kuyruktaki bir sonraki görsele geçilir. Tek
+     soru ekleme akışındaki (#page11QuestionBackdrop) aynı .qhavuz-add-*
+     bileşenlerini (çip/cevap ızgarası, kırpma kutusu) paylaşır; branş
+     burada deneme üzerinden belli olmadığı (toplu eklendiği) için ayrıca
+     seçilir. Kırpılmış görsel, kırpma adımı dışındaki adımlarda (branş/
+     sayı/cevap) üstteki küçük önizlemede görünür ve tıklanınca büyük
+     halde açılır; kırpma adımında görsel zaten büyük kutuda göründüğü
+     için önizleme o adımda gizlenir. -->
+<div class="page9-add-backdrop" id="page11BulkQuestionBackdrop">
+  <div class="page9-add-card qhavuz-add-card">
+    <div class="qhavuz-add-steps" id="page11BulkStepDots" aria-hidden="true">
+      <span class="qhavuz-add-step-dot"></span>
+      <span class="qhavuz-add-step-dot"></span>
+      <span class="qhavuz-add-step-dot"></span>
+      <span class="qhavuz-add-step-dot"></span>
+    </div>
+
+    <div class="page9-add-header">
+      <div class="page9-add-heading">
+        <span class="page9-add-title">Toplu Soru Ekle</span>
+        <span class="page9-add-subtitle" id="page11BulkSubtitle">Görseli kırp</span>
+      </div>
+      <button type="button" class="delete-btn page9-add-close" id="page11BulkClose" aria-label="Kapat">×</button>
+    </div>
+
+    <div class="qhavuz-add-body">
+
+      <span class="page11-bulk-progress" id="page11BulkProgress">1 / 1</span>
+
+      <!-- Görselin küçük önizlemesi + o ana kadar seçilenlerin özeti
+           (Soru Havuzu'ndaki cevap önizlemesiyle aynı bileşen). Kırpma
+           adımında gizlenir (görsel zaten büyük kırpma kutusunda
+           görünür), diğer adımlarda (branş/sayı/cevap) görünür ve
+           tıklanınca soru görselini büyük halde açar (bkz.
+           openPage11BulkPreviewLightbox). -->
+      <div class="qhavuz-add-answer-preview page11-bulk-preview-wrap" id="page11BulkPreviewWrap" role="button" tabindex="0" aria-label="Soru görselini büyük gör">
+        <img id="page11BulkPreviewImg" alt="Soru görseli">
+        <div class="qhavuz-add-answer-preview-info">
+          <span class="qhavuz-add-answer-preview-subject" id="page11BulkPreviewSummary">Branş seç</span>
+        </div>
+      </div>
+
+      <!-- Adım 1: Görseli yakınlaştır/uzaklaştır ve kırp -->
+      <div class="qhavuz-add-step" id="page11BulkStepCrop">
+        <div class="qhavuz-crop-box" id="page11BulkCropBox">
+          <img id="page11BulkCropImg" alt="Soru görseli" draggable="false">
+        </div>
+        <div class="qhavuz-crop-zoom-row">
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="7"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <input type="range" id="page11BulkCropZoom" min="100" max="300" value="100" aria-label="Yakınlaştır">
+          <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="7"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            <line x1="11" y1="8" x2="11" y2="14"></line>
+            <line x1="8" y1="11" x2="14" y2="11"></line>
+          </svg>
+        </div>
+      </div>
+
+      <!-- Adım 2: Branş -->
+      <div class="qhavuz-add-step is-hidden" id="page11BulkStepSubject">
+        <span class="qhavuz-add-label">Branş</span>
+        <div class="qhavuz-add-subject-grid" id="page11BulkSubjectGrid"></div>
+      </div>
+
+      <!-- Adım 3: Soru sayısı (seçilen branştaki kaçıncı soru) -->
+      <div class="qhavuz-add-step is-hidden" id="page11BulkStepNumber">
+        <span class="qhavuz-add-label">Soru Sayısı</span>
+        <div class="page11-bulk-number-grid" id="page11BulkNumberGrid"></div>
+      </div>
+
+      <!-- Adım 4: Doğru cevap -->
+      <div class="qhavuz-add-step is-hidden" id="page11BulkStepAnswer">
+        <span class="qhavuz-add-label">Doğru Cevap</span>
+        <div class="qhavuz-add-answer-grid" id="page11BulkAnswerGrid"></div>
+      </div>
+
+    </div>
+
+    <div class="qhavuz-add-nav">
+      <button type="button" class="add-task-btn qhavuz-add-back is-hidden" id="page11BulkBack">Geri</button>
+      <button type="button" class="add-task-btn page9-add-confirm" id="page11BulkConfirm" disabled>İleri</button>
+    </div>
+
+    <!-- Bir soru kaydedilip kuyruktaki bir sonrakine geçilirken kısaca
+         görünen geçiş ekranı: adım sıfırlanırken kafa karışmasın diye
+         "kaydedildi" onayını ve sıradaki soruyu net biçimde bildirir. -->
+    <div class="page11-bulk-transition-overlay" id="page11BulkTransitionOverlay" aria-hidden="true">
+      <div class="page11-bulk-transition-check">
+        <svg viewBox="0 0 24 24" width="26" height="26"><path d="M4 12.5l5 5L20 6" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <span class="page11-bulk-transition-text" id="page11BulkTransitionText">Kaydedildi</span>
+    </div>
+  </div>
+</div>
+<input type="file" accept="image/*" multiple id="page11BulkQuestionFileInput" class="qhavuz-file-input">
+
+<!-- Sayfa 11: "Toplu Soru Ekle" pop-up'ı içindeki, kırpma adımı dışında
+     görünen küçük önizlemeye tıklanınca açılan basit lightbox. Soru
+     henüz kaydedilmediği için (i) bilgi / düzenle / cevap gibi ekstra
+     bileşenler yok; sadece görseli büyük gösterir, iki parmakla
+     yakınlaştırma ve sürükleme destekler. -->
+<div class="qhavuz-lightbox-backdrop" id="page11BulkPreviewLightboxBackdrop">
+  <div class="qhavuz-lightbox-card">
+    <button type="button" class="delete-btn qhavuz-lightbox-close" id="page11BulkPreviewLightboxClose" aria-label="Kapat">×</button>
+    <div class="qhavuz-lightbox-img-wrap" id="page11BulkPreviewLightboxImgWrap">
+      <img id="page11BulkPreviewLightboxImg" alt="Soru görseli">
+    </div>
+  </div>
+</div>
+
+<!-- Sayfa 11: eklenmiş soru görselini büyük gösteren lightbox. Soru
+     Havuzu'ndaki soru lightbox'ının (#qhavuzLightboxBackdrop) birebir
+     aynısı: aynı kart/CSS, iki parmakla yakınlaştırma + sürükleme, blurlu
+     "Görmek için Dokun" cevap şeridi VE aynı (i) "Bilgi" butonu — ders,
+     deneme, tarih gibi detaylar havuzdaki gibi kartın üzerinde değil, bu
+     butonla açılan ayrı bir "Soru Bilgisi" pop-up'ında yazar. Çözüldü
+     yerine "Düzenle" (kalem) butonu vardır; o da kırp/cevap pop-up'ını açar. -->
+<div class="qhavuz-lightbox-backdrop" id="examQLightboxBackdrop">
+  <div class="qhavuz-lightbox-card">
+    <button type="button" class="delete-btn qhavuz-lightbox-info" id="examQLightboxInfoBtn" aria-label="Bilgi">
+      <svg viewBox="0 0 24 24" width="14" height="14"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2.4"/><line x1="12" y1="10.5" x2="12" y2="16.5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><circle cx="12" cy="7.3" r="1.15" fill="currentColor"/></svg>
+    </button>
+    <button type="button" class="delete-btn exam-q-lightbox-edit" id="examQLightboxEditBtn" aria-label="Soruyu düzenle">
+      <svg viewBox="0 0 24 24" width="14" height="14"><path d="M4 20l4.5-1 10.2-10.2-3.5-3.5L5 15.5 4 20z" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M13.3 6.8l3.5 3.5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
+    </button>
+    <button type="button" class="delete-btn qhavuz-lightbox-close" id="examQLightboxClose" aria-label="Kapat">×</button>
+    <div class="qhavuz-lightbox-img-wrap" id="examQLightboxImgWrap">
+      <img id="examQLightboxImg" alt="Soru görseli">
+    </div>
+    <div class="qhavuz-lightbox-answer-wrap">
+      <div class="qhavuz-lightbox-answer-row" id="examQLightboxAnswerRow"></div>
+      <button type="button" class="qhavuz-answer-reveal" id="examQLightboxReveal">
+        <svg viewBox="0 0 24 24" width="15" height="15"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+        <span>Görmek için Dokun</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Sayfa 11: lightbox'taki (i) butonuna basınca açılan "Soru Bilgisi"
+     pop-up'ı. Soru Havuzu'ndaki #qhavuzInfoBackdrop ile aynı kart dilini
+     (aynı .qhavuz-info-* sınıfları) kullanır. Tarih bilgileri kaldırıldı;
+     üstteki rozet bu sorunun kaçıncı soru olduğunu ("20. soru" biçiminde)
+     ve hangi branşa ait olduğunu gösterir. Açıklama isteğe bağlıdır,
+     doğrudan burada yazılıp odaktan çıkınca kaydedilir (havuzdaki gibi
+     ayrı bir düzenleme moduna gerek yoktur). -->
+<div class="settings-confirm-backdrop" id="examQInfoBackdrop">
+  <div class="settings-confirm-card qhavuz-info-card">
+    <span class="settings-confirm-title">Soru Bilgisi</span>
+    <span class="qhavuz-info-badge" id="examQInfoSubjectBadge"></span>
+    <div class="qhavuz-info-rows">
+      <div class="qhavuz-info-row qhavuz-info-row--desc">
+        <span class="qhavuz-info-label">Açıklama</span>
+        <div class="qhavuz-info-value" id="examQInfoDesc"></div>
+      </div>
+    </div>
+    <div class="settings-confirm-actions">
+      <button type="button" class="settings-confirm-cancel" id="examQInfoCloseBtn">Kapat</button>
+    </div>
+  </div>
+</div>
 
 <!-- From Uiverse.io by andrew-demchenk0 (uyarlandı) -->
 <nav class="navbar">
@@ -33149,6 +32931,8 @@
 
   const page8CategoryList = document.getElementById('page8CategoryList');
   const page8RoutineGroupList = document.getElementById('page8RoutineGroupList');
+  const page8AddCategoryBtn = document.getElementById('page8AddCategoryBtn');
+  const page8AddRoutineGroupBtn = document.getElementById('page8AddRoutineGroupBtn');
   const page8EditBtn = document.getElementById('page8EditBtn');
 
   // Düzenleme modu: kalem ikonuna basılınca hem kategori/rutin grubu
@@ -33212,21 +32996,6 @@
     }
   });
 
-  // Liste boşken sayfa bomboş kalmasın: ne yapılacağını söyleyen kısa bir kart.
-  const createPage8Empty = (title, text) => {
-    const box = document.createElement('div');
-    box.className = 'page8-empty';
-    const t = document.createElement('span');
-    t.className = 'page8-empty-title';
-    t.textContent = title;
-    const d = document.createElement('span');
-    d.className = 'page8-empty-text';
-    d.textContent = text;
-    box.appendChild(t);
-    box.appendChild(d);
-    return box;
-  };
-
   const renderPage8Categories = () => {
     page8CategoryList.innerHTML = '';
     page8State.categories.forEach((cat) => {
@@ -33243,9 +33012,6 @@
       });
       page8CategoryList.appendChild(card);
     });
-    if (!page8State.categories.length) {
-      page8CategoryList.appendChild(createPage8Empty('Henüz kategori yok', 'Sağ alttaki butona dokun, ilk görevini ekle.'));
-    }
     if (page8ActiveView === 'tasks') renderPage8GroupsPanel();
   };
 
@@ -33265,9 +33031,6 @@
       });
       page8RoutineGroupList.appendChild(card);
     });
-    if (!page8State.routineGroups.length) {
-      page8RoutineGroupList.appendChild(createPage8Empty('Henüz rutin grubu yok', 'Sağ alttaki butona dokun, ilk rutinini ekle.'));
-    }
     if (page8ActiveView === 'routines') renderPage8GroupsPanel();
   };
 
@@ -33283,50 +33046,6 @@
   const page8GroupsChipList = document.getElementById('page8GroupsChipList');
   let page8GroupsPanelOpen = false;
   let page8ActiveView = 'tasks';
-
-  // Bir grubun kartına kaydırır ve iki kez "kabartıp" vurgular. Hem
-  // Kategoriler pop-up'ındaki etiketler hem de hızlı ekle / yeni kategori
-  // akışları bunu kullanır. `block`: 'start' (etiketten gidişte kartı en
-  // üste getirir) ya da 'nearest' (zaten görünüyorsa kaydırmaz).
-  const page8FocusGroup = (group, block) => {
-    const card = document.getElementById(`page8-group-${group.id}`);
-    if (!card) return;
-    card.scrollIntoView({ behavior: 'smooth', block: block || 'start' });
-
-    // Kaydırma animasyonu (smooth scroll) asenkron sürdüğü için, vurgu
-    // efektini hemen değil, kart gerçekten hedef konuma varıp ekrandaki
-    // pozisyonu art arda birkaç karede sabitlendikten sonra uyguluyoruz.
-    let lastTop = card.getBoundingClientRect().top;
-    let stableFrames = 0;
-    let totalFrames = 0;
-    const maxFrames = 120; // ~2 sn güvenlik sınırı
-
-    const applyHighlight = () => {
-      card.classList.remove('is-highlighted');
-      // Reflow tetikleyerek animasyonun tekrar oynatılabilmesini sağlar.
-      void card.offsetWidth;
-      card.classList.add('is-highlighted');
-      card.addEventListener('animationend', () => card.classList.remove('is-highlighted'), { once: true });
-    };
-
-    const waitForScrollEnd = () => {
-      const top = card.getBoundingClientRect().top;
-      if (Math.abs(top - lastTop) < 0.5) {
-        stableFrames += 1;
-      } else {
-        stableFrames = 0;
-      }
-      lastTop = top;
-      totalFrames += 1;
-
-      if (stableFrames >= 4 || totalFrames >= maxFrames) {
-        applyHighlight();
-        return;
-      }
-      requestAnimationFrame(waitForScrollEnd);
-    };
-    requestAnimationFrame(waitForScrollEnd);
-  };
 
   const renderPage8GroupsPanel = () => {
     const isTasks = page8ActiveView === 'tasks';
@@ -33356,9 +33075,48 @@
 
         chip.appendChild(name);
         chip.addEventListener('click', () => {
-          if (!document.getElementById(`page8-group-${group.id}`)) return;
+          const card = document.getElementById(`page8-group-${group.id}`);
+          if (!card) return;
           setPage8GroupsPanel(false);
-          window.setTimeout(() => page8FocusGroup(group), 180);
+          window.setTimeout(() => {
+            card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+            // Kaydırma animasyonu (smooth scroll) asenkron sürdüğü için,
+            // vurgu efektini hemen değil, kart gerçekten hedef konuma
+            // varıp ekrandaki pozisyonu art arda birkaç karede sabitlendikten
+            // sonra uyguluyoruz. Aksi halde efekt, kart henüz kayarken,
+            // tıklanır tıklanmaz başlıyordu.
+            let lastTop = card.getBoundingClientRect().top;
+            let stableFrames = 0;
+            let totalFrames = 0;
+            const maxFrames = 120; // ~2 sn güvenlik sınırı
+
+            const applyHighlight = () => {
+              card.classList.remove('is-highlighted');
+              // Reflow tetikleyerek animasyonun tekrar oynatılabilmesini sağlar.
+              void card.offsetWidth;
+              card.classList.add('is-highlighted');
+              card.addEventListener('animationend', () => card.classList.remove('is-highlighted'), { once: true });
+            };
+
+            const waitForScrollEnd = () => {
+              const top = card.getBoundingClientRect().top;
+              if (Math.abs(top - lastTop) < 0.5) {
+                stableFrames += 1;
+              } else {
+                stableFrames = 0;
+              }
+              lastTop = top;
+              totalFrames += 1;
+
+              if (stableFrames >= 4 || totalFrames >= maxFrames) {
+                applyHighlight();
+                return;
+              }
+              requestAnimationFrame(waitForScrollEnd);
+            };
+            requestAnimationFrame(waitForScrollEnd);
+          }, 180);
         });
         page8GroupsChipList.appendChild(chip);
       });
@@ -33414,7 +33172,6 @@
     const kind = page8PendingNameKind;
     if (!kind) return;
     const typed = page8NameInput.value.trim();
-    let created = null;
 
     if (kind === 'category') {
       const cat = {
@@ -33424,7 +33181,6 @@
         tasks: []
       };
       page8State.categories.push(cat);
-      created = cat;
       renderPage8Categories();
       savePage8State();
     } else {
@@ -33435,16 +33191,15 @@
         routines: []
       };
       page8State.routineGroups.push(grp);
-      created = grp;
       renderPage8RoutineGroups();
       savePage8State();
     }
 
     closePage8NamePopup();
-    // Yeni grup listenin sonuna eklendiği için ekranın dışında kalabilir;
-    // pop-up kapanırken kartına kaydırıp vurgula.
-    if (created) window.setTimeout(() => page8FocusGroup(created, 'nearest'), 320);
   };
+
+  page8AddCategoryBtn.addEventListener('click', () => openPage8NamePopup('category'));
+  page8AddRoutineGroupBtn.addEventListener('click', () => openPage8NamePopup('routine'));
 
   page8NameCancel.addEventListener('click', closePage8NamePopup);
   page8NameBackdrop.addEventListener('click', (e) => {
@@ -33460,280 +33215,6 @@
       closePage8NamePopup();
     }
   });
-
-  // ---- Hızlı ekle: yüzen ana buton (FAB) + açılır panel + hızlı ekle penceresi ----
-  // Akış: ana butona dokun -> üstüne panel açılır (Kategori ekle) ve ana buton
-  // "Görev ekle"ye dönüşür; ona TEKRAR dokun -> hızlı ekle penceresi açılır:
-  // mevcut kategorilerden birini seç ya da yeni kategori oluştur, görevi yaz.
-  // Panelin dışına dokunmak / Esc paneli kapatır. Aktif sekmeye (Görevler /
-  // Rutinler) göre metinler ve hedef liste değişir.
-  const PAGE8_FAB_TEXT = {
-    tasks: {
-      fab: 'Hızlı görev ekle', fabOpen: 'Görev ekle', group: 'Kategori ekle',
-      title: 'Hızlı görev ekle', groupLabel: 'Kategori', newChip: 'Yeni kategori',
-      newPlaceholder: 'Yeni kategori adı', itemLabel: 'Görev', itemPlaceholder: 'Ne yapacaksın?',
-      defaultName: 'Kategori', toast: (n) => `"${n}" kategorisine eklendi`
-    },
-    routines: {
-      fab: 'Hızlı rutin ekle', fabOpen: 'Rutin ekle', group: 'Rutin grubu ekle',
-      title: 'Hızlı rutin ekle', groupLabel: 'Rutin grubu', newChip: 'Yeni grup',
-      newPlaceholder: 'Yeni grup adı', itemLabel: 'Rutin', itemPlaceholder: 'Hangi rutini ekleyelim?',
-      defaultName: 'Rutin Grubu', toast: (n) => `"${n}" grubuna eklendi`
-    }
-  };
-
-  const page8Section = document.getElementById('page-8');
-  const page8Fab = document.getElementById('page8Fab');
-  const page8FabLabel = document.getElementById('page8FabLabel');
-  const page8FabPanel = document.getElementById('page8FabPanel');
-  const page8FabScrim = document.getElementById('page8FabScrim');
-  const page8FabAddGroup = document.getElementById('page8FabAddGroup');
-  const page8FabAddGroupLabel = document.getElementById('page8FabAddGroupLabel');
-  const page8FabDock = document.getElementById('page8FabDock');
-  let page8FabOpen = false;
-
-  // Küçük dokunsal geri bildirim (destekleyen cihazlarda) ve dokunulan
-  // noktadan yayılan ripple; premium his için tüm butonlarda ortak.
-  const page8Haptic = (ms) => { try { if (navigator.vibrate) navigator.vibrate(ms || 6); } catch (e) { /* yoksay */ } };
-  const page8Ripple = (btn, e) => {
-    const host = btn.querySelector('.page8-fab-face') || btn;
-    const r = host.getBoundingClientRect();
-    const size = Math.max(r.width, r.height) * 2;
-    const dot = document.createElement('span');
-    dot.className = 'page8-ripple';
-    dot.style.width = dot.style.height = size + 'px';
-    dot.style.left = (e.clientX - r.left - size / 2) + 'px';
-    dot.style.top = (e.clientY - r.top - size / 2) + 'px';
-    host.appendChild(dot);
-    dot.addEventListener('animationend', () => dot.remove(), { once: true });
-  };
-
-  const page8FabKind = () => (page8ActiveView === 'routines' ? 'routines' : 'tasks');
-
-  const page8SyncFab = () => {
-    const t = PAGE8_FAB_TEXT[page8FabKind()];
-    page8FabLabel.textContent = t.fabOpen;
-    page8FabAddGroupLabel.textContent = t.group;
-    page8FabAddGroup.setAttribute('aria-label', t.group);
-    page8Fab.setAttribute('aria-label', page8FabOpen ? t.fabOpen : t.fab);
-  };
-
-  const setPage8Fab = (open) => {
-    if (open === page8FabOpen) return;
-    page8FabOpen = open;
-    page8Fab.classList.toggle('is-open', open);
-    page8Fab.setAttribute('aria-expanded', open ? 'true' : 'false');
-    page8FabPanel.classList.toggle('is-open', open);
-    page8FabPanel.inert = !open;
-    page8FabScrim.classList.toggle('is-open', open);
-    page8FabDock.classList.toggle('is-open', open);
-    page8SyncFab();
-  };
-
-  const page8FabOnViewChange = () => {
-    setPage8Fab(false);
-    page8SyncFab();
-  };
-
-  // ---- Hızlı ekle penceresi ----
-  const PAGE8_QUICK_NEW = '__new__';
-  const page8QuickBackdrop = document.getElementById('page8QuickBackdrop');
-  const page8QuickTitle = document.getElementById('page8QuickTitle');
-  const page8QuickCatLabel = document.getElementById('page8QuickCatLabel');
-  const page8QuickTaskLabel = document.getElementById('page8QuickTaskLabel');
-  const page8QuickChips = document.getElementById('page8QuickChips');
-  const page8QuickNewName = document.getElementById('page8QuickNewName');
-  const page8QuickTask = document.getElementById('page8QuickTask');
-  const page8QuickConfirm = document.getElementById('page8QuickConfirm');
-  const page8QuickClose = document.getElementById('page8QuickClose');
-  let page8QuickKind = 'tasks';
-  let page8QuickSelected = null;
-  // Her tür için en son eklenen grubu hatırla: bir sonraki hızlı ekleme aynı
-  // kategori önseçili gelsin (arka arkaya birkaç görev eklemek kolaylaşır).
-  const page8QuickLast = { tasks: null, routines: null };
-
-  const page8QuickList = () => (page8QuickKind === 'tasks' ? page8State.categories : page8State.routineGroups);
-  const page8QuickItemsKey = () => (page8QuickKind === 'tasks' ? 'tasks' : 'routines');
-
-  const syncPage8QuickConfirm = () => {
-    page8QuickConfirm.disabled = !page8QuickTask.value.trim();
-  };
-
-  // Yazı uzadıkça kutu büyür (iPhone imleç zıplaması yüzünden bir sonraki
-  // kareye erteleniyor, bkz. startItemTextEdit'teki not).
-  let page8QuickGrowRaf = null;
-  const growPage8QuickTask = () => {
-    page8QuickTask.style.height = 'auto';
-    page8QuickTask.style.height = Math.min(page8QuickTask.scrollHeight + 2, 140) + 'px';
-  };
-
-  const selectPage8Quick = (id, silent) => {
-    page8QuickSelected = id;
-    const isNew = id === PAGE8_QUICK_NEW;
-    page8QuickChips.querySelectorAll('.page8-quick-chip').forEach((chip) => {
-      const on = chip.dataset.id === id;
-      chip.classList.toggle('is-selected', on);
-      chip.setAttribute('aria-checked', on ? 'true' : 'false');
-    });
-    page8QuickNewName.hidden = !isNew;
-    if (!silent) (isNew ? page8QuickNewName : page8QuickTask).focus();
-  };
-
-  const renderPage8QuickChips = () => {
-    const t = PAGE8_FAB_TEXT[page8QuickKind];
-    page8QuickChips.innerHTML = '';
-    const CHECK = '<svg class="page8-quick-chip-check" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12.5l5 5.5 11-13"/></svg>';
-
-    page8QuickList().forEach((group) => {
-      const chip = document.createElement('button');
-      chip.type = 'button';
-      chip.className = 'page8-quick-chip';
-      chip.dataset.id = group.id;
-      chip.setAttribute('role', 'radio');
-      chip.style.setProperty('--n', String(page8QuickChips.children.length));
-      chip.style.setProperty('--chip-color', group.color);
-      chip.style.setProperty('--chip-ink', getReadableTextColor(group.color));
-      chip.innerHTML = '<span class="page8-quick-chip-dot"></span>' + CHECK + '<span class="page8-quick-chip-name"></span>';
-      chip.querySelector('.page8-quick-chip-name').textContent = group.name;
-      chip.addEventListener('click', () => { page8Haptic(5); selectPage8Quick(group.id); });
-      page8QuickChips.appendChild(chip);
-    });
-
-    const add = document.createElement('button');
-    add.type = 'button';
-    add.className = 'page8-quick-chip page8-quick-chip-new';
-    add.dataset.id = PAGE8_QUICK_NEW;
-    add.style.setProperty('--n', String(page8QuickChips.children.length));
-    add.setAttribute('role', 'radio');
-    add.innerHTML = '<svg class="page8-quick-chip-plus" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>' + CHECK + '<span class="page8-quick-chip-name"></span>';
-    add.querySelector('.page8-quick-chip-name').textContent = t.newChip;
-    add.addEventListener('click', () => { page8Haptic(5); selectPage8Quick(PAGE8_QUICK_NEW); });
-    page8QuickChips.appendChild(add);
-  };
-
-  const closePage8Quick = () => {
-    page8QuickBackdrop.classList.remove('is-open');
-    const active = document.activeElement;
-    if (active && page8QuickBackdrop.contains(active)) active.blur();
-  };
-
-  const openPage8Quick = (kind) => {
-    page8QuickKind = kind;
-    const t = PAGE8_FAB_TEXT[kind];
-    page8QuickTitle.textContent = t.title;
-    page8QuickCatLabel.textContent = t.groupLabel;
-    page8QuickTaskLabel.textContent = t.itemLabel;
-    page8QuickNewName.placeholder = t.newPlaceholder;
-    page8QuickNewName.setAttribute('aria-label', t.newPlaceholder);
-    page8QuickTask.placeholder = t.itemPlaceholder;
-    page8QuickNewName.value = '';
-    page8QuickTask.value = '';
-    page8QuickTask.style.height = '';
-
-    renderPage8QuickChips();
-    const list = page8QuickList();
-    const last = list.find((g) => g.id === page8QuickLast[kind]);
-    // Önseçim: en son kullanılan grup, yoksa ilk grup, hiç grup yoksa "Yeni".
-    const initial = last ? last.id : (list.length ? list[0].id : PAGE8_QUICK_NEW);
-    selectPage8Quick(initial, true);
-    syncPage8QuickConfirm();
-
-    page8QuickBackdrop.classList.add('is-open');
-    // Pop-up açılış animasyonu bitmeden odaklanırsa klavye bazı tarayıcılarda
-    // geç açılabiliyor; bir sonraki kareye erteliyoruz.
-    requestAnimationFrame(() => {
-      const chosen = page8QuickChips.querySelector('.page8-quick-chip.is-selected');
-      if (chosen) chosen.scrollIntoView({ block: 'nearest' });
-      (initial === PAGE8_QUICK_NEW ? page8QuickNewName : page8QuickTask).focus();
-    });
-  };
-
-  const commitPage8Quick = () => {
-    const text = page8QuickTask.value.trim();
-    if (!text) { page8QuickTask.focus(); return; }
-
-    const kind = page8QuickKind;
-    const t = PAGE8_FAB_TEXT[kind];
-    const itemsKey = page8QuickItemsKey();
-    const list = page8QuickList();
-
-    let group;
-    if (page8QuickSelected === PAGE8_QUICK_NEW) {
-      group = {
-        id: page8GenId(),
-        name: page8QuickNewName.value.trim() || `${t.defaultName} ${list.length + 1}`,
-        color: page8NextColor(list.length),
-        [itemsKey]: []
-      };
-      list.push(group);
-    } else {
-      group = list.find((g) => g.id === page8QuickSelected);
-    }
-    if (!group) return;
-
-    group[itemsKey].push({ id: page8GenId(), text, done: false });
-    page8QuickLast[kind] = group.id;
-    savePage8State();
-    if (kind === 'tasks') renderPage8Categories(); else renderPage8RoutineGroups();
-
-    closePage8Quick();
-    showPage8Toast(t.toast(group.name));
-    // Klavye kapanıp yerleşim oturduktan sonra eklenen kartı göster.
-    window.setTimeout(() => page8FocusGroup(group, 'nearest'), 320);
-  };
-
-  page8QuickTask.addEventListener('input', () => {
-    syncPage8QuickConfirm();
-    if (page8QuickGrowRaf) cancelAnimationFrame(page8QuickGrowRaf);
-    page8QuickGrowRaf = requestAnimationFrame(growPage8QuickTask);
-  });
-  page8QuickTask.addEventListener('keydown', (e) => {
-    // Enter yeni satır ekler (uygulamanın geri kalanıyla aynı); masaüstünde
-    // Ctrl/Cmd+Enter ile hızlıca eklenebilir.
-    if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) { e.preventDefault(); commitPage8Quick(); }
-  });
-  page8QuickNewName.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') { e.preventDefault(); page8QuickTask.focus(); }
-  });
-  page8QuickConfirm.addEventListener('click', commitPage8Quick);
-  page8QuickClose.addEventListener('click', closePage8Quick);
-  page8QuickBackdrop.addEventListener('click', (e) => {
-    if (e.target === page8QuickBackdrop) closePage8Quick();
-  });
-
-  // ---- Ana buton / panel / arka perde ----
-  page8Fab.addEventListener('click', () => {
-    if (!page8FabOpen) { setPage8Fab(true); return; }
-    // Panel açıkken ana butona tekrar basmak: hızlı görev ekleme.
-    setPage8Fab(false);
-    openPage8Quick(page8FabKind());
-  });
-  page8FabScrim.addEventListener('click', () => setPage8Fab(false));
-  page8FabAddGroup.addEventListener('click', () => {
-    const kind = page8FabKind();
-    setPage8Fab(false);
-    openPage8NamePopup(kind === 'tasks' ? 'category' : 'routine');
-  });
-
-  document.addEventListener('keydown', (e) => {
-    if (e.key !== 'Escape') return;
-    if (page8QuickBackdrop.classList.contains('is-open')) closePage8Quick();
-    else if (page8FabOpen) setPage8Fab(false);
-  });
-
-  // Dokunma efektleri (ripple + hafif titreşim).
-  page8Fab.addEventListener('pointerdown', (e) => { page8Ripple(page8Fab, e); page8Haptic(8); });
-  page8FabAddGroup.addEventListener('pointerdown', (e) => { page8Ripple(page8FabAddGroup, e); page8Haptic(6); });
-
-  // Sayfadan ayrılırken (alt nav / yan panel) açık panel ve pencere kapansın.
-  new MutationObserver(() => {
-    if (!page8Section.classList.contains('is-active')) {
-      setPage8Fab(false);
-      if (page8QuickBackdrop.classList.contains('is-open')) closePage8Quick();
-    }
-  }).observe(page8Section, { attributes: true, attributeFilter: ['class'] });
-
-  page8SyncFab();
 
   // ---- Görevler / Rutinler sekme geçişi (Ayarlar'daki hafta başlangıcı
   //      segmented control'üyle birebir aynı mantık). ----
@@ -33754,8 +33235,6 @@
     page8ActiveView = value;
     setPage8GroupsPanel(false);
     renderPage8GroupsPanel();
-    // Hızlı ekle butonu da sekmeye göre (görev/rutin) metnini değiştirir.
-    page8FabOnViewChange();
   };
 
   page8SegOptions.forEach((btn) => btn.addEventListener('click', () => setPage8View(btn.dataset.value)));
@@ -36379,7 +35858,7 @@
       { key: 'tarih', name: 'Tarih', count: 5, color: '#ffd23f' },
       { key: 'cografya', name: 'Coğrafya', count: 5, color: '#6ec6ff' },
       { key: 'felsefe', name: 'Felsefe', count: 5, color: '#ff5c5c' },
-      { key: 'din', name: 'Din Kültürü ve Ahlak Bilgisi', count: 5, color: '#8fe3a0' },
+      { key: 'din', name: 'Din', count: 5, color: '#8fe3a0' },
       { key: 'matematik', name: 'Matematik', count: 40, color: '#c9a6ff' },
       { key: 'fizik', name: 'Fizik', count: 7, color: '#ffb46e' },
       { key: 'kimya', name: 'Kimya', count: 7, color: '#9fb8ff' },
@@ -36917,6 +36396,7 @@
   const examDetailBlankCount = document.getElementById('examDetailBlankCount');
   const examDetailSubjectList = document.getElementById('examDetailSubjectList');
   const examDetailBackBtn = document.getElementById('examDetailBackBtn');
+  const examDetailBulkAddBtn = document.getElementById('examDetailBulkAddBtn');
   const examDetailResourcesBtn = document.getElementById('examDetailResourcesBtn');
   const examDetailDeleteBtn = document.getElementById('examDetailDeleteBtn');
   const examDetailPhotoToggleBtn = document.getElementById('examDetailPhotoToggleBtn');
@@ -37016,7 +36496,7 @@
     examDetailLockBtn.setAttribute('aria-pressed', locked ? 'true' : 'false');
     examDetailLockBtn.setAttribute('aria-label', locked ? 'Kilidi kaldır' : 'Denemeyi kilitle');
     page11DetailSection.classList.toggle('is-locked', locked);
-    [examDetailMarkAllBtn, examDetailClearAllBtn, examDetailLaterBtn, examDetailDeleteBtn, examDetailResourcesBtn].forEach((btn) => {
+    [examDetailMarkAllBtn, examDetailClearAllBtn, examDetailLaterBtn, examDetailDeleteBtn, examDetailResourcesBtn, examDetailBulkAddBtn].forEach((btn) => {
       btn.disabled = locked;
     });
   };
@@ -37061,7 +36541,7 @@
     photoBtn.setAttribute(
       'aria-label',
       photo
-        ? `${subjectName} soru ${idx + 1} görselini düzenle`
+        ? `${subjectName} soru ${idx + 1} görselini görüntüle`
         : `${subjectName} soru ${idx + 1} için görsel ekle`
     );
     photoBtn.innerHTML = PAGE11_PHOTO_CAMERA_ICON;
@@ -37070,7 +36550,9 @@
       if (exam.locked) return;
       const currentPhoto = page11GetPhoto(exam, subjectKey, idx);
       if (currentPhoto) {
-        openPage11QuestionModal(exam, subjectKey, idx, null);
+        // Eklenmiş görsel: Soru Havuzu'ndaki gibi büyük (yakınlaştırılabilir)
+        // lightbox açılır; düzenlemek için lightbox'taki kalem butonu kullanılır.
+        openExamQLightbox(exam, subjectKey, idx);
       } else {
         page11PendingPhotoTarget = { examId: exam.id, subjectKey, idx };
         page11QuestionFileInput.value = '';
@@ -37282,6 +36764,8 @@
     if (typeof closeExamResourcesModal === 'function') closeExamResourcesModal();
     page11SetMenuOpen(false);
     if (typeof closeExamBulkConfirm === 'function') closeExamBulkConfirm();
+    if (typeof closeExamQLightbox === 'function') closeExamQLightbox();
+    if (typeof closeExamQInfo === 'function') closeExamQInfo();
     document.body.classList.remove('is-exam-detail-open');
     goToPage('page-11');
     renderPage11List();
@@ -37668,26 +37152,222 @@
   })();
 
   // ---- Yanlış/boş bırakılan soruya görsel ekleme pop-up'ı ----
+  // Soru Havuzu'ndaki "Soru Ekle" ile aynı adım adım akış:
+  //   1) Görseli kırp: 1:1 kutuda sürükleyerek konumla, iki parmakla ya da
+  //      çubukla yakınlaştır (kırpma mantığı Soru Havuzu'ndakiyle birebir aynı;
+  //      sonuç 900x900 JPEG olarak kaydedilir, böylece 0 Hata Testleri'nde ve
+  //      lightbox'ta havuz soruları gibi kutuyu eksiksiz doldurur).
+  //   2) Doğru cevabı işaretle.
+  // Branş/sınav türü deneme üzerinden zaten belli olduğu için o adım yoktur.
   const page11QuestionBackdrop = document.getElementById('page11QuestionBackdrop');
   const page11QuestionClose = document.getElementById('page11QuestionClose');
-  const page11QuestionPreviewImg = document.getElementById('page11QuestionPreviewImg');
+  const page11QuestionSubtitle = document.getElementById('page11QuestionSubtitle');
+  const page11QuestionStepDots = Array.from(document.querySelectorAll('#page11QuestionStepDots .qhavuz-add-step-dot'));
+  const page11QuestionStepCrop = document.getElementById('page11QuestionStepCrop');
+  const page11QuestionStepAnswer = document.getElementById('page11QuestionStepAnswer');
+  const page11QuestionCropBox = document.getElementById('page11QuestionCropBox');
+  const page11QuestionCropImg = document.getElementById('page11QuestionCropImg');
+  const page11QuestionCropZoom = document.getElementById('page11QuestionCropZoom');
   const page11QuestionChangeBtn = document.getElementById('page11QuestionChangeBtn');
-  const page11QuestionAnswerGrid = document.getElementById('page11QuestionAnswerGrid');
-  const page11QuestionConfirm = document.getElementById('page11QuestionConfirm');
   const page11QuestionRemoveBtn = document.getElementById('page11QuestionRemoveBtn');
+  const page11QuestionAnswerPreviewImg = document.getElementById('page11QuestionAnswerPreviewImg');
+  const page11QuestionAnswerPreviewTrack = document.getElementById('page11QuestionAnswerPreviewTrack');
+  const page11QuestionAnswerPreviewSubject = document.getElementById('page11QuestionAnswerPreviewSubject');
+  const page11QuestionAnswerGrid = document.getElementById('page11QuestionAnswerGrid');
+  const page11QuestionBack = document.getElementById('page11QuestionBack');
+  const page11QuestionConfirm = document.getElementById('page11QuestionConfirm');
   const page11QuestionFileInput = document.getElementById('page11QuestionFileInput');
 
-  // Pop-up açıkken hedef soru (hangi deneme/branş/sıra) ve seçilen
-  // değerler; dosya seçici hem yeni görsel eklerken hem de mevcut
-  // görseli değiştirirken aynı input'u kullanır (page11PendingPhotoTarget).
+  // ---- Kırpıcı ----
+  // Soru Havuzu'ndaki kırpma adımının (qhavuzResetCropUI / qhavuzGetCroppedImage
+  // ve dokunma/fare dinleyicileri) aynısı; orada tek bir pop-up'a bağlı global
+  // durum kullanıldığı için burada kendi durumunu taşıyan küçük bir fabrikaya
+  // sarıldı. Görsel varsayılan olarak kutuyu tamamen kaplayacak şekilde
+  // ("cover") ölçeklenir; kullanıcı yakınlaştırıp sürükleyerek kırpılacak
+  // alanı seçer. dirty: kullanıcı görseli hiç oynattı mı (bkz. Adım 1 "İleri").
+  const page11CreateCropper = (boxEl, imgEl, zoomEl, onReady) => {
+    let state = null;
+    let dirty = false;
+    let pointerActive = false;
+    let panStartX = 0, panStartY = 0;
+    let pinchDist = 0, pinchStartZoom = 1;
+
+    const clampPan = () => {
+      if (!state) return;
+      const dispW = state.natW * state.coverScale * state.zoom;
+      const dispH = state.natH * state.coverScale * state.zoom;
+      const maxX = Math.max(0, (dispW - state.boxSize) / 2);
+      const maxY = Math.max(0, (dispH - state.boxSize) / 2);
+      state.panX = Math.min(Math.max(state.panX, -maxX), maxX);
+      state.panY = Math.min(Math.max(state.panY, -maxY), maxY);
+    };
+
+    const apply = () => {
+      if (!state) return;
+      imgEl.style.transform = `translate(${state.panX}px, ${state.panY}px) scale(${state.zoom})`;
+    };
+
+    const reset = () => {
+      state = null;
+      dirty = false;
+      pointerActive = false;
+      pinchDist = 0;
+      imgEl.onload = null;
+      imgEl.onerror = null;
+      imgEl.style.transform = '';
+      imgEl.style.width = '';
+      imgEl.style.height = '';
+      imgEl.removeAttribute('src');
+      zoomEl.value = 100;
+    };
+
+    const load = (src) => {
+      reset();
+      if (!src) return;
+      imgEl.onload = () => {
+        const boxSize = boxEl.clientWidth || 280;
+        const natW = imgEl.naturalWidth || boxSize;
+        const natH = imgEl.naturalHeight || boxSize;
+        const coverScale = boxSize / Math.min(natW, natH);
+        imgEl.style.width = `${natW * coverScale}px`;
+        imgEl.style.height = `${natH * coverScale}px`;
+        state = { boxSize, natW, natH, coverScale, zoom: 1, panX: 0, panY: 0 };
+        apply();
+        if (onReady) onReady();
+      };
+      imgEl.src = src;
+    };
+
+    // Kutuda o an görünen alanı kaynak görselin gerçek piksel koordinatlarına
+    // çevirip 900x900'lük kare bir canvas'a çizer (Soru Havuzu ile aynı çıktı).
+    const getCropped = () => new Promise((resolve) => {
+      const s = state;
+      if (!s) { resolve(null); return; }
+      try {
+        const OUTPUT = 900;
+        const effScale = s.coverScale * s.zoom;
+        const dispW = s.natW * effScale;
+        const dispH = s.natH * effScale;
+        const imgLeft = (s.boxSize - dispW) / 2 + s.panX;
+        const imgTop = (s.boxSize - dispH) / 2 + s.panY;
+        const canvas = document.createElement('canvas');
+        canvas.width = OUTPUT;
+        canvas.height = OUTPUT;
+        canvas.getContext('2d').drawImage(imgEl, -imgLeft / effScale, -imgTop / effScale, s.boxSize / effScale, s.boxSize / effScale, 0, 0, OUTPUT, OUTPUT);
+        resolve(canvas.toDataURL('image/jpeg', 0.88));
+      } catch (err) {
+        resolve(null);
+      }
+    });
+
+    const dist = (t1, t2) => Math.hypot(t1.clientX - t2.clientX, t1.clientY - t2.clientY);
+
+    boxEl.addEventListener('touchstart', (e) => {
+      if (!state) return;
+      if (e.touches.length === 2) {
+        pinchDist = dist(e.touches[0], e.touches[1]);
+        pinchStartZoom = state.zoom;
+        pointerActive = false;
+      } else if (e.touches.length === 1) {
+        pointerActive = true;
+        panStartX = e.touches[0].clientX - state.panX;
+        panStartY = e.touches[0].clientY - state.panY;
+      }
+    }, { passive: true });
+
+    boxEl.addEventListener('touchmove', (e) => {
+      if (!state) return;
+      if (e.touches.length === 2 && pinchDist) {
+        state.zoom = Math.min(Math.max(pinchStartZoom * (dist(e.touches[0], e.touches[1]) / pinchDist), 1), 3);
+        zoomEl.value = Math.round(state.zoom * 100);
+        dirty = true;
+        clampPan();
+        apply();
+      } else if (e.touches.length === 1 && pointerActive) {
+        state.panX = e.touches[0].clientX - panStartX;
+        state.panY = e.touches[0].clientY - panStartY;
+        dirty = true;
+        clampPan();
+        apply();
+      }
+    }, { passive: true });
+
+    const touchEnd = (e) => {
+      if (e.touches.length < 2) pinchDist = 0;
+      if (e.touches.length === 0) pointerActive = false;
+    };
+    boxEl.addEventListener('touchend', touchEnd, { passive: true });
+    boxEl.addEventListener('touchcancel', touchEnd, { passive: true });
+
+    // Fare ile sürükleme (masaüstü/geniş ekran).
+    boxEl.addEventListener('mousedown', (e) => {
+      if (!state) return;
+      pointerActive = true;
+      panStartX = e.clientX - state.panX;
+      panStartY = e.clientY - state.panY;
+    });
+    window.addEventListener('mousemove', (e) => {
+      if (!pointerActive || !state) return;
+      state.panX = e.clientX - panStartX;
+      state.panY = e.clientY - panStartY;
+      dirty = true;
+      clampPan();
+      apply();
+    });
+    window.addEventListener('mouseup', () => { pointerActive = false; });
+
+    zoomEl.addEventListener('input', () => {
+      if (!state) return;
+      state.zoom = Number(zoomEl.value) / 100;
+      dirty = true;
+      clampPan();
+      apply();
+    });
+
+    return { load, reset, getCropped, isReady: () => !!state, isDirty: () => dirty };
+  };
+
+  const page11QuestionCropper = page11CreateCropper(
+    page11QuestionCropBox,
+    page11QuestionCropImg,
+    page11QuestionCropZoom,
+    () => page11QuestionSyncNav()
+  );
+
+  // Pop-up açıkken hedef soru (hangi deneme/branş/sıra) ve seçilen değerler;
+  // dosya seçici hem yeni görsel eklerken hem de mevcut görseli değiştirirken
+  // aynı input'u kullanır (page11PendingPhotoTarget).
   let page11QuestionTarget = null;
   let page11PendingPhotoTarget = null;
+  let page11QuestionStep = 0;
+  // Kullanıcının yeni seçtiği (sıkıştırılmış) görsel; mevcut görseli düzenlerken null.
+  let page11QuestionRawImage = null;
+  // Daha önce kaydedilmiş görselin referansı (idb://... ya da eski data URL).
+  let page11QuestionExistingRef = null;
+  // Adım 1'den sonra kesinleşen ve Kaydet'te yazılacak görsel: yeni kırpılmış
+  // data URL'i ya da (hiç oynatılmadıysa) mevcut referans.
   let page11QuestionPendingImage = null;
   let page11QuestionPendingAnswer = null;
+  let page11QuestionOpenToken = 0;
 
-  const page11UpdateQuestionConfirmState = () => {
-    page11QuestionConfirm.disabled = !(page11QuestionPendingImage && page11QuestionPendingAnswer);
-  };
+  const PAGE11_QUESTION_STEP_SUBTITLES = ['Görseli kırp', 'Doğru cevabı işaretle'];
+  const PAGE11_QUESTION_STEP_LABELS = ['İleri', 'Kaydet'];
+
+  function page11QuestionSyncNav() {
+    page11QuestionStepCrop.classList.toggle('is-hidden', page11QuestionStep !== 0);
+    page11QuestionStepAnswer.classList.toggle('is-hidden', page11QuestionStep !== 1);
+    page11QuestionStepDots.forEach((dot, i) => {
+      dot.classList.toggle('is-active', i === page11QuestionStep);
+      dot.classList.toggle('is-done', i < page11QuestionStep);
+    });
+    page11QuestionSubtitle.textContent = PAGE11_QUESTION_STEP_SUBTITLES[page11QuestionStep];
+    page11QuestionBack.classList.toggle('is-hidden', page11QuestionStep === 0);
+    page11QuestionConfirm.textContent = PAGE11_QUESTION_STEP_LABELS[page11QuestionStep];
+    // Adım 1: görsel yüklenip kırpıcı hazır olunca; Adım 2: şık seçilince açılır.
+    page11QuestionConfirm.disabled = page11QuestionStep === 0
+      ? !page11QuestionCropper.isReady()
+      : !page11QuestionPendingAnswer;
+  }
 
   const page11BuildQuestionAnswerGrid = () => {
     page11QuestionAnswerGrid.innerHTML = '';
@@ -37701,35 +37381,55 @@
       btn.addEventListener('click', () => {
         page11QuestionPendingAnswer = letter;
         page11BuildQuestionAnswerGrid();
-        page11UpdateQuestionConfirmState();
+        page11QuestionSyncNav();
       });
       page11QuestionAnswerGrid.appendChild(btn);
     });
   };
 
-  // imageDataUrl verilirse (yeni seçilen/değiştirilen görsel) onu, yoksa
-  // o soruya daha önce kaydedilmiş görseli kullanır; her iki durumda da
-  // önceden kayıtlı doğru cevap varsa ön seçili gelir.
+  // imageDataUrl verilirse (yeni seçilen/değiştirilen görsel) onu, yoksa o
+  // soruya daha önce kaydedilmiş görseli kırpma adımında açar; her iki
+  // durumda da önceden kayıtlı doğru cevap varsa ön seçili gelir.
   const openPage11QuestionModal = (exam, subjectKey, idx, imageDataUrl) => {
     const existing = page11GetPhoto(exam, subjectKey, idx);
+    if (!imageDataUrl && !(existing && existing.image)) return;
+
     page11QuestionTarget = { examId: exam.id, subjectKey, idx };
-    page11QuestionPendingImage = imageDataUrl || (existing && existing.image) || null;
+    page11QuestionRawImage = imageDataUrl || null;
+    page11QuestionExistingRef = (existing && existing.image) || null;
+    page11QuestionPendingImage = null;
     page11QuestionPendingAnswer = (existing && existing.answer) || null;
-    if (!page11QuestionPendingImage) return;
-    page11QuestionPreviewImg.src = '';
-    resolveImageSrc(page11QuestionPendingImage).then((url) => { page11QuestionPreviewImg.src = url; });
+    page11QuestionStep = 0;
+
+    const subjectDef = (EXAM_SUBJECTS[exam.type] || EXAM_SUBJECTS.tyt).find((subj) => subj.key === subjectKey);
+    page11QuestionAnswerPreviewTrack.textContent = PAGE11_TYPE_LABELS[exam.type] || 'TYT';
+    page11QuestionAnswerPreviewSubject.textContent = `${subjectDef ? subjectDef.name : subjectKey} · Soru ${idx + 1}`;
     page11QuestionRemoveBtn.classList.toggle('is-hidden', !existing);
     page11BuildQuestionAnswerGrid();
-    page11UpdateQuestionConfirmState();
+
+    // Kırpma adımı görünür olmadan kutunun genişliği ölçülemez; önce adımı
+    // göster, sonra görseli yükle (yüklenince kırpıcı hazır olur ve İleri açılır).
+    page11QuestionCropper.reset();
+    page11QuestionSyncNav();
+    const token = ++page11QuestionOpenToken;
+    resolveImageSrc(page11QuestionRawImage || page11QuestionExistingRef).then((url) => {
+      if (token !== page11QuestionOpenToken || !page11QuestionTarget) return;
+      page11QuestionCropper.load(url);
+    });
     page11QuestionBackdrop.classList.add('is-open');
   };
 
   const closePage11QuestionModal = () => {
+    page11QuestionOpenToken += 1;
     page11QuestionBackdrop.classList.remove('is-open');
     page11QuestionTarget = null;
     page11PendingPhotoTarget = null;
+    page11QuestionRawImage = null;
+    page11QuestionExistingRef = null;
     page11QuestionPendingImage = null;
     page11QuestionPendingAnswer = null;
+    page11QuestionStep = 0;
+    page11QuestionCropper.reset();
     page11QuestionFileInput.value = '';
   };
 
@@ -37765,16 +37465,48 @@
     if (e.target === page11QuestionBackdrop) closePage11QuestionModal();
   });
 
+  // "Geri": kırpma adımına dönülürse pan/zoom durumu korunur.
+  page11QuestionBack.addEventListener('click', () => {
+    if (page11QuestionStep === 0) return;
+    page11QuestionStep = 0;
+    page11QuestionSyncNav();
+  });
+
+  // "İleri / Kaydet": 1) görseli kırpıp cevap adımına geç, 2) soruyu kaydet.
   page11QuestionConfirm.addEventListener('click', async () => {
-    if (!page11QuestionPendingImage || !page11QuestionPendingAnswer || !page11QuestionTarget) return;
+    if (!page11QuestionTarget) return;
+
+    if (page11QuestionStep === 0) {
+      page11QuestionConfirm.disabled = true;
+      const untouchedExisting = !!page11QuestionExistingRef
+        && !page11QuestionRawImage
+        && !page11QuestionCropper.isDirty();
+      let previewSrc;
+      if (untouchedExisting) {
+        // Kayıtlı görsel zaten kırpılmış; hiç oynatılmadıysa tekrar
+        // JPEG'e kodlayıp kaliteyi düşürmeye gerek yok, aynı referans kalır.
+        page11QuestionPendingImage = page11QuestionExistingRef;
+        previewSrc = await resolveImageSrc(page11QuestionExistingRef);
+      } else {
+        const cropped = await page11QuestionCropper.getCropped();
+        page11QuestionPendingImage = cropped || page11QuestionRawImage || page11QuestionExistingRef;
+        previewSrc = cropped || await resolveImageSrc(page11QuestionPendingImage);
+      }
+      if (!page11QuestionTarget) return; // pop-up beklerken kapatıldıysa
+      page11QuestionAnswerPreviewImg.src = previewSrc || '';
+      page11QuestionStep = 1;
+      page11QuestionSyncNav();
+      return;
+    }
+
+    if (!page11QuestionPendingImage || !page11QuestionPendingAnswer) return;
     const { examId, subjectKey, idx } = page11QuestionTarget;
     const exam = page11State.exams.find((it) => it.id === examId);
     if (!exam) return;
     const existing = page11GetPhoto(exam, subjectKey, idx);
-    // page11QuestionPendingImage, kullanıcı yeni bir dosya seçtiyse ham
-    // (sıkıştırılmış) bir data:image URL'idir; mevcut görsel değiştirilmeden
-    // pop-up tekrar açıldıysa zaten bir "idb://" veya bulut URL'sidir —
-    // bu durumda tekrar IndexedDB'ye yazmaya gerek yoktur.
+    // page11QuestionPendingImage, kırpılmış yeni bir data:image URL'idir ya da
+    // (kırpma hiç değişmediyse) zaten bir "idb://" veya bulut URL'sidir — bu
+    // durumda tekrar IndexedDB'ye yazmaya gerek yoktur.
     const isNewImage = typeof page11QuestionPendingImage === 'string'
       && page11QuestionPendingImage.startsWith('data:image');
     const imageRef = isNewImage
@@ -37785,7 +37517,12 @@
     }
     page11SetPhoto(exam, subjectKey, idx, {
       image: imageRef,
-      answer: page11QuestionPendingAnswer
+      answer: page11QuestionPendingAnswer,
+      // Eklenme tarihi ilk eklemede sabitlenir; sonraki düzenlemelerde
+      // (fotoğraf/cevap değişse bile) korunur — havuzdaki "Eklenme Tarihi"
+      // ile aynı mantık. Açıklama da varsa (Bilgi pop-up'ından girilmiş) taşınır.
+      ts: (existing && existing.ts) || Date.now(),
+      description: (existing && existing.description) || null
     });
     closePage11QuestionModal();
     renderExamDetail();
@@ -37802,6 +37539,527 @@
     }
     closePage11QuestionModal();
     renderExamDetail();
+  });
+
+  // ---- "Toplu Soru Ekle" pop-up'ı ----
+  // Kameradan art arda çekilen ya da galeriden çoklu seçilen görseller
+  // önce sıkıştırılıp bir kuyruğa (data URL listesi) alınır; pop-up ilk
+  // görselle açılır. Kuyruktaki HER görsel için sırasıyla önce kırpılır
+  // (page11CreateCropper fabrikası, tek soru ekleme akışındakiyle aynı,
+  // burada ikinci bir kırpıcı örneği için yeniden kullanılır), sonra
+  // branş -> soru sayısı -> doğru cevap seçilir; cevap işaretlenince
+  // kaydedilir. Kırpılmış görsel, kırpma adımı dışındaki adımlarda
+  // üstteki küçük önizlemede görünür ve tıklanınca büyük halde
+  // açılır (bkz. openPage11BulkPreviewLightbox). Kaydedince otomatik
+  // olarak kuyruktaki bir sonraki görsele geçilir, kuyruk biterse
+  // pop-up kapanır.
+  const page11BulkAddMenuBtn = document.getElementById('examDetailBulkAddBtn');
+  const page11BulkQuestionFileInput = document.getElementById('page11BulkQuestionFileInput');
+  const page11BulkBackdrop = document.getElementById('page11BulkQuestionBackdrop');
+  const page11BulkClose = document.getElementById('page11BulkClose');
+  const page11BulkSubtitle = document.getElementById('page11BulkSubtitle');
+  const page11BulkStepDots = Array.from(document.querySelectorAll('#page11BulkStepDots .qhavuz-add-step-dot'));
+  const page11BulkProgress = document.getElementById('page11BulkProgress');
+  const page11BulkPreviewWrap = document.getElementById('page11BulkPreviewWrap');
+  const page11BulkPreviewImg = document.getElementById('page11BulkPreviewImg');
+  const page11BulkPreviewSummary = document.getElementById('page11BulkPreviewSummary');
+  const page11BulkStepSubject = document.getElementById('page11BulkStepSubject');
+  const page11BulkSubjectGrid = document.getElementById('page11BulkSubjectGrid');
+  const page11BulkStepAnswer = document.getElementById('page11BulkStepAnswer');
+  const page11BulkAnswerGrid = document.getElementById('page11BulkAnswerGrid');
+  const page11BulkStepNumber = document.getElementById('page11BulkStepNumber');
+  const page11BulkNumberGrid = document.getElementById('page11BulkNumberGrid');
+  const page11BulkStepCrop = document.getElementById('page11BulkStepCrop');
+  const page11BulkCropBox = document.getElementById('page11BulkCropBox');
+  const page11BulkCropImg = document.getElementById('page11BulkCropImg');
+  const page11BulkCropZoom = document.getElementById('page11BulkCropZoom');
+  const page11BulkBack = document.getElementById('page11BulkBack');
+  const page11BulkConfirm = document.getElementById('page11BulkConfirm');
+  const page11BulkPreviewLightboxBackdrop = document.getElementById('page11BulkPreviewLightboxBackdrop');
+  const page11BulkPreviewLightboxImg = document.getElementById('page11BulkPreviewLightboxImg');
+  const page11BulkPreviewLightboxClose = document.getElementById('page11BulkPreviewLightboxClose');
+  let page11BulkPreviewLightboxZoom = null;
+  const page11BulkTransitionOverlay = document.getElementById('page11BulkTransitionOverlay');
+  const page11BulkTransitionText = document.getElementById('page11BulkTransitionText');
+  let page11BulkTransitionTimer = null;
+
+  const page11BulkCropper = page11CreateCropper(
+    page11BulkCropBox,
+    page11BulkCropImg,
+    page11BulkCropZoom,
+    () => page11BulkSyncNav()
+  );
+
+  let page11BulkExam = null;
+  let page11BulkQueue = [];
+  let page11BulkQueueIndex = 0;
+  let page11BulkStep = 0;
+  let page11BulkSubjectKey = null;
+  let page11BulkAnswer = null;
+  let page11BulkIdx = null;
+  // Kırpma adımında (adım 0) onaylanan görsel burada saklanır; sonraki
+  // adımlarda (branş/soru sayısı/cevap) hem küçük önizleme hem de son
+  // kayıt bu görseli kullanır — kırpma işlemi tekrar yapılmaz.
+  let page11BulkCroppedImage = null;
+
+  // Yeni sıra: önce görsel kırpılır, sonra branş, sonra soru sayısı,
+  // en sonda doğru cevap işaretlenip kaydedilir.
+  const PAGE11_BULK_STEP_SUBTITLES = ['Görseli kırp', 'Branşı seç', 'Soru sayısını seç', 'Doğru cevabı işaretle'];
+  const PAGE11_BULK_STEP_LABELS = ['İleri', 'İleri', 'İleri', 'Ekle'];
+
+  // Küçük önizlemeye tıklanınca (kırpma adımı dışındaki adımlarda görünür)
+  // o ana kadarki en güncel görseli (kırpılmışsa kırpılmış halini)
+  // büyük gösterir; henüz kaydedilmediği için ekstra bilgi/cevap
+  // bileşeni yoktur.
+  const openPage11BulkPreviewLightbox = () => {
+    const src = page11BulkPreviewImg.src;
+    if (!src) return;
+    if (!page11BulkPreviewLightboxZoom && typeof attachPinchZoomPan === 'function') {
+      page11BulkPreviewLightboxZoom = attachPinchZoomPan(page11BulkPreviewLightboxImg);
+    }
+    if (page11BulkPreviewLightboxZoom) page11BulkPreviewLightboxZoom.reset();
+    page11BulkPreviewLightboxImg.src = src;
+    page11BulkPreviewLightboxBackdrop.classList.add('is-open');
+  };
+  const closePage11BulkPreviewLightbox = () => {
+    page11BulkPreviewLightboxBackdrop.classList.remove('is-open');
+    if (page11BulkPreviewLightboxZoom) page11BulkPreviewLightboxZoom.reset();
+  };
+  page11BulkPreviewWrap.addEventListener('click', openPage11BulkPreviewLightbox);
+  page11BulkPreviewWrap.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      openPage11BulkPreviewLightbox();
+    }
+  });
+  page11BulkPreviewLightboxClose.addEventListener('click', closePage11BulkPreviewLightbox);
+  page11BulkPreviewLightboxBackdrop.addEventListener('click', (e) => {
+    if (e.target === page11BulkPreviewLightboxBackdrop) closePage11BulkPreviewLightbox();
+  });
+
+  // Adım boyunca üstteki küçük önizlemenin altında o ana kadar seçilenlerin
+  // özetini gösterir (ör. "Matematik · Cevap C · 12. soru").
+  const page11BulkSummaryText = () => {
+    if (!page11BulkExam) return 'Branş seç';
+    const parts = [];
+    if (page11BulkSubjectKey) {
+      const subjectDef = (EXAM_SUBJECTS[page11BulkExam.type] || EXAM_SUBJECTS.tyt).find((s) => s.key === page11BulkSubjectKey);
+      parts.push(subjectDef ? subjectDef.name : page11BulkSubjectKey);
+    }
+    if (page11BulkIdx !== null) parts.push(`${page11BulkIdx + 1}. soru`);
+    if (page11BulkAnswer) parts.push(`Cevap ${page11BulkAnswer}`);
+    return parts.length ? parts.join(' · ') : 'Branş seç';
+  };
+
+  function page11BulkSyncNav() {
+    page11BulkStepCrop.classList.toggle('is-hidden', page11BulkStep !== 0);
+    page11BulkStepSubject.classList.toggle('is-hidden', page11BulkStep !== 1);
+    page11BulkStepNumber.classList.toggle('is-hidden', page11BulkStep !== 2);
+    page11BulkStepAnswer.classList.toggle('is-hidden', page11BulkStep !== 3);
+    // Kırpma adımında görsel zaten büyük kırpma kutusunda görünür; küçük
+    // önizleme o adımda gizlenir, diğer adımlarda (branş/sayı/cevap) görünür.
+    page11BulkPreviewWrap.classList.toggle('is-hidden', page11BulkStep === 0);
+    page11BulkStepDots.forEach((dot, i) => {
+      dot.classList.toggle('is-active', i === page11BulkStep);
+      dot.classList.toggle('is-done', i < page11BulkStep);
+    });
+    page11BulkSubtitle.textContent = PAGE11_BULK_STEP_SUBTITLES[page11BulkStep];
+    page11BulkProgress.textContent = `${page11BulkQueueIndex + 1} / ${page11BulkQueue.length}`;
+    page11BulkPreviewSummary.textContent = page11BulkSummaryText();
+    page11BulkBack.classList.toggle('is-hidden', page11BulkStep === 0);
+    page11BulkConfirm.textContent = PAGE11_BULK_STEP_LABELS[page11BulkStep];
+
+    let disabled;
+    if (page11BulkStep === 0) disabled = !page11BulkCropper.isReady();
+    else if (page11BulkStep === 1) disabled = !page11BulkSubjectKey;
+    else if (page11BulkStep === 2) disabled = page11BulkIdx === null;
+    else disabled = !page11BulkAnswer;
+    page11BulkConfirm.disabled = disabled;
+  }
+
+  const page11BuildBulkSubjectGrid = () => {
+    page11BulkSubjectGrid.innerHTML = '';
+    if (!page11BulkExam) return;
+    (EXAM_SUBJECTS[page11BulkExam.type] || EXAM_SUBJECTS.tyt).forEach((subj) => {
+      const chip = document.createElement('button');
+      chip.type = 'button';
+      chip.className = 'qhavuz-add-subject-chip';
+      chip.style.setProperty('--qhavuz-chip-color', page11SubjectColor(page11BulkExam.type, subj));
+      chip.textContent = subj.name;
+      if (page11BulkSubjectKey === subj.key) chip.classList.add('is-selected');
+      chip.addEventListener('click', () => {
+        if (page11BulkSubjectKey !== subj.key) {
+          // Branş değişirse önceden seçilmiş soru sayısı artık geçersiz
+          // (farklı branşın soru sayısı farklı olabilir); sıfırlanır.
+          page11BulkSubjectKey = subj.key;
+          page11BulkIdx = null;
+        }
+        page11BuildBulkSubjectGrid();
+        page11BulkSyncNav();
+      });
+      page11BulkSubjectGrid.appendChild(chip);
+    });
+  };
+
+  const page11BuildBulkAnswerGrid = () => {
+    page11BulkAnswerGrid.innerHTML = '';
+    PAGE11_ANSWERS.forEach((letter) => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'qhavuz-add-answer-btn';
+      btn.textContent = letter;
+      btn.setAttribute('aria-label', `Doğru cevap ${letter}`);
+      if (page11BulkAnswer === letter) btn.classList.add('is-selected');
+      btn.addEventListener('click', () => {
+        page11BulkAnswer = letter;
+        page11BuildBulkAnswerGrid();
+        page11BulkSyncNav();
+      });
+      page11BulkAnswerGrid.appendChild(btn);
+    });
+  };
+
+  // Seçilen branştaki soru sayısı kadar buton üretir; daha önce görseli
+  // eklenmiş sorular köşelerindeki küçük noktayla (üzerine yazılacağını
+  // hatırlatmak için) işaretlenir, ama seçilmesine engel olmaz.
+  const page11BuildBulkNumberGrid = () => {
+    page11BulkNumberGrid.innerHTML = '';
+    if (!page11BulkExam || !page11BulkSubjectKey) return;
+    const subjectDef = (EXAM_SUBJECTS[page11BulkExam.type] || EXAM_SUBJECTS.tyt).find((s) => s.key === page11BulkSubjectKey);
+    if (!subjectDef) return;
+    for (let i = 0; i < subjectDef.count; i++) {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'page11-bulk-number-btn';
+      btn.textContent = String(i + 1);
+      btn.setAttribute('aria-label', `${subjectDef.name} soru ${i + 1}`);
+      if (page11GetPhoto(page11BulkExam, page11BulkSubjectKey, i)) btn.classList.add('has-photo');
+      if (page11BulkIdx === i) btn.classList.add('is-selected');
+      btn.addEventListener('click', () => {
+        page11BulkIdx = i;
+        page11BuildBulkNumberGrid();
+        page11BulkSyncNav();
+      });
+      page11BulkNumberGrid.appendChild(btn);
+    }
+  };
+
+  // Kuyruktaki sıradaki görsele geçerken tüm seçimler sıfırlanır ve adım
+  // 1'e (branş) dönülür; küçük önizleme yeni görsele güncellenir.
+  const openPage11BulkItem = () => {
+    page11BulkSubjectKey = null;
+    page11BulkAnswer = null;
+    page11BulkIdx = null;
+    page11BulkStep = 0;
+    page11BulkCroppedImage = null;
+    page11BulkCropper.reset();
+    page11BulkPreviewImg.src = page11BulkQueue[page11BulkQueueIndex] || '';
+    page11BuildBulkSubjectGrid();
+    page11BuildBulkAnswerGrid();
+    page11BulkNumberGrid.innerHTML = '';
+    // Kırpma artık ilk adım: kutuyu önce görünür yapıp (sync), ardından
+    // görseli kırpıcıya yükler (genişlik ancak kutu görünürken ölçülebilir).
+    page11BulkSyncNav();
+    page11BulkCropper.load(page11BulkQueue[page11BulkQueueIndex]);
+  };
+
+  const closePage11BulkModal = () => {
+    if (page11BulkTransitionTimer) {
+      clearTimeout(page11BulkTransitionTimer);
+      page11BulkTransitionTimer = null;
+    }
+    page11BulkTransitionOverlay.classList.remove('is-visible');
+    page11BulkBackdrop.classList.remove('is-open');
+    page11BulkExam = null;
+    page11BulkQueue = [];
+    page11BulkQueueIndex = 0;
+    page11BulkSubjectKey = null;
+    page11BulkAnswer = null;
+    page11BulkIdx = null;
+    page11BulkStep = 0;
+    page11BulkCroppedImage = null;
+    page11BulkCropper.reset();
+    page11BulkQuestionFileInput.value = '';
+  };
+
+  const page11BulkAdvanceQueue = () => {
+    page11BulkQueueIndex += 1;
+    const isLast = page11BulkQueueIndex >= page11BulkQueue.length;
+    // Adımlar sessizce sıfırlanıp Branş adımından yeniden başlarsa kafa
+    // karıştırıcı oluyor; bu yüzden kaydedildiğini ve sıradaki soruya
+    // geçildiğini açıkça bildiren kısa bir geçiş ekranı gösterilir.
+    page11BulkTransitionText.textContent = isLast
+      ? 'Kaydedildi! Tüm sorular eklendi.'
+      : `Kaydedildi! Sıradaki soruya geçiliyor (${page11BulkQueueIndex + 1}/${page11BulkQueue.length})`;
+    page11BulkTransitionOverlay.classList.add('is-visible');
+    if (page11BulkTransitionTimer) clearTimeout(page11BulkTransitionTimer);
+    page11BulkTransitionTimer = setTimeout(() => {
+      page11BulkTransitionTimer = null;
+      page11BulkTransitionOverlay.classList.remove('is-visible');
+      if (isLast) {
+        closePage11BulkModal();
+        renderExamDetail();
+      } else {
+        openPage11BulkItem();
+      }
+    }, 2000);
+  };
+
+  page11BulkAddMenuBtn.addEventListener('click', () => {
+    page11SetMenuOpen(false);
+    const exam = page11State.exams.find((it) => it.id === page11ActiveExamId);
+    if (!exam || exam.locked) return;
+    page11BulkQuestionFileInput.value = '';
+    page11BulkQuestionFileInput.click();
+  });
+
+  // Kamera (anlık çekim) veya galeriden çoklu seçim: tarayıcı/işletim
+  // sistemi bu "accept=image/* multiple" girişinde ikisi arasında seçim
+  // sunar (Kaynaklar'daki çoklu görsel yükleme girişiyle aynı davranış).
+  // Seçilen tüm dosyalar önce sıkıştırılıp bir kuyruğa dönüştürülür, sonra
+  // pop-up ilk görselle açılır.
+  page11BulkQuestionFileInput.addEventListener('change', async () => {
+    const files = Array.from(page11BulkQuestionFileInput.files || []);
+    page11BulkQuestionFileInput.value = '';
+    if (!files.length) return;
+    const exam = page11State.exams.find((it) => it.id === page11ActiveExamId);
+    if (!exam || exam.locked) return;
+
+    const queue = [];
+    for (const file of files) {
+      const dataUrl = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = () => reject(reader.error);
+        reader.readAsDataURL(file);
+      });
+      const compressed = typeof compressImageDataUrl === 'function'
+        ? await compressImageDataUrl(dataUrl)
+        : dataUrl;
+      queue.push(compressed);
+    }
+    if (!queue.length) return;
+
+    page11BulkExam = exam;
+    page11BulkQueue = queue;
+    page11BulkQueueIndex = 0;
+    openPage11BulkItem();
+    page11BulkBackdrop.classList.add('is-open');
+  });
+
+  // Kapatma: kuyrukta henüz işlenmemiş görseller varsa vazgeçilmiş sayılır;
+  // o ana kadar kaydedilmiş olanlar (Ekle'ye basılanlar) zaten kalıcıdır.
+  page11BulkClose.addEventListener('click', () => {
+    closePage11BulkModal();
+    renderExamDetail();
+  });
+  page11BulkBackdrop.addEventListener('click', (e) => {
+    if (e.target === page11BulkBackdrop) {
+      closePage11BulkModal();
+      renderExamDetail();
+    }
+  });
+
+  page11BulkBack.addEventListener('click', () => {
+    if (page11BulkStep === 0) return;
+    page11BulkStep -= 1;
+    page11BulkSyncNav();
+  });
+
+  page11BulkConfirm.addEventListener('click', async () => {
+    if (!page11BulkExam) return;
+
+    // Adım 1: görseli kırp. Sonuç saklanır; hem küçük önizleme hem de
+    // en sonunda kaydedilecek görsel bunu kullanır (tekrar kırpılmaz).
+    if (page11BulkStep === 0) {
+      if (!page11BulkCropper.isReady()) return;
+      const cropped = await page11BulkCropper.getCropped();
+      page11BulkCroppedImage = cropped || page11BulkQueue[page11BulkQueueIndex];
+      page11BulkPreviewImg.src = page11BulkCroppedImage;
+      page11BulkStep = 1;
+      page11BulkSyncNav();
+      return;
+    }
+
+    if (page11BulkStep === 1) {
+      if (!page11BulkSubjectKey) return;
+      page11BulkStep = 2;
+      page11BuildBulkNumberGrid();
+      page11BulkSyncNav();
+      return;
+    }
+
+    if (page11BulkStep === 2) {
+      if (page11BulkIdx === null) return;
+      page11BulkStep = 3;
+      page11BulkSyncNav();
+      return;
+    }
+
+    // Adım 4: doğru cevap işaretlendi; kaydet ve kuyruktaki bir sonraki
+    // görsele geç. Görsel adım 1'de zaten kırpılıp saklanmıştı.
+    if (!page11BulkAnswer) return;
+    page11BulkConfirm.disabled = true;
+    const imageDataUrl = page11BulkCroppedImage || page11BulkQueue[page11BulkQueueIndex];
+    const imageRef = await storeImageAndGetRef(imageDataUrl);
+    page11SetPhoto(page11BulkExam, page11BulkSubjectKey, page11BulkIdx, {
+      image: imageRef,
+      answer: page11BulkAnswer,
+      ts: Date.now(),
+      description: null
+    });
+    renderExamDetail();
+    page11BulkAdvanceQueue();
+  });
+
+  // ---- Soru görseli lightbox'ı ----
+  // Soru Havuzu'ndaki soru lightbox'ıyla (openQhavuzLightbox) aynı davranış:
+  // büyük 1:1 görsel, iki parmakla yakınlaştırma + sürükleme (ortak
+  // attachPinchZoomPan), açılışta blurlu gizli cevap şeridi ("Görmek için
+  // Dokun") VE aynı (i) "Bilgi" butonu. Fark: Çözüldü yerine "Düzenle" butonu
+  // var; deneme/branş/soru/eklenme tarihi gibi detaylar kartın üzerinde değil,
+  // (i) butonuyla açılan #examQInfoBackdrop pop-up'ında yazar (havuzdaki
+  // Soru Bilgisi pop-up'ıyla birebir aynı yerde ve aynı biçimde).
+  const examQLightboxBackdrop = document.getElementById('examQLightboxBackdrop');
+  const examQLightboxImg = document.getElementById('examQLightboxImg');
+  const examQLightboxImgWrap = document.getElementById('examQLightboxImgWrap');
+  const examQLightboxClose = document.getElementById('examQLightboxClose');
+  const examQLightboxEditBtn = document.getElementById('examQLightboxEditBtn');
+  const examQLightboxInfoBtn = document.getElementById('examQLightboxInfoBtn');
+  const examQLightboxAnswerRow = document.getElementById('examQLightboxAnswerRow');
+  const examQLightboxReveal = document.getElementById('examQLightboxReveal');
+  let examQLightboxZoom = null;
+  let examQLightboxTarget = null;
+
+  // Kırpma özelliğinden önce eklenmiş eski görseller kare değil; bunları
+  // 1:1 kutuda kesmemek için oranı korunarak (contain) gösterilir.
+  examQLightboxImg.addEventListener('load', () => {
+    const w = examQLightboxImg.naturalWidth;
+    const h = examQLightboxImg.naturalHeight;
+    examQLightboxImgWrap.classList.toggle('is-contain', !!(w && h) && Math.abs(w / h - 1) > 0.03);
+  });
+
+  const closeExamQLightbox = () => {
+    examQLightboxBackdrop.classList.remove('is-open');
+    if (examQLightboxZoom) examQLightboxZoom.reset();
+    examQLightboxTarget = null;
+  };
+
+  const openExamQLightbox = (exam, subjectKey, idx) => {
+    const photo = page11GetPhoto(exam, subjectKey, idx);
+    if (!photo || !photo.image) return;
+
+    // attachPinchZoomPan Soru Havuzu script'inde tanımlı; ilk açılışta bağlanır.
+    if (!examQLightboxZoom && typeof attachPinchZoomPan === 'function') {
+      examQLightboxZoom = attachPinchZoomPan(examQLightboxImg);
+    }
+    if (examQLightboxZoom) examQLightboxZoom.reset();
+
+    examQLightboxTarget = { examId: exam.id, subjectKey, idx };
+    examQLightboxImgWrap.classList.remove('is-contain');
+    examQLightboxImg.removeAttribute('src');
+    resolveImageSrc(photo.image).then((url) => {
+      const t = examQLightboxTarget;
+      if (t && t.examId === exam.id && t.subjectKey === subjectKey && t.idx === idx) {
+        examQLightboxImg.src = url;
+      }
+    });
+
+    examQLightboxAnswerRow.innerHTML = '';
+    PAGE11_ANSWERS.forEach((letter) => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'qhavuz-lightbox-answer-btn';
+      if (letter === photo.answer) btn.classList.add('is-correct');
+      btn.textContent = letter;
+      btn.disabled = true;
+      btn.setAttribute('aria-label', `Doğru cevap ${letter}`);
+      examQLightboxAnswerRow.appendChild(btn);
+    });
+    // Cevap her açılışta yeniden gizlenmiş (blurlu) başlar.
+    examQLightboxReveal.classList.remove('is-hidden');
+
+    examQLightboxEditBtn.classList.toggle('is-hidden', !!exam.locked);
+    examQLightboxBackdrop.classList.add('is-open');
+  };
+
+  examQLightboxReveal.addEventListener('click', () => {
+    examQLightboxReveal.classList.add('is-hidden');
+  });
+
+  // ---- "Soru Bilgisi" pop-up'ı (lightbox'taki (i) butonu) ----
+  const examQInfoBackdrop = document.getElementById('examQInfoBackdrop');
+  const examQInfoSubjectBadge = document.getElementById('examQInfoSubjectBadge');
+  const examQInfoDesc = document.getElementById('examQInfoDesc');
+  const examQInfoCloseBtn = document.getElementById('examQInfoCloseBtn');
+
+  const openExamQInfo = () => {
+    const target = examQLightboxTarget;
+    if (!target) return;
+    const exam = page11State.exams.find((it) => it.id === target.examId);
+    if (!exam) return;
+    const photo = page11GetPhoto(exam, target.subjectKey, target.idx);
+    if (!photo) return;
+    const subjectDef = (EXAM_SUBJECTS[exam.type] || EXAM_SUBJECTS.tyt).find((subj) => subj.key === target.subjectKey);
+    const subjectName = subjectDef ? subjectDef.name : target.subjectKey;
+
+    // Rozet: kaçıncı soru olduğu ("20. soru" biçiminde) + hangi branşa ait olduğu.
+    examQInfoSubjectBadge.textContent = `${target.idx + 1}. soru · ${subjectName}`;
+    examQInfoSubjectBadge.style.background = subjectDef ? page11SubjectColor(exam.type, subjectDef) : '#ff90e8';
+
+    // Açıklama, exam kilitli değilse doğrudan yazılıp odaktan çıkınca kaydedilir.
+    examQInfoDesc.innerHTML = '';
+    if (exam.locked) {
+      const hasValue = !!(photo.description && photo.description.trim());
+      examQInfoDesc.textContent = hasValue ? photo.description : '—';
+      examQInfoDesc.classList.toggle('is-empty', !hasValue);
+    } else {
+      examQInfoDesc.classList.remove('is-empty');
+      const textarea = document.createElement('textarea');
+      textarea.className = 'page9-add-custom-input qhavuz-info-input qhavuz-info-input--desc';
+      textarea.rows = 1;
+      textarea.maxLength = 500;
+      textarea.placeholder = 'Açıklama ekle...';
+      textarea.value = photo.description || '';
+      const commit = () => {
+        const v = textarea.value.trim();
+        const current = page11GetPhoto(exam, target.subjectKey, target.idx);
+        if (!current) return;
+        page11SetPhoto(exam, target.subjectKey, target.idx, { ...current, description: v || null });
+      };
+      textarea.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') { textarea.value = photo.description || ''; textarea.blur(); }
+      });
+      textarea.addEventListener('blur', commit, { once: true });
+      examQInfoDesc.appendChild(textarea);
+    }
+
+    examQInfoBackdrop.classList.add('is-open');
+  };
+
+  const closeExamQInfo = () => {
+    examQInfoBackdrop.classList.remove('is-open');
+  };
+
+  examQLightboxInfoBtn.addEventListener('click', openExamQInfo);
+  examQInfoCloseBtn.addEventListener('click', closeExamQInfo);
+  examQInfoBackdrop.addEventListener('click', (e) => {
+    if (e.target === examQInfoBackdrop) closeExamQInfo();
+  });
+
+  // "Düzenle": lightbox'ı kapatıp kırp/cevap pop-up'ını mevcut görselle açar.
+  examQLightboxEditBtn.addEventListener('click', () => {
+    const target = examQLightboxTarget;
+    if (!target) return;
+    const exam = page11State.exams.find((it) => it.id === target.examId);
+    closeExamQLightbox();
+    if (!exam || exam.locked) return;
+    openPage11QuestionModal(exam, target.subjectKey, target.idx, null);
+  });
+
+  examQLightboxClose.addEventListener('click', closeExamQLightbox);
+  examQLightboxBackdrop.addEventListener('click', (e) => {
+    if (e.target === examQLightboxBackdrop) closeExamQLightbox();
   });
 
   // ---- İlk render ----
