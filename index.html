@@ -2350,10 +2350,9 @@
     z-index: -1;
     pointer-events: none;
     opacity: var(--relax-stick, 0);
+    /* Mat (tam opak) zemin: altından kayan içerik artık hiç sezilmesin diye
+       yarı saydam color-mix yerine düz --theme-bg rengi kullanılır. */
     background-color: var(--theme-bg, #F6F4EF);
-    background-color: color-mix(in srgb, var(--theme-bg, #F6F4EF) 97%, transparent);
-    -webkit-backdrop-filter: blur(14px);
-    backdrop-filter: blur(14px);
     -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 16px), transparent);
     mask-image: linear-gradient(to bottom, #000 calc(100% - 16px), transparent);
     transition: background-color var(--theme-transition-duration) var(--theme-transition-easing);
@@ -6926,10 +6925,9 @@
       z-index: -1;
       pointer-events: none;
       opacity: var(--qh-stick, 0);
+      /* Mat (tam opak) zemin: altından kayan içerik artık hiç sezilmesin
+         diye yarı saydam color-mix yerine düz --theme-bg rengi kullanılır. */
       background-color: var(--theme-bg, #F6F4EF);
-      background-color: color-mix(in srgb, var(--theme-bg, #F6F4EF) 92%, transparent);
-      -webkit-backdrop-filter: blur(8px);
-      backdrop-filter: blur(8px);
       -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 12px), transparent);
       mask-image: linear-gradient(to bottom, #000 calc(100% - 12px), transparent);
       transition: background-color var(--theme-transition-duration, 480ms) var(--theme-transition-easing, ease);
@@ -11037,8 +11035,24 @@
     z-index: 2;
   }
 
+  /* Deneme kilitliyken bu silme çarpıları artık soluk/pasif halde
+     görünmek yerine tamamen kaybolur (dokunulamayan bir buton hâlâ
+     görünür durmamalı). Görsele dokunup büyük halde açmak (thumb'ın
+     kendi click dinleyicisi) her zaman serbest kalır. */
+  .exam-resources-thumb-remove:disabled,
+  .exam-resources-video-link-remove:disabled {
+    display: none;
+  }
+
   body.is-anthracite .exam-resources-thumb {
     background: var(--dark-card-color, #32343a);
+  }
+
+  /* Kırpma pop-up'ı, "Kaynaklar" pop-up'ının (.settings-confirm-backdrop,
+     z-index 60) üzerinden açılabilmeli diye .page9-add-backdrop'ın
+     varsayılan 40 katmanının üstüne çıkarılır. */
+  .exam-resources-crop-backdrop {
+    z-index: 70;
   }
 
   /* ---- Kaynaklar: cevap anahtarı görselleri arasında sağa/sola
@@ -11053,14 +11067,29 @@
     position: relative;
     background: #f2f2f2;
     touch-action: pan-y;
+    overflow: hidden;
   }
 
+  /* Görsel büyütüldüğünde (bkz. examResGalleryZoom JS) taşan kısım
+     kutunun dışına çıkmasın diye .exam-res-gallery-viewport overflow'u
+     gizler; img'nin kendisi iki parmakla/çift dokunarak yakınlaştırılıp
+     sürüklenebilir (transform: JS tarafından yazılır). */
   .exam-res-gallery-viewport img {
     display: block;
     width: 100%;
     max-height: 74vh;
     object-fit: contain;
     background: #f2f2f2;
+    transform-origin: center center;
+    will-change: transform;
+  }
+
+  .exam-res-gallery-viewport.is-zoomed {
+    touch-action: none;
+  }
+
+  .exam-res-gallery-viewport.is-zoomed img {
+    cursor: grab;
   }
 
   .exam-res-gallery-arrow {
@@ -13857,10 +13886,10 @@
     z-index: -1;
     pointer-events: none;
     opacity: var(--p11d-stick, 0);
+    /* Mat (tam opak) zemin: altından kayan branş kartları artık hiç
+       sezilmesin diye yarı saydam color-mix yerine düz --theme-bg rengi
+       kullanılır. */
     background-color: var(--theme-bg, #F6F4EF);
-    background-color: color-mix(in srgb, var(--theme-bg, #F6F4EF) 94%, transparent);
-    -webkit-backdrop-filter: blur(12px);
-    backdrop-filter: blur(12px);
     -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 14px), transparent);
     mask-image: linear-gradient(to bottom, #000 calc(100% - 14px), transparent);
     transition: background-color var(--theme-transition-duration, 480ms) var(--theme-transition-easing, ease);
@@ -20553,10 +20582,9 @@
     z-index: -1;
     pointer-events: none;
     opacity: var(--p9-stick, 0);
+    /* Mat (tam opak) zemin: altından kayan içerik artık hiç sezilmesin diye
+       yarı saydam color-mix yerine düz --theme-bg rengi kullanılır. */
     background-color: var(--theme-bg, #F6F4EF);
-    background-color: color-mix(in srgb, var(--theme-bg, #F6F4EF) 97%, transparent);
-    -webkit-backdrop-filter: blur(14px);
-    backdrop-filter: blur(14px);
     -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 16px), transparent);
     mask-image: linear-gradient(to bottom, #000 calc(100% - 16px), transparent);
     transition: background-color var(--theme-transition-duration, 480ms) var(--theme-transition-easing, ease);
@@ -24491,6 +24519,46 @@
         </button>
       </div>
       <div class="exam-res-gallery-counter" id="examResGalleryCounter"></div>
+    </div>
+  </div>
+
+  <!-- Kaynaklar: "+ Ekle" ile seçilen her görsel, Soru Havuzu'ndaki soru
+       ekleme akışıyla birebir aynı 1:1 kutuda kırpılıp yakınlaştırıldıktan
+       sonra cevap anahtarı listesine eklenir (page11CreateCropper fabrikası
+       yeniden kullanılır). Birden fazla görsel seçilirse sırayla bu
+       pop-up'ta kırpılırlar; üst başlıkta "2 / 3" gibi bir sayaç belirir. -->
+  <div class="page9-add-backdrop exam-resources-crop-backdrop" id="examResourcesCropBackdrop">
+    <div class="page9-add-card qhavuz-add-card">
+      <div class="page9-add-header">
+        <div class="page9-add-heading">
+          <span class="page9-add-title">Görsel Ekle</span>
+          <span class="page9-add-subtitle" id="examResourcesCropSubtitle">Görseli kırp</span>
+        </div>
+        <button type="button" class="delete-btn page9-add-close" id="examResourcesCropCloseBtn" aria-label="Kapat">×</button>
+      </div>
+
+      <div class="qhavuz-add-step" id="examResourcesCropStep">
+        <div class="qhavuz-crop-box" id="examResourcesCropBox">
+          <img id="examResourcesCropImg" alt="Cevap anahtarı görseli" draggable="false">
+        </div>
+        <div class="qhavuz-crop-zoom-row">
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="7"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <input type="range" id="examResourcesCropZoom" min="100" max="300" value="100" aria-label="Yakınlaştır">
+          <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="7"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            <line x1="11" y1="8" x2="11" y2="14"></line>
+            <line x1="8" y1="11" x2="14" y2="11"></line>
+          </svg>
+        </div>
+      </div>
+
+      <div class="qhavuz-add-nav">
+        <button type="button" class="add-task-btn page9-add-confirm" id="examResourcesCropConfirmBtn" disabled>Ekle</button>
+      </div>
     </div>
   </div>
 
@@ -37159,8 +37227,10 @@
   });
 
   // "+ Görsel Ekle": galeriden/kameradan birden fazla görsel seçilebilir;
-  // her biri (Soru Havuzu'ndaki gibi) sıkıştırılıp IndexedDB'ye Blob
-  // olarak yazılır, o denemenin cevap anahtarı görsel listesine eklenir.
+  // her biri Soru Havuzu'ndaki soru ekleme akışıyla birebir aynı 1:1
+  // kutuda kırpılıp yakınlaştırıldıktan sonra (bkz. examResourcesCrop*
+  // aşağıda) sıkıştırılıp IndexedDB'ye Blob olarak yazılır ve o denemenin
+  // cevap anahtarı görsel listesine eklenir.
   examResourcesAddImageBtn.addEventListener('click', () => examResourcesImageInput.click());
 
   examResourcesImageInput.addEventListener('change', async () => {
@@ -37170,8 +37240,12 @@
     const exam = page11State.exams.find((it) => it.id === page11ActiveExamId);
     if (!exam) return;
     if (exam.locked) return;
-    const res = page11GetResources(exam);
 
+    // Kırpma kutusu büyük boyutlu telefon fotoğraflarıyla yavaş çalışmasın
+    // diye her görsel, kırpıcıya verilmeden önce (Toplu Soru Ekle'deki
+    // gibi) makul bir boyuta sıkıştırılır; asıl kırpma çıktısı (900x900)
+    // bu ön sıkıştırmadan bağımsız olarak kaliteli kalır.
+    const dataUrls = [];
     for (const file of files) {
       const dataUrl = await new Promise((resolve, reject) => {
         const reader = new FileReader();
@@ -37182,13 +37256,100 @@
       const compressed = typeof compressImageDataUrl === 'function'
         ? await compressImageDataUrl(dataUrl)
         : dataUrl;
-      const ref = await storeImageAndGetRef(compressed);
-      res.answerKeyImages.push(ref);
+      dataUrls.push(compressed);
     }
+    openExamResourcesCropQueue(dataUrls);
+  });
 
-    savePage11State();
-    renderExamResourcesModal(exam);
-    page11UpdateResourcesIndicator();
+  // ---- Kaynaklar: görsel kırpma kuyruğu ----
+  // Soru Havuzu'ndaki kırpma adımıyla aynı bileşenleri (.qhavuz-crop-box,
+  // page11CreateCropper fabrikası) kullanır. page11CreateCropper bu
+  // noktadan SONRA (aşağıda "Kırpıcı" bölümünde) tanımlandığı için burada
+  // doğrudan çağrılmaz; ilk kullanımda tembel (lazy) olarak oluşturulur —
+  // o an script'in tamamı zaten çalışmış olacağından page11CreateCropper
+  // kesinlikle tanımlı olur.
+  const examResourcesCropBackdrop = document.getElementById('examResourcesCropBackdrop');
+  const examResourcesCropCloseBtn = document.getElementById('examResourcesCropCloseBtn');
+  const examResourcesCropSubtitle = document.getElementById('examResourcesCropSubtitle');
+  const examResourcesCropBox = document.getElementById('examResourcesCropBox');
+  const examResourcesCropImg = document.getElementById('examResourcesCropImg');
+  const examResourcesCropZoom = document.getElementById('examResourcesCropZoom');
+  const examResourcesCropConfirmBtn = document.getElementById('examResourcesCropConfirmBtn');
+
+  let examResourcesCropperInstance = null;
+  const getExamResourcesCropper = () => {
+    if (!examResourcesCropperInstance) {
+      examResourcesCropperInstance = page11CreateCropper(
+        examResourcesCropBox,
+        examResourcesCropImg,
+        examResourcesCropZoom,
+        () => { examResourcesCropConfirmBtn.disabled = !examResourcesCropperInstance.isReady(); }
+      );
+    }
+    return examResourcesCropperInstance;
+  };
+
+  let examResourcesCropQueue = [];
+  let examResourcesCropQueueIndex = 0;
+
+  const closeExamResourcesCropModal = () => {
+    examResourcesCropBackdrop.classList.remove('is-open');
+    unlockExamResourcesBackgroundScrollIfClosed();
+    getExamResourcesCropper().reset();
+    examResourcesCropQueue = [];
+    examResourcesCropQueueIndex = 0;
+  };
+
+  // Kuyruktaki sıradaki görseli kırpma kutusuna yükler; kuyruk biterse
+  // pop-up'ı kapatır. Birden fazla görsel seçildiyse başlıkta "2 / 3"
+  // gibi bir sayaç, son görselde ise buton "Ekle" yerine yine "Ekle"
+  // kalır (aradakiler "İleri" der, tek/son görselde "Ekle").
+  const loadExamResourcesCropStep = () => {
+    const total = examResourcesCropQueue.length;
+    if (examResourcesCropQueueIndex >= total) { closeExamResourcesCropModal(); return; }
+    examResourcesCropSubtitle.textContent = total > 1
+      ? `Görseli kırp (${examResourcesCropQueueIndex + 1}/${total})`
+      : 'Görseli kırp';
+    examResourcesCropConfirmBtn.textContent = examResourcesCropQueueIndex < total - 1 ? 'İleri' : 'Ekle';
+    examResourcesCropConfirmBtn.disabled = true;
+    getExamResourcesCropper().load(examResourcesCropQueue[examResourcesCropQueueIndex]);
+  };
+
+  const openExamResourcesCropQueue = (dataUrls) => {
+    if (!dataUrls.length) return;
+    examResourcesCropQueue = dataUrls;
+    examResourcesCropQueueIndex = 0;
+    examResourcesCropBackdrop.classList.add('is-open');
+    lockExamResourcesBackgroundScroll();
+    loadExamResourcesCropStep();
+  };
+
+  // "İleri / Ekle": o an kutuda görünen alanı 900x900 JPEG olarak kırpıp
+  // (Soru Havuzu'ndaki soru görselleriyle birebir aynı çıktı), doğrudan
+  // IndexedDB'ye yazar ve cevap anahtarı listesine ekler; ardından
+  // kuyrukta bir sonraki görsele geçer.
+  examResourcesCropConfirmBtn.addEventListener('click', async () => {
+    const exam = page11State.exams.find((it) => it.id === page11ActiveExamId);
+    if (!exam || exam.locked) { closeExamResourcesCropModal(); return; }
+    const cropper = getExamResourcesCropper();
+    if (!cropper.isReady()) return;
+    examResourcesCropConfirmBtn.disabled = true;
+    const croppedDataUrl = await cropper.getCropped();
+    if (croppedDataUrl) {
+      const ref = await storeImageAndGetRef(croppedDataUrl);
+      const res = page11GetResources(exam);
+      res.answerKeyImages.push(ref);
+      savePage11State();
+      renderExamResourcesModal(exam);
+      page11UpdateResourcesIndicator();
+    }
+    examResourcesCropQueueIndex += 1;
+    loadExamResourcesCropStep();
+  });
+
+  examResourcesCropCloseBtn.addEventListener('click', closeExamResourcesCropModal);
+  examResourcesCropBackdrop.addEventListener('click', (e) => {
+    if (e.target === examResourcesCropBackdrop) closeExamResourcesCropModal();
   });
 
   // "Video Çözüm" chip'i: link yoksa/varsa formu açıp kapatır. Form
@@ -37263,11 +37424,61 @@
   let examResGalleryImages = [];
   let examResGalleryIndex = 0;
 
+  // ---- Galeri: çift dokunma / çift tıklama ya da iki parmakla
+  // yakınlaştırma (büyütme). Yakınlaştırılmış görsel parmakla/fareyle
+  // sürüklenerek gezilebilir; 1x'e dönünce sağa/sola kaydırarak görsel
+  // değiştirme normale döner (bkz. aşağıdaki dokunma dinleyicileri). ----
+  let examResGalleryScale = 1;
+  let examResGalleryPanX = 0;
+  let examResGalleryPanY = 0;
+
+  const applyExamResGalleryTransform = () => {
+    examResGalleryImg.style.transform = examResGalleryScale > 1.01
+      ? `translate(${examResGalleryPanX}px, ${examResGalleryPanY}px) scale(${examResGalleryScale})`
+      : '';
+  };
+
+  const clampExamResGalleryPan = () => {
+    const rect = examResGalleryViewport.getBoundingClientRect();
+    const maxX = Math.max(0, (rect.width * (examResGalleryScale - 1)) / 2);
+    const maxY = Math.max(0, (rect.height * (examResGalleryScale - 1)) / 2);
+    examResGalleryPanX = Math.min(Math.max(examResGalleryPanX, -maxX), maxX);
+    examResGalleryPanY = Math.min(Math.max(examResGalleryPanY, -maxY), maxY);
+  };
+
+  const resetExamResGalleryZoom = () => {
+    examResGalleryScale = 1;
+    examResGalleryPanX = 0;
+    examResGalleryPanY = 0;
+    examResGalleryImg.style.transform = '';
+    examResGalleryViewport.classList.remove('is-zoomed');
+  };
+
+  // Yakınlaştırılmışsa 1x'e döner; değilse dokunulan/tıklanan noktayı
+  // merkez alarak yakınlaştırır (galeri uygulamalarındaki çift dokunma
+  // davranışıyla aynı).
+  const toggleExamResGalleryZoom = (clientX, clientY) => {
+    if (examResGalleryScale > 1.01) {
+      resetExamResGalleryZoom();
+      return;
+    }
+    const rect = examResGalleryViewport.getBoundingClientRect();
+    const offsetX = clientX - (rect.left + rect.width / 2);
+    const offsetY = clientY - (rect.top + rect.height / 2);
+    examResGalleryScale = 2.4;
+    examResGalleryPanX = -offsetX * (examResGalleryScale - 1);
+    examResGalleryPanY = -offsetY * (examResGalleryScale - 1);
+    clampExamResGalleryPan();
+    applyExamResGalleryTransform();
+    examResGalleryViewport.classList.add('is-zoomed');
+  };
+
   const renderExamResGallery = () => {
     const total = examResGalleryImages.length;
     if (!total) { closeExamResGallery(); return; }
     if (examResGalleryIndex < 0) examResGalleryIndex = total - 1;
     if (examResGalleryIndex >= total) examResGalleryIndex = 0;
+    resetExamResGalleryZoom();
     examResGalleryImg.src = '';
     resolveImageSrc(examResGalleryImages[examResGalleryIndex]).then((url) => {
       examResGalleryImg.src = url;
@@ -37289,7 +37500,13 @@
   const closeExamResGallery = () => {
     examResGalleryBackdrop.classList.remove('is-open');
     unlockExamResourcesBackgroundScrollIfClosed();
+    resetExamResGalleryZoom();
   };
+
+  // Masaüstü/fare: çift tıklama ile aynı yakınlaştırma davranışı.
+  examResGalleryImg.addEventListener('dblclick', (e) => {
+    toggleExamResGalleryZoom(e.clientX, e.clientY);
+  });
 
   examResGalleryPrev.addEventListener('click', () => {
     examResGalleryIndex -= 1;
@@ -37306,19 +37523,61 @@
     if (e.target === examResGalleryBackdrop) closeExamResGallery();
   });
 
-  // Parmakla sağa/sola kaydırarak galeri görselleri arasında geçiş.
-  // Dikey harekette (aşağı/yukarı kaydırma) devreye girmemesi için yatay
-  // mesafe, dikey mesafeden belirgin şekilde büyük olmalı.
+  // Parmakla sağa/sola kaydırarak galeri görselleri arasında geçiş
+  // (1x'teyken); iki parmakla yakınlaştırma; yakınlaştırılmışken tek
+  // parmakla sürükleyerek gezinme; art arda iki hafif dokunuşla
+  // yakınlaştırmayı aç/kapat. Dikey harekette (aşağı/yukarı kaydırma)
+  // sayfa değişimi devreye girmemesi için yatay mesafe, dikey mesafeden
+  // belirgin şekilde büyük olmalı.
   (() => {
     let startX = 0, startY = 0, tracking = false;
+    let panStartX = 0, panStartY = 0, panPointerActive = false;
+    let pinchDist = 0, pinchStartScale = 1;
+    let lastTapTime = 0;
+
+    const dist = (t1, t2) => Math.hypot(t1.clientX - t2.clientX, t1.clientY - t2.clientY);
+
     examResGalleryViewport.addEventListener('touchstart', (e) => {
-      if (e.touches.length !== 1) return;
-      tracking = true;
-      startX = e.touches[0].clientX;
-      startY = e.touches[0].clientY;
+      if (e.touches.length === 2) {
+        tracking = false;
+        panPointerActive = false;
+        pinchDist = dist(e.touches[0], e.touches[1]);
+        pinchStartScale = examResGalleryScale;
+      } else if (e.touches.length === 1) {
+        if (examResGalleryScale > 1.01) {
+          tracking = false;
+          panPointerActive = true;
+          panStartX = e.touches[0].clientX - examResGalleryPanX;
+          panStartY = e.touches[0].clientY - examResGalleryPanY;
+        } else {
+          tracking = true;
+          startX = e.touches[0].clientX;
+          startY = e.touches[0].clientY;
+        }
+      }
+    }, { passive: true });
+
+    examResGalleryViewport.addEventListener('touchmove', (e) => {
+      if (e.touches.length === 2 && pinchDist) {
+        const newDist = dist(e.touches[0], e.touches[1]);
+        examResGalleryScale = Math.min(Math.max(pinchStartScale * (newDist / pinchDist), 1), 4);
+        examResGalleryViewport.classList.toggle('is-zoomed', examResGalleryScale > 1.01);
+        clampExamResGalleryPan();
+        applyExamResGalleryTransform();
+      } else if (e.touches.length === 1 && panPointerActive) {
+        examResGalleryPanX = e.touches[0].clientX - panStartX;
+        examResGalleryPanY = e.touches[0].clientY - panStartY;
+        clampExamResGalleryPan();
+        applyExamResGalleryTransform();
+      }
     }, { passive: true });
 
     examResGalleryViewport.addEventListener('touchend', (e) => {
+      if (e.touches.length < 2) pinchDist = 0;
+      if (e.touches.length === 0) {
+        panPointerActive = false;
+        if (examResGalleryScale <= 1.01) resetExamResGalleryZoom();
+      }
       if (!tracking) return;
       tracking = false;
       const touch = e.changedTouches && e.changedTouches[0];
@@ -37328,6 +37587,18 @@
       if (Math.abs(dx) > 45 && Math.abs(dx) > Math.abs(dy) * 1.3) {
         examResGalleryIndex += dx < 0 ? 1 : -1;
         renderExamResGallery();
+        return;
+      }
+      // Parmak neredeyse hiç hareket etmediyse (dokunma, kaydırma değil)
+      // ve önceki dokunuştan 320ms içindeyse çift dokunma sayılır.
+      if (Math.abs(dx) < 12 && Math.abs(dy) < 12) {
+        const now = Date.now();
+        if (now - lastTapTime < 320) {
+          lastTapTime = 0;
+          toggleExamResGalleryZoom(touch.clientX, touch.clientY);
+        } else {
+          lastTapTime = now;
+        }
       }
     }, { passive: true });
   })();
