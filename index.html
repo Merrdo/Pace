@@ -28060,7 +28060,26 @@
   // dinlendiği için üst güvenli alan rengi sadece o pop-up'larda
   // değişiyor, diğerlerinde eski tema rengiyle kalıyordu. Artık hepsini
   // aynı anda dinliyoruz.
-  document.querySelectorAll('.page9-add-backdrop, .qhavuz-lightbox-backdrop, .settings-confirm-backdrop, .wheel-color-backdrop, .task-sheet-backdrop').forEach(watchBackdropForThemeColor);
+  document.querySelectorAll('.page9-add-backdrop, .qhavuz-lightbox-backdrop, .settings-confirm-backdrop, .wheel-color-backdrop, .task-sheet-backdrop, .cd-confirm').forEach((backdrop) => {
+    // .task-sheet-backdrop diğer pop-up'lardan farklı olarak arka plan
+    // rengini (background-color) CSS transition'ıyla değiştiriyor (sabit
+    // bir ton yerine). MutationObserver sınıf eklenir eklenmez (geçiş daha
+    // yeni başlamışken, neredeyse saydam haldeyken) tetiklendiği için
+    // getComputedStyle o anda geçişin henüz ilerlemediği/saydam değerini
+    // okuyup el._themeTint'e YANLIŞ ve KALICI olarak önbelleğe alıyordu —
+    // bu yüzden üst güvenli alan hiç renklenmiyordu. Bu backdrop için
+    // .is-open kuralındaki gerçek rgba tonunu burada baştan sabitliyoruz,
+    // böylece hiç yanlış zamanlı bir okuma yapılmıyor.
+    if (backdrop.classList.contains('task-sheet-backdrop') && !backdrop._themeTint) {
+      // Bazı .task-sheet-backdrop türevleri (ör. Ay takvimi sheet'i) kendi
+      // rgba tonunu ezip farklı bir renk/alfa kullanıyor; genel varsayılanı
+      // uygulamadan önce bu özel durumları burada ayrı ayrı tanımlıyoruz.
+      backdrop._themeTint = backdrop.classList.contains('relax-month-backdrop')
+        ? { r: 20, g: 16, b: 28, alpha: 0.14 }
+        : { r: 14, g: 14, b: 22, alpha: 0.42 };
+    }
+    watchBackdropForThemeColor(backdrop);
+  });
 
   const layerA = document.getElementById('themeLayerA');
   const layerB = document.getElementById('themeLayerB');
@@ -33987,13 +34006,14 @@
     // =====================================================================
     // Replan: geçmişte kalan tamamlanmamış görevleri tek tek gözden geçirip
     // kaydırarak/dokunarak ertele · tamamla · sil · atla. Özellik tamamen
-    // ücretsizdir. İlk kullanımda asıl akış yerine, her kaydırma yönünün ne
-    // yaptığını örnekleriyle anlatan bir tanıtım sayfası (.replan-intro-*)
-    // gösterilir; bunu görüp gördüğü APP_STATE'te bir bayrakla tutulur (bkz.
-    // REPLAN_INTRO_SEEN_KEY) ve bir daha gösterilmez.
+    // ücretsizdir. Tanıtım sayfası (.replan-intro-*) artık hiç gösterilmiyor
+    // — özellik ilk kullanımda dahi doğrudan asıl akışla (openReplan) açılır.
+    // hasSeenReplanIntro() bu yüzden her zaman true döner; alttaki
+    // .replan-intro-* işaretleme mantığı ve markası koddan kaldırılmadı
+    // (zararsız/ölü kod), ama artık hiçbir yerden tetiklenmiyor.
     // =====================================================================
     const REPLAN_INTRO_SEEN_KEY = 'plannerReplanIntroSeen';
-    const hasSeenReplanIntro = () => !!APP_STATE[REPLAN_INTRO_SEEN_KEY];
+    const hasSeenReplanIntro = () => true;
     const markReplanIntroSeen = () => { if (!hasSeenReplanIntro()) saveAppState({ [REPLAN_INTRO_SEEN_KEY]: true }); };
     const todayStrReplan = () => ymd(startOfDay(new Date()));
     const tomorrowStrReplan = () => ymd(new Date(startOfDay(new Date()).getTime() + 86400000));
