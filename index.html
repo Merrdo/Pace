@@ -33028,10 +33028,14 @@
       // Not: body.has-modal-open kilidi kullanılmıyor — bu sayfa zaten tam
       // ekran ve opak olduğundan arkadaki içerik dokunuşları alamıyor.
       overlay.classList.add('is-open');
-      // Ad alanına anında odaklanılır ki klavye direkt açılsın; açılış
-      // animasyonu bitmeden odaklanırsa klavye bazı tarayıcılarda geç
-      // açılabiliyor, bir sonraki kareye erteliyoruz (page8NameInput ile aynı desen).
-      requestAnimationFrame(() => nameInput.focus());
+      // Ad alanına anında odaklanılır ki klavye direkt açılsın. ÖNEMLİ:
+      // bu çağrı dokunuşla (click) TAM OLARAK AYNI senkron çağrı zincirinde
+      // kalmalı — requestAnimationFrame/setTimeout gibi bir sonraki kareye
+      // ertelenirse iOS Safari bunu artık kullanıcı hareketinin bir parçası
+      // saymıyor: input görünür şekilde odaklanıyor ama klavye kendiliğinden
+      // açılmıyor, kullanıcı elle alana dokunmak zorunda kalıyordu. Bu
+      // yüzden hiçbir gecikme olmadan doğrudan çağırıyoruz.
+      nameInput.focus();
     };
 
     const closeTaskAddOverlay = () => {
