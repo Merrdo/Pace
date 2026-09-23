@@ -7428,13 +7428,13 @@
      mantık); her satırın rastgele bir animasyon gecikmesi olduğu için
      hepsi aynı anda değil, doğal/dağınık biçimde titrer. */
   @keyframes page9Jiggle {
-    0% { transform: rotate(-1deg); }
-    50% { transform: rotate(1deg); }
-    100% { transform: rotate(-1deg); }
+    0% { transform: rotate(-0.35deg); }
+    50% { transform: rotate(0.35deg); }
+    100% { transform: rotate(-0.35deg); }
   }
 
   .page9-subject-list.is-edit-mode .page9-subject-row {
-    animation: page9Jiggle 0.22s ease-in-out infinite;
+    animation: page9Jiggle 0.34s ease-in-out infinite;
     touch-action: none;
   }
 
@@ -18167,14 +18167,19 @@
     padding-left: 0.15rem;
   }
 
+  /* Eskiden kalın siyah çerçeveli + katı gölgeli "brütalist" bir kutuydu;
+     bu sayfada artık kart yüzeyi yok — satırlar doğrudan sayfanın kendi
+     zemini üzerinde, yanal panelle aynı sade dilde akıyor. Sol kenar,
+     üstteki bölüm etiketiyle (.settings-section-label) aynı 0.15rem'e
+     hizalanıyor. */
   .settings-card {
     width: 100%;
     box-sizing: border-box;
-    background: #fff;
-    border: 4px solid #000;
-    border-radius: 1.1em;
-    box-shadow: 6px 6px 0px 0px #000;
-    padding: 0.95rem 1.1rem;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    padding: clamp(0.6rem, 1.6dvh, 1rem) 0.15rem;
     display: flex;
     flex-direction: column;
   }
@@ -18194,9 +18199,10 @@
   }
 
   .settings-divider {
-    height: 2px;
-    background: rgba(18, 18, 18, 0.1);
+    height: 1px;
+    background: color-mix(in srgb, var(--theme-text, #121212) 12%, transparent);
     margin: 0.15rem 0;
+    transition: background-color 0.4s ease;
   }
 
   .settings-row-text {
@@ -18206,19 +18212,26 @@
     min-width: 0;
   }
 
+  /* Yazı rengi artık "Kart Renkleri" anahtarına bağlı değil: doğrudan o an
+     aktif sayfa zeminine (--theme-text) göre otomatik ayarlanıyor. Zemin
+     koyulaştıkça yazı otomatik beyaza, açıldıkça otomatik siyaha döner,
+     böylece hangi tema + hangi anahtar kombinasyonu seçilirse seçilsin
+     okunabilirlik hiç bozulmaz. */
   .settings-row-title {
     font-family: "Baloo 2", "Space Grotesk", sans-serif;
     font-weight: 700;
     font-size: 1rem;
-    color: #121212;
+    color: var(--theme-text, #121212);
+    transition: color 0.4s ease;
   }
 
   .settings-row-desc {
     font-family: "Baloo 2", "Space Grotesk", sans-serif;
     font-weight: 500;
     font-size: 0.8rem;
-    color: rgba(18, 18, 18, 0.55);
+    color: color-mix(in srgb, var(--theme-text, #121212) 58%, transparent);
     line-height: 1.35;
+    transition: color 0.4s ease;
   }
 
   /* Karanlık mod anahtarı: uygulamanın genel .brutal-toggle görünümünü
@@ -18239,12 +18252,12 @@
     width: 2.1rem;
     height: 2.1rem;
     border-radius: 50%;
-    border: 2px solid #000;
+    /* Önceki %25 opaklık koyu zeminde neredeyse görünmüyordu; %55'e
+       çıkarıldı — hâlâ var(--theme-text) üzerinden temaya göre otomatik
+       beyaz/siyah oluyor, sadece artık gerçekten fark ediliyor. */
+    border: 2px solid var(--theme-pure, #000);
     flex-shrink: 0;
-  }
-
-  body.is-anthracite .settings-color-chip {
-    border-color: #000;
+    transition: border-color 0.4s ease;
   }
 
   /* ---------- "Kart rengi" satırı: Kart Renkleri anahtarı açıldığında
@@ -18269,7 +18282,14 @@
   .settings-row-link {
     border: none;
     background: none;
-    width: 100%;
+    /* width:100% + simetrik negatif margin, "auto" genişlik olmadığından
+       kutuyu SAĞA doğru 0.6rem kısaltıyordu (sol kenar -0.3rem kayıyor,
+       genişlik sabit kaldığından sağ kenar telafi edilmiyordu) — bu yüzden
+       bu satırlardaki daire/ok grubu, üstteki anahtarlı (toggle) satırların
+       sağ hizasından geride duruyordu. calc(100% + 0.6rem) ile kutu her iki
+       yönde de 0.3rem taşıyor, padding de içeriği tam olması gereken yere
+       (diğer satırlarla birebir aynı sağ/sol kenara) geri çekiyor. */
+    width: calc(100% + 0.6rem);
     box-sizing: border-box;
     text-align: left;
     cursor: pointer;
@@ -18282,11 +18302,11 @@
   }
 
   .settings-row-link:hover {
-    background-color: rgba(18, 18, 18, 0.045);
+    background-color: color-mix(in srgb, var(--theme-text, #121212) 5%, transparent);
   }
 
   .settings-row-link:active {
-    background-color: rgba(18, 18, 18, 0.09);
+    background-color: color-mix(in srgb, var(--theme-text, #121212) 9%, transparent);
   }
 
   .settings-row-link-right {
@@ -18300,29 +18320,15 @@
     width: 2.1rem;
     height: 2.1rem;
     border-radius: 0.55rem;
-    border: 2px solid #000;
+    border: 2px solid var(--theme-pure, #000);
     background-repeat: repeat;
     background-color: #eee;
+    transition: border-color 0.4s ease;
   }
 
   .settings-row-chevron {
-    color: rgba(18, 18, 18, 0.35);
-  }
-
-  body.is-anthracite .settings-row-link:hover {
-    background-color: rgba(242, 242, 244, 0.08);
-  }
-
-  body.is-anthracite .settings-row-link:active {
-    background-color: rgba(242, 242, 244, 0.15);
-  }
-
-  body.is-anthracite .settings-row-chevron {
-    color: rgba(242, 242, 244, 0.4);
-  }
-
-  body.is-anthracite .settings-pattern-chip {
-    border-color: #000;
+    color: var(--theme-pure, #000);
+    transition: color 0.4s ease;
   }
 
   /* ---------- Desenler Alt Sayfası ----------
@@ -18462,70 +18468,110 @@
     opacity: 0.35;
   }
 
-  /* "Hafta başlangıcı" artık Soru Takibi (Sayfa 9) Özet kartındaki desenin
-     birebir aynısı: küçük gri bir üst başlık (.page9-summary-title) +
-     hemen altında TYT/AYT ile aynı segmented control (.page9-segmented).
-     Eskiden bu satır ayrı bir ".settings-weekstart-segmented" varyantı ve
-     büyük bir satır başlığıyla (.settings-row-title) oluşturuluyordu; bu,
-     Sayfa 9'daki kart diliyle örtüşmeyen, kendine özgü ve dağınık bir
-     görünüme yol açıyordu. Artık iki yerde de birebir aynı sınıflar
-     kullanıldığından ayrı bir varyant kuralına gerek kalmadı. */
+  /* "Hafta başlangıcı" Soru Takibi (Sayfa 9) Özet kartındaki desenle aynı
+     iskeleti (küçük üst başlık + segmented control) paylaşıyordu, ama Sayfa
+     9'daki .page9-segmented kalın siyah çerçeveli/gölgeli "brütalist" bir
+     kutu — Ayarlar sayfasında artık kart yüzeyi olmadığından bu kutu, düz
+     zemin üzerinde yersiz ve eski tarz kalıyordu. Aşağıdaki kurallar SADECE
+     #weekStartSegmented'i (ve etiketini) hedefliyor; .page9-segmented'in
+     kendisi Sayfa 8/9/10'da hâlâ kullanıldığından ona dokunulmuyor. Yeni
+     görünüm: kenarlıksız, zemine göre otomatik kontrastlı (--theme-text)
+     soft bir pil izi + üzerinde yaylanarak kayan, vurgu renginde ince bir
+     gösterge — yanal panelin seçim çentiğiyle aynı dil. */
+  .settings-page .page9-summary-title {
+    font-family: "Baloo 2", "Space Grotesk", sans-serif;
+    color: var(--theme-pure, #000);
+    opacity: 1;
+    transition: color 0.4s ease;
+  }
 
-  /* ---------- Verileri sıfırlama butonu ---------- */
+  /* body.is-anthracite .page9-summary-title (Kart Renkleri açıkken sabit
+     açık gri yazı rengi) bu etiketten daha özgül olduğu için Ayarlar'da
+     krem/açık zeminde etiket görünmez oluyordu. Ayarlar'daki etiket kartın
+     içinde değil doğrudan sayfa zemininde durduğundan, anahtarın durumundan
+     bağımsız olarak zemine göre saf siyah/beyaz kalmalı. */
+  body.is-anthracite .settings-page .page9-summary-title {
+    color: var(--theme-pure, #000);
+  }
+
+  #weekStartSegmented.settings-segmented.page9-segmented {
+    background: color-mix(in srgb, var(--theme-text, #121212) 7%, transparent);
+    border: none;
+    border-radius: 999px;
+    box-shadow: none;
+  }
+
+  #weekStartSegmented .settings-segmented-slider {
+    background: var(--accent-color, #ff90e8);
+    border-radius: 999px;
+    box-shadow: 0 2px 10px 0 color-mix(in srgb, var(--accent-color, #ff90e8) 55%, transparent);
+    transition: transform 0.45s cubic-bezier(0.34, 1.4, 0.64, 1);
+  }
+
+  #weekStartSegmented .settings-segmented-option {
+    color: color-mix(in srgb, var(--theme-text, #121212) 55%, transparent);
+    transition: color 0.3s ease;
+  }
+
+  #weekStartSegmented .settings-segmented-option.is-active {
+    color: #1a1a1a;
+  }
+
+  body.is-anthracite #weekStartSegmented.settings-segmented.page9-segmented {
+    background: color-mix(in srgb, var(--theme-text, #f2f2f4) 7%, transparent);
+  }
+
+  body.is-anthracite #weekStartSegmented .settings-segmented-option {
+    color: color-mix(in srgb, var(--theme-text, #f2f2f4) 55%, transparent);
+  }
+
+  body.is-anthracite #weekStartSegmented .settings-segmented-option.is-active {
+    color: #1a1a1a;
+  }
+
+  /* ---------- Dışa/İçe aktar ve Sıfırla butonları ----------
+     Eskiden kalın siyah çerçeve + katı ("brütalist") gölgeyle basılan bir
+     kutu efekti vardı. Artık yanal panelin sade diliyle aynı: kenarlıksız,
+     zemine göre otomatik kontrastlı (--theme-text) soft dolgulu bir pil,
+     hover/basmada yumuşakça koyulaşıp hafifçe yükseliyor. Sıfırla butonu
+     aynı nötr pilden başlar, sadece hover/basmada kırmızı uyarı tonuna
+     geçer — tehlike hissi hâlâ var ama artık ince bir renk geçişiyle. ---------- */
+  .settings-outline-btn,
   .settings-danger-btn {
     flex-shrink: 0;
-    padding: 0.6rem 1rem;
+    padding: 0.65rem 1.15rem;
     font-family: "Space Grotesk", sans-serif;
-    font-weight: 800;
+    font-weight: 700;
     font-size: 0.88rem;
-    color: #121212;
-    background-color: #fff;
-    border: 3px solid #000;
-    border-radius: 0.8rem;
-    box-shadow: 3px 3px 0px 0px #000;
+    color: var(--theme-text, #121212);
+    background-color: color-mix(in srgb, var(--theme-text, #121212) 8%, transparent);
+    border: none;
+    border-radius: 999px;
     cursor: pointer;
-    transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease, color 0.15s ease;
+    transition: background-color 0.25s ease, color 0.25s ease, transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .settings-outline-btn:hover,
+  .settings-danger-btn:hover {
+    background-color: color-mix(in srgb, var(--theme-text, #121212) 14%, transparent);
+    transform: translateY(-1px);
+  }
+
+  .settings-outline-btn:active,
+  .settings-danger-btn:active {
+    background-color: color-mix(in srgb, var(--theme-text, #121212) 18%, transparent);
+    transform: translateY(0) scale(0.96);
   }
 
   .settings-danger-btn:hover {
-    transform: translate(-1px, -1px);
-    box-shadow: 4px 4px 0px 0px #000;
-    background-color: #ff5c5c;
+    color: #ff5c5c;
+    background-color: color-mix(in srgb, #ff5c5c 20%, transparent);
   }
 
   .settings-danger-btn:active {
-    transform: translate(1px, 1px);
-    box-shadow: 1px 1px 0px 0px #000;
-    background-color: #ff5c5c;
-  }
-
-  /* ---------- Dışa/İçe aktar butonları (Sıfırla ile aynı brütalist stil,
-     ancak tehlikeli olmadıkları için hover'da kırmızı değil nötr gri) ---------- */
-  .settings-outline-btn {
-    flex-shrink: 0;
-    padding: 0.6rem 1rem;
-    font-family: "Space Grotesk", sans-serif;
-    font-weight: 800;
-    font-size: 0.88rem;
-    color: #121212;
-    background-color: #fff;
-    border: 3px solid #000;
-    border-radius: 0.8rem;
-    box-shadow: 3px 3px 0px 0px #000;
-    cursor: pointer;
-    transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease, color 0.15s ease;
-  }
-
-  .settings-outline-btn:hover {
-    transform: translate(-1px, -1px);
-    box-shadow: 4px 4px 0px 0px #000;
-    background-color: #e4e4e4;
-  }
-
-  .settings-outline-btn:active {
-    transform: translate(1px, 1px);
-    box-shadow: 1px 1px 0px 0px #000;
-    background-color: #e4e4e4;
+    color: #ff5c5c;
+    background-color: color-mix(in srgb, #ff5c5c 30%, transparent);
+    transform: scale(0.96);
   }
 
   /* ---------- Sıfırlama onay pop-up'ı (wheel-color-backdrop ile aynı dil) ---------- */
@@ -18711,25 +18757,10 @@
     box-shadow: 1px 1px 0px 0px #000;
   }
 
-  /* ---------- Anahtar aktifken (karanlık mod) Ayarlar sayfasının beyaz
-     yüzeyleri de diğer sayfalardaki gibi antresit tona geçer. ---------- */
-  body.is-anthracite .settings-card {
-    background-color: var(--dark-card-color, #1c1c22);
-    color: #f2f2f4;
-  }
-
-  body.is-anthracite .settings-row-title {
-    color: #f2f2f4;
-  }
-
-  body.is-anthracite .settings-row-desc {
-    color: rgba(242, 242, 244, 0.55);
-  }
-
-  body.is-anthracite .settings-divider {
-    background: rgba(242, 242, 244, 0.15);
-  }
-
+  /* Satır metinleri artık --theme-text ile zemine göre otomatik uyarlandığı
+     için bu anahtara bağlı ayrı bir kural gerekmiyor; genel .page9-segmented
+     bileşeni (diğer sayfalarla paylaşılan) hâlâ kendi koyu yüzeyini
+     "Kart Renkleri" anahtarından alıyor. */
   body.is-anthracite .settings-segmented {
     background: var(--dark-card-color, #1c1c22);
   }
@@ -18744,39 +18775,6 @@
      kalsın diye burada da ayrıca tanımlıyoruz. */
   body.is-anthracite .settings-segmented-option.is-active {
     color: #fff;
-  }
-
-  body.is-anthracite .settings-danger-btn {
-    background-color: var(--dark-card-color, #1c1c22);
-    border-color: #000;
-    color: #f2f2f4;
-  }
-
-  /* Karanlık moddaki genel ".settings-danger-btn" kuralı (element+2 sınıf,
-     0-2-1 özgüllük) ".settings-danger-btn:hover/:active" kuralından
-     (2 sınıf, 0-2-0 özgüllük) daha yüksek olduğu için basınca/üzerine
-     gelince beliren kırmızı uyarı rengini eziyordu. Burada aynı renk
-     karanlık moda özel olarak tekrar zorlanıyor. */
-  body.is-anthracite .settings-danger-btn:hover,
-  body.is-anthracite .settings-danger-btn:active {
-    background-color: #ff5c5c;
-  }
-
-  body.is-anthracite .settings-outline-btn {
-    background-color: var(--dark-card-color, #1c1c22);
-    border-color: #000;
-    color: #f2f2f4;
-  }
-
-  /* Aynı özgüllük sorunu ".settings-outline-btn"da da vardı; basma/üzerine
-     gelme geri bildirimi karanlık modda tamamen kayboluyordu. Açık moddaki
-     sabit gri (#e4e4e4) yerine, seçilen kart rengini otomatik hafifçe
-     aydınlatan bir filtre kullanıyoruz — böylece "Antresit" veya "Siyah"
-     hangi kart rengi seçili olursa olsun basma efekti doğru görünür. */
-  body.is-anthracite .settings-outline-btn:hover,
-  body.is-anthracite .settings-outline-btn:active {
-    background-color: var(--dark-card-color, #1c1c22);
-    filter: brightness(1.35);
   }
 
   body.is-anthracite .settings-confirm-card {
@@ -18942,10 +18940,8 @@
     }
 
     .settings-card {
-      border-width: 6px;
       border-radius: 1.4em;
-      box-shadow: 6px 6px 0px 0px #000;
-      padding: clamp(0.9rem, 2.6dvh, 1.6rem) 1.9rem;
+      padding: clamp(0.9rem, 2.6dvh, 1.6rem) 0.15rem;
     }
 
     .settings-row {
@@ -18955,38 +18951,10 @@
 
     /* Görünüm kartında birden çok satır olduğu için diğer kartlara göre
        doğal olarak en uzun kart o oluyordu; sadece bu kartın iç
-       boşluklarını (kart dolgusu + satır dolgusu) sıkılaştırarak boyunu
-       kısaltıyoruz. Diğer kartların ölçüleri değişmiyor. */
-    /* DENEME: "Görünüm" kartının brütalist kutusu (kalın çerçeve + katı
-       gölge + dolgu arka plan) kaldırıldı. Satırlar artık sayfanın kendi
-       zemini üzerinde düz metin/seçenek olarak duruyor; kart yoksa yatay
-       dolgu da gereksiz — sol kenar, üstteki "Görünüm" etiketiyle aynı
-       0.15rem'e çekilerek satırların "G" harfiyle hizalanması sağlanıyor.
-       Beğenilirse aynı yaklaşım mobil ve diğer kartlara da uygulanacak. */
-    .settings-col-left > .settings-section:nth-child(1) .settings-card {
-      background: transparent;
-      border: none;
-      border-radius: 0;
-      box-shadow: none;
-      padding: clamp(0.6rem, 1.6dvh, 1rem) 0.15rem;
-    }
-
+       boşluklarını (satır dolgusu) sıkılaştırarak boyunu kısaltıyoruz.
+       Diğer kartların ölçüleri değişmiyor. */
     .settings-col-left > .settings-section:nth-child(1) .settings-row {
       padding: clamp(0.25rem, 0.9dvh, 0.55rem) 0;
-    }
-
-    /* .settings-row-link kendi -0.3rem/0.3rem margin+padding çiftini
-       (eski, kart-arka-planlı tasarımda hover kutusunu satırın biraz
-       dışına taşırmak için) taşıyordu. Yukarıdaki satır artık yatay
-       padding'i 0'a zorluyor ama negatif margin duruyordu; bu da
-       "Kart rengi / Renk teması / Vurgu rengi / Renk Paleti" satırlarının
-       metnini "Tam ekran / Kart Renkleri" satırlarına göre 0.3rem sola
-       kaydırıyordu. Kart yoksa bu telafi mekanizmasına gerek kalmadığı
-       için margin'i de sıfırlıyoruz — böylece tüm satır başlıkları aynı
-       sol kenardan başlar. */
-    .settings-col-left > .settings-section:nth-child(1) .settings-row-link {
-      margin-left: 0;
-      margin-right: 0;
     }
 
     .settings-row-title {
@@ -19012,34 +18980,6 @@
       padding: clamp(0.3rem, 1dvh, 0.6rem) 0;
     }
 
-    /* DENEME: Görünüm kartında yapılan aynı deney (brütalist kutunun
-       kaldırılıp satırların sayfa zemininde düz metin olarak akması) sağ
-       sütundaki üç karta (Takvim / Gündelik / Veri) da uygulandı. Kart
-       çerçevesi/gölgesi/dolgu arka planı kaldırılıyor, yatay dolgu da
-       sol sütunla birebir aynı 0.15rem'e çekiliyor ki her iki sütundaki
-       tüm satır/etiket metinleri (Görünüm, Takvim, Gündelik, Veri) aynı
-       dikey çizgide, aynı sol kenardan başlasın. */
-    /* NOT: "body.is-anthracite .settings-card" (karanlık moddaki kart
-       zemini) kuralı, sınıf sayısı eşit olduğunda eleman seçicisi (body)
-       sayesinde ".settings-col-right .settings-card"dan DAHA yüksek
-       özgüllüğe sahip çıkıyordu (2 sınıf + 1 eleman > 2 sınıf + 0 eleman),
-       bu yüzden karanlık modda sağ sütundaki üç kart eski koyu zeminini
-       koruyup şeffaflaşmıyordu. Seçiciye bir sınıf daha (.settings-page)
-       ekleyerek özgüllüğü kasıtlı olarak yükseltiyoruz ki hem açık hem
-       karanlık modda kazansın. */
-    .settings-page .settings-col-right .settings-card {
-      background: transparent;
-      border: none;
-      border-radius: 0;
-      box-shadow: none;
-      padding: clamp(0.6rem, 1.6dvh, 1rem) 0.15rem;
-    }
-
-    body.is-anthracite .settings-page .settings-col-right .settings-card {
-      background: transparent;
-      color: #f2f2f4;
-    }
-
     .settings-col-right .settings-row {
       padding: clamp(0.25rem, 0.9dvh, 0.55rem) 0;
     }
@@ -19058,9 +18998,8 @@
 
     .settings-danger-btn,
     .settings-outline-btn {
-      padding: 0.85rem 1.5rem;
+      padding: 0.85rem 1.6rem;
       font-size: 0.98rem;
-      box-shadow: 4px 4px 0px 0px #000;
     }
 
     .settings-segmented {
@@ -19084,13 +19023,18 @@
       font-size: 0.9rem;
     }
 
-    @media (hover: hover) and (pointer: fine) {
-      .settings-danger-btn:hover,
-      .settings-outline-btn:hover {
-        transform: translate(-2px, -2px);
-        box-shadow: 6px 6px 0px 0px #000;
-      }
-    }
+  }
+
+  /* Renk/desen satırları (.settings-row-link) -0.3rem negatif kenar boşluğu +
+     0.3rem yan dolguyla, metin ve ok/daire grubunu diğer satırlarla birebir
+     aynı kenara oturtur. Geniş ekrandaki `.settings-row { padding: X 0 }` ve
+     `.settings-col-left > ... .settings-row` kuralları bu yan dolguyu
+     sıfırlıyor, metinleri ~0.3rem sola kaydırıyordu (Tam ekran / Kart
+     Renkleri satırlarıyla hizasızlık). Özgüllüğü yüksek bu kural, sadece
+     yan dolguyu geri verir; dikey dolgu geniş ekran kurallarında kalır. */
+  .settings-scroll .settings-page .settings-card .settings-row.settings-row-link {
+    padding-left: 0.3rem;
+    padding-right: 0.3rem;
   }
 
   /* ==========================================================================
@@ -19830,7 +19774,11 @@
       border-radius: 16px;
       background: none;
       cursor: pointer;
-      color: #ffffff;
+      /* Sabit beyaz yerine sayfanın o anki zeminine (--theme-text) göre
+         otomatik kontrast: koyu temalarda beyaza, "Krem"/"Fildişi"/"Bebek
+         Mavisi" gibi açık temalarda siyaha döner, okunabilirlik her
+         kombinasyonda korunur. */
+      color: var(--theme-text, #ffffff);
       -webkit-tap-highlight-color: transparent;
       transition: color 0.25s ease, background-color 0.25s ease, transform 0.15s ease;
     }
@@ -21040,6 +20988,18 @@
       display: flex;
       align-items: center;
       justify-content: center;
+    }
+
+    /* Yanal panelli düzende .page'in "left" değeri panel boşluğu kadardır
+       (sidebar + 32px) ve .page'in transform'u, içindeki "position: fixed"
+       katmanların referansını ekran yerine sayfanın kutusu yapar. Bu yüzden
+       tam ekran kronometre/sayaç, ekranın değil sayfanın ortasına (yaklaşık
+       56px sağa kaymış) hizalanıyordu. Katmanı sol kenarda o boşluk kadar
+       geri çekip gerçek ekran genişliğine yayıyoruz; saat, ipucu, tur
+       butonu ve ders etiketi tam yatay ortada durur. */
+    .stopwatch-fullscreen,
+    .countdown-fullscreen {
+      left: calc(-1 * (var(--sidebar-width) + 32px));
     }
 
     .stopwatch-fullscreen-core {
@@ -22646,9 +22606,26 @@
       grid-area: subjects;
     }
 
+    /* Sağ sütun (Özet) sol sütundan daha kısa içerik taşıyabiliyor;
+       eskiden height:100% ile kart gövdesi uzatılıyor ama içi dolmuyordu,
+       bu da aşağı kaydırınca sol taraf sürerken sağ tarafın "bitip yarım
+       kalmış" görünmesine yol açıyordu. #page-11-detail'deki özet
+       panelinde kullanılan aynı çözüm: kart kaydırma sırasında üstte
+       sabit (sticky) kalır, kendi boyu kadar yer kaplar, altında boşluk
+       bırakmaz. */
     #page-9 .page9-columns > .page9-summary-card {
       grid-area: summary;
-      height: 100%;
+      position: sticky;
+      top: 20px;
+      align-self: start;
+      max-height: calc(100vh - 40px);
+      overflow-y: auto;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+
+    #page-9 .page9-columns > .page9-summary-card::-webkit-scrollbar {
+      display: none;
     }
 
     #page-9.page {
@@ -22675,7 +22652,11 @@
 
     #page-9 .page9-hero {
       grid-area: hero;
-      max-width: 30rem;
+      /* Sol sütunun tamamını kaplar: ilerleme çubuğu Özet paneline kadar
+         uzanır, "Hedef" butonu da sütunun sağ ucuna oturur. */
+      width: 100%;
+      max-width: none;
+      box-sizing: border-box;
     }
 
     /* Eski tablet kuralı hedef butonuna min-width: 17rem veriyordu. */
@@ -22726,14 +22707,18 @@
      Aynı .page9-add-* sınıflarını paylaşan Kronometre "Branşlarım", Soru
      Havuzu, 0 Hata pop-up'ları etkilenmesin diye yalnızca bu iki kimliğe
      (#page9AddBackdrop / #page9GoalBackdrop) uygulanır. */
+  /* Premium revizyon: doygun/katı vurgular yerine ince opacity
+     kademeleri, yumuşatılmış gölge ve Özet panelindeki (.page9-summary-*)
+     sessiz görsel dille uyumlu bir tipografi ölçeği kullanılır. Amaç
+     "çocuksu" hissi kırmak ama abartıp soğuk/steril de yapmamak. */
   #page9AddBackdrop .page9-add-card,
   #page9GoalBackdrop .page9-add-card {
     background: #fff;
     color: #121212;
     border: none;
-    border-radius: 1.8rem;
-    box-shadow: 0 30px 60px -20px rgba(0, 0, 0, 0.45), 0 4px 12px rgba(0, 0, 0, 0.08);
-    padding: 1.3rem 1.3rem 1.4rem;
+    border-radius: 1.6rem;
+    box-shadow: 0 24px 48px -22px rgba(0, 0, 0, 0.32), 0 2px 8px rgba(0, 0, 0, 0.05);
+    padding: 1.4rem 1.4rem 1.5rem;
     font-family: "Baloo 2", "Space Grotesk", sans-serif;
   }
 
@@ -22746,27 +22731,30 @@
   #page9AddBackdrop .page9-add-title,
   #page9GoalBackdrop .page9-add-title {
     font-family: "Baloo 2", "Space Grotesk", sans-serif;
-    font-weight: 800;
-    font-size: 1.25rem;
+    font-weight: 700;
+    font-size: 1.15rem;
+    letter-spacing: -0.01em;
   }
 
   #page9AddBackdrop .page9-add-subtitle {
     font-family: "Baloo 2", "Space Grotesk", sans-serif;
     font-weight: 600;
-    font-size: 0.88rem;
+    font-size: 0.84rem;
+    opacity: 0.55;
   }
 
   #page9AddBackdrop .page9-add-close,
   #page9GoalBackdrop .page9-add-close {
-    width: 2.1rem;
-    height: 2.1rem;
+    width: 2rem;
+    height: 2rem;
     border: none;
     border-radius: 50%;
     box-shadow: none;
-    background-color: rgba(127, 127, 127, 0.16);
+    background-color: rgba(127, 127, 127, 0.12);
     color: inherit;
+    opacity: 0.7;
     font-family: "Baloo 2", "Space Grotesk", sans-serif;
-    font-size: 1.3rem;
+    font-size: 1.2rem;
   }
 
   #page9AddBackdrop .page9-add-close:hover,
@@ -22784,14 +22772,18 @@
   }
 
   #page9AddBackdrop .page9-add-selectall {
-    padding: 0.45rem 1rem;
+    padding: 0.4rem 0.9rem;
     font-family: "Baloo 2", "Space Grotesk", sans-serif;
-    font-weight: 700;
-    font-size: 0.85rem;
+    font-weight: 600;
+    font-size: 0.78rem;
+    letter-spacing: 0.01em;
     border: none;
     border-radius: 999px;
     box-shadow: none;
-    background-color: rgba(127, 127, 127, 0.16);
+    color: inherit;
+    opacity: 0.65;
+    background-color: rgba(127, 127, 127, 0.12);
+    transition: background-color 0.18s ease, opacity 0.18s ease, transform 0.15s ease;
   }
 
   #page9AddBackdrop .page9-add-selectall:active {
@@ -22799,20 +22791,34 @@
     box-shadow: none;
   }
 
+  /* Tam dolu vurgu rengi yerine ince bir "tint" (rengin kendisiyle değil
+     düşük opaklıklı bir karışımıyla) — seçili durum göze batmadan belli
+     olsun, sayfanın geri kalanı kadar sakin kalsın. */
   #page9AddBackdrop .page9-add-selectall.is-active {
-    background-color: var(--accent-color, #ff90e8);
-    color: #16171b;
+    opacity: 1;
+    color: var(--accent-color, #ff90e8);
+    background-color: color-mix(in srgb, var(--accent-color, #ff90e8) 16%, transparent);
   }
 
   #page9AddBackdrop .page9-add-chip {
-    padding: 0.65rem 0.85rem;
+    padding: 0.7rem 0.85rem;
     border: none;
     border-radius: 1rem;
     box-shadow: none;
+    background-color: rgba(127, 127, 127, 0.05);
+    transition: background-color 0.18s ease, transform 0.15s ease;
   }
 
   body.is-anthracite #page9AddBackdrop .page9-add-chip {
-    background-color: rgba(255, 255, 255, 0.07);
+    background-color: rgba(255, 255, 255, 0.045);
+  }
+
+  /* Seçili satır: doygun bir dolgu yerine kendi vurgu renginin çok
+     ince bir tonu + zar zor görünen bir kenar — satır satır kırmızı
+     yuvarlaklarla dolan "işaretli liste" hissi yerine sakin bir vurgu. */
+  #page9AddBackdrop .page9-add-chip.is-selected {
+    background-color: color-mix(in srgb, var(--accent-color, #ff90e8) 10%, transparent);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent-color, #ff90e8) 28%, transparent);
   }
 
   #page9AddBackdrop .page9-add-chip:active {
@@ -22820,9 +22826,13 @@
   }
 
   #page9AddBackdrop .page9-add-chip-box {
-    width: 1.4rem;
-    height: 1.4rem;
-    border: 2px solid rgba(127, 127, 127, 0.45);
+    width: 1.2rem;
+    height: 1.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.62rem;
+    border: 1.5px solid rgba(127, 127, 127, 0.35);
     border-radius: 50%;
     background-color: transparent;
     transition: background-color 0.18s ease, border-color 0.18s ease;
@@ -22830,6 +22840,7 @@
 
   body.is-anthracite #page9AddBackdrop .page9-add-chip-box {
     background-color: transparent;
+    border-color: rgba(255, 255, 255, 0.28);
   }
 
   #page9AddBackdrop .page9-add-chip.is-selected .page9-add-chip-box {
@@ -22840,51 +22851,57 @@
 
   #page9AddBackdrop .page9-add-chip-name {
     font-family: "Baloo 2", "Space Grotesk", sans-serif;
-    font-weight: 700;
-    font-size: 1rem;
+    font-weight: 600;
+    font-size: 0.95rem;
   }
 
   #page9AddBackdrop .page9-add-chip-color-dot {
+    width: 1.05rem;
+    height: 1.05rem;
     border: none;
-    box-shadow: 0 4px 8px -3px rgba(0, 0, 0, 0.35);
+    box-shadow: 0 2px 6px -2px rgba(0, 0, 0, 0.3);
   }
 
   #page9AddBackdrop .page9-add-chip-color-dot:hover {
-    box-shadow: 0 0 0 4px rgba(127, 127, 127, 0.18), 0 4px 8px -3px rgba(0, 0, 0, 0.35);
+    box-shadow: 0 0 0 3px rgba(127, 127, 127, 0.14), 0 2px 6px -2px rgba(0, 0, 0, 0.3);
   }
 
   #page9AddBackdrop .page9-add-chip-delete {
+    width: 1.2rem;
+    height: 1.2rem;
+    font-size: 0.68rem;
     border: none;
     box-shadow: none;
-    background-color: rgba(229, 72, 77, 0.14);
+    background-color: rgba(229, 72, 77, 0.12);
     color: #e5484d;
   }
 
   #page9AddBackdrop .page9-add-custom-input {
-    padding: 0.65rem 1rem;
+    padding: 0.6rem 1rem;
     font-family: "Baloo 2", "Space Grotesk", sans-serif;
-    font-weight: 700;
-    font-size: 0.95rem;
+    font-weight: 600;
+    font-size: 0.9rem;
     border: none;
     border-radius: 999px;
-    box-shadow: inset 0 0 0 2px transparent;
+    background-color: rgba(127, 127, 127, 0.07);
+    box-shadow: inset 0 0 0 1.5px transparent;
     transition: box-shadow 0.2s ease;
   }
 
   body.is-anthracite #page9AddBackdrop .page9-add-custom-input {
-    background-color: rgba(255, 255, 255, 0.07);
+    background-color: rgba(255, 255, 255, 0.055);
   }
 
   #page9AddBackdrop .page9-add-custom-input:focus {
-    box-shadow: inset 0 0 0 2px var(--accent-color, #ff90e8);
+    box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--accent-color, #ff90e8) 55%, transparent);
   }
 
   #page9AddBackdrop .page9-add-custom-btn {
-    width: 2.7rem;
-    height: 2.7rem;
+    width: 2.5rem;
+    height: 2.5rem;
     border: none;
     border-radius: 50%;
-    box-shadow: 0 6px 12px -6px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 4px 10px -5px rgba(0, 0, 0, 0.35);
     background-color: var(--accent-color, #ff90e8);
     color: #16171b;
     font-family: "Baloo 2", "Space Grotesk", sans-serif;
@@ -22895,30 +22912,35 @@
     box-shadow: none;
   }
 
+  /* Onay butonu vurgu rengini korur (CTA olduğu belli olmalı) ama gölgesi
+     daha az bağırır, harf aralığı hafif açılır — Özet panelindeki büyük
+     rakamla aynı kayıtsız/kendinden emin ton. */
   #page9AddBackdrop .page9-add-confirm,
   #page9GoalBackdrop .page9-add-confirm {
-    height: 3rem;
+    height: 2.9rem;
     padding: 0 1.4rem;
     border: none;
     border-radius: 999px;
     background-color: var(--accent-color, #ff90e8);
     color: #16171b;
-    box-shadow: 0 10px 24px -12px rgba(0, 0, 0, 0.35);
+    box-shadow: 0 8px 18px -10px rgba(0, 0, 0, 0.3);
     font-family: "Baloo 2", "Space Grotesk", sans-serif;
-    font-weight: 700;
-    font-size: 1rem;
+    font-weight: 600;
+    font-size: 0.95rem;
+    letter-spacing: 0.01em;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
   }
 
   #page9AddBackdrop .page9-add-confirm:hover,
   #page9GoalBackdrop .page9-add-confirm:hover {
-    transform: none;
-    box-shadow: 0 10px 24px -12px rgba(0, 0, 0, 0.35);
+    transform: translateY(-1px);
+    box-shadow: 0 10px 20px -10px rgba(0, 0, 0, 0.32);
   }
 
   #page9AddBackdrop .page9-add-confirm:active,
   #page9GoalBackdrop .page9-add-confirm:active {
     transform: scale(0.98);
-    box-shadow: 0 6px 14px -10px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 4px 10px -8px rgba(0, 0, 0, 0.28);
     background-color: var(--accent-color, #ff90e8);
     filter: brightness(0.94);
   }
@@ -27689,6 +27711,13 @@
   // tarafından <meta name="theme-color"> rengiyle boyanır. Tema her
   // değiştiğinde bu meta etiketini de güncelleyerek üst şeridin her zaman
   // o an aktif arka plan rengiyle aynı anda değişmesini sağlıyoruz.
+  // Aktif temanın yazı rengine göre SAF siyah (#000) veya SAF beyaz (#fff)
+  // döndürür; açık zeminde siyah, koyu zeminde beyaz. Ayarlar'daki renk
+  // halkaları, oklar ve bazı etiketler bunu (--theme-pure) kullanır.
+  const themePureOf = (textHex) => {
+    const clean = String(textHex || '#000000').replace('#', '');
+    return parseInt(clean.substring(0, 2), 16) > 128 ? '#ffffff' : '#000000';
+  };
   const themeColorMeta = document.querySelector('meta[name="theme-color"]');
   const updateThemeColorMeta = (hex) => {
     if (themeColorMeta) themeColorMeta.setAttribute('content', hex);
@@ -27818,6 +27847,7 @@
 
   layerA.style.background = themes[themeIndex].gradient;
   document.documentElement.style.setProperty('--theme-text', themes[themeIndex].text);
+  document.documentElement.style.setProperty('--theme-pure', themePureOf(themes[themeIndex].text));
   document.documentElement.style.setProperty('--theme-bg', themes[themeIndex].color);
   document.documentElement.style.setProperty('--weekend-color', themes[themeIndex].weekend);
   refreshThemeColorMeta();
@@ -27831,6 +27861,7 @@
     visibleLayer.classList.remove('is-visible');
 
     document.documentElement.style.setProperty('--theme-text', theme.text);
+    document.documentElement.style.setProperty('--theme-pure', themePureOf(theme.text));
     document.documentElement.style.setProperty('--theme-bg', theme.color);
     document.documentElement.style.setProperty('--weekend-color', theme.weekend);
     refreshThemeColorMeta();
@@ -27864,6 +27895,7 @@
     visibleLayer.classList.remove('is-visible');
 
     document.documentElement.style.setProperty('--theme-text', theme.text);
+    document.documentElement.style.setProperty('--theme-pure', themePureOf(theme.text));
     document.documentElement.style.setProperty('--theme-bg', theme.color);
     document.documentElement.style.setProperty('--weekend-color', theme.weekend);
     refreshThemeColorMeta();
@@ -37837,6 +37869,62 @@
   };
   page9PrevDayBtn.addEventListener('click', () => shiftPage9Date(-1));
   page9NextDayBtn.addEventListener('click', () => shiftPage9Date(1));
+
+  // Tarih satırı + günün toplamı/hedef alanının BOŞ kısımlarında sağa
+  // kaydırınca önceki gün, sola kaydırınca sonraki gün açılır (butonlara
+  // basmaya gerek kalmaz). Alan, .page9-date-row'un üstünden .page9-hero'nun
+  // altına kadar olan dikdörtgendir; iki bölüm arasındaki boşluk da dahil.
+  // Butonlar (ok, Hedef) kaydırmayı başlatmaz; dikey kaydırma bozulmaz.
+  (() => {
+    const wrap = document.querySelector('#page-9 .page9-wrap');
+    const dateRow = document.querySelector('#page-9 .page9-date-row');
+    const hero = document.getElementById('page9Hero');
+    if (!wrap || !dateRow || !hero) return;
+    let sx = 0, sy = 0, sid = null, swiped = false;
+
+    const inZone = (x, y) => {
+      const a = dateRow.getBoundingClientRect();
+      const b = hero.getBoundingClientRect();
+      const left = Math.min(a.left, b.left);
+      const right = Math.max(a.right, b.right);
+      return x >= left && x <= right && y >= a.top && y <= b.bottom + 8;
+    };
+
+    wrap.addEventListener('pointerdown', (e) => {
+      swiped = false;
+      if (e.pointerType === 'mouse' && e.button !== 0) return;
+      if (e.target.closest('button, input, a')) return;
+      if (!inZone(e.clientX, e.clientY)) return;
+      sx = e.clientX; sy = e.clientY; sid = e.pointerId; swiped = false;
+    });
+
+    const end = (e, cancelled) => {
+      if (sid === null || e.pointerId !== sid) return;
+      sid = null;
+      if (cancelled) return;
+      const dx = e.clientX - sx;
+      const dy = e.clientY - sy;
+      if (Math.abs(dx) < 45 || Math.abs(dx) < Math.abs(dy) * 1.3) return;
+      swiped = true;
+      setTimeout(() => { swiped = false; }, 400);
+      shiftPage9Date(dx > 0 ? -1 : 1);
+    };
+    wrap.addEventListener('pointerup', (e) => end(e, false));
+    wrap.addEventListener('pointercancel', (e) => end(e, true));
+
+    // Kaydırma tarih etiketinden başladıysa ardından gelen "bugüne dön"
+    // tıklamasını yut.
+    wrap.addEventListener('click', (e) => {
+      if (!swiped) return;
+      swiped = false;
+      e.stopPropagation();
+      e.preventDefault();
+    }, true);
+
+    // Yatay hareketi tarayıcıya bırakmadan bize ver; dikey kaydırma serbest.
+    dateRow.style.touchAction = 'pan-y';
+    hero.style.touchAction = 'pan-y';
+  })();
 
   // Tarih kutusuna tıklanınca bugüne dön.
   page9DateLabel.style.cursor = 'pointer';
