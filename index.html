@@ -2248,6 +2248,12 @@
     color: #f2f2f4;
   }
 
+  /* ========================================================
+     PLANLAYICI SAYFASI (#page-relax)
+     Not: Kod içinde "Rahatla" adıyla geçiyor (eski/çalışma adı),
+     ama ekranda gösterilen başlık "Planlayıcı" ve bundan sonra
+     sohbette "planlayıcı sayfası" denince kastedilen yer burasıdır.
+     ======================================================== */
   /* ---------- "Rahatla" sayfası (#page-relax) ----------
      Uygulamanın geri kalanıyla aynı tasarım dili: kendi rengi olmayan,
      theme-layer'ın üzerinde şeffaf duran bir sayfa (Mini Oyunlar/Karar
@@ -2363,6 +2369,20 @@
     align-items: baseline;
     gap: 0.4rem;
     font-family: "Baloo 2", "Space Grotesk", sans-serif;
+    /* Artık dokunulabilir bir <button>: varsayılan buton görünümü sıfırlanır,
+       basılınca hafif küçülme dışında görsel olarak eskisiyle birebir aynı
+       kalır (bkz. Ay takvimi sheet'i, aşağıda .relax-month-*). */
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: transform 0.15s ease;
+  }
+
+  .relax-calendar-header:active {
+    transform: scale(0.97);
   }
 
   .relax-calendar-date {
@@ -2380,6 +2400,23 @@
     color: var(--accent-color, #ff90e8);
   }
 
+  /* Ay takvimi sheet'inden bir gün seçildiğinde (sheet açık kalır) bu
+     başlık yeni tarihe geçer; metin değişmeden hemen önce/sonra bu sınıf
+     JS'te baştan tetiklenir (bkz. selectRelaxDate → animateHeader). */
+  @keyframes relaxCalendarHeaderIn {
+    from { opacity: 0; transform: translateY(7px); }
+  }
+
+  .relax-calendar-header.is-swap .relax-calendar-date,
+  .relax-calendar-header.is-swap .relax-calendar-year {
+    display: inline-block;
+    animation: relaxCalendarHeaderIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+  }
+
+  .relax-calendar-header.is-swap .relax-calendar-year {
+    animation-delay: 45ms;
+  }
+
   .relax-calendar-chevron {
     margin-left: 0.1rem;
     color: var(--accent-color, #ff90e8);
@@ -2387,12 +2424,15 @@
   }
 
   .relax-calendar-week {
+    position: relative;
     display: grid;
     grid-template-columns: repeat(7, 1fr);
     gap: 0.25rem;
   }
 
   .relax-calendar-day-cell {
+    position: relative;
+    z-index: 1;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -2423,19 +2463,492 @@
     font-weight: 600;
     font-size: 1rem;
     color: var(--theme-text, #1a1a1a);
-    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+    transition: border-color 0.15s ease, color 0.15s ease, transform 0.15s ease, background-color 0.15s ease;
   }
 
   .relax-calendar-day-cell:active .relax-calendar-day-num {
     transform: scale(0.92);
   }
 
+  /* Seçili gün: dolgu artık altındaki kayan daireden (.relax-week-select-bubble)
+     gelir — Sayfa 6'daki büyük takvimin .calendar-select-bubble'ıyla ve Ay
+     takvimi sheet'indeki .relax-month-select-bubble'la birebir aynı dil:
+     seçim değişince bir günden ötekine yaylanarak kayar. */
   .relax-calendar-day-cell.is-selected .relax-calendar-day-num {
-    background-color: var(--accent-color, #ff90e8);
     border-color: transparent;
     color: #16171b;
+    font-weight: 700;
+  }
+
+  /* Basılı tutma vurgusu: bir güne uzunca basılınca (bkz. "Kopyala/Yapıştır"
+     balonu, openRelaxDayBubbleFor) o günün dairesi hafif gri bir dolguyla
+     işaretlenir; balon açık kaldığı sürece kalır, kapanınca (nereden
+     kapanırsa kapansın, bkz. closeRelaxDayBubble) otomatik kalkar. */
+  .relax-calendar-day-cell.is-longpress-active .relax-calendar-day-num {
+    background-color: rgba(127, 127, 127, 0.18);
+  }
+
+  body.is-anthracite .relax-calendar-day-cell.is-longpress-active .relax-calendar-day-num {
+    background-color: rgba(242, 242, 244, 0.16);
+  }
+
+  .relax-week-select-bubble {
+    position: absolute;
+    left: 0;
+    top: 0;
+    z-index: 0;
+    pointer-events: none;
+    will-change: transform;
+    transition: transform 0.55s cubic-bezier(0.34, 1.4, 0.64, 1), opacity 0.25s ease;
+  }
+
+  .relax-week-select-bubble.is-hidden {
+    opacity: 0;
+  }
+
+  .relax-week-select-bubble-dot {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background-color: var(--accent-color, #ff90e8);
     box-shadow: 0 8px 16px -8px rgba(0, 0, 0, 0.35);
     transform: scale(1.04);
+  }
+
+  @keyframes relaxWeekBubblePop {
+    from { opacity: 0; transform: scale(0.2); }
+  }
+
+  .relax-week-select-bubble.is-pop .relax-week-select-bubble-dot {
+    animation: relaxWeekBubblePop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) backwards;
+  }
+
+  /* Farklı bir haftaya geçildiğinde (ör. Ay takvimi sheet'inden uzak bir
+     gün seçilince) şerit baştan kurulur; sert bir "tak" yerine günler
+     soldan sağa hafif bir dalgayla belirir — Sayfa 6'daki büyük takvimin
+     ay değişimindeki .calendar-day.is-anim ile aynı dil. */
+  @keyframes relaxWeekDayIn {
+    from { opacity: 0; transform: translateY(8px) scale(0.7); }
+  }
+
+  .relax-calendar-day-cell.is-anim .relax-calendar-day-num,
+  .relax-calendar-day-cell.is-anim .relax-calendar-day-label {
+    animation: relaxWeekDayIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) calc(var(--c, 0) * 35ms) backwards;
+  }
+
+  /* ---------------------------------------------------------------------
+     Gün hücresine basılı tutunca beliren "Kopyala / Yapıştır" balonu
+     (bkz. openRelaxDayBubbleFor). Sayfa 8'in nötr/koyu bağlam menüsü
+     yerine, bu sayfadaki Görev eylem sayfasıyla (.task-sheet / .task-sheet-
+     action, bkz. yukarıda) AYNI görsel dili kullanır: yuvarlak renkli
+     ikon rozeti + kalın Baloo 2 başlık içeren, açık (ya da anahtar
+     açıkken antresit) kart satırları, yumuşak "tile" zeminler ve basınca
+     hafif küçülüp ışıldayan dokunuş. --------------------------------- */
+  .relax-day-bubble {
+    --rdb-bg: #ffffff;
+    --rdb-text: #16171b;
+    --rdb-muted: rgba(22, 23, 27, 0.55);
+    --rdb-tile: rgba(22, 23, 27, 0.05);
+    --rdb-tile-strong: rgba(22, 23, 27, 0.1);
+    --rdb-accent: var(--accent-color, #ff90e8);
+    --rdb-on-accent: #16171b;
+    position: fixed;
+    z-index: 500;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    min-width: 15rem;
+    max-width: calc(100vw - 2rem);
+    padding: 0.45rem;
+    box-sizing: border-box;
+    background: var(--rdb-bg);
+    border-radius: 1.3rem;
+    box-shadow: 0 18px 38px -18px rgba(0, 0, 0, 0.4), 0 2px 12px rgba(0, 0, 0, 0.08);
+    font-family: "Baloo 2", "Space Grotesk", sans-serif;
+    opacity: 0;
+    transform: translateY(6px) scale(0.94);
+    transition: opacity 0.16s ease, transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  body.is-anthracite .relax-day-bubble {
+    --rdb-bg: var(--dark-card-color, #32343a);
+    --rdb-text: #f2f2f4;
+    --rdb-muted: rgba(242, 242, 244, 0.6);
+    --rdb-tile: rgba(255, 255, 255, 0.07);
+    --rdb-tile-strong: rgba(255, 255, 255, 0.13);
+    box-shadow: 0 18px 38px -18px rgba(0, 0, 0, 0.6), 0 1px 0 rgba(255, 255, 255, 0.05);
+  }
+
+  .relax-day-bubble.is-visible {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+
+  .relax-day-bubble-item {
+    --rdb-ic-bg: var(--rdb-tile-strong);
+    --rdb-ic-fg: var(--rdb-text);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    width: 100%;
+    margin: 0;
+    padding: 0.55rem 0.85rem 0.55rem 0.5rem;
+    background: var(--rdb-tile);
+    color: var(--rdb-text);
+    border: none;
+    border-radius: 1rem;
+    font-family: inherit;
+    text-align: left;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.18s ease;
+  }
+
+  .relax-day-bubble-item:active {
+    transform: scale(0.97);
+    background: var(--rdb-tile-strong);
+  }
+
+  .relax-day-bubble-item[data-action="copy"] {
+    --rdb-ic-bg: var(--rdb-accent);
+    --rdb-ic-fg: var(--rdb-on-accent);
+  }
+
+  .relax-day-bubble-icon {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 2.15rem;
+    height: 2.15rem;
+    border-radius: 50%;
+    background: var(--rdb-ic-bg);
+    color: var(--rdb-ic-fg);
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .relax-day-bubble-item:active .relax-day-bubble-icon {
+    transform: scale(0.9) rotate(-6deg);
+  }
+
+  .relax-day-bubble-icon svg {
+    width: 17px;
+    height: 17px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2.2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .relax-day-bubble-text {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    line-height: 1.22;
+  }
+
+  .relax-day-bubble-title {
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: var(--rdb-text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .relax-day-bubble-sub {
+    margin-top: 0.05rem;
+    font-weight: 600;
+    font-size: 0.72rem;
+    color: var(--rdb-muted);
+  }
+
+  .page8-copy-toast.relax-day-toast {
+    font-family: "Baloo 2", "Space Grotesk", sans-serif;
+  }
+
+  /* =====================================================================
+     PLANLAYICI SAYFASI: Ay takvimi (alttan açılan sheet)
+     .task-sheet-backdrop / .task-sheet sınıflarını (Görev eylem sayfasıyla
+     aynı açılış/kapanış animasyonu ve tutamaç) miras alır; burada sadece
+     kendi içeriğine (üst çubuk, hafta başlıkları, gün ızgarası) özel
+     kurallar tanımlanır. Bir güne dokununca gün ızgarasındaki .is-selected
+     dairesi ve #relaxCalendarWeek'teki dairenin görünümüyle aynı stil
+     kullanılır, böylece iki takvim de aynı "dil"i konuşur. */
+  .relax-month-sheet {
+    max-width: 30rem;
+    font-family: "Baloo 2", "Space Grotesk", sans-serif;
+    --rm-ease: cubic-bezier(0.16, 1, 0.3, 1);
+    --rm-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  /* Ay takvimi sheet'i: arkadaki Planlayıcı sayfası bulanıklaşmaz (genel
+     .task-sheet-backdrop'un aksine), ince/cam gibi şeffaf bir örtüyle
+     görünür kalır — geri tuşu ve "Planlayıcı" başlığı okunur durumda
+     kalır. Aynı anda #page-relax hafifçe küçülüp yukarı doğru geri çekilir
+     (bkz. #page-relax.is-behind-sheet), böylece üstteki geçiş net görülür. */
+  .task-sheet-backdrop.relax-month-backdrop {
+    background: rgba(20, 16, 28, 0);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+
+  .task-sheet-backdrop.relax-month-backdrop.is-open {
+    background: rgba(20, 16, 28, 0.14);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+
+  #page-relax {
+    transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1), border-radius 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+    transform-origin: 50% 0%;
+  }
+
+  #page-relax.is-behind-sheet {
+    transform: scale(0.94) translateY(-16px);
+    border-radius: 34px;
+    overflow: hidden;
+  }
+
+  /* Sheet arkadayken üst çubuk (geri tuşu + "Planlayıcı" başlığı) tamamen
+     gizlenir; onun bıraktığı boşluk kapanır ve hemen altındaki takvim
+     alanı (.relax-calendar) en üst tarafa yükselir — kullanıcı sheet'in
+     ardında geri tuşu/başlık yerine doğrudan takvim şeridini görür. */
+  #page-relax .calendar-topbar {
+    max-height: 3rem;
+    overflow: hidden;
+    transition:
+      opacity 0.4s ease,
+      transform 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+      max-height 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+      margin-bottom 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  #page-relax.is-behind-sheet .calendar-topbar {
+    opacity: 0;
+    transform: translateY(-14px);
+    max-height: 0;
+    margin-bottom: -1.6rem;
+    pointer-events: none;
+  }
+
+  .relax-month-head {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.3rem 0.1rem 1rem;
+  }
+
+  .relax-month-title {
+    flex: 1;
+    text-align: left;
+    font-weight: 700;
+    font-size: 1.35rem;
+    letter-spacing: -0.01em;
+    color: var(--ts-text, #16171b);
+  }
+
+  .relax-month-title-year {
+    color: var(--accent-color, #ff90e8);
+  }
+
+  .relax-month-close-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    border: none;
+    background: var(--ts-tile, rgba(22, 23, 27, 0.05));
+    color: var(--ts-text, #16171b);
+    flex-shrink: 0;
+    cursor: pointer;
+    transition: background-color 0.15s ease, transform 0.15s ease;
+  }
+
+  .relax-month-close-btn:active {
+    transform: scale(0.9);
+    background: var(--ts-tile-strong, rgba(22, 23, 27, 0.1));
+  }
+
+  .relax-month-weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    padding: 0 0.2rem;
+    margin-bottom: 0.3rem;
+  }
+
+  .relax-month-weekdays span {
+    text-align: center;
+    font-weight: 600;
+    font-size: 0.72rem;
+    color: var(--ts-muted, rgba(22, 23, 27, 0.5));
+  }
+
+  .relax-month-grid {
+    display: grid;
+    /* 6 satır x 7 gün: hangi ay olursa olsun hücre sayısı hep aynıdır (bkz.
+       renderMonthGrid'teki TOTAL_CELLS), böylece ay değişince sheet'in
+       yüksekliği asla kırpılıp uzamaz. */
+    grid-template-rows: repeat(6, 1fr);
+    grid-template-columns: repeat(7, 1fr);
+    row-gap: 0.35rem;
+    padding: 0 0.2rem 0.2rem;
+    /* Sağa/sola kaydırma jesti burada yakalanır (dikey sayfa kaydırmasıyla
+       karışmaması için yatay pan serbest bırakılır, dikey engellenir). */
+    touch-action: pan-y;
+    /* Seçili günün kayan dairesi (.relax-month-select-bubble) buna göre
+       konumlanır — Sayfa 6'daki büyük takvimle (.calendar-grid) birebir
+       aynı yöntem. */
+    position: relative;
+  }
+
+  .relax-month-day {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 0.2rem;
+    padding: 0.2rem 0 0.35rem;
+    background: none;
+    border: none;
+    font-family: inherit;
+    cursor: pointer;
+  }
+
+  .relax-month-day.is-outside {
+    cursor: default;
+  }
+
+  /* Önceki/sonraki aydan taşan (tıklanamaz) günler: ızgara hep 6 satır
+     gösterdiği için bu günler boş bırakılmak yerine soluk rakamla belirir. */
+  .relax-month-day.is-outside .relax-month-day-num {
+    opacity: 0.28;
+  }
+
+  .relax-month-day-num {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    font-weight: 600;
+    font-size: 0.92rem;
+    color: var(--ts-text, #16171b);
+    border: 2px solid transparent;
+    transition: background-color 0.15s ease, color 0.15s ease, transform 0.15s ease;
+  }
+
+  .relax-month-day:not(.is-outside):active .relax-month-day-num {
+    transform: scale(0.9);
+  }
+
+  .relax-month-day.is-today .relax-month-day-num {
+    border-color: var(--accent-color, #ff90e8);
+  }
+
+  .relax-month-day.is-selected .relax-month-day-num {
+    border-color: transparent;
+    color: #16171b;
+    font-weight: 700;
+  }
+
+  /* Seçili günün kayan dairesi: ızgaraya JS'te eklenen tek bir eleman,
+     Sayfa 6'daki büyük takvimin .calendar-select-bubble'ıyla birebir aynı
+     davranış — seçim değişince bir günden ötekine yaylanarak kayar. */
+  .relax-month-select-bubble {
+    position: absolute;
+    left: 0;
+    top: 0;
+    z-index: 0;
+    pointer-events: none;
+    will-change: transform;
+    transition: transform 0.55s var(--rm-spring), opacity 0.25s ease;
+  }
+
+  .relax-month-select-bubble.is-hidden {
+    opacity: 0;
+  }
+
+  .relax-month-select-bubble-dot {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background-color: var(--accent-color, #ff90e8);
+    box-shadow: 0 8px 16px -8px rgba(0, 0, 0, 0.35);
+    transform: scale(1.04);
+  }
+
+  .relax-month-day-dots {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.2rem;
+    height: 0.4rem;
+  }
+
+  .relax-month-day-dots i {
+    display: block;
+    width: 0.32rem;
+    height: 0.32rem;
+    border-radius: 50%;
+    background: var(--dot-c, var(--accent-color, #ff90e8));
+    font-style: normal;
+  }
+
+  /* ---------- Ay takvimi sheet'i: kaydırma ve seçim animasyonları ----------
+     Ok butonları kalktığı için ay değişimi artık yalnızca sağa/sola
+     kaydırmayla olur (bkz. JS'teki goToRelaxMonth). Yön (--dir: -1/1),
+     ızgaraya (.relax-month-grid) ve başlığa (.relax-month-title) JS'ten
+     yazılır; günler soldan/sağdan geldiği yöne göre hafif kayarak belirir,
+     başlık da aynı yönde kayarak yeni ay adını gösterir. Bir gün seçilince
+     sheet kapanmaz: kayan balon (.relax-month-select-bubble) o güne
+     yaylanarak kayar — Sayfa 6'daki büyük takvimin seçim animasyonuyla
+     birebir aynı dil. Üst başlıktaki tarih ise (#relaxCalendarHeaderBtn,
+     Sayfa dışı) ayrı bir geçiş animasyonuyla güncellenir. */
+  @keyframes relaxMonthDayIn {
+    from { opacity: 0; transform: translate(calc(var(--dir, 0) * 14px), 8px) scale(0.7); }
+  }
+
+  @keyframes relaxMonthLabelIn {
+    from { opacity: 0; transform: translateX(calc(var(--dir, 0) * 18px)); }
+  }
+
+  @keyframes relaxMonthBubblePop {
+    from { opacity: 0; transform: scale(0.2); }
+  }
+
+  .relax-month-grid .relax-month-day.is-anim .relax-month-day-num {
+    animation: relaxMonthDayIn 0.4s var(--rm-ease) calc(var(--base, 0ms) + var(--r, 0) * 26ms + var(--c, 0) * 14ms) backwards;
+  }
+
+  .relax-month-title.is-swap > span {
+    display: inline-block;
+    animation: relaxMonthLabelIn 0.36s var(--rm-ease) backwards;
+  }
+
+  .relax-month-title.is-swap > .relax-month-title-year {
+    animation-delay: 45ms;
+  }
+
+  .relax-month-select-bubble.is-pop .relax-month-select-bubble-dot {
+    animation: relaxMonthBubblePop 0.55s var(--rm-spring) backwards;
+  }
+
+  body.is-anthracite .relax-month-close-btn {
+    background: var(--ts-tile, rgba(255, 255, 255, 0.065));
+  }
+
+  body.is-anthracite .relax-month-close-btn:active {
+    background: var(--ts-tile-strong, rgba(255, 255, 255, 0.12));
   }
 
   /* "Rahatla" sayfasının başlığı, uygulamanın diğer marka başlıklarıyla
@@ -3281,7 +3794,8 @@
     transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.2s ease;
   }
 
-  .task-sheet-backdrop.is-open .task-sheet-action {
+  .task-sheet-backdrop.is-open .task-sheet-action,
+  .task-sheet-backdrop.is-open .task-sheet-subtask-peek {
     animation: taskSheetRise 0.55s cubic-bezier(0.22, 1, 0.36, 1) backwards;
     animation-delay: calc(0.1s + var(--i, 0) * 65ms);
   }
@@ -3289,6 +3803,196 @@
   @keyframes taskSheetRise {
     from { opacity: 0; transform: translateY(18px) scale(0.98); }
     to { opacity: 1; transform: none; }
+  }
+
+  /* --- Alt görevler: yukarı sürüklenerek açılan panel ---
+     .task-sheet-subtask-peek hem "kaç alt görev tamamlandı" özetini hem de
+     sürükleme tutamacını üstlenir (dokununca da açılır/kapanır — bkz. JS'teki
+     click/pointer ikilisi). Panelin yüksekliği sürükleme sırasında JS'te px
+     cinsinden canlı güncellenir; bırakınca CSS geçişiyle (aynı premium
+     "cubic-bezier(0.22,1,0.36,1)" eğrisi) hedef yüksekliğe yaylanarak oturur. */
+  .task-sheet-subtasks {
+    margin-top: 0.75rem;
+  }
+
+  .task-sheet-subtask-peek {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    width: 100%;
+    margin: 0;
+    padding: 0.7rem 0.95rem 0.7rem 0.7rem;
+    border: none;
+    border-radius: 20px;
+    background: var(--ts-tile);
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    cursor: grab;
+    touch-action: none;
+    -webkit-tap-highlight-color: transparent;
+    transition: background-color 0.2s ease, transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .task-sheet-subtask-peek:active {
+    transform: scale(0.98);
+    background: var(--ts-tile-strong);
+  }
+
+  .task-sheet-subtask-peek-ring {
+    --sr-pct: 0;
+    position: relative;
+    flex: none;
+    width: 1.9rem;
+    height: 1.9rem;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    background: conic-gradient(var(--ts-task) calc(var(--sr-pct) * 1%), var(--ts-tile-strong) 0);
+    transition: background 0.45s ease;
+  }
+
+  .task-sheet-subtask-peek-ring::after {
+    content: "";
+    width: 1.22rem;
+    height: 1.22rem;
+    border-radius: 50%;
+    background: var(--ts-bg);
+  }
+
+  .task-sheet-subtask-peek-text {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.05rem;
+  }
+
+  .task-sheet-subtask-peek-title {
+    font-weight: 700;
+    font-size: 0.94rem;
+  }
+
+  .task-sheet-subtask-peek-count {
+    font-weight: 600;
+    font-size: 0.8rem;
+    color: var(--ts-muted);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .task-sheet-subtask-peek-chevron {
+    flex: none;
+    width: 18px;
+    height: 18px;
+    color: var(--ts-muted);
+    transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .task-sheet-subtasks.is-open .task-sheet-subtask-peek-chevron {
+    transform: rotate(180deg);
+  }
+
+  .task-sheet-subtasks.is-open .task-sheet-subtask-peek {
+    background: var(--ts-tile-strong);
+    border-radius: 20px 20px 10px 10px;
+  }
+
+  .task-sheet-subtask-panel {
+    position: relative;
+    height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    overscroll-behavior: contain;
+    transition: height 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .task-sheet-subtask-panel.is-dragging {
+    transition: none;
+  }
+
+  /* Panel üst sınırına (bkz. JS: SUBTASK_PANEL_MAX_H) ulaşıp kaydırılabilir
+     olunca, son satırın kırpıldığını/daha fazlası olduğunu belli eden ince
+     bir alt gölge belirir. */
+  .task-sheet-subtask-panel::after {
+    content: "";
+    position: sticky;
+    display: block;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 22px;
+    margin-top: -22px;
+    background: linear-gradient(to bottom, transparent, var(--ts-bg));
+    opacity: 0;
+    transition: opacity 0.25s ease;
+    pointer-events: none;
+  }
+
+  .task-sheet-subtasks.is-capped .task-sheet-subtask-panel::after {
+    opacity: 1;
+  }
+
+  .task-sheet-subtask-panel-inner {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+    padding: 0.55rem 0.15rem 0.15rem;
+  }
+
+  .task-sheet-subtask-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem 0.5rem;
+    border-radius: 16px;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: background-color 0.2s ease;
+  }
+
+  .task-sheet-subtask-row:active {
+    background: var(--ts-tile);
+  }
+
+  .task-sheet-subtask-check {
+    flex: none;
+    width: 1.3rem;
+    height: 1.3rem;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    color: transparent;
+    box-shadow: inset 0 0 0 1.7px var(--ts-tile-strong);
+    transition: background-color 0.2s ease, box-shadow 0.2s ease, color 0.2s ease, transform 0.32s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .task-sheet-subtask-check svg {
+    width: 11px;
+    height: 11px;
+  }
+
+  .task-sheet-subtask-row.is-done .task-sheet-subtask-check {
+    background: var(--ts-task);
+    color: var(--ts-on-task);
+    box-shadow: none;
+    transform: scale(1.06);
+  }
+
+  .task-sheet-subtask-text {
+    flex: 1;
+    min-width: 0;
+    font-weight: 600;
+    font-size: 0.94rem;
+    line-height: 1.3;
+    overflow-wrap: anywhere;
+    transition: color 0.3s ease, opacity 0.25s ease;
+  }
+
+  .task-sheet-subtask-row.is-done .task-sheet-subtask-text {
+    opacity: 0.45;
+    text-decoration: line-through;
   }
 
   /* Basış noktasından yayılan yumuşak ışık (JS: --rx / --ry). */
@@ -3488,11 +4192,15 @@
     .task-sheet-backdrop,
     .task-sheet-view,
     .task-sheet-action,
+    .task-sheet-subtask-peek,
+    .task-sheet-subtask-panel,
+    .task-sheet-subtask-peek-chevron,
     .relax-task-item.is-collapsing {
       transition-duration: 0.01ms !important;
       transition-delay: 0s !important;
     }
     .task-sheet-backdrop.is-open .task-sheet-action,
+    .task-sheet-backdrop.is-open .task-sheet-subtask-peek,
     .task-sheet[data-view="confirm"] .task-sheet-confirm-ic,
     .relax-task-marker.is-popping,
     .relax-task-item.is-updated .relax-task-marker,
@@ -3502,6 +4210,541 @@
       animation-delay: 0s !important;
     }
     .relax-task-burst { display: none; }
+  }
+
+  /* =====================================================================
+     PLANLAYICI: Replan — geçmişte kalan, tamamlanmamış görevleri tek tek
+     gözden geçirip kaydırarak ertele / tamamla / sil / atla. Görev eylem
+     sayfasıyla (.task-sheet) aynı temeli (arka plan, sürükleyerek kapatma,
+     renk değişkenleri) paylaşır; burada yalnızca Replan'a özgü iç düzen ve
+     kart sürükleme efektleri tanımlanır. İlk kullanımda, asıl akış yerine
+     özelliği anlatan bir tanıtım sayfası (.replan-intro-*) açılır. JS:
+     aşağıdaki "Planyacı: Yeni Aktivite" script bloğunun sonunda (openReplan /
+     replanDoAction / kart sürükleme dinleyicileri).
+     ===================================================================== */
+
+  /* ---- Planlayıcı sayfasında beliren "X görev seni bekliyor" hapı ---- */
+  .replan-banner {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    align-self: flex-start;
+    margin: -0.35rem 0 0.85rem;
+    padding: 0.5rem 0.95rem 0.5rem 0.5rem;
+    border: none;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--accent-color, #ff90e8) 16%, var(--theme-bg, #F6F4EF));
+    color: var(--theme-text, #1a1a1a);
+    font-family: "Baloo 2", "Space Grotesk", sans-serif;
+    font-weight: 700;
+    font-size: 0.85rem;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    box-shadow: 0 8px 20px -14px rgba(0, 0, 0, 0.45);
+    transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.4s ease, color 0.4s ease;
+    animation: replanBannerIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+  }
+
+  @keyframes replanBannerIn {
+    from { opacity: 0; transform: translateY(-6px) scale(0.96); }
+  }
+
+  .replan-banner:active { transform: scale(0.96); }
+
+  .replan-banner-ic {
+    display: grid;
+    place-items: center;
+    width: 1.7rem;
+    height: 1.7rem;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: var(--accent-color, #ff90e8);
+    color: #16171b;
+    animation: replanBannerSpin 5s ease-in-out infinite;
+  }
+
+  @keyframes replanBannerSpin {
+    0%, 78% { transform: rotate(0deg); }
+    88% { transform: rotate(-24deg); }
+    100% { transform: rotate(0deg); }
+  }
+
+  /* ---- Replan tanıtım (onboarding) sheet'i: yalnızca ilk kullanımda,
+     özelliği örnekleriyle anlatan ara sayfa. .task-sheet temelini kullanır;
+     "paywall" değildir, hiçbir kilit/kapalı durum göstermez. ---- */
+  .replan-intro-sheet {
+    padding-top: 1.4rem;
+    text-align: center;
+  }
+
+  .replan-intro-head {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.3rem 0.6rem 1.1rem;
+  }
+
+  .replan-intro-icon {
+    display: grid;
+    place-items: center;
+    width: 3.4rem;
+    height: 3.4rem;
+    margin-bottom: 0.2rem;
+    border-radius: 50%;
+    background: linear-gradient(145deg, var(--accent-color, #ff90e8), color-mix(in srgb, var(--accent-color, #ff90e8) 40%, #ffd76a));
+    color: #16171b;
+    box-shadow: 0 14px 26px -14px var(--accent-color, #ff90e8);
+    animation: taskSheetWarn 1.4s ease 0.15s both;
+  }
+
+  .replan-intro-title {
+    font-family: "Baloo 2", "Space Grotesk", sans-serif;
+    font-weight: 800;
+    font-size: 1.28rem;
+    color: var(--ts-text);
+  }
+
+  .replan-intro-desc {
+    max-width: 22rem;
+    font-weight: 600;
+    font-size: 0.9rem;
+    line-height: 1.45;
+    color: var(--ts-muted);
+  }
+
+  .replan-intro-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+    margin: 1rem 0 1.1rem;
+    text-align: left;
+    max-height: 46vh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .replan-intro-step {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.7rem 0.8rem;
+    border-radius: 18px;
+    background: var(--ts-tile);
+  }
+
+  .replan-intro-step-diagram {
+    flex-shrink: 0;
+    display: grid;
+    place-items: center;
+    width: 3.6rem;
+    height: 3rem;
+    color: var(--rp-step-color, var(--accent-color, #ff90e8));
+  }
+
+  .replan-intro-step-diagram svg { width: 100%; height: 100%; overflow: visible; }
+
+  .replan-intro-step-body { display: flex; flex-direction: column; gap: 0.15rem; min-width: 0; }
+
+  .replan-intro-step-title {
+    font-weight: 800;
+    font-size: 0.86rem;
+    color: var(--ts-text);
+  }
+
+  .replan-intro-step-title span { color: var(--rp-step-color, var(--accent-color, #ff90e8)); }
+
+  .replan-intro-step-example {
+    font-weight: 600;
+    font-size: 0.78rem;
+    line-height: 1.4;
+    color: var(--ts-muted);
+  }
+
+  .replan-intro-note {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.6rem 0.8rem;
+    margin-bottom: 1rem;
+    border-radius: 16px;
+    background: color-mix(in srgb, var(--accent-color, #ff90e8) 12%, transparent);
+    color: var(--ts-text);
+    font-weight: 600;
+    font-size: 0.78rem;
+    line-height: 1.4;
+    text-align: left;
+  }
+
+  .replan-intro-note svg { flex-shrink: 0; color: var(--accent-color, #ff90e8); }
+
+  .replan-intro-cta {
+    background: linear-gradient(120deg, var(--accent-color, #ff90e8), color-mix(in srgb, var(--accent-color, #ff90e8) 45%, #ffd76a));
+    color: #16171b;
+    box-shadow: 0 16px 28px -14px var(--accent-color, #ff90e8);
+  }
+
+  .replan-intro-later {
+    width: 100%;
+    margin-top: 0.6rem;
+    padding: 0.6rem 0;
+    border: none;
+    background: none;
+    color: var(--ts-muted);
+    font-family: inherit;
+    font-weight: 700;
+    font-size: 0.86rem;
+    cursor: pointer;
+  }
+
+  /* ---- Replan akış sheet'i ---- */
+  .replan-sheet {
+    padding-top: 0.6rem;
+    max-width: 26rem;
+  }
+
+  .replan-head {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.2rem 0.15rem 0.9rem;
+  }
+
+  .replan-title {
+    font-family: "Baloo 2", "Space Grotesk", sans-serif;
+    font-weight: 800;
+    font-size: 1.05rem;
+    color: var(--ts-text);
+  }
+
+  .replan-progress {
+    flex: 1;
+    text-align: right;
+    margin-right: 0.3rem;
+    font-weight: 700;
+    font-size: 0.82rem;
+    color: var(--ts-muted);
+  }
+
+  .replan-undo-btn {
+    order: -1;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    border: none;
+    padding: 0.35rem 0.7rem 0.35rem 0.55rem;
+    border-radius: 999px;
+    background: var(--ts-tile);
+    color: var(--ts-text);
+    font-family: inherit;
+    font-weight: 700;
+    font-size: 0.78rem;
+    cursor: pointer;
+    animation: taskSheetRise 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .replan-undo-btn[hidden] { display: none; }
+
+  .replan-close-btn {
+    display: grid;
+    place-items: center;
+    width: 1.9rem;
+    height: 1.9rem;
+    flex-shrink: 0;
+    border: none;
+    border-radius: 50%;
+    background: var(--ts-tile);
+    color: var(--ts-text);
+    cursor: pointer;
+  }
+
+  .replan-stack {
+    position: relative;
+    height: 15.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .replan-card {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 1.4rem 1.2rem;
+    border-radius: 26px;
+    /* --ts-tile neredeyse saydam (ör. %5 siyah) olduğundan tek başına
+       arka plan olarak kullanılırsa "current" kart altındaki "next"
+       kartın ikonu/metni şeffaf zeminden sızıp üst üste biniyordu.
+       Tile tonunu opak --ts-bg üstüne bindirip tam kaplayan, opak bir
+       zemin elde ediyoruz; görünen renk aynı kalır, sadece artık
+       arkasını göstermiyor. */
+    background: linear-gradient(var(--ts-tile), var(--ts-tile)), var(--ts-bg);
+    text-align: center;
+    touch-action: none;
+    user-select: none;
+    cursor: grab;
+    will-change: transform;
+  }
+
+  .replan-card.is-next {
+    z-index: 1;
+    transform: scale(0.93) translateY(14px);
+    opacity: 0.55;
+    pointer-events: none;
+    transition: transform 0.36s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.36s ease;
+  }
+
+  .replan-card.is-next.is-promoting {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
+
+  .replan-card.is-current { z-index: 2; }
+  .replan-card.is-current.is-dragging { cursor: grabbing; }
+  .replan-card.is-empty { background: transparent; pointer-events: none; }
+
+  .replan-card-marker {
+    display: grid;
+    place-items: center;
+    width: 3.6rem;
+    height: 3.6rem;
+    border-radius: 50%;
+    background: var(--rp-color, var(--accent-color, #ff90e8));
+    color: var(--rp-on, #16171b);
+    box-shadow: 0 14px 26px -14px var(--rp-color, var(--accent-color, #ff90e8));
+  }
+
+  .replan-card-marker svg { width: 24px; height: 24px; }
+
+  .replan-card-name {
+    font-family: "Baloo 2", "Space Grotesk", sans-serif;
+    font-weight: 800;
+    font-size: 1.2rem;
+    color: var(--ts-text);
+    max-width: 16rem;
+    overflow-wrap: anywhere;
+  }
+
+  .replan-card-date {
+    font-weight: 700;
+    font-size: 0.86rem;
+    color: var(--ts-muted);
+  }
+
+  .replan-card-badge {
+    margin-top: 0.15rem;
+    padding: 0.25rem 0.65rem;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--ts-danger) 16%, transparent);
+    color: var(--ts-danger);
+    font-weight: 700;
+    font-size: 0.72rem;
+  }
+
+  /* Kartın gerçek içeriği (ikon/isim/tarih/rozet): sürüklerken bir yöne
+     doğru belirgin mesafe alınınca önce bu katman soluklaşıp kaybolur,
+     ipucu metni ancak ondan sonra ortaya çıkar. */
+  .replan-card-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  /* Yön ipucu artık köşelerde değil, kartın tam ortasında (görevin
+     durduğu yerde) görev metninin yerini alarak belirir. Kaydırma
+     mesafesi arttıkça kademeli solmak yerine, içerik tamamen kaybolduğu
+     anda tek seferde (opacity geçişsiz) beliriyor; böylece hangi
+     yönün seçili olduğu bir bakışta netleşiyor. */
+  .replan-card-hint {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 0 1.4rem;
+    font-family: "Baloo 2", "Space Grotesk", sans-serif;
+    font-weight: 800;
+    font-size: 1.35rem;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .replan-card-hint.is-dir-done { color: var(--accent-color, #ff90e8); }
+  .replan-card-hint.is-dir-skip { color: var(--ts-muted); }
+  .replan-card-hint.is-dir-delete { color: var(--ts-danger); }
+  .replan-card-hint.is-dir-reschedule { color: var(--ts-muted); }
+
+  .replan-empty {
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    opacity: 0;
+    transform: scale(0.9);
+    pointer-events: none;
+    transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .replan-sheet.is-done-state .replan-empty {
+    opacity: 1;
+    transform: none;
+    pointer-events: auto;
+  }
+
+  .replan-empty-ic {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 3.6rem;
+    height: 3.6rem;
+    border-radius: 50%;
+    background: var(--accent-color, #ff90e8);
+    color: #16171b;
+  }
+
+  .replan-empty-title {
+    font-family: "Baloo 2", "Space Grotesk", sans-serif;
+    font-weight: 800;
+    font-size: 1.15rem;
+    color: var(--ts-text);
+  }
+
+  .replan-empty-sub {
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: var(--ts-muted);
+  }
+
+  .replan-empty-close {
+    width: 10rem;
+    height: 2.7rem;
+    margin-top: 0.4rem;
+  }
+
+  .replan-confetti { position: absolute; inset: 0; pointer-events: none; }
+
+  .replan-confetti-dot {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: var(--s);
+    height: var(--s);
+    border-radius: 2px;
+    background: var(--accent-color, #ff90e8);
+    transform: translate(-50%, -50%) rotate(var(--a));
+    animation: replanConfettiPop 0.9s cubic-bezier(0.16, 1, 0.3, 1) var(--dl) backwards;
+  }
+
+  @keyframes replanConfettiPop {
+    from { transform: translate(-50%, -50%) rotate(var(--a)) translateY(0); opacity: 1; }
+    to { transform: translate(-50%, -50%) rotate(var(--a)) translateY(calc(-1 * var(--d) * 3)); opacity: 0; }
+  }
+
+  /* ---- Ertele mini paneli: alttan yükselir ---- */
+  /* Ertele seçenekleri artık sayfayı aşağı uzatan ayrı bir panel değil,
+     kartın tam üzerine (aynı boyut/konumda) biner; kart soluklaşıp
+     seçenekler onun yerinde belirir. */
+  .replan-reschedule-panel {
+    position: absolute;
+    inset: 0;
+    z-index: 4;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.7rem;
+    padding: 1.4rem 1.2rem;
+    border-radius: 26px;
+    background: linear-gradient(var(--ts-tile), var(--ts-tile)), var(--ts-bg);
+    opacity: 0;
+    transform: scale(0.94);
+    pointer-events: none;
+    transition: opacity 0.28s ease, transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .replan-reschedule-panel.is-open {
+    opacity: 1;
+    transform: none;
+    pointer-events: auto;
+  }
+
+  .replan-reschedule-title { font-weight: 700; font-size: 0.82rem; color: var(--ts-muted); }
+  .replan-reschedule-row { display: flex; gap: 0.5rem; }
+
+  .replan-reschedule-chip {
+    position: relative;
+    padding: 0.55rem 1rem;
+    border: none;
+    border-radius: 999px;
+    background: var(--ts-tile-strong);
+    color: var(--ts-text);
+    font-family: inherit;
+    font-weight: 700;
+    font-size: 0.85rem;
+    cursor: pointer;
+    overflow: hidden;
+    transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .replan-reschedule-chip:active { transform: scale(0.95); }
+
+  .replan-reschedule-date-input {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    opacity: 0;
+    border: none;
+    background: none;
+    cursor: pointer;
+  }
+
+  .replan-reschedule-cancel {
+    border: none;
+    background: none;
+    color: var(--ts-muted);
+    font-family: inherit;
+    font-weight: 700;
+    font-size: 0.8rem;
+    cursor: pointer;
+    padding: 0.2rem;
+  }
+
+  /* ---- Görev listesinde "kaç kez ertelendi" rozeti ---- */
+  .relax-task-replan-badge {
+    display: inline-flex;
+    align-items: center;
+    margin-left: 0.4rem;
+    padding: 0.12rem 0.45rem;
+    border-radius: 999px;
+    background: color-mix(in srgb, #ff5c5c 16%, transparent);
+    color: #ff5c5c;
+    font-weight: 700;
+    font-size: 0.68rem;
+    vertical-align: middle;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .replan-card,
+    .replan-card.is-next,
+    .replan-empty,
+    .replan-reschedule-panel {
+      transition-duration: 0.01ms !important;
+      animation-duration: 0.01ms !important;
+    }
+    .replan-confetti { display: none; }
   }
 
   /* =====================================================================
@@ -3845,14 +5088,17 @@
     display: none;
   }
 
-  .task-add-overlay[data-step="time"] .task-add-footer,
   .task-add-overlay[data-ready="1"] .task-add-footer {
     display: block;
     animation: task-add-step-in 0.38s cubic-bezier(0.19, 1, 0.22, 1);
   }
 
-  .task-add-overlay[data-step="time"] .task-add-submit-continue,
-  .task-add-overlay:not([data-step="time"]) .task-add-submit-save {
+  /* "Zaman" ve "Tekrar" adımlarında her zaman ileri gidilebilir (bkz. JS
+     updateReady: bu iki adımda ready hep "1"), bu yüzden footer'ları da
+     hep görünür. Son adımda (Tekrar; düzenleme modunda ise Zaman) "Sürdür"
+     yerine "Ekle"/"Kaydet" gösterilir — bkz. JS goToStep: is-final-step. */
+  .task-add-overlay.is-final-step .task-add-submit-continue,
+  .task-add-overlay:not(.is-final-step) .task-add-submit-save {
     display: none;
   }
 
@@ -4121,6 +5367,223 @@
   .task-add-seg-btn.is-selected {
     background: var(--ta-accent);
     color: var(--ta-on-accent);
+  }
+
+  /* ---- Alt Görevler: isteğe bağlı checklist; "Yeni Aktivite" akışında
+     Zaman ile Tekrar adımları arasında durur, görev düzenlenirken de
+     erişilebilir. Satırlar task-add-subtask-list'e JS ile basılır. ---- */
+  .task-add-subtask-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 0.7rem;
+  }
+
+  .task-add-subtask-row {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    padding: 0.6rem 0.6rem 0.6rem 0.7rem;
+    background: var(--ta-track);
+    border-radius: 1rem;
+    animation: task-add-step-in 0.22s cubic-bezier(0.19, 1, 0.22, 1);
+  }
+
+  .task-add-subtask-check {
+    flex-shrink: 0;
+    width: 1.4rem;
+    height: 1.4rem;
+    display: grid;
+    place-items: center;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    background: none;
+    box-shadow: inset 0 0 0 2px var(--ta-muted);
+    color: transparent;
+    cursor: pointer;
+    transition: background-color 0.15s ease, box-shadow 0.15s ease, color 0.15s ease, transform 0.15s ease;
+  }
+
+  .task-add-subtask-check:active {
+    transform: scale(0.9);
+  }
+
+  .task-add-subtask-row.is-done .task-add-subtask-check {
+    background: var(--ta-accent);
+    box-shadow: none;
+    color: var(--ta-on-accent);
+  }
+
+  .task-add-subtask-text {
+    flex: 1;
+    min-width: 0;
+    font-family: var(--ta-font);
+    font-weight: 700;
+    font-size: 0.96rem;
+    color: var(--ta-text);
+    overflow-wrap: anywhere;
+    transition: color 0.2s ease;
+  }
+
+  .task-add-subtask-row.is-done .task-add-subtask-text {
+    color: var(--ta-muted);
+    text-decoration: line-through;
+  }
+
+  .task-add-subtask-remove {
+    flex-shrink: 0;
+    width: 1.6rem;
+    height: 1.6rem;
+    display: grid;
+    place-items: center;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    background: none;
+    color: var(--ta-muted);
+    cursor: pointer;
+    transition: background-color 0.15s ease, color 0.15s ease, transform 0.15s ease;
+  }
+
+  .task-add-subtask-remove:active {
+    background: color-mix(in srgb, var(--ta-text) 12%, transparent);
+    transform: scale(0.88);
+  }
+
+  .task-add-subtask-input-row {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding-left: 0.9rem;
+    background: var(--ta-track);
+    border-radius: 999px;
+  }
+
+  .task-add-subtask-input {
+    flex: 1;
+    min-width: 0;
+    padding: 0.75rem 0;
+    border: none;
+    background: none;
+    font-family: var(--ta-font);
+    font-weight: 700;
+    font-size: 0.96rem;
+    color: var(--ta-text);
+  }
+
+  .task-add-subtask-input::placeholder {
+    color: var(--ta-muted);
+  }
+
+  .task-add-subtask-input:focus {
+    outline: none;
+  }
+
+  .task-add-subtask-add-btn {
+    flex-shrink: 0;
+    width: 2.2rem;
+    height: 2.2rem;
+    display: grid;
+    place-items: center;
+    margin: 0.28rem;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    background: var(--ta-accent);
+    color: var(--ta-on-accent);
+    cursor: pointer;
+    transition: transform 0.15s ease;
+  }
+
+  .task-add-subtask-add-btn:active {
+    transform: scale(0.9);
+  }
+
+  .task-add-subtask-hint {
+    margin-top: 0.7rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    line-height: 1.35;
+    color: var(--ta-muted);
+  }
+
+  /* ---- Tekrar: kısayol hapları ("Bir kez" / "Her hafta" / "Her ay" /
+     "Belirli günler") + "Belirli günler" seçilince beliren gün baloncukları. ---- */
+  .task-add-repeat-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.6rem;
+  }
+
+  .task-add-repeat-opt {
+    padding: 0.65rem 1rem;
+    background: var(--ta-track);
+    border: none;
+    border-radius: 999px;
+    color: var(--ta-text);
+    font-family: var(--ta-font);
+    font-weight: 700;
+    font-size: 0.92rem;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background-color 0.2s ease, color 0.2s ease, transform 0.15s ease;
+  }
+
+  .task-add-repeat-opt:active {
+    transform: scale(0.95);
+  }
+
+  .task-add-repeat-opt.is-selected {
+    background: var(--ta-accent);
+    color: var(--ta-on-accent);
+  }
+
+  .task-add-repeat-days {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.9rem;
+  }
+
+  .task-add-repeat-days[hidden] {
+    display: none;
+  }
+
+  .task-add-repeat-day-btn {
+    width: 3rem;
+    height: 3rem;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--ta-track);
+    border: none;
+    border-radius: 50%;
+    color: var(--ta-text);
+    font-family: var(--ta-font);
+    font-weight: 700;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: background-color 0.2s ease, color 0.2s ease, transform 0.15s ease;
+  }
+
+  .task-add-repeat-day-btn:active {
+    transform: scale(0.9);
+  }
+
+  .task-add-repeat-day-btn.is-selected {
+    background: var(--ta-accent);
+    color: var(--ta-on-accent);
+  }
+
+  .task-add-repeat-hint {
+    margin-top: 0.85rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    line-height: 1.35;
+    color: var(--ta-muted);
   }
 
   /* ---------- Alt sabit "Ekle" butonu ---------- */
@@ -22633,6 +24096,10 @@
            koyu kart. Şimdilik statik (saat sabit "22:00"); daireye
            basılınca sadece işaretlenir (görsel), kartın geri kalanına
            basılınca boş bir sayfaya (#page-relax) geçilir. -->
+      <!-- PLANLAYICI SAYFASI'na (#page-relax) buradan geçiliyor: ana sayfadaki
+           bu widget'a (yeşil daire hariç kart geneline) basılınca planlayıcı
+           sayfası açılır. Bundan sonra sohbette "planlayıcı sayfası" denince
+           kastedilen yer #page-relax'tir. -->
       <div class="home-tile home-tile-relax">
       <button type="button" class="home-relax-widget" id="homeRelaxWidget" aria-label="Rahatla'ya git">
         <!-- Sol: canlı işaretçi (JS: syncHomeRelaxWidget) — şu an süren ya da en yakın
@@ -22759,9 +24226,14 @@
     </div>
   </section>
 
-  <!-- "Rahatla" sayfası: şimdilik tamamen boş, ileride doldurulacak.
+  <!-- ============================================================
+       PLANLAYICI SAYFASI — id="page-relax"
+       (Kod içinde "Rahatla" adıyla geçiyor, ekrandaki başlık "Planlayıcı".
+       Bundan sonra sohbette "planlayıcı sayfası" denince bu <section>
+       ve buna bağlı JS/CSS blokları kastedilir.)
        Ana sayfadaki koyu widget'a (yeşil daire hariç) basılınca buraya
-       geçilir; geri butonuyla Ana Sayfa'ya dönülür. -->
+       geçilir; geri butonuyla Ana Sayfa'ya dönülür.
+       ============================================================ -->
   <section class="page" id="page-relax">
     <div class="calendar-topbar">
       <button type="button" class="calendar-back-btn" id="relaxBackBtn" aria-label="Geri dön">
@@ -22777,15 +24249,30 @@
          gerçek tarihten hesaplanıp dolduruluyor; bugünün dairesi vurgu
          renginde dolu görünür. -->
     <div class="relax-calendar">
-      <div class="relax-calendar-header">
+      <!-- Dokununca ay takvimi sheet'i açılır (bkz. openRelaxMonthSheet,
+           "Planyacı: Yeni Aktivite" script bloğunun sonunda). -->
+      <button type="button" class="relax-calendar-header" id="relaxCalendarHeaderBtn" aria-label="Ay takvimini aç">
         <span class="relax-calendar-date" id="relaxCalendarDate">19 Eylül</span>
         <span class="relax-calendar-year" id="relaxCalendarYear">2026</span>
         <svg class="relax-calendar-chevron" viewBox="0 0 24 24" width="16" height="16">
           <path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
-      </div>
+      </button>
       <div class="relax-calendar-week" id="relaxCalendarWeek"></div>
     </div>
+
+    <!-- Replan: geçmişte kalan tamamlanmamış görev varsa beliren hap. İlk
+         dokunuşta özelliği anlatan tanıtım sayfası (.replan-intro-*) açılır;
+         sonraki dokunuşlarda doğrudan Replan akışı açılır. Tarih başlığına
+         (#relaxCalendarHeaderBtn) uzun basmak da aynı akışı, o güne odaklı
+         olarak açar. JS/CSS: aşağıdaki "Planyacı: Yeni Aktivite" script
+         bloğunun sonu / .replan-* CSS bloğu. -->
+    <button type="button" class="replan-banner" id="replanBannerBtn" hidden aria-label="Yeniden Planla">
+      <span class="replan-banner-ic" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="15" height="15"><path d="M9 14L4 9l5-5" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </span>
+      <span class="replan-banner-text" id="replanBannerCount">Görev bekliyor</span>
+    </button>
 
     <!-- Seçilen günün görevleri: eklendikçe yukarıdan aşağıya doğru
          listelenir, aralarındaki dikey çizgi (bkz. .relax-task-connector-line)
@@ -22804,6 +24291,33 @@
       <span>Görev Ekle</span>
     </button>
   </section>
+
+  <!-- PLANLAYICI SAYFASI: Ay takvimi (alttan açılan sheet). #page-relax'teki
+       tarih başlığına (#relaxCalendarHeaderBtn) dokununca açılır. Bir güne
+       dokununca hem hafta şeridi hem de görev listesi o güne kayar (var olan
+       "süpürme" giriş animasyonuyla), sheet aşağı kayarak kapanır. JS'i
+       aşağıdaki "Planyacı: Yeni Aktivite" script bloğunun sonunda
+       (openRelaxMonthSheet / renderRelaxMonthGrid / selectRelaxDate). -->
+  <div class="task-sheet-backdrop relax-month-backdrop" id="relaxMonthSheetBackdrop" aria-hidden="true">
+    <div class="task-sheet relax-month-sheet" id="relaxMonthSheet" role="dialog" aria-modal="true" aria-label="Ay takvimi" tabindex="-1">
+      <div class="task-sheet-drag" id="relaxMonthSheetDrag">
+        <div class="task-sheet-grabber" aria-hidden="true"></div>
+      </div>
+
+      <div class="relax-month-head">
+        <span class="relax-month-title">
+          <span id="relaxMonthTitleName">Eylül</span>
+          <span class="relax-month-title-year" id="relaxMonthTitleYear">2026</span>
+        </span>
+        <button type="button" class="relax-month-close-btn" id="relaxMonthCloseBtn" aria-label="Kapat">
+          <svg viewBox="0 0 24 24" width="14" height="14"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+
+      <div class="relax-month-weekdays" id="relaxMonthWeekdays"></div>
+      <div class="relax-month-grid" id="relaxMonthGrid"></div>
+    </div>
+  </div>
 
   <!-- "Yeni Aktivite" tam ekran sayfası (Planyacı): #page-relax'teki "Görev
        Ekle" butonuna basınca alttan yukarı kayarak açılır. Bir .page
@@ -22891,6 +24405,39 @@
           <div class="task-add-seg" id="taskAddDurationRow" role="radiogroup" aria-label="Çalışılacak süre"></div>
         </div>
         </div>
+
+        <!-- ADIM 3.5 — Alt Görevler: isteğe bağlı checklist; boş bırakılırsa görev sade kalır.
+             Hem yeni görev eklenirken hem de düzenlerken erişilebilir. -->
+        <div class="task-add-step" data-step="subtasks">
+          <div class="task-add-card">
+            <h3 class="task-add-card-title">Alt Görevler</h3>
+            <div class="task-add-subtask-list" id="taskAddSubtaskList"></div>
+            <div class="task-add-subtask-input-row">
+              <input type="text" id="taskAddSubtaskInput" class="task-add-subtask-input" placeholder="Alt görev ekle" maxlength="60" autocomplete="off" enterkeyhint="done" aria-label="Alt görev ekle">
+              <button type="button" class="task-add-subtask-add-btn" id="taskAddSubtaskAddBtn" aria-label="Ekle">
+                <svg viewBox="0 0 24 24" width="15" height="15"><path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
+              </button>
+            </div>
+            <p class="task-add-subtask-hint">İsteğe bağlı: görevi küçük adımlara böl.</p>
+          </div>
+        </div>
+
+        <!-- ADIM 4 — Tekrar: yeni görevde de, düzenlemede de gösterilir. Düzenlerken
+             seçilirse mevcut görev bir seriye dönüşmez; düzenlenen tarihten itibaren
+             ileriye dönük bağımsız kopyalar eklenir (bkz. saveBtn handler). -->
+        <div class="task-add-step" data-step="repeat">
+          <div class="task-add-card">
+            <h3 class="task-add-card-title">Tekrar</h3>
+            <div class="task-add-repeat-options" id="taskAddRepeatOptions" role="radiogroup" aria-label="Tekrar sıklığı">
+              <button type="button" class="task-add-repeat-opt" data-mode="none">Bir kez</button>
+              <button type="button" class="task-add-repeat-opt" data-mode="weekly">Her hafta</button>
+              <button type="button" class="task-add-repeat-opt" data-mode="monthly">Her ay</button>
+              <button type="button" class="task-add-repeat-opt" data-mode="custom">Belirli günler</button>
+            </div>
+            <div class="task-add-repeat-days" id="taskAddRepeatDays" hidden role="group" aria-label="Tekrar günleri"></div>
+            <p class="task-add-repeat-hint" id="taskAddRepeatHint"></p>
+          </div>
+        </div>
       </div>
 
       <div class="task-add-footer">
@@ -22952,6 +24499,24 @@
               </span>
             </button>
           </div>
+
+          <!-- Alt görevler: yukarı sürüklenerek (ya da dokunularak) açılan panel.
+               Görevde alt görev yoksa tamamen gizli kalır (hidden). Yükseklik
+               canlı olarak JS'te sürüklemeyle güncellenir, bırakınca yaylanarak
+               açık/kapalı konumuna oturur (bkz. openTaskSheet / onSubDragEnd). -->
+          <div class="task-sheet-subtasks" id="taskSheetSubtasks" hidden>
+            <button type="button" class="task-sheet-subtask-peek" id="taskSheetSubtaskPeek" style="--i:3" aria-expanded="false" aria-controls="taskSheetSubtaskList">
+              <span class="task-sheet-subtask-peek-ring" id="taskSheetSubtaskRing" aria-hidden="true"></span>
+              <span class="task-sheet-subtask-peek-text">
+                <span class="task-sheet-subtask-peek-title">Alt görevler</span>
+                <span class="task-sheet-subtask-peek-count" id="taskSheetSubtaskCount"></span>
+              </span>
+              <svg class="task-sheet-subtask-peek-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 15l6-6 6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+            <div class="task-sheet-subtask-panel" id="taskSheetSubtaskPanel">
+              <div class="task-sheet-subtask-panel-inner" id="taskSheetSubtaskList"></div>
+            </div>
+          </div>
         </div>
 
         <div class="task-sheet-view task-sheet-view-confirm" aria-live="polite">
@@ -22964,6 +24529,133 @@
             <button type="button" class="task-sheet-btn" data-action="cancel-delete">Vazgeç</button>
             <button type="button" class="task-sheet-btn is-danger" data-action="confirm-delete">Evet, sil</button>
           </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Replan: ilk kullanım tanıtım (onboarding) sheet'i. #replanBannerBtn'e
+       ya da tarih başlığına ilk uzun basışta, asıl Replan akışı yerine bu
+       gösterilir; her kaydırma yönünün ne yaptığını örnekleriyle anlatır.
+       Özellik tamamen ücretsizdir, burada bir satın alma/kilit yoktur —
+       amaç yalnızca kullanıcı ilk kez karşılaştığında kaybolmaması. "Şimdi
+       Dene" (openReplanIntroCta) sheet'i kapatıp asıl Replan akışını hemen
+       ardından açar; bir daha gösterilmez (bkz. REPLAN_INTRO_SEEN_KEY). -->
+  <div class="task-sheet-backdrop replan-intro-backdrop" id="replanIntroBackdrop" aria-hidden="true">
+    <div class="task-sheet replan-intro-sheet" id="replanIntroSheet" role="dialog" aria-modal="true" aria-label="Yeniden Planla nasıl çalışır?" tabindex="-1">
+      <div class="task-sheet-drag" id="replanIntroDrag">
+        <div class="task-sheet-grabber" aria-hidden="true"></div>
+      </div>
+
+      <div class="replan-intro-head">
+        <span class="replan-intro-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="26" height="26"><path d="M9 14L4 9l5-5" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+        <span class="replan-intro-title">Yeniden Planla</span>
+        <span class="replan-intro-desc">Geçmişte kalıp tamamlanmamış görevlerin tek tek önüne gelir. Her kart için kaydırarak hızlıca karar verirsin.</span>
+      </div>
+
+      <div class="replan-intro-steps">
+        <div class="replan-intro-step" style="--rp-step-color: var(--accent-color, #ff90e8);">
+          <span class="replan-intro-step-diagram" aria-hidden="true">
+            <svg viewBox="0 0 68 56"><rect x="2" y="14" width="30" height="28" rx="9" fill="none" stroke="currentColor" stroke-opacity="0.35" stroke-width="2.3"/><path d="M38 28h12" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"/><path d="M44 22l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/><circle cx="60" cy="28" r="8" fill="currentColor"/><path d="M56.4 28.3l2.4 2.4 4.4-5" fill="none" stroke="#16171b" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </span>
+          <span class="replan-intro-step-body">
+            <span class="replan-intro-step-title">Sağa kaydır → <span>Tamamla</span></span>
+            <span class="replan-intro-step-example">Örnek: dün planladığın "Spor yap" görevini yaptıysan, kartı sağa kaydır ya da alttaki onay işaretine dokun — tamamlandı olarak işaretlenir.</span>
+          </span>
+        </div>
+
+        <div class="replan-intro-step" style="--rp-step-color: var(--ts-muted);">
+          <span class="replan-intro-step-diagram" aria-hidden="true">
+            <svg viewBox="0 0 68 56"><rect x="36" y="14" width="30" height="28" rx="9" fill="none" stroke="currentColor" stroke-opacity="0.35" stroke-width="2.3"/><path d="M30 28H18" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"/><path d="M24 22l-6 6 6 6" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/><circle cx="8" cy="28" r="8" fill="currentColor"/><path d="M10.3 23.6l-4.4 4.4 4.4 4.4" fill="none" stroke="#16171b" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </span>
+          <span class="replan-intro-step-body">
+            <span class="replan-intro-step-title">Sola kaydır → <span>Atla</span></span>
+            <span class="replan-intro-step-example">Örnek: "Market alışverişi" için şu an karar vermek istemiyorsan atla — görev hiç değişmeden kalır, sırada bir sonraki karta geçersin.</span>
+          </span>
+        </div>
+
+        <div class="replan-intro-step" style="--rp-step-color: var(--ts-danger);">
+          <span class="replan-intro-step-diagram" aria-hidden="true">
+            <svg viewBox="0 0 68 56"><rect x="19" y="2" width="30" height="26" rx="9" fill="none" stroke="currentColor" stroke-opacity="0.35" stroke-width="2.3"/><path d="M34 34v10" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"/><path d="M28 40l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/><circle cx="34" cy="48" r="8" fill="currentColor"/><path d="M30.3 46.2h7.4" stroke="#16171b" stroke-width="1.6" stroke-linecap="round"/><path d="M31.4 46.2l.5 5.2a.8.8 0 0 0 .8.7h2.6a.8.8 0 0 0 .8-.7l.5-5.2" fill="none" stroke="#16171b" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M32.5 46.2v-.9a.7.7 0 0 1 .7-.7h1.6a.7.7 0 0 1 .7.7v.9" fill="none" stroke="#16171b" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </span>
+          <span class="replan-intro-step-body">
+            <span class="replan-intro-step-title">Aşağı kaydır → <span>Sil</span></span>
+            <span class="replan-intro-step-example">Örnek: artık gerekmeyen "Faturaları öde" görevini böyle listeden kaldırabilirsin. Elini çabuk mu ettin? Üstteki "Geri al" ile anında geri getirirsin.</span>
+          </span>
+        </div>
+
+        <div class="replan-intro-step" style="--rp-step-color: var(--accent-color, #ff90e8);">
+          <span class="replan-intro-step-diagram" aria-hidden="true">
+            <svg viewBox="0 0 68 56"><rect x="19" y="30" width="30" height="24" rx="9" fill="none" stroke="currentColor" stroke-opacity="0.35" stroke-width="2.3"/><path d="M34 24V14" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"/><path d="M28 18l6-6 6 6" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/><circle cx="34" cy="9" r="8" fill="currentColor"/><circle cx="34" cy="9" r="4.6" fill="none" stroke="#16171b" stroke-width="1.3"/><path d="M34 6.2v3l2.1 1.4" fill="none" stroke="#16171b" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </span>
+          <span class="replan-intro-step-body">
+            <span class="replan-intro-step-title">Yukarı kaydır → <span>Ertele</span></span>
+            <span class="replan-intro-step-example">Örnek: "Doktor randevusu" görevini bugüne, yarına ya da açılan takvimden seçtiğin başka bir güne taşıyabilirsin.</span>
+          </span>
+        </div>
+      </div>
+
+      <div class="replan-intro-note">
+        <svg viewBox="0 0 24 24" width="17" height="17"><circle cx="12" cy="12" r="9.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 8v5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="16.2" r="1.1" fill="currentColor"/></svg>
+        <span>Bir yanlışlık olursa üst köşedeki "Geri al" ile son adımı geri alabilirsin.</span>
+      </div>
+
+      <button type="button" class="task-sheet-btn replan-intro-cta" id="replanIntroCtaBtn">Anladım, göster</button>
+      <button type="button" class="replan-intro-later" id="replanIntroLaterBtn">Daha sonra bakarım</button>
+    </div>
+  </div>
+
+  <!-- Replan: asıl akış. Geçmişte kalan tamamlanmamış görevler bir kart
+       yığını olarak sırayla gelir; kart yukarı/sağa/sola/aşağı sürüklenerek
+       ertele/tamamla/sil/atla uygulanır.
+       "Ertele" bir tarih seçilene kadar alttan mini bir panel açar. Son
+       görev de bitince "Hepsi tamam!" durumu gösterilir. JS: aşağıdaki
+       "Planyacı: Yeni Aktivite" script bloğunun sonunda (openReplan /
+       replanDoAction / kart sürükleme dinleyicileri). -->
+  <div class="task-sheet-backdrop replan-backdrop" id="replanBackdrop" aria-hidden="true">
+    <div class="task-sheet replan-sheet" id="replanSheet" role="dialog" aria-modal="true" aria-label="Yeniden Planla" tabindex="-1">
+      <div class="task-sheet-drag" id="replanSheetDrag">
+        <div class="task-sheet-grabber" aria-hidden="true"></div>
+      </div>
+
+      <div class="replan-head">
+        <button type="button" class="replan-undo-btn" id="replanUndoBtn" hidden aria-label="Son işlemi geri al">
+          <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M9 14L4 9l5-5" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Geri Al
+        </button>
+        <span class="replan-title">Yeniden Planla</span>
+        <span class="replan-progress" id="replanProgressText"></span>
+        <button type="button" class="replan-close-btn" id="replanCloseBtn" aria-label="Kapat">
+          <svg viewBox="0 0 24 24" width="13" height="13" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+
+      <div class="replan-stack" id="replanStack">
+        <div class="replan-card is-next is-empty" id="replanCardNext"></div>
+        <div class="replan-card is-current is-empty" id="replanCardCurrent"></div>
+
+        <div class="replan-empty" id="replanEmptyState" hidden>
+          <span class="replan-empty-ic" id="replanEmptyIcon">
+            <svg viewBox="0 0 24 24" width="28" height="28" aria-hidden="true"><path d="M5.5 12.8l4.2 4.2L18.5 8" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </span>
+          <span class="replan-empty-title">Hepsi tamam!</span>
+          <span class="replan-empty-sub">Bekleyen görev kalmadı.</span>
+          <button type="button" class="task-sheet-btn replan-empty-close" id="replanEmptyCloseBtn">Kapat</button>
+        </div>
+
+        <div class="replan-reschedule-panel" id="replanReschedulePanel">
+          <span class="replan-reschedule-title">Hangi güne?</span>
+          <div class="replan-reschedule-row">
+            <button type="button" class="replan-reschedule-chip" id="replanRescheduleToday">Bugün</button>
+            <button type="button" class="replan-reschedule-chip" id="replanRescheduleTomorrow">Yarın</button>
+            <button type="button" class="replan-reschedule-chip replan-reschedule-pick" id="replanReschedulePick">
+              Tarih Seç
+              <input type="date" id="replanRescheduleDateInput" class="replan-reschedule-date-input" aria-label="Tarih seç">
+            </button>
+          </div>
+          <button type="button" class="replan-reschedule-cancel" id="replanRescheduleCancelBtn">Vazgeç</button>
         </div>
       </div>
     </div>
@@ -30182,6 +31874,7 @@
     else closeDayCountdownPage();
   });
 
+  // PLANLAYICI SAYFASI (#page-relax) — JS mantığı burada başlıyor.
   // "Rahatla" da aynı açma/kapama desenini kullanır: ana sayfadaki widget'tan
   // açılır, geri butonuyla Ana Sayfa'ya döner. Sayfa içeriği şimdilik boş.
   const openRelaxPage = () => {
@@ -30209,28 +31902,254 @@
   const relaxCalendarYearEl = document.getElementById('relaxCalendarYear');
   const relaxCalendarWeekEl = document.getElementById('relaxCalendarWeek');
 
-  const renderRelaxCalendarWeek = () => {
-    if (!relaxCalendarWeekEl) return;
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+  // Seçili günün kayan dairesi: şeride eklenen tek bir eleman; seçim
+  // değişince yaylanarak yeni günün üstüne kayar — Sayfa 6'daki büyük
+  // takvimin calendarBubbleEl'iyle birebir aynı yapı/mantık.
+  let relaxWeekSelectedCell = null;
+  const relaxWeekBubbleEl = document.createElement('span');
+  relaxWeekBubbleEl.className = 'relax-week-select-bubble is-hidden';
+  relaxWeekBubbleEl.setAttribute('aria-hidden', 'true');
+  relaxWeekBubbleEl.innerHTML = '<span class="relax-week-select-bubble-dot"></span>';
 
-    if (relaxCalendarDateEl) relaxCalendarDateEl.textContent = `${today.getDate()} ${HOME_MONTHS_TR[today.getMonth()]}`;
-    if (relaxCalendarYearEl) relaxCalendarYearEl.textContent = String(today.getFullYear());
+  // CSS animasyonunu (sınıf ekle/çıkar + reflow ile) baştan oynatır.
+  const replayRelaxWeekAnim = (el, cls) => {
+    el.classList.remove(cls);
+    void el.offsetWidth;
+    el.classList.add(cls);
+  };
+
+  // Konum, hücrelerin düzen (offset) ölçülerinden hesaplanır. animate=false
+  // → anında (kaymadan) yerine oturur (şerit yeniden çizilince); animate=true
+  // → bir günden ötekine yaylanarak kayar (dokunuşla seçilince).
+  const placeRelaxWeekBubble = (cell, animate, forcePop) => {
+    if (!cell) {
+      relaxWeekBubbleEl.classList.add('is-hidden');
+      return;
+    }
+    const num = cell.querySelector('.relax-calendar-day-num');
+    if (!num) return;
+    const size = num.offsetWidth;
+    const wasHidden = relaxWeekBubbleEl.classList.contains('is-hidden');
+    const jump = !animate || wasHidden;
+    relaxWeekBubbleEl.style.width = `${size}px`;
+    relaxWeekBubbleEl.style.height = `${size}px`;
+    if (jump) relaxWeekBubbleEl.style.transition = 'none';
+    relaxWeekBubbleEl.style.transform =
+      `translate(${cell.offsetLeft + num.offsetLeft}px, ${cell.offsetTop + num.offsetTop}px)`;
+    if (jump) {
+      void relaxWeekBubbleEl.offsetWidth;
+      relaxWeekBubbleEl.style.transition = '';
+    }
+    relaxWeekBubbleEl.classList.remove('is-hidden');
+    if ((animate && wasHidden) || forcePop) replayRelaxWeekAnim(relaxWeekBubbleEl, 'is-pop');
+  };
+
+  // PLANLAYICI SAYFASI: bu fonksiyon artık isteğe bağlı bir "focusDateStr"
+  // (yyyy-mm-dd) parametresi alır. Parametre verilmezse eskisi gibi bugüne
+  // göre çizilir; verilirse hem başlık hem de hafta şeridi o günün
+  // haftasına göre kurulur ve o gün seçili işaretlenir. Ay takvimi
+  // sheet'inden (aşağıdaki "Planyacı: Yeni Aktivite" script bloğundaki
+  // selectRelaxDate) bir gün seçildiğinde buraya o günün tarihi geçilir.
+  // En son çizilen haftanın Pazartesi'si: yeni seçim aynı hafta içindeyse
+  // (örn. Ay takvimi sheet'inden komşu bir gün seçildiğinde) şerit baştan
+  // kurulmaz, sadece seçim günceller — böylece kayan daire (Sayfa 6'daki
+  // büyük takvimle birebir aynı dilde) tak diye değil, yaylanarak kayar.
+  // ---------- Planlayıcı: gün hücresine basılı tutunca Kopyala/Yapıştır ----------
+  // Hafta şeridindeki herhangi bir güne basılı tutulunca o günün görevlerini
+  // kopyalayıp başka bir güne yapıştırabilmeyi sağlayan küçük bir eylem
+  // balonu açılır. Görsel dil Sayfa 8'deki basılı tutma balonuyla
+  // (.page8-copy-bubble / .page8-copy-toast) birebir aynıdır, ama içerik ve
+  // eylemler tamamen bu şeride özeldir. Kopyalanan görevler yeni bir id ve
+  // "yapılmadı" durumuyla hedef güne eklenir; id ve tik durumu taşınmaz,
+  // sadece görev tanımı (ad/ikon/renk/saat) kopyalanır.
+  let relaxDayClipboard = null; // { dateStr, tasks: [...] } ya da hiç kopyalanmadıysa null
+
+  // Tek bir görevi kopyalayıp herhangi bir güne yapıştırmayı sağlayan ayrı
+  // bir pano: { name, icon, color, start, end, durationMinutes } ya da
+  // hiç kopyalanmadıysa null. relaxDayClipboard'dan (bütün günü kopyalar)
+  // bağımsız çalışır; ikisi aynı anda dolu olabilir.
+  let relaxTaskClipboard = null;
+
+  const formatRelaxDayLabel = (dateStr) => {
+    const parts = String(dateStr || '').split('-').map(Number);
+    if (parts.length !== 3 || parts.some((n) => !Number.isFinite(n))) return String(dateStr || '');
+    const d = new Date(parts[0], parts[1] - 1, parts[2]);
+    return `${d.getDate()} ${HOME_MONTHS_TR[d.getMonth()]}`;
+  };
+
+  let relaxDayBubbleEl = null;
+  let relaxDayBubbleCloseHandler = null;
+  let relaxDayBubbleHighlightCell = null;
+
+  const closeRelaxDayBubble = () => {
+    if (relaxDayBubbleEl) {
+      relaxDayBubbleEl.remove();
+      relaxDayBubbleEl = null;
+    }
+    if (relaxDayBubbleCloseHandler) {
+      document.removeEventListener('pointerdown', relaxDayBubbleCloseHandler, true);
+      window.removeEventListener('scroll', relaxDayBubbleCloseHandler, true);
+      relaxDayBubbleCloseHandler = null;
+    }
+    if (relaxDayBubbleHighlightCell) {
+      relaxDayBubbleHighlightCell.classList.remove('is-longpress-active');
+      relaxDayBubbleHighlightCell = null;
+    }
+  };
+
+  let relaxDayToastEl = null;
+  let relaxDayToastTimer = null;
+  // Ekranın alt tarafında kısa süreliğine beliren "Kopyalandı"/"Yapıştırıldı"
+  // bildirimi — Sayfa 8'in kendi toast'uyla (.page8-copy-toast) aynı görünüm,
+  // yalnız yazı tipi bu sayfanın diğer bileşenleriyle (Baloo 2) örtüşsün diye
+  // ayrı bir sınıfla ezilir.
+  const showRelaxDayToast = (message) => {
+    if (!relaxDayToastEl) {
+      relaxDayToastEl = document.createElement('div');
+      relaxDayToastEl.className = 'page8-copy-toast relax-day-toast';
+      document.body.appendChild(relaxDayToastEl);
+    }
+    relaxDayToastEl.textContent = message;
+    relaxDayToastEl.classList.remove('is-visible');
+    void relaxDayToastEl.offsetWidth;
+    relaxDayToastEl.classList.add('is-visible');
+    if (relaxDayToastTimer) clearTimeout(relaxDayToastTimer);
+    relaxDayToastTimer = setTimeout(() => {
+      relaxDayToastEl.classList.remove('is-visible');
+    }, 1600);
+  };
+
+  // `items`: [{ action, icon (svg string), label, sub?, onClick }] —
+  // dokunulan noktanın (varsa) tam üstünde, yatayda ortalanmış olarak
+  // sırayla, Görev eylem sayfasıyla aynı dilde (yuvarlak ikon rozeti +
+  // başlık/alt yazı) balon satırları çizilir.
+  const showRelaxDayBubble = (items, touchX, touchY, highlightCell) => {
+    closeRelaxDayBubble();
+    if (!items || !items.length) return;
+    if (highlightCell) {
+      relaxDayBubbleHighlightCell = highlightCell;
+      highlightCell.classList.add('is-longpress-active');
+    }
+
+    const menu = document.createElement('div');
+    menu.className = 'relax-day-bubble';
+    items.forEach((it) => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'relax-day-bubble-item';
+      if (it.action) btn.dataset.action = it.action;
+
+      const icon = document.createElement('span');
+      icon.className = 'relax-day-bubble-icon';
+      icon.innerHTML = it.icon || '';
+      icon.setAttribute('aria-hidden', 'true');
+
+      const text = document.createElement('span');
+      text.className = 'relax-day-bubble-text';
+      const title = document.createElement('span');
+      title.className = 'relax-day-bubble-title';
+      title.textContent = it.label;
+      text.appendChild(title);
+      if (it.sub) {
+        const sub = document.createElement('span');
+        sub.className = 'relax-day-bubble-sub';
+        sub.textContent = it.sub;
+        text.appendChild(sub);
+      }
+
+      btn.appendChild(icon);
+      btn.appendChild(text);
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        closeRelaxDayBubble();
+        it.onClick();
+      });
+      menu.appendChild(btn);
+    });
+    document.body.appendChild(menu);
+
+    const GAP = 26;
+    const bubbleRect = menu.getBoundingClientRect();
+    const hasTouchPoint = typeof touchX === 'number' && typeof touchY === 'number';
+    const centerX = hasTouchPoint ? touchX : window.innerWidth / 2;
+    let left = centerX - bubbleRect.width / 2;
+    left = Math.max(8, Math.min(left, window.innerWidth - bubbleRect.width - 8));
+    let top = hasTouchPoint ? touchY - GAP - bubbleRect.height : 8;
+    if (top < 8) top = hasTouchPoint ? touchY + GAP : 8;
+    menu.style.left = `${left}px`;
+    menu.style.top = `${top}px`;
+
+    requestAnimationFrame(() => menu.classList.add('is-visible'));
+
+    relaxDayBubbleEl = menu;
+    relaxDayBubbleCloseHandler = (e) => {
+      if (menu.contains(e.target)) return;
+      closeRelaxDayBubble();
+    };
+    // Aynı dokunuşla açılıp hemen kapanmasın diye dinleyici bir adım
+    // gecikmeyle eklenir (Sayfa 8'in kendi balonuyla aynı önlem).
+    setTimeout(() => {
+      document.addEventListener('pointerdown', relaxDayBubbleCloseHandler, true);
+      window.addEventListener('scroll', relaxDayBubbleCloseHandler, true);
+    }, 0);
+  };
+
+  // Gerçek uygulama, addRelaxTask/getRelaxTasksByDate/renderRelaxTasksList/
+  // syncHomeRelaxWidget hepsi tanımlandıktan sonra aşağıdaki "Planlayıcı:
+  // Yeni Aktivite" IIFE'sinin içinde bu değişkene atanır (kapanış (closure)
+  // sayesinde dışarıdaki bu bağlamayı günceller); burada sadece hücre
+  // basılı tutma dinleyicilerinin (aşağıda) referans verebilmesi için bir
+  // yer tutucu tanımlanır.
+  let openRelaxDayBubbleFor = () => {};
+
+  let relaxWeekMonday = null;
+  const renderRelaxCalendarWeek = (focusDateStr) => {
+    if (!relaxCalendarWeekEl) return;
+    let focus = new Date();
+    focus.setHours(0, 0, 0, 0);
+    if (focusDateStr) {
+      const parts = String(focusDateStr).split('-').map(Number);
+      if (parts.length === 3 && parts.every((n) => Number.isFinite(n))) {
+        focus = new Date(parts[0], parts[1] - 1, parts[2]);
+      }
+    }
+
+    if (relaxCalendarDateEl) relaxCalendarDateEl.textContent = `${focus.getDate()} ${HOME_MONTHS_TR[focus.getMonth()]}`;
+    if (relaxCalendarYearEl) relaxCalendarYearEl.textContent = String(focus.getFullYear());
 
     // Haftanın Pazartesi'sini bul (getDay(): 0=Paz ... 6=Cmt).
-    const mondayOffset = (today.getDay() + 6) % 7;
-    const monday = new Date(today);
-    monday.setDate(today.getDate() - mondayOffset);
+    const mondayOffset = (focus.getDay() + 6) % 7;
+    const monday = new Date(focus);
+    monday.setDate(focus.getDate() - mondayOffset);
 
+    // Aynı hafta içinde kalan bir seçim: şeridi yeniden kurmadan sadece
+    // ilgili hücrenin seçimini değiştir, kayan daire ona yaylanarak kaysın.
+    if (relaxWeekMonday && relaxWeekMonday.getTime() === monday.getTime() && relaxCalendarWeekEl.childElementCount > 1) {
+      const focusStr = `${focus.getFullYear()}-${String(focus.getMonth() + 1).padStart(2, '0')}-${String(focus.getDate()).padStart(2, '0')}`;
+      const targetCell = relaxCalendarWeekEl.querySelector(`.relax-calendar-day-cell[data-date="${focusStr}"]`);
+      if (targetCell && targetCell !== relaxWeekSelectedCell) {
+        if (relaxWeekSelectedCell) relaxWeekSelectedCell.classList.remove('is-selected');
+        targetCell.classList.add('is-selected');
+        relaxWeekSelectedCell = targetCell;
+        placeRelaxWeekBubble(targetCell, true);
+      }
+      return;
+    }
+
+    const isWeekChange = relaxWeekMonday !== null;
+    relaxWeekMonday = monday;
     relaxCalendarWeekEl.innerHTML = '';
+    relaxCalendarWeekEl.appendChild(relaxWeekBubbleEl);
+    relaxWeekSelectedCell = null;
     for (let i = 0; i < 7; i += 1) {
       const day = new Date(monday);
       day.setDate(monday.getDate() + i);
-      const isToday = day.getTime() === today.getTime();
+      const isSelected = day.getTime() === focus.getTime();
 
       const cell = document.createElement('button');
       cell.type = 'button';
-      cell.className = 'relax-calendar-day-cell' + (isToday ? ' is-selected' : '');
+      cell.className = 'relax-calendar-day-cell' + (isWeekChange ? ' is-anim' : '') + (isSelected ? ' is-selected' : '');
+      cell.style.setProperty('--c', String(i));
       cell.setAttribute('aria-label', `${day.getDate()} ${HOME_MONTHS_TR[day.getMonth()]}`);
       // Yeni Aktivite sayfası, seçili günü buradan okur (yyyy-mm-dd).
       cell.dataset.date = `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, '0')}-${String(day.getDate()).padStart(2, '0')}`;
@@ -30238,17 +32157,79 @@
         <span class="relax-calendar-day-label">${RELAX_WEEKDAYS_TR[i]}</span>
         <span class="relax-calendar-day-num">${day.getDate()}</span>
       `;
-      // Tıklanan güne dairesi kayar; ayrıca o günün "Seçilen Görevler"
-      // listesinin de güncellenmesi için bir olay yayınlanır (dinleyicisi
-      // aşağıdaki "Planyacı: Yeni Aktivite" script bloğunda).
+      if (isSelected) relaxWeekSelectedCell = cell;
+      // Tıklanan güne kayan daire (Sayfa 6'daki büyük takvimle aynı
+      // yaylanarak kayma animasyonu) yaylanır; ayrıca o günün "Seçilen
+      // Görevler" listesinin de güncellenmesi için bir olay yayınlanır
+      // (dinleyicisi aşağıdaki "Planyacı: Yeni Aktivite" script bloğunda).
+      // NOT: basılı tutma (aşağıda) balonu açtıysa, parmak/imleç kalkınca
+      // tarayıcının kendiliğinden ürettiği "click" olayı günü DEĞİŞTİRMESİN
+      // diye longPressFired bayrağıyla bir kereliğine bastırılır.
+      let cellLongPressFired = false;
       cell.addEventListener('click', () => {
-        relaxCalendarWeekEl.querySelectorAll('.relax-calendar-day-cell').forEach((el) => el.classList.remove('is-selected'));
+        if (cellLongPressFired) { cellLongPressFired = false; return; }
+        if (relaxWeekSelectedCell === cell) return;
+        if (relaxWeekSelectedCell) relaxWeekSelectedCell.classList.remove('is-selected');
         cell.classList.add('is-selected');
+        relaxWeekSelectedCell = cell;
+        placeRelaxWeekBubble(cell, true);
         document.dispatchEvent(new CustomEvent('relax:date-changed', { detail: { date: cell.dataset.date } }));
       });
+
+      // ---- Basılı tutma: "Günün görevlerini kopyala" / "... tarihinden
+      // yapıştır" balonu (bkz. openRelaxDayBubbleFor) ----
+      let cellPressTimer = null;
+      let cellPressMoved = false;
+      let cellPressStartX = 0;
+      let cellPressStartY = 0;
+      const CELL_LONG_PRESS_MS = 450;
+      const CELL_PRESS_MOVE_TOLERANCE = 10;
+      const clearCellPressTimer = () => {
+        if (cellPressTimer) {
+          clearTimeout(cellPressTimer);
+          cellPressTimer = null;
+          cell.classList.remove('is-longpress-active');
+        }
+      };
+      cell.addEventListener('pointerdown', (e) => {
+        if (e.pointerType === 'mouse' && e.button !== 0) return;
+        cellPressMoved = false;
+        cellPressStartX = e.clientX;
+        cellPressStartY = e.clientY;
+        clearCellPressTimer();
+        cell.classList.add('is-longpress-active');
+        cellPressTimer = setTimeout(() => {
+          cellPressTimer = null;
+          if (!cellPressMoved) {
+            const opened = openRelaxDayBubbleFor(cell, cellPressStartX, cellPressStartY);
+            if (opened) cellLongPressFired = true;
+            else cell.classList.remove('is-longpress-active');
+          } else {
+            cell.classList.remove('is-longpress-active');
+          }
+        }, CELL_LONG_PRESS_MS);
+      });
+      cell.addEventListener('pointermove', (e) => {
+        if (!cellPressTimer) return;
+        const dx = e.clientX - cellPressStartX;
+        const dy = e.clientY - cellPressStartY;
+        if (Math.hypot(dx, dy) > CELL_PRESS_MOVE_TOLERANCE) cellPressMoved = true;
+      });
+      cell.addEventListener('pointerup', clearCellPressTimer);
+      cell.addEventListener('pointerleave', clearCellPressTimer);
+      cell.addEventListener('pointercancel', clearCellPressTimer);
+      cell.addEventListener('contextmenu', (e) => e.preventDefault());
+
       relaxCalendarWeekEl.appendChild(cell);
     }
+    placeRelaxWeekBubble(relaxWeekSelectedCell, false, isWeekChange);
   };
+
+  // Şerit yeniden boyutlanırsa (döndürme vb.) balon kaymadan yeni konumuna
+  // oturur — Sayfa 6'daki ResizeObserver ile aynı mantık.
+  if (typeof ResizeObserver === 'function') {
+    new ResizeObserver(() => placeRelaxWeekBubble(relaxWeekSelectedCell, false)).observe(relaxCalendarWeekEl);
+  }
 
   renderRelaxCalendarWeek();
 
@@ -30371,6 +32352,12 @@
     const dateRelEl = $('taskAddDateRel');
     const wheel = $('taskAddWheel');
     const durationRow = $('taskAddDurationRow');
+    const repeatOptionsRow = $('taskAddRepeatOptions');
+    const repeatDaysRow = $('taskAddRepeatDays');
+    const repeatHintEl = $('taskAddRepeatHint');
+    const subtaskListEl = $('taskAddSubtaskList');
+    const subtaskInputEl = $('taskAddSubtaskInput');
+    const subtaskAddBtn = $('taskAddSubtaskAddBtn');
     const openBtn = $('relaxAddBtn');
     if (!overlay || !openBtn) return;
 
@@ -30391,6 +32378,20 @@
     const pad2 = (n) => String(n).padStart(2, '0');
     const MONTHS_SHORT_TR = ['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara'];
     const DAYS_SHORT_TR = ['Paz', 'Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt']; // getDay(): 0=Paz
+    const DAYS_LONG_TR = ['Pazar', 'Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi']; // getDay(): 0=Pazar
+    // ---- Tekrar: gün kodları alarm/takvim mantığıyla aynı (bkz. event_create_v1 rrule günleri) ----
+    const REPEAT_DOW_CODE = ['SU', 'MO', 'TU', 'WE', 'TH', 'FR', 'SA']; // getDay() sırasına göre
+    const REPEAT_DAY_CHIPS = [
+      { code: 'MO', label: 'Pzt' },
+      { code: 'TU', label: 'Sal' },
+      { code: 'WE', label: 'Çar' },
+      { code: 'TH', label: 'Per' },
+      { code: 'FR', label: 'Cum' },
+      { code: 'SA', label: 'Cmt' },
+      { code: 'SU', label: 'Paz' },
+    ];
+    const REPEAT_HORIZON_DAYS = 366; // haftalık / belirli-gün tekrarları ~1 yıl ileriye kadar oluşturulur
+    const REPEAT_HORIZON_MONTHS = 12; // aylık tekrar 12 ay ileriye kadar oluşturulur
     const ymd = (d) => `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
     const startOfDay = (d) => { const x = new Date(d); x.setHours(0, 0, 0, 0); return x; };
     // İkonsuz görevlerde ikon yerine geçen baş harf (Türkçe büyük harf kurallarıyla: i → İ).
@@ -30417,7 +32418,10 @@
     let iconChosen = false;             // bu oturumda bir ikon (ya da "Boş") seçildi mi
     let iconEmpty = false;              // "Boş" ikon: halkada adın baş harfi görünür
     let colorChosen = false;            // renk adımında bir renk (ya da "Boş") seçildi mi
+    let repeatMode = 'none';            // 'none' | 'weekly' | 'monthly' | 'custom'
+    let repeatCustomDays = new Set();   // 'custom' modunda seçili günler ('MO','TU',... REPEAT_DOW_CODE)
     let editingTask = null;             // { id, dateStr }: form "Düzenle" modunda mı (yoksa yeni görev)
+    let taskSubtasks = [];               // [{id, text, done}]: bu oturumdaki alt görevler (isteğe bağlı)
     const topbarTitleEl = overlay.querySelector('.task-add-topbar-title');
 
     // "14:30" biçimi (gün taşarsa 24 saate sarar)
@@ -30598,17 +32602,171 @@
       });
     };
 
+    // ---------------- Tekrar ----------------
+    // Kısayollar: "Bir kez" / "Her hafta" / "Her ay" / "Belirli
+    // günler" (alarm uygulamalarındaki gibi, birden çok gün seçilebilir).
+    // "Her hafta" ve "Belirli günler" ile üretilen tekrarlar, uygulamanın
+    // görevleri zaten güne göre ayrı ayrı sakladığı yapıyla uyumlu olsun diye
+    // kaydedilirken ileriye dönük ayrı birer kayıt olarak oluşturulur (bkz.
+    // buildRepeatDates + saveBtn handler).
+    const renderRepeatDayChips = () => {
+      if (repeatDaysRow.childElementCount) return;
+      REPEAT_DAY_CHIPS.forEach(({ code, label }) => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'task-add-repeat-day-btn';
+        btn.dataset.code = code;
+        btn.textContent = label;
+        btn.setAttribute('aria-pressed', 'false');
+        btn.addEventListener('click', () => toggleRepeatDay(code));
+        repeatDaysRow.appendChild(btn);
+      });
+    };
+
+    const updateRepeatHint = () => {
+      if (repeatMode === 'weekly') {
+        repeatHintEl.textContent = `Her hafta ${DAYS_LONG_TR[selectedDate.getDay()]} günü tekrar eder.`;
+      } else if (repeatMode === 'monthly') {
+        repeatHintEl.textContent = 'Her ay bu tarihte tekrar eder.';
+      } else if (repeatMode === 'custom') {
+        repeatHintEl.textContent = repeatCustomDays.size
+          ? 'Seçtiğin günlerde her hafta tekrar eder.'
+          : 'Tekrar edeceği günleri seç.';
+      } else {
+        repeatHintEl.textContent = 'Bu görev yalnızca seçtiğin tarihte olacak.';
+      }
+    };
+
+    const applyRepeatMode = (mode) => {
+      repeatMode = mode;
+      repeatOptionsRow.querySelectorAll('.task-add-repeat-opt').forEach((el) => {
+        el.classList.toggle('is-selected', el.dataset.mode === mode);
+      });
+      const showDays = mode === 'custom';
+      repeatDaysRow.hidden = !showDays;
+      if (showDays && !repeatCustomDays.size) {
+        // Kolaylık olsun diye seçili tarihin günüyle başlar.
+        repeatCustomDays.add(REPEAT_DOW_CODE[selectedDate.getDay()]);
+      }
+      repeatDaysRow.querySelectorAll('.task-add-repeat-day-btn').forEach((el) => {
+        const on = repeatCustomDays.has(el.dataset.code);
+        el.classList.toggle('is-selected', on);
+        el.setAttribute('aria-pressed', String(on));
+      });
+      updateRepeatHint();
+    };
+
+    const toggleRepeatDay = (code) => {
+      const on = repeatCustomDays.has(code);
+      if (on && repeatCustomDays.size <= 1) return; // en az bir gün seçili kalmalı
+      if (on) repeatCustomDays.delete(code);
+      else repeatCustomDays.add(code);
+      const btn = repeatDaysRow.querySelector(`.task-add-repeat-day-btn[data-code="${code}"]`);
+      if (btn) {
+        const nowOn = repeatCustomDays.has(code);
+        btn.classList.toggle('is-selected', nowOn);
+        btn.setAttribute('aria-pressed', String(nowOn));
+      }
+      updateRepeatHint();
+    };
+
+    repeatOptionsRow.querySelectorAll('.task-add-repeat-opt').forEach((btn) => {
+      btn.addEventListener('click', () => applyRepeatMode(btn.dataset.mode));
+    });
+
+    // Tekrar kuralına göre, seçilen tarihten sonraki (ileriye dönük) tarihleri üretir.
+    const buildRepeatDates = (mode, days, baseDate) => {
+      const dates = [];
+      const start = startOfDay(baseDate);
+      if (mode === 'monthly') {
+        const dom = start.getDate();
+        for (let i = 1; i <= REPEAT_HORIZON_MONTHS; i += 1) {
+          const d = new Date(start.getFullYear(), start.getMonth() + i, dom);
+          if (d.getDate() !== dom) continue; // ör. 31'i olmayan ay: o ay atlanır
+          dates.push(d);
+        }
+        return dates;
+      }
+      const activeDays = mode === 'weekly' ? new Set([REPEAT_DOW_CODE[start.getDay()]]) : days;
+      if (!activeDays || !activeDays.size) return dates;
+      for (let i = 1; i <= REPEAT_HORIZON_DAYS; i += 1) {
+        const d = new Date(start.getFullYear(), start.getMonth(), start.getDate() + i);
+        if (activeDays.has(REPEAT_DOW_CODE[d.getDay()])) dates.push(d);
+      }
+      return dates;
+    };
+
+    // ---------------- Alt Görevler ----------------
+    // taskSubtasks bu oturuma özel bir dizi; prepareForm() boşaltır,
+    // openTaskEditOverlay() düzenlenen görevin alt görevleriyle doldurur.
+    // Kaydedince (saveBtn) doğrudan patch/newTask içine kopyalanır.
+    const renderSubtaskList = () => {
+      if (!subtaskListEl) return;
+      subtaskListEl.innerHTML = taskSubtasks.map((s) => `
+        <div class="task-add-subtask-row${s.done ? ' is-done' : ''}" data-id="${s.id}">
+          <button type="button" class="task-add-subtask-check" aria-label="Tamamlandı işaretle">
+            <svg viewBox="0 0 24 24" width="11" height="11"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <span class="task-add-subtask-text">${escapeHtml(s.text)}</span>
+          <button type="button" class="task-add-subtask-remove" aria-label="Kaldır">
+            <svg viewBox="0 0 24 24" width="13" height="13"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"/></svg>
+          </button>
+        </div>
+      `).join('');
+    };
+
+    const addSubtaskFromInput = () => {
+      if (!subtaskInputEl) return;
+      const text = subtaskInputEl.value.trim();
+      if (!text) { subtaskInputEl.focus({ preventScroll: true }); return; }
+      taskSubtasks.push({ id: genTaskId(), text, done: false });
+      subtaskInputEl.value = '';
+      renderSubtaskList();
+      subtaskInputEl.focus({ preventScroll: true });
+    };
+
+    if (subtaskAddBtn) subtaskAddBtn.addEventListener('click', addSubtaskFromInput);
+    if (subtaskInputEl) {
+      subtaskInputEl.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') { e.preventDefault(); addSubtaskFromInput(); }
+      });
+    }
+    if (subtaskListEl) {
+      subtaskListEl.addEventListener('click', (e) => {
+        const row = e.target.closest('.task-add-subtask-row');
+        if (!row) return;
+        const id = row.dataset.id;
+        if (e.target.closest('.task-add-subtask-remove')) {
+          taskSubtasks = taskSubtasks.filter((s) => s.id !== id);
+          renderSubtaskList();
+          return;
+        }
+        if (e.target.closest('.task-add-subtask-check')) {
+          const item = taskSubtasks.find((s) => s.id === id);
+          if (item) item.done = !item.done;
+          renderSubtaskList();
+        }
+      });
+    }
+
     // ---------------- Adım geçişleri ----------------
-    // Açılış: İkon → (ikon seçilince) Renk → (renk seçilince) Zaman.
+    // Açılış: İkon → (ikon seçilince) Renk → (renk seçilince) Zaman → Tekrar.
     // Üstteki ikon halkasına basmak akışı tekrar "İkon" adımına döndürür.
     // "Sürdür" butonu: İkon adımında bir ikon, Renk adımında bir renk
-    // seçilmişse görünür (CSS: [data-ready="1"]).
+    // seçilmişse görünür (CSS: [data-ready="1"]); Zaman ve Tekrar adımlarında
+    // özel bir koşul olmadığından her zaman görünür.
     // İkon "Boş" ise baş harf addan geleceği için, ad girilene kadar "Sürdür" belirmez.
+    // Görev düzenlenirken (editingTask) akış doğrudan Zaman adımında açılır;
+    // "Sürdür" ile Alt Görevler'e, oradan da Tekrar adımına geçilir — yeni
+    // görevle aynı akış. Düzenlemede "Tekrar" seçilirse, kaydedince mevcut
+    // görev güncellenir VE kurala göre ileriye dönük yeni kopyalar da eklenir
+    // (bkz. saveBtn handler); var olan görevin kendisi bir "seriye" dönüşmez.
     const nameFilled = () => nameInput.value.trim().length > 0;
     const updateReady = () => {
       let ready = false;
       if (currentStep === 'icon') ready = iconChosen && (!iconEmpty || nameFilled());
       else if (currentStep === 'color') ready = colorChosen;
+      else ready = true; // 'time', 'subtasks' ve 'repeat'
       overlay.dataset.ready = ready ? '1' : '0';
       hintEl.classList.toggle('is-visible', currentStep === 'icon' && iconEmpty && !nameFilled());
     };
@@ -30622,6 +32780,9 @@
     const goToStep = (step) => {
       currentStep = step;
       overlay.dataset.step = step;
+      // Son adım her zaman "Tekrar" — bu adımda "Sürdür" yerine "Ekle"/"Kaydet" gösterilir
+      // (bkz. CSS .is-final-step).
+      overlay.classList.toggle('is-final-step', step === 'repeat');
       updateReady();
       stepEls.forEach((el) => el.classList.toggle('is-active', el.dataset.step === step));
       if (scrollEl) scrollEl.scrollTop = 0;
@@ -30644,6 +32805,8 @@
     continueBtn.addEventListener('click', () => {
       if (currentStep === 'icon') goToStep('color');
       else if (currentStep === 'color') goToStep('time');
+      else if (currentStep === 'time') goToStep('subtasks');
+      else if (currentStep === 'subtasks') goToStep('repeat');
     });
 
     // ---------------- Tarih ----------------
@@ -30660,6 +32823,7 @@
       dateInput.value = ymd(selectedDate);
       dateTextEl.textContent = `${selectedDate.getDate()} ${MONTHS_SHORT_TR[selectedDate.getMonth()]} ${selectedDate.getFullYear()} ${DAYS_SHORT_TR[selectedDate.getDay()]}`;
       dateRelEl.textContent = relativeDayLabel(selectedDate);
+      if (repeatMode === 'weekly') updateRepeatHint(); // hafta içindeki gün adı tarihe göre değişir
     };
 
     const onDatePicked = () => {
@@ -30806,6 +32970,9 @@
       measureRow();
 
       nameInput.value = '';
+      taskSubtasks = [];
+      renderSubtaskList();
+      if (subtaskInputEl) subtaskInputEl.value = '';
       iconChosen = false;
       iconEmpty = false;
       applyIcon(TASK_ADD_ICONS[0], false);
@@ -30820,6 +32987,10 @@
       }
       applyDate(day);
 
+      renderRepeatDayChips();
+      repeatCustomDays = new Set();
+      applyRepeatMode('none');
+
       const now = new Date();
       selectedIndex = Math.round((now.getHours() * 60 + now.getMinutes()) / STEP) % COUNT;
       applyDuration(DEFAULT_DURATION);
@@ -30830,8 +33001,10 @@
       // Not: body.has-modal-open kilidi kullanılmıyor — bu sayfa zaten tam
       // ekran ve opak olduğundan arkadaki içerik dokunuşları alamıyor.
       overlay.classList.add('is-open');
-      // Not: ad alanına otomatik odaklanmıyor — klavye açılınca alttaki
-      // ikon menüsü kapanırdı; adı yazmak için üstteki alana dokunulur.
+      // Ad alanına anında odaklanılır ki klavye direkt açılsın; açılış
+      // animasyonu bitmeden odaklanırsa klavye bazı tarayıcılarda geç
+      // açılabiliyor, bir sonraki kareye erteliyoruz (page8NameInput ile aynı desen).
+      requestAnimationFrame(() => nameInput.focus());
     };
 
     const closeTaskAddOverlay = () => {
@@ -31002,6 +33175,7 @@
     const relaxTick = () => {
       if (relaxIntroPlaying || document.hidden) return;
       applyRelaxProgress('tick');
+      if (typeof updateReplanBanner === 'function') updateReplanBanner();
     };
     const startRelaxTicker = () => {
       if (!relaxTickTimer) relaxTickTimer = setInterval(relaxTick, RELAX_TICK_MS);
@@ -31217,6 +33391,19 @@
         moreBtn.setAttribute('aria-label', `${task.name || 'Görev'} için seçenekler`);
         moreBtn.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="5.5" cy="12" r="1.8" fill="currentColor"/><circle cx="12" cy="12" r="1.8" fill="currentColor"/><circle cx="18.5" cy="12" r="1.8" fill="currentColor"/></svg>';
         meta.appendChild(timeEl);
+
+        // Not: alt görevler artık burada (satırın yanında) bir rozetle gösterilmiyor —
+        // göreve dokununca açılan eylem sayfasındaki "Alt görevler" panelinden
+        // (yukarı sürüklenerek) görülüp işaretlenebiliyor.
+
+        // Replan ile 3+ kez ertelenen görevlerde küçük bir uyarı rozeti.
+        if ((task.replanCount || 0) >= 3) {
+          const replanBadge = document.createElement('span');
+          replanBadge.className = 'relax-task-replan-badge';
+          replanBadge.textContent = `${task.replanCount}×`;
+          replanBadge.setAttribute('aria-label', `${task.replanCount} kez ertelendi`);
+          meta.appendChild(replanBadge);
+        }
         meta.appendChild(moreBtn);
 
         topRow.appendChild(nameEl);
@@ -31227,14 +33414,78 @@
         item.appendChild(content);
         tasksItemsEl.appendChild(item);
 
-        // Halkaya dokun → Yapıldı / geri al. Satırın kalanına (ya da "⋯"e) dokun → eylem sayfası.
+        // Halkaya dokun → Yapıldı / geri al. Satırın kalanına (ya da "⋯"e)
+        // dokun → eylem sayfası. Satıra basılı tutunca (bkz. aşağıdaki
+        // pointerdown/move/up dinleyicileri) ise görevi kopyalayan bir balon
+        // belirir; bu durumda parmak kalkınca oluşan "click" olayı eylem
+        // sayfasını AÇMASIN diye itemLongPressFired bayrağıyla bastırılır
+        // (gün hücresindeki aynı desenle, bkz. cellLongPressFired).
+        let itemLongPressFired = false;
         item.addEventListener('click', (e) => {
+          if (itemLongPressFired) { itemLongPressFired = false; return; }
           if (e.target.closest('.relax-task-marker')) {
             toggleTaskDone(ref);
             return;
           }
           openTaskSheet(ref);
         });
+
+        // ---- Basılı tutma: "Görevi kopyala" balonu ----
+        // Kopyalanan görev (ad/ikon/renk/saat) relaxTaskClipboard'a yazılır;
+        // istenen güne gidip gün numarasına ya da listenin boş bir alanına
+        // basılı tutularak yapıştırılabilir (bkz. openRelaxDayBubbleFor ve
+        // tasksListEl'in boş-alan dinleyicisi, aşağıda).
+        let itemPressTimer = null;
+        let itemPressMoved = false;
+        let itemPressStartX = 0;
+        let itemPressStartY = 0;
+        const ITEM_LONG_PRESS_MS = 450;
+        const ITEM_PRESS_MOVE_TOLERANCE = 10;
+        const clearItemPressTimer = () => {
+          if (itemPressTimer) {
+            clearTimeout(itemPressTimer);
+            itemPressTimer = null;
+          }
+        };
+        item.addEventListener('pointerdown', (e) => {
+          if (e.pointerType === 'mouse' && e.button !== 0) return;
+          if (e.target.closest('.relax-task-marker') || e.target.closest('.relax-task-more')) return;
+          itemPressMoved = false;
+          itemPressStartX = e.clientX;
+          itemPressStartY = e.clientY;
+          clearItemPressTimer();
+          itemPressTimer = setTimeout(() => {
+            itemPressTimer = null;
+            if (itemPressMoved) return;
+            itemLongPressFired = true;
+            showRelaxDayBubble([{
+              action: 'copy-task',
+              icon: RELAX_DAY_ICON_COPY,
+              label: 'Görevi kopyala',
+              sub: task.name || '',
+              onClick: () => {
+                relaxTaskClipboard = {
+                  name: task.name,
+                  icon: task.icon,
+                  color: task.color,
+                  start: task.start,
+                  end: task.end,
+                  durationMinutes: task.durationMinutes,
+                };
+                showRelaxDayToast('Görev kopyalandı');
+              },
+            }], itemPressStartX, itemPressStartY, item);
+          }, ITEM_LONG_PRESS_MS);
+        });
+        item.addEventListener('pointermove', (e) => {
+          if (!itemPressTimer) return;
+          const dx = e.clientX - itemPressStartX;
+          const dy = e.clientY - itemPressStartY;
+          if (Math.hypot(dx, dy) > ITEM_PRESS_MOVE_TOLERANCE) itemPressMoved = true;
+        });
+        item.addEventListener('pointerup', clearItemPressTimer);
+        item.addEventListener('pointerleave', clearItemPressTimer);
+        item.addEventListener('pointercancel', clearItemPressTimer);
         marker.addEventListener('keydown', (e) => {
           if (e.key === 'Enter' || e.key === ' ') {
             e.preventDefault();
@@ -31262,6 +33513,8 @@
           }, introDelayMs + 350);
         }
       }
+
+      if (typeof updateReplanBanner === 'function') updateReplanBanner();
     };
 
     const addRelaxTask = (task) => {
@@ -31342,6 +33595,7 @@
       saveAppState({ [RELAX_TASKS_STATE_KEY]: getRelaxTasksByDate() });
       paintTaskDone(ref, true);
       syncHomeRelaxWidget(); // ana sayfadaki canlı widget da güncellensin
+      if (typeof updateReplanBanner === 'function') updateReplanBanner();
     };
 
     const toggleTaskDone = (ref) => setTaskDone(ref, !ref.done);
@@ -31350,6 +33604,7 @@
     const deleteTaskAnimated = (ref) => {
       removeRelaxTaskById(ref.id, ref.dateStr);
       syncHomeRelaxWidget();
+      if (typeof updateReplanBanner === 'function') updateReplanBanner();
       relaxLastMarkerRefs = relaxLastMarkerRefs.filter((r) => r !== ref);
       relaxSegments = relaxSegments.filter((seg) => seg.ref !== ref);
 
@@ -31400,6 +33655,10 @@
       saveBtn.textContent = 'Kaydet';
 
       nameInput.value = task.name || '';
+      taskSubtasks = Array.isArray(task.subtasks)
+        ? task.subtasks.map((s) => ({ id: s && s.id ? s.id : genTaskId(), text: (s && s.text) || '', done: !!(s && s.done) }))
+        : [];
+      renderSubtaskList();
       if (task.icon === '' || task.icon === null) applyEmptyIcon();
       else applyIcon(iconById(task.icon));
       iconChosen = true;
@@ -31436,11 +33695,134 @@
     const sheetDoneTitle = $('taskSheetDoneTitle');
     const sheetDoneSub = $('taskSheetDoneSub');
     const sheetConfirmDesc = $('taskSheetConfirmDesc');
+    const sheetSubtasksWrap = $('taskSheetSubtasks');
+    const sheetSubtaskPeek = $('taskSheetSubtaskPeek');
+    const sheetSubtaskRing = $('taskSheetSubtaskRing');
+    const sheetSubtaskCount = $('taskSheetSubtaskCount');
+    const sheetSubtaskPanel = $('taskSheetSubtaskPanel');
+    const sheetSubtaskList = $('taskSheetSubtaskList');
     let sheetRef = null;
     let sheetResetTimer = null;
+    let sheetSubtaskOpen = false;
 
     const CHECK_ICON_SVG = '<svg class="ts-check" viewBox="0 0 24 24" aria-hidden="true"><path d="M5.5 12.8l4.2 4.2L18.5 8" pathLength="1"/></svg>';
+    const SUBTASK_CHECK_ICON_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5.5 12.8l4.2 4.2L18.5 8" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>';
     const UNDO_ICON_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 14L4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg>';
+
+    // ---- Alt görev paneli: halka/sayaç, satırlar, aç/kapa, sürükleme ----
+    // Çok sayıda alt görev varken panel doğal yüksekliğine (scrollHeight)
+    // kadar açılıp sayfayı taşırmasın diye, açılabileceği yükseklik burada
+    // sınırlanır (~4-5 satır); ötesi panelin kendi içinde kaydırılır.
+    const SUBTASK_PANEL_MAX_H = 236;
+    const sheetSubtaskFullHeight = () => (sheetSubtaskList ? sheetSubtaskList.scrollHeight : 0);
+    const sheetSubtaskNaturalHeight = () => Math.min(sheetSubtaskFullHeight(), SUBTASK_PANEL_MAX_H);
+
+    const renderSheetSubtaskRing = () => {
+      if (!sheetRef || !sheetSubtaskRing) return;
+      const subs = Array.isArray(sheetRef.task.subtasks) ? sheetRef.task.subtasks : [];
+      const total = subs.length;
+      const done = subs.filter((s) => s.done).length;
+      sheetSubtaskRing.style.setProperty('--sr-pct', total ? String(Math.round((done / total) * 100)) : '0');
+      if (sheetSubtaskCount) sheetSubtaskCount.textContent = `${done}/${total} tamamlandı`;
+      if (sheetSubtasksWrap) sheetSubtasksWrap.classList.toggle('is-capped', sheetSubtaskFullHeight() > SUBTASK_PANEL_MAX_H + 1);
+    };
+
+    const buildSheetSubtaskRows = () => {
+      if (!sheetSubtaskList || !sheetRef) return;
+      const subs = Array.isArray(sheetRef.task.subtasks) ? sheetRef.task.subtasks : [];
+      sheetSubtaskList.innerHTML = subs.map((s) => `
+        <div class="task-sheet-subtask-row${s.done ? ' is-done' : ''}" data-sub-id="${s.id}">
+          <span class="task-sheet-subtask-check" aria-hidden="true">${SUBTASK_CHECK_ICON_SVG}</span>
+          <span class="task-sheet-subtask-text">${escapeHtml(s.text)}</span>
+        </div>
+      `).join('');
+    };
+
+    const setSheetSubtaskHeight = (px, animate) => {
+      if (!sheetSubtaskPanel) return;
+      sheetSubtaskPanel.classList.toggle('is-dragging', !animate);
+      sheetSubtaskPanel.style.height = `${Math.max(0, px)}px`;
+    };
+
+    const openSheetSubtasks = (animate) => {
+      sheetSubtaskOpen = true;
+      if (sheetSubtasksWrap) sheetSubtasksWrap.classList.add('is-open');
+      if (sheetSubtaskPeek) sheetSubtaskPeek.setAttribute('aria-expanded', 'true');
+      setSheetSubtaskHeight(sheetSubtaskNaturalHeight(), animate);
+      if (animate && navigator.vibrate) navigator.vibrate(8);
+    };
+
+    const closeSheetSubtasks = (animate) => {
+      sheetSubtaskOpen = false;
+      if (sheetSubtasksWrap) sheetSubtasksWrap.classList.remove('is-open');
+      if (sheetSubtaskPeek) sheetSubtaskPeek.setAttribute('aria-expanded', 'false');
+      setSheetSubtaskHeight(0, animate);
+    };
+
+    const toggleSheetSubtasks = () => { if (sheetSubtaskOpen) closeSheetSubtasks(true); else openSheetSubtasks(true); };
+
+    if (sheetSubtaskList) {
+      sheetSubtaskList.addEventListener('click', (e) => {
+        const row = e.target.closest('.task-sheet-subtask-row');
+        if (!row || !sheetRef) return;
+        const subs = Array.isArray(sheetRef.task.subtasks) ? sheetRef.task.subtasks : [];
+        const sub = subs.find((s) => s.id === row.dataset.subId);
+        if (!sub) return;
+        sub.done = !sub.done;
+        row.classList.toggle('is-done', sub.done);
+        updateRelaxTask(sheetRef.id, sheetRef.dateStr, { subtasks: subs });
+        renderSheetSubtaskRing();
+        if (navigator.vibrate) navigator.vibrate(6);
+        renderRelaxTasksList();
+      });
+    }
+
+    // Sürükleyerek aç/kapa: peek satırından tutup yukarı çekince panel canlı
+    // büyür (dt bazlı direnç sınırların dışında), bırakınca mesafe/hıza göre
+    // en yakın uca ("açık" ya da "kapalı") yaylanarak oturur. Hareket
+    // olmadan (basit dokunuş) bırakılırsa aşağıdaki 'click' dinleyicisi
+    // devreye girer — böylece hem dokunmatik hem klavye ile çalışır.
+    if (sheetSubtaskPeek && sheetSubtaskPanel) {
+      let subDrag = null;
+      let subGestureMoved = false;
+
+      const onSubDragStart = (e) => {
+        if (e.pointerType === 'mouse' && e.button !== 0) return;
+        subGestureMoved = false;
+        subDrag = { id: e.pointerId, y0: e.clientY, t0: performance.now(), startH: sheetSubtaskPanel.getBoundingClientRect().height, dy: 0 };
+        try { sheetSubtaskPeek.setPointerCapture(e.pointerId); } catch (err) { /* yoksay */ }
+      };
+      const onSubDragMove = (e) => {
+        if (!subDrag || e.pointerId !== subDrag.id) return;
+        const raw = subDrag.y0 - e.clientY; // yukarı sürükleme pozitif
+        subDrag.dy = raw;
+        if (Math.abs(raw) > 6) subGestureMoved = true;
+        const max = sheetSubtaskNaturalHeight();
+        let h = subDrag.startH + raw;
+        if (h < 0) h = h * 0.28;
+        else if (h > max) h = max + (h - max) * 0.28;
+        setSheetSubtaskHeight(h, false);
+      };
+      const onSubDragEnd = (e) => {
+        if (!subDrag || e.pointerId !== subDrag.id) return;
+        const { dy, t0, startH } = subDrag;
+        const v = dy / Math.max(1, performance.now() - t0); // px/ms, yukarı pozitif
+        const max = sheetSubtaskNaturalHeight();
+        subDrag = null;
+        if (!subGestureMoved) { setSheetSubtaskHeight(sheetSubtaskOpen ? max : 0, true); return; }
+        const curH = startH + dy;
+        const shouldOpen = max > 0 && (curH > max * 0.42 || v > 0.5);
+        if (shouldOpen) openSheetSubtasks(true); else closeSheetSubtasks(true);
+      };
+      sheetSubtaskPeek.addEventListener('pointerdown', onSubDragStart);
+      sheetSubtaskPeek.addEventListener('pointermove', onSubDragMove);
+      sheetSubtaskPeek.addEventListener('pointerup', onSubDragEnd);
+      sheetSubtaskPeek.addEventListener('pointercancel', onSubDragEnd);
+      sheetSubtaskPeek.addEventListener('click', () => {
+        if (subGestureMoved) { subGestureMoved = false; return; }
+        toggleSheetSubtasks();
+      });
+    }
 
     const openTaskSheet = (ref) => {
       if (!sheetBackdrop || !sheetEl) return;
@@ -31470,6 +33852,22 @@
       }
       sheetConfirmDesc.textContent = `“${task.name || 'Bu görev'}” listeden kaldırılacak.`;
 
+      const subs = Array.isArray(task.subtasks) ? task.subtasks : [];
+      sheetSubtaskOpen = false;
+      if (sheetSubtasksWrap) {
+        sheetSubtasksWrap.hidden = subs.length === 0;
+        sheetSubtasksWrap.classList.remove('is-open');
+      }
+      if (sheetSubtaskPeek) sheetSubtaskPeek.setAttribute('aria-expanded', 'false');
+      if (sheetSubtaskPanel) {
+        sheetSubtaskPanel.classList.remove('is-dragging');
+        sheetSubtaskPanel.style.height = '0px';
+      }
+      if (subs.length) {
+        buildSheetSubtaskRows();
+        renderSheetSubtaskRing();
+      }
+
       sheetBackdrop.setAttribute('aria-hidden', 'false');
       sheetBackdrop.classList.remove('is-open');
       void sheetBackdrop.offsetWidth; // giriş animasyonları baştan oynasın
@@ -31488,6 +33886,9 @@
       sheetResetTimer = setTimeout(() => {
         sheetEl.dataset.view = 'main';
         sheetRef = null;
+        sheetSubtaskOpen = false;
+        if (sheetSubtasksWrap) sheetSubtasksWrap.classList.remove('is-open');
+        if (sheetSubtaskPanel) { sheetSubtaskPanel.classList.remove('is-dragging'); sheetSubtaskPanel.style.height = '0px'; }
       }, 620);
     };
 
@@ -31575,6 +33976,494 @@
       });
     }
 
+    // =====================================================================
+    // Replan: geçmişte kalan tamamlanmamış görevleri tek tek gözden geçirip
+    // kaydırarak/dokunarak ertele · tamamla · sil · atla. Özellik tamamen
+    // ücretsizdir. İlk kullanımda asıl akış yerine, her kaydırma yönünün ne
+    // yaptığını örnekleriyle anlatan bir tanıtım sayfası (.replan-intro-*)
+    // gösterilir; bunu görüp gördüğü APP_STATE'te bir bayrakla tutulur (bkz.
+    // REPLAN_INTRO_SEEN_KEY) ve bir daha gösterilmez.
+    // =====================================================================
+    const REPLAN_INTRO_SEEN_KEY = 'plannerReplanIntroSeen';
+    const hasSeenReplanIntro = () => !!APP_STATE[REPLAN_INTRO_SEEN_KEY];
+    const markReplanIntroSeen = () => { if (!hasSeenReplanIntro()) saveAppState({ [REPLAN_INTRO_SEEN_KEY]: true }); };
+    const todayStrReplan = () => ymd(startOfDay(new Date()));
+    const tomorrowStrReplan = () => ymd(new Date(startOfDay(new Date()).getTime() + 86400000));
+
+    // Bir görev "gecikmiş" mi: tarihi bugünden önceyse VE yapılmamışsa;
+    // ya da bugünse ve bitiş saati şimdiden önceyse.
+    const isTaskOverdueForReplan = (task, dateStr, nowMs) => {
+      if (!task || task.done) return false;
+      const today = todayStrReplan();
+      if (dateStr < today) return true;
+      if (dateStr > today) return false;
+      const range = relaxTaskRangeMs(task, dateStr);
+      return Number.isFinite(range.endMs) && range.endMs <= nowMs;
+    };
+
+    // onlyDate verilirse yalnızca o güne ait gecikmiş görevler döner
+    // (tarih başlığına uzun basınca kullanılır); yoksa tüm geçmiş taranır.
+    const getOverdueReplanQueue = (onlyDate) => {
+      const byDate = getRelaxTasksByDate();
+      const now = Date.now();
+      const out = [];
+      Object.keys(byDate).forEach((dateStr) => {
+        if (onlyDate && dateStr !== onlyDate) return;
+        const list = Array.isArray(byDate[dateStr]) ? byDate[dateStr] : [];
+        list.forEach((task) => {
+          if (task && task.id && isTaskOverdueForReplan(task, dateStr, now)) {
+            out.push({ id: task.id, dateStr, start: task.start || '' });
+          }
+        });
+      });
+      out.sort((a, b) => {
+        if (a.dateStr !== b.dateStr) return a.dateStr < b.dateStr ? -1 : 1;
+        return a.start.localeCompare(b.start);
+      });
+      return out;
+    };
+
+    const replanFindTask = (id, dateStr) => {
+      const byDate = getRelaxTasksByDate();
+      const list = Array.isArray(byDate[dateStr]) ? byDate[dateStr] : [];
+      return list.find((t) => t && t.id === id) || null;
+    };
+
+    const replanFormatDate = (dateStr) => {
+      const parts = String(dateStr || '').split('-').map(Number);
+      if (parts.length !== 3) return '';
+      const d = new Date(parts[0], parts[1] - 1, parts[2]);
+      if (dateStr === todayStrReplan()) return 'Bugün';
+      if (dateStr < todayStrReplan()) return `${d.getDate()} ${HOME_MONTHS_TR[d.getMonth()]} — gecikti`;
+      return `${d.getDate()} ${HOME_MONTHS_TR[d.getMonth()]}`;
+    };
+
+    // ---- Hap: "X görev seni bekliyor" ----
+    const replanBannerBtn = $('replanBannerBtn');
+    const replanBannerCountEl = $('replanBannerCount');
+    const updateReplanBanner = () => {
+      if (!replanBannerBtn) return;
+      const n = getOverdueReplanQueue().length;
+      replanBannerBtn.hidden = n === 0;
+      if (replanBannerCountEl) {
+        replanBannerCountEl.textContent = n === 1 ? '1 görev seni bekliyor' : `${n} görev seni bekliyor`;
+      }
+    };
+
+    // ---- İlk kullanım tanıtım sheet'i ----
+    const replanIntroBackdrop = $('replanIntroBackdrop');
+    const openReplanIntro = () => {
+      if (!replanIntroBackdrop) return;
+      replanIntroBackdrop.setAttribute('aria-hidden', 'false');
+      replanIntroBackdrop.classList.remove('is-open');
+      void replanIntroBackdrop.offsetWidth;
+      replanIntroBackdrop.classList.add('is-open');
+    };
+    const closeReplanIntro = () => {
+      if (!replanIntroBackdrop) return;
+      replanIntroBackdrop.classList.remove('is-open');
+      replanIntroBackdrop.setAttribute('aria-hidden', 'true');
+    };
+
+    // ---- Replan akış sheet'i ----
+    const replanBackdrop = $('replanBackdrop');
+    const replanSheetEl = $('replanSheet');
+    const replanProgressEl = $('replanProgressText');
+    const replanUndoBtn = $('replanUndoBtn');
+    const replanCardCur = $('replanCardCurrent');
+    const replanCardNext = $('replanCardNext');
+    const replanEmptyState = $('replanEmptyState');
+    const replanReschedulePanel = $('replanReschedulePanel');
+    const replanDateInput = $('replanRescheduleDateInput');
+
+    let replanQueue = [];
+    let replanIndex = 0;
+    let replanHistory = [];
+
+    const REPLAN_FLY = {
+      done: 'translate(130%, -6%) rotate(16deg)',
+      delete: 'translate(0, 130%) rotate(0deg)',
+      reschedule: 'translate(0, -130%) rotate(0deg)',
+      skip: 'translate(-130%, -6%) rotate(-16deg)',
+    };
+    const REPLAN_LABELS = { done: 'Tamamla', skip: 'Atla', delete: 'Sil', reschedule: 'Ertele' };
+
+    const fillReplanCard = (el, entry) => {
+      if (!el) return;
+      if (!entry) { el.classList.add('is-empty'); el.innerHTML = ''; return; }
+      const task = replanFindTask(entry.id, entry.dateStr);
+      if (!task) { el.classList.add('is-empty'); el.innerHTML = ''; return; }
+      el.classList.remove('is-empty');
+      const color = task.color || 'var(--accent-color, #ff90e8)';
+      const onColor = task.color ? getReadableTextColor(task.color) : '#16171b';
+      el.style.setProperty('--rp-color', color);
+      el.style.setProperty('--rp-on', onColor);
+      const badge = (task.replanCount || 0) >= 3
+        ? `<span class="replan-card-badge">${task.replanCount}× ertelendi</span>` : '';
+      el.innerHTML = `
+        <span class="replan-card-content">
+          <span class="replan-card-marker">${taskGlyphHtml(task, 26)}</span>
+          <span class="replan-card-name">${escapeHtml(task.name || 'Görev')}</span>
+          <span class="replan-card-date">${replanFormatDate(entry.dateStr)}${task.start ? ` · ${task.start}` : ''}</span>
+          ${badge}
+        </span>
+        <span class="replan-card-hint"></span>
+      `;
+    };
+
+    const spawnReplanConfetti = () => {
+      const host = $('replanEmptyIcon');
+      if (!host) return;
+      let html = '';
+      const N = 16;
+      for (let i = 0; i < N; i += 1) {
+        const a = (360 / N) * i + (Math.random() * 12 - 6);
+        const d = 10 + Math.random() * 16;
+        const sz = 4 + Math.random() * 3;
+        const dl = Math.round(Math.random() * 80);
+        html += `<i class="replan-confetti-dot" style="--a:${a.toFixed(1)}deg;--d:${d.toFixed(1)}px;--s:${sz.toFixed(1)}px;--dl:${dl}ms"></i>`;
+      }
+      const wrap = document.createElement('span');
+      wrap.className = 'replan-confetti';
+      wrap.innerHTML = html;
+      host.appendChild(wrap);
+      setTimeout(() => wrap.remove(), 1200);
+    };
+
+    const replanRenderStack = () => {
+      const cur = replanQueue[replanIndex] || null;
+      const next = replanQueue[replanIndex + 1] || null;
+      if (replanCardCur) {
+        replanCardCur.style.transition = 'none';
+        replanCardCur.style.transform = '';
+        replanCardCur.style.opacity = '';
+        replanCardCur.classList.remove('is-dragging');
+        fillReplanCard(replanCardCur, cur);
+      }
+      if (replanCardNext) {
+        replanCardNext.style.transition = 'none';
+        replanCardNext.classList.remove('is-promoting');
+        fillReplanCard(replanCardNext, next);
+      }
+      if (replanProgressEl) {
+        replanProgressEl.textContent = cur ? `${replanIndex + 1} / ${replanQueue.length}` : '';
+      }
+      if (replanUndoBtn) replanUndoBtn.hidden = !replanHistory.length;
+      const done = !cur;
+      if (replanSheetEl) replanSheetEl.classList.toggle('is-done-state', done);
+      if (replanEmptyState) replanEmptyState.hidden = !done;
+      if (done && !relaxPrefersReducedMotion()) spawnReplanConfetti();
+    };
+
+    const replanFlyCurrent = (dir, cb) => {
+      const reduced = relaxPrefersReducedMotion();
+      if (replanCardCur) {
+        replanCardCur.classList.remove('is-dragging');
+        replanCardCur.style.transition = reduced ? 'opacity 0.15s ease' : 'transform 0.36s cubic-bezier(0.22,1,0.36,1), opacity 0.36s ease';
+        replanCardCur.style.transform = reduced ? '' : (REPLAN_FLY[dir] || '');
+        replanCardCur.style.opacity = '0';
+      }
+      if (replanCardNext) {
+        replanCardNext.style.transition = reduced ? 'none' : 'transform 0.36s cubic-bezier(0.22,1,0.36,1), opacity 0.36s ease';
+        replanCardNext.classList.add('is-promoting');
+      }
+      if (navigator.vibrate) navigator.vibrate(10);
+      setTimeout(() => {
+        replanIndex += 1;
+        replanRenderStack();
+        cb && cb();
+      }, reduced ? 60 : 360);
+    };
+
+    const replanPushHistory = (entry) => {
+      replanHistory.push(entry);
+      if (replanUndoBtn) replanUndoBtn.hidden = false;
+    };
+
+    const replanDoAction = (action, opts) => {
+      const entry = replanQueue[replanIndex];
+      if (!entry) return;
+      const task = replanFindTask(entry.id, entry.dateStr);
+      if (!task) { replanFlyCurrent('skip'); return; }
+
+      if (action === 'skip') {
+        replanPushHistory({ type: 'skip' });
+        replanFlyCurrent('skip');
+        return;
+      }
+
+      if (action === 'done') {
+        const prev = { done: !!task.done, doneAt: task.doneAt };
+        updateRelaxTask(entry.id, entry.dateStr, { done: true, doneAt: Date.now() });
+        replanPushHistory({ type: 'done', entry, prev });
+        syncHomeRelaxWidget();
+        updateReplanBanner();
+        replanFlyCurrent('done');
+        return;
+      }
+
+      if (action === 'delete') {
+        const removedTask = Object.assign({}, task);
+        removeRelaxTaskById(entry.id, entry.dateStr);
+        replanPushHistory({ type: 'delete', entry, removedTask });
+        syncHomeRelaxWidget();
+        updateReplanBanner();
+        replanFlyCurrent('delete');
+        return;
+      }
+
+      if (action === 'reschedule') {
+        const newDate = opts && opts.date;
+        if (!newDate) return;
+        const prev = { date: task.date };
+        const nextCount = (task.replanCount || 0) + 1;
+        updateRelaxTask(entry.id, entry.dateStr, { date: newDate, replanCount: nextCount });
+        replanPushHistory({ type: 'reschedule', entry, prev, newDate });
+        syncHomeRelaxWidget();
+        updateReplanBanner();
+        if (replanReschedulePanel) replanReschedulePanel.classList.remove('is-open');
+        replanFlyCurrent('reschedule');
+        return;
+      }
+    };
+
+    const replanUndo = () => {
+      const last = replanHistory.pop();
+      if (!last) return;
+      if (replanUndoBtn) replanUndoBtn.hidden = !replanHistory.length;
+
+      if (last.type === 'done') {
+        updateRelaxTask(last.entry.id, last.entry.dateStr, { done: last.prev.done, doneAt: last.prev.doneAt });
+      } else if (last.type === 'delete') {
+        const byDate = getRelaxTasksByDate();
+        const list = Array.isArray(byDate[last.entry.dateStr]) ? byDate[last.entry.dateStr].slice() : [];
+        list.push(last.removedTask);
+        byDate[last.entry.dateStr] = list;
+        saveAppState({ [RELAX_TASKS_STATE_KEY]: byDate });
+      } else if (last.type === 'reschedule') {
+        const movedTask = replanFindTask(last.entry.id, last.newDate);
+        const restoredCount = movedTask ? Math.max(0, (movedTask.replanCount || 1) - 1) : 0;
+        updateRelaxTask(last.entry.id, last.newDate, { date: last.prev.date, replanCount: restoredCount });
+      }
+
+      if (last.type !== 'skip') { syncHomeRelaxWidget(); updateReplanBanner(); }
+      replanIndex = Math.max(0, replanIndex - 1);
+      if (last.entry) replanQueue[replanIndex] = last.entry;
+      replanRenderStack();
+    };
+
+    const openReplan = (onlyDate) => {
+      replanQueue = getOverdueReplanQueue(onlyDate || null);
+      replanIndex = 0;
+      replanHistory = [];
+      if (replanReschedulePanel) replanReschedulePanel.classList.remove('is-open');
+      if (!replanBackdrop) return;
+      replanBackdrop.setAttribute('aria-hidden', 'false');
+      replanBackdrop.classList.remove('is-open');
+      void replanBackdrop.offsetWidth;
+      replanBackdrop.classList.add('is-open');
+      replanRenderStack();
+      setTimeout(() => { try { replanSheetEl.focus({ preventScroll: true }); } catch (e) { /* yoksay */ } }, 80);
+    };
+
+    const closeReplan = () => {
+      if (!replanBackdrop) return;
+      replanBackdrop.classList.remove('is-open');
+      replanBackdrop.setAttribute('aria-hidden', 'true');
+      if (replanReschedulePanel) replanReschedulePanel.classList.remove('is-open');
+      renderRelaxTasksList(); // hem seçili günün listesi hem de hap tazelensin
+    };
+
+    // ---- Giriş noktaları: hap + tarih başlığına uzun basma ----
+    // İlk kullanımda (hasSeenReplanIntro() === false) asıl akış yerine
+    // tanıtım sayfası açılır; istenen hedef (null ya da o günün tarihi)
+    // sheet kapanınca kullanılmak üzere saklanır (bkz. replanPendingTarget).
+    let replanPendingTarget = null;
+    if (replanBannerBtn) {
+      replanBannerBtn.addEventListener('click', () => {
+        if (!hasSeenReplanIntro()) { replanPendingTarget = null; openReplanIntro(); return; }
+        openReplan(null);
+      });
+    }
+
+    const relaxHeaderBtnForReplan = $('relaxCalendarHeaderBtn');
+    if (relaxHeaderBtnForReplan) {
+      let replanPressTimer = null;
+      let replanPressFired = false;
+      const clearReplanPress = () => { clearTimeout(replanPressTimer); replanPressTimer = null; };
+      relaxHeaderBtnForReplan.addEventListener('pointerdown', () => {
+        clearReplanPress();
+        replanPressFired = false;
+        replanPressTimer = setTimeout(() => {
+          replanPressFired = true;
+          const dateStr = getSelectedRelaxDateStr();
+          const dayQueue = getOverdueReplanQueue(dateStr);
+          const target = dayQueue.length ? dateStr : null;
+          if (!hasSeenReplanIntro()) { replanPendingTarget = target; openReplanIntro(); return; }
+          openReplan(target);
+        }, 520);
+      });
+      ['pointerup', 'pointercancel', 'pointerleave'].forEach((ev) => {
+        relaxHeaderBtnForReplan.addEventListener(ev, clearReplanPress);
+      });
+      // Uzun basış tetiklendiyse, parmak kalkınca ay takvimi sheet'inin
+      // (aynı butonun normal "click" davranışı) ayrıca açılmasını engelle.
+      relaxHeaderBtnForReplan.addEventListener('click', (e) => {
+        if (replanPressFired) { e.stopPropagation(); e.preventDefault(); replanPressFired = false; }
+      }, true);
+    }
+
+    // ---- Tanıtım sheet'i etkileşimleri ----
+    const replanIntroCtaBtn = $('replanIntroCtaBtn');
+    const replanIntroLaterBtn = $('replanIntroLaterBtn');
+    if (replanIntroCtaBtn) {
+      replanIntroCtaBtn.addEventListener('click', () => {
+        markReplanIntroSeen();
+        closeReplanIntro();
+        const target = replanPendingTarget;
+        replanPendingTarget = null;
+        setTimeout(() => openReplan(target), 260);
+      });
+    }
+    if (replanIntroLaterBtn) {
+      replanIntroLaterBtn.addEventListener('click', () => {
+        markReplanIntroSeen();
+        replanPendingTarget = null;
+        closeReplanIntro();
+      });
+    }
+    if (replanIntroBackdrop) {
+      replanIntroBackdrop.addEventListener('click', (e) => {
+        if (e.target === replanIntroBackdrop) {
+          markReplanIntroSeen();
+          replanPendingTarget = null;
+          closeReplanIntro();
+        }
+      });
+    }
+
+    // ---- Replan sheet: kapatma ----
+    const replanCloseBtnEl = $('replanCloseBtn');
+    const replanEmptyCloseBtn = $('replanEmptyCloseBtn');
+    if (replanCloseBtnEl) replanCloseBtnEl.addEventListener('click', closeReplan);
+    if (replanEmptyCloseBtn) replanEmptyCloseBtn.addEventListener('click', closeReplan);
+    if (replanBackdrop) {
+      replanBackdrop.addEventListener('click', (e) => { if (e.target === replanBackdrop) closeReplan(); });
+    }
+    document.addEventListener('keydown', (e) => {
+      if (e.key !== 'Escape') return;
+      if (replanBackdrop && replanBackdrop.classList.contains('is-open')) closeReplan();
+      else if (replanIntroBackdrop && replanIntroBackdrop.classList.contains('is-open')) {
+        markReplanIntroSeen();
+        replanPendingTarget = null;
+        closeReplanIntro();
+      }
+    });
+
+    // ---- Geri Al ----
+    if (replanUndoBtn) replanUndoBtn.addEventListener('click', replanUndo);
+
+    // ---- Ertele mini paneli ----
+    const replanRescheduleCancelBtn = $('replanRescheduleCancelBtn');
+    if (replanRescheduleCancelBtn) {
+      replanRescheduleCancelBtn.addEventListener('click', () => {
+        if (replanReschedulePanel) replanReschedulePanel.classList.remove('is-open');
+      });
+    }
+    const replanTodayBtn = $('replanRescheduleToday');
+    const replanTomorrowBtn = $('replanRescheduleTomorrow');
+    if (replanTodayBtn) replanTodayBtn.addEventListener('click', () => replanDoAction('reschedule', { date: todayStrReplan() }));
+    if (replanTomorrowBtn) replanTomorrowBtn.addEventListener('click', () => replanDoAction('reschedule', { date: tomorrowStrReplan() }));
+    if (replanDateInput) {
+      replanDateInput.addEventListener('change', () => {
+        if (replanDateInput.value) replanDoAction('reschedule', { date: replanDateInput.value });
+      });
+    }
+
+    // ---- Kart sürükleme (Tinder tarzı: yukarı=ertele, sağ=tamamla, aşağı=sil, sol=atla) ----
+    if (replanCardCur) {
+      const REPLAN_SWIPE_THRESHOLD = 110;
+      const REPLAN_SWIPE_VELOCITY = 0.6;
+      let rpDrag = null;
+
+      // Görev içeriği, kaydırma mesafesi arttıkça (yön netleşince) önce
+      // soluklaşıp kaybolur; "Sil"/"Tamamla" vb. ipucu metni ise o boşluğa,
+      // içerik tamamen kaybolduğu anda tek seferde (geçişsiz) belirir.
+      // Kademeli beliren bir ipucu yerine anlık görünmesi, hangi yönün
+      // seçili olduğunun kaydırma sırasında hemen anlaşılmasını sağlar.
+      const REPLAN_CONTENT_FADE_END = 0.55;
+      const replanCardMove = (dx, dy) => {
+        const rot = dx / 14;
+        replanCardCur.style.transform = `translate(${dx}px, ${dy}px) rotate(${rot}deg)`;
+        const absX = Math.abs(dx);
+        const absY = Math.abs(dy);
+        let dom = null;
+        if (Math.max(absX, absY) > 12) {
+          dom = absX > absY ? (dx > 0 ? 'done' : 'skip') : (dy < 0 ? 'reschedule' : 'delete');
+        }
+        const strength = Math.min(1, Math.max(absX, absY) / REPLAN_SWIPE_THRESHOLD);
+        const contentEl = replanCardCur.querySelector('.replan-card-content');
+        const hintEl = replanCardCur.querySelector('.replan-card-hint');
+        if (contentEl) {
+          contentEl.style.opacity = dom ? String(Math.max(0, 1 - strength / REPLAN_CONTENT_FADE_END)) : '1';
+        }
+        if (hintEl) {
+          const showHint = !!dom && strength >= REPLAN_CONTENT_FADE_END;
+          hintEl.textContent = dom ? REPLAN_LABELS[dom] : '';
+          hintEl.className = 'replan-card-hint' + (dom ? ` is-dir-${dom}` : '');
+          hintEl.style.opacity = showHint ? '1' : '0';
+        }
+      };
+
+      replanCardCur.addEventListener('pointerdown', (e) => {
+        if (!replanQueue[replanIndex] || e.target.closest('.replan-empty')) return;
+        rpDrag = { id: e.pointerId, x0: e.clientX, y0: e.clientY, t0: performance.now() };
+        replanCardCur.classList.add('is-dragging');
+        replanCardCur.style.transition = 'none';
+        try { replanCardCur.setPointerCapture(e.pointerId); } catch (err) { /* yoksay */ }
+      });
+      replanCardCur.addEventListener('pointermove', (e) => {
+        if (!rpDrag || e.pointerId !== rpDrag.id) return;
+        replanCardMove(e.clientX - rpDrag.x0, e.clientY - rpDrag.y0);
+      });
+      const replanCardEnd = (e) => {
+        if (!rpDrag || e.pointerId !== rpDrag.id) return;
+        const dx = e.clientX - rpDrag.x0;
+        const dy = e.clientY - rpDrag.y0;
+        const dt = Math.max(1, performance.now() - rpDrag.t0);
+        const vx = dx / dt;
+        const vy = dy / dt;
+        rpDrag = null;
+        replanCardCur.classList.remove('is-dragging');
+        replanCardCur.style.transition = 'transform 0.3s cubic-bezier(0.22,1,0.36,1)';
+        const absX = Math.abs(dx);
+        const absY = Math.abs(dy);
+        const passed = Math.max(absX, absY) > REPLAN_SWIPE_THRESHOLD || Math.max(Math.abs(vx), Math.abs(vy)) > REPLAN_SWIPE_VELOCITY;
+        const resetCardVisuals = () => {
+          const contentEl = replanCardCur.querySelector('.replan-card-content');
+          const hintEl = replanCardCur.querySelector('.replan-card-hint');
+          if (contentEl) contentEl.style.opacity = '';
+          if (hintEl) { hintEl.style.opacity = '0'; hintEl.className = 'replan-card-hint'; }
+        };
+        if (!passed) {
+          replanCardCur.style.transform = '';
+          resetCardVisuals();
+          return;
+        }
+        if (absX > absY) {
+          replanDoAction(dx > 0 ? 'done' : 'skip');
+        } else if (dy < 0) {
+          replanCardCur.style.transform = '';
+          resetCardVisuals();
+          if (replanReschedulePanel) replanReschedulePanel.classList.add('is-open');
+        } else {
+          replanDoAction('delete');
+        }
+      };
+      replanCardCur.addEventListener('pointerup', replanCardEnd);
+      replanCardCur.addEventListener('pointercancel', replanCardEnd);
+    }
+
     // Hafta şeridinde farklı bir gün seçildiğinde listeyi o güne göre tazele.
     document.addEventListener('relax:date-changed', () => renderRelaxTasksList());
 
@@ -31616,8 +34505,25 @@
           start: fmt(startMin),
           end: fmt(startMin + durationMin),
           durationMinutes: durationMin,
+          subtasks: taskSubtasks.map((s) => ({ id: s.id, text: s.text, done: s.done })),
         };
         const updated = updateRelaxTask(id, fromDate, patch);
+        // Düzenlerken de "Tekrar" seçilmiş olabilir: var olan görev bir seriye
+        // dönüşmez, ama yeni görev eklerken olduğu gibi, düzenlenen tarihten
+        // itibaren ileriye dönük bağımsız kopyalar oluşturulur.
+        if (updated && repeatMode !== 'none') {
+          buildRepeatDates(repeatMode, repeatCustomDays, selectedDate).forEach((d) => {
+            const copy = Object.assign({}, updated, {
+              date: ymd(d),
+              done: false,
+              subtasks: (updated.subtasks || []).map((s) => ({ id: genTaskId(), text: s.text, done: false })),
+            });
+            delete copy.id;
+            delete copy.doneAt;
+            addRelaxTask(copy);
+            document.dispatchEvent(new CustomEvent('task-add:save', { detail: copy }));
+          });
+        }
         editingTask = null;
         if (updated) {
           document.dispatchEvent(new CustomEvent('task-add:update', { detail: updated }));
@@ -31645,10 +34551,24 @@
         start: fmt(startMin),
         end: fmt(startMin + durationMin),
         durationMinutes: durationMin,
+        subtasks: taskSubtasks.map((s) => ({ id: s.id, text: s.text, done: s.done })),
       };
       // Görev APP_STATE'e (localStorage) kaydedilir; ayrıca ileride başka
       // bir bileşenin dinleyebilmesi için aynı olay da yayınlanmaya devam eder.
       addRelaxTask(newTask);
+
+      // Tekrar seçildiyse: aynı görev, kuralına göre ileriye dönük tarihlerde
+      // ayrı birer kayıt olarak da eklenir (bkz. buildRepeatDates). Alt görevler
+      // her kopyada bağımsız (kendi id'leri, işaretsiz) olsun diye yeniden üretilir.
+      if (repeatMode !== 'none') {
+        buildRepeatDates(repeatMode, repeatCustomDays, selectedDate).forEach((d) => {
+          addRelaxTask(Object.assign({}, newTask, {
+            date: ymd(d),
+            subtasks: newTask.subtasks.map((s) => ({ id: genTaskId(), text: s.text, done: false })),
+          }));
+        });
+      }
+
       document.dispatchEvent(new CustomEvent('task-add:save', { detail: newTask }));
       renderRelaxTasksList(320); // "Yeni Aktivite" sayfası kapanırken süpürme biraz gecikmeli başlar
       syncHomeRelaxWidget();     // ana sayfadaki canlı widget da yeni görevi hemen görsün
@@ -31976,6 +34896,477 @@
         if (document.hidden || !isHomeActive() || homeSwapPlaying) return;
         syncHomeRelaxWidget();
         if (!homeIntroPlaying) applyHomeProgress('tick');
+      });
+    }
+
+    // =====================================================================
+    // PLANLAYICI SAYFASI: Ay takvimi (alttan açılan sheet)
+    // #page-relax'teki tarih başlığına (#relaxCalendarHeaderBtn) dokununca
+    // açılır. HTML: bkz. yukarıdaki #relaxMonthSheetBackdrop bloğu.
+    // Ay değişimi artık ok butonlarıyla değil, ızgarayı sağa/sola kaydırarak
+    // yapılır (Sayfa 6'daki büyük takvimle aynı eşik/mantık — bkz. aşağıdaki
+    // touchstart/touchend). Izgara her zaman 6 satır (42 hücre) çizer, bu
+    // yüzden hangi ayda kaç gün olursa olsun sheet'in yüksekliği hiç
+    // değişmez. Bir güne dokununca sheet KAPANMAZ: seçim ızgarada anında bir
+    // "pop" efektiyle görünür, üst başlıktaki tarih (#relaxCalendarHeaderBtn)
+    // ayrı bir geçiş animasyonuyla güncellenir, hafta şeridi o günün
+    // haftasına kayar (renderRelaxCalendarWeek, global — "Sayfa 6" değil
+    // "Planyacı" script bloğunda tanımlı) ve görev listesi var olan
+    // "süpürme" giriş animasyonuyla (renderRelaxTasksList'in introDelayMs'i)
+    // o güne göre yeniden çizilir. getRelaxTasksByDate/getSelectedRelaxDateStr/
+    // ymd/startOfDay/pad2/$ bu IIFE'nin üst kısmında zaten tanımlı olduğundan
+    // burada doğrudan kullanılabiliyor.
+    // =====================================================================
+    (() => {
+      const monthBackdrop = $('relaxMonthSheetBackdrop');
+      const monthSheetEl = $('relaxMonthSheet');
+      const monthGridEl = $('relaxMonthGrid');
+      const monthWeekdaysEl = $('relaxMonthWeekdays');
+      const monthTitleEl = monthSheetEl ? monthSheetEl.querySelector('.relax-month-title') : null;
+      const monthTitleNameEl = $('relaxMonthTitleName');
+      const monthTitleYearEl = $('relaxMonthTitleYear');
+      const headerBtn = document.getElementById('relaxCalendarHeaderBtn');
+      const dragZone = $('relaxMonthSheetDrag');
+      if (!monthBackdrop || !monthSheetEl || !monthGridEl || !headerBtn) return;
+
+      const MONTH_SHEET_WEEKDAYS = ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'];
+      const TOTAL_CELLS = 42; // 6 satır x 7 gün: her ay için sabit yükseklik
+      let viewYear = 0;
+      let viewMonth = 0; // 0-11
+      let slideDir = 0; // ay değişim yönü: -1 önceki, 1 sonraki, 0 yön yok
+      let selectedCellEl = null;
+      let resetTimer = null;
+
+      // Seçili günün kayan dairesi: ızgaraya eklenen tek bir eleman; seçim
+      // değişince yaylanarak yeni günün üstüne kayar (Sayfa 6'daki büyük
+      // takvimin calendarBubbleEl'iyle birebir aynı yapı).
+      const monthBubbleEl = document.createElement('span');
+      monthBubbleEl.className = 'relax-month-select-bubble is-hidden';
+      monthBubbleEl.setAttribute('aria-hidden', 'true');
+      monthBubbleEl.innerHTML = '<span class="relax-month-select-bubble-dot"></span>';
+
+      // CSS animasyonunu (sınıf ekle/çıkar + reflow ile) baştan oynatır.
+      const replayMonthAnim = (el, cls) => {
+        el.classList.remove(cls);
+        void el.offsetWidth;
+        el.classList.add(cls);
+      };
+
+      // Konum, hücrelerin düzen (offset) ölçülerinden hesaplanır; böylece
+      // hücrelerdeki devam eden giriş animasyonları (transform) ölçümü
+      // bozmaz. animate=false → anında (kaymadan) yerine oturur (ay
+      // değişince); animate=true → bir günden ötekine yaylanarak kayar.
+      const placeMonthBubble = (cell, animate) => {
+        if (!cell) {
+          monthBubbleEl.classList.add('is-hidden');
+          return;
+        }
+        const num = cell.firstElementChild;
+        const size = num.offsetWidth;
+        const wasHidden = monthBubbleEl.classList.contains('is-hidden');
+        const jump = !animate || wasHidden; // görünmezken/ilk çizimde kaymadan yerine koy
+        monthBubbleEl.style.width = `${size}px`;
+        monthBubbleEl.style.height = `${size}px`;
+        if (jump) monthBubbleEl.style.transition = 'none';
+        monthBubbleEl.style.transform =
+          `translate(${cell.offsetLeft + num.offsetLeft}px, ${cell.offsetTop + num.offsetTop}px)`;
+        if (jump) {
+          void monthBubbleEl.offsetWidth;
+          monthBubbleEl.style.transition = '';
+        }
+        monthBubbleEl.classList.remove('is-hidden');
+        if (animate && wasHidden) replayMonthAnim(monthBubbleEl, 'is-pop');
+      };
+
+      // yyyy-mm-dd → Date (yerel, gün başı).
+      const parseDateStr = (s) => {
+        const parts = String(s).split('-').map(Number);
+        return new Date(parts[0], (parts[1] || 1) - 1, parts[2] || 1);
+      };
+
+      // O gün için (varsa) görevlerin renklerini, tekrarsız ve en fazla 3
+      // tanesini döndürür — gün hücresindeki noktalar bundan çizilir.
+      const dotColorsForDate = (dateStr) => {
+        const list = getRelaxTasksByDate()[dateStr];
+        if (!Array.isArray(list) || !list.length) return [];
+        const seen = [];
+        for (const t of list) {
+          const c = (t && t.color) || 'var(--accent-color, #ff90e8)';
+          if (!seen.includes(c)) seen.push(c);
+          if (seen.length >= 3) break;
+        }
+        return seen;
+      };
+
+      const renderMonthWeekdays = () => {
+        if (!monthWeekdaysEl || monthWeekdaysEl.childElementCount) return;
+        monthWeekdaysEl.innerHTML = MONTH_SHEET_WEEKDAYS.map((d) => `<span>${d}</span>`).join('');
+      };
+
+      const renderMonthGrid = () => {
+        const dir = slideDir;
+        slideDir = 0;
+        const waveBase = dir === 0 ? 0 : 10;
+
+        if (monthTitleNameEl) monthTitleNameEl.textContent = HOME_MONTHS_TR[viewMonth];
+        if (monthTitleYearEl) monthTitleYearEl.textContent = String(viewYear);
+        if (monthTitleEl) {
+          monthTitleEl.style.setProperty('--dir', String(dir));
+          monthTitleEl.classList.toggle('is-swap', dir !== 0);
+        }
+
+        const first = new Date(viewYear, viewMonth, 1);
+        const startOffset = (first.getDay() + 6) % 7; // Pazartesi başlangıçlı
+        const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
+        const daysInPrevMonth = new Date(viewYear, viewMonth, 0).getDate();
+        const todayStr = ymd(startOfDay(new Date()));
+        const selectedStr = getSelectedRelaxDateStr();
+
+        monthGridEl.innerHTML = '';
+        monthGridEl.style.setProperty('--dir', String(dir));
+        monthGridEl.style.setProperty('--base', `${waveBase}ms`);
+        monthGridEl.appendChild(monthBubbleEl);
+        selectedCellEl = null;
+
+        for (let i = 0; i < TOTAL_CELLS; i += 1) {
+          const dayNum = i - startOffset + 1;
+          const cell = document.createElement('button');
+          cell.type = 'button';
+          cell.className = 'relax-month-day is-anim';
+
+          let cellDate;
+          let inMonth = false;
+          if (dayNum < 1) {
+            cellDate = new Date(viewYear, viewMonth - 1, daysInPrevMonth + dayNum);
+            cell.classList.add('is-outside');
+            cell.disabled = true;
+          } else if (dayNum > daysInMonth) {
+            cellDate = new Date(viewYear, viewMonth + 1, dayNum - daysInMonth);
+            cell.classList.add('is-outside');
+            cell.disabled = true;
+          } else {
+            cellDate = new Date(viewYear, viewMonth, dayNum);
+            inMonth = true;
+          }
+
+          const row = Math.floor(i / 7);
+          const col = i % 7;
+          cell.style.setProperty('--r', String(row));
+          cell.style.setProperty('--c', String(col));
+
+          const dateStr =
+            `${cellDate.getFullYear()}-${pad2(cellDate.getMonth() + 1)}-${pad2(cellDate.getDate())}`;
+          if (dateStr === todayStr) cell.classList.add('is-today');
+          if (dateStr === selectedStr) cell.classList.add('is-selected');
+          cell.setAttribute(
+            'aria-label',
+            `${cellDate.getDate()} ${HOME_MONTHS_TR[cellDate.getMonth()]} ${cellDate.getFullYear()}`
+          );
+          const dots = inMonth
+            ? dotColorsForDate(dateStr).map((c) => `<i style="--dot-c:${c}"></i>`).join('')
+            : '';
+          cell.innerHTML =
+            `<span class="relax-month-day-num">${cellDate.getDate()}</span>` +
+            `<span class="relax-month-day-dots">${dots}</span>`;
+
+          if (dateStr === selectedStr) selectedCellEl = cell;
+
+          if (inMonth) {
+            cell.addEventListener('click', () => selectMonthDay(cell, dateStr));
+          }
+          monthGridEl.appendChild(cell);
+        }
+
+        placeMonthBubble(selectedCellEl, false);
+      };
+
+      // Izgara boyutu değişirse (döndürme vb.) balon kaymadan yeni
+      // konumuna oturur — Sayfa 6'daki ResizeObserver ile aynı mantık.
+      if (typeof ResizeObserver === 'function') {
+        new ResizeObserver(() => placeMonthBubble(selectedCellEl, false)).observe(monthGridEl);
+      }
+
+      // Bir güne dokununca: sheet açık kalır, kayan balon (Sayfa 6'daki
+      // seçim animasyonuyla birebir aynı) o güne yaylanarak kayar.
+      const selectMonthDay = (cell, dateStr) => {
+        if (selectedCellEl && selectedCellEl !== cell) selectedCellEl.classList.remove('is-selected');
+        cell.classList.add('is-selected');
+        selectedCellEl = cell;
+        placeMonthBubble(cell, true);
+        selectRelaxDate(dateStr, true);
+      };
+
+      // Ay takviminden bir gün seçildiğinde: (varsa) üst başlık animasyonlu
+      // geçer, hafta şeridi o güne kayar (renderRelaxCalendarWeek global
+      // fonksiyonu, "Planyacı" script bloğunda tanımlı), görev listesi de
+      // gecikmeli "süpürme" girişiyle (renderRelaxTasksList'in introDelayMs
+      // parametresi) o güne göre yeniden çizilir.
+      const selectRelaxDate = (dateStr, animateHeader) => {
+        if (animateHeader && headerBtn) {
+          headerBtn.classList.remove('is-swap');
+          void headerBtn.offsetWidth; // animasyon baştan oynasın
+          headerBtn.classList.add('is-swap');
+        }
+        if (typeof renderRelaxCalendarWeek === 'function') renderRelaxCalendarWeek(dateStr);
+        renderRelaxTasksList(320);
+      };
+
+      const openMonthSheet = () => {
+        const focus = parseDateStr(getSelectedRelaxDateStr());
+        viewYear = focus.getFullYear();
+        viewMonth = focus.getMonth();
+        slideDir = 0;
+        renderMonthWeekdays();
+        renderMonthGrid();
+        clearTimeout(resetTimer);
+        monthSheetEl.style.transform = '';
+        monthSheetEl.classList.remove('is-dragging');
+        monthBackdrop.setAttribute('aria-hidden', 'false');
+        monthBackdrop.classList.remove('is-open');
+        void monthBackdrop.offsetWidth; // giriş animasyonu baştan oynasın
+        monthBackdrop.classList.add('is-open');
+        const pageRelaxEl = document.getElementById('page-relax');
+        if (pageRelaxEl) pageRelaxEl.classList.add('is-behind-sheet');
+        setTimeout(() => { try { monthSheetEl.focus({ preventScroll: true }); } catch (e) { /* yoksay */ } }, 80);
+      };
+
+      const closeMonthSheet = () => {
+        monthBackdrop.classList.remove('is-open');
+        monthBackdrop.setAttribute('aria-hidden', 'true');
+        monthSheetEl.classList.remove('is-dragging');
+        monthSheetEl.style.transform = '';
+        const pageRelaxEl = document.getElementById('page-relax');
+        if (pageRelaxEl) pageRelaxEl.classList.remove('is-behind-sheet');
+        clearTimeout(resetTimer);
+        resetTimer = setTimeout(() => { monthGridEl.innerHTML = ''; }, 620);
+        if (document.activeElement && monthSheetEl.contains(document.activeElement)) {
+          try { headerBtn.focus({ preventScroll: true }); } catch (e) { /* yoksay */ }
+        }
+      };
+
+      headerBtn.addEventListener('click', openMonthSheet);
+
+      // Ay değiştirme: artık tek giriş noktası budur (ok butonları kalktı,
+      // sadece kaydırma jesti çağırır).
+      const goToRelaxMonth = (delta) => {
+        slideDir = delta;
+        viewMonth += delta;
+        if (viewMonth < 0) { viewMonth = 11; viewYear -= 1; }
+        if (viewMonth > 11) { viewMonth = 0; viewYear += 1; }
+        renderMonthGrid();
+      };
+
+      const closeBtnEl = $('relaxMonthCloseBtn');
+      if (closeBtnEl) closeBtnEl.addEventListener('click', closeMonthSheet);
+
+      monthBackdrop.addEventListener('click', (e) => {
+        if (e.target === monthBackdrop) closeMonthSheet();
+      });
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && monthBackdrop.classList.contains('is-open')) closeMonthSheet();
+      });
+
+      // Sağa/sola kaydırarak ay değiştirme — Sayfa 6'daki büyük takvimin
+      // aynı eşik/mantığı: dikey sayfa kaydırmasıyla karışmaması için yatay
+      // hareket, dikeyden belirgin şekilde baskın olmalı (en az ~45px).
+      let swipeStartX = 0;
+      let swipeStartY = 0;
+      let swipeActive = false;
+
+      monthGridEl.addEventListener('touchstart', (e) => {
+        if (e.touches.length !== 1) return;
+        swipeStartX = e.touches[0].clientX;
+        swipeStartY = e.touches[0].clientY;
+        swipeActive = true;
+      }, { passive: true });
+
+      monthGridEl.addEventListener('touchend', (e) => {
+        if (!swipeActive) return;
+        swipeActive = false;
+        const touch = e.changedTouches[0];
+        const dx = touch.clientX - swipeStartX;
+        const dy = touch.clientY - swipeStartY;
+        if (Math.abs(dx) < 45 || Math.abs(dx) < Math.abs(dy) * 1.3) return;
+        goToRelaxMonth(dx < 0 ? 1 : -1);
+      }, { passive: true });
+
+      monthGridEl.addEventListener('touchcancel', () => {
+        swipeActive = false;
+      }, { passive: true });
+
+      // Aşağı sürükleyerek kapat (tutamaçtan) — cd-sheet'teki (Sayfa 6:
+      // sayaç seçici) sürükleme deseniyle birebir aynı mantık.
+      let drag = null;
+      if (dragZone) {
+        dragZone.addEventListener('pointerdown', (e) => {
+          if (e.pointerType === 'mouse' && e.button !== 0) return;
+          drag = { id: e.pointerId, y0: e.clientY, t0: performance.now(), dy: 0 };
+          monthSheetEl.classList.add('is-dragging');
+          try { dragZone.setPointerCapture(e.pointerId); } catch (err) { /* yoksay */ }
+        });
+        dragZone.addEventListener('pointermove', (e) => {
+          if (!drag || e.pointerId !== drag.id) return;
+          const raw = e.clientY - drag.y0;
+          drag.dy = raw >= 0 ? raw : raw * 0.18;
+          monthSheetEl.style.transform = `translateY(${drag.dy}px)`;
+        });
+        const endDrag = (e) => {
+          if (!drag || e.pointerId !== drag.id) return;
+          const { dy, t0 } = drag;
+          const v = dy / Math.max(1, performance.now() - t0);
+          drag = null;
+          monthSheetEl.classList.remove('is-dragging');
+          if (dy > 110 || (dy > 30 && v > 0.6)) closeMonthSheet();
+          else monthSheetEl.style.transform = '';
+        };
+        dragZone.addEventListener('pointerup', endDrag);
+        dragZone.addEventListener('pointercancel', endDrag);
+      }
+    })();
+
+    // ---------- Gün hücresi Kopyala/Yapıştır balonu: gerçek uygulama ----------
+    // Hafta şeridi (renderRelaxCalendarWeek) bu IIFE'nin DIŞINDA tanımlı
+    // olduğundan, dış kapsamdaki placeholder değişkene (bkz. yukarıdaki
+    // "let openRelaxDayBubbleFor") burada, getRelaxTasksByDate/addRelaxTask/
+    // getSelectedRelaxDateStr/renderRelaxTasksList/syncHomeRelaxWidget hepsi
+    // tanımlandıktan sonra gerçek fonksiyon atanır.
+    // İkon rozetleri: Görev eylem sayfasındaki (.task-sheet-action-ic svg)
+    // ile aynı kalem — stroke tabanlı, dolgusuz, yuvarlak uçlu.
+    const RELAX_DAY_ICON_COPY = '<svg viewBox="0 0 24 24"><rect x="8.25" y="8.25" width="11.5" height="11.5" rx="2.5"/><path d="M15.5 8V6.5A2.5 2.5 0 0 0 13 4H6.5A2.5 2.5 0 0 0 4 6.5V13a2.5 2.5 0 0 0 2.5 2.5H8"/></svg>';
+    const RELAX_DAY_ICON_PASTE = '<svg viewBox="0 0 24 24"><path d="M9.25 4.75h5.5a1 1 0 0 1 1 1V7h1.25A2 2 0 0 1 19 9v9.5a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h1.25V5.75a1 1 0 0 1 1-1Z"/><path d="M8.75 12.5h6.5M8.75 15.75h6.5"/></svg>';
+
+    openRelaxDayBubbleFor = (cell, touchX, touchY) => {
+      const dateStr = cell.dataset.date;
+      if (!dateStr) return;
+      const byDate = getRelaxTasksByDate();
+      const dayTasks = Array.isArray(byDate[dateStr]) ? byDate[dateStr] : [];
+      const items = [];
+
+      if (dayTasks.length) {
+        items.push({
+          action: 'copy',
+          icon: RELAX_DAY_ICON_COPY,
+          label: 'Günün görevlerini kopyala',
+          sub: dayTasks.length === 1 ? '1 görev' : `${dayTasks.length} görev`,
+          onClick: () => {
+            relaxDayClipboard = {
+              dateStr,
+              // Görevler başlangıç saatine göre sıralanıp kopyalanır ki
+              // yapıştırılan güne de aynı sırayla (üstten alta) eklensinler.
+              tasks: dayTasks
+                .slice()
+                .sort((a, b) => (a.start || '').localeCompare(b.start || ''))
+                .map((t) => ({
+                  name: t.name,
+                  icon: t.icon,
+                  color: t.color,
+                  start: t.start,
+                  end: t.end,
+                  durationMinutes: t.durationMinutes,
+                })),
+            };
+            showRelaxDayToast('Görevler kopyalandı');
+          },
+        });
+      }
+
+      if (relaxDayClipboard && relaxDayClipboard.tasks.length) {
+        const n = relaxDayClipboard.tasks.length;
+        items.push({
+          action: 'paste',
+          icon: RELAX_DAY_ICON_PASTE,
+          label: `${formatRelaxDayLabel(relaxDayClipboard.dateStr)} tarihinden yapıştır`,
+          sub: n === 1 ? '1 görev eklenecek' : `${n} görev eklenecek`,
+          onClick: () => {
+            relaxDayClipboard.tasks.forEach((t) => {
+              addRelaxTask(Object.assign({}, t, { date: dateStr }));
+            });
+            // Yapıştırılan gün o an ekranda açık olan gün ise (Seçilen
+            // Görevler listesi) hemen güncellensin; değilse zaten bir
+            // dahaki açılışta güncel haliyle çizilecek.
+            if (dateStr === getSelectedRelaxDateStr()) renderRelaxTasksList(200);
+            syncHomeRelaxWidget();
+            showRelaxDayToast('Görevler yapıştırıldı');
+          },
+        });
+      }
+
+      if (relaxTaskClipboard) {
+        items.push({
+          action: 'paste-task',
+          icon: RELAX_DAY_ICON_PASTE,
+          label: 'Kopyalanan görevi yapıştır',
+          sub: relaxTaskClipboard.name || '',
+          onClick: () => {
+            addRelaxTask(Object.assign({}, relaxTaskClipboard, { date: dateStr }));
+            if (dateStr === getSelectedRelaxDateStr()) renderRelaxTasksList(200);
+            syncHomeRelaxWidget();
+            showRelaxDayToast('Görev yapıştırıldı');
+          },
+        });
+      }
+
+      if (!items.length) return false;
+      showRelaxDayBubble(items, touchX, touchY, cell);
+      return true;
+    };
+
+    // ---------- Seçili günün görev listesi: boş alana basılı tutunca
+    // kopyalanan görevi yapıştır ----------
+    // Bir görev satırının üzerinde değil, listenin boş bölgesinde (satırlar
+    // arasındaki/altındaki boşlukta ya da "Bugün için görev yok" durumunda)
+    // basılı tutulunca — tıpkı gün hücresindeki balon gibi — kopyalanan
+    // tek görevi o an ekranda açık olan güne yapıştırma seçeneği sunulur.
+    if (tasksListEl) {
+      let listPressTimer = null;
+      let listPressMoved = false;
+      let listPressStartX = 0;
+      let listPressStartY = 0;
+      const LIST_LONG_PRESS_MS = 450;
+      const LIST_PRESS_MOVE_TOLERANCE = 10;
+      const clearListPressTimer = () => {
+        if (listPressTimer) {
+          clearTimeout(listPressTimer);
+          listPressTimer = null;
+        }
+      };
+      tasksListEl.addEventListener('pointerdown', (e) => {
+        if (e.pointerType === 'mouse' && e.button !== 0) return;
+        if (e.target.closest('.relax-task-item')) return; // görev satırı kendi mantığını yönetir
+        if (!relaxTaskClipboard) return; // panoda görev yoksa balonu açmaya değmez
+        listPressMoved = false;
+        listPressStartX = e.clientX;
+        listPressStartY = e.clientY;
+        clearListPressTimer();
+        listPressTimer = setTimeout(() => {
+          listPressTimer = null;
+          if (listPressMoved || !relaxTaskClipboard) return;
+          const dateStr = getSelectedRelaxDateStr();
+          showRelaxDayBubble([{
+            action: 'paste-task-empty',
+            icon: RELAX_DAY_ICON_PASTE,
+            label: 'Kopyalanan görevi yapıştır',
+            sub: relaxTaskClipboard.name || '',
+            onClick: () => {
+              addRelaxTask(Object.assign({}, relaxTaskClipboard, { date: dateStr }));
+              renderRelaxTasksList(200);
+              syncHomeRelaxWidget();
+              showRelaxDayToast('Görev yapıştırıldı');
+            },
+          }], listPressStartX, listPressStartY, null);
+        }, LIST_LONG_PRESS_MS);
+      });
+      tasksListEl.addEventListener('pointermove', (e) => {
+        if (!listPressTimer) return;
+        const dx = e.clientX - listPressStartX;
+        const dy = e.clientY - listPressStartY;
+        if (Math.hypot(dx, dy) > LIST_PRESS_MOVE_TOLERANCE) listPressMoved = true;
+      });
+      tasksListEl.addEventListener('pointerup', clearListPressTimer);
+      tasksListEl.addEventListener('pointerleave', clearListPressTimer);
+      tasksListEl.addEventListener('pointercancel', clearListPressTimer);
+      tasksListEl.addEventListener('contextmenu', (e) => {
+        if (!e.target.closest('.relax-task-item')) e.preventDefault();
       });
     }
   })();
