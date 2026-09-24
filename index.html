@@ -378,7 +378,7 @@
   .home-kronometre-ring-widget {
     display: none;
     position: absolute;
-    top: calc(env(safe-area-inset-top) + 96px);
+    top: calc(env(safe-area-inset-top) + 80px);
     left: 22px;
     z-index: 2;
     flex-direction: column;
@@ -400,7 +400,7 @@
   .home-kronometre-ring-label {
     font-family: "Baloo 2", "Sabon", sans-serif;
     font-weight: 600;
-    font-size: 0.8rem;
+    font-size: 1.05rem;
     letter-spacing: -0.01em;
     color: var(--theme-text, #1a1a1a);
     opacity: 0.45;
@@ -409,7 +409,7 @@
   .home-kronometre-ring-text {
     font-family: "Baloo 2", "Sabon", sans-serif;
     font-weight: 800;
-    font-size: 2.15rem;
+    font-size: 4.2rem;
     letter-spacing: -0.02em;
     line-height: 1;
     color: var(--theme-text, #1a1a1a);
@@ -20803,11 +20803,244 @@
     }
 
     /* Soru sayacı (ön yüz) artık büyük ekranda da gösteriliyor (bkz. aşağıdaki
-       "Bugün Çözülen: büyük ekran, kart yok" bloğu). Geri sayım kartı
-       (arka yüz) henüz ayrı bir istekle ele alınmadığı için "cd" hücresi
-       şimdilik boş bırakılıyor; yakında gelecek yeni widget'lara yer açar. */
+       "Bugün Çözülen: büyük ekran, kart yok" bloğu). Geri sayım için
+       mobildeki BEYAZ KART burada hiç kullanılmaz; "cd" hücresini
+       aşağıdaki .home-cd-flat-tile (kartsız, sayfayla bütünleşen versiyon)
+       doldurur. */
     #page-1 .home-flip-back {
       display: none;
+    }
+
+    #page-1 .home-cd-flat-tile {
+      display: none;
+    }
+
+    /* ==========================================================================
+       Sol alt boşluk: Geri Sayım (kartsız) — BÜYÜK EKRAN
+       ==========================================================================
+       "Bugün Çözülen" kutusunun büyük ekranda aldığı kartsız/gölgesiz dille
+       birebir aynı yaklaşım: arka plan yok, kenarlık yok, gölge yok — sadece
+       sayfanın kendi rengi üzerinde duran yazı ve rakamlar. Büyük bir kart
+       hissi vermemesi için mütevazı boyutlarda tutulur (bkz. .home-cd-flat-units
+       clamp değerleri) ve rulo hane animasyonu (bkz. JS: cdReel*) sayaç her
+       göründüğünde / değer her değiştiğinde ince bir hareket katar. */
+    #page-1 .home-cd-flat-tile {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #page-1 .home-cd-flat-tile > button {
+      width: 100%;
+      height: 100%;
+    }
+
+    #page-1 .home-cd-flat-add {
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      gap: clamp(0.7rem, 2cqi, 1.1rem);
+      width: 100%;
+      height: 100%;
+      padding: clamp(0.5rem, 2cqmin, 1.25rem);
+      border: none;
+      background: none;
+      color: inherit;
+      font: inherit;
+      text-align: left;
+      cursor: pointer;
+      opacity: 0.55;
+      transition: opacity 0.2s ease, transform 0.2s ease;
+    }
+
+    #page-1 .home-cd-flat-add:hover {
+      opacity: 0.85;
+    }
+
+    #page-1 .home-cd-flat-add:active {
+      transform: scale(0.98);
+    }
+
+    #page-1 .home-cd-flat-add-ic {
+      flex: none;
+      display: grid;
+      place-items: center;
+      width: clamp(2rem, 7cqi, 2.75rem);
+      height: clamp(2rem, 7cqi, 2.75rem);
+      border-radius: 50%;
+      background: color-mix(in srgb, var(--theme-text, #1a1a1a) 10%, transparent);
+      color: var(--theme-text, #1a1a1a);
+      transition: background-color 0.5s ease, color 0.5s ease;
+    }
+
+    #page-1 .home-cd-flat-add-ic svg {
+      width: 45%;
+      height: 45%;
+    }
+
+    #page-1 .home-cd-flat-add-text {
+      display: flex;
+      flex-direction: column;
+      gap: 0.1rem;
+      min-width: 0;
+    }
+
+    #page-1 .home-cd-flat-add-text b {
+      font-family: "Baloo 2", "Sabon", sans-serif;
+      font-weight: 800;
+      font-size: clamp(0.95rem, 3cqi, 1.3rem);
+      color: var(--theme-text, #1a1a1a);
+      transition: color 0.5s ease;
+    }
+
+    #page-1 .home-cd-flat-add-text small {
+      font-weight: 600;
+      font-size: clamp(0.72rem, 2cqi, 0.95rem);
+      color: color-mix(in srgb, var(--theme-text, #1a1a1a) 55%, transparent);
+      transition: color 0.5s ease;
+    }
+
+    #page-1 .home-cd-flat[hidden],
+    #page-1 .home-cd-flat-add[hidden] {
+      display: none;
+    }
+
+    #page-1 .home-cd-flat {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      justify-content: center;
+      gap: clamp(0.35rem, 1.6cqh, 0.6rem);
+      width: 100%;
+      height: 100%;
+      padding: clamp(0.4rem, 2cqmin, 1.1rem);
+      border: none;
+      background: none;
+      color: inherit;
+      font: inherit;
+      text-align: left;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    #page-1 .home-cd-flat-head {
+      display: flex;
+      flex-direction: column;
+      gap: 0.05rem;
+      max-width: 100%;
+      min-width: 0;
+    }
+
+    #page-1 .home-cd-flat-nameRow {
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+      max-width: 100%;
+      min-width: 0;
+    }
+
+    #page-1 .home-cd-flat-dot {
+      flex: none;
+      width: 0.5rem;
+      height: 0.5rem;
+      border-radius: 50%;
+      background: var(--cd-dot, var(--accent-color, #ff90e8));
+    }
+
+    #page-1 .home-cd-flat-name {
+      min-width: 0;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      font-family: "Baloo 2", "Sabon", sans-serif;
+      font-weight: 700;
+      font-size: clamp(0.85rem, 2.4cqi, 1.15rem);
+      color: var(--theme-text, #1a1a1a);
+      transition: color 0.5s ease;
+    }
+
+    #page-1 .home-cd-flat-date {
+      max-width: 100%;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      font-weight: 600;
+      font-size: clamp(0.68rem, 1.7cqi, 0.85rem);
+      color: color-mix(in srgb, var(--theme-text, #1a1a1a) 50%, transparent);
+      transition: color 0.5s ease;
+    }
+
+    #page-1 .home-cd-flat-units {
+      --u-max: 4.4rem;
+      display: flex;
+      align-items: flex-start;
+      gap: 0.1em;
+      font-family: "Baloo 2", "Sabon", sans-serif;
+      font-weight: 800;
+      font-variant-numeric: tabular-nums lining-nums;
+      line-height: 1.2;
+      font-size: clamp(1.6rem, min(9cqi, 28cqh), var(--u-max));
+      color: var(--theme-text, #1a1a1a);
+      transition: color 0.5s ease;
+    }
+
+    #page-1 .home-cd-flat-units[data-len="3"] { --u-max: 3.8rem; }
+    #page-1 .home-cd-flat-units[data-len="4"],
+    #page-1 .home-cd-flat-units[data-len="5"] { --u-max: 3.3rem; }
+
+    #page-1 .home-cd-flat-units .cd-colon {
+      opacity: 0.28;
+    }
+
+    #page-1 .home-cd-flat-unit {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0;
+    }
+
+    #page-1 .home-cd-flat-num {
+      display: inline-flex;
+      font-variant-numeric: tabular-nums lining-nums;
+      margin-block: -0.2em;
+    }
+
+    #page-1 .home-cd-flat-num .cd-reel {
+      margin-inline: -0.02em;
+    }
+
+    #page-1 .home-cd-flat-label {
+      margin-top: 0.15em;
+      font-weight: 700;
+      font-size: 0.34em;
+      letter-spacing: 0.01em;
+      color: color-mix(in srgb, var(--theme-text, #1a1a1a) 50%, transparent);
+    }
+
+    #page-1 .home-cd-flat-done {
+      display: none;
+      align-items: baseline;
+      flex-wrap: wrap;
+      gap: 0.3em;
+      font-family: "Baloo 2", "Sabon", sans-serif;
+      font-weight: 800;
+      font-size: clamp(1.15rem, 5cqi, 1.9rem);
+      color: #ff5c5c;
+    }
+
+    #page-1 .home-cd-flat.is-done .home-cd-flat-units { display: none; }
+    #page-1 .home-cd-flat.is-done .home-cd-flat-done { display: flex; }
+
+    /* Widget canlanınca (sayfa açılışında ya da sayaç ilk seçildiğinde)
+       hafifçe aşağıdan yukarı belirir; rulo haneler kendi dönüş
+       animasyonlarını (cdReelIntro) ayrıca oynatır. */
+    @keyframes homeCdFlatIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    #page-1 .home-cd-flat-tile {
+      animation: homeCdFlatIn 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
     }
 
     /* ---------- "Bugün Çözülen": büyük ekran, kart yok ----------
@@ -20895,25 +21128,24 @@
       position: relative;
       overflow: hidden;
       transition: width 1.1s cubic-bezier(0.22, 1, 0.36, 1);
+      animation: homeBarPulse 2.4s ease-in-out infinite;
     }
 
-    /* Premium dokunuş: dolu kısımda usulca kayan ince bir ışık şeridi. */
-    #page-1 .home-live-widget-bar-fill::after {
-      content: "";
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(100deg, transparent 15%, rgba(255, 255, 255, 0.6) 50%, transparent 85%);
-      background-size: 200% 100%;
-      animation: homeBarShine 2.8s ease-in-out infinite;
-    }
-
-    @keyframes homeBarShine {
-      0% { background-position: 200% 0; }
-      100% { background-position: -50% 0; }
+    /* Premium dokunuş: kayan ışık şeridi yerine, dolu kısmın usulca nefes
+       alır gibi parlayıp sönmesi (glow pulse). */
+    @keyframes homeBarPulse {
+      0%, 100% {
+        filter: brightness(1);
+        box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent-color, #ff90e8) 55%, transparent);
+      }
+      50% {
+        filter: brightness(1.28);
+        box-shadow: 0 0 8px 1px color-mix(in srgb, var(--accent-color, #ff90e8) 55%, transparent);
+      }
     }
 
     @media (prefers-reduced-motion: reduce) {
-      #page-1 .home-live-widget-bar-fill::after {
+      #page-1 .home-live-widget-bar-fill {
         animation: none;
       }
     }
@@ -21132,7 +21364,7 @@
          durur (0.85fr'nin verdiği devasa alanı doldurmaz). */
       #page-1 .home-tile-count {
         align-self: start;
-        height: clamp(9rem, 13vw, 15rem);
+        height: clamp(9rem, 15vw, 17rem);
       }
 
       /* Rahatla: ikon solda, saat + görev adı onun sağında (mobildeki gibi
@@ -24937,6 +25169,49 @@
         <span class="home-flip-sheen" aria-hidden="true"></span>
         <button type="button" class="home-flip-btn" id="homeFlipBtn" aria-label="Kartı çevir, sayaç göster" aria-pressed="false">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h14"/><path d="M14.5 4.5L18 8l-3.5 3.5"/><path d="M20 16H6"/><path d="M9.5 12.5L6 16l3.5 3.5"/></svg>
+        </button>
+      </div>
+
+      <!-- Sol alt boşluk: BÜYÜK EKRANDA görünen, kartsız/gölgesiz geri sayım
+           widget'ı (bkz. CSS: .home-cd-flat, "cd" ızgara alanı). "Bugün
+           Çözülen" kutusunun aldığı kartsız dille birebir aynı dili
+           paylaşır: sadece sayfanın kendi arka planı üzerinde duran yazı ve
+           rakamlar. Rulo hane animasyonu (cdReel*) ve veri kaynağı
+           (getDayCountdown) mobildeki .home-flip-cd ile ortaktır; bu yüzden
+           ayrı bir DOM kopyası olarak burada durur (bkz. JS: aşağıdaki
+           homeFlipBack IIFE'sinin sonuna eklenen "flat" senkronizasyonu). -->
+      <div class="home-tile home-cd-flat-tile" id="homeCdFlatTile">
+        <button type="button" class="home-cd-flat-add" id="homeCdFlatAdd" aria-label="Sayaç ekle">
+          <span class="home-cd-flat-add-ic" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg>
+          </span>
+          <span class="home-cd-flat-add-text">
+            <b>Sayaç ekle</b>
+            <small>Geri sayımı burada göster</small>
+          </span>
+        </button>
+
+        <button type="button" class="home-cd-flat" id="homeCdFlat" hidden aria-label="Sayacı değiştir">
+          <span class="home-cd-flat-head">
+            <span class="home-cd-flat-nameRow">
+              <span class="home-cd-flat-dot" aria-hidden="true"></span>
+              <span class="home-cd-flat-name" id="homeCdFlatName"></span>
+            </span>
+            <span class="home-cd-flat-date" id="homeCdFlatDate"></span>
+          </span>
+          <span class="home-cd-flat-units" aria-hidden="true">
+            <span class="home-cd-flat-unit"><span class="home-cd-flat-num" id="homeCdFlatNumD"></span><span class="home-cd-flat-label">Gün</span></span>
+            <span class="cd-colon"><i></i><i></i></span>
+            <span class="home-cd-flat-unit"><span class="home-cd-flat-num" id="homeCdFlatNumH"></span><span class="home-cd-flat-label">Saat</span></span>
+            <span class="cd-colon"><i></i><i></i></span>
+            <span class="home-cd-flat-unit"><span class="home-cd-flat-num" id="homeCdFlatNumM"></span><span class="home-cd-flat-label">Dakika</span></span>
+            <span class="cd-colon"><i></i><i></i></span>
+            <span class="home-cd-flat-unit"><span class="home-cd-flat-num" id="homeCdFlatNumS"></span><span class="home-cd-flat-label">Saniye</span></span>
+          </span>
+          <span class="home-cd-flat-done" id="homeCdFlatDoneMsg" aria-hidden="true">
+            <span class="home-flip-done-word"><span>S</span><span>ü</span><span>r</span><span>e</span></span>
+            <span class="home-flip-done-word"><span>D</span><span>o</span><span>l</span><span>d</span><span>u</span></span>
+          </span>
         </button>
       </div>
 
@@ -29568,6 +29843,12 @@
   let swRafId = null;
   let stopwatchLaps = [];                // Kaydedilen turlar: { totalMs, splitMs }
   let stopwatchControlsVisible = false;  // Tam ekranda boş alana dokununca Tur butonu görünür mü?
+  // Kronometre duraklatıldıktan sonra (süre akmıyorken) boş alana dokununca
+  // beliren Tur butonu yalnızca BİR kez basılabilir olmalı — süre ilerlemediği
+  // için ikinci bir tur eklemenin bir anlamı yok. Her yeni duraklatmada bu
+  // hak yeniden true olur; o duraklatma sırasında tur eklenince (veya
+  // sıfırlanınca) tekrar false olur.
+  let stopwatchPausedLapAvailable = false;
 
   // ---- Sayfa 10: Günlük kronometre arşivi ----
   // Kronometrenin o an biriktirdiği süre hangi takvim gününe aitse onun
@@ -29901,13 +30182,19 @@
 
   const toggleLapControls = () => {
     stopwatchControlsVisible = !stopwatchControlsVisible;
-    stopwatchLapBtn.classList.toggle('is-visible', stopwatchControlsVisible);
+    // Çalışırken Tur butonu her zaman gösterilir. Duraklatılmışken ise
+    // sadece o duraklatma için henüz kullanılmamış "tek seferlik" tur hakkı
+    // varsa gösterilir (bkz. stopwatchPausedLapAvailable / addLap).
+    const showLapBtn = stopwatchControlsVisible && (swRunning || stopwatchPausedLapAvailable);
+    stopwatchLapBtn.classList.toggle('is-visible', showLapBtn);
     // Not: Kronometre tam ekranında ders adı etiketi artık gösterilmiyor
     // (Sayaç tam ekranındaki etiket ayrı çalışır, o değişmedi).
     renderLaps();
 
     clearTimeout(lapControlsTimer);
-    if (stopwatchControlsVisible) {
+    // Duraklatılmışken (süre akmadığı için) beliren buton/liste süresiz
+    // açık kalır; sadece ÇALIŞIRKEN 3 saniye sonra kendiliğinden gizlenir.
+    if (stopwatchControlsVisible && swRunning) {
       scheduleLapControlsAutoHide();
     }
   };
@@ -29988,13 +30275,30 @@
 
   // Tur butonuna basınca o ana kadarki süreyi tur olarak kaydeder.
   const addLap = () => {
-    if (!swRunning) return;
+    if (!swRunning && !stopwatchPausedLapAvailable) return;
     const totalMs = currentElapsedMs();
     const prevTotal = stopwatchLaps.length ? stopwatchLaps[stopwatchLaps.length - 1].totalMs : 0;
     stopwatchLaps.push({ totalMs, splitMs: totalMs - prevTotal });
     lapJustAdded = true;
     playLapSound();
     renderLaps();
+    if (!swRunning) {
+      // Duraklatılmışken süre akmadığı için tek seferlik tur hakkı burada
+      // tüketilir. Liste (tekrar boş alana basılana kadar) süresiz açık
+      // kalmaya devam eder; buton ise normalde nasıl kayboluyorsa öyle
+      // (mevcut opacity/transform geçişiyle) kaybolmalı. Bunu, listenin
+      // innerHTML'ini az önce güncelleyen ağır DOM işlemiyle AYNI JS
+      // turunda yapmak yerine bir sonraki çizim karesine erteliyoruz;
+      // aksi halde (özellikle WebKit'te) aynı anda olan büyük bir DOM
+      // güncellemesi kaybolma geçişinin atlanmasına, butonun geçişsiz/
+      // aniden kaybolmasına yol açabiliyor.
+      stopwatchPausedLapAvailable = false;
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          stopwatchLapBtn.classList.remove('is-visible');
+        });
+      });
+    }
     saveStopwatchState();
   };
 
@@ -30028,6 +30332,7 @@
     rolloverStopwatchDay();
     swRunning = true;
     swStartedAt = performance.now();
+    stopwatchPausedLapAvailable = false;
     // Seçili ders varsa, o dersle geçen yeni dilim şimdi başlar.
     swSubjectSegmentStartEpoch = Date.now();
     document.body.classList.add('is-stopwatch-running');
@@ -30075,6 +30380,9 @@
     lapListInteracting = false;
     stopwatchLapBtn.classList.remove('is-visible');
     clearTimeout(lapControlsTimer);
+    // Her yeni duraklatmada tek seferlik "duraklatılmışken tur ekle" hakkı
+    // yeniden açılır (bir sonraki tur boş alana dokunulunca kullanılabilir).
+    stopwatchPausedLapAvailable = true;
     renderLaps();
     updateResetState();
     saveStopwatchState();
@@ -30102,6 +30410,7 @@
     stopwatchHint.textContent = 'Başlatmak için dokun';
     stopwatchLaps = [];
     stopwatchControlsVisible = false;
+    stopwatchPausedLapAvailable = false;
     stopwatchLapBtn.classList.remove('is-visible');
     hideStopwatchFullscreenSubject();
     clearTimeout(lapControlsTimer);
@@ -30209,7 +30518,11 @@
   const stopwatchFullscreenCore = document.getElementById('stopwatchFullscreenCore');
   stopwatchFullscreen.addEventListener('click', (e) => {
     if (e.target !== stopwatchFullscreen && e.target !== stopwatchFullscreenCore) return;
-    if (!swRunning) return; // duraklatılmışken Tur butonu çıkmaz
+    // Kronometre hiç başlatılıp duraklatılmadıysa (biriken süre yoksa) bu
+    // özellik geçerli değildir. Çalışırken HER ZAMAN, duraklatılmışken ise
+    // yalnızca en az bir kez başlatılıp duraklatıldıktan sonra (biriken
+    // süre > 0) boş alana dokunma tur butonunu/listesini açar/kapatır.
+    if (!swRunning && swAccumulatedMs <= 0) return;
     toggleLapControls();
   });
 
@@ -47971,6 +48284,187 @@
     applyFace(false);
     void innerEl.offsetWidth;
     innerEl.style.transition = '';
+  })();
+</script>
+
+<script>
+  // ---------- Ana sayfa (BÜYÜK EKRAN): kartsız Geri Sayım widget'ı ----------
+  // "cd" ızgara hücresini dolduran, mobildeki beyaz kartın aksine hiçbir
+  // arka plan/gölge taşımayan sade bir sayaç. Veri kaynağı ve rulo hane
+  // animasyonu (cdReel*, getDayCountdown, dayCdTarget) mobil kartla
+  // ortaktır; burada sadece AYRI bir DOM'a (home-cd-flat-*) çizilir, böylece
+  // mobildeki .home-flip-cd akışına dokunulmaz. Sadece geniş ekranda
+  // (bkz. CSS: #page-1 .home-cd-flat-tile, min-width:768px) görünür; dar
+  // ekranda script sessizce hiçbir şey yapmaz.
+  (() => {
+    const tileEl = document.getElementById('homeCdFlatTile');
+    const addBtn = document.getElementById('homeCdFlatAdd');
+    const cdBtn = document.getElementById('homeCdFlat');
+    const pageEl = document.getElementById('page-1');
+    if (!tileEl || !addBtn || !cdBtn || typeof openCdSheet !== 'function' || typeof getDayCountdown !== 'function') return;
+
+    const nameEl = document.getElementById('homeCdFlatName');
+    const dateEl = document.getElementById('homeCdFlatDate');
+    const numEls = {
+      d: document.getElementById('homeCdFlatNumD'),
+      h: document.getElementById('homeCdFlatNumH'),
+      m: document.getElementById('homeCdFlatNumM'),
+      s: document.getElementById('homeCdFlatNumS'),
+    };
+    const unitsEl = cdBtn.querySelector('.home-cd-flat-units');
+    const doneEl = document.getElementById('homeCdFlatDoneMsg');
+    if (doneEl) {
+      doneEl.querySelectorAll('.home-flip-done-word span').forEach((el, i) => {
+        el.style.animationDelay = `${i * 45}ms`;
+      });
+    }
+
+    // Aynı seçili sayaç mobil kartla paylaşılır (KEY_CD ile birebir aynı
+    // localStorage anahtarı), böylece hangi ekranda seçilirse seçilsin her
+    // iki widget da senkron kalır.
+    const KEY_CD = 'homeCardCountdown';
+    const SPLIT_MQ = window.matchMedia('(min-width: 768px) and (min-height: 600px)');
+    const isSplit = () => SPLIT_MQ.matches;
+
+    const reels = { d: [], h: [], m: [], s: [] };
+    const timers = [];
+    let cur = null;
+    let tickTimer = 0;
+    let introEnd = 0;
+    let wasDone = null;
+
+    const pad2 = (n) => String(n).padStart(2, '0');
+    const isVisible = () => isSplit() && !!cur && pageEl.classList.contains('is-active') && !document.hidden;
+
+    const currentKey = () => (typeof APP_STATE[KEY_CD] === 'string' ? APP_STATE[KEY_CD] : '');
+
+    const resolve = () => {
+      const parts = String(currentKey()).split('-').map(Number);
+      if (parts.length !== 3 || parts.some((n) => !Number.isFinite(n))) return null;
+      const date = new Date(parts[0], parts[1] - 1, parts[2]);
+      const cd = getDayCountdown(date);
+      return cd ? { date, cd, target: dayCdTarget(date, cd.time).getTime() } : null;
+    };
+
+    const build = (u, n) => {
+      if (u === 'd') unitsEl.dataset.len = String(Math.min(n, 5));
+      numEls[u].textContent = '';
+      reels[u] = Array.from({ length: n }, () => {
+        const r = cdReelMake();
+        numEls[u].appendChild(r.el);
+        return r;
+      });
+    };
+
+    ['h', 'm', 's'].forEach((u) => build(u, 2));
+
+    const calc = () => {
+      const remaining = cur.target - Date.now();
+      const done = remaining <= 0;
+      const total = done ? 0 : Math.ceil(remaining / 1000);
+      return {
+        remaining, done,
+        d: String(Math.floor(total / 86400)),
+        h: pad2(Math.floor((total % 86400) / 3600)),
+        m: pad2(Math.floor((total % 3600) / 60)),
+        s: pad2(total % 60),
+      };
+    };
+
+    const clearTimers = () => {
+      if (tickTimer) { clearTimeout(tickTimer); tickTimer = 0; }
+      while (timers.length) clearTimeout(timers.pop());
+    };
+
+    const applyDone = (v, animate) => {
+      cdBtn.classList.toggle('is-done', v.done);
+      dateEl.textContent = `${dayCdDateText(cur.date)}${cur.cd.time ? `, ${cur.cd.time}` : ''}`;
+      if (!doneEl) return;
+      if (!v.done) { doneEl.classList.remove('is-playing'); return; }
+      if (!animate) { doneEl.classList.add('is-playing'); return; }
+      doneEl.classList.remove('is-playing');
+      void doneEl.offsetWidth;
+      doneEl.classList.add('is-playing');
+    };
+
+    const tick = () => {
+      tickTimer = 0;
+      if (!cur) return;
+      if (!resolve()) { renderFlat(0); return; }
+      if (!isVisible()) return;
+      if (performance.now() < introEnd) { tickTimer = setTimeout(tick, 150); return; }
+      const v = calc();
+      if (reels.d.length !== v.d.length) build('d', v.d.length);
+      ['d', 'h', 'm', 's'].forEach((u) => {
+        v[u].split('').forEach((ch, i) => cdReelSet(reels[u][i], Number(ch), CD_TICK_MS));
+      });
+      if (wasDone !== v.done) { wasDone = v.done; applyDone(v, true); }
+      if (!v.done) tickTimer = setTimeout(tick, (v.remaining % 1000 || 1000) + 8);
+    };
+
+    const renderFlat = (delay) => {
+      clearTimers();
+      const r = resolve();
+      addBtn.hidden = !!r;
+      cdBtn.hidden = !r;
+      if (!r) { cur = null; return; }
+      cur = r;
+      cdBtn.style.setProperty('--cd-dot', r.cd.color);
+      nameEl.textContent = r.cd.name;
+      cdBtn.setAttribute('aria-label', `${r.cd.name}, sayacı değiştir`);
+      const v = calc();
+      wasDone = v.done;
+      applyDone(v, true);
+      build('d', v.d.length);
+      if (!isVisible()) return;
+      let order = 0;
+      ['d', 'h', 'm', 's'].forEach((u) => {
+        v[u].split('').forEach((ch, i) => {
+          cdReelIntro(reels[u][i], Number(ch), delay + order * 55, 1300, timers);
+          order += 1;
+        });
+      });
+      const total = delay + order * 55 + 1300;
+      introEnd = performance.now() + total;
+      tickTimer = setTimeout(tick, total + 20);
+    };
+
+    const openPicker = () => {
+      const has = !!resolve();
+      openCdSheet({
+        mode: 'pick',
+        selectedKey: has ? currentKey() : '',
+        onPick: (key) => { saveAppState({ [KEY_CD]: key }); renderFlat(120); },
+        onClear: () => { saveAppState({ [KEY_CD]: '' }); renderFlat(0); },
+      });
+    };
+
+    addBtn.addEventListener('click', openPicker);
+    cdBtn.addEventListener('click', openPicker);
+
+    let wasActive = pageEl.classList.contains('is-active');
+    new MutationObserver(() => {
+      const active = pageEl.classList.contains('is-active');
+      if (active && !wasActive && isSplit()) renderFlat(300);
+      if (!active) clearTimers();
+      wasActive = active;
+    }).observe(pageEl, { attributes: true, attributeFilter: ['class'] });
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden && isSplit() && pageEl.classList.contains('is-active')) renderFlat(0);
+    });
+
+    // Başka bir sekmede (ör. Takvim'deki Sayaçlarım) sayaç değişirse burada
+    // da anında yansısın diye storage olaylarını dinler (aynı localStorage
+    // anahtarı, KEY_CD, mobil kartla ortaktır).
+    window.addEventListener('storage', (e) => {
+      if (e.key && e.key.indexOf(KEY_CD) === -1) return;
+      if (isSplit() && pageEl.classList.contains('is-active')) renderFlat(0);
+    });
+
+    if (SPLIT_MQ.addEventListener) SPLIT_MQ.addEventListener('change', () => { if (isSplit()) renderFlat(200); else clearTimers(); });
+    else if (SPLIT_MQ.addListener) SPLIT_MQ.addListener(() => { if (isSplit()) renderFlat(200); else clearTimers(); });
+
+    if (isSplit()) renderFlat(250);
   })();
 </script>
 
