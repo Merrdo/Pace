@@ -15130,6 +15130,7 @@
   body.is-page8-typing .navbar {
     opacity: 0;
     transform: translateY(28px);
+    pointer-events: none;
   }
 
   body.is-stopwatch-running .navbar .wrapper,
@@ -19636,6 +19637,248 @@
 
     .page8-groups-chip-list {
       max-height: 60vh;
+    }
+  }
+
+  /* ==========================================================================
+     ALT NAV BAR — Yanal Panel (.sidebar-nav) ile birebir aynı tasarım
+     ==========================================================================
+     Telefondaki alt nav bar artık kalın kenarlıklı/katı gölgeli pill değil;
+     yanal panelin yatay karşılığıdır: kendi kutusu yok, sadece tema yazı
+     rengiyle (--theme-text) çizilmiş 50x50'lik ikon düğmeleri. Karşılıkları:
+       - Seçili sekme        : vurgu rengi (--accent-color) + hafif drop-shadow
+       - Seçim göstergesi    : yanal panelde sağ kenardaki dikey çentik;
+                               burada içeriğe bakan üst kenardaki yatay çentik
+                               (26x3px, vurgu rengi, glow, yaylanarak kayar)
+       - Panel/sayfa ayrımı  : yanal paneldeki gradient ince çizgi (üst kenarda)
+       - Hover               : %6 tema rengi zemin (ikonlar sabit kalır;
+                               hover/basma/pop hareketi yok)
+       - Sekme adı baloncuğu : yok (yanal panelde isim hiçbir zaman gösterilmez)
+     Telefonda sayfalar alt şeridin ALTINDAN kayabildiği için (yanal panelde
+     olduğu gibi yana ayrılmış bir boşluk yok), şeridin arkasına tema zemin
+     rengi (hafif bulanık) konur; görsel olarak yanal paneldeki "zeminsiz"
+     görünümle aynıdır ama kayan içerik ikonların altında görünmez.
+     Soru Havuzu modundaki Geri / Görsel Ekle / Seç ve Vazgeç / Test / Paketle
+     eylemleri de aynı dilde (zeminsiz, tema rengi, ana eylem vurgu rengi). */
+  .navbar {
+    padding: 20px 12px calc(16px + env(safe-area-inset-bottom));
+    pointer-events: auto;
+  }
+
+  .navbar::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background-color: color-mix(in srgb, var(--theme-bg, #F6F4EF) 92%, transparent);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+    transition: background-color var(--theme-transition-duration, 480ms) var(--theme-transition-easing, ease);
+  }
+
+  .navbar::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    pointer-events: none;
+    background: linear-gradient(
+      to right,
+      transparent 0%,
+      color-mix(in srgb, var(--theme-text, #1a1a1a) 12%, transparent) 18%,
+      color-mix(in srgb, var(--theme-text, #1a1a1a) 12%, transparent) 82%,
+      transparent 100%
+    );
+    transition: background-color 0.5s ease;
+  }
+
+  .wrapper {
+    z-index: 1;
+    width: 100%;
+    max-width: 420px;
+    height: 50px;
+    padding: 0;
+    background: none;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    /* Yanal panelde bu değişken tanımlı olmadığından kamera flaşı orada
+       "tanımsız" değere düşüyor; aynı görünümü korumak için burada da
+       tanımsız bırakılıyor. */
+    --font-color-light: initial;
+  }
+
+  .nav-slider {
+    top: -20px;
+    left: 0;
+    width: calc(100% / 7);
+    height: 3px;
+    background: none;
+    border-radius: 0;
+    transition: transform 0.55s cubic-bezier(0.34, 1.4, 0.64, 1);
+    pointer-events: none;
+  }
+
+  .nav-slider::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    width: 26px;
+    height: 3px;
+    margin-left: -13px;
+    border-radius: 3px;
+    background-color: var(--accent-color, #ff90e8);
+    box-shadow: 0 0 10px 0 color-mix(in srgb, var(--accent-color, #ff90e8) 65%, transparent);
+  }
+
+  /* Soru Havuzu modunda çentik, ana eylemin (orta bölge) üstünde durur. */
+  .wrapper.is-qhavuz-mode .nav-slider {
+    width: calc(100% / 7);
+    transform: translateX(300%);
+    transition: transform 0.55s cubic-bezier(0.34, 1.4, 0.64, 1);
+  }
+
+  .wrapper.is-qhavuz-select.has-qhavuz-selection .nav-slider {
+    background-color: transparent;
+  }
+
+  .option {
+    display: flex;
+    justify-content: center;
+    top: 0;
+    height: 50px;
+  }
+
+  .nav-btn {
+    width: min(50px, 100%);
+    height: 50px;
+    flex: none;
+    border-radius: 16px;
+    isolation: isolate;
+    color: var(--theme-text, #1a1a1a);
+    transition:
+      opacity 0.22s ease,
+      transform 0.32s cubic-bezier(0.65, 0, 0.35, 1),
+      color 0.25s ease;
+    transition-delay: calc(0.14s + var(--i, 0) * 24ms), calc(0.14s + var(--i, 0) * 24ms), 0s;
+  }
+
+  .nav-btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: 16px;
+    background-color: transparent;
+    pointer-events: none;
+    transition: background-color 0.25s ease, transform 0.15s ease;
+  }
+
+  .nav-input:checked + .nav-btn {
+    color: var(--accent-color, #ff90e8);
+  }
+
+  .nav-icon {
+    width: 21px;
+    height: 21px;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    transition: none;
+  }
+
+  .nav-input:checked + .nav-btn .nav-icon {
+    stroke: currentColor;
+    filter: drop-shadow(0 2px 6px color-mix(in srgb, var(--accent-color, #ff90e8) 35%, transparent));
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .nav-input:not(:checked):hover + .nav-btn::before {
+      background-color: color-mix(in srgb, var(--theme-text, #1a1a1a) 6%, transparent);
+    }
+  }
+
+  .nav-input:focus-visible + .nav-btn::before {
+    outline: 2px solid var(--accent-color, #ff90e8);
+    outline-offset: -2px;
+  }
+
+  .nav-tooltip {
+    display: none;
+  }
+
+  /* Hareketsiz alt bar: çark dönmez; Soru Havuzu moduna girip çıkarken
+     ikonlar/eylemler kaymaz (sadece solup belirir); Seç modundaki titreme yok. */
+  .nav-input[value="page-settings"]:checked + .nav-btn .nav-icon-gear {
+    animation: none;
+  }
+
+  .wrapper.is-qhavuz-mode .nav-btn,
+  .wrapper .nav-action {
+    transform: none;
+  }
+
+  .wrapper.is-shaking {
+    animation: none;
+  }
+
+  /* ---- Soru Havuzu modu eylemleri: aynı zeminsiz dil ---- */
+  .nav-actions {
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 50px;
+  }
+
+  .wrapper .nav-action,
+  .wrapper .nav-action-cancel {
+    color: var(--theme-text, #1a1a1a);
+  }
+
+  .wrapper .nav-action-add,
+  .wrapper .nav-action-test,
+  .wrapper.has-qhavuz-selection .nav-action-test {
+    color: var(--accent-color, #ff90e8);
+  }
+
+  .wrapper .nav-action-add .nav-action-icon,
+  .wrapper .nav-action-test .nav-action-icon {
+    filter: drop-shadow(0 2px 6px color-mix(in srgb, var(--accent-color, #ff90e8) 35%, transparent));
+  }
+
+  .nav-action-hint {
+    color: color-mix(in srgb, var(--theme-text, #1a1a1a) 55%, transparent);
+  }
+
+  .nav-action-badge,
+  .wrapper.has-qhavuz-selection .nav-action-badge {
+    background-color: var(--accent-color, #ff90e8);
+    color: #121212;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .wrapper .nav-action-back:hover,
+    .wrapper .nav-action-cancel:hover,
+    .wrapper .nav-action-select:hover,
+    .wrapper .nav-action-add:hover,
+    .wrapper .nav-action-test:hover:not(:disabled),
+    .wrapper .nav-action-package:hover:not(:disabled) {
+      background-color: color-mix(in srgb, var(--theme-text, #1a1a1a) 6%, transparent);
+    }
+  }
+
+  .wrapper .nav-action-add:active,
+  .wrapper .nav-action-test:active:not(:disabled) {
+    background-color: rgba(128, 128, 128, 0.2);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .nav-slider,
+    .nav-slider::before {
+      transition-duration: 0.01s !important;
     }
   }
 
@@ -27234,33 +27477,6 @@
     });
   });
 
-  // Bir sekmeye her dokunulduğunda/tıklandığında (zaten seçili olsa bile),
-  // sayfa adını taşıyan baloncuk kısa süreliğine belirir. Fareyle üzerine
-  // gelindiğinde zaten CSS ile (hover) sürekli görünüyor; bu ise dokunmatik
-  // cihazlar için anlık bir geri bildirim sağlıyor.
-  navInputs.forEach((input) => {
-    input.addEventListener('click', () => {
-      const tooltip = input.nextElementSibling && input.nextElementSibling.querySelector('.nav-tooltip');
-      if (!tooltip) return;
-
-      // Başka bir ikonda hâlâ açık duran bir önizleme varsa, yenisi
-      // seçilir seçilmez onu anında kapat.
-      document.querySelectorAll('.nav-tooltip.is-flashing').forEach((other) => {
-        if (other !== tooltip) {
-          other.classList.remove('is-flashing');
-          clearTimeout(other._flashTimer);
-        }
-      });
-
-      tooltip.classList.remove('is-flashing');
-      void tooltip.offsetWidth; // reflow: art arda tıklamalarda animasyonu sıfırdan başlat
-      tooltip.classList.add('is-flashing');
-      clearTimeout(tooltip._flashTimer);
-      tooltip._flashTimer = setTimeout(() => {
-        tooltip.classList.remove('is-flashing');
-      }, 1500);
-    });
-  });
 </script>
 
 <script>
