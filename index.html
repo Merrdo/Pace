@@ -368,6 +368,116 @@
     font-feature-settings: "tnum" 1;
   }
 
+  /* ---------- Easter egg: Pace logosuna dokunma ----------
+     1. dokunuş: "e" harfi canlanır, 2.: göz kırpar, 3.: "Mini Oyunlar açıldı"
+     penceresi. Logo normalde dokunmayı geçirmez (pointer-events: none);
+     yalnızca şeffaf #appLogoHit alanı dokunmayı alır. "e" harfi JS ile ayrı bir
+     <text> olarak kurulur (bkz. JS: Pace easter egg). */
+  #appLogoHit {
+    pointer-events: all;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+
+  .app-logo { user-select: none; -webkit-user-select: none; }
+
+  #appLogoE {
+    transform-box: fill-box;
+    transform-origin: 50% 100%;
+  }
+
+  #appLogoE.is-alive { animation: logoEJelly 0.9s cubic-bezier(0.3, 0.7, 0.4, 1) both, logoEJelly-color 0.9s linear both; }
+  #appLogoE.is-wink { animation: logoETilt 0.75s ease-in-out both; }
+
+  /* 1. dokunuş: yaylanan "jöle" zıplaması (çömel → uzayarak zıpla → ezilerek
+     in → sekerek otur) + zıplarken vurgu rengine bürünür. */
+  @keyframes logoEJelly {
+    0%   { transform: none; }
+    14%  { transform: scale(1.18, 0.76); }
+    34%  { transform: translateY(-12px) scale(0.9, 1.22); }
+    54%  { transform: translateY(0) scale(1.16, 0.8); }
+    72%  { transform: translateY(-3px) scale(0.96, 1.07); }
+    88%  { transform: scale(1.03, 0.98); }
+    100% { transform: none; }
+  }
+
+  @keyframes logoEJelly-color {
+    0%, 100% { fill: currentColor; stroke: currentColor; }
+    12%, 82% { fill: var(--accent-color, #ff90e8); stroke: var(--accent-color, #ff90e8); }
+  }
+
+  /* 2. dokunuş: kafa hafifçe yana eğilir; göz kapağı (JS ile kırpma) kapanıp açılır. */
+  @keyframes logoETilt {
+    0%   { transform: none; }
+    20%, 72% { transform: rotate(-12deg) translateY(-1px); }
+    100% { transform: none; }
+  }
+
+  .egg-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: rgba(0, 0, 0, 0.55);
+    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(6px);
+    opacity: 0;
+    transition: opacity 0.25s ease;
+  }
+
+  .egg-overlay.is-open { opacity: 1; }
+
+  .egg-dialog {
+    width: min(100%, 20rem);
+    padding: 1.6rem 1.4rem 1.3rem;
+    border-radius: 1.75rem;
+    text-align: center;
+    font-family: "Baloo 2", "Space Grotesk", sans-serif;
+    color: var(--theme-text, #f2f2f4);
+    background: color-mix(in srgb, var(--theme-text, #f2f2f4) 9%, var(--theme-bg, #1c1c22));
+    box-shadow: 0 24px 48px -20px rgba(0, 0, 0, 0.6);
+    transform: scale(0.88) translateY(12px);
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .egg-overlay.is-open .egg-dialog { transform: none; }
+
+  .egg-dialog-title {
+    margin: 0 0 0.4rem;
+    font-weight: 800;
+    font-size: 1.5rem;
+    line-height: 1.2;
+  }
+
+  .egg-dialog-text {
+    margin: 0 0 1.2rem;
+    font-weight: 600;
+    font-size: 1rem;
+    line-height: 1.35;
+    color: color-mix(in srgb, var(--theme-text, #f2f2f4) 62%, transparent);
+  }
+
+  .egg-dialog-btn {
+    width: 100%;
+    padding: 0.8rem 1rem;
+    border: none;
+    border-radius: 999px;
+    font-family: inherit;
+    font-weight: 800;
+    font-size: 1.1rem;
+    color: #16171b;
+    background: var(--accent-color, #ff90e8);
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: transform 0.2s ease;
+  }
+
+  .egg-dialog-btn:active { transform: scale(0.96); }
+
   /* ---------- Ana sayfa: "Kronometre" metin widget'ı (SOL BOŞLUK) ----------
      Sadece BÜYÜK EKRANDA (bkz. aşağıdaki #page-1 .home-kronometre-ring-widget
      kuralı, min-width:768px) görünür; logonun altında, sol boşlukta durur.
@@ -1466,8 +1576,8 @@
      aynı antresit tona geçer; metin/ikon çizgileri okunaklı kalsın diye
      açık renge döner. */
   body.is-anthracite .home-date-widget {
-    background-color: var(--dark-card-color, #1c1c22);
-    box-shadow: 0 10px 22px -14px rgba(0, 0, 0, 0.5), 0 2px 6px rgba(0, 0, 0, 0.18);
+    background-color: transparent;
+    box-shadow: none;
   }
 
   body.is-anthracite .home-date-widget-num,
@@ -1480,8 +1590,8 @@
   }
 
   body.is-anthracite .home-live-widget {
-    background-color: var(--dark-card-color, #1c1c22);
-    box-shadow: 0 14px 28px -16px rgba(0, 0, 0, 0.55), 0 2px 8px rgba(0, 0, 0, 0.2);
+    background-color: transparent;
+    box-shadow: none;
   }
 
   body.is-anthracite .home-live-widget-count,
@@ -1853,10 +1963,10 @@
     min-width: 0;
     min-height: 3.6rem;
     padding: 0.6rem 1rem;
-    background-color: #fff;
+    background-color: transparent;
     border: none;
     border-radius: 999px;
-    box-shadow: 0 10px 22px -14px rgba(0, 0, 0, 0.26), 0 2px 6px rgba(0, 0, 0, 0.05);
+    box-shadow: none;
     cursor: pointer;
     text-align: left;
     font-family: "Space Grotesk", sans-serif;
@@ -1865,12 +1975,12 @@
 
   .home-date-widget:hover {
     transform: translateY(-2px);
-    box-shadow: 0 14px 26px -14px rgba(0, 0, 0, 0.3), 0 2px 6px rgba(0, 0, 0, 0.06);
+    box-shadow: none;
   }
 
   .home-date-widget:active {
     transform: translateY(0);
-    box-shadow: 0 6px 14px -10px rgba(0, 0, 0, 0.22), 0 1px 4px rgba(0, 0, 0, 0.05);
+    box-shadow: none;
   }
 
   .home-date-widget-num {
@@ -1919,10 +2029,10 @@
        kısa telefonlarda ~8.5rem, uzun olanlarda ~11rem'e kadar büyür. */
     min-height: clamp(8.5rem, 19dvh, 11rem);
     padding: 1.3rem 1.45rem 1.25rem;
-    background-color: #fff;
+    background-color: transparent;
     border: none;
     border-radius: 1.75rem;
-    box-shadow: 0 14px 28px -16px rgba(0, 0, 0, 0.28), 0 2px 8px rgba(0, 0, 0, 0.06);
+    box-shadow: none;
     cursor: pointer;
     text-align: left;
     font-family: "Space Grotesk", sans-serif;
@@ -1931,12 +2041,12 @@
 
   .home-live-widget:hover {
     transform: translateY(-2px);
-    box-shadow: 0 18px 32px -16px rgba(0, 0, 0, 0.32), 0 2px 8px rgba(0, 0, 0, 0.07);
+    box-shadow: none;
   }
 
   .home-live-widget:active {
     transform: translateY(0);
-    box-shadow: 0 8px 18px -12px rgba(0, 0, 0, 0.24), 0 1px 4px rgba(0, 0, 0, 0.05);
+    box-shadow: none;
   }
 
   .home-live-widget-count {
@@ -17971,8 +18081,8 @@
     inset: 0;
     overflow: hidden;
     border-radius: 1.75rem;
-    background-color: #fff;
-    box-shadow: 0 14px 28px -16px rgba(0, 0, 0, 0.28), 0 2px 8px rgba(0, 0, 0, 0.06);
+    background-color: transparent;
+    box-shadow: none;
     color: #000;
     font-family: "Baloo 2", "Space Grotesk", sans-serif;
     transform: rotateY(180deg);
@@ -17981,8 +18091,8 @@
   }
 
   body.is-anthracite .home-flip-back {
-    background-color: var(--dark-card-color, #1c1c22);
-    box-shadow: 0 14px 28px -16px rgba(0, 0, 0, 0.55), 0 2px 8px rgba(0, 0, 0, 0.2);
+    background-color: transparent;
+    box-shadow: none;
     color: #f2f2f4;
   }
 
@@ -18202,20 +18312,18 @@
   /* --- Değiştirme düğmesi (sağ üst) --- */
   .home-flip-btn {
     position: absolute;
-    top: 0.8rem;
-    right: 0.8rem;
+    top: 0.3rem;
+    right: 0.3rem;
     z-index: 3;
     display: grid;
     place-items: center;
-    width: 2.15rem;
-    height: 2.15rem;
+    width: 3.2rem;
+    height: 3.2rem;
     padding: 0;
     border: none;
     border-radius: 50%;
-    background: rgba(127, 127, 127, 0.14);
-    -webkit-backdrop-filter: blur(6px);
-    backdrop-filter: blur(6px);
-    color: rgba(0, 0, 0, 0.62);
+    background: transparent;
+    color: var(--theme-text, #1a1a1a);
     cursor: pointer;
     transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.2s ease;
   }
@@ -18224,7 +18332,7 @@
 
   .home-flip-btn:active {
     transform: scale(0.88);
-    background: rgba(127, 127, 127, 0.28);
+    background: transparent;
   }
 
   .home-flip-btn:focus-visible {
@@ -18233,8 +18341,8 @@
   }
 
   .home-flip-btn svg {
-    width: 1.05rem;
-    height: 1.05rem;
+    width: 1.4rem;
+    height: 1.4rem;
     transition: transform 0.95s cubic-bezier(0.3, 0.08, 0.22, 1.12);
   }
 
@@ -18286,6 +18394,314 @@
 
   .home-flip.is-flipping .home-flip-sheen::before { animation: homeFlipSheen 0.95s cubic-bezier(0.4, 0, 0.2, 1); }
   .home-flip.is-flipping .home-flip-sheen::after { animation: homeFlipShade 0.95s ease-in-out; }
+
+  /* ---------- Ana sayfa kartları: yazı renkleri temaya göre otomatik ----------
+     Kartların dolgusu şeffaf olduğundan (arka plan neyse o), metinler artık
+     sabit siyah/beyaz/gri yerine JS'in aktif temaya göre güncellediği
+     --theme-text değişkenini kullanır. Alt/soluk metinler aynı rengin
+     yarı saydam tonudur; böylece her temada (açık, koyu, özel) okunur kalır. */
+  .home-live-widget,
+  .home-date-widget,
+  .home-flip-back {
+    --hw-fg: var(--theme-text, #1a1a1a);
+    --hw-muted: color-mix(in srgb, var(--theme-text, #1a1a1a) 62%, transparent);
+  }
+
+  body .home-live-widget-count,
+  body .home-live-widget-title,
+  body .home-date-widget-num,
+  body .home-date-widget-weekday,
+  body .home-flip-back,
+  body.is-anthracite .home-live-widget-count,
+  body.is-anthracite .home-live-widget-title,
+  body.is-anthracite .home-date-widget-num,
+  body.is-anthracite .home-date-widget-weekday,
+  body.is-anthracite .home-flip-back {
+    color: var(--hw-fg);
+  }
+
+  body .home-live-widget-sub,
+  body .home-date-widget-month,
+  body .home-flip-add-text small,
+  body .home-flip-cd-date,
+  body .home-flip-label,
+  body.is-anthracite .home-live-widget-sub,
+  body.is-anthracite .home-date-widget-month,
+  body.is-anthracite .home-flip-add-text small,
+  body.is-anthracite .home-flip-cd-date,
+  body.is-anthracite .home-flip-label {
+    color: var(--hw-muted);
+  }
+
+  /* Hedef doluyken alt metin sıvının üstünde kalır: biraz daha koyu ton. */
+  body .home-live-widget.has-goal .home-live-widget-sub,
+  body.is-anthracite .home-live-widget.has-goal .home-live-widget-sub {
+    color: color-mix(in srgb, var(--theme-text, #1a1a1a) 78%, transparent);
+  }
+
+  body .home-flip-btn,
+  body.is-anthracite .home-flip-btn {
+    background: transparent;
+    color: var(--theme-text, #1a1a1a);
+  }
+
+  /* ==========================================================================
+     ANA SAYFA — MOBİL TASARIM DİLİ (kartsız, büyük tipografi, ince ayraçlar)
+     ==========================================================================
+     Referans: üstte sade durum satırı (ikon | ayraç | başlık + alt yazı),
+     ortada dev rakam + küçük büyük-harf etiket, altında ince dikey ayraçlı
+     Saat | Dakika | Saniye ve hap biçiminde sayaç adı. Yalnızca mobil/dar
+     ekranı etkiler; geniş ekran kuralları (#page-1 ...) aynen korunur. */
+  /* Takvim bağlantısı: yalnızca mobil; büyük ekranda gizli. */
+  .home-cal-link { display: none; }
+
+  @media not all and (min-width: 768px) and (min-height: 600px) {
+    .home-cal-link {
+      position: absolute;
+      left: calc(24px + 0.3rem);
+      right: calc(24px + 0.3rem);
+      bottom: calc(env(safe-area-inset-bottom, 0px) + 96px + 0.9rem);
+      z-index: 2;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 0.4rem 0;
+      background: none;
+      border: none;
+      font-family: "Baloo 2", "Space Grotesk", sans-serif;
+      color: var(--theme-text, #1a1a1a);
+      text-align: left;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      transition: opacity 0.2s ease;
+    }
+
+    .home-cal-link:active { opacity: 0.55; }
+
+    .home-cal-link-day {
+      font-weight: 800;
+      font-size: 2.6rem;
+      line-height: 1;
+      letter-spacing: -0.02em;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .home-cal-link-sep {
+      align-self: stretch;
+      width: 1.5px;
+      background: color-mix(in srgb, var(--theme-text, #1a1a1a) 22%, transparent);
+    }
+
+    .home-cal-link-text {
+      display: flex;
+      flex-direction: column;
+      gap: 0.05rem;
+      min-width: 0;
+    }
+
+    .home-cal-link-month {
+      font-weight: 700;
+      font-size: 0.95rem;
+      letter-spacing: 0.06em;
+      line-height: 1.1;
+    }
+
+    .home-cal-link-weekday {
+      font-weight: 600;
+      font-size: 0.95rem;
+      line-height: 1.1;
+      color: color-mix(in srgb, var(--theme-text, #1a1a1a) 62%, transparent);
+    }
+
+    .home-cal-link-go {
+      margin-left: auto;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-weight: 700;
+      font-size: 1rem;
+    }
+
+    /* --- Durum satırı: Rahatla / Yatış --- */
+    .home-relax-widget {
+      min-height: 0;
+      /* Widget'ı "Pace" logosuna doğru yukarı çeker. transform yerleşimi
+         değiştirmediği için satır sığdırma ölçümü ve diğer öğeler etkilenmez. */
+      transform: translateY(calc(-1 * clamp(2.5rem, 7dvh, 4.5rem)));
+    }
+
+    .home-relax-task-row {
+      min-height: 3.6rem;
+      padding: 0.5rem 0.3rem;
+      gap: 1.1rem;
+    }
+
+    .home-relax-widget .home-relax-widget-moon {
+      width: 2.2rem;
+      height: 2.2rem;
+      box-shadow: none;
+      color: var(--accent-color, #ff9f43);
+    }
+
+    .home-relax-widget-moon svg { width: 26px; height: 26px; }
+
+    .home-relax-widget-bottom {
+      flex-direction: column-reverse;
+      align-self: stretch;
+      padding-left: 1.1rem;
+      border-left: 1.5px solid color-mix(in srgb, var(--theme-text, #1a1a1a) 22%, transparent);
+      gap: 0.05rem;
+    }
+
+    .home-relax-widget-title { font-size: 1.2rem; line-height: 1.2; }
+    .home-relax-widget-time { font-size: 0.95rem; }
+
+    /* --- Kart ön yüzü: dev rakam + küçük büyük-harf etiket --- */
+    .home-live-widget {
+      align-items: flex-start;
+      justify-content: center;
+      gap: 0.6rem;
+      min-height: clamp(15rem, 34dvh, 21rem);
+      padding: 1rem 0.3rem;
+      text-align: left;
+    }
+
+    .home-live-widget-count {
+      font-size: clamp(4.6rem, 16dvh, 7.4rem);
+      letter-spacing: -0.03em;
+    }
+
+    .home-live-widget-text { align-items: flex-start; gap: 0.25rem; }
+
+    /* Hedef dolumu: kartı kaplayan sıvı/dalga yerine, alt yazının altında
+       ince, sade bir ilerleme çizgisi. Oran JS'ten (--fill-ratio, 0..1) gelir. */
+    .home-live-widget-fill,
+    .home-live-widget.has-goal .home-live-widget-fill {
+      display: none;
+    }
+
+    body .home-live-widget.has-goal .home-live-widget-sub,
+    body.is-anthracite .home-live-widget.has-goal .home-live-widget-sub {
+      color: var(--hw-muted);
+    }
+
+    .home-live-widget-bar {
+      display: none;
+      width: min(62vw, 15rem);
+      height: 4px;
+      margin-top: 0.7rem;
+      border-radius: 999px;
+      background: color-mix(in srgb, var(--theme-text, #1a1a1a) 14%, transparent);
+      overflow: hidden;
+    }
+
+    .home-live-widget.has-goal .home-live-widget-bar { display: block; }
+
+    .home-live-widget-bar-fill {
+      display: block;
+      height: 100%;
+      width: calc(var(--fill-ratio, 0) * 100%);
+      border-radius: inherit;
+      background: var(--accent-color, #ff90e8);
+      transition: width 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    body .home-live-widget-title,
+    body.is-anthracite .home-live-widget-title {
+      font-size: 0.95rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--hw-muted);
+    }
+
+    /* --- Kart arka yüzü: sayaç --- */
+    .home-flip-cd {
+      align-items: flex-start;
+      gap: 0.9rem;
+      padding: 0.8rem 0.3rem;
+      text-align: left;
+    }
+
+    .home-flip-add {
+      justify-content: flex-start;
+      padding-left: 0.3rem;
+    }
+
+    .home-flip-units {
+      order: 1;
+      display: grid;
+      grid-template-columns: auto auto auto auto auto;
+      justify-content: start;
+      align-items: center;
+      justify-items: start;
+      column-gap: 1.1rem;
+      row-gap: 0.15rem;
+      width: 100%;
+      font-size: 1.9rem;
+    }
+
+    .home-flip-unit { align-items: flex-start; }
+
+    .home-flip-done { order: 1; justify-content: flex-start; }
+
+    /* Gün: dev rakam, tüm satırı kaplar; ilk ":" ayracı kalkar. */
+    .home-flip-unit:first-child {
+      grid-column: 1 / -1;
+      font-size: clamp(3.9rem, 13dvh, 6rem);
+    }
+
+    .home-flip-units[data-len="4"] .home-flip-unit:first-child,
+    .home-flip-units[data-len="5"] .home-flip-unit:first-child {
+      font-size: clamp(3rem, 10dvh, 4.6rem);
+    }
+
+    .home-flip-unit:first-child + .cd-colon { display: none; }
+
+    /* Kalan ":" noktaları ince dikey ayraca dönüşür. */
+    .home-flip-units .cd-colon {
+      width: 1.5px;
+      height: 2.2rem;
+      opacity: 1;
+      background: color-mix(in srgb, var(--theme-text, #1a1a1a) 22%, transparent);
+    }
+
+    .home-flip-units .cd-colon i { display: none; }
+
+    .home-flip-label {
+      margin-top: 0.4rem;
+      font-size: 0.72rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .home-flip-unit:first-child .home-flip-label { font-size: 0.9rem; margin-top: 0.5rem; }
+
+    /* Sayaç adı + tarih: kartsız, düz yazı; sayının üstünde, sol üst
+       boşlukta durur. Renk noktası gösterilmez. */
+    .home-flip-cd-head {
+      order: 0;
+      width: 100%;
+      max-width: 100%;
+      align-items: flex-start;
+      gap: 0.1rem;
+      padding: 0 3rem 0 0; /* sağ üstteki çevirme butonuyla çakışmasın */
+      background: none;
+      border-radius: 0;
+    }
+
+    .home-flip-cd-dot { display: none; }
+    .home-flip-cd-nameRow { justify-content: flex-start; }
+
+    .home-flip-cd-name {
+      font-size: 1.15rem;
+      letter-spacing: 0.01em;
+    }
+
+    .home-flip-cd-date {
+      font-size: 0.9rem;
+      padding-left: 0;
+    }
+  }
 
   @keyframes homeFlipSheen {
     0% { opacity: 0; transform: translateX(-130%) skewX(-14deg); }
@@ -20712,6 +21128,14 @@
      içindeki yazı, rakam ve ikonlar kendi kutularının boyutuna göre
      (cqi/cqh) ölçeklenir. Kutunun kendisi (.home-tile / .home-flip-back) ölçü
      kapsayıcısıdır; içindeki düğmelerde JS/tıklama davranışı değişmez. */
+
+  /* Kartsız geri sayım yalnızca büyük ekran içindir. .home-tile mobilde
+     display: contents olduğundan, gizlenmezse içindeki stilsiz mavi
+     "Sayaç ekle" düğmesi telefonda sayfanın altına taşıyordu. */
+  .home-cd-flat-tile {
+    display: none;
+  }
+
   @media (min-width: 768px) and (min-height: 600px) {
     #page-1 {
       container-type: inline-size;
@@ -25031,7 +25455,8 @@
     <!-- Ana sayfa şimdilik boş: yeniden tasarım için hazırlanıyor.
          Eski tüm elementler aşağıdaki küçük buton + panel içine taşındı. -->
     <svg class="app-logo" viewBox="0 0 150 52" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Pace">
-      <text x="2" y="40">Pace</text>
+      <rect id="appLogoHit" x="0" y="0" width="150" height="52" fill="transparent"/>
+      <text id="appLogoBase" x="2" y="40">Pace</text>
     </svg>
 
     <!-- Sağ üst köşe: MOBİLDE Kronometre widget'ı, BÜYÜK EKRANDA tarih+saat
@@ -25244,6 +25669,52 @@
       </div>
       -->
     </div>
+
+    <!-- Takvim bağlantısı (yalnızca MOBİL): kartsız, düz yazı. Bugünün tarihini
+         gösterir; dokununca Takvim sayfasına (#page-6) geçer. Büyük ekranda
+         gizlidir (orada sağ üstteki #homeDateTimeWidget aynı işi görür). -->
+    <button type="button" class="home-cal-link" id="homeCalLink" aria-label="Takvim'e git">
+      <span class="home-cal-link-day" id="homeCalLinkDay">24</span>
+      <span class="home-cal-link-sep" aria-hidden="true"></span>
+      <span class="home-cal-link-text">
+        <span class="home-cal-link-month" id="homeCalLinkMonth">EYLÜL</span>
+        <span class="home-cal-link-weekday" id="homeCalLinkWeekday">Perşembe</span>
+      </span>
+      <span class="home-cal-link-go">
+        Takvim
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </span>
+    </button>
+    <script>
+      (() => {
+        const MONTHS = ['OCAK', 'ŞUBAT', 'MART', 'NİSAN', 'MAYIS', 'HAZİRAN', 'TEMMUZ', 'AĞUSTOS', 'EYLÜL', 'EKİM', 'KASIM', 'ARALIK'];
+        const DAYS = ['Pazar', 'Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi'];
+        const btn = document.getElementById('homeCalLink');
+        const dayEl = document.getElementById('homeCalLinkDay');
+        const monthEl = document.getElementById('homeCalLinkMonth');
+        const weekdayEl = document.getElementById('homeCalLinkWeekday');
+        if (!btn) return;
+        const update = () => {
+          const now = new Date();
+          dayEl.textContent = String(now.getDate());
+          monthEl.textContent = MONTHS[now.getMonth()];
+          weekdayEl.textContent = DAYS[now.getDay()];
+        };
+        update();
+        setInterval(update, 60000);
+        // Ana sayfadaki Tarih/Saat widget'ıyla aynı akış: gizli nav radio'sunu
+        // işaretleyip 'change' tetikler; böylece alt çubuk da senkron kalır.
+        btn.addEventListener('click', () => {
+          const input = document.querySelector('.nav-input[value="page-6"]');
+          if (input && !input.checked) {
+            input.checked = true;
+            input.dispatchEvent(new Event('change'));
+          } else if (typeof goToPage === 'function') {
+            goToPage('page-6');
+          }
+        });
+      })();
+    </script>
   </section>
 
   <!-- ============================================================
@@ -29275,6 +29746,120 @@
 
   const miniGamesHubBackBtn = document.getElementById('miniGamesHubBackBtn');
   if (miniGamesHubBackBtn) miniGamesHubBackBtn.addEventListener('click', closeMiniGamesHub);
+
+  // ---------- Easter egg: Pace logosuna dokun ----------
+  // 1. dokunuş: "e" harfi canlanır · 2.: göz kırpar · 3.: "Mini Oyunlar açıldı"
+  // penceresi; "Keşfet" Mini Oyunlar sayfasını açar. 4 sn dokunulmazsa sayaç
+  // sıfırlanır. "e" harfi, ölçümle konumlanan ayrı bir <text> olarak kurulur.
+  (() => {
+    const hit = document.getElementById('appLogoHit');
+    const base = document.getElementById('appLogoBase');
+    if (!hit || !base) return;
+
+    let eEl = null;
+    const buildE = () => {
+      if (!eEl) {
+        eEl = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        eEl.setAttribute('id', 'appLogoE');
+        eEl.setAttribute('y', base.getAttribute('y'));
+        eEl.textContent = 'e';
+        base.after(eEl);
+      }
+      base.textContent = 'Pac';
+      eEl.setAttribute('x', String(parseFloat(base.getAttribute('x')) + base.getComputedTextLength()));
+    };
+    // Font yüklendikten sonra ölç; yoksa kısa gecikmeyle dene.
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(buildE);
+    else setTimeout(buildE, 600);
+
+    // Göz kırpma: "e"nin üst ve alt kısmı ortadaki çizgiye doğru kapanır
+    // (göz kapağı gibi), kısa süre kapalı kalır, sonra açılır. SVG clipPath'i
+    // requestAnimationFrame ile animasyonlanır (tüm tarayıcılarda çalışır).
+    let winkRun = 0;
+    const winkLids = () => {
+      const svg = base.ownerSVGElement;
+      let clip = svg.querySelector('#appLogoEClip');
+      if (!clip) {
+        clip = document.createElementNS('http://www.w3.org/2000/svg', 'clipPath');
+        clip.setAttribute('id', 'appLogoEClip');
+        clip.innerHTML = '<rect id="appLogoEClipRect"></rect>';
+        svg.prepend(clip);
+      }
+      const rect = clip.firstChild;
+      const ex = parseFloat(eEl.getAttribute('x'));
+      const mid = parseFloat(eEl.getAttribute('y')) - 11; // "e"nin ortadaki çizgisi (yaklaşık)
+      rect.setAttribute('x', String(ex - 8));
+      rect.setAttribute('width', '44');
+      const ease = (t) => (t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2);
+      const run = ++winkRun;
+      let t0 = null;
+      eEl.setAttribute('clip-path', 'url(#appLogoEClip)');
+      const step = (ts) => {
+        if (run !== winkRun) return;
+        if (t0 === null) t0 = ts;
+        const t = ts - t0 - 140; // eğilme başladıktan biraz sonra kapan
+        let k = 0; // 0 açık, 1 kapalı
+        if (t > 0 && t < 130) k = ease(t / 130);
+        else if (t >= 130 && t < 300) k = 1;
+        else if (t >= 300 && t < 520) k = 1 - ease((t - 300) / 220);
+        const half = 30 * (1 - k) + 1.3 * k;
+        rect.setAttribute('y', String(mid - half));
+        rect.setAttribute('height', String(half * 2));
+        if (t < 520) requestAnimationFrame(step);
+        else eEl.removeAttribute('clip-path');
+      };
+      requestAnimationFrame(step);
+    };
+
+    const play = (cls) => {
+      if (!eEl) buildE();
+      winkRun += 1; // süren göz kırpmayı iptal et
+      eEl.removeAttribute('clip-path');
+      eEl.classList.remove('is-alive', 'is-wink');
+      void eEl.getBoundingClientRect(); // animasyonu baştan başlatmak için
+      eEl.classList.add(cls);
+      if (cls === 'is-wink') winkLids();
+    };
+
+    const openPopup = () => {
+      if (document.getElementById('eggOverlay')) return;
+      const overlay = document.createElement('div');
+      overlay.className = 'egg-overlay';
+      overlay.id = 'eggOverlay';
+      overlay.setAttribute('role', 'dialog');
+      overlay.setAttribute('aria-modal', 'true');
+      overlay.setAttribute('aria-labelledby', 'eggTitle');
+      overlay.innerHTML =
+        '<div class="egg-dialog">' +
+          '<h2 class="egg-dialog-title" id="eggTitle">Mini Oyunlar açıldı!</h2>' +
+          '<p class="egg-dialog-text">Pace\'in içinde saklı bir sürpriz buldun.</p>' +
+          '<button type="button" class="egg-dialog-btn" id="eggGoBtn">Keşfet</button>' +
+        '</div>';
+      document.body.appendChild(overlay);
+      requestAnimationFrame(() => overlay.classList.add('is-open'));
+
+      const close = (after) => {
+        overlay.classList.remove('is-open');
+        setTimeout(() => { overlay.remove(); if (after) after(); }, 250);
+      };
+      overlay.querySelector('#eggGoBtn').addEventListener('click', () => {
+        close(() => { if (typeof openMiniGamesHub === 'function') openMiniGamesHub(); });
+      });
+      // Pencerenin dışına dokununca sadece kapanır.
+      overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
+    };
+
+    let taps = 0;
+    let tapTimer = null;
+    hit.addEventListener('click', () => {
+      clearTimeout(tapTimer);
+      taps += 1;
+      if (taps === 1) play('is-alive');
+      else if (taps === 2) play('is-wink');
+      else { taps = 0; openPopup(); return; }
+      tapTimer = setTimeout(() => { taps = 0; }, 4000);
+    });
+  })();
 
   const miniGameWheelCard = document.getElementById('miniGameWheelCard');
   if (miniGameWheelCard) miniGameWheelCard.addEventListener('click', openWheelPage);
