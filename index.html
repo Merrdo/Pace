@@ -316,6 +316,115 @@
     animation: homeKronometrePulse 1.6s ease-in-out infinite;
   }
 
+  /* ---------- Ana sayfa: "Tarih + Saat" widget'ı ----------
+     Sağ üst köşede, Pace logosuyla aynı marka tipografisini paylaşan,
+     kartsız/gölgesiz sade bir metin bloğu. Üstte küçük/soluk tarih,
+     altta büyük/koyu saat — Sıradaki görev kartındaki "küçük üst,
+     büyük alt" dilinin aynısı. Tıklanabilir değil, sadece bilgi amaçlı.
+     NOT: sadece BÜYÜK EKRANDA (bkz. "TABLET / GENİŞ EKRAN: Ana Sayfa"
+     bölümündeki @media (min-width: 768px) kuralı) görünür; mobilde
+     varsayılan olarak gizli kalır ve o boşlukta Kronometre widget'ı
+     gösterilmeye devam eder. */
+  .home-datetime-widget {
+    display: none;
+    position: absolute;
+    top: calc(env(safe-area-inset-top) + 16px);
+    right: 22px;
+    z-index: 2;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.15rem;
+    font-family: "Baloo 2", "Sabon", sans-serif;
+    text-align: right;
+    color: var(--theme-text, #1a1a1a);
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: opacity 0.2s ease;
+  }
+
+  .home-datetime-widget:active {
+    opacity: 0.55;
+  }
+
+  .home-datetime-widget-date {
+    font-weight: 600;
+    font-size: 0.72rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--theme-text, #1a1a1a);
+    opacity: 0.45;
+  }
+
+  .home-datetime-widget-time {
+    font-weight: 800;
+    font-size: 2.15rem;
+    letter-spacing: -0.02em;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum" 1;
+  }
+
+  /* ---------- Ana sayfa: "Kronometre" metin widget'ı (SOL BOŞLUK) ----------
+     Sadece BÜYÜK EKRANDA (bkz. aşağıdaki #page-1 .home-kronometre-ring-widget
+     kuralı, min-width:768px) görünür; logonun altında, sol boşlukta durur.
+     Kart/gölge/cam efekti YOK — sağ üstteki .home-datetime-widget ile BİREBİR
+     AYNI dili paylaşan sade bir metin bloğu: üstte küçük soluk etiket, altta
+     büyük düz rakam. Sayaç çalışırken sadece metin büyüyüp (.home-kronometre-widget
+     ile aynı) hafif nabız atar; başka hiçbir görsel öğe eklenmez. */
+  .home-kronometre-ring-widget {
+    display: none;
+    position: absolute;
+    top: calc(env(safe-area-inset-top) + 96px);
+    left: 22px;
+    z-index: 2;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.15rem;
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: opacity 0.2s ease;
+  }
+
+  .home-kronometre-ring-widget:active {
+    opacity: 0.55;
+  }
+
+  .home-kronometre-ring-label {
+    font-family: "Baloo 2", "Sabon", sans-serif;
+    font-weight: 600;
+    font-size: 0.8rem;
+    letter-spacing: -0.01em;
+    color: var(--theme-text, #1a1a1a);
+    opacity: 0.45;
+  }
+
+  .home-kronometre-ring-text {
+    font-family: "Baloo 2", "Sabon", sans-serif;
+    font-weight: 800;
+    font-size: 2.15rem;
+    letter-spacing: -0.02em;
+    line-height: 1;
+    color: var(--theme-text, #1a1a1a);
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum" 1;
+  }
+
+  .home-kronometre-ring-widget.is-running .home-kronometre-ring-text {
+    animation: homeKronometrePulse 1.6s ease-in-out infinite;
+  }
+
+  .home-kronometre-ring-widget.is-running .home-kronometre-ring-label {
+    opacity: 0.55;
+  }
+
   /* ---------- Alt Nav Bar ---------- */
 
   .navbar {
@@ -1552,16 +1661,17 @@
     color: #f2f2f4;
   }
 
-  /* Sayfa 5: anahtar aktifken kronometre kartı ve ondan açılan büyük
-     takvim arayüzündeki beyaz yüzeyler de aynı tona geçer. Seçili gün
-     (pembe) ve hafta sonu (kırmızı) vurgu renkleri korunuyor. */
-  body.is-anthracite .stopwatch-display {
-    background: var(--dark-card-color, #1c1c22);
-  }
-
-  body.is-anthracite .stopwatch-time-row,
-  body.is-anthracite .stopwatch-hint {
-    color: #f2f2f4;
+  /* Sayfa 5: sayaç ve "Turlarım"/"Sıfırla" butonları artık kartsız;
+     metin zaten var(--theme-text) ile her temaya otomatik uyum
+     sağladığından burada sadece butonların add-task-btn'den miras
+     kalan kart kalıntılarını (koyu zemin) geçersiz kılmak gerekiyor. */
+  body.is-anthracite .stopwatch-reset-btn,
+  body.is-anthracite .stopwatch-laps-btn,
+  body.is-anthracite .stopwatch-lap-btn {
+    background: none;
+    border: none;
+    box-shadow: none;
+    color: var(--theme-text, #f2f2f4);
   }
 
   /* Sayaç (geri sayım) kurulum kartı: Kronometre kartıyla aynı "Kart
@@ -2065,7 +2175,42 @@
      işaretlenir, kartın geri kalanına basınca boş bir sayfaya geçilir. */
   .home-relax-widget {
     grid-column: 1 / -1;
+    position: relative;
     display: flex;
+    flex-direction: column;
+    width: 100%;
+    min-height: clamp(7.5rem, 16dvh, 9.5rem);
+    overflow: hidden;
+    background-color: transparent;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    text-align: left;
+    font-family: "Space Grotesk", sans-serif;
+  }
+
+  /* Planlayıcı listesindeki (.relax-tasks-connectors) katmanla birebir aynı
+     mantık: satırlar arasına renk geçişli, dolan bir çizgi çizilir; JS
+     (drawHomeRelaxConnectors) konum/uzunluğu her satırın gerçek yerine göre
+     hesaplar. Burada, Planlayıcı'dakinden daha belirgin olsun diye çizgi
+     biraz daha kalın ve iz (track) katmanı daha az soluk. */
+  .home-relax-connectors {
+    z-index: 0;
+  }
+
+  .home-relax-connectors .relax-task-connector-line {
+    width: 4px;
+  }
+
+  .home-relax-connectors .relax-task-connector-track {
+    opacity: 0.34;
+  }
+
+  .home-relax-task-row {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex: 1;
     flex-direction: row;
     align-items: center;
     justify-content: flex-start;
@@ -2073,36 +2218,46 @@
     width: 100%;
     min-height: clamp(7.5rem, 16dvh, 9.5rem);
     padding: 1.1rem 1.3rem;
-    background-color: #fff;
+    background-color: transparent;
     border: none;
-    border-radius: 1.75rem;
-    box-shadow: 0 14px 28px -16px rgba(0, 0, 0, 0.28), 0 2px 8px rgba(0, 0, 0, 0.06);
+    border-radius: 0;
+    box-shadow: none;
     cursor: pointer;
     text-align: left;
     font-family: "Space Grotesk", sans-serif;
-    transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
   }
 
-  .home-relax-widget:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 18px 32px -16px rgba(0, 0, 0, 0.32), 0 2px 8px rgba(0, 0, 0, 0.07);
+  .home-relax-task-row[hidden] {
+    display: none;
   }
 
-  .home-relax-widget:active {
-    transform: translateY(0);
-    box-shadow: 0 8px 18px -12px rgba(0, 0, 0, 0.24), 0 1px 4px rgba(0, 0, 0, 0.05);
-  }
-
+  /* Boş durum (görev yok) dairesi: widget kartsız, doğrudan sayfa zemininde
+     durduğu için renkleri sabit siyah/beyaz DEĞİL, Planlayıcı sayfasındaki
+     işaretçilerle aynı şekilde aktif temanın yazı rengine (--theme-text)
+     göre otomatik ayarlanır. Halka + ay ikonu + hafif dolgu bu renkten
+     türetildiği için açık, koyu ya da renkli hiçbir temada kaybolmaz. */
   .home-relax-widget-moon {
     flex: none;
+    box-sizing: border-box;
     width: 2.1rem;
     height: 2.1rem;
     display: flex;
     align-items: center;
     justify-content: center;
     border-radius: 50%;
-    background-color: #f5f5f5;
-    color: #000;
+    /* Planlayıcı'da siyah (#272727) bir görev eklendiğinde henüz dolmamış
+       işaretçinin görünümüyle BİREBİR aynı: içi boş (sayfa zemini görünür),
+       2.5px siyah halka, ortada tema yazı renginde ikon. */
+    --mk-color: var(--theme-ring, #272727);
+    background: none;
+    box-shadow: inset 0 0 0 2.5px var(--mk-color);
+    color: var(--theme-text, #1a1a1a);
+    transition: color 0.5s ease, box-shadow 0.5s ease;
+  }
+
+  .home-relax-widget-moon svg {
+    width: 21px;
+    height: 21px;
   }
 
   /* Sağ taraf: yazı alanı (üstte küçük saat/durum, altında büyük görev adı). */
@@ -2121,7 +2276,8 @@
     font-weight: 600;
     font-size: 0.88rem;
     line-height: 1.2;
-    color: #9a9a9a;
+    color: color-mix(in srgb, var(--theme-text, #1a1a1a) 60%, transparent);
+    transition: color 0.5s ease;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -2132,7 +2288,8 @@
     font-weight: 700;
     font-size: 1.6rem;
     line-height: 1.15;
-    color: #000;
+    color: var(--theme-text, #1a1a1a);
+    transition: color 0.5s ease;
     overflow-wrap: anywhere;
     display: -webkit-box;
     -webkit-box-orient: vertical;
@@ -2149,40 +2306,26 @@
     --hw-line: #8a8a90;
   }
 
-  /* Referanstaki gibi işaretçinin üstünden ve altından geçen ince çizgi. */
-  .home-relax-widget-lead::before,
-  .home-relax-widget-lead::after {
-    content: "";
-    position: absolute;
-    left: 50%;
-    width: 3px;
-    margin-left: -1.5px;
-    border-radius: 999px;
-    opacity: 0.32;
-    pointer-events: none;
-  }
-
+  /* NOT (düzeltme): Burada eskiden her işaretçinin üstünden/altından geçen,
+     SABİT GRİ ve zemin rengine doğru SOLUKLAŞARAK biten ayrı bir "çubuk"
+     (::before/::after) vardı. Bu, satırlar arasına gerçek konum/renkle
+     JS'in çizdiği asıl bağlantı çizgisiyle (.home-relax-connectors,
+     drawHomeRelaxConnectors) AYNI yerde üst üste biniyordu: iki farklı katman
+     (biri gri ve bulanık/soluk, diğeri görev renkleriyle net) çakışınca
+     çizginin dairelerle birleştiği uçlar yarım kalmış/bulanık bir "silüet"
+     gibi görünüyordu. Planlayıcı sayfasında (.relax-tasks-list) böyle ikinci
+     bir katman YOK — sadece tek, net, renk geçişli bağlantı çizgisi var. Ana
+     sayfayı da onunla birebir aynı yapmak için bu eski çubuklar tamamen
+     kaldırıldı; artık burada da SADECE drawHomeRelaxConnectors'ın çizdiği
+     net çizgi görünür. */
   .home-relax-widget-lead {
     flex: none;
-  }
-
-  .home-relax-widget-lead::before {
-    bottom: calc(100% - 1px);
-    height: 1.1rem;
-    /* Alttaki çubukla aynı: işaretçiye bitişik uçta dolu, uzak uçta silikleşir. */
-    background: linear-gradient(to top, var(--hw-line), transparent);
-  }
-
-  .home-relax-widget-lead::after {
-    top: calc(100% - 1px);
-    height: 1.1rem;
-    background: linear-gradient(to bottom, var(--hw-line), transparent);
   }
 
   .home-relax-widget .relax-task-marker {
     width: 3.6rem;
     height: 3.6rem;
-    color: #000;
+    color: var(--theme-text, #1a1a1a);
   }
 
   .home-relax-widget .relax-task-marker svg {
@@ -2227,26 +2370,14 @@
   /* Anahtar (koyu mod) açıkken diğer ana sayfa kartlarıyla aynı antresit
      tona geçer; metin/ikon renkleri onlarla aynı açık tonlara döner. */
   body.is-anthracite .home-relax-widget {
-    background-color: var(--dark-card-color, #1c1c22);
-    box-shadow: 0 14px 28px -16px rgba(0, 0, 0, 0.55), 0 2px 8px rgba(0, 0, 0, 0.2);
+    background-color: transparent;
+    box-shadow: none;
   }
 
-  body.is-anthracite .home-relax-widget-moon {
-    background-color: rgba(255, 255, 255, 0.1);
-    color: #f2f2f4;
-  }
-
-  body.is-anthracite .home-relax-widget-time {
-    color: #a9a9ae;
-  }
-
-  body.is-anthracite .home-relax-widget-title {
-    color: #f2f2f4;
-  }
-
-  body.is-anthracite .home-relax-widget .relax-task-marker {
-    color: #f2f2f4;
-  }
+  /* NOT: Widget kartsız (şeffaf) olduğundan yazı/ikon/ay renkleri artık
+     antresit (kart koyu modu) anahtarına DEĞİL, sayfa zeminini temsil eden
+     --theme-text değişkenine bağlı; bu yüzden burada ayrıca açık renk
+     geçersiz kılmaları yok (açık zeminde beyaz yazı okunmaz hale geliyordu). */
 
   /* ========================================================
      PLANLAYICI SAYFASI (#page-relax)
@@ -2734,6 +2865,211 @@
     margin-bottom: -1.6rem;
     pointer-events: none;
   }
+
+  /* =====================================================================
+     UYKU AYARI (Planlayıcı): üst çubuk butonu, sheet ve sabit görevler
+     ===================================================================== */
+  #page-relax .relax-sleep-btn {
+    margin-left: 0;
+    margin-right: -10px;
+  }
+
+  /* Sabit (uyku) görevlerinde Düzenle/Sil yerine "Uyku ayarı" gösterilir. */
+  .task-sheet [data-action="sleep-settings"] { display: none; }
+  .task-sheet[data-fixed="1"] [data-action="sleep-settings"] { display: flex; }
+  .task-sheet[data-fixed="1"] [data-action="edit"],
+  .task-sheet[data-fixed="1"] [data-action="delete"] { display: none; }
+
+  .task-sheet.sleep-sheet {
+    --ts-task: #ffb46e;
+  }
+
+  .sleep-head {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+    padding: 0.15rem 0.35rem 1.05rem;
+  }
+
+  .sleep-head-ic {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 3.1rem;
+    height: 3.1rem;
+    border-radius: 50%;
+    background: #9fb8ff;
+    color: #16171b;
+    box-shadow: 0 12px 22px -12px #9fb8ff;
+  }
+
+  .sleep-head-ic svg { width: 22px; height: 22px; }
+
+  .sleep-head-text {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+  }
+
+  .sleep-title {
+    font-weight: 700;
+    font-size: 1.3rem;
+    line-height: 1.15;
+  }
+
+  .sleep-desc {
+    font-weight: 600;
+    font-size: 0.82rem;
+    line-height: 1.25;
+    color: var(--ts-muted);
+  }
+
+  .sleep-switch {
+    position: relative;
+    flex: none;
+    width: 3.1rem;
+    height: 1.9rem;
+  }
+
+  .sleep-switch input {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    opacity: 0;
+    cursor: pointer;
+    z-index: 2;
+  }
+
+  .sleep-switch-track {
+    position: absolute;
+    inset: 0;
+    border-radius: 999px;
+    background: var(--ts-tile-strong);
+    transition: background-color 0.25s ease;
+  }
+
+  .sleep-switch-track::after {
+    content: "";
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: calc(1.9rem - 6px);
+    height: calc(1.9rem - 6px);
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .sleep-switch input:checked + .sleep-switch-track { background: var(--ts-task); }
+  .sleep-switch input:checked + .sleep-switch-track::after { transform: translateX(1.2rem); }
+
+  .sleep-fields {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    transition: opacity 0.25s ease;
+  }
+
+  .sleep-field {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+    padding: 0.7rem 0.9rem 0.7rem 0.8rem;
+    border-radius: 22px;
+    background: var(--ts-tile);
+    cursor: pointer;
+  }
+
+  .sleep-field-ic {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 2.6rem;
+    height: 2.6rem;
+    border-radius: 50%;
+    background: var(--f-bg);
+    color: var(--f-fg);
+  }
+
+  .sleep-field-ic svg { width: 20px; height: 20px; }
+
+  .sleep-field-label {
+    flex: 1;
+    font-weight: 700;
+    font-size: 1.05rem;
+  }
+
+  .sleep-time-input {
+    box-sizing: border-box;
+    min-width: 6.4rem;
+    padding: 0.4rem 0.7rem;
+    border: none;
+    border-radius: 14px;
+    background: var(--ts-tile-strong);
+    color: var(--ts-text);
+    font-family: inherit;
+    font-weight: 700;
+    font-size: 1.3rem;
+    text-align: center;
+    -webkit-appearance: none;
+    appearance: none;
+    color-scheme: light;
+    outline: none;
+  }
+
+  body.is-anthracite .sleep-time-input { color-scheme: dark; }
+
+  .sleep-summary {
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 0.5rem;
+    margin: 1.05rem 0 0.95rem;
+    transition: opacity 0.25s ease;
+  }
+
+  .sleep-summary-num {
+    font-weight: 800;
+    font-size: 2.1rem;
+    line-height: 1;
+    letter-spacing: -0.01em;
+  }
+
+  .sleep-summary-label {
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: var(--ts-muted);
+  }
+
+  .sleep-sheet.is-off .sleep-fields,
+  .sleep-sheet.is-off .sleep-summary {
+    opacity: 0.38;
+    pointer-events: none;
+  }
+
+  .sleep-save-btn {
+    width: 100%;
+    padding: 0.95rem 1rem;
+    border: none;
+    border-radius: 22px;
+    background: var(--ts-text);
+    color: var(--ts-bg);
+    font: inherit;
+    font-weight: 800;
+    font-size: 1.05rem;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .sleep-save-btn:active { transform: scale(0.97); }
 
   .relax-month-head {
     display: flex;
@@ -13948,7 +14284,7 @@
      sayesinde) her zaman okunaklı kalıyor; sağdaki iç dolgu (padding) da
      harflerin artık asla kırpılmamasını garanti ediyor. */
   .stopwatch-subject-tag {
-    font-family: "Space Grotesk", sans-serif;
+    font-family: "Baloo 2", sans-serif;
     font-weight: 800;
     font-size: 0.82rem;
     letter-spacing: 0.01em;
@@ -13976,9 +14312,12 @@
     -webkit-tap-highlight-color: transparent;
   }
 
-  /* Sayaç çalışırken bekleme kartı tamamen gizlenir; yerini tam ekran
-     görünüm alır (aşağıdaki .stopwatch-fullscreen). */
-  body.is-stopwatch-running .stopwatch-page {
+  /* Tam ekran açıkken (kronometre çalışırken VE duraklatıldıktan sonra,
+     geri butonuyla çıkılana kadar) bekleme kartı tamamen gizlenir; yerini
+     tam ekran görünüm alır (aşağıdaki .stopwatch-fullscreen).
+     NOT: body.is-stopwatch-fs tam ekranın açık olduğunu,
+     body.is-stopwatch-running ise kronometrenin fiilen saydığını belirtir. */
+  body.is-stopwatch-fs .stopwatch-page {
     opacity: 0;
     transform: scale(0.96);
     pointer-events: none;
@@ -14041,32 +14380,38 @@
     width: 100%;
     box-sizing: border-box;
     padding: 2.2rem 1.2rem;
-    background: #fff;
-    border: 5px solid #000;
-    border-radius: 1.4em;
-    box-shadow: 8px 8px 0px 0px #000;
+    background: none;
+    border: none;
+    box-shadow: none;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     gap: 0.35rem;
     cursor: pointer;
-    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease;
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.2s ease;
   }
 
   .stopwatch-display.is-pressed {
-    transform: translate(2px, 2px) scale(0.99);
-    box-shadow: 4px 4px 0px 0px #000;
+    transform: scale(0.97);
+    opacity: 0.7;
   }
 
   .stopwatch-time-row {
     display: flex;
     align-items: baseline;
-    font-family: "Space Grotesk", sans-serif;
+    font-family: "Baloo 2", sans-serif;
     font-weight: 900;
-    color: #121212;
+    color: var(--theme-text, #1a1a1a);
     line-height: 1;
     font-variant-numeric: tabular-nums;
+    transition: color 0.5s ease;
+  }
+
+  /* Kronometre rakamları daha ince (Baloo 2: 900 -> 700). Sayaç
+     (#countdownDisplay) kendi ağırlığında kalır. */
+  #stopwatchDisplay .stopwatch-time-row {
+    font-weight: 700;
   }
 
   .stopwatch-time {
@@ -14081,12 +14426,12 @@
   }
 
   .stopwatch-hint {
-    font-family: "Space Grotesk", sans-serif;
+    font-family: "Baloo 2", sans-serif;
     font-weight: 700;
     font-size: 0.85rem;
-    color: #121212;
+    color: var(--theme-text, #1a1a1a);
     opacity: 0.45;
-    transition: opacity 0.3s ease;
+    transition: opacity 0.3s ease, color 0.5s ease;
   }
 
   .stopwatch-controls {
@@ -14113,11 +14458,76 @@
     margin-bottom: 0.6rem;
   }
 
-  .stopwatch-reset-btn {
-    padding: 0.7rem 1.5rem;
+  /* Turlarım / Sıfırla: kartsız, sade metin butonları. add-task-btn'in
+     beyaz zemin/siyah çerçeve/gölge dilini burada tamamen iptal edip
+     yazıyı doğrudan arka planın üstüne, var(--theme-text) ile her
+     temada okunaklı kalacak şekilde bırakıyoruz. Dokunma geri bildirimi
+     artık kutu gölgesiyle değil, opacity/scale ile veriliyor. */
+  .stopwatch-reset-btn,
+  .stopwatch-laps-btn,
+  .stopwatch-lap-btn {
+    padding: 0.6rem 0.9rem;
     font-size: 0.92rem;
+    font-family: "Baloo 2", sans-serif;
+    font-weight: 800;
+    color: var(--theme-text, #1a1a1a);
+    background: none;
+    border: none;
+    border-radius: 0.9rem;
+    box-shadow: none;
+    opacity: 0.65;
+    position: relative;
     transition: opacity 0.25s ease, transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1),
-      box-shadow 0.2s ease, background-color 0.2s ease;
+      color 0.5s ease;
+  }
+
+  /* Uiverse.io by WhiteNervosa: hover'da ortadan dışa doğru açılan
+     alt çizgi. Renk sabit beyaz yerine currentColor kullanır, böylece
+     buton hangi renkteyse (tema metni ya da :active'deki accent) çizgi
+     de onunla eşleşir. */
+  .stopwatch-reset-btn::after,
+  .stopwatch-laps-btn::after,
+  .stopwatch-lap-btn::after {
+    content: "";
+    pointer-events: none;
+    bottom: 0.15rem;
+    left: 50%;
+    position: absolute;
+    width: 0%;
+    height: 2px;
+    background-color: currentColor;
+    transition-timing-function: cubic-bezier(0.25, 0.8, 0.25, 1);
+    transition-duration: 400ms;
+    transition-property: width, left;
+  }
+
+  .stopwatch-reset-btn:hover,
+  .stopwatch-laps-btn:hover {
+    transform: none;
+    box-shadow: none;
+    background: none;
+    opacity: 1;
+  }
+
+  .stopwatch-reset-btn:focus::after,
+  .stopwatch-reset-btn:hover::after,
+  .stopwatch-laps-btn:focus::after,
+  .stopwatch-laps-btn:hover::after,
+  .stopwatch-lap-btn:focus::after,
+  .stopwatch-lap-btn:hover::after {
+    width: calc(100% - 1.8rem);
+    left: 0.9rem;
+  }
+
+  .stopwatch-reset-btn:active,
+  .stopwatch-reset-btn.is-pressed,
+  .stopwatch-laps-btn:active,
+  .stopwatch-laps-btn.is-pressed {
+    transform: scale(0.92);
+    box-shadow: none;
+    background-color: transparent;
+    color: var(--accent-color, #ff90e8);
+    opacity: 1;
   }
 
   /* Süre sıfırken (henüz başlatılmamışken) Sıfırla butonu tamamen
@@ -14130,13 +14540,6 @@
 
   /* Sıfırla ile aynı satırda, solda yer alan "Turlarım" butonu; aynı
      koşulla (süre sıfır değilken) belirir/gizlenir. */
-  .stopwatch-laps-btn {
-    padding: 0.7rem 1.5rem;
-    font-size: 0.92rem;
-    transition: opacity 0.25s ease, transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1),
-      box-shadow 0.2s ease, background-color 0.2s ease;
-  }
-
   .stopwatch-laps-btn.is-hidden {
     opacity: 0;
     transform: scale(0.85);
@@ -14227,21 +14630,74 @@
     transition: opacity 0.35s ease, transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
 
-  body.is-stopwatch-running .stopwatch-fullscreen {
+  body.is-stopwatch-fs .stopwatch-fullscreen {
     opacity: 1;
     pointer-events: auto;
     transform: scale(1);
   }
 
-  body.is-stopwatch-running .stopwatch-fullscreen:active {
+  body.is-stopwatch-fs .stopwatch-fullscreen:active {
     transform: scale(0.97);
+  }
+
+  /* Kronometre duraklatılınca tam ekranda kalınır; sol üstte küçük bir
+     geri butonu belirir, basınca tam ekrandan çıkılır. Sadece kronometre
+     DURAKLATILMIŞKEN (is-stopwatch-fs var, is-stopwatch-running yok)
+     görünür; çalışırken gizli ve tıklanamaz. */
+  .stopwatch-fs-back-btn {
+    position: absolute;
+    top: calc(env(safe-area-inset-top) + 0.9rem);
+    left: calc(env(safe-area-inset-left) + 0.9rem);
+    width: 2.6rem;
+    height: 2.6rem;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    border-radius: 50%;
+    box-shadow: none;
+    color: var(--theme-text, #f2f2f7);
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    z-index: 6;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.3s ease, visibility 0s linear 0.3s,
+      transform 0.15s ease, background-color 0.15s ease, color 0.5s ease;
+  }
+
+  .stopwatch-fs-back-btn svg {
+    display: block;
+    width: 16px;
+    height: 16px;
+  }
+
+  body.is-stopwatch-fs:not(.is-stopwatch-running) .stopwatch-fs-back-btn {
+    opacity: 0.75;
+    visibility: visible;
+    pointer-events: auto;
+    transition: opacity 0.3s ease, visibility 0s, transform 0.15s ease,
+      background-color 0.15s ease, color 0.5s ease;
+  }
+
+  body.is-stopwatch-fs:not(.is-stopwatch-running) .stopwatch-fs-back-btn:hover {
+    opacity: 1;
+    background-color: rgba(127, 127, 127, 0.14);
+  }
+
+  body.is-stopwatch-fs:not(.is-stopwatch-running) .stopwatch-fs-back-btn:active {
+    opacity: 1;
+    transform: scale(0.92);
   }
 
   .stopwatch-fullscreen-time-row {
     display: flex;
     align-items: baseline;
-    font-family: "Space Grotesk", sans-serif;
-    font-weight: 900;
+    font-family: "Baloo 2", sans-serif;
+    font-weight: 700;
     color: var(--theme-text, #f2f2f7);
     line-height: 1;
     font-variant-numeric: tabular-nums;
@@ -14266,7 +14722,7 @@
     transform: translateX(-50%);
     margin-top: 0.9rem;
     width: max-content;
-    font-family: "Space Grotesk", sans-serif;
+    font-family: "Baloo 2", sans-serif;
     font-weight: 700;
     font-size: 0.85rem;
     color: var(--theme-text, #f2f2f7);
@@ -14303,18 +14759,38 @@
     left: 50%;
     margin-top: 2.7rem;
     transform: translateX(-50%) scale(0.85);
-    padding: 0.65rem 1.5rem;
-    font-size: 0.95rem;
+    /* Görünüm (font, boyut, kartsız yapı, alt çizgi efekti) artık
+       Sıfırla butonuyla ortak (bkz. yukarıdaki .stopwatch-reset-btn
+       kuralları); burada sadece konum ve belirme/gizlenme kalır. */
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.25s ease, transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1),
-      box-shadow 0.2s ease, background-color 0.2s ease;
+      color 0.5s ease;
   }
 
   .stopwatch-lap-btn.is-visible {
-    opacity: 1;
+    opacity: 0.65;
     transform: translateX(-50%) scale(1);
     pointer-events: auto;
+  }
+
+  /* Sıfırla'daki hover/basılma davranışının aynısı; tek fark, butonun
+     yatayda translateX(-50%) ile ortalanmış olması yüzünden transform'un
+     bunu koruması gerekir. */
+  .stopwatch-lap-btn.is-visible:hover {
+    transform: translateX(-50%) scale(1);
+    box-shadow: none;
+    background: none;
+    opacity: 1;
+  }
+
+  .stopwatch-lap-btn.is-visible:active,
+  .stopwatch-lap-btn.is-visible.is-pressed {
+    transform: translateX(-50%) scale(0.92);
+    box-shadow: none;
+    background-color: transparent;
+    color: var(--accent-color, #ff90e8);
+    opacity: 1;
   }
 
   /* Zaman + ipucu + Tur butonunu saran sabit boyutlu blok. Bu blok
@@ -14337,7 +14813,7 @@
     transform: translateX(-50%);
     width: min(88vw, 520px);
     text-align: center;
-    font-family: "Playfair Display", "Georgia", serif;
+    font-family: "Baloo 2", sans-serif;
     font-style: italic;
     font-weight: 800;
     font-size: clamp(1.7rem, 8.2vw, 2.7rem);
@@ -14429,7 +14905,7 @@
     align-items: flex-start;
     justify-content: space-between;
     gap: 1.2rem;
-    font-family: "Space Grotesk", sans-serif;
+    font-family: "Baloo 2", sans-serif;
     font-variant-numeric: tabular-nums;
     color: var(--theme-text, #f2f2f7);
     padding-bottom: 0.6rem;
@@ -14521,7 +14997,7 @@
   }
 
   .countdown-setup-value {
-    font-family: "Space Grotesk", sans-serif;
+    font-family: "Baloo 2", sans-serif;
     font-weight: 900;
     font-size: 2.1rem;
     color: #121212;
@@ -14532,7 +15008,7 @@
   }
 
   .countdown-setup-colon {
-    font-family: "Space Grotesk", sans-serif;
+    font-family: "Baloo 2", sans-serif;
     font-weight: 900;
     font-size: 2.1rem;
     color: #121212;
@@ -14541,7 +15017,7 @@
   }
 
   .countdown-setup-label {
-    font-family: "Space Grotesk", sans-serif;
+    font-family: "Baloo 2", sans-serif;
     font-weight: 700;
     font-size: 0.75rem;
     color: #121212;
@@ -14555,7 +15031,7 @@
     border-radius: 50%;
     background: #fff;
     color: #121212;
-    font-family: "Space Grotesk", sans-serif;
+    font-family: "Baloo 2", sans-serif;
     font-weight: 800;
     font-size: 1.1rem;
     display: flex;
@@ -14644,7 +15120,7 @@
   .countdown-presets-edit-btn {
     flex-shrink: 0;
     padding: 0.4rem 0.75rem;
-    font-family: "Space Grotesk", sans-serif;
+    font-family: "Baloo 2", sans-serif;
     font-weight: 800;
     font-size: 0.78rem;
     color: #121212;
@@ -14765,7 +15241,7 @@
   }
 
   .countdown-presets-soon-text {
-    font-family: "Space Grotesk", sans-serif;
+    font-family: "Baloo 2", sans-serif;
     font-weight: 800;
     font-size: 1.3rem;
     color: #121212;
@@ -14823,7 +15299,7 @@
   .countdown-sound-name {
     flex: 1;
     min-width: 0;
-    font-family: "Space Grotesk", sans-serif;
+    font-family: "Baloo 2", sans-serif;
     font-weight: 700;
     font-size: 0.9rem;
     color: #121212;
@@ -14904,7 +15380,7 @@
   }
 
   .countdown-preset-chip-time {
-    font-family: "Space Grotesk", sans-serif;
+    font-family: "Baloo 2", sans-serif;
     font-weight: 800;
     font-size: 0.92rem;
     color: #121212;
@@ -14949,7 +15425,7 @@
 
   .countdown-presets-empty {
     grid-column: 1 / -1;
-    font-family: "Space Grotesk", sans-serif;
+    font-family: "Baloo 2", sans-serif;
     font-weight: 600;
     font-size: 0.82rem;
     color: #121212;
@@ -14975,7 +15451,7 @@
     width: 100%;
     padding: 0.55rem 0.5rem;
     text-align: center;
-    font-family: "Space Grotesk", sans-serif;
+    font-family: "Baloo 2", sans-serif;
     font-weight: 700;
     font-size: 0.95rem;
     color: #121212;
@@ -14998,7 +15474,7 @@
      kutularla aynı hizada, dikeyde ortalanmış küçük bir işaret. */
   .countdown-presets-add-colon {
     flex-shrink: 0;
-    font-family: "Space Grotesk", sans-serif;
+    font-family: "Baloo 2", sans-serif;
     font-weight: 900;
     font-size: 1.2rem;
     line-height: 1;
@@ -15059,7 +15535,7 @@
     position: relative;
     display: flex;
     align-items: baseline;
-    font-family: "Space Grotesk", sans-serif;
+    font-family: "Baloo 2", sans-serif;
     font-weight: 900;
     color: var(--theme-text, #f2f2f7);
     line-height: 1;
@@ -15073,7 +15549,7 @@
   }
 
   .countdown-fullscreen-hint {
-    font-family: "Space Grotesk", sans-serif;
+    font-family: "Baloo 2", sans-serif;
     font-weight: 700;
     font-size: 0.85rem;
     color: var(--theme-text, #f2f2f7);
@@ -15116,7 +15592,7 @@
     transition: opacity 0.3s ease, transform 0.3s ease;
   }
 
-  body.is-stopwatch-running .navbar,
+  body.is-stopwatch-fs .navbar,
   body.is-countdown-running .navbar,
   body.is-laps-open .navbar,
   body.is-patterns-open .navbar,
@@ -15133,7 +15609,7 @@
     pointer-events: none;
   }
 
-  body.is-stopwatch-running .navbar .wrapper,
+  body.is-stopwatch-fs .navbar .wrapper,
   body.is-countdown-running .navbar .wrapper,
   body.is-laps-open .navbar .wrapper,
   body.is-patterns-open .navbar .wrapper,
@@ -19968,8 +20444,9 @@
       transition: background-color 0.5s ease;
     }
 
-    /* Kronometre tam ekran çalışırken panel tamamen odaktan çekilir. */
-    body.is-stopwatch-running .sidebar-nav {
+    /* Kronometre tam ekranı açıkken (çalışırken ve duraklatılmışken) panel
+       tamamen odaktan çekilir. */
+    body.is-stopwatch-fs .sidebar-nav {
       opacity: 0;
       transform: translateX(-16px);
       pointer-events: none;
@@ -20247,6 +20724,21 @@
       padding-top: calc(env(safe-area-inset-top) + 80px);
     }
 
+    /* Sağ üst köşe: büyük ekranda mobildeki Kronometre widget'ı yerine
+       tarih+saat widget'ı gösterilir. */
+    #page-1 .home-kronometre-widget {
+      display: none;
+    }
+
+    #page-1 .home-datetime-widget {
+      display: flex;
+    }
+
+    /* Sol boşluk: sadece büyük ekranda görünen Kronometre halka widget'ı. */
+    #page-1 .home-kronometre-ring-widget {
+      display: flex;
+    }
+
     #page-1 .home-widgets-stack {
       --tile-r: 1.75rem;
       width: 100%;
@@ -20259,13 +20751,12 @@
       grid-template-rows:
         minmax(6.5rem, 0.8fr)
         minmax(7rem, 0.9fr)
-        minmax(8rem, 1.2fr)
-        minmax(5rem, 0.6fr);
+        minmax(8rem, 1.2fr);
       grid-template-areas:
         "relax relax"
         "count count"
-        "cd    cd"
-        "date  mini";
+        "cd    .";
+        /* eski hali (Mini Oyunlar geri gelince): "cd    mini" yap. */
     }
 
     /* Kutular: ızgara hücresini tam doldurur ve kendi boyutlarına göre
@@ -20286,7 +20777,6 @@
     #page-1 .home-tile-relax { grid-area: relax; }
     #page-1 .home-tile-count { grid-area: count; }
     #page-1 .home-flip-back { grid-area: cd; }
-    #page-1 .home-tile-date { grid-area: date; }
     #page-1 .home-tile-mini { grid-area: mini; }
 
     /* Kutunun içindeki düğme hücreyi tam doldurur. */
@@ -20312,31 +20802,120 @@
       display: none;
     }
 
-    /* Ön yüz: "çevrilmiş" durumdayken dokunmayı kapatan kural burada geçersiz. */
+    /* Soru sayacı (ön yüz) artık büyük ekranda da gösteriliyor (bkz. aşağıdaki
+       "Bugün Çözülen: büyük ekran, kart yok" bloğu). Geri sayım kartı
+       (arka yüz) henüz ayrı bir istekle ele alınmadığı için "cd" hücresi
+       şimdilik boş bırakılıyor; yakında gelecek yeni widget'lara yer açar. */
+    #page-1 .home-flip-back {
+      display: none;
+    }
+
+    /* ---------- "Bugün Çözülen": büyük ekran, kart yok ----------
+       Büyük ekranda kutuyu saran beyaz kart tamamen kalkar; rakam ve
+       yazılar doğrudan bento ızgarasının arka planı üzerinde durur. Sabit
+       siyah/gri yerine JS'in aktif temaya göre andan ana güncellediği
+       --theme-text/--accent-color değişkenleri kullanılır, böylece açık,
+       koyu ve diğer özel temalarda okunabilirlik otomatik korunur. Kartın
+       verdiği "widget" hissini geri kazandırmak için rakam hover'da yumuşakça
+       büyür ve hedef belirliyse ince, minimalist bir dolum çubuğu akar
+       (mobildeki tam kart "sıvı" efekti yerine). */
     #page-1 .home-tile-count .home-live-widget {
       pointer-events: auto;
-      padding: clamp(1.25rem, 5cqmin, 2.6rem);
+      padding: clamp(0.5rem, 2cqmin, 1.25rem);
+      background: transparent;
+      border: none;
+      border-radius: 0;
+      box-shadow: none;
       /* Başlık üstte, dev rakam altta (iOS widget'ları gibi); DOM sırası
          (rakam önce) değişmediği için sadece yön ters çevrilir. */
       flex-direction: column-reverse;
-      justify-content: space-between;
+      justify-content: center;
+      transition: none;
     }
 
-    #page-1 .home-tile-count .home-live-widget:hover {
-      transform: translateY(-2px);
+    #page-1 .home-tile-count .home-live-widget:hover,
+    #page-1 .home-tile-count .home-live-widget:active {
+      transform: none;
+      box-shadow: none;
+    }
+
+    /* Mobildeki tam-kart sıvı/dalga dolum katmanı büyük ekranda kullanılmaz;
+       yerini aşağıdaki ince çubuk alır. */
+    #page-1 .home-tile-count .home-live-widget-fill {
+      display: none;
     }
 
     #page-1 .home-live-widget-count {
-      font-size: clamp(3.5rem, min(30cqi, 40cqh), 16rem);
+      font-size: clamp(3rem, min(22cqi, 30cqh), 7.5rem);
       line-height: 0.9;
+      color: var(--theme-text, #1a1a1a);
+      transition: color 0.5s ease, transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    #page-1 .home-tile-count .home-live-widget:hover .home-live-widget-count {
+      transform: scale(1.03);
     }
 
     #page-1 .home-live-widget-title {
       font-size: clamp(1.15rem, 3.4cqi, 2.2rem);
+      color: var(--theme-text, #1a1a1a);
+      transition: color 0.5s ease;
     }
 
     #page-1 .home-live-widget-sub {
       font-size: clamp(0.9rem, 2.1cqi, 1.35rem);
+      color: color-mix(in srgb, var(--theme-text, #1a1a1a) 55%, transparent);
+      transition: color 0.5s ease;
+    }
+
+    /* ---- Minimalist hedef doluluk çubuğu (yalnızca büyük ekran) ----
+       Genişliği JS'in --fill-ratio olarak yazdığı orana (0..1) göre akar;
+       ne kartı kaplayacak kadar büyük ne de fark edilmeyecek kadar küçük,
+       ince bir "pill" şeklinde. */
+    #page-1 .home-live-widget-bar {
+      display: none;
+      width: clamp(5rem, 24cqi, 13rem);
+      height: clamp(0.4rem, 1.1cqh, 0.6rem);
+      margin-top: 0.6rem;
+      border-radius: 999px;
+      background: color-mix(in srgb, var(--theme-text, #1a1a1a) 12%, transparent);
+      overflow: hidden;
+    }
+
+    #page-1 .home-live-widget.has-goal .home-live-widget-bar {
+      display: block;
+    }
+
+    #page-1 .home-live-widget-bar-fill {
+      display: block;
+      height: 100%;
+      width: calc(var(--fill-ratio, 0) * 100%);
+      border-radius: inherit;
+      background: var(--accent-color, #ff90e8);
+      position: relative;
+      overflow: hidden;
+      transition: width 1.1s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    /* Premium dokunuş: dolu kısımda usulca kayan ince bir ışık şeridi. */
+    #page-1 .home-live-widget-bar-fill::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(100deg, transparent 15%, rgba(255, 255, 255, 0.6) 50%, transparent 85%);
+      background-size: 200% 100%;
+      animation: homeBarShine 2.8s ease-in-out infinite;
+    }
+
+    @keyframes homeBarShine {
+      0% { background-position: 200% 0; }
+      100% { background-position: -50% 0; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      #page-1 .home-live-widget-bar-fill::after {
+        animation: none;
+      }
     }
 
     /* Geniş ve alçak kart (çoğu büyük ekranda böyle): yazı solda, rakam sağda. */
@@ -20344,20 +20923,20 @@
       #page-1 .home-tile-count .home-live-widget {
         flex-direction: row-reverse;
         align-items: center;
-        justify-content: space-between;
-        gap: 1.5rem;
+        justify-content: flex-start;
+        gap: clamp(1rem, 6cqi, 2.2rem);
       }
 
       #page-1 .home-tile-count .home-live-widget-count {
-        font-size: clamp(3rem, min(62cqh, 22cqi), 16rem);
+        font-size: clamp(2.75rem, min(46cqh, 15cqi), 7rem);
       }
 
       #page-1 .home-tile-count .home-live-widget-title {
-        font-size: clamp(1.15rem, min(3.4cqi, 12cqh), 2.2rem);
+        font-size: clamp(1.1rem, min(3cqi, 11cqh), 1.9rem);
       }
 
       #page-1 .home-tile-count .home-live-widget-sub {
-        font-size: clamp(0.9rem, min(2.1cqi, 8cqh), 1.35rem);
+        font-size: clamp(0.85rem, min(1.9cqi, 7cqh), 1.2rem);
       }
     }
 
@@ -20437,10 +21016,30 @@
     }
 
     /* ---------- Rahatla ---------- */
+    /* DÜZELTME: .home-relax-widget (bir <div>) .home-tile'ın gerçek
+       yüksekliğini hiç almıyordu (yukarıdaki "#page-1 .home-tile > button"
+       kuralı sadece <button> çocuklara uygulanıyor, bu bir div). Bu yüzden
+       widget SADECE KENDİ İÇERİĞİNE göre (kaç satır varsa o kadar)
+       boyutlanıyordu. JS'teki measureHomeRowsFit ise "ekrana kaç satır
+       sığar" sorusunu widget'ın O ANKİ (zaten içeriğe göre küçülmüş)
+       yüksekliğine bakarak cevaplıyordu — döngüsel bir hata: widget bir kez
+       tek satıra düşünce, konteyner de tek satırlık boya küçüldüğü için bir
+       daha asla büyüyemiyordu. Bu tek kök neden üç şikayeti de açıklıyor:
+       (1) işareti kaldırılan görev geri gelmiyormuş gibi görünüyordu çünkü
+       gösterecek ikinci bir satır zaten yoktu, (2) widget bazen "saçmalayıp"
+       tek görevde takılı kalıyordu, (3) sağ taraftaki boşluğu doldurmuyordu.
+       Şimdi widget, kutusunun (.home-tile / grid hücresinin) GERÇEK
+       yüksekliğini alıyor; JS bu sabit yüksekliğe göre kaç satırın sığdığını
+       doğru hesaplayıp ekranı olabildiğince dolduruyor. */
     #page-1 .home-relax-widget {
       --hw-z: 1; /* işaretçinin büyütme oranı (aşağıdaki kutu boyutu eşikleri) */
+      height: 100%;
+    }
+
+    #page-1 .home-relax-task-row {
       padding: clamp(1.25rem, 4.5cqmin, 2.2rem);
       gap: clamp(1.1rem, 4cqmin, 2.6rem);
+      min-height: 0;
     }
 
     #page-1 .home-relax-widget-time {
@@ -20512,31 +21111,51 @@
     }
 
     /* ---------- ≥ 900px: bento düzeni ---------- */
+    /* NOT: Mini Oyunlar kartı geçici olarak kaldırıldığı için (yukarıda HTML
+       yorum içine alındı) sağ taraf artık Rahatla ("relax") widget'ına ait:
+       Rahatla sağ üstten sağ alta kadar İKİ SATIR boyunca uzuyor (Geri Sayım
+       satırının hizasına kadar), "Bugün Çözülen" (count) ve Geri Sayım (cd)
+       eskisi gibi tek satır/sol sütunda kalıyor. Mini Oyunlar geri
+       eklendiğinde bu iki satırlık yapı yeniden gözden geçirilmeli. */
     @container home (min-width: 900px) {
       #page-1 .home-widgets-stack {
         grid-template-columns: minmax(0, 1.55fr) repeat(2, minmax(0, 0.5fr));
         grid-template-rows: minmax(8rem, 0.85fr) minmax(9rem, 1.15fr);
         grid-template-areas:
           "count relax relax"
-          "cd    date  mini";
+          "cd    relax relax";
       }
 
-      /* Rahatla: dikey "kutu" — üstte canlı görev işaretçisi, altta saat ve
-         büyük görev adı (diğer kutularla aynı dil: üstte küçük, altta büyük).
-         İşaretçinin üstündeki çizgi kutunun kenarına taşmasın diye üst
-         boşluk, çizginin boyu (1.1rem × büyütme oranı) kadar artırılır;
-         yani işaretçi biraz aşağı iner, çizgi ise kutunun içinde kalır. */
+      /* Geri sayım (cd) hâlâ gizli olduğu için ikinci satır boş kalıyor;
+         soru sayacı bu boşluğu doldurmak için gereğinden fazla uzamasın
+         diye kendi hücresinin üst kısmında, sabit/ölçülü bir yükseklikte
+         durur (0.85fr'nin verdiği devasa alanı doldurmaz). */
+      #page-1 .home-tile-count {
+        align-self: start;
+        height: clamp(9rem, 13vw, 15rem);
+      }
+
+      /* Rahatla: ikon solda, saat + görev adı onun sağında (mobildeki gibi
+         yan yana), böylece metin ikonun altına değil sağına yazılır. Widget
+         artık dikeyde birden fazla satır (görev) barındırıyor; kendisi
+         sütun, her .home-relax-task-row eskisi gibi yatay kalıyor. */
       #page-1 .home-relax-widget {
         flex-direction: column;
-        align-items: flex-start;
-        justify-content: space-between;
-        padding: calc(clamp(1.25rem, 5cqmin, 2.4rem) + 1.1rem * var(--hw-z)) clamp(1.25rem, 5cqmin, 2.4rem) clamp(1.25rem, 5cqmin, 2.4rem);
+        justify-content: flex-start;
+      }
+
+      #page-1 .home-relax-task-row {
+        flex-direction: row;
+        align-items: center;
+        justify-content: flex-start;
+        padding: clamp(0.9rem, 3.6cqmin, 1.7rem) clamp(1.25rem, 5cqmin, 2.4rem);
+        min-height: 0;
       }
 
       #page-1 .home-relax-widget-bottom {
-        flex: none;
-        width: 100%;
-        justify-content: flex-end;
+        flex: 1;
+        width: auto;
+        justify-content: center;
       }
 
       #page-1 .home-relax-widget-time {
@@ -21108,17 +21727,26 @@
        derinleşir (masaüstünde "tıklanabilir" hissini güçlendirir). */
     .stopwatch-display {
       padding: 3.8rem 2.8rem;
+    }
+
+    /* Kronometre sayacı (#stopwatchDisplay) artık KARTSIZ: çerçeve, köşe
+       yuvarlaklığı ve siyah gölge yok; rakamlar doğrudan sayfa zemininde
+       durur, hover'da da kalkma efekti yoktur (dokunma geri bildirimi
+       için taban .is-pressed kuralı - scale/opacity - aynen geçerli).
+       Kart görünümü sadece Sayaç'ta (#countdownDisplay) korunur; :where()
+       özgüllüğü artırmadığı için bu kurallar eskisiyle aynı ağırlıkta. */
+    .stopwatch-display:where(:not(#stopwatchDisplay)) {
       border-width: 6px;
       border-radius: 1.7em;
       box-shadow: 10px 10px 0px 0px #000;
     }
 
-    .stopwatch-display.is-pressed {
+    .stopwatch-display:where(:not(#stopwatchDisplay)).is-pressed {
       box-shadow: 6px 6px 0px 0px #000;
     }
 
     @media (hover: hover) and (pointer: fine) {
-      .stopwatch-display:hover {
+      .stopwatch-display:where(:not(#stopwatchDisplay)):hover {
         transform: translate(-3px, -3px);
         box-shadow: 13px 13px 0px 0px #000;
       }
@@ -21206,9 +21834,9 @@
     }
 
     .stopwatch-lap-btn {
-      padding: 0.85rem 2rem;
-      font-size: 1.05rem;
-      margin-top: 3.4rem;
+      padding: 1.1rem 2.2rem;
+      font-size: 1.2rem;
+      margin-top: 3.1rem;
     }
 
     /* ---- Tur listesini büyük ekranda saatin ALTINDAN alıp ekranın SAĞ
@@ -24174,12 +24802,28 @@
       <text x="2" y="40">Pace</text>
     </svg>
 
-    <!-- Kronometre metin widget'ı: kart değil, Pace logosuyla aynı marka
-         tipografisini taşıyan sade bir metin; sağ üst köşede logonun
-         simetriğinde durur. Kısa dokunuş Kronometre sayfasını (Sayfa 5)
-         açar, basılı tutmak (onay penceresiyle) süreyi sıfırlar. -->
+    <!-- Sağ üst köşe: MOBİLDE Kronometre widget'ı, BÜYÜK EKRANDA tarih+saat
+         widget'ı gösterilir (görünürlük aşağıdaki .home-kronometre-widget /
+         .home-datetime-widget CSS kurallarında media query ile ayrılır,
+         bkz. "TABLET / GENİŞ EKRAN: Ana Sayfa" bölümü). İkisi de DOM'da
+         durur, sadece biri her an görünür. -->
     <button type="button" class="home-kronometre-widget is-idle" id="homeKronometreWidget" aria-label="Kronometre'ye git; basılı tutunca süreyi sıfırlar">
       <span id="homeKronometreWidgetText">Kronometre</span>
+    </button>
+
+    <button type="button" class="home-datetime-widget" id="homeDateTimeWidget" aria-label="Takvim'e git">
+      <span class="home-datetime-widget-date" id="homeDateTimeWidgetDate">24 Eylül Perşembe</span>
+      <span class="home-datetime-widget-time" id="homeDateTimeWidgetTime">19:09</span>
+    </button>
+
+    <!-- Sol boşluk: BÜYÜK EKRANDA logonun altında duran küçük Kronometre halka
+         widget'ı (bkz. CSS: .home-kronometre-ring-widget). Bilinçli olarak küçük
+         tutuldu; bu alana ileride başka öğeler de eklenecek. Aynı kronometre
+         durumunu (#homeKronometreWidget ile birebir) gösterir, ayrı bir DOM
+         elemanı olarak. -->
+    <button type="button" class="home-kronometre-ring-widget is-idle" id="homeKronometreRingWidget" aria-label="Kronometre'ye git; basılı tutunca süreyi sıfırlar">
+      <span class="home-kronometre-ring-label">Kronometre</span>
+      <span class="home-kronometre-ring-text" id="homeKronometreRingText">00:00:00</span>
     </button>
 
     <div class="home-widgets-stack">
@@ -24192,33 +24836,44 @@
            sayfası açılır. Bundan sonra sohbette "planlayıcı sayfası" denince
            kastedilen yer #page-relax'tir. -->
       <div class="home-tile home-tile-relax">
-      <button type="button" class="home-relax-widget" id="homeRelaxWidget" aria-label="Rahatla'ya git">
-        <!-- Sol: canlı işaretçi (JS: syncHomeRelaxWidget) — şu an süren ya da en yakın
-             sonraki görevin dolum animasyonu; görev yoksa ay ikonu. Üstteki/alttaki
-             ince çizgiler Planyacı'daki zaman çizgisini anımsatır. Sağ: yazılar. -->
-        <span class="home-relax-widget-lead" id="homeRelaxWidgetLead">
-          <span id="homeRelaxWidgetSlot">
-            <span class="home-relax-widget-moon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" width="22" height="22">
-                <path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5Z" fill="currentColor"/>
-              </svg>
+      <div class="home-relax-widget" id="homeRelaxWidget" role="list" aria-label="Sıradaki görevler">
+        <!-- Planlayıcı listesindeki gibi (bkz. #relaxTasksConnectors) satırlar
+             arasına renkli, geçişli dikey bağlantı çizgisi çizen katman; JS
+             (drawHomeRelaxConnectors) her satırın gerçek konumuna göre kurar. -->
+        <div class="relax-tasks-connectors home-relax-connectors" id="homeRelaxConnectors" aria-hidden="true"></div>
+        <!-- Her satır (.home-relax-task-row) mevcut tek-görev widget'ının BİREBİR
+             AYNI yapısı: sol canlı işaretçi (JS: syncHomeRelaxWidget) — şu an
+             süren ya da sıradaki görevin dolum animasyonu; sağda saat + isim.
+             JS ilk satırı burada bulur, gerektiği kadar KOPYALAYIP altına ekler
+             (bkz. HOME_TASK_ROWS_MAX). Görev yoksa tek satır ay ikonuyla kalır.
+             Ekrana sığmayan alt satırlar JS tarafından (updateHomeRowsFit)
+             gizlenir; hiç sabit sayı hedeflenmez. -->
+        <button type="button" class="home-relax-task-row" data-row-index="0" aria-label="Rahatla'ya git">
+          <span class="home-relax-widget-lead" id="homeRelaxWidgetLead">
+            <span id="homeRelaxWidgetSlot">
+              <span class="home-relax-widget-moon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="22" height="22">
+                  <path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5Z" fill="currentColor"/>
+                </svg>
+              </span>
             </span>
           </span>
-        </span>
-        <span class="home-relax-widget-bottom">
-          <span class="home-relax-widget-time" id="homeRelaxWidgetTime">Yaklaşan görev yok</span>
-          <span class="home-relax-widget-title" id="homeRelaxWidgetTitle">Rahatla</span>
-        </span>
-      </button>
+          <span class="home-relax-widget-bottom">
+            <span class="home-relax-widget-time" id="homeRelaxWidgetTime">Yaklaşan görev yok</span>
+            <span class="home-relax-widget-title" id="homeRelaxWidgetTitle">Rahatla</span>
+          </span>
+        </button>
+      </div>
       </div>
 
-      <!-- Soru Takibi'ndeki (Sayfa 9) günlük log kayıtlarından canlı olarak
-           hesaplanan "bugün çözülen soru" sayacı. Log her eklendiğinde/
-           silindiğinde savePage9State üzerinden anında güncellenir; tıklanınca
-           doğrudan Soru Takibi sekmesini açar. Yerleşimde en üstte, tam
-           genişlikte duran ana (hero) karttır. -->
-      <!-- Çevrilebilir kart: ön yüz mevcut "Bugün Çözülen" widget'ı, arka yüz
-           seçilen sayaç ya da "Sayaç ekle" alanı. Sağ üstteki düğme kartı çevirir. -->
+      <!-- BUGÜN ÇÖZÜLEN + GERİ SAYIM KARTI: küçük ekranlarda eski yerinde
+           (Rahatla ile Mini Oyunlar arasında) geri gösteriliyor. Büyük
+           ekranda soru sayacı (ön yüz) artık kartsız/minimalist haliyle
+           gösteriliyor (bkz. "Bugün Çözülen: büyük ekran, kart yok" bloğu);
+           geri sayım kartı (.home-flip-back) ise henüz ayrı bir istekle ele
+           alınmadığı için "#page-1 .home-flip-back { display: none; }"
+           kuralıyla gizli kalıyor, "cd" hücresi yakında gelecek yeni
+           widget'lara boş yer bırakıyor. -->
       <div class="home-flip" id="homeFlip">
         <div class="home-flip-inner" id="homeFlipInner">
       <div class="home-tile home-tile-count">
@@ -24236,6 +24891,11 @@
         <span class="home-live-widget-text">
           <span class="home-live-widget-title">Bugün Çözülen</span>
           <span class="home-live-widget-sub" id="homeQuestionWidgetSub">Henüz soru girilmedi</span>
+          <!-- Yalnızca büyük ekranda görünen minimalist hedef çubuğu; genişliği
+               JS'teki --fill-ratio (0..1) ile ayarlanır. -->
+          <span class="home-live-widget-bar" aria-hidden="true">
+            <span class="home-live-widget-bar-fill" id="homeQuestionWidgetBarFill"></span>
+          </span>
         </span>
       </button>
       </div>
@@ -24280,22 +24940,15 @@
         </button>
       </div>
 
-      <!-- Minimalist takvim widget'ı: bugünün gün/ay/haftagünü bilgisini
-           gösterir, dakikada bir tazelenir (gece yarısını geçen açık
-           oturumlarda da güncel kalsın diye); tıklanınca Takvim sayfasını
-           (Sayfa 6) açar. Alt satırın sol yarısında durur. -->
-      <div class="home-tile home-tile-date">
-      <button type="button" class="home-date-widget" id="homeCalendarWidget" aria-label="Takvime git">
-        <span class="home-date-widget-num" id="homeCalendarWidgetDay">18</span>
-        <span class="home-date-widget-text">
-          <span class="home-date-widget-weekday" id="homeCalendarWidgetWeekday">Cuma</span>
-          <span class="home-date-widget-month" id="homeCalendarWidgetMonth">EYLÜL</span>
-        </span>
-      </button>
-      </div>
+      <!-- NOT: Buradaki minimalist takvim rozeti (Perşembe/EYLÜL/24) kaldırıldı;
+           tarih artık sağ üst köşedeki #homeDateTimeWidget içinde gösteriliyor.
+           Aşağıdaki Mini Oyunlar kutusu, boşalan bu alanı da kaplayacak şekilde
+           grid-template-areas'ta "mini" olarak genişletildi (bkz. CSS). -->
 
-      <!-- Minimalist Mini Oyunlar widget'ı (kompakt): tıklanınca Mini Oyunlar
-           sayfasını açar; alt satırın sağ yarısında durur. -->
+      <!-- MINI OYUNLAR KARTI GEÇİCİ OLARAK KALDIRILDI (silinmedi, yorum
+           içinde saklanıyor). "Mini oyunları ekle" dendiğinde bu blok geri
+           açılacak. İlgili grid-area: mini kuralları (~satır 20333, ~20564)
+           kart dönene kadar dokunulmadan bırakıldı.
       <div class="home-tile home-tile-mini">
       <button type="button" class="home-mini-widget home-mini-widget-compact" id="homeMiniGamesWidget" aria-label="Mini Oyunlar'a git">
         <span class="home-mini-widget-icon" aria-hidden="true">
@@ -24314,12 +24967,14 @@
         </span>
       </button>
       </div>
+      -->
     </div>
   </section>
 
   <!-- ============================================================
        PLANLAYICI SAYFASI — id="page-relax"
        (Kod içinde "Rahatla" adıyla geçiyor, ekrandaki başlık "Planlayıcı".
+
        Bundan sonra sohbette "planlayıcı sayfası" denince bu <section>
        ve buna bağlı JS/CSS blokları kastedilir.)
        Ana sayfadaki koyu widget'a (yeşil daire hariç) basılınca buraya
@@ -24333,7 +24988,13 @@
         </svg>
       </button>
       <span class="calendar-topbar-title">Planlayıcı</span>
-      <div class="calendar-topbar-spacer"></div>
+      <!-- Uyku ayarı: sağdaki dengeleme kutusunun yerini alır (aynı boyut, başlık
+           ortada kalır). Dokununca yatış/uyanış saatlerinin girildiği sheet açılır. -->
+      <button type="button" class="calendar-back-btn relax-sleep-btn" id="relaxSleepBtn" aria-label="Uyku ayarı">
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+          <path d="M19.5 14.3A8 8 0 1 1 9.7 4.5a6.4 6.4 0 0 0 9.8 9.8Z" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
     </div>
 
     <!-- Minimalist hafta şeridi: gün adı + sayısı JS'te (renderRelaxCalendarWeek)
@@ -24580,6 +25241,16 @@
                 <span class="task-sheet-action-sub">Ad, ikon, renk ve saati değiştir</span>
               </span>
             </button>
+            <!-- Sadece sabit (uyku) görevlerde görünür: Düzenle/Sil yerine. -->
+            <button type="button" class="task-sheet-action" data-action="sleep-settings" style="--i:1">
+              <span class="task-sheet-action-ic">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19.5 14.3A8 8 0 1 1 9.7 4.5a6.4 6.4 0 0 0 9.8 9.8Z"/></svg>
+              </span>
+              <span class="task-sheet-action-text">
+                <span class="task-sheet-action-title">Uyku ayarı</span>
+                <span class="task-sheet-action-sub">Yatış ve uyanış saatini değiştir</span>
+              </span>
+            </button>
             <button type="button" class="task-sheet-action" data-action="delete" style="--i:2">
               <span class="task-sheet-action-ic">
                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 6h17"/><path d="M8.5 6V4.3a1 1 0 0 1 1-1h5a1 1 0 0 1 1 1V6"/><path d="M6 6l.9 13.2a2 2 0 0 0 2 1.8h6.2a2 2 0 0 0 2-1.8L18 6"/><path d="M10 10.5v6M14 10.5v6"/></svg>
@@ -24622,6 +25293,56 @@
           </div>
         </div>
       </div>
+    </div>
+  </div>
+
+  <!-- Planlayıcı: UYKU AYARI sheet'i (#relaxSleepBtn ile açılır). Kişi yatış ve
+       uyanış saatini girer; günlük ortalama uyku süresi anında hesaplanır.
+       Kaydedilince her günün ilk görevi "Uyanış", son görevi "Yatış" olur
+       (sabit görevler; bkz. getSleepTasksForDate). -->
+  <div class="task-sheet-backdrop" id="sleepSheetBackdrop" aria-hidden="true">
+    <div class="task-sheet sleep-sheet" id="sleepSheet" role="dialog" aria-modal="true" aria-label="Uyku ayarı" tabindex="-1">
+      <div class="task-sheet-drag" id="sleepSheetDrag">
+        <div class="task-sheet-grabber" aria-hidden="true"></div>
+      </div>
+
+      <div class="sleep-head">
+        <span class="sleep-head-ic" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M19.5 14.3A8 8 0 1 1 9.7 4.5a6.4 6.4 0 0 0 9.8 9.8Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M17 3.8v3M15.5 5.3h3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        </span>
+        <div class="sleep-head-text">
+          <span class="sleep-title">Uyku ayarı</span>
+          <span class="sleep-desc">Her günün ilk ve son görevi olarak sabit “Uyanış” ve “Yatış” görevleri eklenir.</span>
+        </div>
+        <label class="sleep-switch" aria-label="Uyku planını aç/kapat">
+          <input type="checkbox" id="sleepEnabled" checked>
+          <span class="sleep-switch-track" aria-hidden="true"></span>
+        </label>
+      </div>
+
+      <div class="sleep-fields">
+        <label class="sleep-field" style="--f-bg:#9fb8ff;--f-fg:#16171b">
+          <span class="sleep-field-ic" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M19.5 14.3A8 8 0 1 1 9.7 4.5a6.4 6.4 0 0 0 9.8 9.8Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </span>
+          <span class="sleep-field-label">Yatış saati</span>
+          <input type="time" class="sleep-time-input" id="sleepBedInput" value="00:00" required>
+        </label>
+        <label class="sleep-field" style="--f-bg:#ffb46e;--f-fg:#16171b">
+          <span class="sleep-field-ic" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M3 18.5h18M7 18.5a5 5 0 0 1 10 0M12 6.2v2.6M5 10.7l1.8 1.8M19 10.7l-1.8 1.8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </span>
+          <span class="sleep-field-label">Uyanış saati</span>
+          <input type="time" class="sleep-time-input" id="sleepWakeInput" value="08:00" required>
+        </label>
+      </div>
+
+      <div class="sleep-summary" aria-live="polite">
+        <span class="sleep-summary-num" id="sleepSummaryNum">8 sa</span>
+        <span class="sleep-summary-label">günlük ortalama uyku</span>
+      </div>
+
+      <button type="button" class="sleep-save-btn" id="sleepSaveBtn">Kaydet</button>
     </div>
   </div>
 
@@ -24989,6 +25710,13 @@
          Sayının üzerindeki görünmez alana dokunmak duraklatıp tam
          ekrandan çıkar; boş bir alana dokununca Tur butonu belirir. -->
     <div class="stopwatch-fullscreen" id="stopwatchFullscreen">
+      <!-- Sadece kronometre duraklatılmışken görünen, sol üstteki küçük geri
+           butonu: basınca tam ekrandan çıkılır (bkz. exitStopwatchFullscreen). -->
+      <button type="button" class="stopwatch-fs-back-btn" id="stopwatchFsBackBtn" aria-label="Geri dön">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M15 4l-8 8 8 8" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
       <div class="stopwatch-fullscreen-core" id="stopwatchFullscreenCore">
         <div class="stopwatch-fullscreen-time-row">
           <span class="stopwatch-time" id="stopwatchTimeFull">00:00:00</span><span class="stopwatch-centis" id="stopwatchCentisFull">.00</span>
@@ -27643,6 +28371,25 @@
   updateHomeCalendarWidget();
   setInterval(updateHomeCalendarWidget, 60000);
 
+  // ---------- Ana sayfa: sağ üst köşedeki "Tarih + Saat" widget'ı ----------
+  // Aynı HOME_MONTHS_TR/HOME_WEEKDAYS_TR dizilerini kullanır; saat kısmı
+  // dakikayı kaçırmasın diye 15 saniyede bir tazelenir.
+  const homeDateTimeWidgetDateEl = document.getElementById('homeDateTimeWidgetDate');
+  const homeDateTimeWidgetTimeEl = document.getElementById('homeDateTimeWidgetTime');
+
+  const updateHomeDateTimeWidget = () => {
+    const now = new Date();
+    const pad = (n) => String(n).padStart(2, '0');
+    if (homeDateTimeWidgetDateEl) {
+      homeDateTimeWidgetDateEl.textContent = `${now.getDate()} ${HOME_MONTHS_TR[now.getMonth()]} ${HOME_WEEKDAYS_TR[now.getDay()]}`;
+    }
+    if (homeDateTimeWidgetTimeEl) {
+      homeDateTimeWidgetTimeEl.textContent = `${pad(now.getHours())}:${pad(now.getMinutes())}`;
+    }
+  };
+  updateHomeDateTimeWidget();
+  setInterval(updateHomeDateTimeWidget, 15000);
+
   const homeCalendarWidgetEl = document.getElementById('homeCalendarWidget');
   if (homeCalendarWidgetEl) {
     homeCalendarWidgetEl.addEventListener('click', () => {
@@ -27667,8 +28414,11 @@
 
   if (homeRelaxWidgetEl) {
     homeRelaxWidgetEl.addEventListener('click', (e) => {
-      if (e.target.closest('.relax-task-marker')) {
-        if (typeof window.toggleHomeRelaxWidgetTask === 'function') window.toggleHomeRelaxWidgetTask();
+      const markerHit = e.target.closest('.relax-task-marker');
+      if (markerHit) {
+        const rowEl = e.target.closest('.home-relax-task-row');
+        const rowIndex = rowEl ? Number(rowEl.getAttribute('data-row-index')) || 0 : 0;
+        if (typeof window.toggleHomeRelaxWidgetTask === 'function') window.toggleHomeRelaxWidgetTask(rowIndex);
         return;
       }
       if (typeof openRelaxPage === 'function') openRelaxPage();
@@ -28064,6 +28814,7 @@
   layerA.style.background = themes[themeIndex].gradient;
   document.documentElement.style.setProperty('--theme-text', themes[themeIndex].text);
   document.documentElement.style.setProperty('--theme-pure', themePureOf(themes[themeIndex].text));
+  document.documentElement.style.setProperty('--theme-ring', themePureOf(themes[themeIndex].text) === '#ffffff' ? '#ffffff' : '#272727');
   document.documentElement.style.setProperty('--theme-bg', themes[themeIndex].color);
   document.documentElement.style.setProperty('--weekend-color', themes[themeIndex].weekend);
   refreshThemeColorMeta();
@@ -28078,6 +28829,7 @@
 
     document.documentElement.style.setProperty('--theme-text', theme.text);
     document.documentElement.style.setProperty('--theme-pure', themePureOf(theme.text));
+    document.documentElement.style.setProperty('--theme-ring', themePureOf(theme.text) === '#ffffff' ? '#ffffff' : '#272727');
     document.documentElement.style.setProperty('--theme-bg', theme.color);
     document.documentElement.style.setProperty('--weekend-color', theme.weekend);
     refreshThemeColorMeta();
@@ -28112,6 +28864,7 @@
 
     document.documentElement.style.setProperty('--theme-text', theme.text);
     document.documentElement.style.setProperty('--theme-pure', themePureOf(theme.text));
+    document.documentElement.style.setProperty('--theme-ring', themePureOf(theme.text) === '#ffffff' ? '#ffffff' : '#272727');
     document.documentElement.style.setProperty('--theme-bg', theme.color);
     document.documentElement.style.setProperty('--weekend-color', theme.weekend);
     refreshThemeColorMeta();
@@ -29149,11 +29902,8 @@
   const toggleLapControls = () => {
     stopwatchControlsVisible = !stopwatchControlsVisible;
     stopwatchLapBtn.classList.toggle('is-visible', stopwatchControlsVisible);
-    if (stopwatchControlsVisible) {
-      showStopwatchFullscreenSubject();
-    } else {
-      hideStopwatchFullscreenSubject();
-    }
+    // Not: Kronometre tam ekranında ders adı etiketi artık gösterilmiyor
+    // (Sayaç tam ekranındaki etiket ayrı çalışır, o değişmedi).
     renderLaps();
 
     clearTimeout(lapControlsTimer);
@@ -29281,6 +30031,8 @@
     // Seçili ders varsa, o dersle geçen yeni dilim şimdi başlar.
     swSubjectSegmentStartEpoch = Date.now();
     document.body.classList.add('is-stopwatch-running');
+    document.body.classList.add('is-stopwatch-fs'); // tam ekran açık kalır (geri butonuyla çıkılır)
+    stopwatchFullscreenHint.textContent = 'Duraklatmak için dokun';
     stopwatchDisplay.setAttribute('aria-label', 'Kronometreyi duraklat');
     stopwatchHint.textContent = 'Duraklatmak için dokun';
     if (swRafId) cancelAnimationFrame(swRafId);
@@ -29309,6 +30061,12 @@
     swRunning = false;
     if (swRafId) cancelAnimationFrame(swRafId);
     document.body.classList.remove('is-stopwatch-running');
+    // Duraklatınca tam ekrandan ÇIKILMAZ (is-stopwatch-fs kalır); çıkış sol
+    // üstteki geri butonuyla yapılır. Tam ekranda yeniden başlatmak için
+    // ipucu kalıcı olarak "Devam etmek için dokun" olur.
+    stopwatchFullscreenHint.textContent = 'Devam etmek için dokun';
+    clearTimeout(stopwatchHintTimer);
+    stopwatchFullscreenHint.classList.remove('is-hidden');
     hideStopwatchFullscreenSubject();
     stopwatchDisplay.setAttribute('aria-label', 'Kronometreyi başlat');
     stopwatchHint.textContent = swAccumulatedMs > 0 ? 'Devam etmek için dokun' : 'Başlatmak için dokun';
@@ -29320,6 +30078,13 @@
     renderLaps();
     updateResetState();
     saveStopwatchState();
+  };
+
+  // Duraklatılmış tam ekrandan geri butonuyla çıkış: sadece görünümü kapatır,
+  // kronometrenin durumuna (süre, turlar) dokunmaz.
+  const exitStopwatchFullscreen = () => {
+    if (swRunning) return;
+    document.body.classList.remove('is-stopwatch-fs');
   };
 
   const toggleStopwatch = () => {
@@ -29444,8 +30209,17 @@
   const stopwatchFullscreenCore = document.getElementById('stopwatchFullscreenCore');
   stopwatchFullscreen.addEventListener('click', (e) => {
     if (e.target !== stopwatchFullscreen && e.target !== stopwatchFullscreenCore) return;
+    if (!swRunning) return; // duraklatılmışken Tur butonu çıkmaz
     toggleLapControls();
   });
+
+  const stopwatchFsBackBtn = document.getElementById('stopwatchFsBackBtn');
+  if (stopwatchFsBackBtn) {
+    stopwatchFsBackBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      exitStopwatchFullscreen();
+    });
+  }
 
   // Tur butonuna basınca o ana kadarki süre tur olarak eklenir.
   stopwatchLapBtn.addEventListener('click', (e) => {
@@ -33036,7 +33810,93 @@
       return ymd(startOfDay(new Date()));
     };
 
-    const findTaskAddIcon = (iconId) => TASK_ADD_ICONS.find((i) => i.id === iconId) || TASK_ADD_ICONS[0];
+    // ---------- UYKU PLANI: her günün ilk (Uyanış) ve son (Yatış) sabit görevi ----------
+    // Kişi Planlayıcı'daki "Uyku ayarı"ndan yatış ve uyanış saatini girer
+    // (APP_STATE.sleepPlan = { enabled, bed:'HH:MM', wake:'HH:MM' }). Bu iki görev
+    // her güne SAHTE (sanal) görev olarak, çizim anında eklenir — günlük görev
+    // listesine (relaxTasks) yazılmaz; böylece "her gün" için tek bir ayar yeter,
+    // silinemez/düzenlenemez, saatler değişince tüm günler birden güncellenir.
+    //  • Uyanış: uyanış saatinde başlar, SLEEP_WAKE_MIN dakika sürer (halka dolar).
+    //  • Yatış : yatış saatinde başlar, uyanış saatine kadar (uyku süresi) dolar.
+    //    Gece yarısından sonra yatılıyorsa (ör. 00:00) görev listenin sonunda
+    //    durur ama zamanı ertesi günün 00:00'ıdır (bkz. fixedStartMs).
+    // "Yapıldı" bilgisi APP_STATE.sleepDone içinde 'YYYY-MM-DD|wake|bed' anahtarıyla
+    // tutulur; görevin `done` özelliği bu haritaya yazan/okuyan bir getter/setter
+    // olduğundan, mevcut tüm tamamlama kodu (liste, ana sayfa widget'ı) değişmeden çalışır.
+    const SLEEP_PLAN_KEY = 'sleepPlan';
+    const SLEEP_DONE_KEY = 'sleepDone';
+    const SLEEP_WAKE_MIN = 30;
+    const SLEEP_WAKE_COLOR = '#ffb46e';
+    const SLEEP_BED_COLOR = '#9fb8ff';
+    const SLEEP_ICONS = {
+      'sleep-wake': { id: 'sleep-wake', label: 'Uyanış', svg: '<path d="M3 18.5h18M7 18.5a5 5 0 0 1 10 0M12 6.2v2.6M5 10.7l1.8 1.8M19 10.7l-1.8 1.8" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>' },
+      'sleep-bed': { id: 'sleep-bed', label: 'Yatış', svg: '<path d="M19.5 14.3A8 8 0 1 1 9.7 4.5a6.4 6.4 0 0 0 9.8 9.8Z" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/><path d="M17.2 3.6v2.8M15.8 5h2.8" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>' },
+    };
+    const sleepHhmmToMin = (str) => {
+      const p = String(str || '').split(':').map(Number);
+      return (p.length >= 2 && p.every((n) => Number.isFinite(n))) ? p[0] * 60 + p[1] : NaN;
+    };
+    const sleepMinToHhmm = (m) => {
+      const v = ((Math.round(m) % 1440) + 1440) % 1440;
+      return `${pad2(Math.floor(v / 60))}:${pad2(v % 60)}`;
+    };
+    // Geçerli ve açık bir uyku planı yoksa null.
+    const getSleepPlan = () => {
+      const raw = APP_STATE[SLEEP_PLAN_KEY];
+      if (!raw || !raw.enabled) return null;
+      const bed = sleepHhmmToMin(raw.bed);
+      const wake = sleepHhmmToMin(raw.wake);
+      if (!Number.isFinite(bed) || !Number.isFinite(wake) || bed === wake) return null;
+      return { bed, wake, sleepMin: ((wake - bed) + 1440) % 1440 };
+    };
+    const getSleepDoneMap = () => {
+      const m = APP_STATE[SLEEP_DONE_KEY];
+      return (m && typeof m === 'object') ? m : {};
+    };
+    const makeSleepTask = (kind, dateStr, plan) => {
+      const dp = String(dateStr).split('-').map(Number);
+      if (dp.length !== 3 || dp.some((n) => !Number.isFinite(n))) return null;
+      const [y, mo, d] = dp;
+      const at = (dayOffset, minutes) => new Date(y, mo - 1, d + dayOffset, Math.floor(minutes / 60), minutes % 60, 0, 0).getTime();
+      const isWake = kind === 'wake';
+      // Yatış, uyanıştan önceki bir saatse (ör. 00:00 < 08:00) gece yarısını geçmiştir → ertesi günün saati.
+      const startMs = isWake ? at(0, plan.wake) : at(plan.bed < plan.wake ? 1 : 0, plan.bed);
+      const endMs = isWake ? startMs + SLEEP_WAKE_MIN * 60000 : startMs + plan.sleepMin * 60000;
+      const key = `${dateStr}|${kind}`;
+      const task = {
+        id: `sleep-${kind}-${dateStr}`,
+        name: isWake ? 'Uyanış' : 'Yatış',
+        icon: isWake ? 'sleep-wake' : 'sleep-bed',
+        color: isWake ? SLEEP_WAKE_COLOR : SLEEP_BED_COLOR,
+        start: sleepMinToHhmm(isWake ? plan.wake : plan.bed),
+        end: sleepMinToHhmm(isWake ? plan.wake + SLEEP_WAKE_MIN : plan.wake),
+        durationMinutes: isWake ? SLEEP_WAKE_MIN : plan.sleepMin,
+        sleepKind: kind,
+        fixed: true,
+        fixedStartMs: startMs,
+        fixedEndMs: endMs,
+        subtasks: [],
+      };
+      Object.defineProperty(task, 'done', {
+        enumerable: true,
+        configurable: true,
+        get: () => !!getSleepDoneMap()[key],
+        set: (v) => {
+          const next = Object.assign({}, getSleepDoneMap());
+          if (v) next[key] = true; else delete next[key];
+          saveAppState({ [SLEEP_DONE_KEY]: next });
+        },
+      });
+      return task;
+    };
+    // Bir günün iki sabit görevi: { wake, bed } (plan kapalıysa ikisi de null).
+    const getSleepTasksForDate = (dateStr) => {
+      const plan = getSleepPlan();
+      if (!plan) return { wake: null, bed: null };
+      return { wake: makeSleepTask('wake', dateStr, plan), bed: makeSleepTask('bed', dateStr, plan) };
+    };
+
+    const findTaskAddIcon = (iconId) => SLEEP_ICONS[iconId] || TASK_ADD_ICONS.find((i) => i.id === iconId) || TASK_ADD_ICONS[0];
 
     // ---------- Gerçek zamanlı ilerleme (cihaz saatine göre) ----------
     // Liste yukarıdan aşağıya tek bir "zincir" gibi dolar:
@@ -33086,6 +33946,10 @@
     };
 
     const relaxTaskRangeMs = (task, dateStr) => {
+      // Sabit (uyku) görevlerinin zamanı önceden hesaplıdır (ertesi güne taşabilir).
+      if (task && Number.isFinite(task.fixedStartMs) && Number.isFinite(task.fixedEndMs)) {
+        return { startMs: task.fixedStartMs, endMs: task.fixedEndMs };
+      }
       const startMs = relaxTimeToMs(dateStr, task.start);
       let endMs;
       if (Number.isFinite(task.durationMinutes) && task.durationMinutes > 0) {
@@ -33183,21 +34047,33 @@
       if (!markerRefs || !markerRefs.length) return;
 
       const containerRect = tasksListEl.getBoundingClientRect();
+      // ÖNEMLİ (çizgi kayması hatası): getBoundingClientRect() değerleri, üst
+      // öğelerdeki CSS transform'ları (ör. ay takvimi sheet'i açıkken
+      // #page-relax'in scale(0.94)'ü) DAHİL ölçer; ama çizgilerin left/top/height
+      // değerleri transform'suz yerel piksellerdir. Sayfa küçülmüşken çizim
+      // yapılırsa (ay takviminden gün seçilince olduğu gibi) çizgiler sayfa
+      // eski boyuta dönünce yukarı kayıp kısalıyordu (aşağı indikçe daha çok).
+      // Bu yüzden ölçümler, listenin görünen/gerçek genişlik oranıyla yerel
+      // piksellere geri çevrilir. Transform yoksa oran 1'dir ve hiçbir şey değişmez.
+      let relaxScale = tasksListEl.offsetWidth ? containerRect.width / tasksListEl.offsetWidth : 1;
+      if (!Number.isFinite(relaxScale) || relaxScale <= 0 || Math.abs(relaxScale - 1) < 0.003) relaxScale = 1;
       for (let i = 0; i < markerRefs.length; i += 1) {
         const a = markerRefs[i];
         const rectA = a.el.getBoundingClientRect();
-        relaxSegments.push({ fillEl: a.fillEl, markerEl: a.el, len: rectA.height, from: a.startMs, to: a.endMs, ref: a });
+        relaxSegments.push({ fillEl: a.fillEl, markerEl: a.el, len: rectA.height / relaxScale, from: a.startMs, to: a.endMs, ref: a });
 
         const b = markerRefs[i + 1];
         if (!b) break;
         const rectB = b.el.getBoundingClientRect();
-        const centerXA = rectA.left + rectA.width / 2 - containerRect.left;
-        const centerYA = rectA.top + rectA.height / 2 - containerRect.top;
-        const centerXB = rectB.left + rectB.width / 2 - containerRect.left;
-        const centerYB = rectB.top + rectB.height / 2 - containerRect.top;
+        const hA = rectA.height / relaxScale;
+        const hB = rectB.height / relaxScale;
+        const centerXA = (rectA.left + rectA.width / 2 - containerRect.left) / relaxScale;
+        const centerYA = (rectA.top + rectA.height / 2 - containerRect.top) / relaxScale;
+        const centerXB = (rectB.left + rectB.width / 2 - containerRect.left) / relaxScale;
+        const centerYB = (rectB.top + rectB.height / 2 - containerRect.top) / relaxScale;
 
-        const yStart = centerYA + rectA.height / 2 - 1;
-        const yEnd = centerYB - rectB.height / 2 + 1;
+        const yStart = centerYA + hA / 2 - 1;
+        const yEnd = centerYB - hB / 2 + 1;
         const height = yEnd - yStart;
         if (height <= 0) continue;
 
@@ -33292,6 +34168,10 @@
       const tasks = rawList.slice()
         // Başlangıç saatine göre yukarıdan aşağıya sırala.
         .sort((a, b) => (a.start || '').localeCompare(b.start || ''));
+      // Uyku planı açıksa: günün İLK görevi Uyanış, SON görevi Yatış (sabit görevler).
+      const sleepFixed = getSleepTasksForDate(dateStr);
+      if (sleepFixed.wake) tasks.unshift(sleepFixed.wake);
+      if (sleepFixed.bed) tasks.push(sleepFixed.bed);
 
       tasksItemsEl.innerHTML = '';
       relaxLastMarkerRefs = [];
@@ -33437,6 +34317,7 @@
         item.addEventListener('pointerdown', (e) => {
           if (e.pointerType === 'mouse' && e.button !== 0) return;
           if (e.target.closest('.relax-task-marker') || e.target.closest('.relax-task-more')) return;
+          if (task.sleepKind) return; // sabit uyku görevleri kopyalanmaz
           itemPressMoved = false;
           itemPressStartX = e.clientX;
           itemPressStartY = e.clientY;
@@ -33823,7 +34704,8 @@
       sheetEl.style.setProperty('--ts-on-task', ref.onColor);
 
       sheetNameEl.textContent = task.name || '';
-      sheetTimeEl.textContent = (task.start && task.end) ? `${task.start} – ${task.end}` : '';
+      sheetTimeEl.textContent = (task.start && task.end) ? `${task.start} – ${task.end}${task.sleepKind ? ' · Sabit görev' : ''}` : '';
+      sheetEl.dataset.fixed = task.sleepKind ? '1' : '0';
       sheetMarkerEl.innerHTML = ref.done ? CHECK_ICON_SVG.replace('class="ts-check" ', '') : taskGlyphHtml(task, 21);
       if (ref.done) sheetMarkerEl.querySelector('svg').setAttribute('style', 'fill:none;stroke:currentColor;stroke-width:2.9;stroke-linecap:round;stroke-linejoin:round');
       sheetChipEl.classList.toggle('is-visible', ref.done);
@@ -33913,6 +34795,10 @@
             closeTaskSheet();
             setTimeout(() => openTaskEditOverlay(ref), 170);
             break;
+          case 'sleep-settings':
+            closeTaskSheet();
+            setTimeout(() => { if (typeof openSleepSheet === 'function') openSleepSheet(); }, 200);
+            break;
           case 'delete':
             sheetEl.dataset.view = 'confirm';
             break;
@@ -33961,6 +34847,133 @@
         zone.addEventListener('pointerup', onDragEnd);
         zone.addEventListener('pointercancel', onDragEnd);
       });
+    }
+
+    // =====================================================================
+    // UYKU AYARI sheet'i: yatış/uyanış saati → günlük ortalama uyku süresi →
+    // kaydedince her güne sabit Uyanış + Yatış görevleri (bkz. getSleepTasksForDate).
+    // =====================================================================
+    const sleepBackdrop = $('sleepSheetBackdrop');
+    const sleepSheetEl = $('sleepSheet');
+    const sleepEnabledEl = $('sleepEnabled');
+    const sleepBedEl = $('sleepBedInput');
+    const sleepWakeEl = $('sleepWakeInput');
+    const sleepSummaryNumEl = $('sleepSummaryNum');
+    const sleepSaveBtn = $('sleepSaveBtn');
+    const sleepBtnEl = $('relaxSleepBtn');
+    let sleepResetTimer = null;
+
+    const formatSleepDuration = (min) => {
+      const h = Math.floor(min / 60);
+      const m = min % 60;
+      if (h && m) return `${h} sa ${m} dk`;
+      return h ? `${h} sa` : `${m} dk`;
+    };
+
+    const refreshSleepSummary = () => {
+      if (!sleepSummaryNumEl) return;
+      const bed = sleepHhmmToMin(sleepBedEl.value);
+      const wake = sleepHhmmToMin(sleepWakeEl.value);
+      if (!Number.isFinite(bed) || !Number.isFinite(wake) || bed === wake) {
+        sleepSummaryNumEl.textContent = '—';
+        return;
+      }
+      sleepSummaryNumEl.textContent = formatSleepDuration(((wake - bed) + 1440) % 1440);
+    };
+
+    const syncSleepOffState = () => {
+      if (sleepSheetEl && sleepEnabledEl) sleepSheetEl.classList.toggle('is-off', !sleepEnabledEl.checked);
+    };
+
+    const openSleepSheet = () => {
+      if (!sleepBackdrop || !sleepSheetEl) return;
+      const saved = APP_STATE[SLEEP_PLAN_KEY] || {};
+      sleepEnabledEl.checked = saved.enabled === undefined ? true : !!saved.enabled;
+      sleepBedEl.value = /^\d{1,2}:\d{2}$/.test(saved.bed || '') ? saved.bed : '00:00';
+      sleepWakeEl.value = /^\d{1,2}:\d{2}$/.test(saved.wake || '') ? saved.wake : '08:00';
+      syncSleepOffState();
+      refreshSleepSummary();
+      clearTimeout(sleepResetTimer);
+      sleepSheetEl.style.transform = '';
+      sleepSheetEl.classList.remove('is-dragging');
+      sleepBackdrop.setAttribute('aria-hidden', 'false');
+      sleepBackdrop.classList.remove('is-open');
+      void sleepBackdrop.offsetWidth;
+      sleepBackdrop.classList.add('is-open');
+      setTimeout(() => { try { sleepSheetEl.focus({ preventScroll: true }); } catch (e) { /* yoksay */ } }, 80);
+    };
+
+    const closeSleepSheet = () => {
+      if (!sleepBackdrop) return;
+      sleepBackdrop.classList.remove('is-open');
+      sleepBackdrop.setAttribute('aria-hidden', 'true');
+      sleepSheetEl.classList.remove('is-dragging');
+      sleepSheetEl.style.transform = '';
+    };
+
+    const saveSleepPlan = () => {
+      const enabled = !!sleepEnabledEl.checked;
+      const bed = sleepBedEl.value;
+      const wake = sleepWakeEl.value;
+      if (enabled) {
+        const b = sleepHhmmToMin(bed);
+        const w = sleepHhmmToMin(wake);
+        if (!Number.isFinite(b) || !Number.isFinite(w)) {
+          if (typeof showAppToast === 'function') showAppToast('Yatış ve uyanış saatini gir', 'error');
+          return;
+        }
+        if (b === w) {
+          if (typeof showAppToast === 'function') showAppToast('Yatış ve uyanış saati aynı olamaz', 'error');
+          return;
+        }
+      }
+      saveAppState({ [SLEEP_PLAN_KEY]: { enabled, bed: bed || '00:00', wake: wake || '08:00' } });
+      closeSleepSheet();
+      renderRelaxTasksList();
+      syncHomeRelaxWidget();
+    };
+
+    if (sleepBtnEl) sleepBtnEl.addEventListener('click', openSleepSheet);
+    if (sleepBackdrop && sleepSheetEl) {
+      sleepBackdrop.addEventListener('click', (e) => { if (e.target === sleepBackdrop) closeSleepSheet(); });
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && sleepBackdrop.classList.contains('is-open')) closeSleepSheet();
+      });
+      sleepEnabledEl.addEventListener('change', syncSleepOffState);
+      sleepBedEl.addEventListener('input', refreshSleepSummary);
+      sleepWakeEl.addEventListener('input', refreshSleepSummary);
+      sleepBedEl.addEventListener('change', refreshSleepSummary);
+      sleepWakeEl.addEventListener('change', refreshSleepSummary);
+      if (sleepSaveBtn) sleepSaveBtn.addEventListener('click', saveSleepPlan);
+
+      // Aşağı sürükleyerek kapat (tutamaç alanından).
+      const sleepDragZone = $('sleepSheetDrag');
+      if (sleepDragZone) {
+        let sd = null;
+        sleepDragZone.addEventListener('pointerdown', (e) => {
+          if (e.pointerType === 'mouse' && e.button !== 0) return;
+          sd = { id: e.pointerId, y0: e.clientY, t0: performance.now(), dy: 0 };
+          sleepSheetEl.classList.add('is-dragging');
+          try { sleepDragZone.setPointerCapture(e.pointerId); } catch (err) { /* yoksay */ }
+        });
+        sleepDragZone.addEventListener('pointermove', (e) => {
+          if (!sd || e.pointerId !== sd.id) return;
+          const raw = e.clientY - sd.y0;
+          sd.dy = raw >= 0 ? raw : raw * 0.18;
+          sleepSheetEl.style.transform = `translateY(${sd.dy}px)`;
+        });
+        const endSleepDrag = (e) => {
+          if (!sd || e.pointerId !== sd.id) return;
+          const { dy, t0 } = sd;
+          const v = dy / Math.max(1, performance.now() - t0);
+          sd = null;
+          sleepSheetEl.classList.remove('is-dragging');
+          if (dy > 110 || (dy > 30 && v > 0.6)) closeSleepSheet();
+          else sleepSheetEl.style.transform = '';
+        };
+        sleepDragZone.addEventListener('pointerup', endSleepDrag);
+        sleepDragZone.addEventListener('pointercancel', endSleepDrag);
+      }
     }
 
     // =====================================================================
@@ -34590,59 +35603,152 @@
 
     renderRelaxTasksList();
 
-    // ---------- Ana sayfa: canlı "Rahatla" widget'ı ----------
-    // Şu an süren bir görev varsa (başlangıç ≤ şimdi < bitiş) o gösterilir ve
-    // işaretçisi Planyacı sayfasındaki gibi yukarıdan aşağıya dolar; yoksa en
-    // yakın sonraki görev (boş halka) gösterilir; hiç görev yoksa ay ikonlu
-    // varsayılan görünüm kalır. Tüm günler taranır (yarın/haftaya görev de
-    // "sıradaki" olabilir). Ana sayfa görünürken her saniye ilerler; sayfa
-    // görünür olunca dolum boştan güncel duruma bir kez süpürülür.
+    // ---------- Ana sayfa: canlı "Rahatla" widget'ı (ÇOKLU GÖREV) ----------
+    // Widget artık TEK değil, EKRANA SIĞDIĞI KADAR görevi en baştan (şu an
+    // süren/sıradaki) başlayarak sırayla listeler — sabit bir sayı hedeflenmez.
+    // Her satırın görsel davranışı (dolum animasyonu, tik/"Yapıldı"
+    // işaretleme, saat etiketi) ESKİ TEK SATIRLIK widget'la BİREBİR AYNI —
+    // sadece N kez tekrarlanıyor. İlk satır HTML'de zaten var
+    // (data-row-index="0"); HOME_TASK_ROWS_MAX'e kadar ondan klonlanır,
+    // widget'ın gerçek yüksekliğine sığmayanlar updateHomeRowsFit tarafından
+    // gizlenir (bkz. aşağıda, ResizeObserver ile). Satırlar arasına
+    // Planlayıcı listesindeki gibi renkli, dolan bağlantı çizgisi çizilir
+    // (bkz. drawHomeRelaxConnectors).
+    const HOME_TASK_ROWS_MAX = 5; // güvenli üst sınır; gerçek görünen sayı ekrana göre daha az olabilir
     const homeWidgetEl = $('homeRelaxWidget');
-    const homeSlotEl = $('homeRelaxWidgetSlot');
-    const homeLeadEl = $('homeRelaxWidgetLead');
-    const homeTimeEl = $('homeRelaxWidgetTime');
-    const homeTitleEl = $('homeRelaxWidgetTitle');
-    const homeBottomEl = homeWidgetEl ? homeWidgetEl.querySelector('.home-relax-widget-bottom') : null;
+    const homeRowTemplateEl = homeWidgetEl ? homeWidgetEl.querySelector('.home-relax-task-row[data-row-index="0"]') : null;
+    const homeConnectorsEl = $('homeRelaxConnectors');
     const homePageEl = $('page-1');
     const HOME_INTRO_MS = 900;
     const HOME_MOON_HTML = '<span class="home-relax-widget-moon" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5Z" fill="currentColor"/></svg></span>';
-    let homeShown = null;            // { key, fillEl, from, to }
+    let homeRows = [];                // [{ rowEl, leadEl, slotEl, timeEl, titleEl, bottomEl }] — DOM referansları, sırayla
+    let homeShownList = [];           // [{ key, fillEl, from, to, pick }] — homeRows ile aynı sırada, aynı uzunlukta
+    let homeVisibleCount = 1;         // widget'ın gerçek yüksekliğine sığan satır sayısı (updateHomeRowsFit hesaplar)
     let homeTickTimer = null;
     let homeIntroTimer = null;
     let homeIntroPlaying = false;
     let homeSwapPlaying = false;     // toggleHomeRelaxWidgetTask kendi geçişini oynatırken homeTick araya girmesin
     let homeSwapTimer = null;        // widget'ta görev tamamlanınca: tik/halka animasyonu → yumuşak geçiş → sıradaki görev
+    let homeFitResizeTimer = null;
 
+    // İlk satırdan HOME_TASK_ROWS_MAX'e tamamlayacak kadar satır klonlar ve
+    // homeRows dizisini (DOM referanslarıyla) kurar. Bir kere çalışır.
+    const buildHomeRows = () => {
+      if (!homeWidgetEl || !homeRowTemplateEl) { homeRows = []; return; }
+      for (let i = 1; i < HOME_TASK_ROWS_MAX; i += 1) {
+        if (homeWidgetEl.querySelector(`.home-relax-task-row[data-row-index="${i}"]`)) continue;
+        const clone = homeRowTemplateEl.cloneNode(true);
+        clone.setAttribute('data-row-index', String(i));
+        // id'ler benzersiz olmalı: klonlarda satır numarasıyla son eklenir.
+        clone.querySelectorAll('[id]').forEach((el) => { el.id = `${el.id}__row${i}`; });
+        homeWidgetEl.appendChild(clone);
+      }
+      homeRows = Array.from(homeWidgetEl.querySelectorAll('.home-relax-task-row')).map((rowEl) => ({
+        rowEl,
+        leadEl: rowEl.querySelector('.home-relax-widget-lead'),
+        slotEl: rowEl.querySelector('[id^="homeRelaxWidgetSlot"]'),
+        timeEl: rowEl.querySelector('[id^="homeRelaxWidgetTime"]'),
+        titleEl: rowEl.querySelector('[id^="homeRelaxWidgetTitle"]'),
+        bottomEl: rowEl.querySelector('.home-relax-widget-bottom'),
+      }));
+    };
+    buildHomeRows();
 
-    // En uygun görevi seç: önce şu an süren (en son başlayan), yoksa en yakın sonraki.
-    const pickHomeTask = () => {
-      const now = Date.now();
-      const byDate = getRelaxTasksByDate();
-      let current = null;
-      let next = null;
-      Object.keys(byDate).forEach((dateStr) => {
-        const list = byDate[dateStr];
-        if (!Array.isArray(list)) return;
-        list.forEach((task, idx) => {
-          if (task && task.done) return; // "Yapıldı" işaretli görev artık şimdi/sıradaki değil
-          const r = relaxTaskRangeMs(task, dateStr);
-          if (!Number.isFinite(r.startMs) || !Number.isFinite(r.endMs)) return;
-          const entry = { task, dateStr, startMs: r.startMs, endMs: r.endMs, idx };
-          if (r.startMs <= now && now < r.endMs) {
-            // Aynı saatte başlayan görevlerde Planlayıcı listesiyle aynı
-            // sırayı kullan: liste stabil sıralandığı için önce eklenen
-            // (küçük idx) her zaman üstte görünür, widget da onu göstersin.
-            if (!current || r.startMs > current.startMs
-              || (r.startMs === current.startMs && idx < current.idx)) current = entry;
-          } else if (r.startMs > now) {
-            if (!next || r.startMs < next.startMs
-              || (r.startMs === next.startMs && idx < next.idx)) next = entry;
-          }
-        });
+    // Widget'ın GERÇEK yüksekliğine kaç satırın taşmadan sığdığını hesaplar.
+    // Tek bir satırın İÇERİĞİNİN gerektirdiği minimum doğal yüksekliğini
+    // ölçüp widget'ın toplam yüksekliğine böler; sonuç en az 1, en fazla
+    // HOME_TASK_ROWS_MAX olur. Satırlar normalde flex:1 ile konteynere göre
+    // esnediğinden (bu da ölçümü kısır döngüye sokar: her zaman "tam sığıyor"
+    // çıkar) ölçüm sırasında GEÇİCİ olarak flex:none + height:auto yapılıp
+    // içeriğin gerçek/doğal yüksekliği (marker boyutu + padding) alınır.
+    const measureHomeRowsFit = () => {
+      if (!homeWidgetEl || !homeRows.length) return 1;
+      const total = homeWidgetEl.getBoundingClientRect().height;
+      if (!total) return homeVisibleCount || 1;
+      const probe = homeRows[0].rowEl;
+      const wasHidden = homeRows.map((r) => r.rowEl.hidden);
+      const prevStyle = { flex: probe.style.flex, height: probe.style.height, hidden: probe.hidden };
+      probe.hidden = false;
+      probe.style.flex = 'none';
+      probe.style.height = 'auto';
+      const rowH = probe.getBoundingClientRect().height || 1;
+      probe.style.flex = prevStyle.flex;
+      probe.style.height = prevStyle.height;
+      homeRows.forEach((r, i) => { r.rowEl.hidden = wasHidden[i]; });
+      const fit = Math.max(1, Math.min(HOME_TASK_ROWS_MAX, Math.floor(total / rowH)));
+      return fit;
+    };
+
+    const updateHomeRowsFit = () => {
+      const fit = measureHomeRowsFit();
+      if (fit === homeVisibleCount) {
+        // Görünen satır SAYISI değişmese bile kutunun gerçek piksel
+        // boyutu/konumu değişmiş olabilir (ör. yan panel genişliği ya da
+        // bento düzeni eşiği geçildiğinde); bu durumda satırlar zaten doğru
+        // yere kayar ama önceden çizilmiş bağlantı çizgileri eski ölçümde
+        // donmuş kalırdı. Bu yüzden burada da (satır sayısı sabit kalsa
+        // dahi) çizgiler güncel konuma göre yeniden çizilir — bkz.
+        // scheduleHomeConnectorRedraw altındaki not.
+        if (typeof scheduleHomeConnectorRedraw === 'function') scheduleHomeConnectorRedraw();
+        return;
+      }
+      homeVisibleCount = fit;
+      // Görünürlük değiştiyse widget'ı zorla yeniden kur (satır sayısı artık farklı).
+      homeShownList = [];
+      syncHomeRelaxWidget(true);
+    };
+
+    if (homeWidgetEl && 'ResizeObserver' in window) {
+      const homeFitObserver = new ResizeObserver(() => {
+        clearTimeout(homeFitResizeTimer);
+        homeFitResizeTimer = setTimeout(updateHomeRowsFit, 80);
       });
-      if (current) return Object.assign({ mode: 'now' }, current);
-      if (next) return Object.assign({ mode: 'next' }, next);
-      return null;
+      homeFitObserver.observe(homeWidgetEl);
+    }
+
+    // En uygun N görevi seç: en baştan (şu an süren varsa önce o), sonra
+    // kronolojik olarak sıradaki görevler. SADECE BUGÜNE ait görevler
+    // taranır — yarının, dünün ya da iki hafta sonrasının görevi widget'ta
+    // görünmemeli.
+    const pickHomeTasks = (limit) => {
+      const now = Date.now();
+      const todayStr = ymd(startOfDay(new Date()));
+      const byDate = getRelaxTasksByDate();
+      const entries = [];
+      const list = Array.isArray(byDate[todayStr]) ? byDate[todayStr] : [];
+      list.forEach((task, idx) => {
+        if (task && task.done) return; // "Yapıldı" işaretli görev artık şimdi/sıradaki değil
+        const r = relaxTaskRangeMs(task, todayStr);
+        if (!Number.isFinite(r.startMs) || !Number.isFinite(r.endMs)) return;
+        if (r.endMs <= now) return; // geçmişte tamamen bitmiş görev listeye girmez
+        entries.push({ task, dateStr: todayStr, startMs: r.startMs, endMs: r.endMs, idx });
+      });
+      // Planlayıcı listesiyle aynı sırayı korumak için: başlama zamanına göre,
+      // eşitlikte küçük idx (önce eklenen) üstte.
+      // Uyku planı: bugünün Uyanış/Yatış görevleri de listeye girer; ayrıca DÜN
+      // gece başlayıp şu an süren Yatış (uyku) görevi "Şimdi" olarak görünür.
+      if (getSleepPlan()) {
+        const sToday = getSleepTasksForDate(todayStr);
+        [sToday.wake, sToday.bed].forEach((task, i) => {
+          if (!task || task.done) return;
+          const r = relaxTaskRangeMs(task, todayStr);
+          if (r.endMs <= now) return;
+          entries.push({ task, dateStr: todayStr, startMs: r.startMs, endMs: r.endMs, idx: 1000 + i });
+        });
+        const yStr = ymd(startOfDay(new Date(Date.now() - 86400000)));
+        const yBed = getSleepTasksForDate(yStr).bed;
+        if (yBed && !yBed.done) {
+          const r = relaxTaskRangeMs(yBed, yStr);
+          if (r.startMs <= now && now < r.endMs) {
+            entries.push({ task: yBed, dateStr: yStr, startMs: r.startMs, endMs: r.endMs, idx: 1002 });
+          }
+        }
+      }
+      entries.sort((a, b) => (a.startMs - b.startMs) || (a.idx - b.idx));
+      return entries.slice(0, limit).map((entry) => Object.assign(
+        { mode: (entry.startMs <= now && now < entry.endMs) ? 'now' : 'next' },
+        entry,
+      ));
     };
 
     const homeTimeLabel = (pick) => {
@@ -34650,46 +35756,54 @@
       if (mode === 'now') return `Şimdi · ${task.start} – ${task.end}`;
       const d = new Date(pick.startMs);
       const diff = Math.round((startOfDay(d) - startOfDay(new Date())) / 86400000);
-      const day = diff <= 0 ? '' : (diff === 1 ? 'Yarın ' : `${d.getDate()} ${MONTHS_SHORT_TR[d.getMonth()]} `);
+      // Gece yarısından sonraki Yatış (ertesi günün 00:00'ı) "Yarın" diye etiketlenmez.
+      const day = (task.sleepKind || diff <= 0) ? '' : (diff === 1 ? 'Yarın ' : `${d.getDate()} ${MONTHS_SHORT_TR[d.getMonth()]} `);
       return `Sıradaki · ${day}${task.start}`;
     };
 
-    // Widget'taki görev "Yapıldı" işaretlendiyse (ya da tamamlama animasyonu
-    // oynuyorsa) halka artık zamana değil kullanıcıya bağlıdır: tam dolu kalmalı.
-    // Bu kontrol olmadan gecikmiş bir giriş/tick zamanlayıcısı dolguyu zamana
-    // göre hesaplanan (kısmi/boş) seviyeye geri çekip animasyonu bozuyordu.
-    const isHomeShownDone = () => !!(homeShown && homeShown.pick && homeShown.pick.task && homeShown.pick.task.done);
+    // Widget'taki bir satırdaki görev "Yapıldı" işaretlendiyse (ya da
+    // tamamlama animasyonu oynuyorsa) halka artık zamana değil kullanıcıya
+    // bağlıdır: tam dolu kalmalı. Bu kontrol olmadan gecikmiş bir giriş/tick
+    // zamanlayıcısı dolguyu zamana göre hesaplanan (kısmi/boş) seviyeye geri
+    // çekip animasyonu bozuyordu.
+    const isHomeShownDone = (shown) => !!(shown && shown.pick && shown.pick.task && shown.pick.task.done);
 
     const applyHomeProgress = (mode) => {
-      if (!homeShown || !homeShown.fillEl) return;
-      if (isHomeShownDone()) return;
-      const isTick = mode === 'tick';
-      const target = isTick ? Date.now() + RELAX_TICK_MS : Date.now();
-      const p = relaxRangeProgress(target, homeShown.from, homeShown.to);
-      homeShown.fillEl.style.transition = isTick ? `clip-path ${RELAX_TICK_MS}ms linear` : 'none';
-      homeShown.fillEl.style.clipPath = relaxClipFor(p);
+      homeShownList.forEach((shown) => {
+        if (!shown || !shown.fillEl) return;
+        if (isHomeShownDone(shown)) return;
+        const isTick = mode === 'tick';
+        const target = isTick ? Date.now() + RELAX_TICK_MS : Date.now();
+        const p = relaxRangeProgress(target, shown.from, shown.to);
+        shown.fillEl.style.transition = isTick ? `clip-path ${RELAX_TICK_MS}ms linear` : 'none';
+        shown.fillEl.style.clipPath = relaxClipFor(p);
+      });
     };
 
-    // Dolum animasyonu: boştan güncel seviyeye yumuşakça süpürülür.
+    // Dolum animasyonu: her satırda boştan güncel seviyeye yumuşakça süpürülür.
     const playHomeIntro = (delayMs = 0) => {
       clearTimeout(homeIntroTimer);
-      if (!homeShown || !homeShown.fillEl) { homeIntroPlaying = false; return; }
-      // Görev zaten "Yapıldı" ise ya da tamamlama animasyonu oynuyorsa halkayı
-      // boşaltıp yeniden süpürmek animasyonu bozar: hiç başlatma.
-      if (homeSwapPlaying || isHomeShownDone()) { homeIntroPlaying = false; return; }
+      const targets = homeShownList.filter((shown) => shown && shown.fillEl && !homeSwapPlaying && !isHomeShownDone(shown));
+      if (!targets.length) { homeIntroPlaying = false; return; }
       if (relaxPrefersReducedMotion()) { applyHomeProgress('instant'); return; }
       homeIntroPlaying = true;
-      homeShown.fillEl.style.transition = 'none';
-      homeShown.fillEl.style.clipPath = relaxClipFor(0);
-      void homeShown.fillEl.offsetWidth; // reflow: başlangıç durumu kesinleşsin
+      targets.forEach((shown) => {
+        shown.fillEl.style.transition = 'none';
+        shown.fillEl.style.clipPath = relaxClipFor(0);
+      });
+      void homeWidgetEl.offsetWidth; // reflow: başlangıç durumu kesinleşsin
       homeIntroTimer = setTimeout(() => {
-        if (!homeShown || !homeShown.fillEl) { homeIntroPlaying = false; return; }
-        // Bekleme sırasında kullanıcı görevi tamamladıysa dolguya dokunma.
-        if (homeSwapPlaying || isHomeShownDone()) { homeIntroPlaying = false; return; }
-        const p = relaxRangeProgress(Date.now(), homeShown.from, homeShown.to);
-        if (p <= 0) { homeIntroPlaying = false; return; }
-        homeShown.fillEl.style.transition = `clip-path ${HOME_INTRO_MS}ms cubic-bezier(0.22, 1, 0.36, 1)`;
-        homeShown.fillEl.style.clipPath = relaxClipFor(p);
+        if (homeSwapPlaying) { homeIntroPlaying = false; return; }
+        let any = false;
+        targets.forEach((shown) => {
+          if (isHomeShownDone(shown) || !shown.fillEl.isConnected) return;
+          const p = relaxRangeProgress(Date.now(), shown.from, shown.to);
+          if (p <= 0) return;
+          any = true;
+          shown.fillEl.style.transition = `clip-path ${HOME_INTRO_MS}ms cubic-bezier(0.22, 1, 0.36, 1)`;
+          shown.fillEl.style.clipPath = relaxClipFor(p);
+        });
+        if (!any) { homeIntroPlaying = false; return; }
         homeIntroTimer = setTimeout(() => {
           homeIntroPlaying = false;
           applyHomeProgress('tick'); // görev bu sırada tamamlandıysa applyHomeProgress zaten dokunmaz
@@ -34697,34 +35811,21 @@
       }, delayMs);
     };
 
-    // Gösterilecek görev değiştiyse widget'ı yeniden kurar; aynıysa dokunmaz.
-    const syncHomeRelaxWidget = (force = false) => {
-      if (!homeWidgetEl || !homeSlotEl) return;
-      // Tamamlama animasyonu (tik + halka dolumu + patlama) oynarken widget'ı
-      // dışarıdan yeniden kurmak animasyonu yarıda keser; geçişin sonunda zaten
-      // güncel duruma eşitlenir. Geçişin kendi çağrısı force=true ile gelir.
-      if (homeSwapPlaying && !force) return;
-      const pick = pickHomeTask();
-      // key'e sadece kimlik/zaman değil, GÖRÜNÜR alanlar da (ad/ikon/renk)
-      // dahil edilir; aksi halde saat değişmeden sadece ad/ikon/renk
-      // düzenlendiğinde widget "aynı görev" sanıp güncellenmeden kalıyordu.
+    // Bir satırı verilen pick (görev) ya da boş duruma göre doldurur; eski
+    // syncHomeRelaxWidget'ın tek-satırlık içerik kurma mantığıyla BİREBİR
+    // AYNI, sadece artık bir "row" nesnesi üzerinde çalışıyor.
+    const fillHomeRow = (row, pick) => {
       const key = pick
         ? `${pick.task.id || ''}|${pick.dateStr}|${pick.task.start}|${pick.mode}|${pick.task.name || ''}|${pick.task.icon}|${pick.task.color || ''}`
         : 'empty';
-      if (homeShown && homeShown.key === key) return;
-
-      clearTimeout(homeIntroTimer);
-      homeIntroPlaying = false;
-      homeWidgetEl.classList.toggle('is-empty', !pick);
 
       if (!pick) {
-        homeSlotEl.innerHTML = HOME_MOON_HTML;
-        homeLeadEl.style.removeProperty('--hw-line');
-        homeTimeEl.textContent = 'Yaklaşan görev yok';
-        homeTitleEl.textContent = 'Rahatla';
-        homeWidgetEl.setAttribute('aria-label', "Rahatla'ya git, yaklaşan görev yok");
-        homeShown = { key, fillEl: null, from: NaN, to: NaN, pick: null };
-        return;
+        row.slotEl.innerHTML = HOME_MOON_HTML;
+        row.leadEl.style.removeProperty('--hw-line');
+        row.timeEl.textContent = 'Yaklaşan görev yok';
+        row.titleEl.textContent = 'Rahatla';
+        row.rowEl.setAttribute('aria-label', "Rahatla'ya git, yaklaşan görev yok");
+        return { key, fillEl: null, from: NaN, to: NaN, pick: null };
       }
 
       const { task } = pick;
@@ -34738,43 +35839,174 @@
       // Ana liste (.relax-task-marker) ile aynı iç yapı: glyph sarmalayıcı +
       // kendini çizen tik SVG'si, "Yapıldı" olunca aynı animasyon burada da
       // oynasın diye. Ayrıca işaretçi kendi başına dokunulabilir bir kontrol
-      // olarak işaretlenir (widget'ın geri kalanı Planlayıcı'yı açmaya devam eder).
-      homeSlotEl.innerHTML = `<span class="relax-task-marker" role="button" tabindex="0">${inner}<span class="relax-task-marker-fill" aria-hidden="true"><span class="relax-task-marker-glyph">${inner}</span><svg class="relax-task-marker-check" viewBox="0 0 24 24" aria-hidden="true">${TASK_CHECK_PATH}</svg></span></span>`;
-      const markerEl = homeSlotEl.firstElementChild;
+      // olarak işaretlenir (satırın geri kalanı Planlayıcı'yı açmaya devam eder).
+      row.slotEl.innerHTML = `<span class="relax-task-marker" role="button" tabindex="0">${inner}<span class="relax-task-marker-fill" aria-hidden="true"><span class="relax-task-marker-glyph">${inner}</span><svg class="relax-task-marker-check" viewBox="0 0 24 24" aria-hidden="true">${TASK_CHECK_PATH}</svg></span></span>`;
+      const markerEl = row.slotEl.firstElementChild;
       markerEl.style.setProperty('--mk-color', color);
       markerEl.style.setProperty('--mk-on', on);
       markerEl.setAttribute('aria-label', `${task.name || 'Görev'}: yapıldı olarak işaretle`);
-      homeLeadEl.style.setProperty('--hw-line', color);
-      homeTimeEl.textContent = homeTimeLabel(pick);
-      homeTitleEl.textContent = task.name || '';
-      homeWidgetEl.setAttribute('aria-label', `Rahatla'ya git, ${pick.mode === 'now' ? 'şu an' : 'sıradaki görev'}: ${task.name || ''}`);
-      homeShown = {
+      row.leadEl.style.setProperty('--hw-line', color);
+      row.timeEl.textContent = homeTimeLabel(pick);
+      row.titleEl.textContent = task.name || '';
+      row.rowEl.setAttribute('aria-label', `Rahatla'ya git, ${pick.mode === 'now' ? 'şu an' : 'sıradaki görev'}: ${task.name || ''}`);
+      return {
         key,
         fillEl: markerEl.querySelector('.relax-task-marker-fill'),
         from: pick.startMs,
         to: pick.endMs,
         pick,
       };
-      applyHomeProgress('instant');
     };
 
-    // Widget'taki işaretçiye dokununca (Planlayıcı'yı açmadan) görevi doğrudan
-    // "Yapıldı" yapar. Erken çalışan bir başka script bloğu, widget'ın geri
-    // kalanına dokununca Planlayıcı'yı açan tıklama dinleyicisini taşıyor;
-    // marker'a dokunulduğunda o dinleyici bunun yerine bu global fonksiyonu
-    // çağırır (kapsam farklı olduğu için window üzerinden erişilir).
+    // Planlayıcı listesindeki drawRelaxTaskConnectors ile AYNI mantık: iki
+    // ardışık satırın işaretçisi arasına renk geçişli, dolan bir çizgi çizer.
+    // Sadece GÖRÜNÜR satırlar (homeVisibleCount kadar) ve içinde gerçek bir
+    // görev olan satırlar arasında çizilir; boş/ay-ikonlu satırdan sonra
+    // çizgi çizilmez.
+    const drawHomeRelaxConnectors = () => {
+      if (!homeConnectorsEl || !homeWidgetEl) return;
+      homeConnectorsEl.innerHTML = '';
+      const containerRect = homeWidgetEl.getBoundingClientRect();
+      // Planlayıcı listesindeki drawRelaxTaskConnectors ile AYNI düzeltme:
+      // üst öğelerde (ör. sayfa giriş animasyonu ölçüm anında henüz bitmemiş
+      // olduğunda) bir CSS transform varsa, getBoundingClientRect() o
+      // transform'u da ölçüme dahil eder; ama çizginin left/top/height
+      // değerleri transform'suz yerel piksel cinsindendir. Bu oran
+      // düzeltilmezse (özellikle daha yavaş/eski WebView'lerde ilk çizim tam
+      // oturmadan önce yakalanırsa) çizgiler gerçek dairelerin arasına değil,
+      // küçülmüş/kaymış bir konuma çizilir ve widget son boyutuna
+      // ulaştığında da güncellenmeden öylece donmuş kalır — tam olarak
+      // dairelerin arasında küçük, yerinde durmayan bir çentik gibi görünür.
+      let homeScale = homeWidgetEl.offsetWidth ? containerRect.width / homeWidgetEl.offsetWidth : 1;
+      if (!Number.isFinite(homeScale) || homeScale <= 0 || Math.abs(homeScale - 1) < 0.003) homeScale = 1;
+      const visibleShown = homeShownList
+        .map((shown, i) => ({ shown, row: homeRows[i] }))
+        .filter(({ shown, row }) => row && !row.rowEl.hidden && shown && shown.pick);
+
+      for (let i = 0; i < visibleShown.length - 1; i += 1) {
+        const a = visibleShown[i];
+        const b = visibleShown[i + 1];
+        const markerA = a.row.slotEl.querySelector('.relax-task-marker');
+        const markerB = b.row.slotEl.querySelector('.relax-task-marker');
+        if (!markerA || !markerB) continue;
+        const rectA = markerA.getBoundingClientRect();
+        const rectB = markerB.getBoundingClientRect();
+        const centerXA = (rectA.left + rectA.width / 2 - containerRect.left) / homeScale;
+        const centerXB = (rectB.left + rectB.width / 2 - containerRect.left) / homeScale;
+        const hA = rectA.height / homeScale;
+        const yStart = (rectA.top - containerRect.top) / homeScale + hA - 1;
+        const yEnd = (rectB.top - containerRect.top) / homeScale + 1;
+        const height = yEnd - yStart;
+        if (height <= 0) continue;
+
+        const colorA = a.shown.pick.task.color || 'var(--accent-color, #ff90e8)';
+        const colorB = b.shown.pick.task.color || 'var(--accent-color, #ff90e8)';
+        const gradient = `linear-gradient(to bottom, ${colorA}, ${colorB})`;
+
+        const line = document.createElement('div');
+        line.className = 'relax-task-connector-line';
+        line.style.left = `${((centerXA + centerXB) / 2) - 2}px`;
+        line.style.top = `${yStart}px`;
+        line.style.height = `${height}px`;
+
+        const track = document.createElement('span');
+        track.className = 'relax-task-connector-track';
+        track.style.background = gradient;
+        const fill = document.createElement('span');
+        fill.className = 'relax-task-connector-fill';
+        fill.style.background = gradient;
+        // Görevler arası boşlukta çizgi tamamen dolu görünür (Planlayıcı'dan
+        // farklı olarak burada gerçek zamanlı ilerleme değil, sabit vurgu istenir).
+        fill.style.clipPath = 'inset(0 0 0 0)';
+        line.appendChild(track);
+        line.appendChild(fill);
+        homeConnectorsEl.appendChild(line);
+      }
+    };
+
+    // Planlayıcı listesindeki pencere resize dinleyicisiyle AYNI mantık:
+    // satır SAYISI değişmese bile (updateHomeRowsFit'in yukarıdaki
+    // ResizeObserver'ı sadece görünen satır sayısı değişince yeniden çizim
+    // tetikler) kutunun boyutu değişince (ör. tablet/bento düzenindeki
+    // container query eşikleri geçilince, ya da cihaz döndürülünce) işaretçiler
+    // yeni konum/boyutlarına kayar ama çizgiler eski piksel ölçümünde donmuş
+    // kalıyordu — bu da çizgilerin kopuk/eğri görünmesine yol açan hataydı.
+    // Burada da JS'in her boyut değişikliğinde çizgileri gerçek konuma göre
+    // yeniden hesaplaması sağlanır.
+    // Tek requestAnimationFrame, bir sonraki paint'ten ÖNCE çalışacağını
+    // garanti eder ama altındaki DOM değişikliğinin layout/stil hesabının
+    // TAMAMEN oturduğunu garanti etmez — özellikle daha yavaş/eski
+    // WebView'lerde (ör. bu widget'ın çalıştığı gömülü tarayıcı) ilk çizim
+    // bazen tam yerleşmeden önce yakalanıp çizgiler küçük/kaymış kalıyordu.
+    // Planlayıcı listesi bu riski taşımıyordu çünkü orada çizim rAF'sız,
+    // doğrudan DOM eklemesinden hemen sonra çalışıyor. Burada da aynı
+    // güvenliği sağlamak için çift rAF kullanılır: ilki mevcut layout'un
+    // işlenmesini, ikincisi çizimin o kesin son duruma göre yapılmasını sağlar.
+    const drawHomeRelaxConnectorsSettled = () => {
+      requestAnimationFrame(() => requestAnimationFrame(drawHomeRelaxConnectors));
+    };
+    let homeConnectorResizeTimer = null;
+    const scheduleHomeConnectorRedraw = () => {
+      clearTimeout(homeConnectorResizeTimer);
+      homeConnectorResizeTimer = setTimeout(drawHomeRelaxConnectorsSettled, 120);
+    };
+    window.addEventListener('resize', scheduleHomeConnectorRedraw);
+    if (homeWidgetEl && 'ResizeObserver' in window) {
+      new ResizeObserver(scheduleHomeConnectorRedraw).observe(homeWidgetEl);
+    }
+    if (window.document.fonts && window.document.fonts.ready) {
+      window.document.fonts.ready.then(drawHomeRelaxConnectorsSettled).catch(() => {});
+    }
+
+    // Gösterilecek görev listesi değiştiyse widget'ı yeniden kurar; birebir
+    // aynıysa dokunmaz (satır satır karşılaştırılır).
+    const syncHomeRelaxWidget = (force = false) => {
+      if (!homeWidgetEl || !homeRows.length) return;
+      // Tamamlama animasyonu (tik + halka dolumu + patlama) oynarken widget'ı
+      // dışarıdan yeniden kurmak animasyonu yarıda keser; geçişin sonunda zaten
+      // güncel duruma eşitlenir. Geçişin kendi çağrısı force=true ile gelir.
+      if (homeSwapPlaying && !force) return;
+      const limit = homeVisibleCount || 1;
+      const picks = pickHomeTasks(limit);
+      const keys = homeRows.map((_, i) => (picks[i]
+        ? `${picks[i].task.id || ''}|${picks[i].dateStr}|${picks[i].task.start}|${picks[i].mode}|${picks[i].task.name || ''}|${picks[i].task.icon}|${picks[i].task.color || ''}`
+        : 'empty'));
+      const unchanged = homeShownList.length === keys.length && homeShownList.every((s, i) => s.key === keys[i]);
+      if (unchanged) return;
+
+      clearTimeout(homeIntroTimer);
+      homeIntroPlaying = false;
+      homeWidgetEl.classList.toggle('is-empty', !picks.length);
+
+      homeShownList = homeRows.map((row, i) => {
+        // Ekrana sığmayan satırlar (i >= limit) her zaman gizli. Sığanlardan
+        // görevi olmayanlar da (boş durum) sadece ilk satırda ay ikonuyla kalır.
+        const pick = i < limit ? (picks[i] || null) : null;
+        row.rowEl.hidden = i >= limit || (!pick && i > 0);
+        return fillHomeRow(row, pick);
+      });
+      applyHomeProgress('instant');
+      requestAnimationFrame(drawHomeRelaxConnectors);
+    };
+
+    // Bir satırdaki işaretçiye dokununca (Planlayıcı'yı açmadan) görevi
+    // doğrudan "Yapıldı" yapar. Erken çalışan bir başka script bloğu,
+    // widget'ın geri kalanına dokununca Planlayıcı'yı açan tıklama
+    // dinleyicisini taşıyor; marker'a dokunulduğunda o dinleyici bunun
+    // yerine bu global fonksiyonu (satır indeksiyle) çağırır.
     //
-    // Akış: önce tik çizilir + halka dolar + patlama oynar (setTaskDone'un
-    // normalde ANINDA tetiklediği syncHomeRelaxWidget'ı burada BİLEREK
-    // geciktiriyoruz, yoksa DOM anında değişip animasyon hiç görünmeden
-    // kesiliyordu) → kısa bir süre öylece durup animasyon izlensin → widget
-    // içeriği yumuşakça solup kaybolur → sıradaki görev (ya da boş durum)
-    // yerine gelir ve yumuşakça belirir.
-    window.toggleHomeRelaxWidgetTask = () => {
-      if (!homeShown || !homeShown.pick || !homeSlotEl) return;
-      const { task, dateStr, startMs, endMs } = homeShown.pick;
+    // Akış: önce tik çizilir + halka dolar + patlama oynar → kısa bir süre
+    // öylece durup animasyon izlensin → o satırın içeriği yumuşakça solup
+    // kaybolur → tüm liste bir yukarı kayar (sıradaki görev ya da boş satır
+    // yerine gelir) ve yumuşakça belirir.
+    window.toggleHomeRelaxWidgetTask = (rowIndex) => {
+      const idx = Number.isInteger(rowIndex) ? rowIndex : 0;
+      const shown = homeShownList[idx];
+      const row = homeRows[idx];
+      if (!shown || !shown.pick || !row) return;
+      const { task, dateStr, startMs, endMs } = shown.pick;
       if (!task || task.done) return;
-      const markerEl = homeSlotEl.firstElementChild;
+      const markerEl = row.slotEl.firstElementChild;
       if (!markerEl) return;
 
       clearTimeout(homeSwapTimer);
@@ -34816,7 +36048,16 @@
       const HOLD_MS = reduceMotion ? 0 : 1300;  // tik çizimi + halka dolumu + patlama TAMAMEN bitsin
                                                  // (patlama kendini spawnTaskBurst içinde 1300ms'de kaldırıyor, aynı süreyle eşleştirildi)
       const FADE_MS = reduceMotion ? 0 : 260;   // içerik yumuşakça kaybolup belirsin
-      const fadeEls = [homeLeadEl, homeBottomEl].filter(Boolean);
+      // Sadece bu satır değil, listenin tamamı bir kayacağı için tüm
+      // satırların lead+bottom'u birlikte solup yeniden belirir. Bağlantı
+      // çizgileri katmanı (homeConnectorsEl) da AYNI solma grubuna dahil
+      // edilir: aksi halde satırlar hâlâ solurken/soluktan belirirken
+      // çizgiler kendi opaklık geçişi olmadığı için yeni konum/renklerine
+      // aniden "zıplayarak" görünüyor, bu da geçişi tutarsız/titrek
+      // gösteriyordu. Artık hepsi tek bir crossfade gibi birlikte söner ve
+      // (içerik görünmezken güncellenip) birlikte belirir.
+      const fadeEls = homeRows.flatMap((r) => [r.leadEl, r.bottomEl]).filter(Boolean);
+      if (homeConnectorsEl) fadeEls.push(homeConnectorsEl);
 
       const swapToNextTask = () => {
         // Güvence: solma başlamadan önce halka kesin olarak %100 dolu ve tik görünür olsun.
@@ -34830,7 +36071,8 @@
           el.style.opacity = '0';
         });
         homeSwapTimer = setTimeout(() => {
-          syncHomeRelaxWidget(true); // içeriği sıradaki göreve (ya da boş duruma) günceller
+          homeShownList = []; // zorla yeniden kurulsun (key aynı görünebilirdi)
+          syncHomeRelaxWidget(true); // içeriği güncel listeye (ya da boş duruma) günceller
           fadeEls.forEach((el) => { el.style.opacity = '0'; });
           void homeWidgetEl.offsetWidth; // reflow: yeni içerik opacity 0'dan başlasın
           requestAnimationFrame(() => {
@@ -34859,8 +36101,9 @@
       if (homeTickTimer) { clearInterval(homeTickTimer); homeTickTimer = null; }
     };
 
-    if (homeWidgetEl && homePageEl) {
+    if (homeWidgetEl && homePageEl && homeRows.length) {
       const isHomeActive = () => homePageEl.classList.contains('is-active');
+      homeVisibleCount = measureHomeRowsFit();
       syncHomeRelaxWidget();
       if (isHomeActive()) { startHomeTicker(); playHomeIntro(350); }
 
@@ -34872,6 +36115,7 @@
           if (active === homeWasActive) return;
           homeWasActive = active;
           if (active) {
+            updateHomeRowsFit();
             syncHomeRelaxWidget();
             playHomeIntro(200);
             startHomeTicker();
@@ -34890,6 +36134,7 @@
         if (!homeIntroPlaying) applyHomeProgress('tick');
       });
     }
+
 
     // =====================================================================
     // PLANLAYICI SAYFASI: Ay takvimi (alttan açılan sheet)
@@ -36927,6 +38172,7 @@
   const homeQuestionWidgetSubEl = document.getElementById('homeQuestionWidgetSub');
   const homeQuestionWidgetEl = document.getElementById('homeQuestionWidget');
   const homeQuestionLiquidEl = document.getElementById('homeQuestionWidgetLiquid');
+  const homeQuestionBarFillEl = document.getElementById('homeQuestionWidgetBarFill');
   const homePageEl = document.getElementById('page-1');
 
   // ---- Dolum animasyonu ----
@@ -36980,6 +38226,12 @@
     const ratio = goal > 0 ? Math.min(1, total / goal) : 0;
 
     homeQuestionWidgetCountEl.textContent = String(total);
+
+    // Büyük ekrandaki ince hedef çubuğu (mobildeki sıvıdan bağımsız,
+    // ayrı bir CSS değişkeniyle beslenir).
+    if (homeQuestionBarFillEl) {
+      homeQuestionBarFillEl.style.setProperty('--fill-ratio', ratio);
+    }
 
     if (homeQuestionWidgetSubEl) {
       let subText;
@@ -46320,34 +47572,102 @@
   // çalıştığı için o değişken/fonksiyonlara doğrudan isimleriyle erişebilir.
   const homeKronometreWidgetEl = document.getElementById('homeKronometreWidget');
   const homeKronometreWidgetTextEl = document.getElementById('homeKronometreWidgetText');
+  // Sol boşluktaki halka widget'ı (bkz. .home-kronometre-ring-widget): aynı
+  // kronometre durumunu ayrı bir DOM elemanında gösterir, sadece BÜYÜK
+  // EKRANDA görünür.
+  const homeKronometreRingWidgetEl = document.getElementById('homeKronometreRingWidget');
+  const homeKronometreRingTextEl = document.getElementById('homeKronometreRingText');
 
+  // Artık her zaman 3 haneli (saat:dakika:saniye) gösterilir — saat 0
+  // olsa bile "00" olarak yazılır (ör. "00:08:06").
   const formatHomeKronometreTime = (ms) => {
     const totalSeconds = Math.floor(ms / 1000);
     const h = Math.floor(totalSeconds / 3600);
     const m = Math.floor((totalSeconds % 3600) / 60);
     const s = totalSeconds % 60;
     const pad = (n) => String(n).padStart(2, '0');
-    return h > 0 ? `${h}:${pad(m)}:${pad(s)}` : `${pad(m)}:${pad(s)}`;
+    return `${pad(h)}:${pad(m)}:${pad(s)}`;
+  };
+
+  // ---- Halka widget'ının rakamını, "Bugün Çözülen" widget'ının rakamıyla
+  // aynı dikey hizaya getirir ----
+  // İki widget farklı yerleşim mantıkları kullandığından (biri mutlak
+  // konumlu sabit bir "top" değeriyle, diğeri esnek bir grid hücresinin
+  // içinde) aralarındaki boşluk ekran genişliğine/yüksekliğine göre
+  // değişebiliyor. Bu yüzden hizalama sabit bir CSS değeriyle değil,
+  // ikisinin gerçek dikey merkezleri ölçülüp aradaki fark kadar halka
+  // widget'ının "top" değeri kaydırılarak yapılır.
+  let homeKronRingBaseTop = null;
+  const alignHomeKronometreRingWidget = () => {
+    if (!homeKronometreRingWidgetEl || !homeKronometreRingTextEl) return;
+    if (getComputedStyle(homeKronometreRingWidgetEl).display === 'none') return;
+    const countNumEl = document.getElementById('homeQuestionWidgetCount');
+    if (!countNumEl) return;
+
+    if (homeKronRingBaseTop === null) {
+      // CSS'teki asıl "top" değerini (env() dahil) bir kez ölçüp saklıyoruz;
+      // sonraki her hizalamada bu temel değerden hesaplanır, üst üste
+      // kaymaz.
+      homeKronometreRingWidgetEl.style.top = '';
+      homeKronRingBaseTop = homeKronometreRingWidgetEl.getBoundingClientRect().top
+        - parseFloat(getComputedStyle(homeKronometreRingWidgetEl).marginTop || '0');
+    }
+
+    const countRect = countNumEl.getBoundingClientRect();
+    const ringTextRect = homeKronometreRingTextEl.getBoundingClientRect();
+    if (!countRect.height || !ringTextRect.height) return;
+
+    const countCenterY = countRect.top + countRect.height / 2;
+    const ringTextCenterY = ringTextRect.top + ringTextRect.height / 2;
+    const diff = countCenterY - ringTextCenterY;
+
+    const currentTopStyle = homeKronometreRingWidgetEl.style.top;
+    const currentTop = currentTopStyle
+      ? parseFloat(currentTopStyle)
+      : homeKronometreRingWidgetEl.getBoundingClientRect().top;
+
+    homeKronometreRingWidgetEl.style.top = `${currentTop + diff}px`;
   };
 
   const updateHomeKronometreWidget = () => {
-    if (!homeKronometreWidgetEl || !homeKronometreWidgetTextEl) return;
     if (typeof currentElapsedMs !== 'function') return;
     const ms = currentElapsedMs();
     const running = typeof swRunning !== 'undefined' && swRunning;
-    if (ms <= 0) {
-      homeKronometreWidgetTextEl.textContent = 'Kronometre';
-      homeKronometreWidgetEl.classList.add('is-idle');
-      homeKronometreWidgetEl.classList.remove('is-running');
-    } else {
-      homeKronometreWidgetTextEl.textContent = formatHomeKronometreTime(ms);
-      homeKronometreWidgetEl.classList.remove('is-idle');
-      homeKronometreWidgetEl.classList.toggle('is-running', running);
+    const label = ms <= 0 ? 'Kronometre' : formatHomeKronometreTime(ms);
+    // Halka widget'ında "Kronometre" başlığı ayrı, sabit bir etikette
+    // (.home-kronometre-ring-label) durur; rakam alanı boşta da 3 haneli
+    // "00:00:00" gösterir.
+    const ringTime = formatHomeKronometreTime(ms > 0 ? ms : 0);
+
+    if (homeKronometreWidgetEl && homeKronometreWidgetTextEl) {
+      homeKronometreWidgetTextEl.textContent = label;
+      homeKronometreWidgetEl.classList.toggle('is-idle', ms <= 0);
+      homeKronometreWidgetEl.classList.toggle('is-running', ms > 0 && running);
     }
+
+    if (homeKronometreRingWidgetEl && homeKronometreRingTextEl) {
+      homeKronometreRingTextEl.textContent = ringTime;
+      homeKronometreRingWidgetEl.classList.toggle('is-idle', ms <= 0);
+      homeKronometreRingWidgetEl.classList.toggle('is-running', ms > 0 && running);
+    }
+
+    alignHomeKronometreRingWidget();
   };
 
   updateHomeKronometreWidget();
   setInterval(updateHomeKronometreWidget, 1000);
+
+  // Ekran boyutu değişince (döndürme, yan panel açılıp kapanması, pencere
+  // yeniden boyutlandırma) iki widget'ın arasındaki boşluk da değişebilir;
+  // bu yüzden hizalamayı sıfırlayıp yeniden ölçüyoruz.
+  let homeKronAlignResizeTimer = null;
+  window.addEventListener('resize', () => {
+    clearTimeout(homeKronAlignResizeTimer);
+    homeKronAlignResizeTimer = setTimeout(() => {
+      homeKronRingBaseTop = null;
+      alignHomeKronometreRingWidget();
+    }, 120);
+  });
 
   // Kronometre "Sayfa 5", Takvim/Rahatla gibi ayrı açılan bir alt sayfa değil,
   // alt nav'daki gerçek bir ana sekme; o yüzden gizli radio'yu işaretleyip
@@ -46363,46 +47683,70 @@
     }
   };
 
-  if (homeKronometreWidgetEl) {
+  // Kısa dokunuş Kronometre sayfasını açar, basılı tutmak (sadece sayaç
+  // duraklatılmışken ve elde biriken süre varken) onay penceresiyle süreyi
+  // sıfırlar. Hem sağ üstteki metin widget'ı hem sol boşluktaki halka
+  // widget'ı bu davranışı birebir paylaşır.
+  const bindHomeKronometreWidgetInteraction = (el) => {
+    if (!el) return;
     const HOME_KRONOMETRE_LONG_PRESS_MS = 550;
-    let homeKronometrePressTimer = null;
-    let homeKronometreLongPressFired = false;
+    let pressTimer = null;
+    let longPressFired = false;
 
-    const clearHomeKronometrePressTimer = () => {
-      if (homeKronometrePressTimer) {
-        clearTimeout(homeKronometrePressTimer);
-        homeKronometrePressTimer = null;
+    const clearPressTimer = () => {
+      if (pressTimer) {
+        clearTimeout(pressTimer);
+        pressTimer = null;
       }
     };
 
-    homeKronometreWidgetEl.addEventListener('pointerdown', () => {
-      homeKronometreLongPressFired = false;
-      clearHomeKronometrePressTimer();
-      homeKronometrePressTimer = setTimeout(() => {
-        homeKronometrePressTimer = null;
-        // Sayfa 5'teki gerçek davranışla aynı kural: Sıfırla, sadece
-        // sayaç DURAKLATILMIŞKEN ve elde biriken bir süre varken çalışır.
+    el.addEventListener('pointerdown', () => {
+      longPressFired = false;
+      clearPressTimer();
+      pressTimer = setTimeout(() => {
+        pressTimer = null;
         const running = typeof swRunning !== 'undefined' && swRunning;
         const hasTime = typeof currentElapsedMs === 'function' && currentElapsedMs() > 0;
         if (!running && hasTime && typeof openStopwatchResetConfirm === 'function') {
-          homeKronometreLongPressFired = true;
+          longPressFired = true;
           openStopwatchResetConfirm();
         }
       }, HOME_KRONOMETRE_LONG_PRESS_MS);
     });
 
     ['pointerup', 'pointerleave', 'pointercancel'].forEach((evt) => {
-      homeKronometreWidgetEl.addEventListener(evt, clearHomeKronometrePressTimer);
+      el.addEventListener(evt, clearPressTimer);
     });
 
-    homeKronometreWidgetEl.addEventListener('click', (e) => {
-      clearHomeKronometrePressTimer();
-      if (homeKronometreLongPressFired) {
-        homeKronometreLongPressFired = false;
+    el.addEventListener('click', (e) => {
+      clearPressTimer();
+      if (longPressFired) {
+        longPressFired = false;
         e.preventDefault();
         return;
       }
       openKronometrePageFromHome();
+    });
+  };
+
+  bindHomeKronometreWidgetInteraction(homeKronometreWidgetEl);
+  bindHomeKronometreWidgetInteraction(homeKronometreRingWidgetEl);
+
+  // Ana sayfadaki Tarih/Saat widget'ına (sağ üst) dokununca Takvim
+  // sayfasına (#page-6) geçilir — alt nav'daki gerçek sekmelerden biri
+  // olduğu için (Kronometre ile birebir aynı akış) gizli radio'yu
+  // işaretleyip 'change' olayını tetikliyoruz ki nav bar'ın seçili
+  // sekmesi ve kayan gösterge de doğru senkron kalsın.
+  const homeDateTimeWidgetEl = document.getElementById('homeDateTimeWidget');
+  if (homeDateTimeWidgetEl) {
+    homeDateTimeWidgetEl.addEventListener('click', () => {
+      const navInputPage6 = document.querySelector('.nav-input[value="page-6"]');
+      if (navInputPage6 && !navInputPage6.checked) {
+        navInputPage6.checked = true;
+        navInputPage6.dispatchEvent(new Event('change'));
+      } else if (typeof goToPage === 'function') {
+        goToPage('page-6');
+      }
     });
   }
 </script>
