@@ -18077,6 +18077,15 @@
     width: 100%;
     perspective: 1200px;
     -webkit-perspective: 1200px;
+    /* Kartın "dinlenme" (bekleme) konumundaki dikey kaydırması buradan
+       okunur (bkz. aşağıda mobilde --home-flip-base-y'nin ezildiği kural).
+       Çevirme animasyonu (homeFlipLift) da AYNI değişkeni kullanarak
+       başlar/biter; böylece animasyon bitince kart mevcut konumundan
+       ayrılmaz — önceden animasyon 0/100%'de bu kaydırmayı sıfıra
+       eşitleyip kartı geçici olarak aşağı düşürüyor, animasyon bitince de
+       gerçek konumuna aniden zıplıyordu. */
+    --home-flip-base-y: 0px;
+    transform: translateY(var(--home-flip-base-y));
   }
 
   .home-flip-inner {
@@ -18372,8 +18381,8 @@
   .home-flip.is-flipping { animation: homeFlipLift 0.95s cubic-bezier(0.3, 0.08, 0.22, 1); }
 
   @keyframes homeFlipLift {
-    0%, 100% { transform: scale(1) translateY(0); }
-    42% { transform: scale(1.05) translateY(-5px); }
+    0%, 100% { transform: translateY(var(--home-flip-base-y, 0px)) scale(1) translateY(0); }
+    42% { transform: translateY(var(--home-flip-base-y, 0px)) scale(1.05) translateY(-5px); }
   }
 
   .home-flip-sheen {
@@ -18657,9 +18666,12 @@
     /* --- Kart arka yüzü: sayaç --- */
     /* Geri Sayım + Soru Takibi kartını (ön/arka yüz birlikte) hafifçe
        yukarı çeker; "Rahatla" widget'ındaki translateY ile aynı mantık
-       (yerleşimi değiştirmez, sadece görsel kaydırma). */
+       (yerleşimi değiştirmez, sadece görsel kaydırma). Doğrudan "transform"
+       yerine değişkeni (--home-flip-base-y) ezmemizin sebebi: homeFlipLift
+       çevirme animasyonu da bu değişkeni okuyor, böylece animasyon
+       kartı bu kaydırılmış konumdan başlatıp yine aynı konuma bitirebiliyor. */
     .home-flip {
-      transform: translateY(calc(-1 * clamp(1rem, 3dvh, 2rem)));
+      --home-flip-base-y: calc(-1 * clamp(1rem, 3dvh, 2rem));
     }
 
     .home-flip-cd {
@@ -28930,16 +28942,9 @@
       // kayıyordu, ama bu kayma tam Soru Havuzu ikonunun üzerinden
       // başladığından, altındaki siyah pil sekmeler arasından geçerken
       // Soru Havuzu ikonu sanki sola/sağa kayıyormuş gibi görünüyordu.
-      // Konum artık transition kapatılıp doğrudan hedef sekmeye
-      // "atlanarak" (bir sonraki karede transition geri açılıp normal
-      // sekme geçişleri eskisi gibi kaymaya devam eder) ayarlanır.
+      // Moddan çıkınca gösterge, işaretli sekmenin altına geri kayar.
       const checked = document.querySelector('.nav-input:checked');
-      if (checked) {
-        navSlider.style.transition = 'none';
-        moveSlider(checked);
-        void navSlider.offsetWidth; // reflow: transition'sız konum kesinleşsin
-        navSlider.style.transition = '';
-      }
+      if (checked) moveSlider(checked);
     }
   };
 
