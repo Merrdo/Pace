@@ -11632,7 +11632,14 @@
   /* Özet kartındaki Gün/Hafta/Ay seçici üç seçenekli olduğundan
      kayan alanın genişliği ikili segmented control'lerden farklıdır. */
   #page9RangeSegmented .settings-segmented-slider {
-    width: calc(33.333% - 3px);
+    /* NOT: calc(33.333% - 3px) değil calc((100% - 6px) / 3) kullanılıyor.
+       .settings-segmented-option'lar flex:1 ile konteynerin (100% - 6px)
+       genişliğini 3'e eşit bölüyor; ama gösterge kendi genişliğinin
+       yüzdesiyle kaydığından (translateX(N * 100%)) iki formül arasındaki
+       1px'lik fark üçüncü sekmede (Ay) birkaç piksellik gözle görülür bir
+       kaymaya dönüşüyordu. Artık ikisi birebir aynı formülü kullanıyor,
+       bu yüzden gösterge her zaman tam metnin altında ortalanıyor. */
+    width: calc((100% - 6px) / 3);
   }
 
   /* ---------- Sayfa 9: Özet kartı ---------- */
@@ -11766,26 +11773,83 @@
     padding: 0.3rem 0;
   }
 
-  /* ---------- Sayfa 10: Kronometre Geçmişi ----------
-     Sayfa 9'daki (Soru Takibi) görsel dili ve tarih gezinme/Gün-Hafta-Ay
-     özet mantığı birebir yeniden kullanılır; kronometrenin her gün 00:00'da
-     kendiliğinden kapanıp arşivlediği günlük süre kayıtları burada listelenir. */
+  /* ---------- Sayfa 10: İstatistiklerim (kartsız tasarım) ----------
+     Sayfa 5'teki (Kronometre) yeni kartsız dille birebir aynı dil: beyaz
+     kart + siyah çerçeve + katı gölge yok. Bölümler doğrudan sayfa
+     zemininde durur, aralarında ince bir ayraç (color-mix ile
+     --theme-text'ten türetilmiş, tüm temalarda otomatik kontrastlı) var.
+     Renkler sabit #000/#fff değil, --theme-text / --accent-color
+     değişkenlerinden türetildiğinden hem açık/koyu hem de kullanıcının
+     seçtiği her tema renginde otomatik doğru kontrastta kalır. */
   .page10-wrap {
     width: 100%;
-    max-width: 340px;
+    max-width: 380px;
     margin: 0 auto;
     display: flex;
     flex-direction: column;
-    gap: 1rem;
+    gap: 0.2rem;
   }
 
   /* Geniş ekranda (bkz. @media min-width:768px) bu iki sarmalayıcı gerçek
-     grid/flex kutularına dönüşür; mobilde ise tamamen şeffaftır — kendi
-     çocukları (kartlar) doğrudan .page10-wrap'in dikey akışına katılır,
-     ekstra bir kutu/boşluk oluşturmazlar. */
+     grid/flex kutularına dönüşür; mobilde ise tamamen şeffaftır. */
   .page10-content,
   .page10-content-left {
     display: contents;
+  }
+
+  /* Üst çubuk: geri butonu solda sabit kalırken "İstatistiklerim" başlığı
+     satırın TAM ortasında dursun istendi. Eskiden flex + space-between +
+     görünmez bir "spacer" kutusuyla yaklaşık ortalanıyordu; bu hem geniş
+     ekranda spacer kaldırılınca başlığı sola kaydırıyordu hem de dar
+     ekranda gerçek matematiksel merkez değil, sadece iki yandaki kutular
+     eşit olduğu sürece ortalanan kırılgan bir denge sağlıyordu. Grid ile
+     başlık artık geri butonunun varlığından tamamen bağımsız, sayfanın
+     gerçek yatay merkezinde duruyor. */
+  .page10-wrap > .calendar-topbar {
+    display: grid;
+    grid-template-columns: 2.6rem 1fr 2.6rem;
+    align-items: center;
+    justify-content: initial;
+  }
+
+  .page10-wrap > .calendar-topbar .calendar-back-btn {
+    grid-column: 1;
+    justify-self: start;
+  }
+
+  .page10-wrap > .calendar-topbar .calendar-topbar-title {
+    grid-column: 2;
+    justify-self: center;
+    text-align: center;
+    /* Kalın/büyük başlık fontu, satır kutusunun içinde optik olarak geri
+       ok ikonundan biraz daha yukarıda oturuyordu; ikonla dikeyde tam
+       hizalansın diye birkaç piksel aşağı kaydırılıyor. */
+    transform: translateY(2px);
+  }
+
+  .page10-wrap > .calendar-topbar .calendar-topbar-spacer {
+    grid-column: 3;
+  }
+
+  #page-10 .calendar-back-btn {
+    background: none;
+    border: none;
+    box-shadow: none;
+    color: var(--theme-text, #1a1a1a);
+    transition: background-color 0.2s ease, color 0.5s ease, transform 0.15s ease;
+  }
+
+  #page-10 .calendar-back-btn:hover {
+    transform: none;
+    box-shadow: none;
+    background-color: color-mix(in srgb, var(--theme-text, #1a1a1a) 8%, transparent);
+  }
+
+  #page-10 .calendar-back-btn:active,
+  #page-10 .calendar-back-btn.is-pressed {
+    transform: scale(0.92);
+    box-shadow: none;
+    background-color: color-mix(in srgb, var(--theme-text, #1a1a1a) 8%, transparent);
   }
 
   .page10-header {
@@ -11793,14 +11857,14 @@
     flex-direction: column;
     gap: 0.3rem;
     width: 100%;
+    margin-top: 0.6rem;
   }
 
   .page10-subtitle {
-    font-family: "Space Grotesk", sans-serif;
+    font-family: "Baloo 2", "Space Grotesk", sans-serif;
     font-weight: 600;
     font-size: 0.85rem;
-    color: var(--theme-text, #fff);
-    opacity: 0.75;
+    color: color-mix(in srgb, var(--theme-text, #fff) 65%, transparent);
     transition: color 0.5s ease;
   }
 
@@ -11808,142 +11872,235 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 0.7rem;
+    gap: 0.5rem;
+    margin-top: 1.1rem;
   }
 
+  /* Tarih kutusu: kart değil, sayfa zeminine göre soft bir "hap" (pill).
+     Ayarlar'daki Hafta Başlangıcı seçicisiyle aynı görsel dil. */
   .page10-date-label {
     flex: 1 1 auto;
     text-align: center;
-    background: #fff;
-    border: 3px solid #000;
-    border-radius: 0.85rem;
-    box-shadow: 3px 3px 0px 0px #000;
-    padding: 0.5rem 0.6rem;
-    font-family: "Space Grotesk", sans-serif;
-    font-weight: 800;
-    font-size: 0.88rem;
-    color: #121212;
+    background: color-mix(in srgb, var(--theme-text, #1a1a1a) 6%, transparent);
+    border: none;
+    border-radius: 999px;
+    box-shadow: none;
+    padding: 0.62rem 0.8rem;
+    font-family: "Baloo 2", "Space Grotesk", sans-serif;
+    font-weight: 700;
+    font-size: 0.86rem;
+    color: var(--theme-text, #1a1a1a);
     cursor: pointer;
-    transition: background-color 0.2s ease, color 0.2s ease;
+    transition: background-color 0.2s ease, color 0.5s ease;
+  }
+
+  .page10-date-label:active {
+    background: color-mix(in srgb, var(--theme-text, #1a1a1a) 12%, transparent);
+  }
+
+  #page-10 .calendar-nav-btn.page10-date-btn {
+    background: none;
+    border: none;
+    box-shadow: none;
+    color: color-mix(in srgb, var(--theme-text, #1a1a1a) 75%, transparent);
+    transition: background-color 0.2s ease, color 0.5s ease, transform 0.15s ease;
+  }
+
+  #page-10 .calendar-nav-btn.page10-date-btn:hover {
+    transform: none;
+    box-shadow: none;
+    background-color: color-mix(in srgb, var(--theme-text, #1a1a1a) 8%, transparent);
+  }
+
+  #page-10 .calendar-nav-btn.page10-date-btn:active,
+  #page-10 .calendar-nav-btn.page10-date-btn.is-pressed {
+    transform: scale(0.9);
+    box-shadow: none;
+    background-color: transparent;
+    color: var(--accent-color, #ff90e8);
   }
 
   .calendar-nav-btn.page10-date-btn:disabled {
-    opacity: 0.35;
+    opacity: 0.3;
     cursor: default;
-    box-shadow: 2px 2px 0px 0px #000;
     transform: none;
   }
 
-  /* Ana özet kartı: seçili aralıktaki (gün/hafta/ay) toplam kronometre süresi */
-  .page10-card {
+  /* ---------- Ortak bölüm iskeleti (kartsız) ----------
+     Toplam Süre / Günlük Trend / Ders Dağılımı, üç ayrı beyaz kart yerine
+     tek bir akışta, aralarına ince bir yatay ayraç çizilerek birbirinden
+     ayrılan üç bölüm olarak durur. */
+  .page10-card,
+  .page10-donut-card,
+  .page10-trend-card {
     width: 100%;
     box-sizing: border-box;
-    background: #fff;
-    border: 4px solid #000;
-    border-radius: 1.1em;
-    box-shadow: 6px 6px 0px 0px #000;
-    padding: 0.9rem 0.9rem 1rem;
+    background: none;
+    border: none;
+    border-top: 1.5px solid color-mix(in srgb, var(--theme-text, #1a1a1a) 12%, transparent);
+    border-radius: 0;
+    box-shadow: none;
+    padding: 1.5rem 0;
     display: flex;
     flex-direction: column;
-    gap: 0.8rem;
+    gap: 1rem;
+    transition: border-color 0.5s ease;
+  }
+
+  .page10-card {
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+  }
+
+  /* ---------- Günlük Trend: "bg-card rounded-2xl border p-4" ----------
+     Paylaşılan PointsChart bileşeniyle birebir aynı kart dili: düz kart
+     zemini, ince kenarlık, sade köşe yuvarlaması — gradyan/parlama/gölge
+     efektleri yok. */
+  .page10-trend-card {
+    border: 1px solid color-mix(in srgb, var(--theme-text, #121212) 22%, transparent);
+    margin-top: 0.4rem;
+    padding: 1rem;
+    border-radius: 1rem;
+    background: color-mix(in srgb, var(--theme-text, #121212) 4%, var(--theme-bg, #fff));
+    box-shadow: none;
+    gap: 0.75rem;
+    transition: background-color 0.5s ease, border-color 0.5s ease;
+  }
+
+  body.is-anthracite .page10-trend-card {
+    background: color-mix(in srgb, #fff 4%, var(--theme-bg, #1c1c22));
+    border-color: color-mix(in srgb, #fff 12%, transparent);
   }
 
   .page10-summary-header {
     display: flex;
-    flex-direction: column;
+    align-items: center;
     gap: 0.65rem;
   }
 
-  .page10-summary-title {
-    font-family: "Archivo Expanded", "Space Grotesk", sans-serif;
+  .page10-summary-title,
+  .page10-donut-title,
+  .page10-trend-title {
+    font-family: "Baloo 2", "Space Grotesk", sans-serif;
     font-weight: 700;
-    font-size: 0.74rem;
-    letter-spacing: 0.03em;
+    font-size: 0.78rem;
+    letter-spacing: 0.06em;
     text-transform: uppercase;
-    color: #121212;
-    opacity: 0.6;
+    color: color-mix(in srgb, var(--theme-text, #121212) 58%, transparent);
+    transition: color 0.5s ease;
   }
 
+  /* Segmented seçici Gün<->Hafta<->Ay arasında geçerken bu etiketin metni
+     (Bugün / 21 – 27 Eylül / Eylül 2026) uzayıp kısalıyordu; önceden
+     "justify-content: space-between" kullanıldığından bu uzunluk değişimi
+     aradaki boşlukları yeniden dağıtıp seçiciyi de yatayda kaydırıyordu.
+     Artık başlık + seçici sıradan (space-between OLMADAN) yan yana sabit
+     dururlar; sadece bu etiket "margin-left: auto" ile satırın sonuna
+     itilir ve kendi genişliği ne olursa olsun SOLUNDAKİ hiçbir öğeyi
+     etkilemez — seçicinin dış hatları artık hiçbir zaman kaymaz. */
   .page10-summary-range-label {
-    font-family: "Space Grotesk", sans-serif;
+    font-family: "Baloo 2", "Space Grotesk", sans-serif;
     font-weight: 600;
     font-size: 0.78rem;
-    color: #121212;
-    opacity: 0.55;
+    color: color-mix(in srgb, var(--theme-text, #121212) 55%, transparent);
+    transition: color 0.5s ease;
+    margin-left: auto;
+    min-width: 0;
+    flex: 0 1 auto;
+    text-align: right;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
+  /* Gün/Hafta/Ay seçici: kartsız, zemine göre soft pil izi + üzerinde
+     yaylanarak kayan vurgu renginde bir gösterge (Ayarlar'daki Hafta
+     Başlangıcı seçicisiyle birebir aynı dil). */
+  #page10RangeSegmented.settings-segmented.page10-segmented {
+    background: color-mix(in srgb, var(--theme-text, #121212) 8%, transparent);
+    box-shadow: inset 0 1px 3px 0 color-mix(in srgb, var(--theme-text, #121212) 10%, transparent);
+    border: none;
+    border-radius: 999px;
+    height: 2.35rem;
+    flex-shrink: 0;
+    width: auto;
+    min-width: 9.5rem;
+  }
+
+  /* Kayan gösterge artık düz bir renk bloğu değil: hafif bir üst parlama
+     (inset highlight) + yumuşak, geniş bir accent gölgesiyle sayfadan
+     "kalkan", elle tutulur bir his veriyor. Geçiş de yaylanan/sekmeli
+     değil, tek yönde akıcı ve yumuşak bir ease-out. */
   #page10RangeSegmented .settings-segmented-slider {
-    width: calc(33.333% - 3px);
+    /* calc(33.333% - 3px) yerine calc((100% - 6px) / 3): .settings-segmented-option
+       öğeleri flex:1 ile konteynerin (100% - 6px) genişliğini tam 3 eşit
+       parçaya bölüyor; gösterge de birebir aynı formülü kullanmazsa
+       translateX(N * 100%) her adımda ~1px kayıyor ve "Ay" sekmesinde
+       gösterge metnin tam altına oturmuyordu. */
+    width: calc((100% - 6px) / 3);
+    background: linear-gradient(180deg, color-mix(in srgb, var(--accent-color, #ff90e8) 100%, white 12%), var(--accent-color, #ff90e8));
+    border-radius: 999px;
+    box-shadow:
+      0 3px 12px 0 color-mix(in srgb, var(--accent-color, #ff90e8) 50%, transparent),
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.35);
+    transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .page10-segmented .settings-segmented-option {
+    font-family: "Baloo 2", "Space Grotesk", sans-serif;
+    color: color-mix(in srgb, var(--theme-text, #121212) 78%, transparent);
+    font-size: 0.76rem;
+    transition: color 0.35s ease;
+  }
+
+  /* Yukarıdaki %78'lik karışım açık zeminde okunaklı olsun diye
+     yükseltildi; koyu modda bu kadar yüksek opaklık gereksiz/fazla
+     kontrastlı durduğundan (zaten koyu zeminde önceki %55'lik değer
+     iyi görünüyordu), karanlık mod burada eski değerine döndürülüyor. */
+  body.is-anthracite .page10-segmented .settings-segmented-option {
+    color: color-mix(in srgb, var(--theme-text, #f2f2f4) 55%, transparent);
+  }
+
+  .page10-segmented .settings-segmented-option.is-active {
+    color: #fff;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.18);
   }
 
   .page10-summary-total {
-    font-family: "Space Grotesk", sans-serif;
+    font-family: "Baloo 2", "Space Grotesk", sans-serif;
     font-weight: 800;
-    font-size: 2.1rem;
-    color: #121212;
+    font-size: clamp(2.6rem, 13vw, 3.4rem);
+    color: var(--theme-text, #121212);
     line-height: 1;
+    letter-spacing: -0.02em;
     font-variant-numeric: tabular-nums;
+    transition: color 0.5s ease;
   }
 
   .page10-summary-total span {
-    font-size: 0.95rem;
+    font-size: 0.42em;
     font-weight: 700;
-    opacity: 0.55;
-  }
-
-  .page10-summary-hint {
-    font-family: "Space Grotesk", sans-serif;
-    font-weight: 600;
-    font-size: 0.78rem;
-    color: #121212;
     opacity: 0.5;
   }
 
-  /* ---------- Sayfa 10: Koyu mod (anthracite) ---------- */
-  body.is-anthracite .page10-date-label {
-    background-color: var(--dark-card-color, #1c1c22);
-    color: #f2f2f4;
+  .page10-summary-hint {
+    font-family: "Baloo 2", "Space Grotesk", sans-serif;
+    font-weight: 600;
+    font-size: 0.8rem;
+    color: color-mix(in srgb, var(--theme-text, #121212) 50%, transparent);
+    transition: color 0.5s ease;
   }
 
-  body.is-anthracite .page10-card {
-    background-color: var(--dark-card-color, #1c1c22);
-  }
+  /* Eski sabit koyu-mod (anthracite) kuralları kalktı: tüm renkler artık
+     zaten var(--theme-text)/var(--accent-color) üzerinden geliyor ve her
+     temada (koyu dahil) otomatik doğru kontrastta kalıyor. */
 
-  body.is-anthracite .settings-segmented.page10-segmented {
-    background-color: var(--dark-card-color, #1c1c22);
-  }
-
-  body.is-anthracite .page10-segmented .settings-segmented-option {
-    color: #f2f2f4;
-  }
-
-  body.is-anthracite .page10-segmented .settings-segmented-option.is-active {
-    color: #fff;
-  }
-
-  body.is-anthracite .page10-summary-title,
-  body.is-anthracite .page10-summary-range-label,
-  body.is-anthracite .page10-summary-total,
-  body.is-anthracite .page10-summary-hint {
-    color: #f2f2f4;
-  }
-
-  /* ---------- Sayfa 10: Ders Dağılımı (daire/donut grafik) ----------
-     Seçili aralıktaki (gün/hafta/ay) tüm günlerin ders bazlı süreleri
-     toplanıp bir donut grafikte ve yanındaki lejantta gösterilir. */
-  .page10-donut-card {
-    width: 100%;
-    box-sizing: border-box;
-    background: #fff;
-    border: 4px solid #000;
-    border-radius: 1.1em;
-    box-shadow: 6px 6px 0px 0px #000;
-    padding: 0.9rem 0.9rem 1rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.8rem;
-  }
-
+  /* ---------- Ders Dağılımı (dilimlerin, iki iç içe halka halinde
+     renkli NOKTALARDAN oluştuğu bir "nokta çemberi" grafiği) ----------
+     Bana gönderdiğin BonusesIncentivesCard bileşeniyle birebir aynı dil:
+     çizgi/arc yerine iki eş merkezli halkaya dizilmiş küçük daireler,
+     ortada büyük TOPLAM değeri, altında her dersin kendi vurgu rengiyle
+     dikey bir çubuk + değer + yüzde gösteren kart benzeri satırlar. */
   .page10-donut-head {
     display: flex;
     align-items: center;
@@ -11951,111 +12108,139 @@
     gap: 0.5rem;
   }
 
-  .page10-donut-title {
-    font-family: "Archivo Expanded", "Space Grotesk", sans-serif;
+  .page10-donut-badge {
+    font-family: "Baloo 2", "Space Grotesk", sans-serif;
     font-weight: 700;
     font-size: 0.74rem;
-    letter-spacing: 0.03em;
-    text-transform: uppercase;
-    color: #121212;
-    opacity: 0.6;
-  }
-
-  .page10-donut-badge {
-    font-family: "Space Grotesk", sans-serif;
-    font-weight: 700;
-    font-size: 0.72rem;
-    color: #121212;
-    opacity: 0.5;
+    color: color-mix(in srgb, var(--theme-text, #121212) 50%, transparent);
+    transition: color 0.5s ease;
   }
 
   .page10-donut-body {
     display: flex;
+    flex-direction: column;
     align-items: center;
-    gap: 1rem;
+    gap: 1.1rem;
   }
 
   .page10-donut-wrap {
     position: relative;
-    width: 7.4rem;
-    height: 7.4rem;
+    width: 9.4rem;
+    height: 9.4rem;
     flex-shrink: 0;
+  }
+
+  /* Nokta çemberinin iç boşluğuna, ortadaki toplam süre kartını hafifçe
+     zeminden kaldıran, vurgu renginde çok yumuşak bir parıltı — düz/boş
+     bir alan yerine daha "canlı" ve kasıtlı tasarlanmış bir merkez hissi
+     veriyor (referans karttaki blur arka planıyla aynı fikir). */
+  .page10-donut-wrap::before {
+    content: '';
+    position: absolute;
+    inset: 22%;
+    border-radius: 50%;
+    background: radial-gradient(circle at 50% 38%,
+      color-mix(in srgb, var(--accent-color, #ff90e8) 16%, transparent),
+      transparent 72%);
+    pointer-events: none;
   }
 
   .page10-donut-svg {
     width: 100%;
     height: 100%;
-    transform: rotate(-90deg);
     display: block;
+    overflow: visible;
   }
 
-  .page10-donut-svg circle {
-    transition: stroke-dasharray 0.6s cubic-bezier(0.22, 1, 0.36, 1), stroke-dashoffset 0.6s cubic-bezier(0.22, 1, 0.36, 1), stroke-width 0.18s ease;
+  /* Nokta çemberindeki her bir nokta: referanstaki gibi düz dolgu
+     (fill), ince stroke yok. Yapı değişmediği sürece sadece rengi/aktif
+     durumu yumuşakça geçiş yapar; strok tabanlı dash animasyonu yok. */
+  .page10-donut-svg circle.page10-donut-dot {
+    cursor: pointer;
+    stroke: none;
+    opacity: 0.92;
+    transform-box: fill-box;
+    transform-origin: center;
+    transition: opacity 0.25s ease, transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), fill 0.4s ease;
   }
 
-  .page10-donut-svg circle.page10-donut-slice {
+  .page10-donut-svg circle.page10-donut-dot.is-active {
+    opacity: 1;
+    transform: scale(1.35);
+  }
+
+  /* Görünmez dokunma dilimleri: derse ait halka payının tamamını (nokta
+     aralarındaki boşluklar dahil) kapsayan, gözle görünmeyen ama parmakla
+     her yerinden yakalanabilen alanlar. Komşu derslerin sınırını aşmadığı
+     için ince bir dilime (ör. %2) yanlışlıkla komşu renk seçilmez. */
+  .page10-donut-svg path.page10-donut-hit {
+    fill: transparent;
+    pointer-events: all;
     cursor: pointer;
   }
 
-  .page10-donut-svg circle.page10-donut-slice.is-active {
-    stroke-width: 19;
+  .page10-donut-center {
+    gap: 0.2rem;
   }
 
   .page10-donut-legend-item {
     cursor: pointer;
-    border-radius: 0.4rem;
+    border-radius: 0.8rem;
+    padding: 0.5rem 0.6rem;
     transition: background-color 0.18s ease;
   }
 
   .page10-donut-legend-item.is-active {
-    background-color: rgba(0, 0, 0, 0.06);
+    background-color: color-mix(in srgb, var(--theme-text, #121212) 7%, transparent);
   }
 
-  body.is-anthracite .page10-donut-legend-item.is-active {
-    background-color: rgba(255, 255, 255, 0.08);
-  }
-
+  /* Tooltip artık koyu/camsı bir rozet değil; sol taraftaki Günlük Trend
+     grafiğinin tooltip'iyle (.page10-trend-tooltip) BİREBİR AYNI kutu
+     dilinde: kart zemininden hafifçe yükselen, ince kenarlıklı, açık
+     renkli bir bilgi kutusu. Halkanın TAM ORTASINA (toplam süre yazısının
+     üstüne) bindirilmiyor, kartın üstünde halkanın dışında duruyor. */
   .page10-donut-tooltip {
     position: absolute;
     left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%) scale(0.85);
-    background: #121212;
-    color: #fff;
-    border: 2px solid #000;
-    border-radius: 0.65rem;
-    padding: 0.4rem 0.6rem;
-    font-family: "Space Grotesk", sans-serif;
-    font-size: 0.68rem;
-    font-weight: 700;
-    line-height: 1.3;
+    top: -0.55rem;
+    transform: translate(-50%, -100%) scale(0.92);
+    background: var(--theme-bg, #ffffff);
+    color: var(--theme-text, #121212);
+    border: 1px solid color-mix(in srgb, var(--theme-text, #121212) 14%, transparent);
+    border-radius: 0.7rem;
+    padding: 0.4rem 0.65rem;
+    font-family: "Baloo 2", "Space Grotesk", sans-serif;
+    line-height: 1.35;
     white-space: nowrap;
-    text-align: center;
+    text-align: left;
     pointer-events: none;
-    box-shadow: 3px 3px 0px 0px #000;
+    box-shadow: 0 10px 24px -10px color-mix(in srgb, var(--theme-text, #121212) 45%, transparent);
     opacity: 0;
     visibility: hidden;
-    transition: opacity 0.2s ease, transform 0.2s ease, visibility 0s linear 0.2s;
+    transition: opacity 0.2s ease, transform 0.25s cubic-bezier(0.34, 1.4, 0.64, 1), visibility 0s linear 0.2s, background-color 0.5s ease, color 0.5s ease, border-color 0.5s ease;
     z-index: 6;
   }
 
   .page10-donut-tooltip.is-visible {
     opacity: 1;
     visibility: visible;
-    transform: translate(-50%, -50%) scale(1);
-    transition: opacity 0.2s ease, transform 0.2s ease, visibility 0s linear;
+    transform: translate(-50%, calc(-100% - 12px)) scale(1);
+    transition: opacity 0.2s ease, transform 0.25s cubic-bezier(0.34, 1.4, 0.64, 1), visibility 0s linear;
   }
 
   .page10-donut-tooltip-name {
     display: block;
-    font-size: 0.66rem;
-    opacity: 0.85;
+    font-size: 0.62rem;
+    font-weight: 600;
+    color: color-mix(in srgb, var(--theme-text, #121212) 55%, transparent);
+    margin-bottom: 0.1rem;
   }
 
   .page10-donut-tooltip-value {
     display: block;
-    color: #ff90e8;
-    font-size: 0.76rem;
+    font-size: 0.78rem;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
   }
 
   .page10-donut-center {
@@ -12070,149 +12255,147 @@
     gap: 0.1rem;
   }
 
+  /* Referanstaki "TOTAL" etiketi büyük değerin ÜSTÜNDE, küçük ve
+     soluk durur; değer altında büyük ve kalın — sırayı da (etiket
+     önce, değer sonra) HTML'de birebir öyle kurduk. */
+  .page10-donut-center-label {
+    font-family: "Baloo 2", "Space Grotesk", sans-serif;
+    font-weight: 700;
+    font-size: 0.6rem;
+    color: color-mix(in srgb, var(--theme-text, #121212) 52%, transparent);
+    text-transform: uppercase;
+    letter-spacing: 0.09em;
+    transition: color 0.5s ease;
+  }
+
   .page10-donut-center-value {
-    font-family: "Space Grotesk", sans-serif;
+    font-family: "Baloo 2", "Space Grotesk", sans-serif;
     font-weight: 800;
-    font-size: 0.88rem;
-    color: #121212;
+    font-size: 1.08rem;
+    color: var(--theme-text, #121212);
     font-variant-numeric: tabular-nums;
     line-height: 1.1;
+    transition: color 0.5s ease;
   }
 
-  .page10-donut-center-label {
-    font-family: "Space Grotesk", sans-serif;
-    font-weight: 600;
-    font-size: 0.58rem;
-    color: #121212;
-    opacity: 0.5;
-    text-transform: uppercase;
-    letter-spacing: 0.03em;
-  }
-
+  /* Alttaki lejant artık dikey, kaydırılan tek bir liste değil; referans
+     karttaki "Bonuses / Incentives" ikilisiyle aynı dilde, dikey vurgu
+     çubuklu kart-satırlardan oluşan, satır satır sarabilen bir ızgara. */
   .page10-donut-legend {
-    flex: 1;
-    min-width: 0;
+    width: 100%;
     display: flex;
-    flex-direction: column;
-    gap: 0.42rem;
-    max-height: 7.6rem;
-    overflow-y: auto;
-    overscroll-behavior: contain;
+    flex-wrap: wrap;
+    gap: 0.3rem 0.4rem;
+    max-height: none;
+    overflow: visible;
   }
 
   .page10-donut-legend-item {
     display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    flex: 1 1 8.5rem;
+    min-width: 8.5rem;
+  }
+
+  .page10-donut-legend-head {
+    display: flex;
     align-items: center;
-    gap: 0.4rem;
-  }
-
-  .page10-donut-legend-dot {
-    flex-shrink: 0;
-    width: 0.6rem;
-    height: 0.6rem;
-    border-radius: 50%;
-    border: 1.5px solid #000;
-  }
-
-  .page10-donut-legend-name {
-    font-family: "Space Grotesk", sans-serif;
-    font-weight: 600;
-    font-size: 0.74rem;
-    color: #121212;
-    opacity: 0.85;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    flex: 1;
+    gap: 0.45rem;
     min-width: 0;
   }
 
-  .page10-donut-legend-pct {
+  .page10-donut-legend-bar {
     flex-shrink: 0;
-    font-family: "Space Grotesk", sans-serif;
+    width: 0.2rem;
+    height: 1rem;
+    border-radius: 999px;
+  }
+
+  .page10-donut-legend-name {
+    font-family: "Baloo 2", "Space Grotesk", sans-serif;
+    font-weight: 600;
+    font-size: 0.76rem;
+    color: color-mix(in srgb, var(--theme-text, #121212) 62%, transparent);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
+    transition: color 0.5s ease;
+  }
+
+  .page10-donut-legend-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 0.05rem;
+  }
+
+  .page10-donut-legend-value {
+    font-family: "Baloo 2", "Space Grotesk", sans-serif;
     font-weight: 800;
-    font-size: 0.74rem;
-    color: #121212;
+    font-size: 0.98rem;
+    color: var(--theme-text, #121212);
+    font-variant-numeric: tabular-nums;
+    line-height: 1.15;
+    transition: color 0.5s ease;
+  }
+
+  .page10-donut-legend-pct {
+    font-family: "Baloo 2", "Space Grotesk", sans-serif;
+    font-weight: 700;
+    font-size: 0.72rem;
     font-variant-numeric: tabular-nums;
   }
 
   .page10-donut-empty {
-    font-family: "Space Grotesk", sans-serif;
+    font-family: "Baloo 2", "Space Grotesk", sans-serif;
     font-weight: 600;
     font-size: 0.85rem;
-    color: #121212;
-    opacity: 0.5;
+    color: color-mix(in srgb, var(--theme-text, #121212) 45%, transparent);
     padding: 0.3rem 0;
+    transition: color 0.5s ease;
   }
 
-  body.is-anthracite .page10-donut-card {
-    background-color: var(--dark-card-color, #1c1c22);
-  }
-
-  body.is-anthracite .page10-donut-title,
-  body.is-anthracite .page10-donut-badge,
-  body.is-anthracite .page10-donut-center-value,
-  body.is-anthracite .page10-donut-center-label,
-  body.is-anthracite .page10-donut-legend-name,
-  body.is-anthracite .page10-donut-legend-pct,
-  body.is-anthracite .page10-donut-empty {
-    color: #f2f2f4;
-  }
-
-  /* ---------- Sayfa 10: Günlük Trend (iniş-çıkışlı çizgi grafik) ----------
-     Sayfa 11 - Analizlerim'deki net trend grafiğiyle birebir aynı görsel
-     dil ve animasyonlarla (bkz. @keyframes analyticsTrendPulse), günlük
-     toplam kronometre süresini çizer. */
-  .page10-trend-card {
-    width: 100%;
-    box-sizing: border-box;
-    background: #fff;
-    border: 4px solid #000;
-    border-radius: 1.1em;
-    box-shadow: 6px 6px 0px 0px #000;
-    padding: 0.9rem 0.9rem 1rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.6rem;
-  }
-
+  /* ---------- Günlük Trend (premium çizgi grafik) ---------- */
   .page10-trend-head {
     display: flex;
-    align-items: center;
+    align-items: baseline;
     justify-content: space-between;
     gap: 0.5rem;
   }
 
   .page10-trend-title {
-    font-family: "Archivo Expanded", "Space Grotesk", sans-serif;
-    font-weight: 700;
-    font-size: 0.74rem;
-    letter-spacing: 0.03em;
-    text-transform: uppercase;
-    color: #121212;
-    opacity: 0.6;
+    letter-spacing: 0.08em;
   }
 
   .page10-trend-badge {
-    font-family: "Space Grotesk", sans-serif;
+    font-family: "Baloo 2", "Space Grotesk", sans-serif;
     font-weight: 800;
-    font-size: 0.78rem;
-    padding: 0.2rem 0.5rem;
-    border: 2px solid #000;
-    border-radius: 0.6rem;
-    background: #f2f2f2;
-    color: #121212;
+    font-size: 0.76rem;
+    padding: 0.3rem 0.7rem;
+    border: none;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--theme-text, #121212) 7%, transparent);
+    color: color-mix(in srgb, var(--theme-text, #121212) 70%, transparent);
+    transition: background-color 0.35s ease, color 0.35s ease, transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
 
   .page10-trend-badge.is-up {
-    background: #5cd68a;
-    color: #0d3d20;
+    background: color-mix(in srgb, #00e6a0 28%, transparent);
+    color: #0a7a4c;
   }
 
   .page10-trend-badge.is-down {
-    background: #ff5c5c;
-    color: #5c0011;
+    background: color-mix(in srgb, #ff3d68 24%, transparent);
+    color: #c81b45;
   }
+
+  /* Koyu modda arka plan zaten koyu zeminle iyi bir kontrast oluşturuyordu;
+     açık mod için yukarıda güçlendirilen (%28/%24) tonlar koyu modda
+     gereğinden fazla doygun durabileceğinden, karanlık mod eski (%18/%14)
+     değerine döndürülüyor. */
+  body.is-anthracite .page10-trend-badge.is-up { background: color-mix(in srgb, #00e6a0 18%, transparent); color: #4dffc2; }
+  body.is-anthracite .page10-trend-badge.is-down { background: color-mix(in srgb, #ff3d68 14%, transparent); color: #ff87a1; }
 
   .page10-trend-chart-wrap {
     position: relative;
@@ -12221,37 +12404,58 @@
 
   .page10-trend-chart {
     width: 100%;
-    height: 8.5rem;
+    height: 10.4rem;
     display: block;
     overflow: visible;
   }
 
-  .page10-trend-area {
-    transform-box: fill-box;
-    transform-origin: bottom;
-    transform: scaleY(0);
-    opacity: 0;
-    transition: transform 0.7s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.5s ease;
+  /* Gün etiketleri ve nokta üstü süre etiketleri: sabit bir hex yerine
+     var(--theme-text) üzerinden dinamik renk kullanıyor, böylece tema
+     (açık/koyu/özel renk) her ne olursa olsun anında doğru kontrastta
+     kalıyor — JS'in tema anlık görüntüsü almasına gerek kalmıyor. */
+  .page10-trend-day-label {
+    fill: color-mix(in srgb, var(--theme-text, #121212) 52%, transparent);
   }
 
-  .page10-trend-area.is-in {
-    transform: scaleY(1);
-    opacity: 1;
+  .page10-trend-value-label {
+    fill: color-mix(in srgb, var(--theme-text, #121212) 62%, transparent);
   }
 
-  .page10-trend-segment {
-    transition: stroke-dashoffset 0.55s ease;
+  .page10-trend-empty-msg {
+    fill: color-mix(in srgb, var(--theme-text, #121212) 45%, transparent);
   }
 
+  /* Çizgi: PointsChart'taki <Line stroke="var(--primary)" strokeWidth={2}>
+     ile birebir aynı — düz, tek renk, alan dolgusu (gradient) yok. */
+  .page10-trend-line {
+    fill: none;
+    stroke: var(--accent-color, #ff90e8);
+    stroke-width: 2px;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    transition: stroke-dashoffset 0.9s cubic-bezier(0.16, 1, 0.3, 1), stroke 0.5s ease;
+  }
+
+  /* Noktalar: PointsChart'taki dot={{r:3}} / activeDot={{r:6}} ile aynı —
+     her noktada her zaman küçük, dolu bir daire görünür; dokunulan/gezinilen
+     noktada büyür. */
   .page10-trend-dot {
+    fill: var(--accent-color, #ff90e8);
+    stroke: var(--accent-color, #ff90e8);
+    stroke-width: 1px;
+    opacity: 0;
     transform-box: fill-box;
     transform-origin: center;
-    transform: scale(0);
-    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    transform: scale(1);
+    transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), stroke 0.5s ease, fill 0.5s ease;
   }
 
   .page10-trend-dot.is-in {
-    transform: scale(1);
+    opacity: 1;
+  }
+
+  .page10-trend-dot.is-active {
+    transform: scale(2);
   }
 
   .page10-trend-hit {
@@ -12262,94 +12466,89 @@
     outline: none;
   }
 
-  .page10-trend-pulse {
-    transform-box: fill-box;
-    transform-origin: center;
-    animation: analyticsTrendPulse 2.2s ease-out infinite;
+  /* İmleç çizgisi: recharts'taki <Tooltip cursor={{stroke:"var(--primary)", strokeDasharray:"4 4"}}>
+     ile aynı — dokunulan/gezinilen noktanın X konumunda dikey, kesikli bir
+     rehber çizgi belirir. */
+  .page10-trend-cursor-line {
+    stroke: var(--accent-color, #ff90e8);
+    stroke-width: 1px;
+    stroke-dasharray: 4 4;
+    opacity: 0;
+    transition: opacity 0.15s ease, stroke 0.5s ease;
   }
 
+  .page10-trend-cursor-line.is-active {
+    opacity: 1;
+  }
+
+  /* Tooltip: paylaştığın grafik bileşenindeki (PointsChart) popover
+     stiliyle aynı dil — koyu cam kutu yerine, kart zemininden hafifçe
+     yükselen, ince kenarlıklı, açık renkli bir bilgi kutusu. */
   .page10-trend-tooltip {
     position: absolute;
     left: 0;
     top: 0;
-    transform: translate(-50%, calc(-100% - 10px));
-    background: #121212;
-    color: #fff;
-    border: 2px solid #000;
-    border-radius: 0.65rem;
-    padding: 0.4rem 0.6rem;
-    font-family: "Space Grotesk", sans-serif;
-    font-size: 0.7rem;
-    font-weight: 700;
-    line-height: 1.3;
+    transform: translate(-50%, calc(-100% - 8px)) scale(0.92);
+    background: var(--theme-bg, #ffffff);
+    color: var(--theme-text, #121212);
+    border: 1px solid color-mix(in srgb, var(--theme-text, #121212) 14%, transparent);
+    border-radius: 0.7rem;
+    padding: 0.4rem 0.65rem;
+    font-family: "Baloo 2", "Space Grotesk", sans-serif;
+    line-height: 1.35;
     white-space: nowrap;
+    text-align: left;
     pointer-events: none;
-    box-shadow: 3px 3px 0px 0px #000;
+    box-shadow: 0 10px 24px -10px color-mix(in srgb, var(--theme-text, #121212) 45%, transparent);
     opacity: 0;
     visibility: hidden;
-    transition: opacity 0.22s ease, transform 0.22s ease, visibility 0s linear 0.22s;
+    transition: opacity 0.2s ease, transform 0.25s cubic-bezier(0.34, 1.4, 0.64, 1), visibility 0s linear 0.2s, background-color 0.5s ease, color 0.5s ease, border-color 0.5s ease;
     z-index: 5;
   }
 
   .page10-trend-tooltip.is-visible {
     opacity: 1;
     visibility: visible;
-    transform: translate(-50%, calc(-100% - 16px));
-    transition: opacity 0.22s ease, transform 0.22s ease, visibility 0s linear;
+    transform: translate(-50%, calc(-100% - 14px)) scale(1);
+    transition: opacity 0.2s ease, transform 0.25s cubic-bezier(0.34, 1.4, 0.64, 1), visibility 0s linear;
   }
 
-  .page10-trend-tooltip-name {
+  .page10-trend-tooltip-date {
     display: block;
-    font-size: 0.7rem;
-  }
-
-  .page10-trend-tooltip-value {
-    display: block;
-    color: #ff90e8;
-    font-size: 0.78rem;
-  }
-
-  .page10-trend-labels {
-    display: flex;
-    justify-content: space-between;
-    font-family: "Space Grotesk", sans-serif;
+    font-size: 0.62rem;
     font-weight: 600;
-    font-size: 0.65rem;
-    color: rgba(18, 18, 18, 0.55);
-    gap: 0.4rem;
+    color: color-mix(in srgb, var(--theme-text, #121212) 55%, transparent);
+    margin-bottom: 0.1rem;
   }
 
-  .page10-trend-labels span {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+  .page10-trend-tooltip-total {
+    display: block;
+    font-size: 0.78rem;
+    font-weight: 800;
+    color: var(--theme-text, #121212);
   }
 
-  body.is-anthracite .page10-trend-card {
-    background-color: var(--dark-card-color, #1c1c22);
+  .page10-trend-tooltip-change {
+    display: block;
+    font-size: 0.64rem;
+    font-weight: 700;
+    color: color-mix(in srgb, var(--theme-text, #121212) 55%, transparent);
+    font-variant-numeric: tabular-nums;
   }
 
-  body.is-anthracite .page10-trend-title {
-    color: #f2f2f4;
+  /* ---- Y ekseni (PointsChart'taki gibi): kesikli ızgara çizgileri +
+     sol tarafta değer etiketleri. Eski TEK "sıfır" referans çizgisi
+     yerine, veri aralığını gerçekten okunabilir kılan 3 seviyeli bir
+     eksen geldi. ---- */
+  .page10-trend-grid-line {
+    stroke: color-mix(in srgb, var(--theme-text, #121212) 10%, transparent) !important;
+    stroke-dasharray: 3 3;
   }
 
-  body.is-anthracite .page10-trend-badge {
-    background: var(--dark-card-color, #1c1c22);
-    color: #f2f2f4;
-  }
-
-  body.is-anthracite .page10-trend-badge.is-up {
-    background: #5cd68a;
-    color: #0d3d20;
-  }
-
-  body.is-anthracite .page10-trend-badge.is-down {
-    background: #ff5c5c;
-    color: #5c0011;
-  }
-
-  body.is-anthracite .page10-trend-labels {
-    color: rgba(242, 242, 244, 0.55);
+  .page10-trend-axis-label {
+    fill: color-mix(in srgb, var(--theme-text, #121212) 48%, transparent);
+    font-family: "Baloo 2", "Space Grotesk", sans-serif;
+    font-weight: 600;
   }
 
   /* ---------- Sayfa 11: Denemelerim ----------
@@ -22886,17 +23085,16 @@
   /* ==========================================================================
      TABLET / GENİŞ EKRAN: Sayfa 10 (İstatistiklerim) Yeniden Tasarımı
      ==========================================================================
-     Telefonda tüm kartlar (Toplam Süre, Ders Dağılımı, Günlük Trend) tek
-     dar sütunda alt alta durur. 768px ve üzerinde sayfa artık Sayfa 9/5 ile
-     aynı dili konuşuyor: üst çubuk + alt başlık + tarih gezinme tek geniş
-     satırda (başlık solda, tarih aracı sağda) birleşiyor; asıl içerik ise
-     solda dar bir sütunda Toplam Süre + Günlük Trend, sağda daha geniş bir
-     sütunda Ders Dağılımı (donut + lejant) olacak şekilde iki sütunlu bir
-     grid'e yerleşiyor. Donut kartı, dairenin ve lejantın nefes alması için
-     bilhassa geniş sütunu alıyor. Kartlar page9/page5 ile tutarlı kalın
-     çerçeve + katı gölge dilini, fare geldiğinde de hafif kalkma (hover)
-     hissini paylaşıyor; JS akışı (segmented seçim, tarih gezinme, donut/trend
-     tooltip'leri) hiç değişmiyor, sadece boyut/yerleşim büyüyor. */
+     Sayfa artık mobildeki gibi tamamen kartsız: beyaz kart, siyah çerçeve,
+     katı gölge yok. Üst çubuk + alt başlık + tarih gezinme tek geniş
+     satırda (başlık solda, tarih aracı sağda) birleşir; asıl içerik solda
+     dar bir sütunda Toplam Süre + Günlük Trend, sağda daha geniş bir
+     sütunda Ders Dağılımı (donut + lejant) olacak şekilde iki sütuna
+     yerleşir — aralarında ince, dikey bir ayraç var (yanal panelin kendi
+     ayraç diliyle aynı). Yanal panelle bütünleşik dursun diye zemin
+     doğrudan sayfanın kendi zemini; JS akışı (segmented seçim, tarih
+     gezinme, donut/trend tooltip'leri) hiç değişmez, sadece boyut/yerleşim
+     büyür. */
   @media (min-width: 768px) and (min-height: 600px) {
     #page-10.page {
       align-items: flex-start;
@@ -22904,7 +23102,7 @@
     }
 
     .page10-wrap {
-      max-width: 1080px;
+      max-width: 1120px;
       width: 100%;
       display: grid;
       grid-template-columns: minmax(0, 1fr) auto;
@@ -22913,20 +23111,26 @@
         "subtitle date"
         "content  content";
       column-gap: 1.5rem;
-      row-gap: 1rem;
+      row-gap: 0.6rem;
       align-items: start;
     }
 
     /* Üst çubuk + alt başlık + tarih gezinme: tek geniş satırda birleşir.
        Sol tarafta geri butonu + "İstatistiklerim" + alt yazı, sağ tarafta
-       kompakt tarih gezinme aracı — Sayfa 9'daki başlık/tarih ikilisiyle
-       aynı düzen. */
+       kompakt tarih gezinme aracı. */
     .page10-wrap > .calendar-topbar {
       grid-area: topbar;
+      display: flex;
       max-width: none;
       width: auto;
       align-items: flex-start;
+      justify-content: flex-start;
       gap: 1rem;
+    }
+
+    .page10-wrap > .calendar-topbar .calendar-topbar-title {
+      justify-self: initial;
+      text-align: left;
     }
 
     .page10-wrap > .calendar-topbar .calendar-back-btn {
@@ -22936,103 +23140,104 @@
     }
 
     .page10-wrap > .calendar-topbar .calendar-topbar-title {
-      font-size: 1.55rem;
+      font-size: 1.6rem;
+      font-family: "Baloo 2", "Space Grotesk", sans-serif;
     }
 
     .page10-wrap > .calendar-topbar .calendar-topbar-spacer {
       display: none;
     }
 
-    .page10-header { grid-area: subtitle; align-self: center; width: auto; }
-    .page10-date-row { grid-area: date; align-self: center; width: auto; }
+    .page10-header { grid-area: subtitle; align-self: center; width: auto; margin-top: 0; }
+    .page10-date-row { grid-area: date; align-self: center; width: auto; margin-top: 0; }
 
     .page10-subtitle {
       font-size: 1rem;
-      opacity: 0.65;
     }
 
     .page10-date-row {
       justify-content: flex-end;
-      gap: 0.6rem;
+      gap: 0.5rem;
       flex-shrink: 0;
     }
 
     .page10-date-label {
       flex: 0 0 auto;
       min-width: 11rem;
-      padding: 0.6rem 1.1rem;
+      padding: 0.65rem 1.2rem;
       font-size: 0.95rem;
-      border-width: 3px;
-      box-shadow: 4px 4px 0px 0px #000;
     }
 
     .page10-date-btn {
       width: 2.4rem;
       height: 2.4rem;
-      border-radius: 50%;
     }
 
     /* Asıl içerik: solda dar sütunda Toplam Süre + Günlük Trend üst üste,
-       sağda daha geniş sütunda Ders Dağılımı (donut + lejant) — dairenin
-       ve lejantın nefes alacağı, ekranın verdiği genişliği en verimli
-       kullanan yerleşim. */
+       sağda daha geniş sütunda Ders Dağılımı (donut + lejant). İki sütun
+       arasında sayfanın kendi zemininde ince, dikey bir ayraç durur —
+       kart kenarlığı değil, yanal panelin kendi ayracıyla aynı dil. */
     .page10-content {
       grid-area: content;
       display: grid;
-      grid-template-columns: minmax(0, 1fr) minmax(360px, 1.15fr);
+      grid-template-columns: minmax(0, 1fr) minmax(380px, 1.05fr);
       align-items: start;
-      gap: 1.6rem;
+      gap: 0;
+      margin-top: 1.2rem;
     }
 
     .page10-content-left {
       display: flex;
       flex-direction: column;
-      gap: 1.6rem;
+      gap: 0;
       min-width: 0;
+      padding-right: 2.4rem;
+      border-right: 1.5px solid color-mix(in srgb, var(--theme-text, #1a1a1a) 12%, transparent);
+      transition: border-color 0.5s ease;
+    }
+
+    .page10-donut-card {
+      padding-left: 2.4rem;
     }
 
     .page10-card,
     .page10-donut-card,
     .page10-trend-card {
-      padding: 1.5rem 1.6rem 1.7rem;
-      border-width: 5px;
-      border-radius: 1.5em;
-      box-shadow: 8px 8px 0px 0px #000;
-      gap: 1.1rem;
-      transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.18s ease;
+      padding-top: 1.7rem;
+      padding-bottom: 1.9rem;
+      gap: 1.3rem;
     }
 
-    @media (hover: hover) and (pointer: fine) {
-      .page10-card:hover,
-      .page10-donut-card:hover,
-      .page10-trend-card:hover {
-        transform: translate(-2px, -2px);
-        box-shadow: 10px 10px 0px 0px #000;
-      }
+    .page10-card {
+      margin-top: 0;
+      border-top: none;
+      padding-top: 0;
+      padding-bottom: 1.9rem;
     }
 
-    /* Sağ sütundaki Ders Dağılımı kartı, sol sütunun toplam yüksekliğine
+    /* Sağ sütundaki Ders Dağılımı bölümü, sol sütunun toplam yüksekliğine
        (Toplam Süre + Günlük Trend) yakın durup nefes alsın diye kendi
        gövdesini dikeyde ortalar ve donut'u biraz büyütür. */
     .page10-donut-card {
       height: 100%;
       display: flex;
       flex-direction: column;
+      border-top: none;
     }
 
     .page10-donut-body {
       flex: 1;
-      align-items: center;
-      gap: 2rem;
+      justify-content: center;
+      gap: 1.8rem;
     }
 
     .page10-donut-wrap {
-      width: 11.5rem;
-      height: 11.5rem;
+      width: 13.5rem;
+      height: 13.5rem;
     }
 
     .page10-donut-center-value {
-      font-size: 1.15rem;
+      font-size: 1.5rem;
     }
 
     .page10-donut-center-label {
@@ -23040,32 +23245,34 @@
     }
 
     .page10-donut-legend {
-      max-height: none;
-      gap: 0.7rem;
-      overflow-y: visible;
+      gap: 0.5rem 0.7rem;
     }
 
     .page10-donut-legend-item {
-      padding: 0.3rem 0.4rem;
+      flex: 1 1 9.5rem;
+      min-width: 9.5rem;
     }
 
-    .page10-donut-legend-dot {
-      width: 0.8rem;
-      height: 0.8rem;
+    .page10-donut-legend-bar {
+      height: 1.15rem;
     }
 
     .page10-donut-legend-name {
-      font-size: 0.9rem;
+      font-size: 0.92rem;
+    }
+
+    .page10-donut-legend-value {
+      font-size: 1.1rem;
     }
 
     .page10-donut-legend-pct {
-      font-size: 0.9rem;
+      font-size: 0.82rem;
     }
 
     .page10-summary-title,
     .page10-donut-title,
     .page10-trend-title {
-      font-size: 0.8rem;
+      font-size: 0.82rem;
     }
 
     .page10-summary-range-label {
@@ -23073,23 +23280,20 @@
     }
 
     .page10-summary-total {
-      font-size: 2.9rem;
-    }
-
-    .page10-summary-total span {
-      font-size: 1.1rem;
+      font-size: clamp(3.2rem, 4vw, 4.2rem);
     }
 
     .page10-summary-hint {
-      font-size: 0.88rem;
+      font-size: 0.9rem;
     }
 
     #page10RangeSegmented.settings-segmented.page10-segmented {
       height: 2.6rem;
+      min-width: 11rem;
     }
 
     #page-10 .page10-segmented .settings-segmented-option {
-      font-size: 0.9rem;
+      font-size: 0.85rem;
     }
 
     .page10-donut-badge,
@@ -23098,11 +23302,7 @@
     }
 
     .page10-trend-chart {
-      height: 11.5rem;
-    }
-
-    .page10-trend-labels {
-      font-size: 0.78rem;
+      height: 13.85rem;
     }
   }
 
@@ -27226,10 +27426,10 @@
           <span class="page10-trend-badge" id="page10TrendBadge">—</span>
         </div>
         <div class="page10-trend-chart-wrap" id="page10TrendChartWrap">
-          <svg class="page10-trend-chart" id="page10TrendChart" viewBox="0 0 300 130" preserveAspectRatio="none"></svg>
+          <svg class="page10-trend-chart" id="page10TrendChart" viewBox="0 0 300 150" preserveAspectRatio="none"></svg>
           <div class="page10-trend-tooltip" id="page10TrendTooltip"></div>
         </div>
-        <div class="page10-trend-labels" id="page10TrendLabels"></div>
+
       </div>
       </div>
 
@@ -27243,10 +27443,10 @@
         </div>
         <div class="page10-donut-body" id="page10DonutBody">
           <div class="page10-donut-wrap">
-            <svg class="page10-donut-svg" id="page10DonutSvg" viewBox="0 0 120 120"></svg>
+            <svg class="page10-donut-svg" id="page10DonutSvg" viewBox="0 0 240 240"></svg>
             <div class="page10-donut-center">
-              <span class="page10-donut-center-value" id="page10DonutCenterValue">00:00:00</span>
               <span class="page10-donut-center-label">Toplam</span>
+              <span class="page10-donut-center-value" id="page10DonutCenterValue">00:00:00</span>
             </div>
             <div class="page10-donut-tooltip" id="page10DonutTooltip"></div>
           </div>
@@ -40771,7 +40971,6 @@
   const page10TrendChart = document.getElementById('page10TrendChart');
   const page10TrendChartWrap = document.getElementById('page10TrendChartWrap');
   const page10TrendTooltip = document.getElementById('page10TrendTooltip');
-  const page10TrendLabels = document.getElementById('page10TrendLabels');
 
   // SVG elemanı oluşturmak için küçük yardımcı (Sayfa 11 - Analizlerim
   // script'indeki svgEl ile aynı mantık; script sırasına bağımlı kalmamak
@@ -40978,8 +41177,18 @@
 
     const list = Object.keys(map).map((key) => map[key]).sort((a, b) => b.ms - a.ms);
     const labeledTotal = list.reduce((sum, item) => sum + item.ms, 0);
-    const unlabeledMs = Math.max(0, dayTotalMs - labeledTotal);
-    return { list, unlabeledMs };
+    // Normalde dayTotalMs (stopwatchLogs'tan gelen "günün toplam süresi")
+    // ile ders bazlı kayıtların (stopwatchSubjectLogs) toplamı birbiriyle
+    // tutarlı olur. Ama bu iki ayrı depo bir şekilde senkron dışı kalırsa
+    // (ör. eski/test verisi) ve ders bazlı toplam, günün kayıtlı toplamından
+    // BÜYÜK çıkarsa, aşağıdaki yüzde hesaplarında payda (gün toplamı)
+    // paydan (ders süresi) küçük kalıp %100'ü aşan, %9010 gibi anlamsız
+    // yüzdelere yol açar. Bunu önlemek için payda olarak ikisinin
+    // BÜYÜĞÜNÜ kullanıyoruz — veri tutarlıysa hiçbir şey değişmez, tutarsızsa
+    // yüzdeler her zaman mantıklı (≤%100) kalır.
+    const effectiveDayTotalMs = Math.max(dayTotalMs, labeledTotal);
+    const unlabeledMs = Math.max(0, effectiveDayTotalMs - labeledTotal);
+    return { list, unlabeledMs, effectiveDayTotalMs };
   };
 
   // Verilen dersin rengini, "Branşlarım" pop-up'ındaki ile birebir aynı
@@ -41015,49 +41224,150 @@
     return days;
   };
 
-  // Günlük Trend grafiği için gün listesi: Gün/Hafta modunda seçili
-  // aralığın bittiği günden geriye doğru kayan 7 günlük bir pencere
-  // (tek bir günde bile öncesine kıyasla iniş-çıkış görülebilsin diye),
-  // Ay modunda ise doğrudan o ayın (bugüne kadarki) tüm günleri gösterilir.
-  const page10GetTrendDays = () => {
+  // Günlük Trend grafiğinin kaç nokta gösterdiğini belirler: Hafta modunda
+  // son 5 hafta, Ay modunda son 5 ay (seçili hafta/ay dahil, geriye doğru).
+  const PAGE10_TREND_BUCKET_COUNT = 5;
+
+  // Bir "bucket" (dönem) nesnesi: {date: dönemin başlangıcı, rangeEnd:
+  // dönemin (bugünle sınırlanmamış) gerçek bitişi, key, ms: o dönemdeki
+  // TOPLAM süre}. Trend grafiği hem tekil gün noktalarını (Gün modu) hem de
+  // bu dönem toplamlarını (Hafta/Ay modu) aynı {date,key,ms} şekliyle
+  // tükettiği için render fonksiyonunda ayrım gerekmez.
+  const page10SumDaysMs = (start, end) => page10BuildDaysList(start, end).reduce((sum, d) => sum + d.ms, 0);
+
+  // Seçili haftadan geriye, o hafta dahil son `count` haftanın HER BİRİNİN
+  // toplam süresini tek bir nokta olarak döndürür (gün gün değil).
+  const page10BuildWeekBuckets = (anchorDate, count) => {
     const today = page10StartOfDay(new Date());
-    const { start, end } = page10GetRangeBounds();
-    let rangeStart;
-    let rangeEnd;
-    if (page10Range === 'month') {
-      rangeStart = start;
-      rangeEnd = end.getTime() > today.getTime() ? today : end;
-    } else {
-      const anchor = end.getTime() > today.getTime() ? today : end;
-      rangeEnd = anchor;
-      rangeStart = new Date(anchor);
-      rangeStart.setDate(rangeStart.getDate() - 6);
+    const anchorWeekStart = page10GetWeekStart(anchorDate);
+    const buckets = [];
+    for (let i = count - 1; i >= 0; i -= 1) {
+      const start = new Date(anchorWeekStart);
+      start.setDate(start.getDate() - i * 7);
+      if (start.getTime() > today.getTime()) continue;
+      const end = new Date(start);
+      end.setDate(end.getDate() + 6);
+      const cappedEnd = end.getTime() > today.getTime() ? today : end;
+      buckets.push({ date: start, rangeEnd: end, key: page10DateKeyOf(start), ms: page10SumDaysMs(start, cappedEnd) });
     }
+    return buckets;
+  };
+
+  // Seçili aydan geriye, o ay dahil son `count` ayın HER BİRİNİN toplam
+  // süresini tek bir nokta olarak döndürür (ör. Temmuz toplamı, Ağustos
+  // toplamı, ...).
+  const page10BuildMonthBuckets = (anchorDate, count) => {
+    const today = page10StartOfDay(new Date());
+    const buckets = [];
+    for (let i = count - 1; i >= 0; i -= 1) {
+      const start = new Date(anchorDate.getFullYear(), anchorDate.getMonth() - i, 1);
+      if (start.getTime() > today.getTime()) continue;
+      const end = new Date(start.getFullYear(), start.getMonth() + 1, 0);
+      const cappedEnd = end.getTime() > today.getTime() ? today : end;
+      const key = `${start.getFullYear()}-${String(start.getMonth() + 1).padStart(2, '0')}`;
+      buckets.push({ date: start, rangeEnd: end, key, ms: page10SumDaysMs(start, cappedEnd) });
+    }
+    return buckets;
+  };
+
+  // Günlük Trend grafiği için nokta listesi:
+  // - Gün modunda: seçili günün ait olduğu GERÇEK takvim haftasının
+  //   günleri (Ayarlar'daki "Hafta başlangıcı" tercihiyle aynı) — yani Gün
+  //   sekmesi açıkken grafik, o an Hafta sekmesine geçilmiş gibi görünür.
+  // - Hafta modunda: gün gün DEĞİL, seçili hafta dahil son 5 haftanın HER
+  //   BİRİNİN toplam süresi tek bir nokta olarak (haftalık toplamlar).
+  // - Ay modunda: seçili ay dahil son 5 ayın HER BİRİNİN toplam süresi tek
+  //   bir nokta olarak (ör. Temmuz toplamı, Ağustos toplamı, ...).
+  const page10GetTrendDays = () => {
+    if (page10Range === 'week') return page10BuildWeekBuckets(page10SelectedDate, PAGE10_TREND_BUCKET_COUNT);
+    if (page10Range === 'month') return page10BuildMonthBuckets(page10SelectedDate, PAGE10_TREND_BUCKET_COUNT);
+    const today = page10StartOfDay(new Date());
+    const rangeStart = page10GetWeekStart(page10SelectedDate);
+    const weekEnd = new Date(rangeStart);
+    weekEnd.setDate(weekEnd.getDate() + 6);
+    const rangeEnd = weekEnd.getTime() > today.getTime() ? today : weekEnd;
     return page10BuildDaysList(rangeStart, rangeEnd);
   };
 
-  // ---- Ders Dağılımı: donut grafik ----
+  // ---- Ders Dağılımı: nokta çemberi grafiği ----
   // Verilen gün listesindeki (özet kartıyla aynı aralık) tüm derslere göre
-  // süreleri toplar; her ders donut üzerinde kendi payı kadar bir dilim,
-  // altında da yüzdeli bir lejant satırı olarak gösterilir.
-  const PAGE10_DONUT_R = 50;
-  const PAGE10_DONUT_CIRC = 2 * Math.PI * PAGE10_DONUT_R;
-  const PAGE10_DONUT_STROKE = 16;
+  // süreleri toplar; toplam süre ortada büyük harflerle, her dersin payı
+  // da iki iç içe halkaya dizilmiş küçük noktalardan oluşan bir "nokta
+  // çemberi"nde kendi vurgu renginde gösterilir — bana gönderdiğin
+  // BonusesIncentivesCard bileşeniyle birebir aynı görsel dil (iki halka +
+  // ortada TOPLAM değeri + altta dikey çubuklu değer kartları).
+  const PAGE10_DONUT_CENTER = 120;
+  const PAGE10_DONUT_OUTER_R = 99;
+  const PAGE10_DONUT_OUTER_COUNT = 48;
+  const PAGE10_DONUT_INNER_R = 82;
+  const PAGE10_DONUT_INNER_COUNT = 36;
+  const PAGE10_DONUT_DOT_R = 5.4;
 
-  // Bir dilime ya da lejant satırına dokununca, o dersin bu aralıktaki
-  // toplam süresini ortadaki baloncukta gösterir; tekrar dokununca kapanır.
+  // Bir halkadaki noktaların (x, y) konumlarını üretir; saat 12 yönünden
+  // (-90°) başlayıp saat yönünde ilerler — eski dilimli grafikle aynı
+  // başlangıç açısı, böylece "en çok çalışılan ders" hep en tepeden başlar.
+  const page10DonutRingPositions = (count, radius) => {
+    const positions = [];
+    for (let i = 0; i < count; i++) {
+      const angle = -Math.PI / 2 + (i / count) * 2 * Math.PI;
+      positions.push({
+        x: PAGE10_DONUT_CENTER + radius * Math.cos(angle),
+        y: PAGE10_DONUT_CENTER + radius * Math.sin(angle),
+        frac: i / count,
+      });
+    }
+    return positions;
+  };
+
+  // ---- Dokunma alanı (hitbox): her ders için, noktaların tam üstüne
+  // basmaya gerek kalmadan, o dersin payına denk gelen halka DİLİMİNİN
+  // (0'dan bir dış/iç boşlukla taşan) HERHANGİ BİR YERİNE dokunarak seçim
+  // yapılabilsin diye görünmez bir "pasta dilimi" (annulus sector) alanı.
+  // Sınırlar (start/end) birebir renklendirmede kullanılan kümülatif
+  // paylarla aynı olduğu için komşu derslerin alanına ASLA taşmaz — çok
+  // ince bir dilim (ör. %2) doğal olarak ince kalır, geniş bir dilim
+  // (ör. %54) ise noktalar arasındaki boşluklara basılsa bile yakalanır.
+  const PAGE10_DONUT_HIT_INNER = PAGE10_DONUT_INNER_R - 12;
+  const PAGE10_DONUT_HIT_OUTER = PAGE10_DONUT_OUTER_R + 12;
+
+  const page10DonutPolar = (frac, r) => {
+    const angle = -Math.PI / 2 + frac * 2 * Math.PI;
+    return {
+      x: PAGE10_DONUT_CENTER + r * Math.cos(angle),
+      y: PAGE10_DONUT_CENTER + r * Math.sin(angle),
+    };
+  };
+
+  const page10DonutSectorPath = (startFrac, endFrac) => {
+    // Tek ders (%100) durumunda start/end aynı noktaya denk gelip dejenere
+    // bir yol oluşmasın diye span'i tam bir tam tura ulaşmadan kırpıyoruz.
+    const span = Math.min(endFrac - startFrac, 0.999);
+    const effEnd = startFrac + span;
+    const large = span > 0.5 ? 1 : 0;
+    const oStart = page10DonutPolar(startFrac, PAGE10_DONUT_HIT_OUTER);
+    const oEnd = page10DonutPolar(effEnd, PAGE10_DONUT_HIT_OUTER);
+    const iEnd = page10DonutPolar(effEnd, PAGE10_DONUT_HIT_INNER);
+    const iStart = page10DonutPolar(startFrac, PAGE10_DONUT_HIT_INNER);
+    return `M ${oStart.x.toFixed(2)} ${oStart.y.toFixed(2)} A ${PAGE10_DONUT_HIT_OUTER} ${PAGE10_DONUT_HIT_OUTER} 0 ${large} 1 ${oEnd.x.toFixed(2)} ${oEnd.y.toFixed(2)} L ${iEnd.x.toFixed(2)} ${iEnd.y.toFixed(2)} A ${PAGE10_DONUT_HIT_INNER} ${PAGE10_DONUT_HIT_INNER} 0 ${large} 0 ${iStart.x.toFixed(2)} ${iStart.y.toFixed(2)} Z`;
+  };
+
+  // Bir noktaya, dokunma dilimine ya da lejant kartına dokununca (ya da
+  // fareyle ÜZERİNE GELİNDİĞİNDE, tıklamadan) o dersin bu aralıktaki
+  // toplam süresini gösterir; tekrar dokununca (ya da fare çekilince)
+  // kapanır. Değer, o dersin kendi vurgu renginde yazılır.
   const page10ShowDonutTooltip = (key, ms, total) => {
     if (!page10DonutTooltip) return;
     const isUnlabeled = key === '__unlabeled__';
-    const name = isUnlabeled ? 'Etiketsiz' : key.split('::')[1];
+    const [track, name] = isUnlabeled ? [null, 'Etiketsiz'] : key.split('::');
+    const color = isUnlabeled ? PAGE10_DONUT_UNLABELED_COLOR : page10ColorForSubject(track, name);
     const pct = total > 0 ? Math.round((ms / total) * 100) : 0;
     page10DonutTooltip.innerHTML = `
       <span class="page10-donut-tooltip-name">${name}</span>
-      <span class="page10-donut-tooltip-value">${page10FormatDurationMs(ms)} · %${pct}</span>
+      <span class="page10-donut-tooltip-value" style="color:${color}">${page10FormatDurationMs(ms)} · %${pct}</span>
     `;
     page10DonutTooltip.classList.add('is-visible');
     if (page10DonutSvg) {
-      page10DonutSvg.querySelectorAll('.page10-donut-slice').forEach((c) => {
+      page10DonutSvg.querySelectorAll('.page10-donut-dot').forEach((c) => {
         c.classList.toggle('is-active', c.dataset.key === key);
       });
     }
@@ -41072,7 +41382,7 @@
     if (!force && page10DonutPinnedKey !== null) return;
     page10DonutPinnedKey = null;
     if (page10DonutTooltip) page10DonutTooltip.classList.remove('is-visible');
-    if (page10DonutSvg) page10DonutSvg.querySelectorAll('.page10-donut-slice').forEach((c) => c.classList.remove('is-active'));
+    if (page10DonutSvg) page10DonutSvg.querySelectorAll('.page10-donut-dot').forEach((c) => c.classList.remove('is-active'));
     if (page10DonutLegend) page10DonutLegend.querySelectorAll('.page10-donut-legend-item').forEach((it) => it.classList.remove('is-active'));
   };
 
@@ -41087,24 +41397,67 @@
     page10ShowDonutTooltip(key, entry.ms, page10DonutTotalRef);
   };
 
+  // Fare bir dersin üzerine gelince ön izleme olarak gösterir (tıklamaya
+  // gerek yok); fare çekilince, eğer sabitlenmiş (tıklanmış) bir ders
+  // varsa ona geri döner, yoksa tamamen kapanır.
+  const page10HoverDonut = (key) => {
+    const entry = page10DonutEntriesRef.find((e) => e.key === key);
+    if (!entry) return;
+    page10ShowDonutTooltip(key, entry.ms, page10DonutTotalRef);
+  };
+
+  const page10UnhoverDonut = () => {
+    if (page10DonutPinnedKey) {
+      const pinned = page10DonutEntriesRef.find((e) => e.key === page10DonutPinnedKey);
+      if (pinned) {
+        page10ShowDonutTooltip(page10DonutPinnedKey, pinned.ms, page10DonutTotalRef);
+        return;
+      }
+    }
+    page10HideDonutTooltip(true);
+  };
+
   document.addEventListener('click', (e) => {
     if (page10DonutPinnedKey === null) return;
-    if (e.target.closest && (e.target.closest('.page10-donut-slice') || e.target.closest('.page10-donut-legend-item'))) return;
+    if (e.target.closest && (e.target.closest('.page10-donut-dot') || e.target.closest('.page10-donut-hit') || e.target.closest('.page10-donut-legend-item'))) return;
     page10HideDonutTooltip(true);
   });
+
+  // Etiketsiz (ders atanmamış) süre için sabit, TAMAMEN OPAK bir gri —
+  // saydam (rgba/alpha'lı) bir renk kullanılırsa, bir dilim aktifken
+  // noktalar büyüyüp üst üste bindiğinde alttaki noktalar yarı saydam
+  // olduğundan birbirinin içinden görünüp lekeli/iç içe geçmiş bir hisse
+  // yol açıyordu; opak renklerde (dersler) bu sorun yok çünkü üstteki
+  // nokta altındakini tamamen kapatıyor.
+  const PAGE10_DONUT_UNLABELED_COLOR = '#4d4d4d';
+
+  // Noktalardan oluşan tek bir halkayı (dış ya da iç) SVG'ye ekler; konum
+  // sabit kalır, rengi her render'da ayrı bir adımda güncellenir.
+  const page10BuildDonutRing = (positions) => {
+    positions.forEach((pos) => {
+      const circle = page10SvgEl('circle', {
+        cx: pos.x.toFixed(2), cy: pos.y.toFixed(2), r: String(PAGE10_DONUT_DOT_R),
+      });
+      circle.classList.add('page10-donut-dot');
+      circle.dataset.frac = String(pos.frac);
+      circle.setAttribute('tabindex', '0');
+      circle.setAttribute('role', 'button');
+      page10DonutSvg.appendChild(circle);
+    });
+  };
 
   const renderPage10Donut = (days) => {
     if (!page10DonutSvg) return;
     const map = {};
     let total = 0;
     days.forEach((day) => {
-      const { list, unlabeledMs } = page10SubjectBreakdownForDay(day.key, day.ms);
+      const { list, unlabeledMs, effectiveDayTotalMs } = page10SubjectBreakdownForDay(day.key, day.ms);
       list.forEach((subj) => {
         const key = `${subj.track}::${subj.name}`;
         map[key] = (map[key] || 0) + subj.ms;
       });
       if (unlabeledMs > 0) map.__unlabeled__ = (map.__unlabeled__ || 0) + unlabeledMs;
-      total += day.ms;
+      total += effectiveDayTotalMs;
     });
 
     page10DonutCenterValue.textContent = page10FormatDurationMs(total);
@@ -41121,9 +41474,13 @@
       page10DonutBody.style.display = 'none';
       page10DonutEmpty.style.display = 'block';
       page10DonutBadge.textContent = '';
-      page10DonutSvg.innerHTML = '';
-      page10DonutSvg.dataset.signature = '';
       page10DonutLegend.innerHTML = '';
+      page10DonutLegend.dataset.signature = '';
+      if (page10DonutSvg.dataset.gridBuilt === '1') {
+        page10DonutSvg.querySelectorAll('.page10-donut-dot').forEach((c) => c.setAttribute('fill', 'rgba(120,120,120,0.18)'));
+        const hitLayerEmpty = page10DonutSvg.querySelector('.page10-donut-hitlayer');
+        if (hitLayerEmpty) hitLayerEmpty.innerHTML = '';
+      }
       page10HideDonutTooltip(true);
       return;
     }
@@ -41131,94 +41488,183 @@
     page10DonutEmpty.style.display = 'none';
     page10DonutBadge.textContent = `${entries.length} ders`;
 
-    // Dilim/lejant SATIRLARININ SAYISI VE SIRASI (hangi dersler var) aynı
-    // kaldığı sürece, mevcut SVG/legend elemanlarını YOK EDİP BAŞTAN
-    // OLUŞTURMAK yerine sadece niteliklerini (pay, yüzde) güncelliyoruz.
-    // Böylece "Bugün" canlı süresi her saniye arttıkça grafik sürekli
-    // sıfırdan çizilip bir anlığına kaybolmuyor/beliriyor gibi görünmüyor;
-    // sadece dilimler CSS transition ile yumuşakça büyüyüp küçülüyor.
-    // Bir ders eklenip çıktığında (yapı gerçekten değiştiğinde) ise tam
-    // olarak yeniden çiziliyor.
+    // Nokta ızgarası (48 dış + 36 iç = 84 nokta) sabittir ve sadece BİR
+    // KERE kurulur. "Bugün" canlı süresi her saniye arttıkça grafik
+    // sürekli sıfırdan çizilip bir anlığına kaybolmuyor/beliriyor gibi
+    // durmuyor; sadece noktaların rengi CSS transition ile yumuşakça
+    // değişiyor. Dokunma alanı katmanı (.page10-donut-hitlayer) noktalardan
+    // ÖNCE eklenir ki noktalar görsel olarak onun üstünde kalsın, ama
+    // aradaki boşluklara dokunulduğunda tıklama ona düşsün.
+    if (page10DonutSvg.dataset.gridBuilt !== '1') {
+      page10DonutSvg.innerHTML = '';
+      const hitLayer = page10SvgEl('g', {});
+      hitLayer.classList.add('page10-donut-hitlayer');
+      page10DonutSvg.appendChild(hitLayer);
+      page10BuildDonutRing(page10DonutRingPositions(PAGE10_DONUT_OUTER_COUNT, PAGE10_DONUT_OUTER_R));
+      page10BuildDonutRing(page10DonutRingPositions(PAGE10_DONUT_INNER_COUNT, PAGE10_DONUT_INNER_R));
+      page10DonutSvg.dataset.gridBuilt = '1';
+      page10DonutSvg.querySelectorAll('.page10-donut-dot').forEach((circle) => {
+        circle.addEventListener('click', (e) => {
+          e.stopPropagation();
+          if (circle.dataset.key) page10ToggleDonutTooltip(circle.dataset.key);
+        });
+        circle.addEventListener('mouseenter', () => {
+          if (circle.dataset.key) page10HoverDonut(circle.dataset.key);
+        });
+        circle.addEventListener('mouseleave', page10UnhoverDonut);
+      });
+    }
+
+    // Lejant KARTLARININ SAYISI VE SIRASI (hangi dersler var) aynı kaldığı
+    // sürece mevcut kartları YOK EDİP BAŞTAN OLUŞTURMAK yerine sadece
+    // değer/yüzdelerini güncelliyoruz.
     const signature = entries.map((e) => e.key).join('|');
-    const structureChanged = page10DonutSvg.dataset.signature !== signature;
+    const structureChanged = page10DonutLegend.dataset.signature !== signature;
 
     if (structureChanged) {
-      page10DonutSvg.innerHTML = '';
       page10DonutLegend.innerHTML = '';
-      page10DonutSvg.dataset.signature = signature;
-
-      // Arka plandaki gri iz: derslerin dilimleri bunun üzerine çizilir.
-      page10DonutSvg.appendChild(page10SvgEl('circle', {
-        cx: '60', cy: '60', r: String(PAGE10_DONUT_R), fill: 'none',
-        stroke: document.body.classList.contains('is-anthracite') ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.08)',
-        'stroke-width': String(PAGE10_DONUT_STROKE)
-      }));
+      page10DonutLegend.dataset.signature = signature;
 
       entries.forEach((entry) => {
         const isUnlabeled = entry.key === '__unlabeled__';
         const [track, name] = isUnlabeled ? [null, 'Etiketsiz'] : entry.key.split('::');
-        const color = isUnlabeled ? 'rgba(120,120,120,0.6)' : page10ColorForSubject(track, name);
-
-        const circle = page10SvgEl('circle', {
-          cx: '60', cy: '60', r: String(PAGE10_DONUT_R), fill: 'none',
-          stroke: color, 'stroke-width': String(PAGE10_DONUT_STROKE),
-          'stroke-dasharray': `0 ${PAGE10_DONUT_CIRC}`,
-          'stroke-dashoffset': '0'
-        });
-        circle.classList.add('page10-donut-slice');
-        circle.dataset.key = entry.key;
-        circle.setAttribute('tabindex', '0');
-        circle.setAttribute('role', 'button');
-        circle.setAttribute('aria-label', isUnlabeled ? 'Etiketsiz' : name);
-        circle.addEventListener('click', (e) => {
-          e.stopPropagation();
-          page10ToggleDonutTooltip(entry.key);
-        });
-        page10DonutSvg.appendChild(circle);
+        const color = isUnlabeled ? PAGE10_DONUT_UNLABELED_COLOR : page10ColorForSubject(track, name);
 
         const item = document.createElement('div');
         item.className = 'page10-donut-legend-item';
         item.dataset.key = entry.key;
 
-        const dot = document.createElement('span');
-        dot.className = 'page10-donut-legend-dot';
-        dot.style.backgroundColor = color;
-
+        const head = document.createElement('div');
+        head.className = 'page10-donut-legend-head';
+        const bar = document.createElement('span');
+        bar.className = 'page10-donut-legend-bar';
+        bar.style.backgroundColor = color;
         const nameEl = document.createElement('span');
         nameEl.className = 'page10-donut-legend-name';
         nameEl.textContent = isUnlabeled ? 'Etiketsiz' : name;
+        head.appendChild(bar);
+        head.appendChild(nameEl);
 
+        const stats = document.createElement('div');
+        stats.className = 'page10-donut-legend-stats';
+        const valueEl = document.createElement('span');
+        valueEl.className = 'page10-donut-legend-value';
         const pctEl = document.createElement('span');
         pctEl.className = 'page10-donut-legend-pct';
+        pctEl.style.color = color;
+        stats.appendChild(valueEl);
+        stats.appendChild(pctEl);
 
-        item.appendChild(dot);
-        item.appendChild(nameEl);
-        item.appendChild(pctEl);
+        item.appendChild(head);
+        item.appendChild(stats);
         item.addEventListener('click', (e) => {
           e.stopPropagation();
           page10ToggleDonutTooltip(entry.key);
         });
+        item.addEventListener('mouseenter', () => page10HoverDonut(entry.key));
+        item.addEventListener('mouseleave', page10UnhoverDonut);
         page10DonutLegend.appendChild(item);
       });
     }
 
-    // Payları (ve dolayısıyla dilim büyüklüklerini) güncelle. Yapı
-    // değişmediyse bu, mevcut elemanlar üzerinde bir nitelik güncellemesi
-    // olduğundan CSS transition düzgün çalışır ve grafik kaybolmaz.
-    const slices = page10DonutSvg.querySelectorAll('.page10-donut-slice');
-    const legendItems = page10DonutLegend.querySelectorAll('.page10-donut-legend-item');
+    // Kümülatif payları (sınırları) hesapla — hem noktaların rengini hem
+    // de lejanttaki değer/yüzde metinlerini bundan güncelliyoruz.
     let cumulative = 0;
-    entries.forEach((entry, i) => {
+    const boundaries = entries.map((entry) => {
       const pct = entry.ms / total;
-      const dash = pct * PAGE10_DONUT_CIRC;
-      const circle = slices[i];
-      if (circle) {
-        circle.setAttribute('stroke-dasharray', `${dash} ${Math.max(0, PAGE10_DONUT_CIRC - dash)}`);
-        circle.setAttribute('stroke-dashoffset', String(-cumulative * PAGE10_DONUT_CIRC));
-      }
-      const pctEl = legendItems[i] && legendItems[i].querySelector('.page10-donut-legend-pct');
-      if (pctEl) pctEl.textContent = `${Math.round(pct * 100)}%`;
+      const start = cumulative;
       cumulative += pct;
+      const isUnlabeled = entry.key === '__unlabeled__';
+      const [track, name] = isUnlabeled ? [null, 'Etiketsiz'] : entry.key.split('::');
+      const color = isUnlabeled ? PAGE10_DONUT_UNLABELED_COLOR : page10ColorForSubject(track, name);
+      return { key: entry.key, start, end: start + pct, color, ms: entry.ms, pct };
+    });
+
+    const entryForFraction = (frac) => {
+      for (let i = 0; i < boundaries.length; i++) {
+        if (frac >= boundaries[i].start && frac < boundaries[i].end) return boundaries[i];
+      }
+      return boundaries[boundaries.length - 1];
+    };
+
+    const page10AllDonutDots = Array.from(page10DonutSvg.querySelectorAll('.page10-donut-dot'));
+    page10AllDonutDots.forEach((circle) => {
+      const b = entryForFraction(parseFloat(circle.dataset.frac));
+      circle.setAttribute('fill', b.color);
+      circle.dataset.key = b.key;
+      circle.setAttribute('aria-label', b.key === '__unlabeled__' ? 'Etiketsiz' : b.key.split('::')[1]);
+    });
+
+    // Küçük dilimler için garanti nokta: 84 nokta sabit konumludur, bir
+    // dersin payı noktalar arasındaki ortalama boşluktan (~%2-3) daha
+    // küçükse hiçbir nokta o dilimin sınırlarına denk gelmeyebilir — dilim
+    // veride var olur (tooltip/lejant doğru çalışır) ama halkada hiç
+    // boyanmamış görünür. Bunu önlemek için, hiç noktası olmayan her
+    // dilimin orta açısına EN YAKIN (henüz başka bir dilime bu şekilde
+    // atanmamış) noktayı bulup zorla o dilimin rengine boyuyoruz; böylece
+    // her ders, payı ne kadar küçük olursa olsun en az bir noktayla temsil
+    // ediliyor.
+    const page10RepresentedKeys = new Set(page10AllDonutDots.map((c) => c.dataset.key));
+    const page10ClaimedDots = new Set();
+    const page10CircularFracDist = (a, b) => {
+      const d = Math.abs(a - b);
+      return Math.min(d, 1 - d);
+    };
+    boundaries
+      .filter((b) => !page10RepresentedKeys.has(b.key))
+      .sort((a, b) => (a.end - a.start) - (b.end - b.start))
+      .forEach((b) => {
+        const mid = (b.start + b.end) / 2;
+        let best = null;
+        let bestDist = Infinity;
+        page10AllDonutDots.forEach((circle) => {
+          if (page10ClaimedDots.has(circle)) return;
+          const dist = page10CircularFracDist(parseFloat(circle.dataset.frac), mid);
+          if (dist < bestDist) {
+            bestDist = dist;
+            best = circle;
+          }
+        });
+        if (best) {
+          page10ClaimedDots.add(best);
+          best.setAttribute('fill', b.color);
+          best.dataset.key = b.key;
+          best.setAttribute('aria-label', b.key === '__unlabeled__' ? 'Etiketsiz' : b.key.split('::')[1]);
+        }
+      });
+
+    // Dokunma alanlarını (görünmez pasta dilimleri) güncel paylara göre
+    // baştan çiz — canlı sayaç yüzdeleri her saniye kaydırdığı için bu
+    // sınırlar da onunla birlikte güncel kalmalı. Sayı azsa (genelde
+    // birkaç ders) her seferinde yeniden oluşturmak ucuz.
+    const hitLayer = page10DonutSvg.querySelector('.page10-donut-hitlayer');
+    if (hitLayer) {
+      hitLayer.innerHTML = '';
+      boundaries.forEach((b) => {
+        const hitPath = page10SvgEl('path', { d: page10DonutSectorPath(b.start, b.end) });
+        hitPath.classList.add('page10-donut-hit');
+        hitPath.dataset.key = b.key;
+        hitPath.setAttribute('tabindex', '0');
+        hitPath.setAttribute('role', 'button');
+        hitPath.setAttribute('aria-label', b.key === '__unlabeled__' ? 'Etiketsiz' : b.key.split('::')[1]);
+        hitPath.addEventListener('click', (e) => {
+          e.stopPropagation();
+          page10ToggleDonutTooltip(b.key);
+        });
+        hitPath.addEventListener('mouseenter', () => page10HoverDonut(b.key));
+        hitPath.addEventListener('mouseleave', page10UnhoverDonut);
+        hitLayer.appendChild(hitPath);
+      });
+    }
+
+    const legendItems = page10DonutLegend.querySelectorAll('.page10-donut-legend-item');
+    legendItems.forEach((item, i) => {
+      const b = boundaries[i];
+      if (!b) return;
+      const valueEl = item.querySelector('.page10-donut-legend-value');
+      const pctEl = item.querySelector('.page10-donut-legend-pct');
+      if (valueEl) valueEl.textContent = page10FormatDurationMs(b.ms);
+      if (pctEl) pctEl.textContent = `%${Math.round(b.pct * 100)}`;
     });
 
     // Açık (sabitlenmiş) bir tooltip varsa, güncel süreyle tazele; ders
@@ -41234,13 +41680,97 @@
   };
 
   // ---- Günlük Trend: iniş-çıkışlı çizgi grafik ----
-  const PAGE10_TREND_VB = { w: 300, h: 130, padX: 12, padY: 18 };
+  // h: veri alanının yüksekliği (noktalar/çizgi bu alana çiziliyor).
+  // labelH: altta, gün etiketleri için ayrılan ek şerit. Tooltip ve nokta
+  // konumlarıyla gün etiketleri artık AYNI viewBox koordinat sisteminde,
+  // tek bir <svg> içinde birlikte çiziliyor — ayrı bir HTML satırı olarak
+  // "sonradan eklenmiş" gibi durup noktayla hizası kaçmıyor.
+  const PAGE10_TREND_VB = { w: 300, h: 130, padL: 34, padR: 10, padY: 18, labelH: 20 };
   let page10TrendPinnedIndex = null;
   let page10TrendPinTimer = null;
   let page10TrendPoints = [];
   let page10TrendDaysRef = [];
 
   const page10TrendShortDate = (date) => `${date.getDate()} ${PAGE10_MONTHS_TR[date.getMonth()].slice(0, 3)}`;
+
+  // Alt eksendeki kısa etiket: Gün modunda tekil gün ("Bugün" / "21 Eyl"),
+  // Hafta modunda o haftanın başlangıç tarihi, Ay modunda ay kısaltması
+  // ("Tem", "Ağu", ...) — böylece Hafta/Ay modunda noktalar gün değil,
+  // dönem (hafta/ay) temsil ettiği hemen anlaşılır.
+  const page10TrendAxisLabel = (point) => {
+    if (page10Range === 'week') return page10TrendShortDate(point.date);
+    if (page10Range === 'month') return PAGE10_MONTHS_TR[point.date.getMonth()].slice(0, 3);
+    const todayKey = page10DateKey(new Date());
+    return point.key === todayKey ? 'Bugün' : page10TrendShortDate(point.date);
+  };
+
+  // Tooltip / aria-label için daha ayrıntılı metin: Hafta modunda tarih
+  // aralığı ("21–27 Eyl"), Ay modunda tam ay adı + yıl ("Temmuz 2026").
+  const page10TrendTooltipLabel = (point) => {
+    if (page10Range === 'week') {
+      const end = point.rangeEnd || (() => { const e = new Date(point.date); e.setDate(e.getDate() + 6); return e; })();
+      const sameMonth = point.date.getMonth() === end.getMonth();
+      const startStr = sameMonth ? `${point.date.getDate()}` : `${point.date.getDate()} ${PAGE10_MONTHS_TR[point.date.getMonth()].slice(0, 3)}`;
+      return `${startStr}–${end.getDate()} ${PAGE10_MONTHS_TR[end.getMonth()].slice(0, 3)}`;
+    }
+    if (page10Range === 'month') return `${PAGE10_MONTHS_TR[point.date.getMonth()]} ${point.date.getFullYear()}`;
+    const todayKey = page10DateKey(new Date());
+    return point.key === todayKey ? 'Bugün' : page10TrendShortDate(point.date);
+  };
+
+  // Monoton kübik (Fritsch-Carlson) Hermite eğrisi: klasik Catmull-Rom'un
+  // aksine taşma (overshoot) yapmaz. Bir bölüm düzse (eğim 0) o bölümdeki
+  // teğetler de 0'a kilitlenir, yani düz kalır; yön değiştiren noktalarda
+  // ise komşu segmentleri aşmayan, yumuşak bir kavis üretir. Böylece hem
+  // düz veri dümdüz görünür hem de tepe noktaları sivri bir "iğne" yerine
+  // yumuşak bir tümsek olur.
+  const page10SmoothPathD = (points) => {
+    const n = points.length;
+    if (n < 2) return n === 1 ? `M ${points[0].x} ${points[0].y}` : '';
+    const dx = new Array(n - 1);
+    const slope = new Array(n - 1);
+    for (let i = 0; i < n - 1; i += 1) {
+      dx[i] = points[i + 1].x - points[i].x;
+      slope[i] = dx[i] === 0 ? 0 : (points[i + 1].y - points[i].y) / dx[i];
+    }
+    const m = new Array(n);
+    m[0] = slope[0];
+    m[n - 1] = slope[n - 2];
+    for (let i = 1; i < n - 1; i += 1) {
+      if (slope[i - 1] === 0 || slope[i] === 0 || (slope[i - 1] > 0) !== (slope[i] > 0)) {
+        m[i] = 0;
+      } else {
+        m[i] = (slope[i - 1] + slope[i]) / 2;
+      }
+    }
+    for (let i = 0; i < n - 1; i += 1) {
+      if (slope[i] === 0) {
+        m[i] = 0;
+        m[i + 1] = 0;
+      } else {
+        const a = m[i] / slope[i];
+        const b = m[i + 1] / slope[i];
+        const s = a * a + b * b;
+        if (s > 9) {
+          const tau = 3 / Math.sqrt(s);
+          m[i] = tau * a * slope[i];
+          m[i + 1] = tau * b * slope[i];
+        }
+      }
+    }
+    let d = `M ${points[0].x} ${points[0].y}`;
+    for (let i = 0; i < n - 1; i += 1) {
+      const p0 = points[i];
+      const p1 = points[i + 1];
+      const h3 = dx[i] / 3;
+      const cp1x = p0.x + h3;
+      const cp1y = p0.y + m[i] * h3;
+      const cp2x = p1.x - h3;
+      const cp2y = p1.y - m[i + 1] * h3;
+      d += ` C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${p1.x} ${p1.y}`;
+    }
+    return d;
+  };
 
   const page10ShowTrendTooltip = (i) => {
     const pt = page10TrendPoints[i];
@@ -41249,24 +41779,47 @@
     const wrapRect = page10TrendChartWrap.getBoundingClientRect();
     const svgRect = page10TrendChart.getBoundingClientRect();
     const scaleX = svgRect.width / PAGE10_TREND_VB.w;
-    const scaleY = svgRect.height / PAGE10_TREND_VB.h;
+    const scaleY = svgRect.height / (PAGE10_TREND_VB.h + PAGE10_TREND_VB.labelH);
     const px = (svgRect.left - wrapRect.left) + pt.x * scaleX;
     const py = (svgRect.top - wrapRect.top) + pt.y * scaleY;
     page10TrendTooltip.style.left = `${px}px`;
     page10TrendTooltip.style.top = `${py}px`;
-    const todayKey = page10DateKey(new Date());
-    const dayLabel = day.key === todayKey ? 'Bugün' : page10TrendShortDate(day.date);
+    const dayLabel = page10TrendTooltipLabel(day);
+    const prevDay = page10TrendDaysRef[i - 1];
+    const change = prevDay ? day.ms - prevDay.ms : null;
+    // PointsChart'taki tooltip gibi: değişim satırı tek, nötr (muted) renk;
+    // sadece pozitifse "+" öneki eklenir (recharts'taki changePrefix mantığı).
+    const changeText = change === null
+      ? ''
+      : `<span class="page10-trend-tooltip-change">${change > 0 ? '+' : change < 0 ? '-' : ''}${page10FormatDurationMs(Math.abs(change))}</span>`;
     page10TrendTooltip.innerHTML = `
-      <span class="page10-trend-tooltip-name">${dayLabel}</span>
-      <span class="page10-trend-tooltip-value">${page10FormatDurationMs(day.ms)}</span>
+      <span class="page10-trend-tooltip-date">${dayLabel}</span>
+      <span class="page10-trend-tooltip-total">Toplam ${page10FormatDurationMs(day.ms)}</span>
+      ${changeText}
     `;
     page10TrendTooltip.classList.add('is-visible');
+    if (page10TrendChart) {
+      page10TrendChart.querySelectorAll('.page10-trend-dot').forEach((d, di) => {
+        d.classList.toggle('is-active', di === i);
+      });
+      const cursorLine = page10TrendChart.querySelector('.page10-trend-cursor-line');
+      if (cursorLine) {
+        cursorLine.setAttribute('x1', String(pt.x));
+        cursorLine.setAttribute('x2', String(pt.x));
+        cursorLine.classList.add('is-active');
+      }
+    }
   };
 
   const page10HideTrendTooltip = (force) => {
     if (!force && page10TrendPinnedIndex !== null) return;
     clearTimeout(page10TrendPinTimer);
     if (page10TrendTooltip) page10TrendTooltip.classList.remove('is-visible');
+    if (page10TrendChart) {
+      page10TrendChart.querySelectorAll('.page10-trend-dot').forEach((d) => d.classList.remove('is-active'));
+      const cursorLine = page10TrendChart.querySelector('.page10-trend-cursor-line');
+      if (cursorLine) cursorLine.classList.remove('is-active');
+    }
   };
 
   document.addEventListener('click', (e) => {
@@ -41305,7 +41858,6 @@
     if (days.length < 2 || !hasAnyTime) {
       page10TrendChart.innerHTML = '';
       page10TrendChart.dataset.signature = '';
-      page10TrendLabels.innerHTML = '';
       page10TrendPinnedIndex = null;
       clearTimeout(page10TrendPinTimer);
       page10HideTrendTooltip(true);
@@ -41315,57 +41867,57 @@
       page10TrendBadge.className = 'page10-trend-badge';
       const msg = page10SvgEl('text', {
         x: String(PAGE10_TREND_VB.w / 2),
-        y: String(PAGE10_TREND_VB.h / 2),
+        y: String((PAGE10_TREND_VB.h + PAGE10_TREND_VB.labelH) / 2),
         'text-anchor': 'middle',
         'dominant-baseline': 'middle',
-        'font-family': 'Space Grotesk, sans-serif',
+        'font-family': '"Baloo 2", "Space Grotesk", sans-serif',
         'font-weight': '700',
         'font-size': '11',
-        fill: document.body.classList.contains('is-anthracite') ? 'rgba(242,242,244,0.45)' : 'rgba(18,18,18,0.45)'
+        class: 'page10-trend-empty-msg'
       });
-      msg.textContent = 'Grafik için en az iki günlük kayıt gerekli';
+      const unitWord = page10Range === 'week' ? 'haftalık' : page10Range === 'month' ? 'aylık' : 'günlük';
+      msg.textContent = `Grafik için en az iki ${unitWord} kayıt gerekli`;
       page10TrendChart.appendChild(msg);
       return;
     }
 
     page10TrendDaysRef = days;
 
-    const { w, h, padX, padY } = PAGE10_TREND_VB;
+    const { w, h, padL, padR, padY } = PAGE10_TREND_VB;
     const minMs = Math.min(...values);
     const maxMs = Math.max(...values);
     const range = (maxMs - minMs) || 1;
-    const stepX = (w - padX * 2) / (values.length - 1);
+    const stepX = (w - padL - padR) / (values.length - 1);
     const points = values.map((ms, i) => ({
-      x: padX + stepX * i,
+      x: padL + stepX * i,
+      y: h - padY - ((ms - minMs) / range) * (h - padY * 2)
+    }));
+    // PointsChart'taki gibi 3 seviyeli Y ekseni: alt/orta/üst değer,
+    // noktalarla AYNI ölçek (yukarıdaki y hesabı) kullanılarak konumlanır.
+    const yTicks = [minMs, minMs + range / 2, maxMs].map((ms) => ({
+      ms,
       y: h - padY - ((ms - minMs) / range) * (h - padY * 2)
     }));
     page10TrendPoints = points;
     const bottomY = h - 3;
 
-    const bezierSegs = points.map((p1, i) => {
-      const p0 = points[i - 1] || points[i];
-      const p2 = points[i + 1] || p1;
-      const p3 = points[i + 2] || p2;
-      return {
-        p1,
-        p2,
-        cp1: { x: p1.x + (p2.x - p0.x) / 6, y: p1.y + (p2.y - p0.y) / 6 },
-        cp2: { x: p2.x - (p3.x - p1.x) / 6, y: p2.y - (p3.y - p1.y) / 6 }
-      };
-    }).slice(0, -1);
-
-    let areaD = `M ${points[0].x} ${points[0].y}`;
-    bezierSegs.forEach((seg) => {
-      areaD += ` C ${seg.cp1.x} ${seg.cp1.y}, ${seg.cp2.x} ${seg.cp2.y}, ${seg.p2.x} ${seg.p2.y}`;
-    });
-    areaD += ` L ${points[points.length - 1].x} ${bottomY} L ${points[0].x} ${bottomY} Z`;
+    // Tek, sürekli bir çizgi: eskiden her gün-arası segment ayrı bir <path>
+    // olup kendi rengini taşıyordu (artış yeşil, azalış kırmızı vb.), bu da
+    // grafiği rengarenk ve parçalı gösteriyordu. Artık tüm gün boyunca TEK
+    // bir path, tek bir vurgu renginde akıyor — daha sakin, tek parça ve
+    // "premium" bir okuma sağlıyor. Noktalar arasında "monoton kübik" bir
+    // eğri kullanılıyor (klasik Catmull-Rom değil): düz/yatay bölümlerde
+    // eğim sıfıra kilitlendiği için o bölüm kesinlikle dümdüz kalıyor, ama
+    // yön değiştiren (tepe/dip yapan) noktalarda sivri bir köşe yerine
+    // yumuşak, taşma yapmayan bir kavis oluşuyor — eski sivri "iğne" görünümü
+    // düzeliyor.
+    const lineD = page10SmoothPathD(points);
 
     const overallDiff = values[values.length - 1] - values[0];
-    const trendUp = overallDiff > 0;
-    const trendDown = overallDiff < 0;
-    const trendColor = trendUp ? '#00e6a0' : (trendDown ? '#ff3d68' : '#ff90e8');
-    const showValueLabels = points.length <= 7;
-    const todayKeyForHit = page10DateKey(new Date());
+    // PointsChart'ta noktaların üstünde ayrı sayı etiketi yok: değer artık
+    // soldaki Y ekseninden ve dokunulunca açılan tooltip'ten okunuyor, bu
+    // yüzden eski üst-üste binen nokta etiketleri kaldırıldı.
+    const showValueLabels = false;
 
     const structureChanged = page10TrendChart.dataset.signature !== signature;
 
@@ -41374,77 +41926,67 @@
       // değişti ya da gece yarısı geçildi). Bu durumda "giriş" animasyonu
       // ile baştan çizmek doğru ve beklenen davranıştır. ----
       page10TrendChart.innerHTML = '';
-      page10TrendLabels.innerHTML = '';
       page10TrendChart.dataset.signature = signature;
       page10TrendPinnedIndex = null;
       clearTimeout(page10TrendPinTimer);
       page10HideTrendTooltip(true);
 
-      for (let g = 1; g <= 2; g += 1) {
-        const gy = padY + ((h - padY * 2) / 3) * g;
+      // PointsChart'taki CartesianGrid + Y ekseni: 3 seviyede yatay,
+      // her gün için dikey kesikli ızgara çizgisi + solda değer etiketi.
+      yTicks.forEach((tick, ti) => {
         page10TrendChart.appendChild(page10SvgEl('line', {
-          x1: String(padX), x2: String(w - padX), y1: String(gy), y2: String(gy),
-          stroke: 'rgba(18,18,18,0.08)', 'stroke-width': '1', 'stroke-dasharray': '4 4'
+          x1: String(padL), x2: String(w - padR), y1: String(tick.y), y2: String(tick.y),
+          class: 'page10-trend-grid-line', 'stroke-width': '1'
         }));
+        const tickLabel = page10SvgEl('text', {
+          x: String(padL - 6),
+          y: String(tick.y + (ti === 0 ? -1 : ti === yTicks.length - 1 ? 6 : 3)),
+          'text-anchor': 'end',
+          'font-size': '7.5',
+          class: 'page10-trend-axis-label'
+        });
+        tickLabel.textContent = page10FormatDurationMs(tick.ms).slice(0, 5);
+        page10TrendChart.appendChild(tickLabel);
+      });
+
+      const maxLabels = days.length <= 7 ? days.length : 6;
+      let labelIdxs;
+      if (days.length <= maxLabels) {
+        labelIdxs = days.map((_, i) => i);
+      } else {
+        const step = (days.length - 1) / (maxLabels - 1);
+        labelIdxs = [...new Set(Array.from({ length: maxLabels }, (_, k) => Math.round(k * step)))];
       }
-
-      const defs = page10SvgEl('defs', {});
-      const gradientId = `page10TrendGradient-${page10Range}`;
-      const gradient = page10SvgEl('linearGradient', { id: gradientId, x1: '0', y1: '0', x2: '0', y2: '1' });
-      gradient.appendChild(page10SvgEl('stop', { offset: '0%', 'stop-color': trendColor, 'stop-opacity': '0.55' }));
-      gradient.appendChild(page10SvgEl('stop', { offset: '100%', 'stop-color': trendColor, 'stop-opacity': '0.02' }));
-      defs.appendChild(gradient);
-
-      const glowId = `page10TrendGlow-${page10Range}`;
-      page10TrendChart.dataset.glowId = glowId;
-      const glowFilter = page10SvgEl('filter', { id: glowId, x: '-60%', y: '-60%', width: '220%', height: '220%' });
-      glowFilter.appendChild(page10SvgEl('feGaussianBlur', { stdDeviation: '2.4', result: 'blur' }));
-      const glowMerge = page10SvgEl('feMerge', {});
-      glowMerge.appendChild(page10SvgEl('feMergeNode', { in: 'blur' }));
-      glowMerge.appendChild(page10SvgEl('feMergeNode', { in: 'blur' }));
-      glowMerge.appendChild(page10SvgEl('feMergeNode', { in: 'SourceGraphic' }));
-      glowFilter.appendChild(glowMerge);
-      defs.appendChild(glowFilter);
-      page10TrendChart.appendChild(defs);
-
-      const areaPath = page10SvgEl('path', {
-        d: areaD, fill: `url(#${gradientId})`, class: 'page10-trend-area'
+      labelIdxs.forEach((i) => {
+        page10TrendChart.appendChild(page10SvgEl('line', {
+          x1: String(points[i].x), x2: String(points[i].x), y1: String(padY), y2: String(h - padY),
+          class: 'page10-trend-grid-line', 'stroke-width': '1'
+        }));
       });
-      page10TrendChart.appendChild(areaPath);
 
-      bezierSegs.forEach((seg, i) => {
-        const trend = values[i + 1] > values[i] ? 'up' : (values[i + 1] < values[i] ? 'down' : 'flat');
-        const color = trend === 'up' ? '#00e6a0' : (trend === 'down' ? '#ff3d68' : '#8b8fa3');
-        const segAttrs = {
-          d: `M ${seg.p1.x} ${seg.p1.y} C ${seg.cp1.x} ${seg.cp1.y}, ${seg.cp2.x} ${seg.cp2.y}, ${seg.p2.x} ${seg.p2.y}`,
-          stroke: color, 'stroke-width': '3.2', 'stroke-linecap': 'round', fill: 'none',
-          class: 'page10-trend-segment'
-        };
-        if (trend !== 'flat') segAttrs.filter = `url(#${glowId})`;
-        const segEl = page10SvgEl('path', segAttrs);
-        page10TrendChart.appendChild(segEl);
-        let len;
-        try {
-          len = segEl.getTotalLength();
-        } catch (err) {
-          len = Math.hypot(seg.p2.x - seg.p1.x, seg.p2.y - seg.p1.y);
-        }
-        segEl.setAttribute('stroke-dasharray', String(len));
-        segEl.setAttribute('stroke-dashoffset', String(len));
+      const lineEl = page10SvgEl('path', {
+        d: lineD, class: 'page10-trend-line'
       });
+      page10TrendChart.appendChild(lineEl);
+      let lineLen;
+      try {
+        lineLen = lineEl.getTotalLength();
+      } catch (err) {
+        lineLen = w;
+      }
+      lineEl.setAttribute('stroke-dasharray', String(lineLen));
+      lineEl.setAttribute('stroke-dashoffset', String(lineLen));
+
+      // İmleç rehber çizgisi (recharts Tooltip cursor): dokunulan noktanın
+      // X'inde dikey, kesikli bir çizgi; sadece etkileşim sırasında görünür.
+      page10TrendChart.appendChild(page10SvgEl('line', {
+        x1: '0', x2: '0', y1: String(padY), y2: String(h - padY),
+        class: 'page10-trend-cursor-line'
+      }));
 
       points.forEach((pt, i) => {
-        if (i === points.length - 1) {
-          const pulseColor = values.length > 1
-            ? (values[i] > values[i - 1] ? '#00e6a0' : (values[i] < values[i - 1] ? '#ff3d68' : '#ff90e8'))
-            : '#ff90e8';
-          page10TrendChart.appendChild(page10SvgEl('circle', {
-            cx: String(pt.x), cy: String(pt.y), r: '5', fill: pulseColor, class: 'page10-trend-pulse'
-          }));
-        }
-
         const dot = page10SvgEl('circle', {
-          cx: String(pt.x), cy: String(pt.y), r: '4.2', fill: '#fff', stroke: '#000', 'stroke-width': '2',
+          cx: String(pt.x), cy: String(pt.y), r: '3',
           class: 'page10-trend-dot'
         });
         page10TrendChart.appendChild(dot);
@@ -41452,13 +41994,11 @@
         if (showValueLabels) {
           const label = page10SvgEl('text', {
             x: String(pt.x),
-            y: String(Math.max(9, pt.y - 9)),
+            y: String(Math.max(9, pt.y - 10)),
             'text-anchor': i === 0 ? 'start' : (i === points.length - 1 ? 'end' : 'middle'),
-            'font-family': 'Space Grotesk, sans-serif',
+            'font-family': '"Baloo 2", "Space Grotesk", sans-serif',
             'font-weight': '700',
             'font-size': '8',
-            fill: document.body.classList.contains('is-anthracite') ? '#f2f2f4' : '#121212',
-            opacity: '0.55',
             class: 'page10-trend-value-label'
           });
           label.textContent = page10FormatDurationMs(values[i]).slice(0, 5);
@@ -41469,7 +42009,7 @@
           cx: String(pt.x), cy: String(pt.y), r: '11', fill: 'transparent', class: 'page10-trend-hit',
           role: 'button', tabindex: '0'
         });
-        const hitDayLabel = days[i].key === todayKeyForHit ? 'Bugün' : page10TrendShortDate(days[i].date);
+        const hitDayLabel = page10TrendTooltipLabel(days[i]);
         hit.setAttribute('aria-label', `${hitDayLabel}: ${page10FormatDurationMs(values[i])}`);
         hit.addEventListener('pointerenter', () => page10ShowTrendTooltip(i));
         hit.addEventListener('pointerleave', () => page10HideTrendTooltip(false));
@@ -41491,24 +42031,38 @@
         page10TrendChart.appendChild(hit);
       });
 
-      const firstLabel = document.createElement('span');
-      firstLabel.textContent = page10TrendShortDate(days[0].date);
-      const lastLabel = document.createElement('span');
-      lastLabel.textContent = page10TrendShortDate(days[days.length - 1].date);
-      page10TrendLabels.appendChild(firstLabel);
-      page10TrendLabels.appendChild(lastLabel);
+      // Gün etiketleri artık ayrı bir HTML satırı değil, grafikle AYNI
+      // <svg> ve aynı koordinat sistemi içinde, tam nokta/hit alanının
+      // altında çiziliyor — bu yüzden hangi etiketin hangi güne ait olduğu
+      // asla kaymaz. Gün/hafta modunda (7 gün) HEPSİ gösteriliyor — 7'yi
+      // 6'ya sıkıştırıp bir günü rastgele atlamak (ör. "22 Eyl" kaybolması)
+      // asıl hizasızlık hissini yaratan şeydi. Sadece ay modu gibi çok
+      // kalabalık aralıklarda sıkışmaması için eşit aralıklarla seçilmiş
+      // en fazla 6 etiket kullanılıyor (ilk ve son gün her zaman dahil).
+      // (labelIdxs, dikey ızgara çizgileriyle aynı gün indekslerini kullanır.)
+      const labelY = h + PAGE10_TREND_VB.labelH / 2 + 3.5;
+      labelIdxs.forEach((i) => {
+        const pt = points[i];
+        const isFirst = i === 0;
+        const isLast = i === points.length - 1;
+        const label = page10SvgEl('text', {
+          x: String(Math.min(w - 1, Math.max(1, pt.x))),
+          y: String(labelY),
+          'text-anchor': isFirst ? 'start' : (isLast ? 'end' : 'middle'),
+          'font-family': '"Baloo 2", "Space Grotesk", sans-serif',
+          'font-weight': '600',
+          'font-size': '9',
+          class: 'page10-trend-day-label'
+        });
+        label.textContent = page10TrendAxisLabel(days[i]);
+        page10TrendChart.appendChild(label);
+      });
 
       page10ApplyTrendBadge(overallDiff);
 
       requestAnimationFrame(() => {
-        const areaEl = page10TrendChart.querySelector('.page10-trend-area');
-        if (areaEl) areaEl.classList.add('is-in');
-        page10TrendChart.querySelectorAll('.page10-trend-segment').forEach((seg) => {
-          seg.style.strokeDashoffset = '0';
-        });
-        page10TrendChart.querySelectorAll('.page10-trend-dot').forEach((dot, i) => {
-          setTimeout(() => dot.classList.add('is-in'), i * 35);
-        });
+        if (lineEl) lineEl.style.strokeDashoffset = '0';
+        page10TrendChart.querySelectorAll('.page10-trend-dot').forEach((d) => d.classList.add('is-in'));
       });
       return;
     }
@@ -41517,38 +42071,37 @@
     // süresi (ve dolayısıyla nokta konumları) birazcık değişti. Elemanlar
     // YOK EDİLİP YENİDEN KURULMUYOR; sadece nitelikleri güncelleniyor, bu
     // yüzden grafik kaybolup belirmiyor, sadece yumuşakça kayıyor. ----
-    const areaEl = page10TrendChart.querySelector('.page10-trend-area');
-    if (areaEl) areaEl.setAttribute('d', areaD);
-
-    const glowId = page10TrendChart.dataset.glowId;
-    const segEls = page10TrendChart.querySelectorAll('.page10-trend-segment');
-    bezierSegs.forEach((seg, i) => {
-      const segEl = segEls[i];
-      if (!segEl) return;
-      const trend = values[i + 1] > values[i] ? 'up' : (values[i + 1] < values[i] ? 'down' : 'flat');
-      const color = trend === 'up' ? '#00e6a0' : (trend === 'down' ? '#ff3d68' : '#8b8fa3');
-      const d = `M ${seg.p1.x} ${seg.p1.y} C ${seg.cp1.x} ${seg.cp1.y}, ${seg.cp2.x} ${seg.cp2.y}, ${seg.p2.x} ${seg.p2.y}`;
-      segEl.setAttribute('d', d);
-      segEl.setAttribute('stroke', color);
-      if (trend !== 'flat' && glowId) {
-        segEl.setAttribute('filter', `url(#${glowId})`);
-      } else {
-        segEl.removeAttribute('filter');
-      }
-      let len;
+    const lineEl = page10TrendChart.querySelector('.page10-trend-line');
+    if (lineEl) {
+      lineEl.setAttribute('d', lineD);
+      let lineLen;
       try {
-        len = segEl.getTotalLength();
+        lineLen = lineEl.getTotalLength();
       } catch (err) {
-        len = Math.hypot(seg.p2.x - seg.p1.x, seg.p2.y - seg.p1.y);
+        lineLen = w;
       }
-      segEl.setAttribute('stroke-dasharray', String(len));
-      segEl.setAttribute('stroke-dashoffset', '0');
+      lineEl.setAttribute('stroke-dasharray', String(lineLen));
+      lineEl.setAttribute('stroke-dashoffset', '0');
+    }
+
+    // Y ekseni (ızgara + etiket) de "Bugün"ün canlı süresiyle birlikte
+    // kayabilir (üst sınır büyüdükçe), bu yüzden değer güncellemesinde
+    // ızgara çizgileri ve etiketleri de tazeleniyor.
+    const gridLines = page10TrendChart.querySelectorAll('.page10-trend-grid-line');
+    const axisLabels = page10TrendChart.querySelectorAll('.page10-trend-axis-label');
+    yTicks.forEach((tick, ti) => {
+      const gl = gridLines[ti];
+      if (gl) { gl.setAttribute('y1', String(tick.y)); gl.setAttribute('y2', String(tick.y)); }
+      const al = axisLabels[ti];
+      if (al) {
+        al.setAttribute('y', String(tick.y + (ti === 0 ? -1 : ti === yTicks.length - 1 ? 6 : 3)));
+        al.textContent = page10FormatDurationMs(tick.ms).slice(0, 5);
+      }
     });
 
     const dots = page10TrendChart.querySelectorAll('.page10-trend-dot');
     const hits = page10TrendChart.querySelectorAll('.page10-trend-hit');
     const valueLabels = page10TrendChart.querySelectorAll('.page10-trend-value-label');
-    const pulse = page10TrendChart.querySelector('.page10-trend-pulse');
 
     points.forEach((pt, i) => {
       const dot = dots[i];
@@ -41561,23 +42114,14 @@
       if (hit) {
         hit.setAttribute('cx', String(pt.x));
         hit.setAttribute('cy', String(pt.y));
-        const hitDayLabel = days[i].key === todayKeyForHit ? 'Bugün' : page10TrendShortDate(days[i].date);
+        const hitDayLabel = page10TrendTooltipLabel(days[i]);
         hit.setAttribute('aria-label', `${hitDayLabel}: ${page10FormatDurationMs(values[i])}`);
       }
 
       if (showValueLabels && valueLabels[i]) {
         valueLabels[i].setAttribute('x', String(pt.x));
-        valueLabels[i].setAttribute('y', String(Math.max(9, pt.y - 9)));
+        valueLabels[i].setAttribute('y', String(Math.max(9, pt.y - 10)));
         valueLabels[i].textContent = page10FormatDurationMs(values[i]).slice(0, 5);
-      }
-
-      if (i === points.length - 1 && pulse) {
-        pulse.setAttribute('cx', String(pt.x));
-        pulse.setAttribute('cy', String(pt.y));
-        const pulseColor = values.length > 1
-          ? (values[i] > values[i - 1] ? '#00e6a0' : (values[i] < values[i - 1] ? '#ff3d68' : '#ff90e8'))
-          : '#ff90e8';
-        pulse.setAttribute('fill', pulseColor);
       }
     });
 
@@ -41594,7 +42138,16 @@
     const { start, end } = page10GetRangeBounds();
     const days = page10BuildDaysList(start, end).slice().reverse();
 
-    const total = days.reduce((sum, day) => sum + day.ms, 0);
+    // "day.ms" (stopwatchLogs'tan gelen ham gün toplamı) ile ders bazlı
+    // kayıtların (stopwatchSubjectLogs) toplamı senkron dışı kalmışsa, bu
+    // üstteki büyük TOPLAM SÜRE sayısı da Ders Dağılımı kartındaki TOPLAM
+    // ile aynı, tutarlı (ve daha güvenilir) değeri göstersin diye aynı
+    // page10SubjectBreakdownForDay üzerinden hesaplanan effectiveDayTotalMs
+    // kullanılıyor (bkz. o fonksiyondaki açıklama).
+    const total = days.reduce((sum, day) => {
+      const { effectiveDayTotalMs } = page10SubjectBreakdownForDay(day.key, day.ms);
+      return sum + effectiveDayTotalMs;
+    }, 0);
     page10SummaryTotal.textContent = page10FormatDurationMs(total);
     page10RangeLabel.textContent = page10RangeLabelText();
     page10SummaryHint.textContent = page10Range === 'day'
