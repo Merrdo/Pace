@@ -1345,15 +1345,11 @@
     90% { transform: translateX(1px); }
   }
 
-  /* Seç modu açılınca çubuğun içeriği değişir; eskiden burada ayrıca kısa
-     bir "titreme" (navQhavuzShake) vardı ama bu, .nav-action'ların zaten
-     sahip olduğu solma + kayma geçişini bastırıp üstüne binince, Seç'e
-     basınca "geçiş animasyonu yok" hissi veriyordu. Masaüstü/yanal panel
-     sürümünde titreme zaten kapalıydı (bkz. "Seç modundaki titreme yok");
-     aynı sadelik telefonda da uygulanıp tek, net geçiş (solma + kayma)
-     görünür kalsın diye titreme burada da kapatıldı. */
+  /* Seç'e basınca çubuk kısa bir titreme yapıp içeriği (Geri/Görsel Ekle/
+     Seç -> Vazgeç/Test/Paket) değiştirir; JS (setQhavuzSelectMode) bu
+     sınıfı yalnızca seçim modu AÇILIRKEN ekleyip ~480ms sonra kaldırır. */
   .wrapper.is-shaking {
-    animation: none;
+    animation: navQhavuzShake 0.42s ease;
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -20762,7 +20758,8 @@
   }
 
   /* Hareketsiz alt bar: çark dönmez; Soru Havuzu moduna girip çıkarken
-     ikonlar/eylemler kaymaz (sadece solup belirir); Seç modundaki titreme yok. */
+     ikonlar/eylemler kaymaz (sadece solup belirir); Seç'e basınca da
+     mobil sürümdekiyle aynı kısa titreme oynar. */
   .nav-input[value="page-settings"]:checked + .nav-btn .nav-icon-gear {
     animation: none;
   }
@@ -20773,7 +20770,7 @@
   }
 
   .wrapper.is-shaking {
-    animation: none;
+    animation: navQhavuzShake 0.42s ease;
   }
 
   /* ---- Soru Havuzu modu eylemleri: aynı zeminsiz dil ---- */
