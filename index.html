@@ -6963,30 +6963,17 @@
     margin: 0;
   }
 
-  /* "Gündelik" başlığı artık düz metin değil, Kronometre başlığıyla
-     (bkz. svg.stopwatch-title) aynı dolgun/marka kimliğini taşıyan bir
-     SVG çizim. viewBox oranı sabit kaldığı için genişliği (width)
-     media query'lerde değiştirmek, içindeki yazıyı da orantılı büyütüp
-     küçültüyor; ayrı bir font-size yönetmeye gerek kalmıyor. */
-  .page8-titlebar svg.page8-title-svg {
-    display: block;
-    width: clamp(136px, 37vw, 187px);
-    height: auto;
-    overflow: visible;
-    color: var(--theme-text, #fff);
-    transition: color 0.5s ease;
-  }
-
-  .page8-titlebar svg.page8-title-svg text {
+  /* "Gündelik" başlığı düz metin (h1) olarak yazılır; font ölçeği eskiden
+     SVG viewBox oranından geliyordu, artık doğrudan clamp() ile aynı
+     görsel boyut korunarak font-size üzerinden yönetiliyor. */
+  .page8-titlebar h1 {
     font-family: "Baloo 2", "Space Grotesk", sans-serif;
     font-weight: 600;
-    font-size: 34px;
+    font-size: clamp(26px, 7.07vw, 35.7px);
     letter-spacing: -0.01em;
-    fill: currentColor;
-    paint-order: stroke fill;
-    stroke: currentColor;
-    stroke-width: 0.2px;
-    stroke-linejoin: round;
+    color: var(--theme-text, #fff);
+    transition: color 0.5s ease;
+    -webkit-text-stroke: 0.006em currentColor;
   }
 
   /* ---- Düzenle kalemi ----
@@ -12444,32 +12431,17 @@
     margin: 0;
   }
 
-  /* "Denemelerim" başlığı artık düz metin değil, Kronometre/Gündelik/Soru
-     Havuzu/Soru Takibi başlıklarıyla (bkz. svg.stopwatch-title,
-     svg.page8-title-svg, svg.qhavuz-title-svg, svg.page9-title-svg) aynı
-     dolgun/marka kimliğini taşıyan bir SVG çizim. viewBox oranı sabit
-     kaldığı için genişliği (width) media query'lerde değiştirmek,
-     içindeki yazıyı da orantılı büyütüp küçültüyor; ayrı bir font-size
-     yönetmeye gerek kalmıyor. */
-  .page11-header-top svg.page11-title-svg {
-    display: block;
-    width: clamp(160px, 45vw, 214px);
-    height: auto;
-    overflow: visible;
-    color: var(--theme-text, #fff);
-    transition: color 0.5s ease;
-  }
-
-  .page11-header-top svg.page11-title-svg text {
+  /* "Denemelerim" başlığı düz metin (h1) olarak yazılır; font ölçeği
+     eskiden SVG viewBox oranından geliyordu, artık doğrudan clamp() ile
+     aynı görsel boyut korunarak font-size üzerinden yönetiliyor. */
+  .page11-header-top h1.page11-title {
     font-family: "Baloo 2", "Space Grotesk", sans-serif;
     font-weight: 600;
-    font-size: 34px;
+    font-size: clamp(21.76px, 6.12vw, 29.1px);
     letter-spacing: -0.01em;
-    fill: currentColor;
-    paint-order: stroke fill;
-    stroke: currentColor;
-    stroke-width: 0.2px;
-    stroke-linejoin: round;
+    color: var(--theme-text, #fff);
+    transition: color 0.5s ease;
+    -webkit-text-stroke: 0.006em currentColor;
   }
 
   /* Düzenle butonunun yanına eklenen "Analizlerim" ikon butonuyla aynı
@@ -14324,6 +14296,19 @@
     width: 100%;
   }
 
+  /* Sayfa 5'i (Kronometre/Sayaç) artık dikeyde tam ortalamak yerine
+     üste hizalıyoruz: eskiden .page'in align-items:center kuralı
+     yüzünden başlık+kart bloğu ekranın tam ortasında, altında/üstünde
+     büyük boş alanlarla kalıyordu (küçük ve "kaybolmuş" gibi
+     görünüyordu). Başlığı üste çekip kartın kendi doğal boyutuyla
+     hemen altında oturmasını sağlıyoruz; tablet media query'sindeki
+     (min-width:768px) aynı kural burada zaten vardı, artık telefonda
+     da tutarlı şekilde uygulanıyor. */
+  #page-5.page {
+    align-items: flex-start;
+    padding-top: calc(40px + env(safe-area-inset-top));
+  }
+
   /* Kronometre <-> Sayaç (geri sayım) geçişini bir kart çevirme (flip)
      animasyonuyla yapan sahne. Perspektif burada, dönen katman (inner)
      ise bunun içinde tanımlanır; gizli başlık butonuna dokununca JS bu
@@ -14463,33 +14448,22 @@
     top: 0.09rem;
   }
 
-  /* "Kronometre" başlığı artık düz metin değil, Pace logosuyla aynı
-     dolgun/marka kimliğini taşıyan bir SVG çizim (bkz. .app-logo). Sadece
-     bir tık daha az kalın: daha düşük font ağırlığı ve çok daha ince bir
-     kontur kullanıyor. viewBox oranı sabit kaldığı için genişliği (width)
-     media query'lerde değiştirmek, içindeki yazıyı da orantılı büyütüp
-     küçültüyor; ayrı bir font-size yönetmeye gerek kalmıyor. */
-  svg.stopwatch-title {
-    display: block;
-    width: 146px;
-    height: auto;
-    overflow: visible;
-    color: var(--theme-text, #f2f2f7);
-    transition: color 0.5s ease;
-    position: relative;
-    top: 0.09rem;
-  }
-
-  svg.stopwatch-title text {
-    font-family: "Baloo 2", "Space Grotesk", sans-serif;
+  /* "Kronometre" başlığı eskiden ayrı bir SVG çiziminde (font-weight:600,
+     34px, 0.2px ince kontur) yazılıyordu; düz metne çevrilirken "Zamanlayıcı"
+     ile aynı .stopwatch-title class'ı paylaşıldığı için yanlışlıkla onun
+     kalınlığını (800) ve boyutunu (1.22rem) almıştı. Burada SADECE
+     Kronometre örneğini (#stopwatchPage içindeki), eski SVG'nin gerçek
+     render boyutuna (34 * 146/210 ≈ 23.64px) ve ağırlığına (600) geri
+     döndürüyoruz; Zamanlayıcı'nın kendi h1'i (yukarıdaki genel kural)
+     hiç etkilenmiyor. -webkit-text-stroke, SVG'deki ince konturun (0.2px
+     stroke-width, 34px font-size → oranı 0.2/34) birebir karşılığı: em
+     birimiyle yazıldığı için font-size her nerede değişirse (mobil/masaüstü
+     clamp'leri) kontur kalınlığı da orantılı kalır, ayrıca tanımlamaya
+     gerek kalmaz. */
+  #stopwatchPage h1.stopwatch-title {
     font-weight: 600;
-    font-size: 34px;
-    letter-spacing: -0.01em;
-    fill: currentColor;
-    paint-order: stroke fill;
-    stroke: currentColor;
-    stroke-width: 0.2px;
-    stroke-linejoin: round;
+    font-size: 1.48rem;
+    -webkit-text-stroke: 0.006em currentColor;
   }
 
   /* Başlık ve Geçmiş butonunu aynı üst satırda tutan satır: başlık solda,
@@ -14541,12 +14515,12 @@
   }
 
   .stopwatch-time {
-    font-size: 2.5rem;
+    font-size: 3.4rem;
     letter-spacing: 0.01em;
   }
 
   .stopwatch-centis {
-    font-size: 1.3rem;
+    font-size: 1.75rem;
     opacity: 0.55;
     margin-left: 0.1rem;
   }
@@ -19059,41 +19033,18 @@
     gap: inherit;
   }
 
-  .settings-title {
+  h1.settings-title {
     display: flex;
     justify-content: center;
     width: 100%;
     margin: 0;
     color: var(--theme-text, #f2f2f7);
     transition: color 0.5s ease;
-  }
-
-  /* "Ayarlar" başlığı artık düz metin değil, Kronometre/Gündelik/Soru
-     Havuzu/Soru Takibi/Denemelerim başlıklarıyla (bkz. svg.stopwatch-title,
-     svg.page8-title-svg, svg.qhavuz-title-svg, svg.page9-title-svg,
-     svg.page11-title-svg) aynı dolgun/marka kimliğini taşıyan bir SVG
-     çizim. viewBox oranı sabit kaldığı için genişliği (width) media
-     query'lerde değiştirmek, içindeki yazıyı da orantılı büyütüp
-     küçültüyor; ayrı bir font-size yönetmeye gerek kalmıyor. */
-  .settings-title svg.settings-title-svg {
-    display: block;
-    width: clamp(150px, 42vw, 195px);
-    height: auto;
-    overflow: visible;
-    color: inherit;
-    transition: color 0.5s ease;
-  }
-
-  .settings-title svg.settings-title-svg text {
     font-family: "Baloo 2", "Space Grotesk", sans-serif;
     font-weight: 600;
-    font-size: 34px;
+    font-size: clamp(31px, 8.66vw, 40px);
     letter-spacing: -0.01em;
-    fill: currentColor;
-    paint-order: stroke fill;
-    stroke: currentColor;
-    stroke-width: 0.2px;
-    stroke-linejoin: round;
+    -webkit-text-stroke: 0.006em currentColor;
   }
 
   .settings-section {
@@ -19770,36 +19721,12 @@
       padding: calc(32px + env(safe-area-inset-top)) 40px 0.6rem;
     }
 
-    .settings-title {
+    h1.settings-title {
       width: 100%;
       max-width: 1040px;
       margin: 0 auto;
       justify-content: flex-start;
-    }
-
-    .settings-title svg.settings-title-svg {
-      width: clamp(195px, 9vw + 150px, 275px);
-    }
-
-    /* "Ayarlar" başlığı SVG içinde text-anchor="middle" ile ortalanmış
-       çiziliyor (mobildeki ortalı görünüm için); bu da viewBox'ın sol
-       tarafında boşluk bırakıp yazıyı kartların sol kenarına göre sağa
-       kaymış gösteriyordu. Geniş ekranda başlık artık sola yaslı
-       aktığından, metni de viewBox'ın sol kenarına yaslıyoruz ki "Ayarlar"
-       yazısı tam olarak aşağıdaki kartlarla (.settings-page) aynı sol
-       hizada dursun. */
-    .settings-title svg.settings-title-svg text {
-      text-anchor: start;
-      /* NOT: SVG <text> öğelerinde CSS "x" özelliği (Chromium'da) metnin
-         asıl konumunu etkilemiyor; öğe hâlâ HTML'deki x="50%" niteliğini
-         (viewBox'ın ortası, 165/2=82.5 birim) kullanıyor. text-anchor:start
-         ile birlikte bu, metnin SOL kenarını viewBox'ın ortasına
-         (kartların sol kenarından belirgin şekilde sağa kaymış) oturtuyordu
-         — ekran görüntüsünde görülen kayma tam olarak bu. "transform"
-         özelliği ise metinde güvenilir şekilde çalıştığından, anchor
-         noktasını 82.5 birim (viewBox genişliğinin yarısı) sola kaydırarak
-         metnin sol kenarını viewBox'ın gerçek sol kenarına (x=0) taşıyoruz. */
-      transform: translateX(-82.5px);
+      font-size: clamp(40.18px, 1.854vw + 30.91px, 56.67px);
     }
 
     /* Ayar sayfasına yeni bölümler eklendikçe (ör. "Gündelik") içerik geniş
@@ -20351,8 +20278,8 @@
       gap: 0.9rem;
     }
 
-    .page8-titlebar svg.page8-title-svg {
-      width: clamp(186px, 8.5vw + 161px, 254px);
+    .page8-titlebar h1 {
+      font-size: clamp(35.5px, 1.62vw + 30.75px, 48.5px);
     }
 
     .page8-tear-pencil,
@@ -21965,8 +21892,8 @@
       width: auto;
     }
 
-    .page11-header-top svg.page11-title-svg {
-      width: clamp(214px, 10vw + 165px, 300px);
+    .page11-header-top h1.page11-title {
+      font-size: clamp(29.1px, 1.36vw + 22.44px, 40.8px);
     }
 
     .page11-subtitle {
@@ -22348,30 +22275,11 @@
       letter-spacing: -0.01em;
     }
 
-    /* SVG çizim olduğu için sadece kapsayıcı genişliği büyütmek yeterli:
-       viewBox oranı sabit olduğundan yazı da orantılı olarak büyüyor.
-       viewBox 210 birim genişlikte ama "Kronometre" metni bunun tamamını
-       doldurmuyor (sağda boşluk kalıyor); bu yüzden container'ı metnin
-       gerçek bittiği yere göre daralttık ki yanındaki ders etiketi
-       başlığa görsel olarak yapışık dursun, boşlukta kalmasın. */
-    svg.stopwatch-title {
-      width: clamp(140px, 2.8vw + 122px, 176px);
-    }
-
-    svg.stopwatch-title text {
-      font-family: "Baloo 2", "Space Grotesk", sans-serif;
-    }
-
-    /* SVG'nin viewBox'ı (210 birim) "Kronometre" metninin gerçekte
-       kapladığından biraz daha geniş; bu yüzden SVG'nin sağında görünmez
-       bir boşluk kalıyor ve ortak gap'e rağmen etiket olması gerekenden
-       uzak duruyor. h1 ile aynı görsel mesafeyi tutturmak için bu görünmez
-       payı burada negatif margin ile telafi ediyoruz (yalnızca Kronometre
-       etiketi; Zamanlayıcı'nın h1'i bu sorunu yaşamıyor). */
-    #stopwatchSubjectTag {
-      margin-left: -1.6rem;
-      position: relative;
-      top: 0.12rem;
+    /* Kronometre'nin masaüstündeki eski SVG boyutu: width clamp(140px,
+       2.8vw+122px, 176px), viewBox 210 → font-size = 34 * width/210. */
+    #stopwatchPage h1.stopwatch-title {
+      font-weight: 600;
+      font-size: clamp(22.67px, 0.4533vw + 19.75px, 28.5px);
     }
 
     .stopwatch-subject-tag {
@@ -26384,9 +26292,7 @@
           <!-- Başlık solda, Geçmiş butonu sağda: aynı üst satırda yan yana. -->
           <div class="stopwatch-header">
             <div class="stopwatch-title-wrap">
-              <svg class="stopwatch-title" viewBox="0 0 210 46" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Kronometre">
-                <text x="1" y="35">Kronometre</text>
-              </svg>
+              <h1 class="stopwatch-title">Kronometre</h1>
               <!-- Seçili ders etiketi: "Branşlarım" pop-up'ından bir ders
                    seçildiğinde burada, kendi renginde ve eğik punto ile
                    görünür; kronometre verileri bu etikete kaydedilir. -->
@@ -26801,9 +26707,7 @@
   <!-- Sekme 7: Ayarlar sayfası -->
   <section class="page" id="page-settings">
     <div class="settings-hero">
-      <h1 class="settings-title"><svg class="settings-title-svg" viewBox="0 0 165 46" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Ayarlar">
-        <text x="50%" y="35" text-anchor="middle">Ayarlar</text>
-      </svg></h1>
+      <h1 class="settings-title">Ayarlar</h1>
     </div>
 
     <div class="settings-scroll" id="settingsScroll">
@@ -27146,9 +27050,7 @@
   <section class="page" id="page-8">
     <div class="page8-header">
       <div class="page8-titlebar">
-        <h1><svg class="page8-title-svg" viewBox="0 0 178 46" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Gündelik">
-          <text x="1" y="35">Gündelik</text>
-        </svg></h1>
+        <h1>Gündelik</h1>
         <button type="button" class="page8-tear-pencil" id="page8EditBtn" aria-label="Düzenle" aria-pressed="false">
           <svg viewBox="0 0 24 24" width="19" height="19" fill="currentColor">
             <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
@@ -27378,9 +27280,7 @@
     <div class="page11-wrap">
       <div class="page11-header">
         <div class="page11-header-top">
-          <h1 class="page11-title"><svg class="page11-title-svg" viewBox="0 0 250 46" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Denemelerim">
-            <text x="1" y="35">Denemelerim</text>
-          </svg></h1>
+          <h1 class="page11-title">Denemelerim</h1>
           <div class="page11-header-actions">
             <button type="button" class="add-task-btn edit-task-btn" id="page11AnalyticsBtn" aria-label="Analizlerim">
               <svg viewBox="0 0 24 24" width="16" height="16">
