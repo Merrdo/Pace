@@ -1175,6 +1175,19 @@
     margin-right: 4px;
   }
 
+  /* "Görsel Ekle" artık yalnızca basılı tutulduğunda değil, her zaman
+     yumuşak gri bir hap zemin üzerinde durur (diğer iki eylemden -Geri/
+     Seç- görsel olarak ayrışıp öne çıksın diye); basılırken bu zemin
+     biraz koyulaşarak dokunma geri bildirimi verir. */
+  .wrapper .nav-action-add {
+    background-color: rgba(128, 128, 128, 0.2);
+    border-radius: 16px;
+  }
+
+  .wrapper .nav-action-add:active {
+    background-color: rgba(128, 128, 128, 0.32);
+  }
+
   .wrapper .nav-action-add,
   .wrapper .nav-action-test {
     grid-column: 3 / 6;
@@ -1332,8 +1345,15 @@
     90% { transform: translateX(1px); }
   }
 
+  /* Seç modu açılınca çubuğun içeriği değişir; eskiden burada ayrıca kısa
+     bir "titreme" (navQhavuzShake) vardı ama bu, .nav-action'ların zaten
+     sahip olduğu solma + kayma geçişini bastırıp üstüne binince, Seç'e
+     basınca "geçiş animasyonu yok" hissi veriyordu. Masaüstü/yanal panel
+     sürümünde titreme zaten kapalıydı (bkz. "Seç modundaki titreme yok");
+     aynı sadelik telefonda da uygulanıp tek, net geçiş (solma + kayma)
+     görünür kalsın diye titreme burada da kapatıldı. */
   .wrapper.is-shaking {
-    animation: navQhavuzShake 0.42s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+    animation: none;
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -18460,7 +18480,10 @@
       position: absolute;
       left: calc(24px + 0.3rem);
       right: calc(24px + 0.3rem);
-      bottom: calc(env(safe-area-inset-bottom, 0px) + 96px + 0.9rem);
+      /* Geri Sayım/Soru Takibi kartıyla AYNI oranda (bkz. .home-flip'in
+         translateY'si) yukarı kayması için "bottom" değerine aynı miktar
+         eklenir. */
+      bottom: calc(env(safe-area-inset-bottom, 0px) + 96px + 0.9rem + clamp(1rem, 3dvh, 2rem));
       z-index: 2;
       display: flex;
       align-items: center;
@@ -18528,17 +18551,34 @@
       /* Widget'ı "Pace" logosuna doğru yukarı çeker. transform yerleşimi
          değiştirmediği için satır sığdırma ölçümü ve diğer öğeler etkilenmez. */
       transform: translateY(calc(-1 * clamp(2.5rem, 7dvh, 4.5rem)));
+      /* "Yapıldı" kutlaması (halka dalgaları + parçacıklar + parıltı) işaretçinin
+         dışına taşar; widget'ın kenarları (sol kenar ve üst satırın üstü)
+         bunu kare/dikdörtgen bir alanda kesiyordu. Kartsız/şeffaf olduğu için
+         kırpmaya gerek yok: efekt serbestçe yayılır. */
+      overflow: visible;
     }
 
     .home-relax-task-row {
       min-height: 3.6rem;
       padding: 0.5rem 0.3rem;
       gap: 1.1rem;
+      overflow: visible;
     }
 
+    /* Kutlama oynayan satır, altındaki satırların üstünde kalsın (parçacıklar
+       alttaki satırın arkasında kesilmesin). */
+    .home-relax-task-row:has(.relax-task-burst) {
+      z-index: 2;
+    }
+
+    /* Ay (boş durum) alanı, görev işaretçisiyle (.relax-task-marker, 3.6rem)
+       AYNI kutu boyutunda olmalı. Eskiden 2.2rem'di; görevler bitip "Rahatla"
+       göründüğünde soldaki alan 1.4rem daralıyor, yazı ve dikey çizgi sola
+       kayıyordu. Boyut aynı olunca hiçbir şey yerinden oynamaz; ikon kutunun
+       ortasında durur. */
     .home-relax-widget .home-relax-widget-moon {
-      width: 2.2rem;
-      height: 2.2rem;
+      width: 3.6rem;
+      height: 3.6rem;
       box-shadow: none;
       color: var(--accent-color, #ff9f43);
     }
@@ -18615,6 +18655,13 @@
     }
 
     /* --- Kart arka yüzü: sayaç --- */
+    /* Geri Sayım + Soru Takibi kartını (ön/arka yüz birlikte) hafifçe
+       yukarı çeker; "Rahatla" widget'ındaki translateY ile aynı mantık
+       (yerleşimi değiştirmez, sadece görsel kaydırma). */
+    .home-flip {
+      transform: translateY(calc(-1 * clamp(1rem, 3dvh, 2rem)));
+    }
+
     .home-flip-cd {
       align-items: flex-start;
       gap: 0.9rem;
@@ -28878,9 +28925,21 @@
       // orta 3 kolona yerleştirsin.
       navSlider.style.transform = '';
     } else {
-      // Moddan çıkınca gösterge, işaretli sekmenin altına geri kayar.
+      // Moddan çıkınca gösterge ARTIK animasyonla kaymaz: eskiden orta
+      // (Soru Havuzu) bölgesinden işaretli sekmeye doğru yumuşakça
+      // kayıyordu, ama bu kayma tam Soru Havuzu ikonunun üzerinden
+      // başladığından, altındaki siyah pil sekmeler arasından geçerken
+      // Soru Havuzu ikonu sanki sola/sağa kayıyormuş gibi görünüyordu.
+      // Konum artık transition kapatılıp doğrudan hedef sekmeye
+      // "atlanarak" (bir sonraki karede transition geri açılıp normal
+      // sekme geçişleri eskisi gibi kaymaya devam eder) ayarlanır.
       const checked = document.querySelector('.nav-input:checked');
-      if (checked) moveSlider(checked);
+      if (checked) {
+        navSlider.style.transition = 'none';
+        moveSlider(checked);
+        void navSlider.offsetWidth; // reflow: transition'sız konum kesinleşsin
+        navSlider.style.transition = '';
+      }
     }
   };
 
@@ -29519,6 +29578,14 @@
     });
     observer.observe(backdrop, { attributes: true, attributeFilter: ['class'] });
   };
+  // Başka <script> bloklarında (ör. Mini Oyunlar sürpriz pop-up'ı gibi
+  // sonradan/dinamik olarak DOM'a eklenen pop-up'lar) da bu fonksiyona
+  // erişilebilsin diye window'a da bağlanır. Yeni bir pop-up eklenince tek
+  // tek burada listelemek yerine, o pop-up'ın açılış kodunda backdrop/overlay
+  // elementi oluşturulur oluşturulmaz
+  // "window.watchBackdropForThemeColor?.(elementiniz)" çağrısı yeterlidir;
+  // üst güvenli alan rengi otomatik eşlenir.
+  window.watchBackdropForThemeColor = watchBackdropForThemeColor;
   // Uygulamadaki tüm pop-up'lar aynı backdrop sınıfını paylaşmıyor: Soru
   // Ekle gibi pop-up'lar .page9-add-backdrop kullanırken, tekli soru
   // görüntüleme/galeri .qhavuz-lightbox-backdrop, onay/tarih/isim gibi
@@ -29837,6 +29904,12 @@
         '</div>';
       document.body.appendChild(overlay);
       requestAnimationFrame(() => overlay.classList.add('is-open'));
+      // Üst güvenli alan (saat/pil şeridi) rengi, açık olan diğer tüm
+      // pop-up'larda olduğu gibi bu overlay'in kendi koyu tonuna göre de
+      // otomatik eşlensin (bkz. watchBackdropForThemeColor).
+      if (typeof window.watchBackdropForThemeColor === 'function') {
+        window.watchBackdropForThemeColor(overlay);
+      }
 
       const close = (after) => {
         overlay.classList.remove('is-open');
