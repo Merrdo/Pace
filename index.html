@@ -7778,33 +7778,6 @@
     margin: 0;
   }
 
-  /* "Soru Takibi" başlığı artık düz metin değil, Kronometre/Gündelik/Soru
-     Havuzu başlıklarıyla (bkz. svg.stopwatch-title, svg.page8-title-svg,
-     svg.qhavuz-title-svg) aynı dolgun/marka kimliğini taşıyan bir SVG
-     çizim. viewBox oranı sabit kaldığı için genişliği (width) media
-     query'lerde değiştirmek, içindeki yazıyı da orantılı büyütüp
-     küçültüyor; ayrı bir font-size yönetmeye gerek kalmıyor. */
-  .page9-header-top svg.page9-title-svg {
-    display: block;
-    width: clamp(150px, 42vw, 195px);
-    height: auto;
-    overflow: visible;
-    color: var(--theme-text, #fff);
-    transition: color 0.5s ease;
-  }
-
-  .page9-header-top svg.page9-title-svg text {
-    font-family: "Baloo 2", "Space Grotesk", sans-serif;
-    font-weight: 600;
-    font-size: 34px;
-    letter-spacing: -0.01em;
-    fill: currentColor;
-    paint-order: stroke fill;
-    stroke: currentColor;
-    stroke-width: 0.2px;
-    stroke-linejoin: round;
-  }
-
   .page9-subtitle {
     font-family: "Space Grotesk", sans-serif;
     font-weight: 600;
@@ -17291,7 +17264,20 @@
     position: relative;
     top: var(--cd-shift, 0em);
     display: block;
-    transition: transform 0.7s var(--cd-ease);
+    /* NOT: burada bilerek --cd-ease (expo tipi, "sonsuza kadar" yavaşlayıp
+       süre bitince kesilen bir eğri) KULLANMIYORUZ. O eğriyle hane, gözle
+       görünmeyecek kadar yavaşladığı an durmuş gibi algılanıyor, sonra
+       geçiş süresi dolunca kalan birkaç piksel birden yerine atlayıp "tık"
+       hissi veriyordu. Bunun yerine gerçekten sıfır hıza inerek duran bir
+       eğri (--cd-reel-ease) kullanıyoruz; son an ayrı bir sıçrama olmuyor. */
+    --cd-reel-ease: cubic-bezier(0.22, 1, 0.36, 1);
+    transition: transform 0.7s var(--cd-reel-ease);
+    /* Tarayıcının şeridi ayrı bir katmanda (GPU) canlandırmasını garantiler.
+       Bu olmadan, küçük ekranda (kısa kayma mesafesi) geçişin son karesi
+       bazen ana iş parçacığında senkron biçimde çizilip az önce anlatılan
+       "tık" hissini büyütüyordu; büyük ekranda mesafe uzun olduğu için aynı
+       gecikme fark edilmiyordu. */
+    will-change: transform;
   }
 
   .cd-reel-strip > i {
@@ -18559,7 +18545,10 @@
       width: 3.6rem;
       height: 3.6rem;
       box-shadow: none;
-      color: var(--accent-color, #ff9f43);
+      /* Ay ikonu artık vurgu renginden bağımsız, hep aynı sıcak turuncu
+         tonunda: kullanıcı hangi vurgu rengini seçerse seçsin değişmesin
+         diye sabit bir renk kullanılıyor. */
+      color: #f1a356;
     }
 
     .home-relax-widget-moon svg { width: 26px; height: 26px; }
@@ -22671,10 +22660,6 @@
     .page9-header-top {
       width: auto;
       gap: 1rem;
-    }
-
-    .page9-header-top svg.page9-title-svg {
-      width: clamp(195px, 9vw + 150px, 275px);
     }
 
     .page9-subtitle {
@@ -32766,8 +32751,14 @@
     return { el, strip, idx: -1, timer: 0 };
   };
 
-  // Geçiş olmadan doğrudan konuma atlar (görünen hane değişmez).
+  // Geçiş olmadan doğrudan konuma atlar (görünen hane değişmez). Bekleyen
+  // bir "geçiş bitti" düzeltmesi varsa (aşağıdaki cdReelMoveTo) önce onu
+  // iptal ediyoruz; yoksa geçiş gerçekten bitmeden tetiklenip yarım kalan
+  // animasyonun üstüne sert bir sıçrama bindirebiliyordu (kullanıcının
+  // fark ettiği "tık tık" sertliği tam olarak buydu).
   const cdReelJump = (r, idx) => {
+    clearTimeout(r.timer);
+    if (r.onSettle) { r.strip.removeEventListener('transitionend', r.onSettle); r.onSettle = null; }
     r.idx = idx;
     r.strip.style.transition = 'none';
     r.strip.style.transform = `translateY(${(-idx * CD_LH).toFixed(3)}em)`;
@@ -32777,13 +32768,32 @@
 
   const cdReelMoveTo = (r, idx, dur) => {
     clearTimeout(r.timer);
+    if (r.onSettle) { r.strip.removeEventListener('transitionend', r.onSettle); r.onSettle = null; }
     r.idx = idx;
     r.strip.style.transitionDuration = `${dur}ms`;
     r.strip.style.transform = `translateY(${(-idx * CD_LH).toFixed(3)}em)`;
-    // Geçiş bitince şerit çok yukarı çıktıysa aynı haneyle başa al.
-    r.timer = setTimeout(() => {
-      if (r.idx < 10) cdReelJump(r, r.idx + 10);
-    }, dur + 60);
+    // Şerit çok yukarı çıktıysa aynı haneyle başa alma düzeltmesini, sabit
+    // bir süre tahmin etmek yerine geçiş GERÇEKTEN bittiğinde (transitionend)
+    // uyguluyoruz; böylece düzeltme hiçbir zaman devam eden bir kaymanın
+    // ortasına denk gelip sert bir sıçrama gibi görünmüyor. setTimeout,
+    // sekme arka plandayken transitionend hiç tetiklenmezse diye yalnızca
+    // bir yedek olarak duruyor.
+    const settle = () => {
+      clearTimeout(r.timer);
+      if (r.onSettle) { r.strip.removeEventListener('transitionend', r.onSettle); r.onSettle = null; }
+      if (r.idx >= 10) return;
+      // Düzeltmeyi (arkadan tekrar üste alma) geçiş bitince HEMEN değil,
+      // tarayıcı yerleşmiş kareyi ekrana çizdikten sonraki karede yapıyoruz.
+      // Aksi halde bazı cihazlarda (özellikle mesafenin kısa olduğu küçük
+      // ekranda) düzeltme, animasyonun son karesiyle aynı ana denk gelip
+      // "sayı geldi + tık" ikisi tek bir sarsıntı gibi algılanabiliyordu.
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        if (r.idx < 10) cdReelJump(r, r.idx + 10);
+      }));
+    };
+    r.onSettle = (e) => { if (e.target === r.strip && e.propertyName === 'transform') settle(); };
+    r.strip.addEventListener('transitionend', r.onSettle);
+    r.timer = setTimeout(settle, dur + 150);
   };
 
   // Geri sayım adımı: haneyi en kısa yoldan (hep aşağı doğru) yeni değere getirir.
