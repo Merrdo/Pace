@@ -59,8 +59,13 @@
   html, body {
     height: 100%;
     width: 100%;
-    /* Pinch/iki parmakla yakınlaştırmayı ve çift dokunma zoom'unu engelle */
-    touch-action: pan-x pan-y;
+    /* Pinch/iki parmakla yakınlaştırmayı ve çift dokunma zoom'unu engelle.
+       Not: pan-x kasıtlı olarak YOK — sayfanın kendisinde yatay kaydırılacak
+       bir içerik yok; pan-x izni açık bırakılırsa bazı mobil tarayıcılar
+       (ör. Samsung Internet) bunu kenardan geri/ileri gitme (edge-swipe)
+       hareketiyle karıştırıp sayfayı yamuk/kaykılmış göstererek sürüklüyor. */
+    touch-action: pan-y;
+    overscroll-behavior-x: none;
     /* Sayfa yukarı/aşağı "esnek" (rubber-band / bounce) kaydırıldığında
        tarayıcının doküman sınırlarının dışını kendi varsayılan (body)
        rengiyle boyayıp altta/üstte çirkin bir şerit göstermesini engeller.
@@ -215,6 +220,15 @@
     transform: translateY(10px);
     transition: opacity 0.2s ease, transform 0.2s ease;
     pointer-events: none;
+    /* Her sayfa kendi iç dikey kaydırmasını (overflow-y:auto) kendi
+       yönetiyor; bu kutularda touch-action ayrı ayrı tanımlanmadığında
+       bazı mobil tarayıcılar (ör. Samsung Internet) bunu body'den miras
+       almak yerine "auto" (her yöne serbest) sayıp kenardan geri/ileri
+       gitme (yatay swipe) hareketini yeniden açıyordu — deneme detayı,
+       analizlerim vb. her .page bundan tek tek etkileniyordu. Kuralı
+       burada tek noktadan tanımlayınca tüm sayfalar için kalıcı çözülür. */
+    touch-action: pan-y;
+    overscroll-behavior-x: none;
   }
 
   .page.is-active {
@@ -12964,7 +12978,8 @@
     text-align: left;
     transform: translateY(14px) scale(0.96);
     opacity: 0;
-    transition: transform 0.26s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.22s ease;
+    transition: transform 0.26s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.22s ease,
+      background-color 0.32s ease, border-color 0.32s ease, box-shadow 0.32s ease;
     display: flex;
     flex-direction: column;
     gap: 0.9rem;
@@ -13008,6 +13023,80 @@
     border: 2.5px solid #000;
     border-radius: 0.7rem;
     padding: 0.55rem 0.7rem;
+  }
+
+  /* Yeni Deneme pop-up'ının başlık satırı: ikon rozeti + başlık + kapat
+     (×) butonu. Mobilde ikon ve kapat butonu display:none (aşağıda) —
+     bu satır mobilde sadece eski ".page11-modal-title" span'ini taşıyan
+     görünmez bir düzen kapsayıcısı, hiçbir görsel fark yaratmaz. Büyük
+     ekranda (bkz. #page11AddBackdrop @media bloğu) ikon ve kapat butonu
+     görünür olur. */
+  .page11-add-modal-header {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+  }
+
+  .page11-add-modal-icon,
+  .page11-add-modal-close {
+    display: none;
+  }
+
+  /* ---- "Deneme Ekle" kartının iki görünümü (form / takvim). İkisi de
+     aynı grid hücresinde (grid-area: 1 / 1) üst üste durur; bu yüzden
+     kartın satır yüksekliği DAİMA ikisinin en uzununa göre sabitlenir —
+     görünüm değişince kart hiç büyüyüp küçülmez, sadece içerik yatayda
+     kayarak yer değiştirir (form sola kayıp kaybolur, takvim sağdan
+     kayarak gelir; "Geri" ile tam tersi). #page11AddBackdrop.is-date-view
+     sınıfı JS tarafından (openPage11DatePicker/closePage11DatePicker)
+     eklenip çıkarılır. ---- */
+  .page11-add-panels {
+    position: relative;
+    display: grid;
+    overflow: hidden;
+  }
+
+  .page11-add-panel {
+    grid-area: 1 / 1;
+    min-width: 0;
+    transition: transform 0.36s cubic-bezier(0.32, 0.72, 0, 1), opacity 0.28s ease;
+    will-change: transform, opacity;
+  }
+
+  .page11-add-panel-form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+  }
+
+  .page11-add-panel-date {
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+    transform: translateX(100%);
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  #page11AddBackdrop.is-date-view .page11-add-panel-form {
+    transform: translateX(-100%);
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  #page11AddBackdrop.is-date-view .page11-add-panel-date {
+    transform: translateX(0);
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  /* Kart, takvim görünümüne geçince Sayfa 6'daki takvimle aynı koyu
+     yüzeye "döner" — genişlik/yükseklik/kenar payı (padding) hiç
+     değişmez, sadece renk teması geçiş yapar. */
+  #page11AddBackdrop.is-date-view .page11-modal-card {
+    background: #000;
+    border-color: #000;
+    box-shadow: 0 22px 48px -16px rgba(0, 0, 0, 0.55), 0 2px 8px 0 rgba(0, 0, 0, 0.3);
   }
 
   .page11-modal-actions {
@@ -13570,179 +13659,338 @@
     opacity: 0.55;
   }
 
-  /* Tarih takvimi kendi backdrop'unda, page11AddBackdrop'ın (z-index 40)
-     üstünde durur, böylece "Deneme Ekle" pop-up'ı açıkken bile ekranın
-     tam ortasında görünür. */
-  .page11-datepicker-backdrop {
-    z-index: 60;
-  }
-
+  /* Takvim artık ayrı bir pop-up/backdrop değil — "Deneme Ekle" kartının
+     içindeki ikinci görünüm (bkz. .page11-add-panel-date). Kendi
+     çerçeve/gölge/genişlik/pozisyonunu taşımıyor; bunları artık üstündeki
+     .page11-modal-card (sabit kart boyutu + kenar payı, takvime geçince
+     koyu temaya dönen arka plan) ve .page11-add-panels (yatay kayma
+     animasyonu) yönetiyor. Burada sadece Sayfa 6'daki büyük takvimle
+     paylaşılan renk değişkenleri, yazı tipi ve (geniş masaüstü kartının
+     ortasında oranı bozulmasın diye) kendi max-width'i kalıyor. Ay/gün
+     hesaplama mantığı ve JS render fonksiyonu Sayfa 6'nınkiyle aynı
+     desende yeniden yazıldı (dalga girişi, kayan seçim dairesi, ay
+     etiketi geçişi). */
   .page11-datepicker {
+    --theme-text: #f5f5f7;
+    --weekend-color: #ff6b81;
+    --cal-ease: cubic-bezier(0.16, 1, 0.3, 1);
+    --cal-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
     width: 100%;
     max-width: 300px;
-    box-sizing: border-box;
-    background: #fff;
-    border: 3px solid #000;
-    border-radius: 1.1em;
-    box-shadow: 6px 6px 0px 0px #000;
-    padding: 0.9rem 0.85rem 1rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.6rem;
-    transform: translateY(14px) scale(0.96);
-    opacity: 0;
-    transition: transform 0.26s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.22s ease;
-  }
-
-  .page11-datepicker-backdrop.is-open .page11-datepicker {
-    transform: translateY(0) scale(1);
-    opacity: 1;
+    margin: 0 auto;
+    font-family: "Baloo 2", "Space Grotesk", sans-serif;
   }
 
   .page11-datepicker-nav {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: 0.5rem;
+    gap: 0.4rem;
   }
 
-  .page11-datepicker-nav-btn {
+  /* "Geri": takvim görünümünden forma döner (Sayfa 11'in kendi ghost
+     buton dili — ay oklarıyla aynı boyut/etkileşim). */
+  .page11-datepicker-back-btn {
     flex-shrink: 0;
-    width: 1.9rem;
-    height: 1.9rem;
+    width: 1.7rem;
+    height: 1.7rem;
     display: flex;
     align-items: center;
     justify-content: center;
     padding: 0;
-    background-color: #f2f2f2;
-    border: 2.5px solid #000;
+    background-color: transparent;
+    border: none;
     border-radius: 50%;
-    box-shadow: 2px 2px 0px 0px #000;
-    color: #121212;
+    color: var(--theme-text);
     cursor: pointer;
-    transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+    transition: background-color 0.15s ease, transform 0.15s ease;
   }
 
-  .page11-datepicker-nav-btn:hover {
-    transform: translate(-1px, -1px);
-    box-shadow: 3px 3px 0px 0px #000;
+  @media (hover: hover) and (pointer: fine) {
+    .page11-datepicker-back-btn:hover {
+      background-color: rgba(255, 255, 255, 0.12);
+    }
+  }
+
+  .page11-datepicker-back-btn:active {
+    transform: scale(0.9);
+    background-color: rgba(255, 255, 255, 0.18);
+  }
+
+  /* "Eylül 2026": ay adı beyaz, yıl vurgu renginde — Sayfa 6'daki
+     .calendar-month-label ile aynı dil, küçültülmüş punto. Geri butonu
+     ile sağdaki nav-btns grubu arasında kalan boşluğu doldurup ortalanır. */
+  .page11-datepicker-month {
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 0.32rem;
+    flex: 1 1 auto;
+    min-width: 0;
+    font-weight: 700;
+    font-size: 1.02rem;
+    letter-spacing: -0.01em;
+    color: var(--theme-text);
+    text-transform: capitalize;
+  }
+
+  .page11-datepicker-month-year {
+    color: var(--accent-color, #ff90e8);
+  }
+
+  .page11-datepicker-nav-btns {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    flex-shrink: 0;
+  }
+
+  /* "Bugün" hapı: sadece görüntülenen ay/seçili gün bugünden uzaktayken
+     genişleyerek belirir — Sayfa 6'daki .calendar-today-btn ile aynı
+     davranış, küçültülmüş boyutta. */
+  .page11-datepicker-today-btn {
+    flex-shrink: 0;
+    height: 1.7rem;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    max-width: 0;
+    padding: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    opacity: 0;
+    transform: scale(0.85);
+    pointer-events: none;
+    background-color: rgba(255, 255, 255, 0.1);
+    border: none;
+    border-radius: 999px;
+    color: var(--theme-text);
+    font-family: "Baloo 2", "Space Grotesk", sans-serif;
+    font-weight: 700;
+    font-size: 0.66rem;
+    letter-spacing: 0.01em;
+    cursor: pointer;
+    transition:
+      max-width 0.45s var(--cal-ease),
+      padding 0.45s var(--cal-ease),
+      opacity 0.28s ease,
+      transform 0.45s var(--cal-spring),
+      background-color 0.18s ease;
+  }
+
+  .page11-datepicker-today-btn.is-visible {
+    max-width: 5rem;
+    padding: 0 0.6rem;
+    opacity: 1;
+    transform: scale(1);
+    pointer-events: auto;
+  }
+
+  .page11-datepicker-today-btn.is-visible:active {
+    transform: scale(0.94);
+    background-color: var(--accent-color, #ff90e8);
+    color: #16171b;
+  }
+
+  .page11-datepicker-today-dot {
+    flex-shrink: 0;
+    width: 0.4rem;
+    height: 0.4rem;
+    border-radius: 50%;
+    background-color: var(--accent-color, #ff90e8);
+  }
+
+  .page11-datepicker-today-btn.is-visible:active .page11-datepicker-today-dot {
+    background-color: #16171b;
+  }
+
+  /* Ay okları: çerçevesiz, hayalet — Sayfa 6'daki ghost buton dili. */
+  .page11-datepicker-nav-btn {
+    flex-shrink: 0;
+    width: 1.7rem;
+    height: 1.7rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    background-color: transparent;
+    border: none;
+    border-radius: 50%;
+    color: var(--accent-color, #ff90e8);
+    cursor: pointer;
+    transition: background-color 0.15s ease, transform 0.15s ease;
+  }
+
+  .page11-datepicker-nav-btn svg {
+    transition: transform 0.3s var(--cal-spring);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .page11-datepicker-nav-btn:hover {
+      background-color: rgba(255, 255, 255, 0.12);
+    }
   }
 
   .page11-datepicker-nav-btn:active,
   .page11-datepicker-nav-btn.is-pressed {
-    transform: translate(1px, 1px);
-    box-shadow: 1px 1px 0px 0px #000;
-    background-color: var(--accent-color, #ff90e8);
+    transform: scale(0.9);
+    background-color: rgba(255, 255, 255, 0.18);
   }
 
-  .page11-datepicker-month {
-    font-family: "Space Grotesk", sans-serif;
-    font-weight: 800;
-    font-size: 0.88rem;
-    color: #121212;
-    text-align: center;
-    text-transform: capitalize;
+  #page11DatePrevBtn:active svg {
+    transform: translateX(-2px);
+  }
+
+  #page11DateNextBtn:active svg {
+    transform: translateX(2px);
   }
 
   .page11-datepicker-weekdays {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    gap: 0.15rem;
   }
 
   .page11-datepicker-weekday {
     text-align: center;
-    font-family: "Archivo Expanded", "Space Grotesk", sans-serif;
-    font-weight: 700;
-    font-size: 0.56rem;
-    letter-spacing: 0.01em;
-    color: rgba(18, 18, 18, 0.45);
-    text-transform: uppercase;
+    font-family: "Baloo 2", "Space Grotesk", sans-serif;
+    font-weight: 600;
+    font-size: 0.6rem;
+    color: var(--theme-text);
+    opacity: 0.5;
   }
 
   .page11-datepicker-weekday.is-weekend {
-    color: rgba(217, 4, 41, 0.85);
+    color: var(--weekend-color);
+    opacity: 0.85;
   }
 
+  /* Gün ızgarası: her hücre geniş dokunma alanlı şeffaf bir düğme;
+     görünen daire .page11-datepicker-day-num'dır. Seçili günün dairesi
+     (.page11-datepicker-bubble) ızgarada tek bir eleman olarak durur ve
+     seçim değişince günler arasında kayar (Sayfa 6 ile birebir aynı
+     teknik, bkz. JS). */
   .page11-datepicker-grid {
+    position: relative;
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    gap: 0.2rem;
+    grid-auto-rows: minmax(2.35rem, 1fr);
+    /* Sağa/sola kaydırma jesti burada yakalanır (dikey sayfa kaydırmasıyla
+       karışmaması için yatay pan serbest bırakılır, dikey engellenir) —
+       Sayfa 6'daki büyük takvimle (.calendar-grid) aynı yöntem. */
+    touch-action: pan-y;
   }
 
   .page11-datepicker-day {
-    aspect-ratio: 1;
+    position: relative;
+    z-index: 1;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-family: "Space Grotesk", sans-serif;
-    font-weight: 700;
-    font-size: 0.72rem;
-    color: #121212;
-    background: transparent;
-    border-radius: 0.5em;
-    border: 2px solid transparent;
+    padding: 0;
+    background: none;
+    border: none;
     cursor: pointer;
-    transition: transform 0.15s ease, border-color 0.15s ease, background-color 0.15s ease, color 0.15s ease;
+    font-family: "Baloo 2", "Space Grotesk", sans-serif;
   }
 
-  .page11-datepicker-day:hover {
-    border-color: #000;
+  .page11-datepicker-day-num {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.75rem;
+    height: 1.75rem;
+    border-radius: 50%;
+    border: 1.5px solid transparent;
+    font-weight: 600;
+    font-size: 0.8rem;
+    color: var(--theme-text);
+    transition: color 0.2s ease, border-color 0.2s ease, background-color 0.15s ease, transform 0.15s ease;
   }
 
-  .page11-datepicker-day.is-weekend {
-    color: #d90429;
+  .page11-datepicker-day:not(:disabled):active .page11-datepicker-day-num {
+    transform: scale(0.88);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .page11-datepicker-day:not(:disabled):not(.is-selected):hover .page11-datepicker-day-num {
+      background-color: rgba(255, 255, 255, 0.12);
+    }
+  }
+
+  .page11-datepicker-day.is-weekend .page11-datepicker-day-num {
+    color: var(--weekend-color);
   }
 
   .page11-datepicker-day.is-outside {
-    color: rgba(18, 18, 18, 0.25);
+    opacity: 0.25;
     cursor: default;
   }
 
   .page11-datepicker-day.is-outside.is-weekend {
-    color: rgba(217, 4, 41, 0.4);
+    opacity: 0.3;
   }
 
-  .page11-datepicker-day.is-outside:hover {
-    border-color: transparent;
-  }
-
-  .page11-datepicker-day.is-today {
-    border-color: #000;
-    font-weight: 900;
-  }
-
-  .page11-datepicker-day.is-selected {
-    background-color: var(--accent-color, #ff90e8);
-    border-color: #000;
-    box-shadow: 2px 2px 0px 0px #000;
-    transform: translate(-1px, -1px);
-  }
-
-  .page11-datepicker-today-btn {
-    align-self: center;
-    font-family: "Archivo Expanded", "Space Grotesk", sans-serif;
+  .page11-datepicker-day.is-today .page11-datepicker-day-num {
+    border-color: var(--accent-color, #ff90e8);
     font-weight: 700;
-    font-size: 0.64rem;
-    letter-spacing: 0.02em;
-    text-transform: uppercase;
-    color: #121212;
-    background: #f2f2f2;
-    border: 2px solid #000;
-    border-radius: 0.6rem;
-    padding: 0.3rem 0.75rem;
-    cursor: pointer;
-    transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
   }
 
-  .page11-datepicker-today-btn:hover {
-    transform: translate(-1px, -1px);
-    box-shadow: 2px 2px 0px 0px #000;
+  .page11-datepicker-day.is-selected .page11-datepicker-day-num {
+    border-color: transparent;
+    color: #16171b;
+    font-weight: 700;
   }
 
-  .page11-datepicker-today-btn:active {
-    transform: translate(1px, 1px);
+  .page11-datepicker-bubble {
+    position: absolute;
+    left: 0;
+    top: 0;
+    z-index: 0;
+    pointer-events: none;
+    will-change: transform;
+    transition: transform 0.5s cubic-bezier(0.34, 1.4, 0.64, 1), opacity 0.22s ease;
+  }
+
+  .page11-datepicker-bubble.is-hidden {
+    opacity: 0;
+  }
+
+  .page11-datepicker-bubble-dot {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
     background-color: var(--accent-color, #ff90e8);
+    box-shadow: 0 6px 14px -8px rgba(0, 0, 0, 0.5);
+    transform: scale(1.04);
+  }
+
+  /* ---- Küçük takvimin giriş animasyonları: Sayfa 6'daki calSettle /
+     calDayIn / calBubblePop / calLabelIn keyframe'lerini (bkz. "Takvim
+     animasyonları" bölümü) aynen yeniden kullanır — yalnızca tetikleyici
+     seçiciler bu pop-up'a özel. Pop-up her açıldığında (.is-open eklendiğinde)
+     ızgara/başlık yeniden çizildiği için animasyon baştan oynar. */
+  #page11AddBackdrop.is-date-view .page11-datepicker-nav {
+    animation: calSettle 0.4s var(--cal-ease) 30ms backwards;
+  }
+
+  #page11AddBackdrop.is-date-view .page11-datepicker-weekday {
+    animation: calSettle 0.4s var(--cal-ease) calc(80ms + var(--c, 0) * 22ms) backwards;
+  }
+
+  #page11AddBackdrop.is-date-view .page11-datepicker-day.is-anim .page11-datepicker-day-num {
+    animation: calDayIn 0.45s var(--cal-ease) calc(var(--base, 110ms) + var(--r, 0) * 34ms + var(--c, 0) * 16ms) backwards;
+  }
+
+  #page11AddBackdrop.is-date-view .page11-datepicker-bubble.is-pop .page11-datepicker-bubble-dot {
+    animation: calBubblePop 0.5s var(--cal-spring) var(--pop-delay, 0ms) backwards;
+  }
+
+  #page11AddBackdrop.is-date-view .page11-datepicker-month.is-swap > span {
+    animation: calLabelIn 0.38s var(--cal-ease) backwards;
+  }
+
+  #page11AddBackdrop.is-date-view .page11-datepicker-month.is-swap > .page11-datepicker-month-year {
+    animation-delay: 50ms;
   }
 
   .page11-modal-confirm:active {
@@ -14422,58 +14670,10 @@
     color: #f2f2f4;
   }
 
-  /* Sayfa 11: tarih seçme pop-up'ı koyu modda — büyük takvimdeki
-     (Sayfa 6) antresit kurallarıyla aynı mantık, hafta sonu kırmızısı
-     burada da korunuyor. */
-  body.is-anthracite .page11-datepicker {
-    background: var(--dark-card-color, #1c1c22);
-  }
-
-  body.is-anthracite .page11-datepicker-nav-btn {
-    background-color: var(--dark-card-color, #1c1c22);
-    color: #f2f2f4;
-  }
-
-  body.is-anthracite .page11-datepicker-nav-btn:active,
-  body.is-anthracite .page11-datepicker-nav-btn.is-pressed {
-    background-color: var(--accent-color, #ff90e8);
-  }
-
-  body.is-anthracite .page11-datepicker-month,
-  body.is-anthracite .page11-datepicker-day {
-    color: #f2f2f4;
-  }
-
-  body.is-anthracite .page11-datepicker-weekday {
-    color: rgba(242, 242, 244, 0.45);
-  }
-
-  body.is-anthracite .page11-datepicker-weekday.is-weekend,
-  body.is-anthracite .page11-datepicker-day.is-weekend {
-    color: #ff5c72;
-  }
-
-  body.is-anthracite .page11-datepicker-day.is-outside {
-    color: rgba(242, 242, 244, 0.25);
-  }
-
-  body.is-anthracite .page11-datepicker-day.is-outside.is-weekend {
-    color: rgba(255, 92, 114, 0.4);
-  }
-
-  /* Seçili gün her zaman pembe (--accent-color) zemin üzerinde duruyor;
-     ama karanlık moddaki genel ".page11-datepicker-day" kuralı metni
-     açık renge (#f2f2f4) çeviriyordu, bu da pembe zemin üzerinde
-     okunaksız kalıyordu. Açık moddaki gibi koyu metne sabitliyoruz. */
-  body.is-anthracite .page11-datepicker-day.is-selected {
-    color: #121212;
-  }
-
-  body.is-anthracite .page11-datepicker-today-btn {
-    background: var(--dark-card-color, #1c1c22);
-    color: #f2f2f4;
-    border-color: #000;
-  }
+  /* Not: Sayfa 11 tarih seçme pop-up'ı artık siteye ait açık/antresit
+     temadan bağımsız, sabit koyu bir yüzey kullanıyor (bkz. yukarıdaki
+     ".page11-datepicker" kuralları) — bu yüzden ayrı bir antresit
+     override'ına ihtiyaç kalmadı. */
 
   /* Görev tikleme kutusunda olduğu gibi: işaretli durumun rengi temadan
      bağımsız aynı kalır, sadece işaretsiz zemin antresite döner. */
@@ -24854,6 +25054,34 @@
   }
 
   /* ==========================================================================
+     GEÇİCİ: Sayfa 11 - 0 Hata Testlerim — Yeniden Tasarım İçin Boşaltma
+     ==========================================================================
+     Sadece BÜYÜK EKRANDA (Denemelerim'de yaptığımızın birebir aynısı):
+     sayfanın mevcut içeriği (üst çubuk/geri butonu + başlık, alt başlık,
+     branş çipleri ızgarası) görünümden kaldırılır, yerine tamamen boş bir
+     çalışma alanı konur. Hiçbir HTML/CSS SİLİNMEDİ; sadece bu blokla
+     gizlendi. Mobil görünüm hiç etkilenmiyor.
+     GERİ ALMAK İÇİN: bu bloğu (baştaki yorumdan kapanış "}" a kadar) silmek
+     yeterli, eski tasarım aynen geri gelir. */
+  .zero-error-canvas {
+    display: none;
+  }
+
+  @media (min-width: 768px) and (min-height: 600px) {
+    #page-zero-error .calendar-topbar,
+    #page-zero-error .page11-subtitle,
+    #page-zero-error .page9-add-grid {
+      display: none !important;
+    }
+
+    #page-zero-error .zero-error-canvas {
+      display: block;
+      width: 100%;
+      min-height: 50vh;
+    }
+  }
+
+  /* ==========================================================================
      TABLET / GENİŞ EKRAN: Soru Çözme Sayfası (#page-camera-test) Yeniden Tasarımı
      ==========================================================================
      Bu tam ekran, hem Soru Havuzu'nun Test Modu'nda hem de 0 Hata
@@ -24948,29 +25176,150 @@
 
   /* ==========================================================================
      TABLET / GENİŞ EKRAN: "Yeni Deneme" Ekleme Pop-up'ı (#page11AddBackdrop)
+     — Yeniden Tasarım (canvas'ın kenarlıksız/soft/gradyanlı diliyle uyumlu)
      ==========================================================================
-     Telefonda dar (320px) tek sütunlu bir kart; geniş ekranda kart
-     genişliyor ve "Tarih" ile "Tür" alanları :has() ile hedeflenerek yan
-     yana iki sütuna alınıyor — "Deneme Adı" ve aksiyon butonları yine tam
-     genişlikte kalıyor. Başka pop-up'larda (Kaynaklar, Filtrele) da
-     kullanılan ".page11-modal-card" sınıfı etkilenmesin diye kapsam
-     #page11AddBackdrop ile sınırlı tutuluyor. */
+     Telefonda dar (320px), kalın siyah çerçeveli "brütalist" kart hâlâ
+     aynen duruyor — bu blok SADECE büyük ekranı hedefliyor. Geniş ekranda
+     kart: kalın çerçeve/sert gölge yerine kenarlıksız yüzey + yumuşak
+     (soft) gölge; "Deneme Adı" ve "Tarih" alan kutuları artık çerçevesiz,
+     zemine göre otomatik kontrastlı (color-mix) dolgu kullanıyor; Tür
+     segmented'i ve "Ekle" butonu, Sayfa 11 canvas'ındaki "+ Deneme Ekle"
+     butonuyla BİREBİR aynı gradyanlı accent dilini taşıyor (bkz.
+     .page11-canvas-add-btn / #weekStartSegmented ile aynı reçete). Kart
+     ayrıca daha geniş ve ferah: max-width 480px'ten 600px'e çıktı, dolgu
+     artırıldı. Yapı (grid, :has() ile Tarih/Tür'ün yan yana durması)
+     korunuyor; yalnızca yüzey dili değişti. Başka pop-up'larda (Kaynaklar,
+     Filtrele) da kullanılan ".page11-modal-card" sınıfı etkilenmesin diye
+     kapsam #page11AddBackdrop ile sınırlı tutuluyor. */
   @media (min-width: 768px) and (min-height: 600px) {
+    /* Kart artık site temasından (açık/antresit) bağımsız, sabit saf
+       siyah bir yüzey — böylece açık temada zeminle karışıp okunurluğu
+       düşüren metinler ortadan kalkıyor. İçerideki tüm renkler bu yüzden
+       var(--theme-text) yerine sabit beyaz tabanlı değerlere geçirildi. */
     #page11AddBackdrop .page11-modal-card {
+      max-width: 600px;
+      padding: 2.3rem 2.6rem 2.2rem;
+      border: none;
+      border-radius: 1.9em;
+      font-family: "Baloo 2", "Space Grotesk", sans-serif;
+      background: #000;
+      box-shadow:
+        0 28px 60px -18px rgba(0, 0, 0, 0.55),
+        0 2px 10px 0 rgba(0, 0, 0, 0.3);
+    }
+
+    /* 2 sütunlu form yerleşimi artık kartın kendisinde değil, "form"
+       görünümünün (.page11-add-panel-form) üzerinde tanımlı — kart iki
+       görünümü (form/takvim) üst üste tutan sabit boyutlu bir kap,
+       grid şablonu yalnızca aktif görünümün kendi iç düzenine ait. */
+    #page11AddBackdrop .page11-add-panel-form {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      column-gap: 1.1rem;
-      row-gap: 1.15rem;
-      max-width: 480px;
-      padding: 1.9rem 1.9rem 2.1rem;
-      border-width: 5px;
-      border-radius: 1.4em;
-      box-shadow: 8px 8px 0px 0px #000;
+      column-gap: 1.4rem;
+      row-gap: 1.35rem;
+    }
+
+    /* Takvim görünümü: artık kendi max-width'iyle kartın ortasında
+       sıkışıp kalmıyor — geniş 600px'lik kartın tüm iç genişliğine
+       (kenar payı dışında) yayılıyor, tıpkı Sayfa 6'daki büyük takvim
+       gibi. Sütunlar zaten repeat(7, 1fr) olduğu için ızgara otomatik
+       olarak bu genişliğe oranlı dağılır. */
+    #page11AddBackdrop .page11-add-panel-date {
+      width: 100%;
+      max-width: none;
+    }
+
+    #page11AddBackdrop .page11-datepicker {
+      max-width: none;
+    }
+
+    #page11AddBackdrop .page11-add-panel-date .page11-datepicker-nav {
+      position: relative;
+      justify-content: space-between;
+      padding-bottom: 1.1rem;
+      margin-bottom: 0.15rem;
+      border-bottom: 1.5px solid rgba(255, 255, 255, 0.12);
+    }
+
+    /* "Eylül 2026": sol taraftaki Geri butonu ile sağdaki ok grubu farklı
+       genişliklerde olduğu için flex ile ortalamak metni gerçek merkezden
+       kaydırıyordu. Bunun yerine satırın tam ortasına mutlak konumla
+       sabitleniyor — Geri butonu ve ok grubu ne genişlikte olursa olsun
+       başlık her zaman tam ortada durur. */
+    #page11AddBackdrop .page11-datepicker-month {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      flex: none;
+      font-size: 1.2rem;
+      pointer-events: none;
+    }
+
+    #page11AddBackdrop .page11-datepicker-back-btn {
+      width: 2.15rem;
+      height: 2.15rem;
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      #page11AddBackdrop .page11-datepicker-back-btn:hover {
+        background: rgba(255, 255, 255, 0.18);
+      }
+    }
+
+    #page11AddBackdrop .page11-datepicker-nav-btn {
+      width: 1.9rem;
+      height: 1.9rem;
+    }
+
+    #page11AddBackdrop .page11-datepicker-day-num {
+      width: 2.05rem;
+      height: 2.05rem;
+      font-size: 0.9rem;
+    }
+
+    #page11AddBackdrop .page11-datepicker-grid {
+      grid-auto-rows: minmax(2.65rem, 1fr);
+    }
+
+    /* Başlık satırı: başlık solda (esnek), kapat butonu sağda — kartın
+       en üstünde tam genişlik bir satır. Altına ince bir ayraç çizgisi,
+       alandan görsel olarak ayırıyor. */
+    #page11AddBackdrop .page11-add-modal-header {
+      grid-column: 1 / -1;
+      padding-bottom: 1.1rem;
+      margin-bottom: 0.15rem;
+      border-bottom: 1.5px solid rgba(255, 255, 255, 0.12);
     }
 
     #page11AddBackdrop .page11-modal-title {
-      grid-column: 1 / -1;
-      font-size: 1.35rem;
+      flex: 1 1 auto;
+      font-family: "Baloo 2", "Space Grotesk", sans-serif;
+      font-size: 1.55rem;
+      color: #f5f5f7;
+    }
+
+    #page11AddBackdrop .page11-add-modal-close {
+      display: flex;
+      flex-shrink: 0;
+      align-items: center;
+      justify-content: center;
+      width: 2.15rem;
+      height: 2.15rem;
+      border: none;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.1);
+      color: rgba(255, 255, 255, 0.75);
+      cursor: pointer;
+      transition: background-color 0.18s ease, color 0.18s ease;
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      #page11AddBackdrop .page11-add-modal-close:hover {
+        background: rgba(255, 255, 255, 0.18);
+        color: #fff;
+      }
     }
 
     #page11AddBackdrop .page11-field:has(#page11ExamNameInput) {
@@ -24987,38 +25336,124 @@
 
     #page11AddBackdrop .page11-modal-actions {
       grid-column: 1 / -1;
-      margin-top: 0.4rem;
+      margin-top: 0.5rem;
+      padding-top: 1.2rem;
+      border-top: 1.5px solid rgba(255, 255, 255, 0.12);
+      display: flex;
+      justify-content: flex-end;
+      gap: 0.7rem;
     }
 
+    /* Etiketler: saf siyah zeminde net okunması için açık gri. */
     #page11AddBackdrop .page11-field-label {
-      font-size: 0.74rem;
+      font-family: "Baloo 2", "Space Grotesk", sans-serif;
+      font-size: 0.8rem;
+      color: rgba(255, 255, 255, 0.62);
     }
 
+    /* Kalın çerçeveli kutulardan, canvas'ın kenarlıksız/soft yüzey
+       diline geçiş: çerçeve yok, siyah zemine göre hafif açık dolgu. */
     #page11AddBackdrop .page11-field-input {
-      font-size: 1.02rem;
-      padding: 0.8rem 0.95rem;
-      border-width: 3px;
+      font-family: "Baloo 2", "Space Grotesk", sans-serif;
+      font-size: 1.05rem;
+      padding: 1rem 1.15rem;
+      border: none;
+      border-radius: 1rem;
+      color: #f5f5f7;
+      background-color: rgba(255, 255, 255, 0.1);
+      transition: background-color 0.18s ease;
     }
 
+    #page11AddBackdrop .page11-date-btn {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      #page11AddBackdrop .page11-field-input:hover {
+        background-color: rgba(255, 255, 255, 0.15);
+      }
+    }
+
+    /* Tür segmented'i: Ayarlar'daki #weekStartSegmented'de kurulan aynı
+       kenarlıksız/pil + gradyanlı gösterge dönüşümü. Metin renkleri,
+       açık pastel accent tonlarında (ör. varsayılan pembe) okunurluğu
+       garanti altına almak için koyu tonlarda tutuluyor. */
     #page11AddBackdrop .settings-segmented {
-      height: 52px;
+      height: 3.3rem;
+      background: rgba(255, 255, 255, 0.1);
+      border: none;
+      border-radius: 999px;
+      box-shadow: none;
+    }
+
+    #page11AddBackdrop .settings-segmented-slider {
+      background: linear-gradient(180deg, color-mix(in srgb, var(--accent-color, #ff90e8) 100%, white 12%), var(--accent-color, #ff90e8));
+      border-radius: 999px;
+      box-shadow: 0 3px 12px 0 color-mix(in srgb, var(--accent-color, #ff90e8) 55%, transparent);
     }
 
     #page11AddBackdrop .settings-segmented-option {
-      font-size: 1rem;
+      font-family: "Baloo 2", "Space Grotesk", sans-serif;
+      font-size: 0.94rem;
+      color: rgba(255, 255, 255, 0.75);
     }
 
-    #page11AddBackdrop .page11-modal-confirm,
+    #page11AddBackdrop .settings-segmented-option.is-active {
+      color: color-mix(in srgb, var(--accent-color, #ff90e8) 30%, #1a1108);
+      text-shadow: none;
+    }
+
+    /* Vazgeç: kenarlıksız, nötr pil — canvas'taki arama/sıralama
+       yüzeyleriyle aynı dil, açık gri metin. */
     #page11AddBackdrop .settings-confirm-cancel {
-      padding: 0.85rem 1.6rem;
-      font-size: 1rem;
+      padding: 0.9rem 1.55rem;
+      font-size: 0.95rem;
+      font-family: "Baloo 2", "Space Grotesk", sans-serif;
+      border: none;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.1);
+      color: rgba(255, 255, 255, 0.85);
+      box-shadow: none;
+    }
+
+    /* Ekle: Sayfa 11 canvas'ındaki "+ Deneme Ekle" butonuyla birebir aynı
+       gradyanlı accent dili; metin beyaz yerine accent'in koyu tonu —
+       açık pastel accent renklerinde beyaz metin zayıf kontrast
+       verdiğinden okunurluk için değiştirildi. */
+    #page11AddBackdrop .page11-modal-confirm {
+      padding: 0.9rem 1.95rem;
+      font-size: 0.95rem;
+      font-family: "Baloo 2", "Space Grotesk", sans-serif;
+      font-weight: 700;
+      border: none;
+      border-radius: 999px;
+      background: linear-gradient(180deg, color-mix(in srgb, var(--accent-color, #ff90e8) 100%, white 12%), var(--accent-color, #ff90e8));
+      color: color-mix(in srgb, var(--accent-color, #ff90e8) 30%, #1a1108);
+      text-shadow: none;
+      box-shadow:
+        0 3px 12px 0 color-mix(in srgb, var(--accent-color, #ff90e8) 50%, transparent),
+        inset 0 1px 0 0 rgba(255, 255, 255, 0.35);
     }
 
     @media (hover: hover) and (pointer: fine) {
       #page11AddBackdrop .settings-confirm-cancel:hover {
-        transform: translate(-1px, -1px);
-        box-shadow: 4px 4px 0px 0px #000;
+        background: rgba(255, 255, 255, 0.18);
       }
+
+      #page11AddBackdrop .page11-modal-confirm:hover {
+        transform: translateY(-1px);
+        box-shadow:
+          0 5px 16px 0 color-mix(in srgb, var(--accent-color, #ff90e8) 60%, transparent),
+          inset 0 1px 0 0 rgba(255, 255, 255, 0.35);
+      }
+    }
+
+    #page11AddBackdrop .settings-confirm-cancel:active,
+    #page11AddBackdrop .page11-modal-confirm:active {
+      transform: translate(1px, 1px);
+      box-shadow: none;
     }
   }
 
@@ -25537,6 +25972,564 @@
     .wheel-option-text,
     .wheel-option-input {
       font-size: 1.08rem;
+    }
+  }
+
+  /* ==========================================================================
+     GEÇİCİ: Sayfa 11 (Denemelerim) — Yeniden Tasarım İçin Boşaltma
+     ==========================================================================
+     Sadece BÜYÜK EKRANDA (bkz. altındaki @media, mobildekiyle aynı eşik)
+     Sayfa 11'in mevcut içeriği (başlık, "+ Deneme Ekle" butonu, deneme
+     listesi, seç/yedekle çubuğu) görünümden kaldırılır. Hiçbir HTML/CSS
+     SİLİNMEDİ; sadece bu blokla gizlendi, böylece yeniden tasarım için
+     tamamen boş bir çalışma alanı elde ediliyor. Mobil görünüm (bu
+     @media eşiğinin altı) hiç etkilenmiyor.
+     GERİ ALMAK İÇİN: bu bloğu (baştaki yorumdan kapanış "}" a kadar) silmek
+     yeterli, eski tasarım aynen geri gelir. */
+  .page11-canvas {
+    display: none;
+  }
+
+  @media (min-width: 768px) and (min-height: 600px) {
+    #page-11.page .page11-wrap {
+      display: none !important;
+    }
+
+    #page-11.page .page11-canvas {
+      display: flex;
+      align-items: stretch;
+      align-self: stretch;
+      gap: 2rem;
+      width: 100%;
+      max-width: 1180px;
+    }
+
+    #page-11.page .page11-canvas-main {
+      flex: 1 1 auto;
+      min-width: 0;
+      /* Sol sütun (başlık + Tümü/TYT/AYT paneli) sağdaki "Genel Performans"
+         sütunundan bağımsız olarak hafifçe sol yukarı kaydırıldı — burası
+         çalışma alanı (boş tuval), hizasının sağ sütunla birebir aynı
+         hizada durması gerekmiyor. Ofset kasıtlı olarak KÜÇÜK tutuluyor:
+         önceki daha büyük değer (-0.9rem / -1.6rem) başlığı/paneli yanal
+         panele (sidebar) doğru fazla kaydırıyor, üst-sol kısmı "kesik"
+         görünümü veriyordu. */
+      position: relative;
+      top: -0.4rem;
+      left: -0.5rem;
+    }
+
+    #page-11.page .page11-canvas-title {
+      margin: 0;
+      font-family: "Baloo 2", "Space Grotesk", sans-serif;
+      font-weight: 700;
+      font-size: clamp(29.1px, 1.36vw + 22.44px, 40.8px);
+      letter-spacing: -0.01em;
+      color: var(--theme-text, #fff);
+      transition: color 0.5s ease;
+    }
+
+    /* Tümü/TYT/AYT: başlığın hemen altında, dar bir şerit. Sayfa 10
+       (İstatistiklerim) Gün/Hafta/Ay seçicisiyle BİREBİR aynı, kartsız/
+       kenarlıksız "pil" dili kullanılıyor — canvas'ın kart kullanmayan,
+       düz akan tasarımıyla tutarlı olsun diye (bkz. #page10RangeSegmented
+       ile aynı background/slider/renk kuralları). Önceki kalın siyah
+       çerçeveli (qhavuz tarzı) hali, hem tasarım diliyle uyuşmuyordu hem
+       de çerçevenin siyah izi başlıktaki "D" harfinin optik başlangıcından
+       daha sola taşıp hizasızlık hissi veriyordu; çerçevesiz pil bu ikisini
+       de çözüyor. */
+    /* Başlık solda, arama kutusu tam karşısında (sağ uçta) durur. */
+    #page-11.page .page11-canvas-headrow {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1.2rem;
+    }
+
+    /* Sıralama filtresi + "Deneme Ekle" birlikte, toolbar satırının sağ
+       ucunda tek bir grup olarak durur. */
+    #page-11.page .page11-canvas-toolbar-right {
+      flex: 0 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    /* "Deneme Ekle": segmented/sıralama filtresiyle AYNI düz, kenarlıksız
+       yüzey dili — ama bir filtre değil, sayfanın birincil eylemi olduğu
+       için nötr yüzey tonu yerine vurgu (accent) rengiyle öne çıkıyor.
+       Eski kalın-çerçeveli/gölgeli add-task-btn'in yerini alıyor; bu artık
+       geçici değil, canvas'ın kalıcı diline ait. */
+    #page-11.page .page11-canvas-add-btn {
+      flex: 0 0 auto;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      height: 2.7rem;
+      padding: 0 1.15rem;
+      font-family: "Baloo 2", "Space Grotesk", sans-serif;
+      font-weight: 700;
+      font-size: 0.8rem;
+      color: #fff;
+      background: linear-gradient(180deg, color-mix(in srgb, var(--accent-color, #ff90e8) 100%, white 12%), var(--accent-color, #ff90e8));
+      box-shadow:
+        0 3px 12px 0 color-mix(in srgb, var(--accent-color, #ff90e8) 50%, transparent),
+        inset 0 1px 0 0 rgba(255, 255, 255, 0.35);
+      border: none;
+      border-radius: 999px;
+      cursor: pointer;
+      white-space: nowrap;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.18);
+      transition: transform 0.15s ease, box-shadow 0.18s ease;
+    }
+
+    #page-11.page .page11-canvas-add-btn:active {
+      transform: translate(1px, 1px);
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      #page-11.page .page11-canvas-add-btn:hover {
+        box-shadow:
+          0 5px 16px 0 color-mix(in srgb, var(--accent-color, #ff90e8) 60%, transparent),
+          inset 0 1px 0 0 rgba(255, 255, 255, 0.35);
+      }
+    }
+
+    #page-11.page .page11-canvas-add-icon {
+      flex: 0 0 auto;
+    }
+
+    /* Arama kutusu: segmented/sıralama filtresiyle aynı düz, kenarlıksız
+       yüzey dili (bkz. #page11CanvasTypeSegmented / .page11-canvas-sort-btn). */
+    #page-11.page .page11-canvas-search {
+      flex: 0 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 0.55rem;
+      width: 100%;
+      max-width: 260px;
+      height: 2.7rem;
+      padding: 0 1rem;
+      border-radius: 999px;
+      background-color: color-mix(in srgb, var(--theme-text, #121212) 8%, transparent);
+      box-shadow: inset 0 1px 3px 0 color-mix(in srgb, var(--theme-text, #121212) 10%, transparent);
+      transition: background-color 0.5s ease;
+    }
+
+    #page-11.page .page11-canvas-search-icon {
+      flex: 0 0 auto;
+      color: color-mix(in srgb, var(--theme-text, #121212) 55%, transparent);
+      transition: color 0.5s ease;
+    }
+
+    #page-11.page .page11-canvas-search-input {
+      flex: 1 1 auto;
+      min-width: 0;
+      border: none;
+      background: none;
+      outline: none;
+      padding: 0;
+      font-family: "Baloo 2", "Space Grotesk", sans-serif;
+      font-weight: 600;
+      font-size: 0.85rem;
+      color: var(--theme-text, #121212);
+      transition: color 0.5s ease;
+    }
+
+    #page-11.page .page11-canvas-search-input::placeholder {
+      color: color-mix(in srgb, var(--theme-text, #121212) 45%, transparent);
+    }
+
+    body.is-anthracite #page-11.page .page11-canvas-search-icon,
+    body.is-anthracite #page-11.page .page11-canvas-search-input {
+      color: color-mix(in srgb, var(--theme-text, #f2f2f4) 82%, transparent);
+    }
+
+    body.is-anthracite #page-11.page .page11-canvas-search-input::placeholder {
+      color: color-mix(in srgb, var(--theme-text, #f2f2f4) 45%, transparent);
+    }
+
+    /* Sonuç ızgarası: arama/tür/sıralama filtrelerine göre anlık güncellenen
+       deneme kartları. Kartların kendisi (.page11-exam-card) zaten var olan
+       kalın çerçeveli dili korur — sadece bu ızgaranın düzeni yeni. */
+    #page-11.page .page11-canvas-results {
+      margin-top: 1.4rem;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 1rem;
+    }
+
+    #page-11.page .page11-canvas-results-empty {
+      grid-column: 1 / -1;
+      padding: 2rem 0;
+      font-size: 0.9rem;
+      opacity: 0.55;
+    }
+
+    /* Kartlar sonuç listesine her girdiğinde (arama/filtre/sıralama
+       değiştiğinde) hafifçe yukarı kayarak ve belirerek gelir; index'e
+       göre kısa bir gecikme (bkz. JS: animationDelay) art arda gelen bir
+       "dalga" hissi verir. */
+    @keyframes page11CanvasCardIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px) scale(0.98);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    #page-11.page .page11-canvas-results .page11-canvas-card-enter {
+      animation: page11CanvasCardIn 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+
+    /* Seçim paneli (segmented) ve sıralama filtresi aynı satırda, uçlara
+       yaslı durur: segmented solda, sıralama filtresi tam karşısında
+       (sağ uçta). margin-top artık segmented yerine bu satırın kendisinde. */
+    #page-11.page .page11-canvas-toolbar {
+      margin-top: 0.9rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+
+    #page-11.page .page11-canvas-type-segmented {
+      margin-top: 0;
+      width: auto;
+      min-width: 10.5rem;
+      max-width: 230px;
+    }
+
+    /* Tarihe göre sıralama filtresi: segmented ile birebir aynı düz/
+       kartsız/kenarlıksız yüzey dili (bkz. #page11CanvasTypeSegmented),
+       kalın siyah çerçeveli qhavuz-sort-btn'den BİLİNÇLİ olarak farklı —
+       burası canvas'ın sade diline uyuyor. */
+    #page-11.page .page11-canvas-sort-btn {
+      flex: 0 0 auto;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      height: 2.7rem;
+      padding: 0 1.1rem;
+      font-family: "Baloo 2", "Space Grotesk", sans-serif;
+      font-weight: 700;
+      font-size: 0.8rem;
+      color: color-mix(in srgb, var(--theme-text, #121212) 94%, transparent);
+      background-color: color-mix(in srgb, var(--theme-text, #121212) 8%, transparent);
+      box-shadow: inset 0 1px 3px 0 color-mix(in srgb, var(--theme-text, #121212) 10%, transparent);
+      border: none;
+      border-radius: 999px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background-color 0.18s ease, transform 0.15s ease, color 0.35s ease;
+    }
+
+    #page-11.page .page11-canvas-sort-btn:active {
+      transform: translate(1px, 1px);
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      #page-11.page .page11-canvas-sort-btn:hover {
+        background-color: color-mix(in srgb, var(--theme-text, #121212) 13%, transparent);
+      }
+    }
+
+    #page-11.page .page11-canvas-sort-icon {
+      flex: 0 0 auto;
+      transition: transform 0.2s ease;
+    }
+
+    /* Varsayılan (en yeni önce) durumda ok aşağı bakar; en eski önce
+       moduna geçilince tersine dönüp yukarı bakar (qhavuzSortBtn ile
+       aynı tek-SVG-döndürme yöntemi). */
+    #page-11.page .page11-canvas-sort-btn.is-asc .page11-canvas-sort-icon {
+      transform: rotate(180deg);
+    }
+
+    body.is-anthracite #page-11.page .page11-canvas-sort-btn {
+      color: color-mix(in srgb, var(--theme-text, #f2f2f4) 82%, transparent);
+    }
+
+    #page11CanvasTypeSegmented.settings-segmented.page11-canvas-type-segmented {
+      background: color-mix(in srgb, var(--theme-text, #121212) 8%, transparent);
+      box-shadow: inset 0 1px 3px 0 color-mix(in srgb, var(--theme-text, #121212) 10%, transparent);
+      border: none;
+      border-radius: 999px;
+      height: 2.7rem;
+    }
+
+    #page11CanvasTypeSegmented .settings-segmented-slider {
+      /* calc((100% - 6px) / 3): Sayfa 10'daki gibi, seçenekler flex:1 ile
+         konteynerin (100% - 6px) genişliğini 3 eşit parçaya böldüğü için
+         gösterge de birebir aynı formülü kullanmalı; yoksa translateX(N*100%)
+         her adımda ~1px kayar. */
+      width: calc((100% - 6px) / 3);
+      background: linear-gradient(180deg, color-mix(in srgb, var(--accent-color, #ff90e8) 100%, white 12%), var(--accent-color, #ff90e8));
+      border-radius: 999px;
+      box-shadow:
+        0 3px 12px 0 color-mix(in srgb, var(--accent-color, #ff90e8) 50%, transparent),
+        inset 0 1px 0 0 rgba(255, 255, 255, 0.35);
+      transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    /* Yazı renkleri: canvas kart zemini kullanmadığından (sayfanın kendi
+       zemininin üzerinde, sadece %8'lik bir pil tonu) Sayfa 10'daki %78/%55
+       karışım burada soluk kalıyordu; kontrastı artırmak için neredeyse tam
+       opak bırakıldı. */
+    .page11-canvas-type-segmented .settings-segmented-option {
+      font-family: "Baloo 2", "Space Grotesk", sans-serif;
+      color: color-mix(in srgb, var(--theme-text, #121212) 94%, transparent);
+      font-size: 0.8rem;
+      transition: color 0.35s ease;
+    }
+
+    body.is-anthracite .page11-canvas-type-segmented .settings-segmented-option {
+      color: color-mix(in srgb, var(--theme-text, #f2f2f4) 82%, transparent);
+    }
+
+    .page11-canvas-type-segmented .settings-segmented-option.is-active {
+      color: #fff;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.18);
+    }
+
+    /* Sağ sütunu ayıran ince dikey çizgi; kalın kart çerçeveleriyle
+       karışmaması için ince (2px) ve düşük opaklıkta tutuluyor. */
+    #page-11.page .page11-canvas-divider {
+      flex: 0 0 auto;
+      align-self: stretch;
+      width: 2px;
+      background: var(--theme-text, #000);
+      opacity: 0.14;
+    }
+
+    /* Sağ sütun: kart yapısı YOK, analiz alanları düz içerik olarak
+       alt alta akıyor. Genel Performans ilk bölüm; sonraki analizler
+       aynı sütuna, aralarında gap ile eklenecek. */
+    #page-11.page .page11-canvas-side {
+      flex: 0 0 320px;
+      display: flex;
+      flex-direction: column;
+      gap: 1.6rem;
+    }
+
+    #page-11.page .page11-perf-section {
+      display: flex;
+      flex-direction: column;
+      gap: 0.9rem;
+    }
+
+    #page-11.page .page11-perf-heading {
+      font-family: "Baloo 2", "Space Grotesk", sans-serif;
+      font-weight: 700;
+      font-size: 1rem;
+      letter-spacing: -0.01em;
+      color: var(--theme-text, #fff);
+    }
+
+    #page-11.page .page11-perf-body {
+      display: flex;
+      align-items: center;
+      gap: 1.3rem;
+    }
+
+    #page-11.page .page11-perf-donut-wrap {
+      position: relative;
+      flex: 0 0 auto;
+      width: 128px;
+      height: 128px;
+    }
+
+    #page-11.page .page11-perf-donut-svg {
+      width: 100%;
+      height: 100%;
+    }
+
+    #page-11.page .page11-perf-donut-track {
+      stroke: var(--theme-text, #000);
+      opacity: 0.1;
+    }
+
+    #page-11.page .page11-perf-donut-progress {
+      transition: stroke-dashoffset 0.5s ease, stroke 0.3s ease;
+    }
+
+    #page-11.page .page11-perf-donut-center {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.1rem;
+      text-align: center;
+    }
+
+    #page-11.page .page11-perf-donut-value {
+      font-family: "Baloo 2", "Space Grotesk", sans-serif;
+      font-weight: 700;
+      font-size: 1.5rem;
+      line-height: 1;
+      color: var(--theme-text, #fff);
+    }
+
+    #page-11.page .page11-perf-donut-label {
+      font-family: "Baloo 2", "Space Grotesk", sans-serif;
+      font-size: 0.68rem;
+      font-weight: 500;
+      color: var(--theme-text, #fff);
+      opacity: 0.55;
+    }
+
+    #page-11.page .page11-perf-side-stats {
+      flex: 1 1 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 0.95rem;
+    }
+
+    #page-11.page .page11-perf-side-stat {
+      display: flex;
+      align-items: baseline;
+      gap: 0.5rem;
+    }
+
+    #page-11.page .page11-perf-side-value {
+      flex: 0 0 auto;
+      font-family: "Baloo 2", "Space Grotesk", sans-serif;
+      font-weight: 700;
+      font-size: 1.3rem;
+      line-height: 1;
+      color: var(--theme-text, #fff);
+    }
+
+    #page-11.page .page11-perf-side-label {
+      font-family: "Baloo 2", "Space Grotesk", sans-serif;
+      font-weight: 600;
+      font-size: 0.66rem;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      color: var(--theme-text, #fff);
+      opacity: 0.5;
+      white-space: nowrap;
+    }
+
+    /* ---- Hata Analizi: Genel Performans'ın hemen altında, düz akan
+       (kartsız) ikinci analiz bloğu; ince bir çizgiyle ayrılır. ---- */
+    #page-11.page .page11-canvas-side-divider {
+      height: 2px;
+      background: var(--theme-text, #000);
+      opacity: 0.12;
+    }
+
+    #page-11.page .page11-mistake-section {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    #page-11.page .page11-mistake-stats {
+      display: flex;
+      gap: 1.8rem;
+    }
+
+    #page-11.page .page11-mistake-chart {
+      display: flex;
+      flex-direction: column;
+      gap: 0.7rem;
+    }
+
+    #page-11.page .page11-mistake-bar-row {
+      display: flex;
+      align-items: center;
+      gap: 0.7rem;
+    }
+
+    #page-11.page .page11-mistake-bar-label {
+      flex: 0 0 56px;
+      font-family: "Baloo 2", "Space Grotesk", sans-serif;
+      font-weight: 600;
+      font-size: 0.68rem;
+      letter-spacing: 0.02em;
+      color: var(--theme-text, #fff);
+      opacity: 0.55;
+      white-space: nowrap;
+    }
+
+    /* Dolgu (fill) ve arka plan (bg) kardeş katmanlar: donut grafiğindeki
+       track/progress deseniyle aynı mantık — opacity yalnızca arka plana
+       uygulanır, dolgu her zaman tam renkte kalır. */
+    #page-11.page .page11-mistake-bar-track {
+      position: relative;
+      flex: 1 1 auto;
+      height: 10px;
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    #page-11.page .page11-mistake-bar-bg {
+      position: absolute;
+      inset: 0;
+      background: var(--theme-text, #000);
+      opacity: 0.1;
+    }
+
+    #page-11.page .page11-mistake-bar-fill {
+      position: absolute;
+      inset: 0;
+      width: 0%;
+      border-radius: 999px;
+      transition: width 0.5s ease;
+    }
+
+    #page-11.page .page11-mistake-bar-fill.is-wrong {
+      background: #ff5c5c;
+    }
+
+    #page-11.page .page11-mistake-bar-fill.is-fixed {
+      background: #5cd68a;
+    }
+
+    #page-11.page .page11-mistake-bar-value {
+      flex: 0 0 24px;
+      text-align: right;
+      font-family: "Baloo 2", "Space Grotesk", sans-serif;
+      font-weight: 700;
+      font-size: 0.85rem;
+      color: var(--theme-text, #fff);
+    }
+
+    /* "0 Hata Testlerim" erişimi artık kalın çerçeveli/gölgeli eski buton
+       değil; Hata Analizi'nin geri kalanıyla aynı düz, kartsız dil: kalın
+       Baloo 2 metin + üzerine gelince kayan bir ok. */
+    #page-11.page .page11-mistake-cta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      margin: 0;
+      padding: 0;
+      border: none;
+      background: none;
+      font-family: "Baloo 2", "Space Grotesk", sans-serif;
+      font-weight: 700;
+      font-size: 0.95rem;
+      letter-spacing: -0.01em;
+      color: var(--theme-text, #fff);
+      cursor: pointer;
+    }
+
+    #page-11.page .page11-mistake-cta-icon {
+      flex: 0 0 auto;
+      transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      #page-11.page .page11-mistake-cta:hover .page11-mistake-cta-icon {
+        transform: translateX(4px);
+      }
     }
   }
 </style>
@@ -27679,6 +28672,166 @@
         </div>
       </div>
     </div>
+
+    <!-- GEÇİCİ: Sayfa 11 yeniden tasarım tuvali — yalnızca büyük ekranda
+         görünür (bkz. ilgili @media bloğu). Sol sütun boş çalışma alanı
+         (şimdilik sadece başlık), sağ sütun (bir çizgiyle ayrılmış)
+         analizlerin toplanacağı yer; kart yapısı kullanılmıyor, düz
+         içerik olarak akıyor. -->
+    <div class="page11-canvas" id="page11Canvas">
+      <div class="page11-canvas-main">
+        <!-- Başlık solda, arama kutusu tam karşısında (satırın sağ ucunda)
+             durur. Yazdıkça (input event) anlık olarak page11CanvasResults'u,
+             deneme adının BAŞLADIĞI harflere göre filtreler; bkz.
+             renderPage11CanvasResults(). -->
+        <div class="page11-canvas-headrow">
+          <h1 class="page11-canvas-title">Denemelerim</h1>
+
+          <div class="page11-canvas-search">
+            <svg class="page11-canvas-search-icon" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="11" cy="11" r="7"/>
+              <path d="M20 20l-3.5-3.5"/>
+            </svg>
+            <input type="text" class="page11-canvas-search-input" id="page11CanvasSearchInput" placeholder="Deneme ara..." autocomplete="off" spellcheck="false" aria-label="Deneme ara">
+          </div>
+        </div>
+
+        <!-- Seçim paneli (Tümü/TYT/AYT) solda, tarihe göre sıralama filtresi
+             tam karşısında (satırın sağ ucunda) durur; ikisi tek bir
+             satırda uçlara yaslanır. -->
+        <div class="page11-canvas-toolbar">
+          <!-- Tümü/TYT/AYT seçimi: sağdaki "Genel Performans" (ve ileride
+               eklenecek diğer analizler) hangi türe göre hesaplanacağını
+               belirler. Daha önce bu alan geçici olarak kaldırılmıştı (bkz.
+               page11PerfType'ın sabit 'tyt' bırakıldığı JS yorumu); şimdi
+               geri eklendi. -->
+          <div class="settings-segmented page11-canvas-type-segmented" id="page11CanvasTypeSegmented">
+            <div class="settings-segmented-slider" id="page11CanvasTypeSlider"></div>
+            <button type="button" class="settings-segmented-option is-active" data-value="all">Tümü</button>
+            <button type="button" class="settings-segmented-option" data-value="tyt">TYT</button>
+            <button type="button" class="settings-segmented-option" data-value="ayt">AYT</button>
+          </div>
+
+          <!-- Tarihe göre sıralama: seçim panelinin tam karşısında. Tıklandıkça
+               en yeni/en eski sırası değişir (bkz. qhavuzSortBtn ile aynı
+               etkileşim dili); page11CanvasSortOrder değeri renderPage11List()
+               içindeki sıralamayı belirler. -->
+          <!-- Sıralama filtresi + "Deneme Ekle" birlikte satırın sağ ucunda
+               durur. Ekle butonu, mobildeki #page11AddExamBtn ile aynı
+               modalı (openPage11AddModal) açar; ama canvas'ın kartsız/
+               kenarlıksız diline uyacak şekilde vurgu renkli, düz bir
+               pil olarak yeniden tasarlandı (eski kalın çerçeveli
+               add-task-btn DEĞİL — mevcut deneme kartları gibi o stil de
+               ayrıca yeniden tasarlanacak, bu geçici değil). -->
+          <div class="page11-canvas-toolbar-right">
+            <button type="button" class="page11-canvas-sort-btn" id="page11CanvasSortBtn" aria-label="Tarihe göre sırala: önce en yeni">
+              <svg class="page11-canvas-sort-icon" id="page11CanvasSortIcon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 5v14M12 19l-5-5M12 19l5-5"/>
+              </svg>
+              <span id="page11CanvasSortLabel">En Yeni</span>
+            </button>
+
+            <button type="button" class="page11-canvas-add-btn" id="page11CanvasAddExamBtn">
+              <svg class="page11-canvas-add-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M12 5v14M5 12h14"/>
+              </svg>
+              <span>Deneme Ekle</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Arama/tür/sıralama filtrelerine göre anlık güncellenen sonuç
+             ızgarası; kartlar renderPage11CanvasResults() ile animasyonlu
+             biçimde eklenir (bkz. page11-canvas-card-enter). -->
+        <div class="page11-canvas-results" id="page11CanvasResults"></div>
+      </div>
+
+      <div class="page11-canvas-divider" aria-hidden="true"></div>
+
+      <div class="page11-canvas-side" id="page11AnalyticsCol">
+        <!-- Genel Performans: TYT/AYT seçimine göre ortalama neti daire
+             grafiğin ortasında, yanında toplam deneme/en yüksek net/son
+             net gösterir. Değerler renderPage11Performance() ile
+             page11State.exams üzerinden hesaplanır. -->
+        <div class="page11-perf-section" id="page11PerfSection">
+          <span class="page11-perf-heading">Genel Performans</span>
+
+          <div class="page11-perf-body">
+            <div class="page11-perf-donut-wrap">
+              <svg class="page11-perf-donut-svg" id="page11PerfDonutSvg" viewBox="0 0 160 160"></svg>
+              <div class="page11-perf-donut-center">
+                <span class="page11-perf-donut-value" id="page11PerfDonutValue">—</span>
+                <span class="page11-perf-donut-label" id="page11PerfDonutLabel">Ort. Net</span>
+              </div>
+            </div>
+
+            <div class="page11-perf-side-stats">
+              <div class="page11-perf-side-stat">
+                <span class="page11-perf-side-value" id="page11PerfCount">0</span>
+                <span class="page11-perf-side-label" id="page11PerfCountLabel">Toplam TYT Deneme</span>
+              </div>
+              <div class="page11-perf-side-stat">
+                <span class="page11-perf-side-value" id="page11PerfBest">—</span>
+                <span class="page11-perf-side-label" id="page11PerfBestLabel">En Yüksek TYT Net</span>
+              </div>
+              <div class="page11-perf-side-stat">
+                <span class="page11-perf-side-value" id="page11PerfLast">—</span>
+                <span class="page11-perf-side-label" id="page11PerfLastLabel">Son TYT Net</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="page11-canvas-side-divider" aria-hidden="true"></div>
+
+        <!-- Hata Analizi: tüm denemelerdeki toplam yanlış/boş sayısı ve
+             0 Hata Testlerim'de sonradan doğru yapılıp giderilen hata
+             sayısı, iki çubuklu basit bir grafikle karşılaştırılır.
+             Branş bazlı inceleme ve gerçek "giderilen hata" takibi bu
+             sistemin ilk adımı; ayrıntılar sonra eklenecek. Değerler
+             renderPage11MistakeStats() ile hesaplanır. -->
+        <div class="page11-mistake-section" id="page11MistakeSection">
+          <span class="page11-perf-heading">Hata Analizi</span>
+
+          <div class="page11-mistake-stats">
+            <div class="page11-perf-side-stat">
+              <span class="page11-perf-side-value" id="page11MistakeWrong">0</span>
+              <span class="page11-perf-side-label">Toplam Yanlış</span>
+            </div>
+            <div class="page11-perf-side-stat">
+              <span class="page11-perf-side-value" id="page11MistakeBlank">0</span>
+              <span class="page11-perf-side-label">Toplam Boş</span>
+            </div>
+          </div>
+
+          <div class="page11-mistake-chart">
+            <div class="page11-mistake-bar-row">
+              <span class="page11-mistake-bar-label">Hata</span>
+              <div class="page11-mistake-bar-track">
+                <div class="page11-mistake-bar-bg"></div>
+                <div class="page11-mistake-bar-fill is-wrong" id="page11MistakeBarWrong"></div>
+              </div>
+              <span class="page11-mistake-bar-value" id="page11MistakeBarWrongValue">0</span>
+            </div>
+            <div class="page11-mistake-bar-row">
+              <span class="page11-mistake-bar-label">Giderilen</span>
+              <div class="page11-mistake-bar-track">
+                <div class="page11-mistake-bar-bg"></div>
+                <div class="page11-mistake-bar-fill is-fixed" id="page11MistakeBarFixed"></div>
+              </div>
+              <span class="page11-mistake-bar-value" id="page11MistakeBarFixedValue">0</span>
+            </div>
+          </div>
+
+          <button type="button" class="page11-mistake-cta" id="page11MistakeZeroErrorBtn">
+            <span>0 Hata Testlerim</span>
+            <svg class="page11-mistake-cta-icon" viewBox="0 0 24 24" width="15" height="15" aria-hidden="true">
+              <path d="M5 12h13M12 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
   </section>
 
   <!-- Sayfa 11 Detay: bir denemenin branş bazlı netleri, tam ekran.
@@ -27905,6 +29058,10 @@
       <span class="page11-subtitle">Yanlış veya boş bıraktığın sorulardan branşına göre biriken test</span>
 
       <div class="page9-add-grid" id="zeroErrorList"></div>
+
+      <!-- GEÇİCİ: yeniden tasarım için boş çalışma alanı, bkz. aşağıdaki
+           ".zero-error-canvas" kuralı ve Sayfa 11'deki aynı desen. -->
+      <div class="zero-error-canvas" id="zeroErrorCanvas"></div>
     </div>
   </section>
 
@@ -27968,40 +29125,98 @@
     </div>
   </section>
 
-  <!-- Sayfa 11: Deneme ekleme pop-up'ı (settings-confirm-backdrop ile aynı dil). -->
+  <!-- Sayfa 11: Deneme ekleme pop-up'ı (settings-confirm-backdrop ile aynı dil).
+       Kart artık iki "görünüm" barındırır: form (isim/tarih/tür) ve takvim
+       (tarih seçimi) — bkz. .page11-add-panels. Tarih alanına dokununca
+       ayrı bir pop-up açmak yerine kart AYNI BOYUTTA kalıp içeriğini
+       yatayda kaydırarak değiştirir (iki görünüm de aynı grid hücresinde
+       üst üste durduğu için satır yüksekliği hep ikisinin en uzununa göre
+       sabittir); takvimdeki "Geri" ile forma dönülür. -->
   <div class="settings-confirm-backdrop" id="page11AddBackdrop">
     <div class="page11-modal-card">
-      <span class="page11-modal-title">Yeni Deneme</span>
+      <div class="page11-add-panels" id="page11AddPanels">
 
-      <div class="page11-field">
-        <label class="page11-field-label" for="page11ExamNameInput">Deneme Adı</label>
-        <input type="text" id="page11ExamNameInput" class="page11-field-input" placeholder="Örn. 3D Yayınları TYT-1" maxlength="40">
-      </div>
+        <!-- Görünüm 1: Form. İkon rozeti ve kapat (×) butonu SADECE büyük
+             ekranda görünür (bkz. CSS: .page11-add-modal-icon /
+             .page11-add-modal-close mobilde display:none); mobil başlık
+             eskisiyle birebir aynı kalır, bu sarmalayıcı satır sadece bir
+             düzen konteyneridir. -->
+        <div class="page11-add-panel page11-add-panel-form">
+          <div class="page11-add-modal-header">
+            <span class="page11-modal-title">Yeni Deneme</span>
+            <button type="button" class="page11-add-modal-close" id="page11AddCloseBtn" aria-label="Kapat">
+              <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
+                <path d="M5 5l14 14M19 5L5 19" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
+              </svg>
+            </button>
+          </div>
 
-      <div class="page11-field page11-date-field">
-        <label class="page11-field-label" for="page11ExamDateBtn">Tarih</label>
-        <button type="button" class="page11-field-input page11-date-btn" id="page11ExamDateBtn" aria-haspopup="true" aria-expanded="false">
-          <span id="page11ExamDateBtnText">Tarih seç</span>
-          <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
-            <rect x="3.5" y="5" width="17" height="15" rx="2.5" fill="none" stroke="currentColor" stroke-width="2"/>
-            <path d="M3.5 9.5h17" stroke="currentColor" stroke-width="2"/>
-            <path d="M8 3v4M16 3v4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-          </svg>
-        </button>
-      </div>
+          <div class="page11-field">
+            <label class="page11-field-label" for="page11ExamNameInput">Deneme Adı</label>
+            <input type="text" id="page11ExamNameInput" class="page11-field-input" placeholder="Örn. 3D Yayınları TYT-1" maxlength="40">
+          </div>
 
-      <div class="page11-field">
-        <span class="page11-field-label">Tür</span>
-        <div class="settings-segmented" id="page11TypeSegmented">
-          <div class="settings-segmented-slider" id="page11TypeSlider"></div>
-          <button type="button" class="settings-segmented-option is-active" data-value="tyt">TYT</button>
-          <button type="button" class="settings-segmented-option" data-value="ayt">AYT</button>
+          <div class="page11-field page11-date-field">
+            <label class="page11-field-label" for="page11ExamDateBtn">Tarih</label>
+            <button type="button" class="page11-field-input page11-date-btn" id="page11ExamDateBtn" aria-haspopup="true" aria-expanded="false">
+              <span id="page11ExamDateBtnText">Tarih seç</span>
+              <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+                <rect x="3.5" y="5" width="17" height="15" rx="2.5" fill="none" stroke="currentColor" stroke-width="2"/>
+                <path d="M3.5 9.5h17" stroke="currentColor" stroke-width="2"/>
+                <path d="M8 3v4M16 3v4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+            </button>
+          </div>
+
+          <div class="page11-field">
+            <span class="page11-field-label">Tür</span>
+            <div class="settings-segmented" id="page11TypeSegmented">
+              <div class="settings-segmented-slider" id="page11TypeSlider"></div>
+              <button type="button" class="settings-segmented-option is-active" data-value="tyt">TYT</button>
+              <button type="button" class="settings-segmented-option" data-value="ayt">AYT</button>
+            </div>
+          </div>
+
+          <div class="settings-confirm-actions page11-modal-actions">
+            <button type="button" class="settings-confirm-cancel" id="page11AddCancelBtn">Vazgeç</button>
+            <button type="button" class="page11-modal-confirm" id="page11AddConfirmBtn">Ekle</button>
+          </div>
         </div>
-      </div>
 
-      <div class="settings-confirm-actions page11-modal-actions">
-        <button type="button" class="settings-confirm-cancel" id="page11AddCancelBtn">Vazgeç</button>
-        <button type="button" class="page11-modal-confirm" id="page11AddConfirmBtn">Ekle</button>
+        <!-- Görünüm 2: Takvim. Sayfa 6'daki büyük takvimle aynı ay/gün
+             hesaplama mantığını ve animasyon dilini (dalga girişi, kayan
+             seçim dairesi, ay etiketi geçişi) birebir kullanır — bkz. JS
+             ve .page11-datepicker-* kuralları. Artık kendi backdrop'u
+             yok; "Geri" butonuyla forma dönülür. -->
+        <div class="page11-add-panel page11-add-panel-date page11-datepicker" id="page11DatePicker">
+          <div class="page11-datepicker-nav">
+            <button type="button" class="page11-datepicker-back-btn" id="page11DateBackBtn" aria-label="Geri">
+              <svg viewBox="0 0 24 24" width="13" height="13">
+                <path d="M15 4l-8 8 8 8" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+            <span class="page11-datepicker-month" id="page11DatePickerMonthLabel">Eylül 2026</span>
+            <div class="page11-datepicker-nav-btns">
+              <button type="button" class="page11-datepicker-today-btn" id="page11DateTodayBtn" aria-label="Bugüne dön" aria-hidden="true" tabindex="-1">
+                <span class="page11-datepicker-today-dot" aria-hidden="true"></span>
+                <span>Bugün</span>
+              </button>
+              <button type="button" class="page11-datepicker-nav-btn" id="page11DatePrevBtn" aria-label="Önceki ay">
+                <svg viewBox="0 0 24 24" width="13" height="13">
+                  <path d="M15 4l-8 8 8 8" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </button>
+              <button type="button" class="page11-datepicker-nav-btn" id="page11DateNextBtn" aria-label="Sonraki ay">
+                <svg viewBox="0 0 24 24" width="13" height="13">
+                  <path d="M9 4l8 8-8 8" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+          <div class="page11-datepicker-weekdays" id="page11DatePickerWeekdays"></div>
+          <div class="page11-datepicker-grid" id="page11DatePickerGrid"></div>
+        </div>
+
       </div>
     </div>
   </div>
@@ -28139,32 +29354,6 @@
       </div>
     </div>
   </div>
-
-  <!-- Sayfa 11: Tarih seçme takvimi — ekranın tam ortasında açılan kendi
-       pop-up'ı. Ayrı bir backdrop üzerinde durur (page11AddBackdrop'ın
-       üstünde, z-index ile), böylece hem "Deneme Adı" hem "Tür" alanlarının
-       üzerine değil, tüm ekranın merkezine gelir. -->
-  <div class="settings-confirm-backdrop page11-datepicker-backdrop" id="page11DatePickerBackdrop">
-    <div class="page11-datepicker" id="page11DatePicker">
-      <div class="page11-datepicker-nav">
-        <button type="button" class="page11-datepicker-nav-btn" id="page11DatePrevBtn" aria-label="Önceki ay">
-          <svg viewBox="0 0 24 24" width="13" height="13">
-            <path d="M15 4l-8 8 8 8" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </button>
-        <span class="page11-datepicker-month" id="page11DatePickerMonthLabel">Eylül 2026</span>
-        <button type="button" class="page11-datepicker-nav-btn" id="page11DateNextBtn" aria-label="Sonraki ay">
-          <svg viewBox="0 0 24 24" width="13" height="13">
-            <path d="M9 4l8 8-8 8" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </button>
-      </div>
-      <div class="page11-datepicker-weekdays" id="page11DatePickerWeekdays"></div>
-      <div class="page11-datepicker-grid" id="page11DatePickerGrid"></div>
-      <button type="button" class="page11-datepicker-today-btn" id="page11DateTodayBtn">Bugün</button>
-    </div>
-  </div>
-
 
   <!-- Ayarlar > Desenler: nav bar'ın dışında, Sayfa 6/7 gibi yalnızca
        "Desenler" satırıyla açılan bağımsız bir alt sayfa. Katalog kartı
@@ -42476,6 +43665,15 @@
     page11State.photoIconsVisible = true;
   }
 
+  // "0 Hata Testlerim"de daha önce yanlış/boş bırakılmış bir soru sonradan
+  // doğru yapıldığında bu sayaç 1 artar (bkz. qhavuzTestHandleAnswer vb.).
+  // GEÇİCİ/basit ölçüm: aynı soru tekrar tekrar doğru yapılırsa yine de
+  // sayılır; "0 Hata Testlerim" sayfası baştan tasarlanınca soru bazlı
+  // tekilleştirme eklenecek.
+  if (typeof page11State.zeroErrorFixedCount !== 'number') {
+    page11State.zeroErrorFixedCount = 0;
+  }
+
   const savePage11State = () => saveAppState({ page11: page11State });
 
   // Bir denemenin branş bazlı ve toplam net hesabı (4 yanlış 1 doğruyu götürür).
@@ -42849,7 +44047,253 @@
     return card;
   };
 
+  // GEÇİCİ: Sayfa 11 (Denemelerim) yeniden tasarım tuvalindeki "Genel
+  // Performans" bölümü. Seçili türe (TYT/AYT) göre: daire grafiğin
+  // ortasında ortalama net, yanında toplam deneme sayısı, en yüksek net
+  // ve en son girilen denemenin neti gösterilir. Tüm veriler
+  // page11State.exams üzerinden anlık hesaplanır.
+  const page11PerfDonutSvg = document.getElementById('page11PerfDonutSvg');
+  const page11PerfDonutValueEl = document.getElementById('page11PerfDonutValue');
+  const page11PerfDonutLabelEl = document.getElementById('page11PerfDonutLabel');
+  const page11PerfCountEl = document.getElementById('page11PerfCount');
+  const page11PerfCountLabelEl = document.getElementById('page11PerfCountLabel');
+  const page11PerfBestEl = document.getElementById('page11PerfBest');
+  const page11PerfBestLabelEl = document.getElementById('page11PerfBestLabel');
+  const page11PerfLastEl = document.getElementById('page11PerfLast');
+  const page11PerfLastLabelEl = document.getElementById('page11PerfLastLabel');
+  // Tümü/TYT/AYT seçimi (bkz. #page11CanvasTypeSegmented); "Genel
+  // Performans" bu değere göre hesaplanır. Varsayılan "all" (Tümü),
+  // segmented control'deki varsayılan aktif seçenekle eşleşir.
+  let page11PerfType = 'all';
+
+  const page11CanvasTypeSegmented = document.getElementById('page11CanvasTypeSegmented');
+  const page11CanvasTypeSlider = document.getElementById('page11CanvasTypeSlider');
+  const page11CanvasTypeOptions = page11CanvasTypeSegmented
+    ? Array.from(page11CanvasTypeSegmented.querySelectorAll('.settings-segmented-option'))
+    : [];
+
+  const page11MoveCanvasTypeSlider = () => {
+    if (!page11CanvasTypeSlider) return;
+    const idx = Math.max(0, page11CanvasTypeOptions.findIndex((b) => b.dataset.value === page11PerfType));
+    page11CanvasTypeSlider.style.transform = `translateX(${idx * 100}%)`;
+  };
+
+  page11CanvasTypeOptions.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const value = btn.dataset.value;
+      if (value === page11PerfType) return;
+      page11PerfType = value;
+      page11CanvasTypeOptions.forEach((b) => b.classList.toggle('is-active', b === btn));
+      page11MoveCanvasTypeSlider();
+      renderPage11Performance();
+      renderPage11CanvasResults();
+    });
+  });
+
+  // Tarihe göre sıralama filtresi (bkz. #page11CanvasSortBtn): seçim
+  // panelinin tam karşısında durur. qhavuzSortOrder ile aynı etkileşim
+  // dili — tıklandıkça en yeni/en eski arasında geçiş yapar ve
+  // renderPage11List() bu değere göre sıralar.
+  let page11CanvasSortOrder = 'desc';
+
+  const page11CanvasSortBtn = document.getElementById('page11CanvasSortBtn');
+  const page11CanvasSortLabel = document.getElementById('page11CanvasSortLabel');
+
+  const page11UpdateCanvasSortBtn = () => {
+    if (!page11CanvasSortBtn) return;
+    page11CanvasSortBtn.classList.toggle('is-asc', page11CanvasSortOrder === 'asc');
+    if (page11CanvasSortLabel) {
+      page11CanvasSortLabel.textContent = page11CanvasSortOrder === 'asc' ? 'En Eski' : 'En Yeni';
+    }
+    page11CanvasSortBtn.setAttribute(
+      'aria-label',
+      page11CanvasSortOrder === 'asc' ? 'Tarihe göre sırala: önce en eski' : 'Tarihe göre sırala: önce en yeni'
+    );
+  };
+
+  if (page11CanvasSortBtn) {
+    page11CanvasSortBtn.addEventListener('click', () => {
+      page11CanvasSortOrder = page11CanvasSortOrder === 'asc' ? 'desc' : 'asc';
+      page11UpdateCanvasSortBtn();
+      renderPage11List();
+      renderPage11CanvasResults();
+    });
+    page11UpdateCanvasSortBtn();
+  }
+
+  // Arama kutusu (bkz. #page11CanvasSearchInput) + sonuç ızgarası
+  // (#page11CanvasResults): seçili tür (page11PerfType) ve sıralama
+  // (page11CanvasSortOrder) ile birlikte, deneme adı yazılan harflerle
+  // BAŞLIYORSA sonuç listesine girer. Türkçe büyük/küçük harf kurallarına
+  // uysun diye toLocaleLowerCase('tr-TR') kullanılıyor (ör. "İ"/"I" ayrımı).
+  const page11CanvasSearchInput = document.getElementById('page11CanvasSearchInput');
+  const page11CanvasResultsEl = document.getElementById('page11CanvasResults');
+
+  const page11MatchesCanvasSearch = (exam, query) => {
+    if (!query) return true;
+    const name = (exam.name || '').toLocaleLowerCase('tr-TR');
+    return name.startsWith(query);
+  };
+
+  // Bir seferde animasyonla "kayan" kart sayısını makul tutmak için
+  // gecikme yalnızca ilk birkaç karta uygulanır; sonrasında hepsi aynı
+  // anda (gecikmesiz) belirir.
+  const PAGE11_CANVAS_STAGGER_MAX = 10;
+  const PAGE11_CANVAS_STAGGER_STEP_MS = 35;
+
+  const renderPage11CanvasResults = () => {
+    if (!page11CanvasResultsEl) return;
+    const query = (page11CanvasSearchInput ? page11CanvasSearchInput.value : '')
+      .trim()
+      .toLocaleLowerCase('tr-TR');
+    const typeFiltered = page11PerfType === 'all'
+      ? page11State.exams
+      : page11State.exams.filter((exam) => exam.type === page11PerfType);
+    const matched = typeFiltered.filter((exam) => page11MatchesCanvasSearch(exam, query));
+    const sortDir = page11CanvasSortOrder === 'asc' ? 1 : -1;
+    const sorted = [...matched].sort((a, b) => sortDir * (
+      (a.date || '').localeCompare(b.date || '') || (a.ts || 0) - (b.ts || 0)
+    ));
+
+    page11CanvasResultsEl.innerHTML = '';
+
+    if (!sorted.length) {
+      const empty = document.createElement('div');
+      empty.className = 'page11-canvas-results-empty';
+      empty.textContent = page11State.exams.length
+        ? 'Eşleşen deneme bulunamadı.'
+        : 'Henüz deneme eklenmedi.';
+      page11CanvasResultsEl.appendChild(empty);
+      return;
+    }
+
+    sorted.forEach((exam, i) => {
+      const card = createPage11ExamCard(exam);
+      card.classList.add('page11-canvas-card-enter');
+      card.style.animationDelay = `${Math.min(i, PAGE11_CANVAS_STAGGER_MAX) * PAGE11_CANVAS_STAGGER_STEP_MS}ms`;
+      page11CanvasResultsEl.appendChild(card);
+    });
+  };
+
+  if (page11CanvasSearchInput) {
+    page11CanvasSearchInput.addEventListener('input', renderPage11CanvasResults);
+  }
+
+  renderPage11CanvasResults();
+
+  // TYT/AYT için EXAM_SUBJECTS'teki soru sayılarının toplamı (mümkün en
+  // yüksek net); daire grafiğin dolum oranını hesaplamak için kullanılır.
+  const page11PerfMaxNet = (type) => (EXAM_SUBJECTS[type] || EXAM_SUBJECTS.tyt)
+    .reduce((sum, subject) => sum + subject.count, 0);
+
+  const page11PerfDonutCircumference = 2 * Math.PI * 64;
+
+  const renderPage11PerfDonut = (pct, color) => {
+    if (!page11PerfDonutSvg) return;
+    const clamped = Math.max(0, Math.min(1, pct || 0));
+    const offset = page11PerfDonutCircumference * (1 - clamped);
+    page11PerfDonutSvg.innerHTML = `
+      <circle class="page11-perf-donut-track" cx="80" cy="80" r="64" fill="none" stroke-width="14"/>
+      <circle class="page11-perf-donut-progress" cx="80" cy="80" r="64" fill="none" stroke-width="14"
+        stroke="${color}" stroke-linecap="round"
+        stroke-dasharray="${page11PerfDonutCircumference}"
+        stroke-dashoffset="${offset}"
+        transform="rotate(-90 80 80)"/>
+    `;
+  };
+
+  const renderPage11Performance = () => {
+    if (!page11PerfCountEl) return;
+    const isAll = page11PerfType === 'all';
+    const typeLabel = isAll ? 'Deneme' : (PAGE11_TYPE_LABELS[page11PerfType] || 'TYT');
+    if (page11PerfDonutLabelEl) page11PerfDonutLabelEl.textContent = isAll ? 'Ort. Başarı' : 'Ort. Net';
+    const color = isAll
+      ? 'var(--accent-color, #ff90e8)'
+      : ((page11State.colors && page11State.colors[page11PerfType]) || PAGE11_DEFAULT_TYPE_COLORS[page11PerfType]);
+    const exams = isAll
+      ? page11State.exams
+      : page11State.exams.filter((exam) => exam.type === page11PerfType);
+
+    page11PerfCountEl.textContent = String(exams.length);
+    page11PerfCountLabelEl.textContent = isAll ? 'Toplam Deneme' : `Toplam ${typeLabel} Deneme`;
+    page11PerfBestLabelEl.textContent = isAll ? 'En Yüksek Net' : `En Yüksek ${typeLabel} Net`;
+    page11PerfLastLabelEl.textContent = isAll ? 'Son Net' : `Son ${typeLabel} Net`;
+
+    if (!exams.length) {
+      page11PerfDonutValueEl.textContent = '—';
+      page11PerfBestEl.textContent = '—';
+      page11PerfLastEl.textContent = '—';
+      renderPage11PerfDonut(0, color);
+      return;
+    }
+
+    const sortedByDate = [...exams].sort((a, b) => (
+      (b.date || '').localeCompare(a.date || '') || (b.ts || 0) - (a.ts || 0)
+    ));
+    const lastNet = page11ComputeExam(sortedByDate[0]).totalNet;
+
+    if (!isAll) {
+      const nets = exams.map((exam) => page11ComputeExam(exam).totalNet);
+      const avgNet = nets.reduce((sum, n) => sum + n, 0) / nets.length;
+      const bestNet = Math.max(...nets);
+
+      page11PerfDonutValueEl.textContent = page11FormatNet(avgNet);
+      page11PerfBestEl.textContent = page11FormatNet(bestNet);
+      page11PerfLastEl.textContent = page11FormatNet(lastNet);
+      renderPage11PerfDonut(avgNet / page11PerfMaxNet(page11PerfType), color);
+      return;
+    }
+
+    // Tümü: TYT ve AYT netleri farklı ölçeklerde (farklı maksimum soru
+    // sayısı) olduğundan doğrudan ortalanamaz; ortadaki halka bu yüzden
+    // her denemenin KENDİ türündeki maksimuma göre yüzdesi alınıp
+    // ortalanarak çizilir (bir çeşit "ortalama başarı yüzdesi"). Sağdaki
+    // "En Yüksek Net" ve "Son Net" ise bilgi amaçlı ham net değerleridir.
+    const ratios = exams.map((exam) => page11ComputeExam(exam).totalNet / page11PerfMaxNet(exam.type));
+    const avgRatio = ratios.reduce((sum, r) => sum + r, 0) / ratios.length;
+    const bestNet = Math.max(...exams.map((exam) => page11ComputeExam(exam).totalNet));
+
+    page11PerfDonutValueEl.textContent = `%${Math.round(avgRatio * 100)}`;
+    page11PerfBestEl.textContent = page11FormatNet(bestNet);
+    page11PerfLastEl.textContent = page11FormatNet(lastNet);
+    renderPage11PerfDonut(avgRatio, color);
+  };
+
+  const page11MistakeWrongEl = document.getElementById('page11MistakeWrong');
+  const page11MistakeBlankEl = document.getElementById('page11MistakeBlank');
+  const page11MistakeBarWrongEl = document.getElementById('page11MistakeBarWrong');
+  const page11MistakeBarWrongValueEl = document.getElementById('page11MistakeBarWrongValue');
+  const page11MistakeBarFixedEl = document.getElementById('page11MistakeBarFixed');
+  const page11MistakeBarFixedValueEl = document.getElementById('page11MistakeBarFixedValue');
+
+  // Hata Analizi: TYT/AYT ayrımı yapmadan TÜM denemelerdeki toplam
+  // yanlış/boş sayısı, ve 0 Hata Testlerim'de sonradan doğru yapılarak
+  // giderilen hata sayısı (page11State.zeroErrorFixedCount) iki çubukla
+  // karşılaştırılır. Çubuklar birbirine göre değil, ikisinin en büyüğüne
+  // göre ölçeklenir.
+  const renderPage11MistakeStats = () => {
+    if (!page11MistakeWrongEl) return;
+    let totalWrong = 0, totalBlank = 0;
+    page11State.exams.forEach((exam) => {
+      const result = page11ComputeExam(exam);
+      totalWrong += result.totalWrong;
+      totalBlank += result.totalBlank;
+    });
+    const fixed = page11State.zeroErrorFixedCount || 0;
+    const totalMistakes = totalWrong + totalBlank;
+    const barMax = Math.max(totalMistakes, fixed, 1);
+
+    page11MistakeWrongEl.textContent = String(totalWrong);
+    page11MistakeBlankEl.textContent = String(totalBlank);
+    page11MistakeBarWrongEl.style.width = `${(totalMistakes / barMax) * 100}%`;
+    page11MistakeBarFixedEl.style.width = `${(fixed / barMax) * 100}%`;
+    page11MistakeBarWrongValueEl.textContent = String(totalMistakes);
+    page11MistakeBarFixedValueEl.textContent = String(fixed);
+  };
+
   const renderPage11List = () => {
+    renderPage11Performance();
+    renderPage11MistakeStats();
     page11ExamList.innerHTML = '';
     if (!page11State.exams.length) {
       const empty = document.createElement('div');
@@ -42858,11 +44302,15 @@
       page11ExamList.appendChild(empty);
       return;
     }
-    // En yeni tarihli deneme en üstte; aynı tarihte eklenme sırası korunur.
-    const sorted = [...page11State.exams].sort((a, b) => (
-      (b.date || '').localeCompare(a.date || '') || (b.ts || 0) - (a.ts || 0)
+    // Varsayılan: en yeni tarihli deneme en üstte; aynı tarihte eklenme
+    // sırası korunur. page11CanvasSortOrder 'asc' ise (bkz. #page11CanvasSortBtn)
+    // sıra tersine döner, en eski deneme en üstte görünür.
+    const page11SortDir = page11CanvasSortOrder === 'asc' ? 1 : -1;
+    const sorted = [...page11State.exams].sort((a, b) => page11SortDir * (
+      (a.date || '').localeCompare(b.date || '') || (a.ts || 0) - (b.ts || 0)
     ));
     sorted.forEach((exam) => page11ExamList.appendChild(createPage11ExamCard(exam)));
+    renderPage11CanvasResults();
   };
 
   // ================= Denemelerim: Yedekle / Yedek Yükle =================
@@ -43111,8 +44559,9 @@
   const page11ExamNameInput = document.getElementById('page11ExamNameInput');
   const page11ExamDateBtn = document.getElementById('page11ExamDateBtn');
   const page11ExamDateBtnText = document.getElementById('page11ExamDateBtnText');
-  const page11DatePickerBackdrop = document.getElementById('page11DatePickerBackdrop');
+  const page11AddPanels = document.getElementById('page11AddPanels');
   const page11DatePicker = document.getElementById('page11DatePicker');
+  const page11DateBackBtn = document.getElementById('page11DateBackBtn');
   const page11DatePrevBtn = document.getElementById('page11DatePrevBtn');
   const page11DateNextBtn = document.getElementById('page11DateNextBtn');
   const page11DatePickerMonthLabel = document.getElementById('page11DatePickerMonthLabel');
@@ -43138,13 +44587,21 @@
   const page11ToISODate = (d) => `${d.getFullYear()}-${page11Pad2(d.getMonth() + 1)}-${page11Pad2(d.getDate())}`;
 
   // ---- Tarih alanı: native <input type="date"> yerine kendi tasarımımız
-  // olan, pop-up şeklinde açılan takvim. Sayfa 6'daki büyük takvimle aynı
-  // ay/gün hesaplama mantığını ve hafta başlangıcı ayarını (calendarWeekStart,
-  // calendarToday, isSameCalendarDate, CALENDAR_MONTHS/WEEKDAYS_*) paylaşır,
-  // kendi DOM'una ve sınıflarına çizer. ----
+  // olan, pop-up şeklinde açılan mini takvim. Sayfa 6'daki büyük takvimle
+  // aynı ay/gün hesaplama mantığını, hafta başlangıcı ayarını ve render
+  // deseni (dalga girişi, kayan seçim dairesi, ay etiketi geçişi) paylaşır
+  // — sadece küçültülmüş boyutta ve kendi (page11-datepicker-*) sınıflarına
+  // çizer. Ortak yardımcılar (calendarWeekStart, calendarToday,
+  // isSameCalendarDate, CALENDAR_MONTHS/WEEKDAYS_*, replayCalendarAnim) aynı
+  // sayfa içindeki başka bir <script> bloğunda (Sayfa 6) tanımlıdır. ----
   let page11SelectedDate = new Date(calendarToday);
   let page11DateViewYear = page11SelectedDate.getFullYear();
   let page11DateViewMonth = page11SelectedDate.getMonth();
+  let page11DateSlideDir = 0;
+  let page11DateSelectedCell = null;
+  const page11DateCellByDay = new Map();
+  const PAGE11_WAVE_ROW_MS = 34;
+  const PAGE11_WAVE_COL_MS = 16;
 
   const renderPage11DateWeekdaysHeader = () => {
     page11DatePickerWeekdays.innerHTML = '';
@@ -43153,15 +44610,82 @@
       const el = document.createElement('span');
       el.className = 'page11-datepicker-weekday';
       if (dow === 0 || dow === 6) el.classList.add('is-weekend');
+      el.style.setProperty('--c', String(i));
       el.textContent = CALENDAR_WEEKDAYS_SHORT_DOW[dow];
       page11DatePickerWeekdays.appendChild(el);
     }
   };
   renderPage11DateWeekdaysHeader();
 
+  // Seçili günün dairesi: ızgaraya eklenen tek bir eleman; seçim değişince
+  // (veya "Bugün" ile aynı aya dönünce) yaylanarak yeni günün üstüne kayar.
+  const page11DateBubbleEl = document.createElement('span');
+  page11DateBubbleEl.className = 'page11-datepicker-bubble is-hidden';
+  page11DateBubbleEl.setAttribute('aria-hidden', 'true');
+  page11DateBubbleEl.innerHTML = '<span class="page11-datepicker-bubble-dot"></span>';
+
+  const placePage11DateBubble = (cell, animate) => {
+    if (!cell) {
+      page11DateBubbleEl.classList.add('is-hidden');
+      return;
+    }
+    const num = cell.firstElementChild;
+    const size = num.offsetWidth;
+    const wasHidden = page11DateBubbleEl.classList.contains('is-hidden');
+    const jump = !animate || wasHidden;
+    page11DateBubbleEl.style.width = `${size}px`;
+    page11DateBubbleEl.style.height = `${size}px`;
+    if (jump) page11DateBubbleEl.style.transition = 'none';
+    page11DateBubbleEl.style.transform =
+      `translate(${cell.offsetLeft + num.offsetLeft}px, ${cell.offsetTop + num.offsetTop}px)`;
+    if (jump) {
+      void page11DateBubbleEl.offsetWidth;
+      page11DateBubbleEl.style.transition = '';
+    }
+    page11DateBubbleEl.classList.remove('is-hidden');
+    if (animate && wasHidden) {
+      page11DateBubbleEl.style.setProperty('--pop-delay', '0ms');
+      replayCalendarAnim(page11DateBubbleEl, 'is-pop');
+    }
+  };
+
+  // "Bugün" hapı: seçili gün ya da görüntülenen ay bugünden farklıysa görünür.
+  const updatePage11DateTodayBtn = () => {
+    const viewingTodayMonth =
+      page11DateViewYear === calendarToday.getFullYear() && page11DateViewMonth === calendarToday.getMonth();
+    const away = !(viewingTodayMonth && isSameCalendarDate(page11SelectedDate, calendarToday));
+    page11DateTodayBtn.classList.toggle('is-visible', away);
+    page11DateTodayBtn.tabIndex = away ? 0 : -1;
+    page11DateTodayBtn.setAttribute('aria-hidden', away ? 'false' : 'true');
+  };
+
+  const selectPage11DateCell = (cell, date) => {
+    if (!cell || page11DateSelectedCell === cell) return;
+    if (page11DateSelectedCell) page11DateSelectedCell.classList.remove('is-selected');
+    page11DateSelectedCell = cell;
+    cell.classList.add('is-selected');
+    page11SelectedDate = date;
+    placePage11DateBubble(cell, true);
+    updatePage11DateBtnText();
+    updatePage11DateTodayBtn();
+  };
+
   const renderPage11DateGrid = () => {
+    const dir = page11DateSlideDir;
+    page11DateSlideDir = 0;
+    const waveBase = dir === 0 ? 110 : 20;
+
     page11DatePickerGrid.innerHTML = '';
-    page11DatePickerMonthLabel.textContent = `${CALENDAR_MONTHS[page11DateViewMonth]} ${page11DateViewYear}`;
+    page11DatePickerGrid.style.setProperty('--dir', String(dir));
+    page11DatePickerGrid.style.setProperty('--base', `${waveBase}ms`);
+    page11DatePickerGrid.appendChild(page11DateBubbleEl);
+    page11DateSelectedCell = null;
+    page11DateCellByDay.clear();
+
+    page11DatePickerMonthLabel.style.setProperty('--dir', String(dir));
+    page11DatePickerMonthLabel.classList.toggle('is-swap', dir !== 0);
+    page11DatePickerMonthLabel.innerHTML =
+      `<span class="page11-datepicker-month-name">${CALENDAR_MONTHS[page11DateViewMonth]}</span> <span class="page11-datepicker-month-year">${page11DateViewYear}</span>`;
 
     const firstOfMonth = new Date(page11DateViewYear, page11DateViewMonth, 1);
     const jsWeekday = firstOfMonth.getDay();
@@ -43175,9 +44699,10 @@
       const dayNum = i - leadingBlank + 1;
       const cell = document.createElement('button');
       cell.type = 'button';
-      cell.className = 'page11-datepicker-day';
+      cell.className = 'page11-datepicker-day is-anim';
 
       let cellDate;
+      let inMonth = false;
       if (dayNum < 1) {
         cellDate = new Date(page11DateViewYear, page11DateViewMonth - 1, daysInPrevMonth + dayNum);
         cell.classList.add('is-outside');
@@ -43188,28 +44713,55 @@
         cell.disabled = true;
       } else {
         cellDate = new Date(page11DateViewYear, page11DateViewMonth, dayNum);
+        inMonth = true;
       }
 
+      const row = Math.floor(i / 7);
       const columnIndex = i % 7;
+      cell.dataset.r = String(row);
+      cell.dataset.c = String(columnIndex);
+      cell.style.setProperty('--r', String(row));
+      cell.style.setProperty('--c', String(columnIndex));
+
       const columnDow = (columnIndex + calendarWeekStart) % 7;
-      if (columnDow === 0 || columnDow === 6) cell.classList.add('is-weekend'); // Cumartesi & Pazar
+      if (columnDow === 0 || columnDow === 6) cell.classList.add('is-weekend');
 
-      cell.textContent = cellDate.getDate();
+      const num = document.createElement('span');
+      num.className = 'page11-datepicker-day-num';
+      num.textContent = String(cellDate.getDate());
+      cell.appendChild(num);
+
       if (isSameCalendarDate(cellDate, calendarToday)) cell.classList.add('is-today');
-      if (isSameCalendarDate(cellDate, page11SelectedDate)) cell.classList.add('is-selected');
 
-      if (!cell.disabled) {
+      if (inMonth) {
+        cell.setAttribute('aria-label', `${cellDate.getDate()} ${CALENDAR_MONTHS[cellDate.getMonth()]}`);
+        page11DateCellByDay.set(cellDate.getDate(), cell);
+        if (isSameCalendarDate(cellDate, page11SelectedDate)) {
+          cell.classList.add('is-selected');
+          page11DateSelectedCell = cell;
+        }
         cell.addEventListener('click', () => {
-          page11SelectedDate = cellDate;
-          renderPage11DateGrid();
-          updatePage11DateBtnText();
+          selectPage11DateCell(cell, cellDate);
           closePage11DatePicker();
         });
       }
 
       page11DatePickerGrid.appendChild(cell);
     }
+
+    if (page11DateSelectedCell) {
+      const r = Number(page11DateSelectedCell.dataset.r);
+      const c = Number(page11DateSelectedCell.dataset.c);
+      page11DateBubbleEl.style.setProperty('--pop-delay', `${waveBase + r * PAGE11_WAVE_ROW_MS + c * PAGE11_WAVE_COL_MS + 40}ms`);
+    }
+    placePage11DateBubble(page11DateSelectedCell, false);
+    if (page11DateSelectedCell) replayCalendarAnim(page11DateBubbleEl, 'is-pop');
+    updatePage11DateTodayBtn();
   };
+
+  if (typeof ResizeObserver === 'function') {
+    new ResizeObserver(() => placePage11DateBubble(page11DateSelectedCell, false)).observe(page11DatePickerGrid);
+  }
 
   const updatePage11DateBtnText = () => {
     const dayName = CALENDAR_WEEKDAYS_LONG[(page11SelectedDate.getDay() + 6) % 7];
@@ -43221,52 +44773,129 @@
     page11DateViewYear = page11SelectedDate.getFullYear();
     page11DateViewMonth = page11SelectedDate.getMonth();
     renderPage11DateGrid();
-    page11DatePickerBackdrop.classList.add('is-open');
+    page11AddBackdrop.classList.add('is-date-view');
     page11ExamDateBtn.setAttribute('aria-expanded', 'true');
   };
 
   const closePage11DatePicker = () => {
-    page11DatePickerBackdrop.classList.remove('is-open');
+    page11AddBackdrop.classList.remove('is-date-view');
     page11ExamDateBtn.setAttribute('aria-expanded', 'false');
   };
 
   page11ExamDateBtn.addEventListener('click', (e) => {
     e.stopPropagation();
-    if (page11DatePickerBackdrop.classList.contains('is-open')) {
+    if (page11AddBackdrop.classList.contains('is-date-view')) {
       closePage11DatePicker();
     } else {
       openPage11DatePicker();
     }
   });
 
-  // Takvim kartının kendisine tıklamak dışarı tıklama sayılmasın diye;
-  // yalnızca dim arka plana (backdrop'un kendisine) tıklanınca kapanır.
-  page11DatePickerBackdrop.addEventListener('click', (e) => {
-    if (e.target === page11DatePickerBackdrop) closePage11DatePicker();
-  });
+  // "Geri" butonu: takvim görünümünden forma döner.
+  page11DateBackBtn.addEventListener('click', () => closePage11DatePicker());
 
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && page11DatePickerBackdrop.classList.contains('is-open')) closePage11DatePicker();
+    if (e.key === 'Escape' && page11AddBackdrop.classList.contains('is-date-view')) closePage11DatePicker();
   });
 
-  page11DatePrevBtn.addEventListener('click', () => {
+  const goToPage11PrevMonth = () => {
     page11DateViewMonth -= 1;
     if (page11DateViewMonth < 0) { page11DateViewMonth = 11; page11DateViewYear -= 1; }
+    page11DateSlideDir = -1;
     renderPage11DateGrid();
-  });
+  };
 
-  page11DateNextBtn.addEventListener('click', () => {
+  const goToPage11NextMonth = () => {
     page11DateViewMonth += 1;
     if (page11DateViewMonth > 11) { page11DateViewMonth = 0; page11DateViewYear += 1; }
+    page11DateSlideDir = 1;
     renderPage11DateGrid();
+  };
+
+  page11DatePrevBtn.addEventListener('click', goToPage11PrevMonth);
+  page11DateNextBtn.addEventListener('click', goToPage11NextMonth);
+
+  // Ekranda sağa/sola kaydırarak ay değiştirme: dikey sayfa kaydırmasıyla
+  // karışmasın diye yatay hareket, dikey harekete göre belirgin şekilde
+  // baskın olmalı (ve en az ~45px olmalı) — Sayfa 6'daki büyük takvimin
+  // (calendarGridEl) swipe mantığıyla birebir aynı.
+  let page11SwipeStartX = 0;
+  let page11SwipeStartY = 0;
+  let page11SwipeActive = false;
+
+  page11DatePickerGrid.addEventListener('touchstart', (e) => {
+    if (e.touches.length !== 1) return;
+    page11SwipeStartX = e.touches[0].clientX;
+    page11SwipeStartY = e.touches[0].clientY;
+    page11SwipeActive = true;
+  }, { passive: true });
+
+  page11DatePickerGrid.addEventListener('touchend', (e) => {
+    if (!page11SwipeActive) return;
+    page11SwipeActive = false;
+    const touch = e.changedTouches[0];
+    const dx = touch.clientX - page11SwipeStartX;
+    const dy = touch.clientY - page11SwipeStartY;
+    if (Math.abs(dx) < 45 || Math.abs(dx) < Math.abs(dy) * 1.3) return;
+    if (dx < 0) {
+      goToPage11NextMonth();
+    } else {
+      goToPage11PrevMonth();
+    }
+  }, { passive: true });
+
+  page11DatePickerGrid.addEventListener('touchcancel', () => {
+    page11SwipeActive = false;
+  }, { passive: true });
+
+  // Masaüstünde fare ile sürükleyerek de ay değiştirilebilsin diye aynı
+  // eşik/mantık pointer event'leriyle (mouse) tekrarlanır.
+  let page11PointerSwipeStartX = 0;
+  let page11PointerSwipeStartY = 0;
+  let page11PointerSwipeActive = false;
+
+  page11DatePickerGrid.addEventListener('pointerdown', (e) => {
+    if (e.pointerType !== 'mouse') return;
+    page11PointerSwipeStartX = e.clientX;
+    page11PointerSwipeStartY = e.clientY;
+    page11PointerSwipeActive = true;
   });
 
+  page11DatePickerGrid.addEventListener('pointerup', (e) => {
+    if (!page11PointerSwipeActive) return;
+    page11PointerSwipeActive = false;
+    const dx = e.clientX - page11PointerSwipeStartX;
+    const dy = e.clientY - page11PointerSwipeStartY;
+    if (Math.abs(dx) < 45 || Math.abs(dx) < Math.abs(dy) * 1.3) return;
+    if (dx < 0) {
+      goToPage11NextMonth();
+    } else {
+      goToPage11PrevMonth();
+    }
+  });
+
+  page11DatePickerGrid.addEventListener('pointercancel', () => {
+    page11PointerSwipeActive = false;
+  });
+
+  // Takvimi bugüne döndürür: aynı aydaysak daire bugüne kayar; başka
+  // aydaysak ızgara bugünün olduğu yönden akarak yeniden çizilir — Sayfa
+  // 6'daki goToCalendarToday ile aynı mantık.
   page11DateTodayBtn.addEventListener('click', () => {
-    page11SelectedDate = new Date(calendarToday);
-    page11DateViewYear = page11SelectedDate.getFullYear();
-    page11DateViewMonth = page11SelectedDate.getMonth();
-    renderPage11DateGrid();
-    updatePage11DateBtnText();
+    const todayYear = calendarToday.getFullYear();
+    const todayMonth = calendarToday.getMonth();
+    const sameMonth = page11DateViewYear === todayYear && page11DateViewMonth === todayMonth;
+    if (sameMonth) {
+      selectPage11DateCell(page11DateCellByDay.get(calendarToday.getDate()), new Date(calendarToday));
+    } else {
+      const diff = (todayYear * 12 + todayMonth) - (page11DateViewYear * 12 + page11DateViewMonth);
+      page11DateSlideDir = diff > 0 ? 1 : -1;
+      page11SelectedDate = new Date(calendarToday);
+      page11DateViewYear = todayYear;
+      page11DateViewMonth = todayMonth;
+      renderPage11DateGrid();
+      updatePage11DateBtnText();
+    }
     closePage11DatePicker();
   });
 
@@ -43287,9 +44916,18 @@
   };
 
   page11AddExamBtn.addEventListener('click', openPage11AddModal);
+  const page11CanvasAddExamBtn = document.getElementById('page11CanvasAddExamBtn');
+  if (page11CanvasAddExamBtn) page11CanvasAddExamBtn.addEventListener('click', openPage11AddModal);
   page11AddCancelBtn.addEventListener('click', closePage11AddModal);
+  const page11AddCloseBtn = document.getElementById('page11AddCloseBtn');
+  if (page11AddCloseBtn) page11AddCloseBtn.addEventListener('click', closePage11AddModal);
   page11AddBackdrop.addEventListener('click', (e) => {
-    if (e.target === page11AddBackdrop) closePage11AddModal();
+    if (e.target !== page11AddBackdrop) return;
+    if (page11AddBackdrop.classList.contains('is-date-view')) {
+      closePage11DatePicker();
+    } else {
+      closePage11AddModal();
+    }
   });
 
   page11AddConfirmBtn.addEventListener('click', () => {
@@ -45429,6 +47067,7 @@
   });
 
   // ---- İlk render ----
+  page11MoveCanvasTypeSlider();
   renderPage11List();
 </script>
 
@@ -45972,7 +47611,13 @@
     });
   };
 
-  const openZeroErrorPage = () => {
+  // "0 Hata Testlerim"e hem Analizlerim'den hem de artık Denemelerim'in
+  // sağ sütunundaki Hata Analizi bölümünden girilebiliyor; geri dönüşün
+  // hangisinden açıldığına göre doğru sayfaya olması için kaydedilir.
+  let zeroErrorReturnPage = 'page-analytics';
+
+  const openZeroErrorPage = (returnPage) => {
+    zeroErrorReturnPage = returnPage || 'page-analytics';
     renderZeroErrorList();
     document.body.classList.add('is-zero-error-open');
     goToPage('page-zero-error');
@@ -45980,11 +47625,16 @@
 
   const closeZeroErrorPage = () => {
     document.body.classList.remove('is-zero-error-open');
-    goToPage('page-analytics');
+    goToPage(zeroErrorReturnPage);
   };
 
-  analyticsZeroErrorBtn.addEventListener('click', openZeroErrorPage);
+  analyticsZeroErrorBtn.addEventListener('click', () => openZeroErrorPage('page-analytics'));
   zeroErrorBackBtn.addEventListener('click', closeZeroErrorPage);
+
+  const page11MistakeZeroErrorBtn = document.getElementById('page11MistakeZeroErrorBtn');
+  if (page11MistakeZeroErrorBtn) {
+    page11MistakeZeroErrorBtn.addEventListener('click', () => openZeroErrorPage('page-11'));
+  }
 </script>
 
 <script>
@@ -48447,6 +50097,16 @@
     });
   };
 
+  // Test, "0 Hata Testlerim"den başlatıldıysa (qhavuzTestReturnPage bunu
+  // işaret eder) ve soru doğru yapıldıysa, Denemelerim'deki Hata Analizi
+  // grafiğinin "Giderilen" sayacını 1 artırır ve kalıcı olarak kaydeder.
+  const qhavuzTestNoteZeroErrorFix = () => {
+    if (qhavuzTestReturnPage !== 'page-zero-error') return;
+    page11State.zeroErrorFixedCount = (page11State.zeroErrorFixedCount || 0) + 1;
+    savePage11State();
+    if (typeof renderPage11MistakeStats === 'function') renderPage11MistakeStats();
+  };
+
   // Bir şıkka basılınca: doğru cevap her zaman yeşile "zıplar"; kullanıcı
   // yanlış işaretlediyse kendi seçtiği şık da ayrıca kırmızıya boyanır.
   // İşaretlendikten sonra tüm şıklar kilitlenir ve "Sonraki Soru"/"Testi
@@ -48459,6 +50119,7 @@
     const isCorrect = letter === item.answer;
     if (isCorrect) {
       qhavuzTestScore += 1;
+      qhavuzTestNoteZeroErrorFix();
       // Soru havuzundaki karta yeşil tik atmak için işaretle ve kaydet.
       // (0 Hata Testlerim gibi soru havuzu dışından gelen sorularda bu
       // alan yoktur; yalnızca gerçek havuz öğeleri güncellenir.)
@@ -48505,6 +50166,7 @@
 
     if (isCorrect) {
       qhavuzTestScore += 1;
+      qhavuzTestNoteZeroErrorFix();
       if (!item.solved && qhavuzState.items.includes(item)) {
         item.solved = true;
         saveQhavuzState();
@@ -48548,6 +50210,7 @@
     const item = qhavuzTestQuestions[qhavuzTestIndex];
     if (isCorrect) {
       qhavuzTestScore += 1;
+      qhavuzTestNoteZeroErrorFix();
       if (!item.solved && qhavuzState.items.includes(item)) {
         item.solved = true;
         saveQhavuzState();
