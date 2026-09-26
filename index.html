@@ -26149,14 +26149,26 @@
       color: color-mix(in srgb, var(--theme-text, #f2f2f4) 45%, transparent);
     }
 
-    /* Sonuç ızgarası: arama/tür/sıralama filtrelerine göre anlık güncellenen
-       deneme kartları. Kartların kendisi (.page11-exam-card) zaten var olan
-       kalın çerçeveli dili korur — sadece bu ızgaranın düzeni yeni. */
+    /* Sonuç listesi: her satırda TEK deneme, tam genişlikte, yatay bir
+       şerit kart (bkz. .page11-wide-card). Kalın çerçeveli/beyaz mobil
+       kart dili burada BİLİNÇLİ OLARAK terk edildi — canvas zaten kartsız/
+       kenarlıksız, saf siyah zemine oturan bir dil kullanıyor; bu yeni kart
+       da o zeminle (hatta tema #000 olsa bile) uyumlu, kenarlıksız/camsı
+       (glass) bir yüzey kullanıyor. */
     #page-11.page .page11-canvas-results {
       margin-top: 1.4rem;
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-      gap: 1rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.85rem;
+    }
+
+    /* Kartlar tam genişliğe (canvas'ın tüm 1180px'ine) yayılmak yerine
+       artık sabit bir üst sınırla (900px) ortalanır — çok geniş
+       ekranlarda tek satırlık kart aşırı uzayıp isim/net arası boşluğun
+       "boş" görünmesini engeller. */
+    .page11-wide-card {
+      max-width: 900px;
     }
 
     #page-11.page .page11-canvas-results-empty {
@@ -26183,6 +26195,320 @@
 
     #page-11.page .page11-canvas-results .page11-canvas-card-enter {
       animation: page11CanvasCardIn 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+
+    /* ---------- Geniş ekran: yatay "şerit" deneme kartı (.page11-wide-card) ----------
+       Yüzey dokusu artık aynı sayfadaki arama kutusuyla (.page11-canvas-search)
+       BİREBİR aynı reçete: kenarlıksız, düz color-mix dolgu + iç gölge —
+       ayrı bir "cam kart" icat etmek yerine canvas'ın zaten kullandığı
+       dokuyla tam tutarlı. Kararlı/tema-bağımsız kalması için TÜM renkler
+       var(--theme-text) üzerinden türetilir (sabit #fff YOK). Tüm yazı
+       tipi Baloo 2. Kart: solda TYT/AYT'yi hem renk hem YAZIYLA belli eden
+       KARE amblem, ortada isim (öne çıkan, büyük) ve tarih, sağda NET
+       (sayı + birim yan yana, en öne çıkan eleman). Kart eskisinden daha
+       ferah/yüksek: amblemin kare oranı ve dikey nefes payı için boyu
+       aşağı doğru genişletildi. */
+    .page11-wide-card {
+      position: relative;
+      width: 100%;
+      box-sizing: border-box;
+      display: flex;
+      align-items: center;
+      gap: 1.15rem;
+      padding: 1.25rem 1.4rem;
+      border-radius: 1.15em;
+      font-family: "Baloo 2", "Space Grotesk", sans-serif;
+      background-color: color-mix(in srgb, var(--theme-text, #121212) 8%, transparent);
+      /* NOT: hover halindeki (.is-wide-hover) box-shadow ile AYNI sayıda
+         katman (3) kasıtlı olarak burada da tutuluyor — fazladan iki katman
+         0 yayılım/opaklıkla "görünmez" bırakılıyor. Tarayıcılar box-shadow
+         geçişlerini yalnızca iki taraftaki katman SAYISI eşitse düzgün
+         interpolasyon yaparak animasyonluyor; sayı farklıysa geçiş ortada
+         bir yerde aniden/sert bir şekilde atlıyordu (imleç kalktığında
+         glow'un "geç ve sert kapanması" bundan kaynaklanıyordu). */
+      box-shadow:
+        inset 0 1px 3px 0 color-mix(in srgb, var(--theme-text, #121212) 10%, transparent),
+        0 0 0 0 transparent,
+        0 0 0 0 transparent;
+      cursor: pointer;
+      transition: background-color 0.18s ease, transform 0.15s ease, box-shadow 0.2s ease-out;
+    }
+
+    /* Glow: artık tarayıcının "hover" yeteneği bildirmesine bağlı bir
+       @media sorgusu içinde değil — bazı tablet+kalem kombinasyonlarında
+       tarayıcı bunu güvenilir bildirmiyor. Bunun yerine JS'in gerçek
+       Pointer Events ile eklediği .is-wide-hover sınıfına bağlı (bkz.
+       createPage11WideExamCard: pointerenter/pointerleave), böylece kalem
+       ekrana değmeden üzerine gelince de, fare ile üzerine gelince de
+       aynı şekilde çalışır. */
+    .page11-wide-card.is-wide-hover {
+      background-color: color-mix(in srgb, var(--theme-text, #121212) 13%, transparent);
+      box-shadow:
+        inset 0 1px 3px 0 color-mix(in srgb, var(--theme-text, #121212) 10%, transparent),
+        0 0 0 1.5px color-mix(in srgb, var(--wide-accent, #3f5aa8) 40%, transparent),
+        0 10px 28px -10px color-mix(in srgb, var(--wide-accent, #3f5aa8) 55%, transparent);
+      transform: translateY(-2px);
+    }
+
+    .page11-wide-card:active {
+      transform: translateY(0) scale(0.997);
+      background-color: color-mix(in srgb, var(--theme-text, #121212) 13%, transparent);
+      box-shadow:
+        inset 0 1px 3px 0 color-mix(in srgb, var(--theme-text, #121212) 10%, transparent),
+        0 0 0 1.5px color-mix(in srgb, var(--wide-accent, #3f5aa8) 40%, transparent),
+        0 10px 28px -10px color-mix(in srgb, var(--wide-accent, #3f5aa8) 55%, transparent);
+    }
+
+    /* TYT/AYT amblemi: tür rengiyle dolgulu, KARE (bir önceki sürümdeki
+       oranla aynı) rozet; içinde türün TAM adı ("TYT"/"AYT") yazılı. */
+    .page11-wide-emblem {
+      flex: 0 0 auto;
+      width: 3rem;
+      height: 3rem;
+      border-radius: 0.85em;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(155deg, color-mix(in srgb, var(--wide-accent, #3f5aa8) 100%, white 22%), var(--wide-accent, #3f5aa8) 65%, color-mix(in srgb, var(--wide-accent, #3f5aa8) 100%, black 12%));
+      box-shadow:
+        0 4px 12px -3px color-mix(in srgb, var(--wide-accent, #3f5aa8) 65%, transparent),
+        inset 0 1px 0 0 rgba(255, 255, 255, 0.32),
+        inset 0 -1px 2px 0 rgba(0, 0, 0, 0.18);
+      border: none;
+      padding: 0;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      transition: filter 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      .page11-wide-emblem:hover {
+        filter: brightness(1.06);
+      }
+    }
+
+    .page11-wide-emblem:active {
+      transform: scale(0.94);
+      filter: brightness(1.1);
+    }
+
+    .page11-wide-emblem-letter {
+      font-family: "Baloo 2", sans-serif;
+      font-weight: 800;
+      font-size: 0.74rem;
+      letter-spacing: 0.01em;
+      color: #fff;
+      line-height: 1;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    }
+
+    /* İsim + tarih: isim ön planda (büyük/kalın), tarih altında sakin/
+       ikincil bilgi olarak durur; tür artık amblemde yazılı olduğu için
+       ayrı bir rozet pili burada tekrar etmiyor. */
+    .page11-wide-main {
+      flex: 1 1 auto;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0.28rem;
+    }
+
+    .page11-wide-name {
+      display: block;
+      font-family: "Baloo 2", sans-serif;
+      font-weight: 700;
+      font-size: 1.22rem;
+      letter-spacing: -0.008em;
+      color: var(--theme-text, #000);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .page11-wide-date {
+      font-family: "Baloo 2", sans-serif;
+      font-weight: 600;
+      font-size: 0.78rem;
+      color: color-mix(in srgb, var(--theme-text, #000) 50%, transparent);
+      white-space: nowrap;
+    }
+
+    /* Sağ uç: NET — kartın en öne çıkan elemanı, isimden sonra ikinci
+       odak noktası. Tür rengiyle boyanır (TYT/AYT ayrımı burada da
+       sürer), büyük punto ve yüksek kontrastla. Birim ("net") artık
+       sayının ALTINDA değil, YANINDA, taban hizalı duruyor. Trend oku
+       varsa net'in altında, küçük ve sakin bir ek bilgi olarak durur. */
+    .page11-wide-side {
+      flex: 0 0 auto;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 0.15rem;
+      min-width: 4.8rem;
+      text-align: right;
+    }
+
+    .page11-wide-net {
+      display: flex;
+      align-items: baseline;
+      gap: 0.35rem;
+      font-family: "Baloo 2", sans-serif;
+      font-weight: 800;
+      font-size: 1.85rem;
+      letter-spacing: -0.015em;
+      color: var(--wide-accent, var(--theme-text, #000));
+      line-height: 1;
+      white-space: nowrap;
+    }
+
+    .page11-wide-net span {
+      font-family: "Baloo 2", sans-serif;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+      color: color-mix(in srgb, var(--theme-text, #000) 42%, transparent);
+    }
+
+    /* Trend oku: aynı türdeki bir önceki denemeye göre net farkı. Yeşil/
+       kırmızı ton fark yönünü, ok ikonu da aynı bilgiyi ikinci kez ama
+       renkten bağımsız (renk körlüğü dahil) okunur kılar. */
+    .page11-wide-trend {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.22rem;
+      font-family: "Baloo 2", sans-serif;
+      font-weight: 700;
+      font-size: 0.72rem;
+      line-height: 1;
+      padding: 0.15rem 0.4rem;
+      border-radius: 999px;
+    }
+
+    .page11-wide-trend.is-up {
+      color: #1f8a4d;
+      background: color-mix(in srgb, #5cd68a 22%, transparent);
+    }
+
+    .page11-wide-trend.is-down {
+      color: #d8394a;
+      background: color-mix(in srgb, #ff5c5c 18%, transparent);
+    }
+
+    /* Silme rozeti: sağ kenarda, kartın normal akışının dışında (mutlak
+       konumlu) — düzenleme modu aktifken belirir, mobildeki köşe rozeti
+       mantığının aynısı ama artık kartın dışına taşmıyor. */
+    .page11-wide-delete {
+      position: absolute;
+      top: 50%;
+      right: 0.6rem;
+      transform: translateY(-50%) scale(0.6);
+      width: 1.7rem;
+      height: 1.7rem;
+      font-size: 0.85rem;
+      font-family: "Baloo 2", sans-serif;
+      border-radius: 50%;
+      border: none;
+      background: color-mix(in srgb, var(--theme-text, #000) 14%, transparent);
+      color: var(--theme-text, #000);
+      opacity: 0;
+      pointer-events: none;
+      transition: transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.2s ease,
+        background-color 0.2s ease, color 0.2s ease;
+    }
+
+    .page11-wide-delete:hover {
+      background: #ff5c5c;
+      color: #fff;
+    }
+
+    .page11-canvas-results.is-edit-mode .page11-wide-card {
+      padding-right: 3rem;
+    }
+
+    .page11-canvas-results.is-edit-mode .page11-wide-delete {
+      opacity: 1;
+      transform: translateY(-50%) scale(1);
+      pointer-events: auto;
+    }
+
+    .page11-wide-card.is-locked .page11-wide-delete {
+      display: none;
+    }
+
+    /* Kilit/seçim göstergesi: artık kartın en soluna ayrı bir sütun açıp
+       amblemi ve isim/tarihi sağa itmiyor. Bunun yerine doğrudan TYT/AYT
+       amblemi üzerine iliştirilmiş, sabit boyutlu küçük bir köşe rozeti —
+       emblem her zaman kartın aynı ilk konumunda durur, kilitli olsun ya
+       da olmasın hiçbir öğe kaymaz. */
+    .page11-wide-emblem {
+      position: relative;
+    }
+
+    .page11-wide-lock-badge,
+    .page11-wide-select {
+      position: absolute;
+      bottom: -0.3rem;
+      right: -0.3rem;
+      width: 1.2rem;
+      height: 1.2rem;
+      box-sizing: border-box;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      opacity: 0;
+      transform: scale(0.5);
+      pointer-events: none;
+      transition: transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.2s ease,
+        background-color 0.2s ease, border-color 0.2s ease;
+    }
+
+    .page11-wide-lock-badge {
+      background: var(--theme-text, #121212);
+      color: var(--theme-bg, #fff);
+      border: 2px solid var(--theme-bg, #fff);
+    }
+
+    .page11-wide-card.is-locked .page11-wide-lock-badge {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    /* Seçim modunda kilit rozeti aynı köşeyi seçim onay kutusuyla
+       paylaşır; ikisi aynı anda gösterilmez (mobildeki mantıkla aynı). */
+    .page11-canvas-results.is-select-mode .page11-wide-lock-badge {
+      display: none;
+    }
+
+    .page11-wide-select {
+      background: color-mix(in srgb, var(--theme-text, #000) 55%, transparent);
+      color: #fff;
+      border: 2px solid var(--theme-bg, #fff);
+    }
+
+    .page11-wide-select svg {
+      opacity: 0;
+      transition: opacity 0.15s ease;
+    }
+
+    .page11-canvas-results.is-select-mode .page11-wide-select {
+      opacity: 1;
+      transform: scale(1);
+      pointer-events: auto;
+    }
+
+    .page11-wide-card.is-selected .page11-wide-select {
+      background: var(--accent-color, #ff90e8);
+      border-color: var(--theme-bg, #fff);
+    }
+
+    .page11-wide-card.is-selected .page11-wide-select svg {
+      opacity: 1;
+    }
+
+    .page11-canvas-results.is-select-mode .page11-wide-card.is-selected {
+      background: color-mix(in srgb, var(--accent-color, #ff90e8) 16%, transparent);
     }
 
     /* Seçim paneli (segmented) ve sıralama filtresi aynı satırda, uçlara
@@ -43817,6 +44143,7 @@
     page11EditMode = on;
     if (on) setPage11SelectMode(false);
     page11ExamList.classList.toggle('is-edit-mode', on);
+    if (page11CanvasResultsEl) page11CanvasResultsEl.classList.toggle('is-edit-mode', on);
     page11EditBtn.classList.toggle('is-active', on);
     page11EditBtn.setAttribute('aria-pressed', on ? 'true' : 'false');
     page11EditBtn.setAttribute('aria-label', on ? 'Düzenlemeyi bitir' : 'Denemeleri düzenle');
@@ -43849,6 +44176,7 @@
     if (on) setPage11EditMode(false);
     else page11SelectedIds.clear();
     page11ExamList.classList.toggle('is-select-mode', on);
+    if (page11CanvasResultsEl) page11CanvasResultsEl.classList.toggle('is-select-mode', on);
     page11SelectBar.hidden = !on;
     updatePage11SelectBar();
   };
@@ -44047,6 +44375,208 @@
     return card;
   };
 
+  // ---- Geniş ekran: yatay "şerit" deneme kartı (.page11-wide-card) ----
+  // createPage11ExamCard ile aynı veri modelini (page11ComputeExam, kilit,
+  // seçim, silme, uzun-basma yedekleme) kullanır; yalnızca DOM/CSS'i tek
+  // satırlık geniş ekran düzenine göre farklıdır (bkz. yukarıdaki CSS).
+  // Düzenleme/seçim modu durumu sınıf olarak kartın kendi konteynerine
+  // (#page11CanvasResults) eklenir; her kart CSS'te bu konteyner sınıfına
+  // göre tepki verir (.page11-canvas-results.is-edit-mode ...).
+
+  // Trend oku: bir denemenin AYNI TÜRDEKİ (TYT/AYT) bir önceki denemesine
+  // göre net'i artmış mı azalmış mı, onu bulur. Kronolojik sıra listedeki
+  // görünür sıralama/filtreden bağımsız, gerçek tarih/eklenme sırasına
+  // (page11State.exams içindeki TÜM kayıtlar) göre hesaplanır — böylece
+  // arama/sıralama değişse de trend ok yönü değişmez.
+  const page11PrevExamOfType = (exam) => {
+    const sameType = page11State.exams
+      .filter((it) => it.type === exam.type)
+      .sort((a, b) => (
+        (a.date || '').localeCompare(b.date || '') || (a.ts || 0) - (b.ts || 0)
+      ));
+    const idx = sameType.findIndex((it) => it.id === exam.id);
+    return idx > 0 ? sameType[idx - 1] : null;
+  };
+
+  const createPage11WideExamCard = (exam) => {
+    const result = page11ComputeExam(exam);
+    const card = document.createElement('div');
+    card.className = 'page11-wide-card';
+    const typeColor = page11State.colors[exam.type] || PAGE11_DEFAULT_TYPE_COLORS[exam.type];
+    card.style.setProperty('--wide-accent', typeColor);
+
+    // TYT/AYT amblemi: tür rengiyle dolgulu rozet + türün TAM adı yazılı.
+    const emblem = document.createElement('button');
+    emblem.type = 'button';
+    emblem.className = 'page11-wide-emblem';
+    emblem.setAttribute('aria-label', `${PAGE11_TYPE_LABELS[exam.type] || 'TYT'} rengini değiştir`);
+    const emblemLetter = document.createElement('span');
+    emblemLetter.className = 'page11-wide-emblem-letter';
+    emblemLetter.textContent = PAGE11_TYPE_LABELS[exam.type] || 'TYT';
+    emblem.appendChild(emblemLetter);
+    emblem.addEventListener('click', (e) => {
+      e.stopPropagation();
+      openColorPicker(`${PAGE11_TYPE_LABELS[exam.type] || 'TYT'} rengi`, page11State.colors[exam.type], (color) => {
+        page11State.colors[exam.type] = color;
+        savePage11State();
+        renderPage11List();
+      });
+    });
+
+    const main = document.createElement('div');
+    main.className = 'page11-wide-main';
+
+    const name = document.createElement('span');
+    name.className = 'page11-wide-name';
+    name.textContent = exam.name;
+
+    const date = document.createElement('span');
+    date.className = 'page11-wide-date';
+    date.textContent = page11FormatDate(exam.date);
+
+    main.appendChild(name);
+    main.appendChild(date);
+
+    const side = document.createElement('div');
+    side.className = 'page11-wide-side';
+
+    const net = document.createElement('div');
+    net.className = 'page11-wide-net';
+    page11AnimateCounter(net, `examWideCardNet:${exam.id}`, result.totalNet, { decimals: true, suffix: 'net', spacer: true });
+    side.appendChild(net);
+
+    // Trend oku: aynı türdeki bir önceki denemeye göre net farkı.
+    const prevExam = page11PrevExamOfType(exam);
+    if (prevExam) {
+      const prevNet = page11ComputeExam(prevExam).totalNet;
+      const diff = result.totalNet - prevNet;
+      if (Math.abs(diff) >= 0.05) {
+        const trend = document.createElement('span');
+        trend.className = `page11-wide-trend ${diff > 0 ? 'is-up' : 'is-down'}`;
+        const arrow = diff > 0
+          ? '<svg viewBox="0 0 24 24" width="10" height="10"><path d="M12 19V5M6 11l6-6 6 6" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+          : '<svg viewBox="0 0 24 24" width="10" height="10"><path d="M12 5v14M6 13l6 6 6-6" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+        trend.innerHTML = `${arrow}<span>${page11FormatNet(Math.abs(diff))}</span>`;
+        trend.setAttribute('aria-label', `${PAGE11_TYPE_LABELS[exam.type] || 'TYT'}'deki bir önceki denemeye göre net ${diff > 0 ? 'artışı' : 'düşüşü'}: ${page11FormatNet(Math.abs(diff))}`);
+        side.appendChild(trend);
+      }
+    }
+
+    const delBtn = document.createElement('button');
+    delBtn.type = 'button';
+    delBtn.className = 'delete-btn page11-wide-delete';
+    delBtn.textContent = '×';
+    delBtn.setAttribute('aria-label', `"${exam.name}" denemesini sil`);
+    delBtn.disabled = !!exam.locked;
+    delBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (exam.locked) return;
+      openPage8Confirm(exam.name, () => {
+        page11State.exams = page11State.exams.filter((it) => it.id !== exam.id);
+        savePage11State();
+        renderPage11List();
+      });
+    });
+
+    // Kilit/seçim rozeti: artık kartı sağa iten, amblemden önce ayrı bir
+    // sütun açan bir alan DEĞİL — doğrudan TYT/AYT amblemi üzerine
+    // iliştirilmiş, sabit boyutlu küçük bir köşe rozeti (bkz. CSS:
+    // .page11-wide-emblem position:relative). Böylece emblem ve isim,
+    // deneme kilitli olsun ya da olmasın HER ZAMAN aynı yerde durur.
+    const selectMark = document.createElement('span');
+    selectMark.className = 'page11-wide-select';
+    selectMark.setAttribute('aria-hidden', 'true');
+    selectMark.innerHTML = '<svg viewBox="0 0 24 24" width="10" height="10"><path d="M4 12.5l5 5L20 6" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    emblem.appendChild(selectMark);
+
+    card.appendChild(emblem);
+    card.appendChild(main);
+    card.appendChild(side);
+    card.appendChild(delBtn);
+
+    if (page11SelectedIds.has(exam.id)) card.classList.add('is-selected');
+
+    if (exam.locked) {
+      card.classList.add('is-locked');
+      const lockBadge = document.createElement('span');
+      lockBadge.className = 'page11-wide-lock-badge';
+      lockBadge.setAttribute('aria-label', `"${exam.name}" denemesi kilitli`);
+      lockBadge.innerHTML = '<svg viewBox="0 0 24 24" width="10" height="10"><rect x="5" y="10.5" width="14" height="9.5" rx="2" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><circle cx="12" cy="14.7" r="1.3" fill="currentColor"/></svg>';
+      emblem.appendChild(lockBadge);
+    }
+
+    // Glow: CSS'in "hover" yeteneğini algılamak için kullandığı medya
+    // özellikleri (hover/any-hover) bazı tablet+kalem kombinasyonlarında
+    // tarayıcı tarafından güncellenmiyor — kalem havadayken bile tarayıcı
+    // "hover yok" bildirebiliyor. Bu yüzden glow artık CSS :hover'a değil,
+    // gerçek Pointer Events'e (pointerenter/pointerleave) bağlı: kalem
+    // (veya fare) ekrana değmeden kartın üzerine gelince de bu olaylar
+    // tetiklenir, dokunmatik parmak temasında ise dokunma anında kısaca
+    // görünüp kalkışta kaybolur.
+    // Glow: bazı tarayıcılarda kalem aniden algılama menzilinden çıkınca
+    // (örn. başka bir öğeye geçmeden doğrudan yukarı çekilince)
+    // 'pointerleave' hiç tetiklenmeyebiliyor ve glow orada asılı kalıyor.
+    // Bunu önlemek için her sinyalde (pointerenter/pointermove) kısa bir
+    // "canlılık" süresi yeniden başlatılıyor; bu süre içinde yeni bir
+    // sinyal gelmezse (kalem tamamen çekilmiş demektir) glow otomatik
+    // kapanır. Gerçek 'pointerleave'/'pointerout' geldiğinde zaten anında
+    // kapanıyor, bu sadece o olayın kaçırıldığı durumlar için bir güvence.
+    let wideHoverTimer = null;
+    const wideHoverClear = () => {
+      clearTimeout(wideHoverTimer);
+      wideHoverTimer = null;
+      card.classList.remove('is-wide-hover');
+    };
+    const wideHoverRefresh = () => {
+      card.classList.add('is-wide-hover');
+      clearTimeout(wideHoverTimer);
+      wideHoverTimer = setTimeout(wideHoverClear, 260);
+    };
+    card.addEventListener('pointerenter', wideHoverRefresh);
+    card.addEventListener('pointermove', wideHoverRefresh);
+    card.addEventListener('pointerleave', wideHoverClear);
+    card.addEventListener('pointerout', wideHoverClear);
+    card.addEventListener('pointercancel', wideHoverClear);
+    card.addEventListener('pointerup', wideHoverClear);
+
+    card.addEventListener('click', () => {
+      if (page11LongPressFired) { page11LongPressFired = false; return; }
+      if (page11SelectMode) { togglePage11Selection(exam.id); return; }
+      openExamDetail(exam.id);
+    });
+
+    let longPressTimer = null;
+    let longPressStart = null;
+    const clearLongPress = () => {
+      if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer = null; }
+      longPressStart = null;
+    };
+    card.addEventListener('pointerdown', (e) => {
+      if (e.pointerType === 'mouse' && e.button !== 0) return;
+      if (page11EditMode || page11SelectMode) return;
+      longPressStart = { x: e.clientX, y: e.clientY };
+      clearTimeout(longPressTimer);
+      longPressTimer = setTimeout(() => {
+        longPressTimer = null;
+        page11LongPressFired = true;
+        if (navigator.vibrate) { try { navigator.vibrate(12); } catch (err) { /* yok say */ } }
+        openPage11BackupConfirm(exam);
+      }, PAGE11_LONG_PRESS_MS);
+    });
+    card.addEventListener('pointermove', (e) => {
+      if (!longPressTimer || !longPressStart) return;
+      const dx = Math.abs(e.clientX - longPressStart.x);
+      const dy = Math.abs(e.clientY - longPressStart.y);
+      if (dx > PAGE11_LONG_PRESS_TOLERANCE || dy > PAGE11_LONG_PRESS_TOLERANCE) clearLongPress();
+    });
+    card.addEventListener('pointerup', clearLongPress);
+    card.addEventListener('pointerleave', clearLongPress);
+    card.addEventListener('pointercancel', clearLongPress);
+    card.addEventListener('contextmenu', (e) => e.preventDefault());
+
+    return card;
+  };
+
   // GEÇİCİ: Sayfa 11 (Denemelerim) yeniden tasarım tuvalindeki "Genel
   // Performans" bölümü. Seçili türe (TYT/AYT) göre: daire grafiğin
   // ortasında ortalama net, yanında toplam deneme sayısı, en yüksek net
@@ -44168,7 +44698,7 @@
     }
 
     sorted.forEach((exam, i) => {
-      const card = createPage11ExamCard(exam);
+      const card = createPage11WideExamCard(exam);
       card.classList.add('page11-canvas-card-enter');
       card.style.animationDelay = `${Math.min(i, PAGE11_CANVAS_STAGGER_MAX) * PAGE11_CANVAS_STAGGER_STEP_MS}ms`;
       page11CanvasResultsEl.appendChild(card);
