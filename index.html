@@ -12828,6 +12828,128 @@
     pointer-events: none;
   }
 
+  /* ---------- Sayfa 11: "Seç ve Yedekle" modu ----------
+     Düzenleme modundaki silme rozetinin (sağ üst) aynası, ama sol üstte
+     ve bir onay kutusu gibi davranır: yedeklenecek denemeler dokunularak
+     işaretlenir. Kilit rozetiyle aynı köşeyi paylaştığı için o mod
+     aktifken kilit rozeti gizlenir (bkz. aşağıdaki kural). */
+  .page11-exam-select {
+    position: absolute;
+    top: -0.6rem;
+    left: -0.6rem;
+    width: 1.7rem;
+    height: 1.7rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    background: #fff;
+    border: 2.5px solid #000;
+    border-radius: 50%;
+    box-shadow: 2px 2px 0px 0px #000;
+    opacity: 0;
+    transform: scale(0.6);
+    pointer-events: none;
+    transition: transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.2s ease,
+      background-color 0.2s ease, border-color 0.2s ease;
+  }
+
+  .page11-exam-select svg {
+    opacity: 0;
+    transition: opacity 0.15s ease;
+  }
+
+  .page11-list.is-select-mode .page11-exam-select {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  .page11-list.is-select-mode .page11-exam-lock-badge {
+    display: none;
+  }
+
+  .page11-exam-card.is-selected .page11-exam-select {
+    background: #121212;
+    border-color: #121212;
+  }
+
+  .page11-exam-card.is-selected .page11-exam-select svg {
+    opacity: 1;
+  }
+
+  .page11-list.is-select-mode .page11-exam-card.is-selected {
+    box-shadow: 6px 6px 0px 0px #2f6fe4;
+  }
+
+  /* Seçim modunda alt kısımda beliren, seçim sayısı + Vazgeç/Yedekle
+     aksiyonlarını içeren yapışkan çubuk. */
+  .page11-select-bar {
+    position: sticky;
+    bottom: 0.75rem;
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    background: #121212;
+    color: #fff;
+    border: 3px solid #000;
+    border-radius: 1rem;
+    box-shadow: 5px 5px 0px 0px #000;
+    padding: 0.7rem 0.9rem;
+  }
+
+  .page11-select-bar[hidden] {
+    display: none;
+  }
+
+  .page11-select-count {
+    font-family: "Space Grotesk", sans-serif;
+    font-weight: 700;
+    font-size: 0.85rem;
+    white-space: nowrap;
+  }
+
+  .page11-select-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-shrink: 0;
+  }
+
+  .page11-select-cancel,
+  .page11-select-confirm {
+    font-family: "Space Grotesk", sans-serif;
+    font-weight: 800;
+    font-size: 0.8rem;
+    border: 2.5px solid #000;
+    border-radius: 0.75rem;
+    padding: 0.5rem 0.8rem;
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+  }
+
+  .page11-select-cancel {
+    background: #fff;
+    color: #121212;
+  }
+
+  .page11-select-confirm {
+    background: #2f6fe4;
+    color: #fff;
+  }
+
+  .page11-select-confirm:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  .page11-select-cancel:active,
+  .page11-select-confirm:not(:disabled):active {
+    transform: translate(1px, 1px);
+    box-shadow: none;
+  }
+
   /* ---------- Sayfa 11: Deneme ekleme pop-up'ı (settings-confirm-backdrop
      ile aynı dil, kendi form alanlarıyla) ---------- */
   .page11-modal-card {
@@ -19842,6 +19964,11 @@
   .settings-confirm-confirm:active {
     transform: translate(1px, 1px);
     box-shadow: 1px 1px 0px 0px #000;
+  }
+
+  /* Yedekleme onayı yıkıcı bir işlem olmadığı için kırmızı yerine mavi. */
+  .settings-confirm-confirm.is-backup {
+    background: #2f6fe4;
   }
 
   /* Satır metinleri artık --theme-text ile zemine göre otomatik uyarlandığı
@@ -27189,6 +27316,21 @@
     </div>
   </div>
 
+  <!-- Bir deneme kartı basılı tutulduğunda (uzun basma) açılan, tek bir
+       denemeyi yedeklemeyi onaylatan küçük pop-up. Aynı brutalist
+       görünümü page8ConfirmBackdrop ile paylaşır, sadece rengi ve metni
+       farklıdır (bkz. .settings-confirm-confirm.is-backup). -->
+  <div class="settings-confirm-backdrop" id="page11BackupConfirmBackdrop">
+    <div class="settings-confirm-card">
+      <span class="settings-confirm-title">Deneme yedeklensin mi?</span>
+      <span class="settings-confirm-desc" id="page11BackupConfirmDesc"></span>
+      <div class="settings-confirm-actions">
+        <button type="button" class="settings-confirm-cancel" id="page11BackupConfirmCancel">Vazgeç</button>
+        <button type="button" class="settings-confirm-confirm is-backup" id="page11BackupConfirmConfirm">Evet, yedekle</button>
+      </div>
+    </div>
+  </div>
+
   <div class="settings-confirm-backdrop" id="page8ConfirmBackdrop">
     <div class="settings-confirm-card">
       <span class="settings-confirm-title" id="page8ConfirmTitle">Emin misin?</span>
@@ -27478,6 +27620,45 @@
                 <path d="M13.3 6.8l3.5 3.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
               </svg>
             </button>
+
+            <!-- Yedekle: Denemelerim'e özel dışa/içe aktarma menüsü. Aynı
+                 açılır menü dili exam-detail-menu ile paylaşılır (bkz. CSS).
+                 "Tümünü Yedekle" tüm denemeleri, "Seç ve Yedekle" seçilen
+                 denemeleri, "Yedek Yükle" ise daha önce indirilmiş bir
+                 .json dosyasını içe aktarır. -->
+            <div class="exam-detail-menu-wrap" id="page11BackupWrap">
+              <button type="button" class="add-task-btn edit-task-btn" id="page11BackupBtn" aria-label="Yedekle" aria-haspopup="menu" aria-expanded="false">
+                <svg viewBox="0 0 24 24" width="16" height="16">
+                  <path d="M12 3.5v11m0 0l-3.6-3.6M12 14.5l3.6-3.6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M5 16v2.5A1.5 1.5 0 0 0 6.5 20h11a1.5 1.5 0 0 0 1.5-1.5V16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </button>
+              <div class="exam-detail-menu" id="page11BackupMenu" role="menu" hidden>
+                <button type="button" class="exam-detail-menu-item" id="page11BackupAllBtn" role="menuitem">
+                  <svg viewBox="0 0 24 24" width="18" height="18">
+                    <rect x="4" y="4" width="16" height="6" rx="1.5" fill="none" stroke="currentColor" stroke-width="2"/>
+                    <rect x="4" y="14" width="16" height="6" rx="1.5" fill="none" stroke="currentColor" stroke-width="2"/>
+                  </svg>
+                  <span class="exam-detail-menu-label">Tümünü Yedekle</span>
+                </button>
+                <button type="button" class="exam-detail-menu-item" id="page11BackupSelectBtn" role="menuitem">
+                  <svg viewBox="0 0 24 24" width="18" height="18">
+                    <rect x="4" y="4" width="16" height="16" rx="3" fill="none" stroke="currentColor" stroke-width="2"/>
+                    <path d="M8 12.5l2.5 2.5L16 9.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                  <span class="exam-detail-menu-label">Seç ve Yedekle</span>
+                </button>
+                <div class="exam-detail-menu-sep" role="separator"></div>
+                <button type="button" class="exam-detail-menu-item" id="page11BackupImportBtn" role="menuitem">
+                  <svg viewBox="0 0 24 24" width="18" height="18">
+                    <path d="M12 20.5v-11m0 0l-3.6 3.6M12 9.5l3.6 3.6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M5 8V5.5A1.5 1.5 0 0 1 6.5 4h11A1.5 1.5 0 0 1 19 5.5V8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                  <span class="exam-detail-menu-label">Yedek Yükle</span>
+                </button>
+              </div>
+              <input type="file" id="page11ImportInput" accept="application/json,.json" hidden>
+            </div>
           </div>
         </div>
         <span class="page11-subtitle">Deneme ekle, branşına göre netlerini işaretle</span>
@@ -27486,6 +27667,17 @@
       <button type="button" class="add-task-btn page11-add-btn" id="page11AddExamBtn">+ Deneme Ekle</button>
 
       <div class="page11-list" id="page11ExamList"></div>
+
+      <!-- "Seç ve Yedekle" modundayken listenin altında beliren, seçili
+           deneme sayısını gösterip yedekleme/vazgeçme aksiyonlarını
+           sunan çubuk. -->
+      <div class="page11-select-bar" id="page11SelectBar" hidden>
+        <span class="page11-select-count" id="page11SelectCount">Deneme seç</span>
+        <div class="page11-select-actions">
+          <button type="button" class="page11-select-cancel" id="page11SelectCancelBtn">Vazgeç</button>
+          <button type="button" class="page11-select-confirm" id="page11SelectBackupBtn" disabled>Yedekle</button>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -42425,6 +42617,7 @@
   const setPage11EditMode = (on) => {
     if (on === page11EditMode) return;
     page11EditMode = on;
+    if (on) setPage11SelectMode(false);
     page11ExamList.classList.toggle('is-edit-mode', on);
     page11EditBtn.classList.toggle('is-active', on);
     page11EditBtn.setAttribute('aria-pressed', on ? 'true' : 'false');
@@ -42432,6 +42625,91 @@
   };
 
   page11EditBtn.addEventListener('click', () => setPage11EditMode(!page11EditMode));
+
+  // ---- "Seç ve Yedekle" modu ----
+  // Kalem (düzenle) moduyla aynı mantık: kapsayıcıya .is-select-mode
+  // eklenip çıkarılır, liste yeniden çizilse de mod korunur. Bu moddayken
+  // bir karta dokunmak (normalde deneme detayını açan davranışın yerine)
+  // seçimi açıp kapatır; alttaki çubuktan seçilenler yedeklenir.
+  let page11SelectMode = false;
+  const page11SelectedIds = new Set();
+
+  const page11SelectBar = document.getElementById('page11SelectBar');
+  const page11SelectCount = document.getElementById('page11SelectCount');
+  const page11SelectCancelBtn = document.getElementById('page11SelectCancelBtn');
+  const page11SelectBackupBtn = document.getElementById('page11SelectBackupBtn');
+
+  const updatePage11SelectBar = () => {
+    const n = page11SelectedIds.size;
+    page11SelectCount.textContent = n === 0 ? 'Deneme seç' : (n === 1 ? '1 deneme seçili' : `${n} deneme seçili`);
+    page11SelectBackupBtn.disabled = n === 0;
+  };
+
+  const setPage11SelectMode = (on) => {
+    if (on === page11SelectMode) return;
+    page11SelectMode = on;
+    if (on) setPage11EditMode(false);
+    else page11SelectedIds.clear();
+    page11ExamList.classList.toggle('is-select-mode', on);
+    page11SelectBar.hidden = !on;
+    updatePage11SelectBar();
+  };
+
+  const togglePage11Selection = (examId) => {
+    if (page11SelectedIds.has(examId)) page11SelectedIds.delete(examId);
+    else page11SelectedIds.add(examId);
+    renderPage11List();
+    updatePage11SelectBar();
+  };
+
+  page11SelectCancelBtn.addEventListener('click', () => setPage11SelectMode(false));
+
+  page11SelectBackupBtn.addEventListener('click', async () => {
+    const chosen = page11State.exams.filter((it) => page11SelectedIds.has(it.id));
+    if (!chosen.length) return;
+    await page11ExportExams(chosen, chosen.length);
+    setPage11SelectMode(false);
+  });
+
+  // ---- Kartta basılı tutunca ("uzun basma") tek denemeyi yedekleme ----
+  const page11BackupConfirmBackdrop = document.getElementById('page11BackupConfirmBackdrop');
+  const page11BackupConfirmDesc = document.getElementById('page11BackupConfirmDesc');
+  const page11BackupConfirmCancel = document.getElementById('page11BackupConfirmCancel');
+  const page11BackupConfirmConfirm = document.getElementById('page11BackupConfirmConfirm');
+  let page11BackupConfirmExam = null;
+
+  const closePage11BackupConfirm = () => {
+    page11BackupConfirmBackdrop.classList.remove('is-open');
+    page11BackupConfirmExam = null;
+  };
+
+  const openPage11BackupConfirm = (exam) => {
+    page11BackupConfirmExam = exam;
+    page11BackupConfirmDesc.textContent = `"${exam.name}" denemesinin yedeği indirilecek.`;
+    page11BackupConfirmBackdrop.classList.add('is-open');
+  };
+
+  page11BackupConfirmCancel.addEventListener('click', closePage11BackupConfirm);
+  page11BackupConfirmBackdrop.addEventListener('click', (e) => {
+    if (e.target === page11BackupConfirmBackdrop) closePage11BackupConfirm();
+  });
+  page11BackupConfirmConfirm.addEventListener('click', () => {
+    const exam = page11BackupConfirmExam;
+    closePage11BackupConfirm();
+    if (exam) page11ExportExams([exam]);
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && page11BackupConfirmBackdrop.classList.contains('is-open')) closePage11BackupConfirm();
+  });
+
+  // Basılı tutma bir kart üzerinde ~480ms sürünce tetiklenir; parmak/imleç
+  // bu sürede belirgin şekilde kayarsa (kaydırma niyeti) iptal edilir.
+  // Tetiklendiğinde hemen ardından gelen "click" olayının kartı açmasını
+  // (deneme detayına gitmesini) engellemek için page11LongPressFired
+  // bayrağı kullanılır.
+  const PAGE11_LONG_PRESS_MS = 480;
+  const PAGE11_LONG_PRESS_TOLERANCE = 10;
+  let page11LongPressFired = false;
 
   const createPage11ExamCard = (exam) => {
     const result = page11ComputeExam(exam);
@@ -42500,14 +42778,26 @@
 
     side.appendChild(net);
 
+    // "Seç ve Yedekle" modunda kartın sol üstünde beliren onay kutusu;
+    // tıklanınca değil, kartın kendisine dokununca (bkz. click handler)
+    // işaretlenir, bu yüzden burada ayrı bir click dinleyicisi yok.
+    const selectMark = document.createElement('span');
+    selectMark.className = 'page11-exam-select';
+    selectMark.setAttribute('aria-hidden', 'true');
+    selectMark.innerHTML = '<svg viewBox="0 0 24 24" width="12" height="12"><path d="M4 12.5l5 5L20 6" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
     card.appendChild(accent);
     card.appendChild(main);
     card.appendChild(side);
     card.appendChild(delBtn);
+    card.appendChild(selectMark);
+
+    if (page11SelectedIds.has(exam.id)) card.classList.add('is-selected');
 
     // Kilitli denemede kartın sol üst köşesinde küçük bir kilit rozeti
     // belirir; deneme kilitliyken silinemez, işaretlenemez, sadece
-    // detay sayfası görüntülenebilir (bkz. page11ApplyExamLockUI).
+    // detay sayfası görüntülenebilir (bkz. page11ApplyExamLockUI). Seçim
+    // modunda bu köşe onay kutusuna bırakılır (bkz. CSS).
     if (exam.locked) {
       card.classList.add('is-locked');
       const lockBadge = document.createElement('span');
@@ -42517,7 +42807,44 @@
       card.appendChild(lockBadge);
     }
 
-    card.addEventListener('click', () => openExamDetail(exam.id));
+    card.addEventListener('click', () => {
+      if (page11LongPressFired) { page11LongPressFired = false; return; }
+      if (page11SelectMode) { togglePage11Selection(exam.id); return; }
+      openExamDetail(exam.id);
+    });
+
+    // ---- Basılı tutunca yedekleme sorusu (uzun basma) ----
+    // Yalnızca normal moddayken (düzenleme/seçim modu açık değilken)
+    // etkindir; PointerEvent hem dokunmatik hem fare için tek bir yol
+    // sağlar.
+    let longPressTimer = null;
+    let longPressStart = null;
+    const clearLongPress = () => {
+      if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer = null; }
+      longPressStart = null;
+    };
+    card.addEventListener('pointerdown', (e) => {
+      if (e.pointerType === 'mouse' && e.button !== 0) return;
+      if (page11EditMode || page11SelectMode) return;
+      longPressStart = { x: e.clientX, y: e.clientY };
+      clearTimeout(longPressTimer);
+      longPressTimer = setTimeout(() => {
+        longPressTimer = null;
+        page11LongPressFired = true;
+        if (navigator.vibrate) { try { navigator.vibrate(12); } catch (err) { /* yok say */ } }
+        openPage11BackupConfirm(exam);
+      }, PAGE11_LONG_PRESS_MS);
+    });
+    card.addEventListener('pointermove', (e) => {
+      if (!longPressTimer || !longPressStart) return;
+      const dx = Math.abs(e.clientX - longPressStart.x);
+      const dy = Math.abs(e.clientY - longPressStart.y);
+      if (dx > PAGE11_LONG_PRESS_TOLERANCE || dy > PAGE11_LONG_PRESS_TOLERANCE) clearLongPress();
+    });
+    card.addEventListener('pointerup', clearLongPress);
+    card.addEventListener('pointerleave', clearLongPress);
+    card.addEventListener('pointercancel', clearLongPress);
+    card.addEventListener('contextmenu', (e) => e.preventDefault());
 
     return card;
   };
@@ -42537,6 +42864,247 @@
     ));
     sorted.forEach((exam) => page11ExamList.appendChild(createPage11ExamCard(exam)));
   };
+
+  // ================= Denemelerim: Yedekle / Yedek Yükle =================
+  // Ayarlar'daki tam uygulama yedeğinden (exportBackup/applyBackupPayload,
+  // bkz. aşağıda) farkı: burası SADECE Sayfa 11'deki denemeleri (ilgili
+  // soru görselleri ve cevap anahtarı görselleri dahil, IndexedDB'den
+  // gömülü base64 olarak) taşınabilir bir .json dosyasına paketler; içe
+  // aktarma da mevcut denemelerin üzerine yazmaz, onlara EKLER.
+
+  const PAGE11_BACKUP_TYPE = 'page11-exams-backup';
+
+  // exam.photos[subjectKey][idx].image ve exam.resources.answerKeyImages[]
+  // içindeki "idb://<id>" görsel referanslarını toplar.
+  const page11CollectImageRefs = (exam) => {
+    const refs = new Set();
+    if (exam.photos && typeof exam.photos === 'object') {
+      Object.values(exam.photos).forEach((bySubject) => {
+        if (!bySubject || typeof bySubject !== 'object') return;
+        Object.values(bySubject).forEach((entry) => {
+          const ref = entry && entry.image;
+          if (typeof ref === 'string' && ref.startsWith('idb://')) refs.add(ref);
+        });
+      });
+    }
+    if (exam.resources && Array.isArray(exam.resources.answerKeyImages)) {
+      exam.resources.answerKeyImages.forEach((ref) => {
+        if (typeof ref === 'string' && ref.startsWith('idb://')) refs.add(ref);
+      });
+    }
+    return Array.from(refs);
+  };
+
+  // Verilen deneme listesini, kullandıkları tüm görselleri gömülü olarak
+  // içeren taşınabilir bir yedek nesnesine dönüştürür.
+  const page11BuildBackupPayload = async (exams) => {
+    const images = {};
+    for (const exam of exams) {
+      const refs = page11CollectImageRefs(exam);
+      for (const ref of refs) {
+        if (images[ref]) continue;
+        try {
+          const id = ref.slice('idb://'.length);
+          const blob = await idbGetImageBlob(id);
+          if (blob) images[ref] = await blobToDataUrl(blob);
+        } catch (err) {
+          console.warn(`Deneme görseli yedeklenemedi (${ref}):`, err);
+        }
+      }
+    }
+    return {
+      app: 'Pace',
+      type: PAGE11_BACKUP_TYPE,
+      version: 1,
+      exportedAt: new Date().toISOString(),
+      exams: JSON.parse(JSON.stringify(exams)),
+      images,
+    };
+  };
+
+  const page11DownloadJSON = (payload, filename) => {
+    const json = JSON.stringify(payload);
+    const blob = new Blob([json], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 4000);
+  };
+
+  // Dosya adında sorun çıkarabilecek karakterleri (Türkçe harfler dahil,
+  // Unicode harf/rakam olmayan her şeyi) tireyle değiştirir.
+  const page11SafeFileNamePart = (s) => (
+    String(s || '').replace(/[^\p{L}\p{N}]+/gu, '-').replace(/^-+|-+$/g, '').slice(0, 40) || 'deneme'
+  );
+
+  const page11ExportExams = async (exams, countHint) => {
+    if (!exams || !exams.length) return;
+    try {
+      const payload = await page11BuildBackupPayload(exams);
+      // Ayarlar'daki genel yedekle aynı adlandırma dili paylaşılır (bkz.
+      // BACKUP_FILENAME_PREFIX / formatBackupDateStamp, dosyanın altındaki
+      // ayrı bir <script> bloğunda tanımlanır; bu fonksiyon yalnızca
+      // kullanıcı etkileşimiyle çağrıldığından sayfa tam yüklendiğinde
+      // ikisi de hazır olur).
+      const stamp = formatBackupDateStamp();
+      const suffix = exams.length === 1
+        ? page11SafeFileNamePart(exams[0].name)
+        : (countHint === 'all' ? 'Tüm Denemeler' : `${exams.length} Deneme`);
+      const filename = `${BACKUP_FILENAME_PREFIX} - ${suffix} (${stamp}).json`;
+      page11DownloadJSON(payload, filename);
+      showAppToast(exams.length === 1 ? 'Deneme yedeklendi' : `${exams.length} deneme yedeklendi`);
+    } catch (err) {
+      console.warn('Deneme(ler) yedeklenemedi:', err);
+      showAppToast('Yedek oluşturulamadı. Lütfen tekrar deneyin.', 'error');
+    }
+  };
+
+  const page11ReadBackupFile = async (file) => {
+    let payload;
+    try {
+      const text = await file.text();
+      payload = JSON.parse(text);
+    } catch (err) {
+      showAppToast('Dosya okunamadı: geçerli bir yedek dosyası değil.', 'error');
+      return null;
+    }
+    if (!payload || typeof payload !== 'object' || !Array.isArray(payload.exams)) {
+      showAppToast('Geçersiz yedek dosyası.', 'error');
+      return null;
+    }
+    return payload;
+  };
+
+  // Doğrulanmış yedeği mevcut denemelere EKLER (üzerine yazmaz). Her
+  // görsel bu cihazın IndexedDB'sine yeni bir kimlikle yazılır ve deneme
+  // içindeki "idb://" referansları buna göre yeniden yazılır; böylece
+  // başka bir cihazdan gelen eski kimliklerle çakışma olmaz. Kimliği
+  // zaten var olan (ör. aynı yedeğin ikinci kez yüklenmesi) denemeler de
+  // yeni bir kimlikle kopya olarak eklenir, hiçbir mevcut veri kaybolmaz.
+  const page11ImportPayload = async (payload) => {
+    const images = (payload.images && typeof payload.images === 'object') ? payload.images : {};
+    const existingIds = new Set(page11State.exams.map((it) => it.id));
+    const refMap = new Map();
+
+    const remapRef = async (ref) => {
+      if (typeof ref !== 'string' || !ref.startsWith('idb://')) return ref;
+      if (refMap.has(ref)) return refMap.get(ref);
+      const dataUrl = images[ref];
+      if (typeof dataUrl !== 'string') { refMap.set(ref, ref); return ref; }
+      try {
+        const blob = await dataUrlToBlob(dataUrl);
+        const newRef = (await idbPutImageBlob(blob)) || ref;
+        refMap.set(ref, newRef);
+        return newRef;
+      } catch (err) {
+        refMap.set(ref, ref);
+        return ref;
+      }
+    };
+
+    let imported = 0;
+    for (const rawExam of payload.exams) {
+      if (!rawExam || typeof rawExam !== 'object' || !rawExam.name) continue;
+      const exam = JSON.parse(JSON.stringify(rawExam));
+
+      if (exam.photos && typeof exam.photos === 'object') {
+        for (const subjectKey of Object.keys(exam.photos)) {
+          const bySubject = exam.photos[subjectKey];
+          if (!bySubject || typeof bySubject !== 'object') continue;
+          for (const idx of Object.keys(bySubject)) {
+            const entry = bySubject[idx];
+            if (entry && typeof entry.image === 'string') {
+              entry.image = await remapRef(entry.image);
+            }
+          }
+        }
+      }
+      if (exam.resources && Array.isArray(exam.resources.answerKeyImages)) {
+        const remapped = [];
+        for (const ref of exam.resources.answerKeyImages) remapped.push(await remapRef(ref));
+        exam.resources.answerKeyImages = remapped;
+      }
+
+      if (!exam.id || existingIds.has(exam.id)) exam.id = page11GenId();
+      existingIds.add(exam.id);
+      if (!exam.answers || typeof exam.answers !== 'object') exam.answers = page11BuildAnswers(exam.type === 'ayt' ? 'ayt' : 'tyt');
+      exam.ts = exam.ts || Date.now();
+      page11State.exams.push(exam);
+      imported += 1;
+    }
+
+    if (imported > 0) {
+      savePage11State();
+      renderPage11List();
+    }
+    return imported;
+  };
+
+  const page11ImportFromFile = async (file) => {
+    const payload = await page11ReadBackupFile(file);
+    if (!payload) return;
+    try {
+      const count = await page11ImportPayload(payload);
+      if (count > 0) showAppToast(count === 1 ? '1 deneme içe aktarıldı' : `${count} deneme içe aktarıldı`);
+      else showAppToast('İçe aktarılacak deneme bulunamadı.', 'error');
+    } catch (err) {
+      console.warn('Yedek içe aktarılamadı:', err);
+      showAppToast('Yedek içe aktarılamadı.', 'error');
+    }
+  };
+
+  // ---- Başlıktaki "Yedekle" menüsü ----
+  const page11BackupWrap = document.getElementById('page11BackupWrap');
+  const page11BackupBtn = document.getElementById('page11BackupBtn');
+  const page11BackupMenu = document.getElementById('page11BackupMenu');
+  const page11BackupAllBtn = document.getElementById('page11BackupAllBtn');
+  const page11BackupSelectBtn = document.getElementById('page11BackupSelectBtn');
+  const page11BackupImportBtn = document.getElementById('page11BackupImportBtn');
+  const page11ImportInput = document.getElementById('page11ImportInput');
+
+  const page11SetBackupMenuOpen = (open) => {
+    page11BackupMenu.hidden = !open;
+    page11BackupBtn.classList.toggle('is-open', open);
+    page11BackupBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+  };
+
+  page11BackupBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    page11SetBackupMenuOpen(page11BackupMenu.hidden);
+  });
+  document.addEventListener('click', (e) => {
+    if (!page11BackupMenu.hidden && !page11BackupWrap.contains(e.target)) page11SetBackupMenuOpen(false);
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !page11BackupMenu.hidden) page11SetBackupMenuOpen(false);
+  });
+
+  page11BackupAllBtn.addEventListener('click', () => {
+    page11SetBackupMenuOpen(false);
+    if (!page11State.exams.length) { showAppToast('Henüz deneme eklenmedi.', 'error'); return; }
+    page11ExportExams(page11State.exams, 'all');
+  });
+
+  page11BackupSelectBtn.addEventListener('click', () => {
+    page11SetBackupMenuOpen(false);
+    if (!page11State.exams.length) { showAppToast('Henüz deneme eklenmedi.', 'error'); return; }
+    setPage11SelectMode(true);
+  });
+
+  page11BackupImportBtn.addEventListener('click', () => {
+    page11SetBackupMenuOpen(false);
+    page11ImportInput.click();
+  });
+
+  page11ImportInput.addEventListener('change', () => {
+    const file = page11ImportInput.files && page11ImportInput.files[0];
+    page11ImportInput.value = '';
+    if (file) page11ImportFromFile(file);
+  });
 
   // ---- Deneme ekleme pop-up'ı ----
   const page11AddBackdrop = document.getElementById('page11AddBackdrop');
@@ -48373,7 +48941,14 @@
   // elinde tutabildiği ve ileride kurulacak gerçek bir bulut
   // senkronizasyonunun da üzerine inşa edilebileceği ortak formattır.
 
-  const BACKUP_FILENAME_PREFIX = 'takvimim-yedek';
+  const BACKUP_FILENAME_PREFIX = 'Pace Yedekleme';
+
+  // gün.ay.yıl (ör. 25.09.2026) biçiminde yerel tarih damgası; dosya
+  // adlarında kullanılır (ISO'daki yıl-ay-gün sırası yerine).
+  const formatBackupDateStamp = (d = new Date()) => {
+    const pad2 = (n) => String(n).padStart(2, '0');
+    return `${pad2(d.getDate())}.${pad2(d.getMonth() + 1)}.${d.getFullYear()}`;
+  };
 
   const exportBackup = async () => {
     try {
@@ -48401,10 +48976,9 @@
       const json = JSON.stringify(payload);
       const blob = new Blob([json], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
-      const dateStamp = new Date().toISOString().slice(0, 10);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `${BACKUP_FILENAME_PREFIX}-${dateStamp}.json`;
+      a.download = `${BACKUP_FILENAME_PREFIX} (${formatBackupDateStamp()}).json`;
       document.body.appendChild(a);
       a.click();
       a.remove();
