@@ -32513,6 +32513,100 @@
     .p8n-pill:hover { background: var(--p8-surf2); }
     .p8n-pill:active { transform: translate(1px, 1px); }
     .p8n-newgroup .p8n-input { width: 220px; }
+    /* --- Sadeleştirilmiş rutin kartları (Düzenle modu, açılır ekleme) --- */
+    .p8n-newbtn { display: block; width: 100%; margin-top: 1.2rem; height: 3rem; border: 2px dashed color-mix(in srgb, var(--theme-text, #121212) 18%, transparent); border-radius: 1.4rem; font: inherit; font-weight: 700; font-size: .95rem; cursor: pointer; color: var(--p8-mute); background: none; transition: background-color .15s, color .15s; }
+    .p8n-newbtn:hover { background: var(--p8-surf); color: var(--theme-text, #121212); }
+    .p8n-pills { display: flex; gap: .5rem; flex-wrap: wrap; }
+    .p8n-newgroup { gap: .8rem; }
+    .p8n-newgroup .p8n-add { flex: 1 1 260px; }
+    .p8n-newgroup .p8n-input { width: auto; }
+    /* Üstteki ilerleme kartı: daha derli toplu, tek satır */
+    .p8n-hero { gap: 1.4rem; padding: 1.1rem 1.6rem; flex-wrap: nowrap; }
+    .p8n-ring { width: 88px; height: 88px; }
+    .p8n-ring circle { stroke-width: 9; }
+    .p8n-ring b { font-size: 1.35rem; }
+    .p8n-hero-big { font-size: 1.35rem; }
+    .p8n-week { margin-left: auto; height: 62px; gap: .45rem; }
+    .p8n-day { width: 26px; }
+    .p8n-bar { height: 42px; }
+    /* ==========================================================================
+       RUTİN KARTLARI (p8g) — tamamen özgün tasarım
+       Kart: grup renginden süzülen yumuşak ışık, sağda ilerleme halkası; satırlar
+       tek tek "tile" gibi. İşaretleme: çember dolar, tik çizilir, halka dalgası.
+       Yönetim: basılı tutma (bkz. JS bindHold) — düzenle düğmesi yok.
+       ========================================================================== */
+    .p8n-groups { grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.3rem; }
+    .p8g { --gc: #ff90e8; --gt: #121212; position: relative; isolation: isolate; overflow: hidden; border-radius: 2rem; padding: 1.3rem 1.1rem 1rem; background: radial-gradient(120% 85% at 0% 0%, color-mix(in srgb, var(--gc) 26%, transparent), transparent 64%), var(--p8-surf); transition: transform .35s cubic-bezier(.2,.8,.2,1), box-shadow .35s ease, opacity .3s ease; touch-action: pan-y; -webkit-tap-highlight-color: transparent; }
+    .p8g::after { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--theme-text, #121212) 7%, transparent); }
+    .p8g.is-now { box-shadow: 0 0 0 2px var(--gc), 0 20px 44px -24px color-mix(in srgb, var(--gc) 75%, transparent); }
+    .p8g.is-pressing { transform: scale(.985); }
+    .p8g.is-ctx-active { transform: translateY(-3px); box-shadow: 0 0 0 1.5px color-mix(in srgb, var(--gc) 45%, transparent), 0 14px 34px -12px color-mix(in srgb, var(--gc) 60%, transparent), 0 26px 44px -18px rgba(0, 0, 0, .45); }
+    .p8g.is-leave { opacity: 0; transform: scale(.94) translateY(6px); pointer-events: none; }
+    .p8g.is-enter { animation: p8gIn .6s cubic-bezier(.2,.8,.2,1) backwards; animation-delay: calc(var(--i, 0) * 80ms); }
+    @keyframes p8gIn { from { opacity: 0; transform: translateY(16px) scale(.985); } to { opacity: 1; transform: none; } }
+    .p8g::before { content: ""; position: absolute; inset: 0; z-index: 0; pointer-events: none; opacity: 0; background: linear-gradient(105deg, transparent 35%, color-mix(in srgb, var(--gc) 42%, transparent) 50%, transparent 65%); transform: translateX(-110%); }
+    .p8g.is-cele::before { animation: p8gSheen 1s ease-out; }
+    @keyframes p8gSheen { 0% { opacity: 1; transform: translateX(-110%); } 100% { opacity: 1; transform: translateX(110%); } }
+    .p8g > * { position: relative; z-index: 1; }
+
+    .p8g-head { display: flex; align-items: center; gap: 1rem; padding: 0 .35rem; margin-bottom: .7rem; }
+    .p8g-titlebox { flex: 1 1 auto; min-width: 0; }
+    .p8g-eyebrow { min-height: 1rem; display: flex; align-items: center; gap: .45rem; font-size: .66rem; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: color-mix(in srgb, var(--gc) 62%, var(--theme-text, #121212)); }
+    .p8g-eyebrow.is-live::before { content: ""; width: .5rem; height: .5rem; border-radius: 50%; background: var(--gc); animation: p8gPulse 1.8s ease-out infinite; }
+    @keyframes p8gPulse { 0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--gc) 70%, transparent); } 100% { box-shadow: 0 0 0 .55rem transparent; } }
+    .p8g-name { font-size: 1.55rem; font-weight: 800; line-height: 1.12; letter-spacing: -.01em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .p8g-name-in { width: 100%; box-sizing: border-box; font: inherit; font-size: 1.35rem; font-weight: 800; color: inherit; background: var(--p8-surf2); border: none; outline: none; border-radius: 999px; padding: .2rem .9rem; }
+    .p8g-sub { margin-top: .2rem; font-size: .88rem; font-weight: 600; color: var(--p8-mute); }
+
+    .p8g-ring { position: relative; flex: 0 0 auto; width: 56px; height: 56px; }
+    .p8g-ring > svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+    .p8g-ring circle { fill: none; stroke-width: 5; stroke-linecap: round; }
+    .p8g-ring .bg { stroke: color-mix(in srgb, var(--theme-text, #121212) 10%, transparent); }
+    .p8g-ring .fg { stroke: var(--gc); transition: stroke-dashoffset .6s cubic-bezier(.4,0,.2,1); }
+    .p8g-ring b { position: absolute; inset: 0; display: grid; place-items: center; font-size: 1.05rem; font-weight: 800; transition: opacity .2s; }
+    .p8g-ring .tick { position: absolute; inset: 0; display: grid; place-items: center; opacity: 0; transform: scale(.4); transition: opacity .25s, transform .4s cubic-bezier(.34,1.56,.64,1); }
+    .p8g-ring .tick svg { width: 1.35rem; height: 1.35rem; fill: none; stroke: var(--gc); stroke-width: 3.2; stroke-linecap: round; stroke-linejoin: round; }
+    .p8g.is-complete .p8g-ring .tick { opacity: 1; transform: none; }
+
+    .p8g-list { display: flex; flex-direction: column; }
+    .p8g-r { position: relative; display: flex; align-items: center; gap: .95rem; padding: .78rem .35rem; border-radius: 1.2rem; cursor: pointer; overflow: hidden; max-height: 6rem; transition: background-color .2s ease, opacity .2s, transform .25s ease, max-height .26s ease .05s, padding .26s ease .05s; -webkit-tap-highlight-color: transparent; }
+    .p8g-r + .p8g-r::before { content: ""; position: absolute; left: 3rem; right: .35rem; top: 0; height: 1px; background: color-mix(in srgb, var(--theme-text, #121212) 7%, transparent); transition: opacity .2s; }
+    .p8g-r.is-pressing, .p8g-r.is-ctx-active { background: color-mix(in srgb, var(--gc) 16%, transparent); }
+    .p8g-r.is-pressing::before, .p8g-r.is-ctx-active::before, .p8g-r.is-pressing + .p8g-r::before, .p8g-r.is-ctx-active + .p8g-r::before { opacity: 0; }
+    .p8g-r.is-leave { opacity: 0; transform: translateX(14px); max-height: 0 !important; padding-top: 0; padding-bottom: 0; pointer-events: none; }
+    .p8g-r.is-enter { animation: p8gRow .45s cubic-bezier(.34,1.3,.5,1) backwards; }
+    @keyframes p8gRow { from { opacity: 0; transform: translateX(-10px) scale(.98); } to { opacity: 1; transform: none; } }
+    .p8g-c { position: relative; flex: 0 0 auto; width: 1.9rem; height: 1.9rem; border-radius: 50%; display: grid; place-items: center; background: transparent; box-shadow: inset 0 0 0 2.5px color-mix(in srgb, var(--theme-text, #121212) 24%, transparent); transition: background-color .25s ease, box-shadow .25s ease, transform .3s cubic-bezier(.34,1.56,.64,1); }
+    .p8g-r:active .p8g-c { transform: scale(.88); }
+    .p8g-c svg { width: 1.05rem; height: 1.05rem; fill: none; stroke: var(--gt); stroke-width: 3.4; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 24; stroke-dashoffset: 24; transition: stroke-dashoffset .32s cubic-bezier(.65,0,.35,1) .06s; }
+    .p8g-c::after { content: ""; position: absolute; inset: 0; border-radius: 50%; opacity: 0; pointer-events: none; }
+    .p8g-r.is-done .p8g-c { background: var(--gc); box-shadow: inset 0 0 0 2.5px var(--gc); }
+    .p8g-r.is-done .p8g-c svg { stroke-dashoffset: 0; }
+    .p8g-r.is-burst .p8g-c::after { animation: p8gBurst .6s ease-out; }
+    @keyframes p8gBurst { 0% { opacity: .75; box-shadow: 0 0 0 0 var(--gc); } 100% { opacity: 0; box-shadow: 0 0 0 .95rem var(--gc); } }
+    .p8g-r.is-burst .p8g-c { animation: p8gPop .42s cubic-bezier(.34,1.56,.64,1); }
+    @keyframes p8gPop { 0% { transform: scale(.8); } 60% { transform: scale(1.14); } 100% { transform: scale(1); } }
+    .p8g-t { flex: 1 1 auto; min-width: 0; font-size: 1.06rem; font-weight: 600; line-height: 1.3; overflow-wrap: anywhere; transition: opacity .3s ease; }
+    .p8g-tt { background-image: linear-gradient(currentColor, currentColor); background-repeat: no-repeat; background-position: 0 58%; background-size: 0 2px; -webkit-box-decoration-break: clone; box-decoration-break: clone; transition: background-size .38s cubic-bezier(.65,0,.35,1); }
+    .p8g-r.is-done .p8g-t { opacity: .42; }
+    .p8g-r.is-done .p8g-tt { background-size: 100% 2px; }
+
+    .p8g-add { display: flex; align-items: center; gap: .95rem; width: 100%; box-sizing: border-box; margin-top: .3rem; padding: .6rem .35rem; border: none; border-radius: 1.2rem; background: none; font: inherit; font-weight: 700; font-size: .95rem; color: var(--p8-mute); text-align: left; cursor: pointer; transition: background-color .2s, color .2s; -webkit-tap-highlight-color: transparent; }
+    .p8g-add i { flex: 0 0 auto; width: 1.9rem; height: 1.9rem; border-radius: 50%; display: grid; place-items: center; font-style: normal; font-size: 1.25rem; line-height: 1; border: 2px dashed color-mix(in srgb, var(--theme-text, #121212) 26%, transparent); transition: border-color .2s, color .2s, transform .3s cubic-bezier(.34,1.56,.64,1); }
+    .p8g-add:hover { background: color-mix(in srgb, var(--gc) 12%, transparent); color: var(--theme-text, #121212); }
+    .p8g-add:hover i { border-color: var(--gc); color: var(--gc); }
+    .p8g-add:active i { transform: scale(.88) rotate(90deg); }
+    .p8g-form { display: flex; align-items: center; gap: .6rem; margin-top: .35rem; padding: 0 .1rem; animation: p8gRow .35s cubic-bezier(.34,1.3,.5,1) backwards; }
+    .p8g-in { flex: 1 1 auto; min-width: 0; box-sizing: border-box; font: inherit; font-weight: 600; font-size: 1rem; color: inherit; background: var(--p8-surf2); border: none; outline: none; border-radius: 999px; padding: .68rem 1.1rem; transition: box-shadow .2s; }
+    .p8g-in:focus { box-shadow: 0 0 0 2px color-mix(in srgb, var(--gc) 70%, transparent); }
+    .p8g-in::placeholder { color: var(--p8-mute); }
+    .p8g-go { flex: 0 0 auto; width: 2.7rem; height: 2.7rem; border: none; border-radius: 50%; display: grid; place-items: center; cursor: pointer; background: var(--gc); transition: transform .25s cubic-bezier(.34,1.56,.64,1); }
+    .p8g-go svg { width: 1.2rem; height: 1.2rem; fill: none; stroke: var(--gt); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+    .p8g-go:active { transform: scale(.88); }
+    .p8g-tip { margin: .9rem 0 0; text-align: center; font-size: .82rem; font-weight: 600; color: var(--p8-mute); }
+    @media (prefers-reduced-motion: reduce) {
+      .p8g, .p8g *, .p8g::before { animation: none !important; transition-duration: .01ms !important; }
+    }
     .p8n-empty { padding: 2rem; border-radius: 1.8rem; background: var(--p8-surf); text-align: center; }
     .p8n-empty b { font-size: 1.3rem; display: block; margin-bottom: .3rem; }
     .p8n-empty p { margin: 0 0 1rem; color: var(--p8-mute); font-weight: 600; }
@@ -34759,8 +34853,8 @@
           <div class="n-composer" id="p8nComposer"></div>
           <div class="n-toolbar" id="p8nNToolbar"></div>
           <div id="p8nNoteList"></div>
-          <div class="n-toast" id="p8nToast" hidden></div>
         </div>
+        <div class="n-toast" id="p8nToast" hidden></div>
       </div>
       <button type="button" class="p8n-fab" id="p8nFab" aria-label="Hızlı not">
         <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Hızlı Not
@@ -38004,6 +38098,94 @@
       fullscreenToggle.checked = isFs();
     });
   }
+</script>
+
+<script>
+  // ---- Tam ekranda klavye: siyah flaş düzeltmesi ----
+  // Sebep: Tam ekranda klavye açılıp kapanırken tarayıcı pencereyi (layout
+  // viewport) yeniden boyutlandırıyor; bu sırada tüm sayfa yeniden
+  // yerleşiyor ve arada arka plandaki siyah yüzey görünüyor.
+  // Çözüm: Tam ekrandayken VirtualKeyboard API ile klavyenin sayfanın
+  // ÜSTÜNE binmesini (overlaysContent) sağlıyoruz. Böylece pencere hiç
+  // boyut değiştirmiyor, yeniden yerleşim ve siyah flaş oluşmuyor. Tam
+  // ekrandan çıkılmıyor. Klavyenin örttüğü alanı ise aşağıda elle
+  // yönetiyoruz. Tam ekran dışında hiçbir şey değişmez.
+  (function () {
+    const vk = navigator.virtualKeyboard;
+    if (!vk) return; // Desteklemeyen tarayıcıda eski davranış aynen sürer.
+
+    const isFs = () => !!(document.fullscreenElement || document.webkitFullscreenElement);
+    const MARGIN = 16;
+    let shiftedEl = null;
+    let shiftedY = 0;
+
+    const clearShift = () => {
+      if (shiftedEl) shiftedEl.style.translate = '';
+      shiftedEl = null;
+      shiftedY = 0;
+    };
+
+    const findAncestor = (el, test) => {
+      let n = el.parentElement;
+      while (n && n !== document.body && n !== document.documentElement) {
+        if (test(n, getComputedStyle(n))) return n;
+        n = n.parentElement;
+      }
+      return null;
+    };
+
+    const reveal = () => {
+      if (!isFs()) return;
+      const kb = vk.boundingRect.height;
+      const el = document.activeElement;
+      if (!kb || !el) return;
+      const editable = el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.isContentEditable;
+      if (!editable) return;
+
+      const overlap = el.getBoundingClientRect().bottom - (window.innerHeight - kb - MARGIN);
+      if (overlap <= 0) return;
+
+      // 1) Kaydırılabilir bir kapsayıcı varsa oradan kaydır.
+      const sc = findAncestor(el, (n, st) =>
+        (st.overflowY === 'auto' || st.overflowY === 'scroll') && n.scrollHeight > n.clientHeight);
+      if (sc) {
+        const room = sc.scrollHeight - sc.clientHeight - sc.scrollTop;
+        const step = Math.min(overlap, room);
+        if (step > 0) sc.scrollBy({ top: step, behavior: 'smooth' });
+        if (step >= overlap) return;
+      }
+
+      // 2) Sabit (fixed) pop-up içindeyse pop-up'ı yukarı kaydır.
+      const fx = findAncestor(el, (n, st) => st.position === 'fixed');
+      if (fx) {
+        if (shiftedEl !== fx) { clearShift(); shiftedEl = fx; }
+        const rest = sc ? overlap - Math.max(0, Math.min(overlap, sc.scrollHeight - sc.clientHeight - sc.scrollTop)) : overlap;
+        shiftedY += rest;
+        fx.style.translate = '0 ' + (-shiftedY) + 'px';
+      }
+    };
+
+    const onFsChange = () => {
+      try { vk.overlaysContent = isFs(); } catch (e) {}
+      if (!isFs()) {
+        clearShift();
+        document.documentElement.style.removeProperty('--kb-h');
+      }
+    };
+    document.addEventListener('fullscreenchange', onFsChange);
+    document.addEventListener('webkitfullscreenchange', onFsChange);
+    onFsChange();
+
+    vk.addEventListener('geometrychange', () => {
+      if (!isFs()) return;
+      const h = vk.boundingRect.height;
+      document.documentElement.style.setProperty('--kb-h', h + 'px');
+      if (!h) clearShift(); else setTimeout(reveal, 50);
+    });
+
+    // Klavye zaten açıkken başka bir alana geçilirse de yeniden hizala.
+    document.addEventListener('focusin', () => setTimeout(reveal, 350));
+  })();
 </script>
 
 <script>
@@ -46999,8 +47181,11 @@
       const pct = t ? Math.round((d / t) * 100) : 0;
       const C = 2 * Math.PI * 42;
       const ring = el('div', 'p8n-ring');
-      ring.innerHTML = `<svg viewBox="0 0 104 104"><circle class="bg" cx="52" cy="52" r="42"/><circle class="fg" cx="52" cy="52" r="42" stroke-dasharray="${C}" stroke-dashoffset="${C * (1 - pct / 100)}"/></svg><b>%${pct}</b>`;
+      const from = window.__p8nLastPct == null ? 0 : window.__p8nLastPct;
+      ring.innerHTML = `<svg viewBox="0 0 104 104"><circle class="bg" cx="52" cy="52" r="42"/><circle class="fg" cx="52" cy="52" r="42" stroke-dasharray="${C}" stroke-dashoffset="${C * (1 - from / 100)}"/></svg><b>%${pct}</b>`;
       hero.appendChild(ring);
+      requestAnimationFrame(() => requestAnimationFrame(() => { const fg = ring.querySelector('.fg'); if (fg) fg.style.strokeDashoffset = String(C * (1 - pct / 100)); }));
+      window.__p8nLastPct = pct;
 
       // Seri: bugün tamamsa bugünden, değilse dünden geriye ardışık %100 günler.
       const hist = page8State.routineHistory;
@@ -47042,64 +47227,250 @@
       inp.addEventListener('click', (e) => e.stopPropagation());
     };
 
+    // ==== Rutin kartları (p8g) — basılı tutma ile yönetim ====
+    // Düzenle düğmesi yok: bir kartın BOŞ alanına / başlığına ya da bir rutin
+    // satırına basılı tutunca (fareyle sağ tıklayınca) Denemelerim ve Soru
+    // Havuzu'ndaki bağlam menüsü (.page11-context-menu) açılır. Rutin
+    // işaretleme yerinde (DOM'u yeniden kurmadan) yapılır ki animasyonlar
+    // kesilmesin.
+    const addOpenGroups = new Set();
+    const seenKeys = new Set();
+    let firstPaint = true;
+    const gKey = (g) => g.id || g.name;
+    const rKey = (g, r) => (r.id || r.text) + '@' + gKey(g);
+    const IC = {
+      edit: '<svg viewBox="0 0 24 24"><path d="M4 20h4L19 9a2.1 2.1 0 0 0-3-3L5 17v3z"/><path d="M14.5 7.5l3 3"/></svg>',
+      color: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><circle cx="8.6" cy="11" r="1"/><circle cx="12" cy="7.9" r="1"/><circle cx="15.4" cy="11" r="1"/></svg>',
+      plus: '<svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>',
+      reset: '<svg viewBox="0 0 24 24"><path d="M4 12a8 8 0 1 0 2.6-5.9"/><path d="M4 4v4.5h4.5"/></svg>',
+      trash: '<svg viewBox="0 0 24 24"><path d="M3.5 6h17"/><path d="M8.5 6V4.3a1 1 0 0 1 1-1h5a1 1 0 0 1 1 1V6"/><path d="M6 6l.9 13.2a2 2 0 0 0 2 1.8h6.2a2 2 0 0 0 2-1.8L18 6"/><path d="M10 10.5v6M14 10.5v6"/></svg>'
+    };
+
+    // ---- Bağlam menüsü (tek örnek, içeriği değişir) ----
+    let ctxMenu = null, ctxTarget = null;
+    const closeCtx = () => {
+      if (ctxTarget) ctxTarget.classList.remove('is-ctx-active');
+      ctxTarget = null;
+      if (ctxMenu) ctxMenu.classList.remove('is-open');
+    };
+    const openCtx = (target, items, x, y) => {
+      if (!ctxMenu) {
+        ctxMenu = el('div', 'page11-context-menu p8g-menu'); ctxMenu.setAttribute('role', 'menu');
+        document.body.appendChild(ctxMenu);
+        document.addEventListener('pointerdown', (e) => { if (ctxMenu.classList.contains('is-open') && !ctxMenu.contains(e.target)) closeCtx(); });
+        window.addEventListener('scroll', closeCtx, true);
+        document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeCtx(); });
+      }
+      closeCtx();
+      ctxTarget = target; target.classList.remove('is-pressing'); target.classList.add('is-ctx-active');
+      ctxMenu.innerHTML = '';
+      items.forEach((it) => {
+        const b = el('button', 'page11-context-menu-item' + (it.danger ? ' is-danger' : '')); b.type = 'button'; b.setAttribute('role', 'menuitem');
+        const ic = el('span', 'page11-context-menu-item-ic'); ic.innerHTML = it.ic;
+        const tx = el('span', 'page11-context-menu-item-text');
+        tx.append(el('span', 'page11-context-menu-item-title', it.title), el('span', 'page11-context-menu-item-sub', it.sub));
+        b.append(ic, tx);
+        b.addEventListener('click', () => { closeCtx(); it.fn(); });
+        ctxMenu.appendChild(b);
+      });
+      const GAP = 26, W = 248, H = items.length * 58 + 16;
+      ctxMenu.style.left = `${x - W / 2}px`; ctxMenu.style.top = `${Math.max(8, y - GAP - H)}px`;
+      ctxMenu.classList.add('is-open');
+      requestAnimationFrame(() => {
+        if (!ctxMenu.classList.contains('is-open')) return;
+        const r = ctxMenu.getBoundingClientRect();
+        let l = x - r.width / 2, t = y - GAP - r.height;
+        if (t < 8) t = y + GAP;
+        l = Math.min(Math.max(8, l), window.innerWidth - r.width - 8);
+        t = Math.min(Math.max(8, t), window.innerHeight - r.height - 8);
+        ctxMenu.style.left = `${l}px`; ctxMenu.style.top = `${t}px`;
+      });
+    };
+
+    // Basılı tutma / sağ tık bağlayıcısı
+    const bindHold = (node, onOpen) => {
+      let timer = null, sx = 0, sy = 0, fired = false;
+      const cancel = () => { if (timer) { clearTimeout(timer); timer = null; } node.classList.remove('is-pressing'); };
+      node.addEventListener('pointerdown', (e) => {
+        fired = false;
+        if (e.pointerType === 'mouse' || e.button > 0) return;
+        if (e.target.closest && e.target.closest('input, textarea, .p8g-form')) return;
+        sx = e.clientX; sy = e.clientY; cancel();
+        node.classList.add('is-pressing');
+        timer = setTimeout(() => {
+          timer = null; fired = true;
+          if (navigator.vibrate) navigator.vibrate(12);
+          onOpen(sx, sy, e.target);
+        }, 480);
+      });
+      node.addEventListener('pointermove', (e) => { if (timer && Math.hypot(e.clientX - sx, e.clientY - sy) > 10) cancel(); });
+      ['pointerup', 'pointercancel', 'pointerleave'].forEach((ev) => node.addEventListener(ev, cancel));
+      node.addEventListener('contextmenu', (e) => {
+        e.preventDefault(); cancel();
+        if (fired) return; // dokunmatikte basılı tutma zaten açtı
+        onOpen(e.clientX, e.clientY, e.target);
+      });
+      // Basılı tutma menüyü açtıysa parmak kalkınca oluşan "click" yutulur.
+      node.addEventListener('click', (e) => { if (fired) { fired = false; e.stopImmediatePropagation(); e.preventDefault(); } }, true);
+    };
+
+    // ---- Kart durumunu yerinde güncelle ----
+    const RING_C = 2 * Math.PI * 21;
+    const paintCard = (card, group, celebrate) => {
+      const total = group.routines.length;
+      const done = group.routines.filter((r) => r.done).length;
+      const complete = total > 0 && done === total;
+      const wasComplete = card.classList.contains('is-complete');
+      const isNow = groupSlot(group.name) === nowGroupKey();
+      card.classList.toggle('is-complete', complete);
+      card.classList.toggle('is-now', isNow && !complete);
+      card.querySelector('.p8g-ring .fg').style.strokeDashoffset = String(RING_C * (1 - (total ? done / total : 0)));
+      card.querySelector('.p8g-ring b').textContent = complete ? '' : (total ? String(total - done) : '+');
+      card.querySelector('.p8g-sub').textContent = !total ? 'Henüz rutin yok' : complete ? 'Hepsi tamam' : `${done} / ${total} tamamlandı`;
+      const eb = card.querySelector('.p8g-eyebrow');
+      eb.textContent = complete ? 'Tamamlandı' : (isNow ? 'Şimdi' : '');
+      eb.classList.toggle('is-live', isNow && !complete);
+      if (celebrate && complete && !wasComplete) {
+        card.classList.remove('is-cele'); void card.offsetWidth; card.classList.add('is-cele');
+        setTimeout(() => card.classList.remove('is-cele'), 1200);
+      }
+    };
+
+    const toggleRoutine = (group, r, row, card) => {
+      r.done = !r.done;
+      snapshot(); savePage8State();
+      row.classList.toggle('is-done', r.done);
+      row.classList.remove('is-burst');
+      if (r.done) { void row.offsetWidth; row.classList.add('is-burst'); }
+      paintCard(card, group, true);
+      renderHero();
+    };
+
+    const removeRoutine = (group, r, row) => {
+      const idx = group.routines.indexOf(r);
+      row.style.maxHeight = row.offsetHeight + 'px'; void row.offsetWidth;
+      row.classList.add('is-leave');
+      setTimeout(() => {
+        group.routines = group.routines.filter((x) => x !== r); save();
+        toast(`"${r.text.length > 28 ? r.text.slice(0, 28) + '…' : r.text}" silindi`, () => {
+          group.routines.splice(Math.min(idx, group.routines.length), 0, r); save();
+        });
+      }, 300);
+    };
+
+    const removeGroup = (group, card) => {
+      if (!window.confirm(`"${group.name}" grubu ve içindeki rutinler silinsin mi?`)) return;
+      const idx = page8State.routineGroups.indexOf(group);
+      card.classList.add('is-leave');
+      setTimeout(() => {
+        page8State.routineGroups = page8State.routineGroups.filter((g) => g !== group); addOpenGroups.delete(gKey(group)); save();
+        toast(`"${group.name}" grubu silindi`, () => {
+          page8State.routineGroups.splice(Math.min(idx, page8State.routineGroups.length), 0, group); save();
+        });
+      }, 320);
+    };
+
+    const renameGroup = (group, card) => {
+      const nameEl = card.querySelector('.p8g-name');
+      const inp = el('input', 'p8g-name-in'); inp.value = group.name; inp.enterKeyHint = 'done'; inp.maxLength = 40;
+      nameEl.replaceWith(inp); inp.focus(); inp.select();
+      let fin = false;
+      const commit = (ok) => { if (fin) return; fin = true; const v = inp.value.trim(); if (ok && v && v !== group.name) { group.name = v; savePage8State(); } render(); };
+      inp.addEventListener('keydown', (e) => { if (e.key === 'Enter') commit(true); else if (e.key === 'Escape') commit(false); });
+      inp.addEventListener('blur', () => commit(true));
+    };
+
+    const openAddForm = (group) => {
+      addOpenGroups.add(gKey(group)); render();
+      const c = [...document.querySelectorAll('#p8nGroups .p8g')][page8State.routineGroups.indexOf(group)];
+      const inp = c && c.querySelector('.p8g-in'); if (inp) inp.focus();
+    };
+
     const renderGroups = () => {
       const box = $('p8nGroups');
+      closeCtx();
       box.innerHTML = '';
-      const now = nowGroupKey();
-      page8State.routineGroups.forEach((group) => {
-        const done = group.routines.filter((r) => r.done).length;
-        const total = group.routines.length;
-        const card = el('div', 'p8n-card' + (groupSlot(group.name) === now ? ' is-now' : ''));
+      page8State.routineGroups.forEach((group, gi) => {
+        const key = gKey(group);
+        const enterCard = firstPaint || !seenKeys.has('g:' + key);
+        const card = el('div', 'p8g' + (enterCard ? ' is-enter' : ''));
         card.style.setProperty('--gc', group.color);
         card.style.setProperty('--gt', tickColor(group.color));
+        card.style.setProperty('--i', String(firstPaint ? gi : 0));
 
-        const head = el('div', 'p8n-card-head');
-        const dot = el('button', 'p8n-dot'); dot.type = 'button'; dot.title = 'Rengi değiştir';
-        dot.addEventListener('click', () => openColorPicker(group.name, group.color, (color) => { group.color = color; savePage8State(); render(); }));
-        const name = el('button', 'p8n-name', group.name); name.type = 'button'; name.title = 'Adı değiştirmek için tıkla';
-        name.addEventListener('click', () => {
-          const inp = el('input', 'p8n-name'); inp.value = group.name; name.replaceWith(inp); inp.focus(); inp.select();
-          let fin = false;
-          const commit = (ok) => { if (fin) return; fin = true; const v = inp.value.trim(); if (ok && v) { group.name = v; savePage8State(); } render(); };
-          inp.addEventListener('keydown', (e) => { if (e.key === 'Enter') commit(true); else if (e.key === 'Escape') commit(false); });
-          inp.addEventListener('blur', () => commit(true));
-        });
-        head.append(dot, name);
-        if (groupSlot(group.name) === now && done < total) head.appendChild(el('span', 'p8n-badge', 'Şimdi'));
-        head.appendChild(el('span', 'p8n-count', total && done === total ? 'Tamam' : `${done}/${total}`));
-        const del = el('button', 'p8n-mini', '×'); del.type = 'button'; del.title = 'Grubu sil';
-        del.addEventListener('click', () => {
-          if (!window.confirm(`"${group.name}" grubu ve içindeki rutinler silinsin mi?`)) return;
-          page8State.routineGroups = page8State.routineGroups.filter((g) => g !== group); save();
-        });
-        head.appendChild(del);
+        // Başlık: eyebrow + ad + alt yazı · ilerleme halkası
+        const head = el('div', 'p8g-head');
+        const tb = el('div', 'p8g-titlebox');
+        tb.append(el('div', 'p8g-eyebrow'), el('div', 'p8g-name', group.name), el('div', 'p8g-sub'));
+        const ring = el('div', 'p8g-ring');
+        ring.innerHTML = `<svg viewBox="0 0 52 52"><circle class="bg" cx="26" cy="26" r="21"/><circle class="fg" cx="26" cy="26" r="21" stroke-dasharray="${RING_C}" stroke-dashoffset="${RING_C}"/></svg><b></b><i class="tick"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 5L19 7"/></svg></i>`;
+        head.append(tb, ring);
         card.appendChild(head);
 
-        const track = el('div', 'p8n-track'); const fill = document.createElement('i'); fill.style.width = (total ? (done / total) * 100 : 0) + '%'; track.appendChild(fill);
-        card.appendChild(track);
+        // Satırlar
+        const list = el('div', 'p8g-list');
+        group.routines.forEach((r, ri) => {
+          const rk = rKey(group, r);
+          const enterRow = !firstPaint && !seenKeys.has('r:' + rk) && !enterCard;
+          const row = el('div', 'p8g-r' + (r.done ? ' is-done' : '') + (enterRow ? ' is-enter' : ''));
+          const c = el('span', 'p8g-c'); c.innerHTML = TICK;
+          const t = el('span', 'p8g-t'); t.appendChild(el('span', 'p8g-tt', r.text));
+          row.append(c, t);
+          row.addEventListener('click', () => toggleRoutine(group, r, row, card));
+          bindHold(row, (x, y) => {
+            openCtx(row, [
+              { ic: IC.edit, title: 'Metni Düzenle', sub: 'Rutinin adını değiştir', fn: () => startEditText(t, r, render) },
+              { ic: IC.trash, title: 'Sil', sub: 'Bu rutini kaldır', danger: true, fn: () => removeRoutine(group, r, row) }
+            ], x, y);
+          });
+          seenKeys.add('r:' + rk);
+          list.appendChild(row);
+        });
+        card.appendChild(list);
 
-        group.routines.forEach((r) => {
-          const row = el('div', 'p8n-row' + (r.done ? ' is-done' : ''));
-          const chk = el('span', 'p8n-chk'); chk.innerHTML = TICK;
-          const txt = el('span', 'p8n-txt', r.text);
-          const ed = el('button', 'p8n-mini', '✎'); ed.type = 'button'; ed.title = 'Düzenle';
-          const rm = el('button', 'p8n-mini', '×'); rm.type = 'button'; rm.title = 'Sil';
-          row.append(chk, txt, ed, rm);
-          row.addEventListener('click', () => { r.done = !r.done; save(); });
-          ed.addEventListener('click', (e) => { e.stopPropagation(); startEditText(row.querySelector('.p8n-txt'), r, render); });
-          rm.addEventListener('click', (e) => { e.stopPropagation(); group.routines = group.routines.filter((x) => x !== r); save(); });
-          card.appendChild(row);
+        // Alt: ekle
+        if (addOpenGroups.has(key)) {
+          const f = el('form', 'p8g-form'); f.autocomplete = 'off'; f.noValidate = true;
+          const inp = el('input', 'p8g-in'); inp.type = 'text'; inp.placeholder = 'Yeni rutin (örn. Su iç)'; inp.enterKeyHint = 'done'; inp.maxLength = 120;
+          const go = el('button', 'p8g-go'); go.type = 'submit'; go.setAttribute('aria-label', 'Ekle');
+          go.innerHTML = '<svg viewBox="0 0 24 24"><path d="M12 19V6M6.5 11.5L12 6l5.5 5.5"/></svg>';
+          f.append(inp, go);
+          f.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const v = inp.value.trim(); if (!v) { inp.focus(); return; }
+            group.routines.push({ id: page8GenId(), text: v, done: false }); save();
+            const c2 = [...document.querySelectorAll('#p8nGroups .p8g')][page8State.routineGroups.indexOf(group)];
+            const i2 = c2 && c2.querySelector('.p8g-in'); if (i2) i2.focus();
+          });
+          inp.addEventListener('keydown', (e) => { if (e.key === 'Escape') { addOpenGroups.delete(key); render(); } });
+          inp.addEventListener('blur', () => { setTimeout(() => { if (!inp.value.trim() && !f.contains(document.activeElement) && addOpenGroups.has(key)) { addOpenGroups.delete(key); render(); } }, 120); });
+          card.appendChild(f);
+        } else {
+          const ab = el('button', 'p8g-add'); ab.type = 'button';
+          ab.innerHTML = '<i>+</i><span>Rutin ekle</span>';
+          ab.addEventListener('click', () => openAddForm(group));
+          card.appendChild(ab);
+        }
+
+        // Kartın kendisine basılı tutma → grup menüsü (satırlar kendi menüsünü açar)
+        bindHold(card, (x, y, target) => {
+          if (target && target.closest && target.closest('.p8g-r')) return;
+          const done = group.routines.filter((r) => r.done).length;
+          const items = [
+            { ic: IC.edit, title: 'Adı Değiştir', sub: 'Grubun ismini düzenle', fn: () => renameGroup(group, card) },
+            { ic: IC.color, title: 'Rengi Değiştir', sub: 'Kartın vurgu rengi', fn: () => openColorPicker(group.name, group.color, (color) => { group.color = color; savePage8State(); render(); }) },
+            { ic: IC.plus, title: 'Rutin Ekle', sub: 'Bu gruba yeni rutin', fn: () => openAddForm(group) }
+          ];
+          if (done) items.push({ ic: IC.reset, title: 'İşaretleri Sıfırla', sub: 'Bugünkü tikleri kaldır', fn: () => { group.routines.forEach((r) => { r.done = false; }); snapshot(); savePage8State(); render(); } });
+          items.push({ ic: IC.trash, title: 'Grubu Sil', sub: 'İçindeki rutinlerle birlikte', danger: true, fn: () => removeGroup(group, card) });
+          openCtx(card, items, x, y);
         });
 
-        card.appendChild(addForm('Rutin ekle (örn. Su iç)', (v) => {
-          group.routines.push({ id: page8GenId(), text: v, done: false });
-          save();
-          const again = [...document.querySelectorAll('#p8nGroups .p8n-card')][page8State.routineGroups.indexOf(group)];
-          if (again) again.querySelector('.p8n-add .p8n-input').focus();
-          return true;
-        }));
+        seenKeys.add('g:' + key);
         box.appendChild(card);
+        paintCard(card, group, false);
       });
+      firstPaint = false;
     };
 
     // ---- Grup ekleme / boş durum ----
@@ -47108,23 +47479,42 @@
       page8State.routineGroups.push({ id: page8GenId(), name: v, color: page8NextColor(page8State.routineGroups.length + 2), routines: [] });
       save();
     };
+    let newGroupOpen = false;
     const renderNewGroup = () => {
       const wrap = $('p8nNewGroup');
       wrap.innerHTML = '';
       const has = (k) => page8State.routineGroups.some((g) => groupSlot(g.name) === k);
-      const bar = el('div', 'p8n-newgroup');
-      [['Sabah', 'sabah'], ['Öğle', 'öğle'], ['Akşam', 'akşam']].forEach(([label, k]) => {
-        if (has(k)) return;
-        const b = el('button', 'p8n-pill', '+ ' + label); b.type = 'button';
-        b.addEventListener('click', () => addGroup(label + ' Rutinim'));
-        bar.appendChild(b);
-      });
-      bar.appendChild(addForm('Yeni rutin grubu adı', (v) => { addGroup(v); return true; }));
-      if (!page8State.routineGroups.length) {
-        const empty = el('div', 'p8n-empty');
-        empty.append(el('b', '', 'Henüz rutin grubun yok'), el('p', '', 'Gününü Sabah, Öğle ve Akşam olarak bölüp rutinlerini buraya ekle.'));
-        empty.appendChild(bar); wrap.appendChild(empty);
-      } else wrap.appendChild(bar);
+      const empty = !page8State.routineGroups.length;
+      const buildPanel = () => {
+        const bar = el('div', 'p8n-newgroup');
+        const missing = [['Sabah', 'sabah'], ['Öğle', 'öğle'], ['Akşam', 'akşam']].filter(([, k]) => !has(k));
+        if (missing.length) {
+          const pills = el('div', 'p8n-pills');
+          missing.forEach(([label]) => {
+            const b = el('button', 'p8n-pill', '+ ' + label); b.type = 'button';
+            b.addEventListener('click', () => { newGroupOpen = false; addGroup(label + ' Rutinim'); });
+            pills.appendChild(b);
+          });
+          bar.appendChild(pills);
+        }
+        bar.appendChild(addForm('Kendi grup adın', (v) => { newGroupOpen = false; addGroup(v); return true; }));
+        return bar;
+      };
+      if (empty) {
+        const box = el('div', 'p8n-empty');
+        box.append(el('b', '', 'Henüz rutin grubun yok'), el('p', '', 'Gününü Sabah, Öğle ve Akşam olarak bölüp rutinlerini buraya ekle.'));
+        box.appendChild(buildPanel()); wrap.appendChild(box);
+      } else if (newGroupOpen) {
+        wrap.appendChild(buildPanel());
+      } else {
+        const b = el('button', 'p8n-newbtn', '+ Yeni grup'); b.type = 'button';
+        b.addEventListener('click', () => {
+          newGroupOpen = true; renderNewGroup();
+          const inp = wrap.querySelector('.p8n-add .p8n-input'); if (inp) inp.focus();
+        });
+        wrap.appendChild(b);
+        wrap.appendChild(el('div', 'p8g-tip', 'İpucu: Bir karta ya da rutine basılı tut, seçenekler açılsın.'));
+      }
     };
 
     // ---- Aklımdakiler (notlar) ----
@@ -62810,6 +63200,8 @@
       const tag = el.tagName;
       if (tag !== 'INPUT' && tag !== 'TEXTAREA') return;
 
+      // Tam ekranda klavye yerleşimini aşağıdaki "tam ekran klavye" betiği yönetir.
+      if (document.fullscreenElement || document.webkitFullscreenElement) return;
       // Sadece gerçekten kaydırılabilir bir üst kapsayıcı varsa (ör.
       // .settings-scroll gibi overflow-y:auto olan ve taşan bir alan)
       // scrollIntoView çağırıyoruz. "İsim gir" gibi ekranın ortasında
