@@ -31389,6 +31389,214 @@
       display: none;
     }
   }
+
+  /* ==========================================================================
+     TABLET / GENİŞ EKRAN — Soru Havuzu: (1) Testlerim listesi (yan panel +
+     "Tümünü gör" pop-up'ı), (2) Seç modu / dock akıcılık düzeltmeleri.
+     Yalnızca yeni büyük ekran tasarımını etkiler; eski/mobil düzene dokunmaz.
+     ========================================================================== */
+  @media (min-width: 768px) and (min-height: 600px) {
+    /* ---- Yan panel: Test Oluştur'un altındaki test listesi ---- */
+    #page-camera .qhavuz-runs { display: flex; flex-direction: column; gap: 0.4rem; margin-top: 0.2rem; }
+    #page-camera .qhavuz-runs[hidden] { display: none; }
+    #page-camera .qhavuz-runs-list { display: flex; flex-direction: column; gap: 0.4rem; }
+    #page-camera .qhavuz-run {
+      display: flex; align-items: center; gap: 0.6rem; width: 100%;
+      padding: 0.55rem 0.85rem; border: none; border-radius: 1rem; text-align: left; cursor: pointer;
+      font-family: "Baloo 2", "Space Grotesk", sans-serif;
+      color: var(--theme-text, #121212);
+      background: color-mix(in srgb, var(--theme-text, #121212) 6%, transparent);
+      transition: background-color 0.15s ease, transform 0.12s ease;
+    }
+    #page-camera .qhavuz-run:active { transform: scale(0.98); }
+    @media (hover: hover) and (pointer: fine) {
+      #page-camera .qhavuz-run:hover { background: color-mix(in srgb, var(--theme-text, #121212) 11%, transparent); }
+    }
+    #page-camera .qhavuz-run-dot {
+      flex: 0 0 auto; width: 0.5rem; height: 0.5rem; border-radius: 50%;
+      background: color-mix(in srgb, var(--theme-text, #121212) 28%, transparent);
+    }
+    #page-camera .qhavuz-run.is-progress .qhavuz-run-dot { background: var(--accent-color, #ff90e8); }
+    #page-camera .qhavuz-run-text { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 0.1rem; }
+    #page-camera .qhavuz-run-title { font-weight: 700; font-size: 0.8rem; line-height: 1.2; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    #page-camera .qhavuz-run-meta { font-weight: 500; font-size: 0.7rem; line-height: 1.2; opacity: 0.6; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    #page-camera .qhavuz-run-bar { display: block; height: 3px; margin-top: 0.25rem; border-radius: 3px; overflow: hidden; background: color-mix(in srgb, var(--theme-text, #121212) 12%, transparent); }
+    #page-camera .qhavuz-run-bar > i { display: block; height: 100%; border-radius: 3px; background: var(--accent-color, #ff90e8); }
+    #page-camera .qhavuz-runs-all {
+      align-self: flex-start; padding: 0.2rem 0.35rem; border: none; background: none; cursor: pointer;
+      font-family: "Baloo 2", "Space Grotesk", sans-serif; font-weight: 700; font-size: 0.78rem;
+      color: color-mix(in srgb, var(--theme-text, #121212) 55%, transparent);
+      transition: color 0.15s ease;
+    }
+    #page-camera .qhavuz-runs-all[hidden] { display: none; }
+    @media (hover: hover) and (pointer: fine) {
+      #page-camera .qhavuz-runs-all:hover { color: var(--theme-text, #121212); text-decoration: underline; }
+    }
+
+    /* ---- Testlerim pop-up'ı (Kaynaklarım ile aynı yüzey dili) ---- */
+    #qhavuzRunsBackdrop {
+      background: rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+    #qhavuzRunsBackdrop .qhavuz-add-card {
+      max-width: 580px;
+      height: min(44rem, 88vh);
+      max-height: 88vh;
+      padding: 2rem 2.3rem 1.8rem;
+      border: none;
+      border-radius: 1.9em;
+      background: #000;
+      font-family: "Baloo 2", "Space Grotesk", sans-serif;
+      box-shadow:
+        0 28px 60px -18px rgba(0, 0, 0, 0.55),
+        0 2px 10px 0 rgba(0, 0, 0, 0.3);
+    }
+    #qhavuzRunsBackdrop .page9-add-header {
+      align-items: center;
+      margin-bottom: 1.2rem;
+      padding-bottom: 1.1rem;
+      border-bottom: 1.5px solid rgba(255, 255, 255, 0.12);
+    }
+    #qhavuzRunsBackdrop .page9-add-title {
+      font-family: "Baloo 2", "Space Grotesk", sans-serif;
+      font-weight: 700;
+      font-size: 1.55rem;
+      line-height: 1.15;
+      color: #f5f5f7;
+    }
+    #qhavuzRunsBackdrop .page9-add-subtitle {
+      font-family: "Baloo 2", "Space Grotesk", sans-serif;
+      font-weight: 500;
+      font-size: 0.9rem;
+      color: rgba(255, 255, 255, 0.55);
+      opacity: 1;
+    }
+    #qhavuzRunsBackdrop .page9-add-close {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 2.15rem;
+      height: 2.15rem;
+      padding: 0;
+      border: none;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.1);
+      box-shadow: none;
+      color: rgba(255, 255, 255, 0.75);
+      font-size: 1.3rem;
+      line-height: 1;
+      cursor: pointer;
+      transition: background-color 0.18s ease, color 0.18s ease;
+    }
+    #qhavuzRunsBackdrop .qhavuz-add-body {
+      scrollbar-width: none;
+    }
+    #qhavuzRunsBackdrop .qhavuz-add-body::-webkit-scrollbar {
+      display: none;
+    }
+    /* Parlama (box-shadow) kaydırma kutusunun kenarında kesilmesin diye
+       gövdeye iç boşluk verilip aynı miktarda negatif dış boşlukla
+       yerleşim korunur. */
+    #qhavuzRunsBackdrop .qhavuz-books-body {
+      padding: 1.1rem 1.2rem;
+      margin: -1.1rem -1.2rem;
+    }
+    #qhavuzRunsBackdrop .qhavuz-books-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.55rem;
+    }
+    #qhavuzRunsBackdrop .qhavuz-books-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: 0.85rem 1.1rem;
+      border-radius: 1.1rem;
+      background: rgba(255, 255, 255, 0.08);
+      color: #f5f5f7;
+      font-family: "Baloo 2", "Space Grotesk", sans-serif;
+      font-weight: 600;
+      font-size: 1rem;
+    }
+    #qhavuzRunsBackdrop .qhavuz-books-item-name {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    #qhavuzRunsBackdrop .qhavuz-books-item-count {
+      flex: 0 0 auto;
+      font-weight: 500;
+      font-size: 0.85rem;
+      color: rgba(255, 255, 255, 0.55);
+    }
+
+    #qhavuzRunsBackdrop .qhavuz-books-item { cursor: pointer; transition: background-color 0.15s ease; }
+    @media (hover: hover) and (pointer: fine) {
+      #qhavuzRunsBackdrop .qhavuz-books-item:hover { background: rgba(255, 255, 255, 0.13); }
+    }
+    #qhavuzRunsBackdrop .qhavuz-run-main { min-width: 0; display: flex; flex-direction: column; gap: 0.1rem; }
+    #qhavuzRunsBackdrop .qhavuz-run-sub { font-weight: 500; font-size: 0.75rem; color: rgba(255, 255, 255, 0.5); }
+    #qhavuzRunsBackdrop .qhavuz-run-right { flex: 0 0 auto; display: flex; align-items: center; gap: 0.6rem; }
+    #qhavuzRunsBackdrop .qhavuz-run-badge { font-weight: 600; font-size: 0.82rem; color: rgba(255, 255, 255, 0.6); white-space: nowrap; }
+    #qhavuzRunsBackdrop .qhavuz-run-badge.is-progress { color: var(--accent-color, #ff90e8); }
+    #qhavuzRunsBackdrop .qhavuz-run-x {
+      height: 1.8rem; min-width: 1.8rem; padding: 0 0.5rem; border: none; border-radius: 999px; cursor: pointer;
+      font-family: inherit; font-weight: 700; font-size: 0.75rem; line-height: 1;
+      color: rgba(255, 255, 255, 0.7); background: rgba(255, 255, 255, 0.1);
+      transition: background-color 0.15s ease, color 0.15s ease;
+    }
+    #qhavuzRunsBackdrop .qhavuz-run-x.is-armed { background: #e5484d; color: #fff; }
+    #qhavuzRunsBackdrop .qhavuz-runs-empty { padding: 2rem 0; text-align: center; font-weight: 500; color: rgba(255, 255, 255, 0.5); }
+
+    /* ---- AKICILIK: Seç modu ----
+       Kasmanın nedenleri: (a) her kartın seçim rozetinde backdrop-filter,
+       (b) animasyon bittikten sonra bile her kartta kalan transform katmanı
+       (fill-mode: both), (c) seçili görselde animasyonlu bulanık gölge,
+       (d) dock'ta büyük parlama gölgesi + taşmalı (overshoot) yay eğrisi,
+       (e) her seçimde zorunlu yerleşim hesabı (offsetWidth). Hepsi yalnızca
+       transform/opacity ile çalışan hafif eşdeğerleriyle değiştirildi. */
+    #page-camera .qhavuz-wide-card { animation-fill-mode: backwards; }
+    #page-camera .qhavuz-wide-select {
+      -webkit-backdrop-filter: none;
+      backdrop-filter: none;
+      background: rgba(20, 20, 22, 0.66);
+      transition: transform 0.18s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.14s ease, background-color 0.14s ease;
+    }
+    #page-camera .qhavuz-canvas-grid.is-select-mode .qhavuz-wide-card.is-selected .qhavuz-wide-thumb {
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06), 0 12px 28px -14px rgba(0, 0, 0, 0.35);
+    }
+    #page-camera .qhavuz-wide-thumb::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      z-index: 3;
+      border-radius: inherit;
+      box-shadow: inset 0 0 0 4px var(--accent-color, #ff90e8);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.16s ease;
+    }
+    #page-camera .qhavuz-canvas-grid.is-select-mode .qhavuz-wide-card.is-selected .qhavuz-wide-thumb::after { opacity: 1; }
+
+    #page-camera .qhavuz-select-dock {
+      box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.06), 0 16px 32px -14px rgba(0, 0, 0, 0.55);
+      transform: translate3d(0, 18px, 0) scale(0.94);
+      will-change: transform, opacity;
+      contain: layout style;
+      transition: opacity 0.18s ease, transform 0.3s cubic-bezier(0.22, 1, 0.36, 1), visibility 0s linear 0.3s;
+    }
+    #page-camera .qhavuz-select-dock-wrap.is-open .qhavuz-select-dock {
+      transform: translate3d(0, 0, 0) scale(1);
+      transition: opacity 0.18s ease, transform 0.3s cubic-bezier(0.22, 1, 0.36, 1), visibility 0s;
+    }
+    #page-camera .qhavuz-select-dock-actions { transition: max-width 0.3s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.2s ease; }
+    #page-camera .qhavuz-select-dock.has-selection .qhavuz-select-dock-actions { max-width: 20rem; }
+    #page-camera .qhavuz-select-dock-icon-btn,
+    #page-camera .qhavuz-select-dock-action { transition: background-color 0.15s ease, transform 0.15s ease, opacity 0.2s ease, filter 0.15s ease; }
+  }
 </style>
 </head>
 <body oncopy="return false" oncut="return false" onselectstart="return false" ondragstart="return false">
@@ -34744,6 +34952,12 @@
           <span class="qhavuz-canvas-side-active-text" id="qhavuzSourceActiveText"></span>
           <button type="button" class="qhavuz-canvas-side-active-clear" id="qhavuzSourceActiveClear" aria-label="Kaynak filtresini kaldır">×</button>
         </div>
+        <!-- Testlerim: yarım kalan / daha önce çözülen testler (en fazla 4).
+             4'ten fazlası varsa düz yazı "Tümünü gör" pop-up'ı açar. -->
+        <div class="qhavuz-runs" id="qhavuzRuns" hidden>
+          <div class="qhavuz-runs-list" id="qhavuzRunsList"></div>
+          <button type="button" class="qhavuz-runs-all" id="qhavuzRunsAllBtn" hidden>Tümünü gör</button>
+        </div>
       </aside>
     </div>
   </section>
@@ -35006,6 +35220,25 @@
 <!-- Soru Havuzu: bir görsel seçilince açılan pop-up. Branş ve doğru
      cevap şıkkı seçilmeden "Kaydet" butonu pasif kalır. wheel-color /
      page9-add pop-up'larıyla aynı brutalist dili paylaşır. -->
+<!-- Soru Havuzu: "Testlerim" pop-up'ı (yan paneldeki "Tümünü gör"). Kaynaklarım
+     ile aynı kart dili; tüm yarım kalan / çözülen testler listelenir. -->
+<div class="page9-add-backdrop" id="qhavuzRunsBackdrop">
+  <div class="page9-add-card qhavuz-add-card" role="dialog" aria-modal="true" aria-labelledby="qhavuzRunsTitle">
+    <div class="page9-add-header">
+      <div class="page9-add-heading">
+        <span class="page9-add-title" id="qhavuzRunsTitle">Testlerim</span>
+        <span class="page9-add-subtitle" id="qhavuzRunsSubtitle">Yarım kalan ve çözülen testler</span>
+      </div>
+      <div class="qhavuz-books-head-actions">
+        <button type="button" class="delete-btn page9-add-close" id="qhavuzRunsClose" aria-label="Kapat">×</button>
+      </div>
+    </div>
+    <div class="qhavuz-add-body qhavuz-books-body">
+      <div class="qhavuz-books-list" id="qhavuzRunsPopupList"></div>
+    </div>
+  </div>
+</div>
+
 <!-- Soru Havuzu: "Kaynaklarım" pop-up'ı. Soru Ekle pop-up'ıyla (#qhavuzAddBackdrop)
      aynı kart genişliği ve yüzey dili; içinde havuza eklenmiş kaynak isimleri
      listelenir (bkz. JS: renderQhavuzBooksList). -->
@@ -56529,9 +56762,13 @@
     if (qhavuzCanvasSelectNum) {
       qhavuzCanvasSelectNum.textContent = String(n);
       if (n !== qhavuzCanvasLastCount) {
-        qhavuzCanvasSelectNum.classList.remove('is-bump');
-        void qhavuzCanvasSelectNum.offsetWidth; // reflow: animasyonu baştan başlat
-        qhavuzCanvasSelectNum.classList.add('is-bump');
+        // Zorunlu yerleşim (offsetWidth) yerine Web Animations: sayfa yeniden hesaplanmaz.
+        if (qhavuzCanvasSelectNum.animate) {
+          qhavuzCanvasSelectNum.animate(
+            [{ transform: 'scale(1)' }, { transform: 'scale(1.28)', offset: 0.45 }, { transform: 'scale(1)' }],
+            { duration: 240, easing: 'ease-out' }
+          );
+        }
       }
     }
     qhavuzCanvasLastCount = n;
@@ -56559,12 +56796,10 @@
     if (qhavuzWideContextMenu) closeQhavuzWideContextMenu();
     if (qhavuzCanvasGrid) {
       qhavuzCanvasGrid.classList.toggle('is-select-mode', qhavuzCanvasSelectMode);
-      Array.from(qhavuzCanvasGrid.children).forEach((el) => {
-        if (el.dataset && el.dataset.id) {
-          const sel = qhavuzCanvasSelected.has(Number(el.dataset.id)) || qhavuzCanvasSelected.has(el.dataset.id);
-          el.classList.toggle('is-selected', qhavuzCanvasSelectMode && sel);
-        }
-      });
+      // Tüm kartları gezmek yerine yalnızca seçili olanlar temizlenir.
+      if (!qhavuzCanvasSelectMode) {
+        qhavuzCanvasGrid.querySelectorAll('.is-selected').forEach((el) => el.classList.remove('is-selected'));
+      }
     }
     if (qhavuzCanvasSelectBar) {
       qhavuzCanvasSelectBar.classList.toggle('is-open', qhavuzCanvasSelectMode);
@@ -57733,6 +57968,7 @@
     if (!qhavuzTestResultView.classList.contains('is-hidden')) return;
     if (qtExam) qtEvaluateExam();
     qhavuzTestFinalizeClock();
+    if (qhavuzRunCur && qtExam) qhavuzRunSave(true);
     qhavuzTestQuestionView.classList.add('is-hidden');
     qhavuzTestResultView.classList.remove('is-hidden');
     qhavuzTestResultScore.textContent = `${qhavuzTestScore}/${qhavuzTestQuestions.length}`;
@@ -57846,11 +58082,213 @@
     qhavuzTestTimerId = setInterval(qhavuzTestTick, 250);
   };
 
+  // ---- Testlerim: yarım kalan / çözülen testlerin kaydı (yalnızca büyük ekran sınav düzeni) ----
+  // Her test, soru kimlikleri + işaretlenen cevaplar + süre ile APP_STATE'e yazılır.
+  // Yarım kalan test listeden dokunulunca kaldığı sorudan ve süreden devam eder;
+  // tamamlanan test sonuç ekranında (cevap incelemesiyle) açılır ve havuzdaki
+  // "çözüldü" işaretlerine dokunmaz (qtReplay).
+  const QHAVUZ_RUNS_KEY = 'qhavuzTestRuns';
+  const QHAVUZ_RUNS_MAX = 40;
+  const QHAVUZ_RUNS_SIDE_MAX = 4;
+  const qhavuzRunsAll = () => (Array.isArray(APP_STATE[QHAVUZ_RUNS_KEY]) ? APP_STATE[QHAVUZ_RUNS_KEY] : []);
+  let qhavuzRunCur = null;
+  let qtReplay = false;
+  let qhavuzRunSaveTimer = 0;
+
+  const qhavuzRunSave = (final) => {
+    clearTimeout(qhavuzRunSaveTimer);
+    const run = qhavuzRunCur;
+    if (!run || qtReplay || !qtExam) return;
+    run.ids = qhavuzTestQuestions.map((q) => q.id);
+    run.total = run.ids.length;
+    run.answers = qtAnswers.map((a) => ({ c: a.choice, t: a.text }));
+    run.index = qhavuzTestIndex;
+    run.elapsedMs = final
+      ? qhavuzTestElapsedFinal
+      : Math.max(0, (qhavuzTestPaused ? qhavuzTestPauseTs : Date.now()) - qhavuzTestStartTs);
+    run.updatedAt = Date.now();
+    if (final) {
+      run.done = true;
+      run.score = qtStats.correct;
+      run.wrong = qtStats.wrong;
+      run.blank = qtStats.blank;
+      run.timedOut = !!qhavuzTestTimedOut;
+    }
+    const list = qhavuzRunsAll().filter((r) => r.id !== run.id);
+    list.unshift(Object.assign({}, run));
+    saveAppState({ [QHAVUZ_RUNS_KEY]: list.slice(0, QHAVUZ_RUNS_MAX) });
+    qhavuzRunsRender();
+  };
+
+  // Her tıklamada tüm uygulama durumunu yazmamak için kısa gecikmeyle toplanır.
+  const qhavuzRunSaveSoon = () => {
+    if (!qhavuzRunCur || qhavuzRunCur.done || qtReplay || qtReview) return;
+    clearTimeout(qhavuzRunSaveTimer);
+    qhavuzRunSaveTimer = setTimeout(() => qhavuzRunSave(false), 500);
+  };
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden && qhavuzRunCur && !qhavuzRunCur.done) qhavuzRunSave(false);
+  });
+  window.addEventListener('pagehide', () => {
+    if (qhavuzRunCur && !qhavuzRunCur.done) qhavuzRunSave(false);
+  });
+
+  const qhavuzRunsSorted = () => qhavuzRunsAll().slice().sort((a, b) => ((a.done ? 1 : 0) - (b.done ? 1 : 0)) || ((b.updatedAt || 0) - (a.updatedAt || 0)));
+  const qhavuzRunAnswered = (r) => (r.answers || []).filter((a) => a && (a.c || (a.t && a.t.trim()))).length;
+  const qhavuzRunTotal = (r) => r.total || (r.ids ? r.ids.length : 0);
+  const qhavuzRunMeta = (r) => (r.done
+    ? `${r.score || 0}/${qhavuzRunTotal(r)} doğru`
+    : `Yarım kaldı · ${qhavuzRunAnswered(r)}/${qhavuzRunTotal(r)} cevap`);
+  const qhavuzRunDate = (r) => {
+    const d = new Date(r.updatedAt || Date.now());
+    return `${d.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' })}, ${d.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}`;
+  };
+  const qhavuzMk = (tag, cls, text) => {
+    const el = document.createElement(tag);
+    if (cls) el.className = cls;
+    if (text !== undefined) el.textContent = text;
+    return el;
+  };
+
+  const qhavuzRunsBackdrop = document.getElementById('qhavuzRunsBackdrop');
+  const qhavuzRunsPopupList = document.getElementById('qhavuzRunsPopupList');
+  const qhavuzRunsSubtitle = document.getElementById('qhavuzRunsSubtitle');
+
+  const qhavuzRunsRenderPopup = () => {
+    if (!qhavuzRunsPopupList) return;
+    const all = qhavuzRunsSorted();
+    qhavuzRunsPopupList.textContent = '';
+    if (qhavuzRunsSubtitle) qhavuzRunsSubtitle.textContent = all.length ? `${all.length} test` : 'Yarım kalan ve çözülen testler';
+    if (!all.length) {
+      qhavuzRunsPopupList.appendChild(qhavuzMk('div', 'qhavuz-runs-empty', 'Henüz test yok.'));
+      return;
+    }
+    const frag = document.createDocumentFragment();
+    all.forEach((r) => {
+      const row = qhavuzMk('div', 'qhavuz-books-item');
+      row.setAttribute('role', 'button');
+      row.tabIndex = 0;
+      const main = qhavuzMk('div', 'qhavuz-run-main');
+      main.appendChild(qhavuzMk('span', 'qhavuz-books-item-name', r.label || 'Test'));
+      main.appendChild(qhavuzMk('span', 'qhavuz-run-sub', qhavuzRunDate(r)));
+      const right = qhavuzMk('div', 'qhavuz-run-right');
+      right.appendChild(qhavuzMk('span', `qhavuz-run-badge${r.done ? '' : ' is-progress'}`, qhavuzRunMeta(r)));
+      const x = qhavuzMk('button', 'qhavuz-run-x', '×');
+      x.type = 'button';
+      x.setAttribute('aria-label', 'Testi sil');
+      let armTimer = 0;
+      x.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (!x.classList.contains('is-armed')) {
+          x.classList.add('is-armed');
+          x.textContent = 'Sil?';
+          armTimer = setTimeout(() => { x.classList.remove('is-armed'); x.textContent = '×'; }, 2500);
+          return;
+        }
+        clearTimeout(armTimer);
+        saveAppState({ [QHAVUZ_RUNS_KEY]: qhavuzRunsAll().filter((q) => q.id !== r.id) });
+        qhavuzRunsRender();
+        if (!qhavuzRunsAll().length) qhavuzRunsBackdrop.classList.remove('is-open');
+      });
+      right.appendChild(x);
+      row.appendChild(main);
+      row.appendChild(right);
+      const open = () => { qhavuzRunsBackdrop.classList.remove('is-open'); qhavuzRunOpen(r.id); };
+      row.addEventListener('click', open);
+      row.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); } });
+      frag.appendChild(row);
+    });
+    qhavuzRunsPopupList.appendChild(frag);
+  };
+
+  const qhavuzRunsRender = () => {
+    const box = document.getElementById('qhavuzRuns');
+    const list = document.getElementById('qhavuzRunsList');
+    const allBtn = document.getElementById('qhavuzRunsAllBtn');
+    if (!box || !list) return;
+    const all = qhavuzRunsSorted();
+    box.hidden = !all.length;
+    list.textContent = '';
+    const frag = document.createDocumentFragment();
+    all.slice(0, QHAVUZ_RUNS_SIDE_MAX).forEach((r) => {
+      const b = qhavuzMk('button', `qhavuz-run${r.done ? '' : ' is-progress'}`);
+      b.type = 'button';
+      b.appendChild(qhavuzMk('span', 'qhavuz-run-dot'));
+      const t = qhavuzMk('span', 'qhavuz-run-text');
+      t.appendChild(qhavuzMk('span', 'qhavuz-run-title', r.label || 'Test'));
+      t.appendChild(qhavuzMk('span', 'qhavuz-run-meta', qhavuzRunMeta(r)));
+      if (!r.done) {
+        const bar = qhavuzMk('span', 'qhavuz-run-bar');
+        const fill = document.createElement('i');
+        fill.style.width = `${qhavuzRunTotal(r) ? Math.round((qhavuzRunAnswered(r) / qhavuzRunTotal(r)) * 100) : 0}%`;
+        bar.appendChild(fill);
+        t.appendChild(bar);
+      }
+      b.appendChild(t);
+      b.addEventListener('click', () => qhavuzRunOpen(r.id));
+      frag.appendChild(b);
+    });
+    list.appendChild(frag);
+    if (allBtn) allBtn.hidden = all.length <= QHAVUZ_RUNS_SIDE_MAX;
+    if (qhavuzRunsBackdrop && qhavuzRunsBackdrop.classList.contains('is-open')) qhavuzRunsRenderPopup();
+  };
+
+  const qhavuzRunOpen = (id) => {
+    if (!qtWideMq.matches) return;
+    const run = qhavuzRunsAll().find((r) => r.id === id);
+    if (!run) return;
+    const byId = new Map(qhavuzState.items.map((it) => [it.id, it]));
+    const qs = [];
+    const ans = [];
+    (run.ids || []).forEach((qid, i) => {
+      const it = byId.get(qid);
+      if (!it) return; // havuzdan silinmiş sorular atlanır
+      qs.push(it);
+      ans.push((run.answers && run.answers[i]) || { c: null, t: '' });
+    });
+    if (!qs.length) { showAppToast('Bu testteki sorular artık havuzda yok.', 'error'); return; }
+    startQhavuzTest(qs, run.label, 'page-camera', undefined, {
+      timeLimitSec: run.done ? 0 : (run.timeLimitSec || 0),
+      resume: { run, answers: ans, index: run.index || 0, replay: !!run.done },
+    });
+  };
+
+  (() => {
+    const allBtn = document.getElementById('qhavuzRunsAllBtn');
+    const closeBtn = document.getElementById('qhavuzRunsClose');
+    const close = () => qhavuzRunsBackdrop && qhavuzRunsBackdrop.classList.remove('is-open');
+    if (allBtn && qhavuzRunsBackdrop) {
+      allBtn.addEventListener('click', () => { qhavuzRunsRenderPopup(); qhavuzRunsBackdrop.classList.add('is-open'); });
+      qhavuzRunsBackdrop.addEventListener('click', (e) => { if (e.target === qhavuzRunsBackdrop) close(); });
+    }
+    if (closeBtn) closeBtn.addEventListener('click', close);
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && qhavuzRunsBackdrop && qhavuzRunsBackdrop.classList.contains('is-open')) close();
+    });
+    qhavuzRunsRender();
+  })();
+
   const startQhavuzTest = (questions, label, returnPage, onExit, opts) => {
-    qhavuzTestQuestions = qhavuzShuffle(questions);
+    const resume = opts && opts.resume ? opts.resume : null;
+    qhavuzTestQuestions = resume ? questions.slice() : qhavuzShuffle(questions);
     qhavuzTestIndex = 0;
     qhavuzTestScore = 0;
     qtExamInit();
+    qtReplay = !!(resume && resume.replay && qtExam);
+    qhavuzRunCur = null;
+    if (resume && qtExam) {
+      qtAnswers = resume.answers.map((a) => ({ choice: a.c || null, text: a.t || '' }));
+      qhavuzTestIndex = Math.max(0, Math.min(qhavuzTestQuestions.length - 1, resume.index || 0));
+      qhavuzRunCur = Object.assign({}, resume.run);
+    } else if (qtExam && returnPage !== 'page-zero-error' && qhavuzTestQuestions.every((q) => qhavuzState.items.includes(q))) {
+      qhavuzRunCur = {
+        id: `r${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`,
+        label,
+        createdAt: Date.now(),
+        timeLimitSec: opts && opts.timeLimitSec ? opts.timeLimitSec : 0,
+        done: false,
+      };
+    }
     qhavuzTestTitle.textContent = label;
     qhavuzTestReturnPage = returnPage || 'page-camera';
     qhavuzTestOnExit = typeof onExit === 'function' ? onExit : renderQhavuzGrid;
@@ -57860,6 +58298,9 @@
     goToPage('page-camera-test');
     renderQhavuzTestQuestion();
     qhavuzTestStartClock(opts && opts.timeLimitSec ? opts.timeLimitSec : 0);
+    if (resume && qtExam) qhavuzTestStartTs -= (resume.run.elapsedMs || 0);
+    if (qhavuzRunCur && !resume) qhavuzRunSave(false);
+    if (qtReplay) finishQhavuzTest();
   };
 
   qhavuzTestSetupConfirm.addEventListener('click', () => {
@@ -57874,6 +58315,9 @@
   });
 
   const exitQhavuzTest = () => {
+    if (qhavuzRunCur && !qhavuzRunCur.done && !qtReplay) qhavuzRunSave(false);
+    qhavuzRunCur = null;
+    qtReplay = false;
     qhavuzTestStopClock();
     document.body.classList.remove('is-qhavuz-test-open');
     goToPage(qhavuzTestReturnPage);
@@ -58014,6 +58458,7 @@
     a.choice = a.choice === letter ? null : letter;
     qtRenderOptions();
     qtUpdateDots();
+    qhavuzRunSaveSoon();
   };
 
   // Şıklar / açık uçlu alan / (incelemede) doğru cevap bilgisi.
@@ -58086,6 +58531,7 @@
     if (i < 0 || i >= qhavuzTestQuestions.length || i === qhavuzTestIndex) return;
     qhavuzTestIndex = i;
     qtExamRender();
+    qhavuzRunSaveSoon();
   };
 
   const qtExamInit = () => {
@@ -58113,7 +58559,7 @@
       const ok = qtIsOpenEnded(item)
         ? qhavuzNormalizeAnswerText(a.text) === qhavuzNormalizeAnswerText(item.answerText)
         : a.choice === item.answer;
-      const inPool = qhavuzState.items.includes(item);
+      const inPool = !qtReplay && qhavuzState.items.includes(item);
       if (ok) {
         correct += 1;
         qhavuzTestNoteZeroErrorFix();
@@ -58192,6 +58638,7 @@
     if (!qtExam || qtReview) return;
     qtAnswers[qhavuzTestIndex].text = qhavuzTestOpenAnswerInput.value;
     qtUpdateDots();
+    qhavuzRunSaveSoon();
   });
 
   // Klavye: ← → sorular arası, A–E şık işaretleme (yazı alanındayken devre dışı).
