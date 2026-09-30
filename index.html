@@ -8840,6 +8840,37 @@
       transition: background-color var(--theme-transition-duration, 480ms) var(--theme-transition-easing, ease);
     }
 
+    /* Üst çubuk (telefon): başlık SOLA yaslı, soru sayacı tam karşısında
+       SAĞDA ve aynı satırda (taban çizgisi hizalı). Düzenle hapı zaten
+       Filtrele bloğuna taşındığından boş kalan sol/sağ hücreler gizlenir.
+       Sayaç DOM'da JS ile buraya taşınır (bkz. "Düzenle hapının konumu"). */
+    #page-camera .qhavuz-topbar {
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: baseline;
+    }
+
+    #page-camera .qhavuz-topbar > span[aria-hidden],
+    #page-camera .qhavuz-topbar-actions {
+      display: none;
+    }
+
+    #page-camera .qhavuz-topbar-title {
+      grid-column: 1;
+      text-align: left;
+    }
+
+    #page-camera .qhavuz-topbar > .qhavuz-count {
+      grid-column: 2;
+      justify-self: end;
+      padding-left: 0;
+    }
+
+    /* Sayaç filtre bloğundan çıktığı için Düzenle hapına (sağ üst köşe)
+       ayrılan üst boşluk padding ile korunur; Filtrele satırı hapın altında kalır. */
+    #page-camera .qhavuz-filter-bar {
+      padding-top: 2.2rem;
+    }
+
     #page-camera #qhavuzAddBtn,
     #page-camera #qhavuzSelectBtn {
       display: none;
@@ -32421,8 +32452,7 @@
      GÜNDELİK — TAMAMEN YENİ TASARIM (#p8n) — sadece BÜYÜK EKRAN
      ==========================================================================
      Rutinler ana sayfa: günlük ilerleme halkası + haftalık çubuklar + seri,
-     Sabah/Öğle/Akşam gibi zaman dilimi kartları ("Şimdi" rozetli). Sağda
-     "Aklımdakiler" not paneli, sağ altta her an açık Hızlı Not butonu.
+     Sabah/Öğle/Akşam gibi zaman dilimi kartları ("Şimdi" rozetli).
      Veri, eski Gündelik ile AYNI (page8State); eski arayüz sadece gizlendi.
      GERİ ALMAK İÇİN bu bloğu, #p8n HTML'ini ve "Gündelik yeni arayüz" JS'ini
      silmek yeterli. Mobil etkilenmez. */
@@ -32450,53 +32480,6 @@
     .p8n-date { font-weight: 600; font-size: 1rem; color: var(--p8-mute); }
     .p8n-notesbtn { margin-left: auto; align-self: center; flex: 0 0 auto; display: inline-flex; align-items: center; gap: .45rem; height: 2.7rem; padding: 0 1.15rem; border: none; border-radius: 999px; cursor: pointer; font: inherit; font-weight: 700; font-size: .85rem; color: color-mix(in srgb, var(--theme-text, #121212) 94%, transparent); background: var(--p8-surf); box-shadow: inset 0 1px 3px 0 color-mix(in srgb, var(--theme-text, #121212) 10%, transparent); transition: background-color .15s, transform .15s; -webkit-tap-highlight-color: transparent; }
     .p8n-notesbtn:active { transform: translate(1px, 1px); }
-    .p8n-notesbtn.p8n-second { margin-left: 0; }
-    .p8n-count-badge { min-width: 1.35rem; height: 1.35rem; padding: 0 .35rem; box-sizing: border-box; display: inline-grid; place-items: center; border-radius: 999px; font-size: .72rem; font-weight: 800; color: #fff; background: var(--accent-color, #ff90e8); }
-    .p8n-back { align-self: center; flex: 0 0 auto; width: 2.7rem; height: 2.7rem; margin-right: -.2rem; display: grid; place-items: center; border: none; border-radius: 50%; cursor: pointer; color: color-mix(in srgb, var(--theme-text, #121212) 94%, transparent); background: var(--p8-surf); box-shadow: inset 0 1px 3px 0 color-mix(in srgb, var(--theme-text, #121212) 10%, transparent); }
-    .p8n-back[hidden], .p8n-notesbtn[hidden], .p8n-notes[hidden], #p8nMain[hidden] { display: none; }
-    .p8n.is-notes .p8n-fab, .p8n.is-notes .p8n-quick { display: none; }
-    .p8n.is-notes .p8n-date { display: none; }
-    /* --- İlerleme özeti --- */
-    .p8n-hero { display: flex; align-items: center; gap: 1.8rem; padding: 1.4rem 1.8rem; border-radius: 1.8rem; background: var(--p8-surf); margin-bottom: 1.4rem; flex-wrap: wrap; }
-    .p8n-ring { position: relative; width: 104px; height: 104px; flex: 0 0 auto; }
-    .p8n-ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
-    .p8n-ring circle { fill: none; stroke-width: 10; stroke-linecap: round; }
-    .p8n-ring .bg { stroke: var(--p8-surf2); }
-    .p8n-ring .fg { stroke: var(--accent-color, #ff90e8); transition: stroke-dashoffset .5s cubic-bezier(.4,0,.2,1); }
-    .p8n-ring b { position: absolute; inset: 0; display: grid; place-items: center; font-size: 1.6rem; font-weight: 800; }
-    .p8n-hero-txt { flex: 1 1 200px; min-width: 0; }
-    .p8n-hero-big { font-size: 1.5rem; font-weight: 700; line-height: 1.15; }
-    .p8n-hero-sub { margin-top: .25rem; color: var(--p8-mute); font-weight: 600; font-size: .95rem; }
-    .p8n-week { display: flex; gap: .55rem; align-items: flex-end; height: 74px; }
-    .p8n-day { display: flex; flex-direction: column; align-items: center; gap: .3rem; width: 30px; font-size: .68rem; font-weight: 700; color: var(--p8-mute); }
-    .p8n-bar { width: 100%; height: 52px; border-radius: 999px; background: var(--p8-surf2); display: flex; align-items: flex-end; overflow: hidden; }
-    .p8n-bar i { display: block; width: 100%; border-radius: 999px; background: var(--accent-color, #ff90e8); opacity: .55; min-height: 0; }
-    .p8n-day.is-today { color: var(--theme-text, #121212); }
-    .p8n-day.is-today .p8n-bar i { opacity: 1; }
-
-    /* --- Rutin kartları --- */
-    .p8n-groups { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.2rem; align-items: start; }
-    .p8n-card { --gc: #ff90e8; --gt: #121212; border-radius: 1.8rem; padding: 1.1rem 1.1rem 1rem; background: linear-gradient(180deg, color-mix(in srgb, var(--gc) 20%, transparent), var(--p8-surf) 130px), var(--p8-surf); transition: box-shadow .2s; }
-    .p8n-card.is-now { box-shadow: 0 0 0 2.5px var(--gc); }
-    .p8n-card-head { display: flex; align-items: center; gap: .6rem; margin-bottom: .5rem; }
-    .p8n-dot { width: 1.7rem; height: 1.7rem; border-radius: 50%; border: none; background: var(--gc); cursor: pointer; flex: 0 0 auto; padding: 0; }
-    .p8n-name { flex: 1 1 auto; min-width: 0; font-weight: 700; font-size: 1.25rem; cursor: text; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; background: none; border: none; outline: none; color: inherit; font-family: inherit; padding: 0; }
-    .p8n-badge { flex: 0 0 auto; font-size: .7rem; font-weight: 800; padding: .15rem .6rem; border-radius: 999px; background: var(--gc); color: var(--gt); }
-    .p8n-count { flex: 0 0 auto; font-weight: 700; font-size: .9rem; color: var(--p8-mute); }
-    .p8n-mini { flex: 0 0 auto; width: 1.7rem; height: 1.7rem; border: none; border-radius: 50%; background: none; color: var(--p8-mute); cursor: pointer; font-size: 1rem; line-height: 1; display: grid; place-items: center; opacity: 0; transition: opacity .15s, background-color .15s; }
-    .p8n-card:hover .p8n-mini, .p8n-note:hover .p8n-mini { opacity: 1; }
-    .p8n-mini:hover { background: var(--p8-surf2); color: var(--theme-text, #121212); }
-    .p8n-track { height: 6px; border-radius: 999px; background: var(--p8-surf2); margin: 0 0 .7rem; overflow: hidden; }
-    .p8n-track i { display: block; height: 100%; background: var(--gc); border-radius: 999px; transition: width .35s ease; }
-    .p8n-row { display: flex; align-items: center; gap: .75rem; padding: .55rem .5rem; border-radius: 1rem; cursor: pointer; transition: background-color .15s; -webkit-tap-highlight-color: transparent; }
-    .p8n-row:hover { background: var(--p8-surf); }
-    .p8n-chk { flex: 0 0 auto; width: 1.7rem; height: 1.7rem; border-radius: 50%; border: 2.5px solid color-mix(in srgb, var(--theme-text, #121212) 28%, transparent); display: grid; place-items: center; transition: background-color .2s, border-color .2s, transform .15s; }
-    .p8n-chk svg { width: 1rem; height: 1rem; stroke: var(--gt); stroke-width: 3.2; fill: none; stroke-linecap: round; stroke-linejoin: round; opacity: 0; transform: scale(.4); transition: opacity .15s, transform .2s cubic-bezier(.34,1.56,.64,1); }
-    .p8n-row:active .p8n-chk { transform: scale(.9); }
-    .p8n-row.is-done .p8n-chk { background: var(--gc); border-color: var(--gc); }
-    .p8n-row.is-done .p8n-chk svg { opacity: 1; transform: none; }
-    .p8n-txt { flex: 1 1 auto; min-width: 0; font-weight: 600; font-size: 1.05rem; overflow-wrap: anywhere; transition: opacity .2s; }
-    .p8n-row.is-done .p8n-txt { opacity: .45; text-decoration: line-through; }
     .p8n-edit { flex: 1 1 auto; min-width: 0; font: inherit; font-weight: 600; font-size: 1.05rem; color: inherit; background: var(--p8-surf2); border: none; outline: none; border-radius: 999px; padding: .3rem .8rem; }
     .p8n-add { display: flex; gap: .5rem; margin-top: .4rem; margin-bottom: 0; }
     .p8n-add .p8n-input { flex: 1 1 auto; min-width: 0; width: auto; }
@@ -32504,9 +32487,8 @@
     .p8n-addbtn:active { transform: translate(1px, 1px); }
     .p8n-newgroup .p8n-add { margin-top: 0; }
     .p8n-input { width: 100%; box-sizing: border-box; font: inherit; font-weight: 600; font-size: .95rem; color: inherit; background: var(--p8-surf); border: none; outline: none; border-radius: 999px; padding: .6rem 1rem; }
-    .p8n-input::placeholder, .p8n-quick textarea::placeholder { color: var(--p8-mute); }
+    .p8n-input::placeholder { color: var(--p8-mute); }
     .p8n-input:focus { background: var(--p8-surf2); }
-
     /* --- Grup ekleme / boş durum --- */
     .p8n-newgroup { display: flex; flex-wrap: wrap; gap: .6rem; align-items: center; margin-top: 1.3rem; }
     .p8n-pill { font: inherit; font-weight: 700; font-size: .85rem; border: none; border-radius: 999px; padding: 0 1.1rem; height: 2.5rem; cursor: pointer; color: color-mix(in srgb, var(--theme-text, #121212) 94%, transparent); background: var(--p8-surf); transition: background-color .15s, transform .15s; }
@@ -32520,172 +32502,161 @@
     .p8n-newgroup { gap: .8rem; }
     .p8n-newgroup .p8n-add { flex: 1 1 260px; }
     .p8n-newgroup .p8n-input { width: auto; }
-    /* Üstteki ilerleme kartı: daha derli toplu, tek satır */
-    .p8n-hero { gap: 1.4rem; padding: 1.1rem 1.6rem; flex-wrap: nowrap; }
-    .p8n-ring { width: 88px; height: 88px; }
-    .p8n-ring circle { stroke-width: 9; }
-    .p8n-ring b { font-size: 1.35rem; }
-    .p8n-hero-big { font-size: 1.35rem; }
-    .p8n-week { margin-left: auto; height: 62px; gap: .45rem; }
-    .p8n-day { width: 26px; }
-    .p8n-bar { height: 42px; }
-    /* ==========================================================================
-       RUTİN KARTLARI (p8g) — tamamen özgün tasarım
-       Kart: grup renginden süzülen yumuşak ışık, sağda ilerleme halkası; satırlar
-       tek tek "tile" gibi. İşaretleme: çember dolar, tik çizilir, halka dalgası.
-       Yönetim: basılı tutma (bkz. JS bindHold) — düzenle düğmesi yok.
-       ========================================================================== */
-    .p8n-groups { grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.3rem; }
-    .p8g { --gc: #ff90e8; --gt: #121212; position: relative; isolation: isolate; overflow: hidden; border-radius: 2rem; padding: 1.3rem 1.1rem 1rem; background: radial-gradient(120% 85% at 0% 0%, color-mix(in srgb, var(--gc) 26%, transparent), transparent 64%), var(--p8-surf); transition: transform .35s cubic-bezier(.2,.8,.2,1), box-shadow .35s ease, opacity .3s ease; touch-action: pan-y; -webkit-tap-highlight-color: transparent; }
-    .p8g::after { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--theme-text, #121212) 7%, transparent); }
-    .p8g.is-now { box-shadow: 0 0 0 2px var(--gc), 0 20px 44px -24px color-mix(in srgb, var(--gc) 75%, transparent); }
-    .p8g.is-pressing { transform: scale(.985); }
-    .p8g.is-ctx-active { transform: translateY(-3px); box-shadow: 0 0 0 1.5px color-mix(in srgb, var(--gc) 45%, transparent), 0 14px 34px -12px color-mix(in srgb, var(--gc) 60%, transparent), 0 26px 44px -18px rgba(0, 0, 0, .45); }
-    .p8g.is-leave { opacity: 0; transform: scale(.94) translateY(6px); pointer-events: none; }
-    .p8g.is-enter { animation: p8gIn .6s cubic-bezier(.2,.8,.2,1) backwards; animation-delay: calc(var(--i, 0) * 80ms); }
-    @keyframes p8gIn { from { opacity: 0; transform: translateY(16px) scale(.985); } to { opacity: 1; transform: none; } }
-    .p8g::before { content: ""; position: absolute; inset: 0; z-index: 0; pointer-events: none; opacity: 0; background: linear-gradient(105deg, transparent 35%, color-mix(in srgb, var(--gc) 42%, transparent) 50%, transparent 65%); transform: translateX(-110%); }
-    .p8g.is-cele::before { animation: p8gSheen 1s ease-out; }
-    @keyframes p8gSheen { 0% { opacity: 1; transform: translateX(-110%); } 100% { opacity: 1; transform: translateX(110%); } }
-    .p8g > * { position: relative; z-index: 1; }
-
-    .p8g-head { display: flex; align-items: center; gap: 1rem; padding: 0 .35rem; margin-bottom: .7rem; }
-    .p8g-titlebox { flex: 1 1 auto; min-width: 0; }
-    .p8g-eyebrow { min-height: 1rem; display: flex; align-items: center; gap: .45rem; font-size: .66rem; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: color-mix(in srgb, var(--gc) 62%, var(--theme-text, #121212)); }
-    .p8g-eyebrow.is-live::before { content: ""; width: .5rem; height: .5rem; border-radius: 50%; background: var(--gc); animation: p8gPulse 1.8s ease-out infinite; }
-    @keyframes p8gPulse { 0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--gc) 70%, transparent); } 100% { box-shadow: 0 0 0 .55rem transparent; } }
-    .p8g-name { font-size: 1.55rem; font-weight: 800; line-height: 1.12; letter-spacing: -.01em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .p8g-name-in { width: 100%; box-sizing: border-box; font: inherit; font-size: 1.35rem; font-weight: 800; color: inherit; background: var(--p8-surf2); border: none; outline: none; border-radius: 999px; padding: .2rem .9rem; }
-    .p8g-sub { margin-top: .2rem; font-size: .88rem; font-weight: 600; color: var(--p8-mute); }
-
-    .p8g-ring { position: relative; flex: 0 0 auto; width: 56px; height: 56px; }
-    .p8g-ring > svg { width: 100%; height: 100%; transform: rotate(-90deg); }
-    .p8g-ring circle { fill: none; stroke-width: 5; stroke-linecap: round; }
-    .p8g-ring .bg { stroke: color-mix(in srgb, var(--theme-text, #121212) 10%, transparent); }
-    .p8g-ring .fg { stroke: var(--gc); transition: stroke-dashoffset .6s cubic-bezier(.4,0,.2,1); }
-    .p8g-ring b { position: absolute; inset: 0; display: grid; place-items: center; font-size: 1.05rem; font-weight: 800; transition: opacity .2s; }
-    .p8g-ring .tick { position: absolute; inset: 0; display: grid; place-items: center; opacity: 0; transform: scale(.4); transition: opacity .25s, transform .4s cubic-bezier(.34,1.56,.64,1); }
-    .p8g-ring .tick svg { width: 1.35rem; height: 1.35rem; fill: none; stroke: var(--gc); stroke-width: 3.2; stroke-linecap: round; stroke-linejoin: round; }
-    .p8g.is-complete .p8g-ring .tick { opacity: 1; transform: none; }
-
+    /* --- Gündelik içeriği: sade tasarım --- */
+    .p8n-groups { padding-top: .6rem; }
+    /* Başlıkta ilerleme halkası: kart yok, doğrudan arka planın üzerinde */
+    .p8n-stat { display: inline-flex; align-items: center; margin-left: auto; align-self: center; flex: 0 0 auto; }
+    .p8n-stat[hidden] { display: none; }
+    .p8n-stat.is-bump { animation: p8nBump .6s cubic-bezier(.34,1.56,.64,1); }
+    @keyframes p8nBump { 0% { transform: scale(1); } 35% { transform: scale(1.1); } 100% { transform: scale(1); } }
+    .p8n-stat-ring { position: relative; width: 58px; height: 58px; flex: 0 0 auto; }
+    .p8n-stat-ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+    .p8n-stat-ring circle { fill: none; stroke-width: 4.5; stroke-linecap: round; }
+    .p8n-stat-ring .bg { stroke: var(--p8-surf2); }
+    .p8n-stat-ring .fg { stroke: var(--accent-color, #ff90e8); transition: stroke-dashoffset .9s cubic-bezier(.22,1,.36,1), filter .5s ease; }
+    .p8n-stat.is-complete .fg { filter: drop-shadow(0 0 4px color-mix(in srgb, var(--accent-color, #ff90e8) 70%, transparent)); }
+    .p8n-stat-ring b { position: absolute; inset: 0; display: grid; place-items: center; font-size: .86rem; font-weight: 800; font-variant-numeric: tabular-nums; }
+    /* Seri alevi: seri varsa görünür; bugün tamamlanmadıysa sönük, tamamlanınca canlı.
+       Tüm ölçüler em'dir: alev ve sayı .p8n-flame'in font-size'ına göre orantılı büyür. */
+    .p8n-flame { --fl: #ff8a1f; display: inline-flex; align-items: flex-end; gap: .1em; align-self: center; flex: 0 0 auto; margin-left: .1rem; font-size: 1.9rem; --num-shift: .2em; }
+    .p8n-flame[hidden] { display: none; }
+    .p8n-flame-wrap { position: relative; display: block; width: 1.3em; height: 1.62em; }
+    .p8n-flame-ico { position: relative; z-index: 1; width: 100%; height: 100%; overflow: visible; transform-origin: 50% 95%; animation: p8nBreath 2.4s ease-in-out infinite; transition: filter .7s ease, opacity .7s ease; }
+    .p8n-fl { transform-box: fill-box; transform-origin: 50% 100%; }
+    .p8n-fl-a { animation: p8nSwayA 1.9s ease-in-out infinite; }
+    .p8n-fl-b { animation: p8nSwayB 1.35s ease-in-out infinite; }
+    .p8n-fl-c { animation: p8nSwayC .95s ease-in-out infinite; }
+    .p8n-flame-glow { position: absolute; z-index: 0; left: 50%; bottom: 6%; width: 190%; height: 130%; transform: translateX(-50%); border-radius: 50%; pointer-events: none; background: radial-gradient(closest-side, rgba(255,140,30,.42), rgba(255,140,30,0)); animation: p8nGlow 2.2s ease-in-out infinite; transition: opacity .7s ease; }
+    .p8n-ember { transform-box: fill-box; opacity: 0; animation: p8nEmber 2.6s ease-out infinite; }
+    .p8n-ember.e2 { animation-delay: .9s; animation-duration: 3s; }
+    .p8n-ember.e3 { animation-delay: 1.7s; animation-duration: 2.3s; }
+    .p8n-flame-num { display: block; min-width: .7em; font-size: 1.15em; font-weight: 800; line-height: 1; transform: translateY(var(--num-shift)); margin-bottom: .05em; color: var(--fl); font-variant-numeric: tabular-nums; letter-spacing: -.02em; transition: color .6s ease; }
+    .p8n-flame.is-off .p8n-flame-ico { filter: grayscale(1); opacity: .38; animation: none; }
+    .p8n-flame.is-off .p8n-fl, .p8n-flame.is-off .p8n-ember { animation: none; }
+    .p8n-flame.is-off .p8n-ember, .p8n-flame.is-off .p8n-flame-glow { opacity: 0; }
+    .p8n-flame.is-off .p8n-flame-num { color: var(--p8-mute); }
+    /* Tutuşma: önce kaidede küçük bir kor, dış/orta/çekirdek katmanları sırayla ve düzensiz
+       sallanarak yükselir; parıltı yavaşça açılır, sayı yumuşakça belirir (zıplama yok). */
+    .p8n-flame.is-pop .p8n-flame-ico { animation: p8nFadeIn .4s ease-out, p8nBreath 2.4s ease-in-out infinite; }
+    .p8n-flame.is-pop .p8n-fl-a { animation: p8nKindle 1.5s cubic-bezier(.3,.6,.3,1), p8nSwayA 1.9s ease-in-out 1.5s infinite; }
+    .p8n-flame.is-pop .p8n-fl-b { animation: p8nKindle 1.4s cubic-bezier(.3,.6,.3,1) .15s backwards, p8nSwayB 1.35s ease-in-out 1.55s infinite; }
+    .p8n-flame.is-pop .p8n-fl-c { animation: p8nKindle 1.3s cubic-bezier(.3,.6,.3,1) .3s backwards, p8nSwayC .95s ease-in-out 1.6s infinite; }
+    .p8n-flame.is-pop .p8n-flame-glow { animation: p8nGlowIn 1.6s ease-out, p8nGlow 2.2s ease-in-out 1.6s infinite; }
+    .p8n-flame.is-pop .p8n-flame-num { animation: p8nNumIn .9s cubic-bezier(.22,1,.36,1) .35s backwards; }
+    @keyframes p8nBreath { 0%, 100% { transform: scale(1, 1); } 50% { transform: scale(1.03, 1.06); } }
+    @keyframes p8nSwayA { 0%, 100% { transform: skewX(0) scaleY(1); } 22% { transform: skewX(-3deg) scaleY(1.05); } 50% { transform: skewX(2.5deg) scaleY(.96); } 78% { transform: skewX(-1.5deg) scaleY(1.03); } }
+    @keyframes p8nSwayB { 0%, 100% { transform: skewX(0) scaleY(1); } 30% { transform: skewX(4deg) scaleY(1.08); } 65% { transform: skewX(-3deg) scaleY(.94); } }
+    @keyframes p8nSwayC { 0%, 100% { transform: skewX(0) scale(1, 1); } 35% { transform: skewX(-5deg) scale(.92, 1.12); } 70% { transform: skewX(4deg) scale(1.06, .92); } }
+    @keyframes p8nGlow { 0%, 100% { opacity: .75; transform: translateX(-50%) scale(1); } 50% { opacity: 1; transform: translateX(-50%) scale(1.1); } }
+    @keyframes p8nFadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes p8nKindle { 0% { transform: scale(.3, 0) skewX(0); opacity: 0; } 12% { opacity: 1; } 28% { transform: scale(.55, .3) skewX(6deg); } 46% { transform: scale(.8, .68) skewX(-7deg); } 64% { transform: scale(.95, 1.1) skewX(4deg); } 82% { transform: scale(1, .96) skewX(-2deg); } 100% { transform: scale(1, 1) skewX(0); } }
+    @keyframes p8nGlowIn { 0% { opacity: 0; transform: translateX(-50%) scale(.4); } 55% { opacity: .5; } 100% { opacity: .75; transform: translateX(-50%) scale(1); } }
+    @keyframes p8nNumIn { 0% { transform: translateY(8px); opacity: 0; } 100% { transform: none; opacity: 1; } }
+    @keyframes p8nEmber { 0% { opacity: 0; transform: translate(0, 4px) scale(1); } 15% { opacity: 1; } 100% { opacity: 0; transform: translate(var(--ex, 3px), -16px) scale(.3); } }
+    .p8n-ember.e1 { --ex: -4px; } .p8n-ember.e2 { --ex: 5px; }
+    @media (prefers-reduced-motion: reduce) { .p8n-flame *, .p8n-flame, .p8n-flame::after, .p8n-flame-wrap::after, .p8n-stat { animation: none !important; } }
+    /* Başlıktaki "Yeni grup" düğmesi; açılan ekleme paneli grupların üstünde durur */
+    .p8n-notesbtn { margin-left: 0; }
+    .p8n-newgrpbtn { margin-left: .5rem; }
+    .p8n-newgrpbtn[aria-expanded="true"] { background: var(--p8-surf2); }
+    #p8nNewGroup .p8n-newgroup { margin: .2rem 0 .6rem; }
+    #p8nTip .p8g-tip { margin-top: 1.4rem; }
+    /* Uygulama içi onay penceresi */
+    .p8n-dlg-back { position: fixed; inset: 0; z-index: 90; display: grid; place-items: center; background: rgba(0,0,0,0); transition: background-color .3s ease, backdrop-filter .3s ease; }
+    .p8n-dlg-back.is-in { background: rgba(0,0,0,.42); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
+    .p8n-dlg { box-sizing: border-box; width: min(410px, calc(100vw - 48px)); padding: 1.7rem 1.6rem 1.4rem; border-radius: 1.9rem; background: var(--theme-bg, #F6F4EF); color: var(--theme-text, #121212); box-shadow: 0 24px 70px rgba(0,0,0,.35); opacity: 0; transform: translateY(16px) scale(.95); transition: opacity .3s ease, transform .4s cubic-bezier(.22,1,.36,1); }
+    .p8n-dlg-back.is-in .p8n-dlg { opacity: 1; transform: none; }
+    .p8n-dlg h3 { margin: 0 0 .4rem; font-size: 1.35rem; font-weight: 800; line-height: 1.2; }
+    .p8n-dlg p { margin: 0 0 1.3rem; font-size: 1rem; font-weight: 600; line-height: 1.4; color: var(--p8-mute); }
+    .p8n-dlg-row { display: flex; gap: .6rem; justify-content: flex-end; }
+    .p8n-dlg-btn { height: 2.8rem; padding: 0 1.4rem; border: none; border-radius: 999px; cursor: pointer; font: inherit; font-weight: 800; font-size: .95rem; color: inherit; background: var(--p8-surf2); transition: transform .2s ease, filter .2s ease; }
+    .p8n-dlg-btn:active { transform: scale(.95); }
+    .p8n-dlg-btn.danger { color: #fff; background: #e5484d; }
+    /* Mini takvim gezinme */
+    .p8g-cal-h { display: flex; align-items: center; gap: .3rem; }
+    .p8g-cal { touch-action: pan-y; user-select: none; -webkit-user-select: none; }
+    .p8g-cal-title { flex: 1 1 auto; min-width: 0; border: none; background: none; padding: .25rem 0; font: inherit; font-size: inherit; font-weight: inherit; letter-spacing: inherit; text-transform: inherit; color: var(--theme-text, #121212); text-align: center; cursor: default; transition: color .25s ease; }
+    .p8g-cal-title.is-away { cursor: pointer; color: var(--gc); }
+    .p8g-cal-nav { flex: 0 0 auto; width: 1.9rem; height: 1.9rem; border: none; border-radius: 50%; display: grid; place-items: center; cursor: pointer; color: inherit; background: none; transition: background-color .2s ease, opacity .2s ease, transform .2s ease; }
+    .p8g-cal-nav:hover { background: var(--p8-surf2); }
+    .p8g-cal-nav:active { transform: scale(.88); }
+    .p8g-cal-nav:disabled { opacity: .25; pointer-events: none; }
+    .p8g-cal-nav svg { width: 1rem; height: 1rem; fill: none; stroke: currentColor; stroke-width: 2.8; stroke-linecap: round; stroke-linejoin: round; }
+    .p8g-cal-g.sw-r { animation: p8gSwR .45s cubic-bezier(.22,1,.36,1); }
+    .p8g-cal-g.sw-l { animation: p8gSwL .45s cubic-bezier(.22,1,.36,1); }
+    @keyframes p8gSwR { from { opacity: 0; transform: translateX(14px); } to { opacity: 1; transform: none; } }
+    @keyframes p8gSwL { from { opacity: 0; transform: translateX(-14px); } to { opacity: 1; transform: none; } }
+    .p8n-groups { display: flex; flex-direction: column; gap: 1.1rem; }
+    .p8g { --gc: #ff90e8; --gt: #121212; display: grid; grid-template-columns: minmax(0, 1fr) 292px; gap: 2.4rem; align-items: start; padding: 1.7rem 2rem 1.5rem; border-radius: 2rem; background: var(--p8-surf); transition: background-color .3s ease, box-shadow .4s ease, opacity .35s ease, transform .35s ease; }
+    .p8g.is-now { box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--gc) 60%, transparent); }
+    .p8g.is-pressing, .p8g.is-ctx-active { background: var(--p8-surf2); }
+    .p8g.is-leave { opacity: 0; transform: scale(.985); }
+    .p8g.is-enter { animation: p8gIn .7s cubic-bezier(.22,1,.36,1) backwards; animation-delay: calc(var(--i, 0) * 90ms); }
+    @keyframes p8gIn { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+    .p8g-head { display: flex; align-items: baseline; gap: .8rem; margin-bottom: .7rem; }
+    .p8g-name { flex: 0 1 auto; min-width: 0; font-size: clamp(1.9rem, 1.2vw + 1.5rem, 2.5rem); font-weight: 800; letter-spacing: -.02em; line-height: 1.05; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .p8g-name-in { flex: 1 1 auto; min-width: 0; box-sizing: border-box; font: inherit; font-size: 1.8rem; font-weight: 800; color: inherit; background: var(--p8-surf2); border: none; outline: none; border-radius: 999px; padding: .1rem .9rem; }
+    .p8g-dot { display: none; }
+    .p8g-sec { display: flex; align-items: center; gap: .6rem; margin: 1.3rem 0 .1rem; padding: 0 .4rem; user-select: none; -webkit-user-select: none; }
+    .p8g-head + .p8g-sec { margin-top: .5rem; }
+    .p8g-sec-name { font-size: 1.05rem; font-weight: 800; letter-spacing: .01em; display: inline-flex; align-items: center; gap: .55rem; }
+    .p8g-sec-name::before { content: ''; width: .5rem; height: .5rem; border-radius: 50%; background: var(--gc); flex: 0 0 auto; }
+    .p8g-sec-in { flex: 0 1 260px; min-width: 0; box-sizing: border-box; font: inherit; font-size: 1.02rem; font-weight: 800; color: inherit; background: var(--p8-surf2); border: none; outline: none; border-radius: 999px; padding: .2rem .8rem; }
+    .p8g-sec-count { font-size: .85rem; font-weight: 700; color: var(--p8-mute); font-variant-numeric: tabular-nums; }
+    .p8g-sec-line { flex: 1 1 auto; height: 1px; background: color-mix(in srgb, var(--theme-text, #121212) 10%, transparent); }
+    .p8g-sec-add { flex: 0 0 auto; width: 1.9rem; height: 1.9rem; border: none; border-radius: 50%; display: grid; place-items: center; cursor: pointer; color: var(--p8-mute); background: none; transition: background-color .2s ease, color .2s ease, transform .2s ease; }
+    .p8g-sec-add:hover { background: var(--p8-surf2); color: var(--theme-text, #121212); }
+    .p8g-sec-add:active { transform: scale(.88); }
+    .p8g-sec-add svg { width: 1.05rem; height: 1.05rem; fill: none; stroke: currentColor; stroke-width: 2.8; stroke-linecap: round; }
+    .p8g-actions { display: flex; flex-wrap: wrap; gap: .3rem; margin-top: .2rem; }
+    .p8g-actions .p8g-add { width: auto; padding: .7rem 1rem .7rem .4rem; }
+    .p8g-titlebox { flex: 0 1 auto; min-width: 0; display: flex; flex-direction: column; gap: .3rem; }
+    .p8g-count { font-size: 1rem; font-weight: 700; color: var(--p8-mute); font-variant-numeric: tabular-nums; }
+    .p8g.is-complete .p8g-count { color: var(--gc); }
+    .p8g-now { align-self: baseline; font-size: .7rem; font-weight: 800; letter-spacing: .04em; padding: .18rem .7rem; border-radius: 999px; background: var(--gc); color: var(--gt); }
     .p8g-list { display: flex; flex-direction: column; }
-    .p8g-r { position: relative; display: flex; align-items: center; gap: .95rem; padding: .78rem .35rem; border-radius: 1.2rem; cursor: pointer; overflow: hidden; max-height: 6rem; transition: background-color .2s ease, opacity .2s, transform .25s ease, max-height .26s ease .05s, padding .26s ease .05s; -webkit-tap-highlight-color: transparent; }
-    .p8g-r + .p8g-r::before { content: ""; position: absolute; left: 3rem; right: .35rem; top: 0; height: 1px; background: color-mix(in srgb, var(--theme-text, #121212) 7%, transparent); transition: opacity .2s; }
-    .p8g-r.is-pressing, .p8g-r.is-ctx-active { background: color-mix(in srgb, var(--gc) 16%, transparent); }
-    .p8g-r.is-pressing::before, .p8g-r.is-ctx-active::before, .p8g-r.is-pressing + .p8g-r::before, .p8g-r.is-ctx-active + .p8g-r::before { opacity: 0; }
-    .p8g-r.is-leave { opacity: 0; transform: translateX(14px); max-height: 0 !important; padding-top: 0; padding-bottom: 0; pointer-events: none; }
-    .p8g-r.is-enter { animation: p8gRow .45s cubic-bezier(.34,1.3,.5,1) backwards; }
-    @keyframes p8gRow { from { opacity: 0; transform: translateX(-10px) scale(.98); } to { opacity: 1; transform: none; } }
-    .p8g-c { position: relative; flex: 0 0 auto; width: 1.9rem; height: 1.9rem; border-radius: 50%; display: grid; place-items: center; background: transparent; box-shadow: inset 0 0 0 2.5px color-mix(in srgb, var(--theme-text, #121212) 24%, transparent); transition: background-color .25s ease, box-shadow .25s ease, transform .3s cubic-bezier(.34,1.56,.64,1); }
+    .p8g-r { display: flex; align-items: center; gap: 1rem; padding: .78rem .4rem; border-radius: 1.1rem; cursor: pointer; overflow: hidden; max-height: 7rem; transition: background-color .25s ease, opacity .3s ease, max-height .3s ease, padding .3s ease; -webkit-tap-highlight-color: transparent; user-select: none; -webkit-user-select: none; }
+    .p8g-r.is-pressing, .p8g-r.is-ctx-active { background: color-mix(in srgb, var(--gc) 14%, transparent); }
+    .p8g-r.is-leave { opacity: 0; max-height: 0 !important; padding-top: 0; padding-bottom: 0; }
+    .p8g-c { flex: 0 0 auto; width: 1.85rem; height: 1.85rem; box-sizing: border-box; border-radius: 50%; border: 2px solid color-mix(in srgb, var(--theme-text, #121212) 26%, transparent); display: grid; place-items: center; transition: background-color .35s ease, border-color .35s ease, transform .35s cubic-bezier(.34,1.56,.64,1); }
     .p8g-r:active .p8g-c { transform: scale(.88); }
-    .p8g-c svg { width: 1.05rem; height: 1.05rem; fill: none; stroke: var(--gt); stroke-width: 3.4; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 24; stroke-dashoffset: 24; transition: stroke-dashoffset .32s cubic-bezier(.65,0,.35,1) .06s; }
-    .p8g-c::after { content: ""; position: absolute; inset: 0; border-radius: 50%; opacity: 0; pointer-events: none; }
-    .p8g-r.is-done .p8g-c { background: var(--gc); box-shadow: inset 0 0 0 2.5px var(--gc); }
+    .p8g-c svg { width: 1rem; height: 1rem; fill: none; stroke: var(--gt); stroke-width: 3.4; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 26; stroke-dashoffset: 26; transition: stroke-dashoffset .4s ease .05s; }
+    .p8g-r.is-done .p8g-c { background: var(--gc); border-color: var(--gc); }
     .p8g-r.is-done .p8g-c svg { stroke-dashoffset: 0; }
-    .p8g-r.is-burst .p8g-c::after { animation: p8gBurst .6s ease-out; }
-    @keyframes p8gBurst { 0% { opacity: .75; box-shadow: 0 0 0 0 var(--gc); } 100% { opacity: 0; box-shadow: 0 0 0 .95rem var(--gc); } }
-    .p8g-r.is-burst .p8g-c { animation: p8gPop .42s cubic-bezier(.34,1.56,.64,1); }
-    @keyframes p8gPop { 0% { transform: scale(.8); } 60% { transform: scale(1.14); } 100% { transform: scale(1); } }
-    .p8g-t { flex: 1 1 auto; min-width: 0; font-size: 1.06rem; font-weight: 600; line-height: 1.3; overflow-wrap: anywhere; transition: opacity .3s ease; }
-    .p8g-tt { background-image: linear-gradient(currentColor, currentColor); background-repeat: no-repeat; background-position: 0 58%; background-size: 0 2px; -webkit-box-decoration-break: clone; box-decoration-break: clone; transition: background-size .38s cubic-bezier(.65,0,.35,1); }
-    .p8g-r.is-done .p8g-t { opacity: .42; }
+    .p8g-t { flex: 1 1 auto; min-width: 0; font-size: 1.3rem; font-weight: 700; line-height: 1.25; overflow-wrap: anywhere; transition: opacity .35s ease; }
+    .p8g-tt { background: linear-gradient(currentColor, currentColor) no-repeat 0 55% / 0 2px; transition: background-size .4s ease; }
+    .p8g-r.is-done .p8g-t { opacity: .4; }
     .p8g-r.is-done .p8g-tt { background-size: 100% 2px; }
-
-    .p8g-add { display: flex; align-items: center; gap: .95rem; width: 100%; box-sizing: border-box; margin-top: .3rem; padding: .6rem .35rem; border: none; border-radius: 1.2rem; background: none; font: inherit; font-weight: 700; font-size: .95rem; color: var(--p8-mute); text-align: left; cursor: pointer; transition: background-color .2s, color .2s; -webkit-tap-highlight-color: transparent; }
-    .p8g-add i { flex: 0 0 auto; width: 1.9rem; height: 1.9rem; border-radius: 50%; display: grid; place-items: center; font-style: normal; font-size: 1.25rem; line-height: 1; border: 2px dashed color-mix(in srgb, var(--theme-text, #121212) 26%, transparent); transition: border-color .2s, color .2s, transform .3s cubic-bezier(.34,1.56,.64,1); }
-    .p8g-add:hover { background: color-mix(in srgb, var(--gc) 12%, transparent); color: var(--theme-text, #121212); }
-    .p8g-add:hover i { border-color: var(--gc); color: var(--gc); }
-    .p8g-add:active i { transform: scale(.88) rotate(90deg); }
-    .p8g-form { display: flex; align-items: center; gap: .6rem; margin-top: .35rem; padding: 0 .1rem; animation: p8gRow .35s cubic-bezier(.34,1.3,.5,1) backwards; }
-    .p8g-in { flex: 1 1 auto; min-width: 0; box-sizing: border-box; font: inherit; font-weight: 600; font-size: 1rem; color: inherit; background: var(--p8-surf2); border: none; outline: none; border-radius: 999px; padding: .68rem 1.1rem; transition: box-shadow .2s; }
-    .p8g-in:focus { box-shadow: 0 0 0 2px color-mix(in srgb, var(--gc) 70%, transparent); }
+    .p8g-add { display: block; width: 100%; box-sizing: border-box; padding: .7rem .4rem; border: none; background: none; text-align: left; font: inherit; font-weight: 700; font-size: 1rem; color: var(--p8-mute); cursor: pointer; border-radius: 1rem; transition: color .2s ease; }
+    .p8g-add:hover { color: var(--theme-text, #121212); }
+    .p8g-form { display: flex; align-items: center; gap: .5rem; padding: .3rem 0 .4rem; animation: p8gIn .35s ease backwards; }
+    .p8g-in { flex: 1 1 auto; min-width: 0; box-sizing: border-box; font: inherit; font-weight: 600; font-size: 1.05rem; color: inherit; background: var(--p8-surf2); border: none; outline: none; border-radius: 999px; padding: .7rem 1.1rem; }
     .p8g-in::placeholder { color: var(--p8-mute); }
-    .p8g-go { flex: 0 0 auto; width: 2.7rem; height: 2.7rem; border: none; border-radius: 50%; display: grid; place-items: center; cursor: pointer; background: var(--gc); transition: transform .25s cubic-bezier(.34,1.56,.64,1); }
-    .p8g-go svg { width: 1.2rem; height: 1.2rem; fill: none; stroke: var(--gt); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
-    .p8g-go:active { transform: scale(.88); }
-    .p8g-tip { margin: .9rem 0 0; text-align: center; font-size: .82rem; font-weight: 600; color: var(--p8-mute); }
-    @media (prefers-reduced-motion: reduce) {
-      .p8g, .p8g *, .p8g::before { animation: none !important; transition-duration: .01ms !important; }
-    }
+    .p8g-go { flex: 0 0 auto; width: 2.7rem; height: 2.7rem; border: none; border-radius: 50%; display: grid; place-items: center; cursor: pointer; background: var(--gc); }
+    .p8g-go svg { width: 1.1rem; height: 1.1rem; fill: none; stroke: var(--gt); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+    /* Mini takvim */
+    .p8g-cal { padding-top: .5rem; }
+    .p8g-cal-h { margin-bottom: .6rem; font-size: .8rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--p8-mute); }
+    .p8g-cal-g { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+    .p8g-cal-g .wd { text-align: center; font-size: .66rem; font-weight: 800; color: var(--p8-mute); padding-bottom: 2px; }
+    .p8g-cal-g .day { position: relative; aspect-ratio: 1; display: grid; place-items: center; border-radius: 50%; font-size: .78rem; font-weight: 700; color: color-mix(in srgb, var(--theme-text, #121212) 70%, transparent); }
+    .p8g-cal-g .day.is-future { opacity: .3; }
+    .p8g-cal-g .day.is-part { background: color-mix(in srgb, var(--gc) 32%, transparent); color: var(--theme-text, #121212); }
+    .p8g-cal-g .day.is-today { box-shadow: 0 0 0 2px var(--gc); color: var(--theme-text, #121212); }
+    .p8g-cal-g .day svg { width: 62%; height: 62%; fill: none; stroke: var(--gc); stroke-width: 3; stroke-linecap: round; }
+    .p8g-cal-g .day.is-full.is-draw path { stroke-dasharray: 20; animation: p8gDraw .5s ease-out backwards; }
+    .p8g-cal-g .day.is-full.is-draw path + path { animation-delay: .18s; }
+    @keyframes p8gDraw { from { stroke-dashoffset: 20; } to { stroke-dashoffset: 0; } }
+    .p8g-tip { margin: 1.1rem 0 0; text-align: center; font-size: .82rem; font-weight: 600; color: var(--p8-mute); }
+    @media (prefers-reduced-motion: reduce) { .p8g, .p8g * { animation: none !important; transition-duration: .01ms !important; } }
     .p8n-empty { padding: 2rem; border-radius: 1.8rem; background: var(--p8-surf); text-align: center; }
     .p8n-empty b { font-size: 1.3rem; display: block; margin-bottom: .3rem; }
     .p8n-empty p { margin: 0 0 1rem; color: var(--p8-mute); font-weight: 600; }
     .p8n-empty .p8n-newgroup { justify-content: center; margin-top: 0; }
 
-    /* --- Aklımdakiler --- */
-    .p8n-notes { max-width: none; border-radius: 1.8rem; background: var(--p8-surf); padding: 1.2rem; }
-    .p8n-notes-sub { margin: 0 0 .9rem; font-size: .85rem; font-weight: 600; color: var(--p8-mute); }
-    .p8n-notelist { margin-top: .8rem; display: flex; flex-direction: column; gap: .15rem; }
-    .p8n-note { --gc: #ffd23f; --gt: #121212; display: flex; align-items: flex-start; gap: .7rem; padding: .55rem .4rem; border-radius: 1rem; }
-    .p8n-note .p8n-chk { width: 1.5rem; height: 1.5rem; margin-top: .05rem; cursor: pointer; border-radius: .55rem; }
-    .p8n-note.is-done .p8n-chk { background: var(--gc); border-color: var(--gc); }
-    .p8n-note.is-done .p8n-chk svg { opacity: 1; transform: none; }
-    .p8n-note .p8n-txt { font-size: .98rem; white-space: pre-wrap; cursor: text; }
-    .p8n-note.is-done .p8n-txt { opacity: .45; text-decoration: line-through; }
-    .p8n-tag { font-size: .68rem; font-weight: 800; padding: .05rem .5rem; border-radius: 999px; background: color-mix(in srgb, var(--gc) 35%, transparent); margin-right: .4rem; vertical-align: middle; }
-    .p8n-noempty { padding: 1rem .2rem; font-weight: 600; font-size: .92rem; color: var(--p8-mute); }
-    .p8n-clear { margin-top: .6rem; }
-
-    /* ===== Aklımdakiler (yeni) ===== */
-    .p8n-notes { background: none; padding: 0; border-radius: 0; }
-    .n-composer { border-radius: 1.8rem; padding: 1rem 1.1rem .9rem; background: var(--p8-surf); margin-bottom: 1.1rem; max-width: 900px; }
-    .n-composer textarea { width: 100%; box-sizing: border-box; min-height: 64px; max-height: 240px; resize: none; font: inherit; font-weight: 600; font-size: 1.1rem; color: inherit; background: none; border: none; outline: none; padding: .2rem .3rem; }
-    .n-composer textarea::placeholder, .n-search input::placeholder { color: var(--p8-mute); }
-    .n-comp-bar { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; margin-top: .4rem; }
-    .n-chip { --kc: #9aa0a6; display: inline-flex; align-items: center; gap: .4rem; height: 2.4rem; padding: 0 .95rem; border: none; border-radius: 999px; cursor: pointer; font: inherit; font-weight: 700; font-size: .85rem; color: inherit; background: var(--p8-surf2); transition: background-color .15s, transform .15s; -webkit-tap-highlight-color: transparent; }
-    .n-chip::before { content: ''; width: .6rem; height: .6rem; border-radius: 50%; background: var(--kc); }
-    .n-chip.no-dot::before { display: none; }
-    .n-chip:active { transform: translate(1px, 1px); }
-    .n-chip.is-on { background: color-mix(in srgb, var(--kc) 55%, transparent); }
-    .n-chip small { font-weight: 800; font-size: .72rem; color: var(--p8-mute); }
-    .n-date { height: 2.4rem; box-sizing: border-box; padding: 0 .8rem; border: none; border-radius: 999px; background: var(--p8-surf2); color: inherit; font: inherit; font-weight: 700; font-size: .82rem; outline: none; }
-    .n-spacer { flex: 1 1 auto; }
-    .n-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; margin-bottom: 1.1rem; }
-    .n-search { position: relative; flex: 0 1 240px; }
-    .n-search input { width: 100%; box-sizing: border-box; height: 2.4rem; padding: 0 1rem; border: none; border-radius: 999px; outline: none; font: inherit; font-weight: 600; font-size: .88rem; color: inherit; background: var(--p8-surf); }
-    .n-search input:focus { background: var(--p8-surf2); }
-    .n-stats { margin: -.3rem 0 1rem .3rem; font-weight: 600; font-size: .88rem; color: var(--p8-mute); }
-    .n-grid { column-width: 270px; column-gap: 1rem; }
-    .n-sec { margin: 1.2rem 0 .7rem .3rem; font-weight: 800; font-size: .8rem; letter-spacing: .04em; text-transform: uppercase; color: var(--p8-mute); display: flex; align-items: center; gap: .6rem; }
-    .nc { --kc: #9aa0a6; --kt: #121212; break-inside: avoid; margin: 0 0 1rem; padding: .9rem 1rem .8rem; border-radius: 1.5rem; background: linear-gradient(180deg, color-mix(in srgb, var(--kc) 22%, transparent), var(--p8-surf) 90px), var(--p8-surf); }
-    .nc.is-pinned { box-shadow: 0 0 0 2px color-mix(in srgb, var(--kc) 70%, transparent); }
-    .nc-top { display: flex; align-items: center; gap: .5rem; margin-bottom: .45rem; }
-    .nc-kind { border: none; cursor: pointer; font: inherit; font-weight: 800; font-size: .7rem; letter-spacing: .03em; padding: .15rem .65rem; border-radius: 999px; background: var(--kc); color: var(--kt); }
-    .nc-time { font-size: .75rem; font-weight: 600; color: var(--p8-mute); flex: 1 1 auto; }
-    .nc-pin { width: 2rem; height: 2rem; border: none; border-radius: 50%; background: none; cursor: pointer; display: grid; place-items: center; color: var(--p8-mute); }
-    .nc-pin svg { width: 1.05rem; height: 1.05rem; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linejoin: round; stroke-linecap: round; }
-    .nc.is-pinned .nc-pin { color: var(--theme-text, #121212); }
-    .nc.is-pinned .nc-pin svg { fill: currentColor; }
-    .nc-txt { font-weight: 600; font-size: 1.05rem; line-height: 1.35; white-space: pre-wrap; overflow-wrap: anywhere; cursor: text; }
-    .nc-edit { width: 100%; box-sizing: border-box; min-height: 70px; resize: none; font: inherit; font-weight: 600; font-size: 1.05rem; color: inherit; background: var(--p8-surf2); border: none; outline: none; border-radius: 1rem; padding: .6rem .8rem; }
-    .nc.is-done .nc-txt { opacity: .45; text-decoration: line-through; }
-    .nc-meta { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: .55rem; }
-    .nc-badge { font-size: .72rem; font-weight: 800; padding: .12rem .6rem; border-radius: 999px; background: var(--p8-surf2); }
-    .nc-badge.late { background: #ff5c5c; color: #fff; }
-    .nc-badge.today { background: #ffd23f; color: #121212; }
-    .nc-acts { display: flex; flex-wrap: wrap; gap: .35rem; margin-top: .7rem; }
-    .nc-act { border: none; cursor: pointer; font: inherit; font-weight: 700; font-size: .78rem; height: 2.1rem; padding: 0 .85rem; border-radius: 999px; color: inherit; background: var(--p8-surf2); -webkit-tap-highlight-color: transparent; }
-    .nc-act:active { transform: translate(1px, 1px); }
-    .nc-act.ok { background: var(--kc); color: var(--kt); }
-    .nc-act.danger { margin-left: auto; color: #e5484d; }
-    .nc-conv { display: flex; flex-wrap: wrap; align-items: center; gap: .35rem; margin-top: .6rem; }
-    .nc-conv span { font-size: .75rem; font-weight: 700; color: var(--p8-mute); }
-    .n-empty { padding: 2.2rem 1rem; text-align: center; border-radius: 1.8rem; background: var(--p8-surf); max-width: 900px; }
-    .n-empty b { display: block; font-size: 1.2rem; margin-bottom: .25rem; }
-    .n-empty p { margin: 0; font-weight: 600; color: var(--p8-mute); }
     .n-toast { position: fixed; left: 50%; bottom: calc(40px + env(safe-area-inset-bottom)); transform: translateX(-50%); z-index: 70; display: flex; align-items: center; gap: .9rem; padding: .7rem .8rem .7rem 1.2rem; border-radius: 999px; background: #121212; color: #fff; font-weight: 700; font-size: .9rem; box-shadow: 0 12px 30px -10px rgba(0,0,0,.5); }
     .n-toast[hidden] { display: none; }
     .n-toast button { border: none; cursor: pointer; font: inherit; font-weight: 800; font-size: .85rem; padding: .35rem .9rem; border-radius: 999px; background: var(--accent-color, #ff90e8); color: #fff; }
-
-    /* --- Hızlı Not (FAB + yazma kutusu) --- */
-    .p8n-fab { position: fixed; right: calc(40px + env(safe-area-inset-right)); bottom: calc(40px + env(safe-area-inset-bottom)); z-index: 60; display: inline-flex; align-items: center; gap: .5rem; height: 3.3rem; padding: 0 1.6rem 0 1.3rem; border: none; border-radius: 999px; cursor: pointer; font: inherit; font-weight: 700; font-size: 1rem; color: #fff; background: linear-gradient(180deg, color-mix(in srgb, var(--accent-color, #ff90e8) 100%, white 12%), var(--accent-color, #ff90e8)); box-shadow: 0 6px 20px 0 color-mix(in srgb, var(--accent-color, #ff90e8) 55%, transparent), inset 0 1px 0 0 rgba(255,255,255,.35); text-shadow: 0 1px 2px rgba(0,0,0,.18); transition: transform .15s; }
-    .p8n-fab:active { transform: translate(1px, 1px) scale(.98); }
-    #page-8:not(.is-active) .p8n-fab, #page-8:not(.is-active) .p8n-quick { display: none; }
-    .p8n-quick { position: fixed; right: calc(40px + env(safe-area-inset-right)); bottom: calc(108px + env(safe-area-inset-bottom)); z-index: 61; width: min(420px, calc(100vw - 80px)); box-sizing: border-box; padding: .9rem; border-radius: 1.6rem; background: var(--theme-bg, #F6F4EF); box-shadow: 0 20px 50px -14px rgba(0,0,0,.45), 0 0 0 1px var(--p8-surf2); }
-    .p8n-quick[hidden] { display: none; }
-    .p8n-quick textarea { width: 100%; box-sizing: border-box; min-height: 92px; resize: none; font: inherit; font-weight: 600; font-size: 1rem; color: inherit; background: var(--p8-surf); border: none; outline: none; border-radius: 1.1rem; padding: .8rem 1rem; }
-    .p8n-quick-bar { display: flex; align-items: center; justify-content: space-between; margin-top: .6rem; font-size: .78rem; font-weight: 600; color: var(--p8-mute); }
-    .p8n-quick-bar .p8n-pill { color: #fff; background: var(--accent-color, #ff90e8); }
   }
 
   /* ==========================================================================
@@ -32721,6 +32692,19 @@
   .nt-sec { margin: .9rem .5rem .4rem; font-size: .72rem; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; color: var(--nt-mute); }
   .nt-row { display: block; width: 100%; text-align: left; padding: .7rem .9rem; border: none; border-radius: 1rem; background: none; color: inherit; cursor: pointer; }
   .nt-row.is-on { background: var(--nt-surf2); }
+  /* Seçim modu (toplu / tek tek silme) */
+  .nt-pill.dng { color: #fff; background: #e5484d; }
+  .nt-pill:disabled { opacity: .4; pointer-events: none; }
+  .nt-selbar { display: flex; align-items: center; gap: .6rem; padding: .7rem 0 0; margin-top: .5rem; border-top: 1px solid var(--nt-surf2); }
+  .nt-selbar[hidden] { display: none; }
+  .nt-selbar span { flex: 1 1 auto; text-align: center; font-size: .82rem; font-weight: 700; color: var(--nt-mute); }
+  .nt.is-sel .nt-row:not(.nt-leave) { position: relative; padding-left: 3rem; }
+  .nt.is-sel .nt-row:not(.nt-leave)::before, .nt-fchk { content: ''; box-sizing: border-box; width: 1.35rem; height: 1.35rem; border-radius: 50%; border: 2px solid var(--nt-mute); background: none center / .85rem no-repeat; }
+  .nt.is-sel .nt-row:not(.nt-leave)::before { position: absolute; left: .85rem; top: 50%; margin-top: -.68rem; }
+  .nt-fchk { flex: 0 0 auto; display: inline-block; }
+  .nt.is-sel .nt-row.is-picked::before, .nt-fchk.is-picked { border-color: var(--accent-color, #ff90e8); background-color: var(--accent-color, #ff90e8); background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23fff' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 5L19 7'/%3E%3C/svg%3E"); }
+  .nt-fold.is-on .nt-fchk { border-color: #fff; }
+  .nt-fold.is-on .nt-fchk.is-picked { background-color: #fff; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23121212' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 5L19 7'/%3E%3C/svg%3E"); }
   .nt-row b { display: block; font-size: .98rem; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .nt-row span { display: block; margin-top: .15rem; font-size: .82rem; font-weight: 500; color: var(--nt-mute); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .nt-row span i { font-style: normal; font-weight: 700; color: color-mix(in srgb, var(--theme-text, #121212) 75%, transparent); margin-right: .5rem; }
@@ -34830,38 +34814,46 @@
     <div class="p8n" id="p8n">
       <div class="p8n-inner">
         <div class="p8n-head">
-          <button type="button" class="p8n-back" id="p8nBack" aria-label="Geri" hidden>
-            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
-          </button>
           <h1 id="p8nTitle">Gündelik</h1>
           <span class="p8n-date" id="p8nDate"></span>
+          <div class="p8n-flame is-off" id="p8nFlame" hidden title="Günlük seri">
+            <span class="p8n-flame-wrap">
+              <span class="p8n-flame-glow"></span>
+              <svg class="p8n-flame-ico" viewBox="0 0 32 40" aria-hidden="true">
+                <defs>
+                  <radialGradient id="p8fgOut" cx=".5" cy="1" r="1" fx=".5" fy="1"><stop offset="0" stop-color="#ffb02e"/><stop offset=".5" stop-color="#ff6412"/><stop offset="1" stop-color="#e02a10"/></radialGradient>
+                  <radialGradient id="p8fgMid" cx=".5" cy="1" r="1" fx=".5" fy="1"><stop offset="0" stop-color="#fff3a6"/><stop offset=".55" stop-color="#ffc233"/><stop offset="1" stop-color="#ff8a1a"/></radialGradient>
+                  <radialGradient id="p8fgIn" cx=".5" cy="1" r="1" fx=".5" fy="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#ffe98a"/></radialGradient>
+                  <filter id="p8fSoft" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation=".35"/></filter>
+                </defs>
+                <g filter="url(#p8fSoft)">
+                  <path class="p8n-fl p8n-fl-a" fill="url(#p8fgOut)" d="M16 1.5C17.2 8 21 11 23.6 15C26 18.8 27.6 22.4 27 27.4C26.4 33.6 22 39 16 39C10 39 5.6 33.6 5 27.4C4.6 22 5.4 16.5 8 10C8.6 14 10.4 16.8 12.6 17.4C11.6 11 13 5.6 16 1.5Z"><animate attributeName="d" dur="2.6s" values="M16 1.5C17.2 8 21 11 23.6 15C26 18.8 27.6 22.4 27 27.4C26.4 33.6 22 39 16 39C10 39 5.6 33.6 5 27.4C4.6 22 5.4 16.5 8 10C8.6 14 10.4 16.8 12.6 17.4C11.6 11 13 5.6 16 1.5Z;M15 2C16.4 8.4 20 11.6 23.8 14C26.4 18 27.6 22.6 27 27.4C26.4 33.6 22 39 16 39C10 39 5.6 33.6 5 27.4C4.5 21.6 5.8 15.6 8.6 8.6C9 13.6 10.6 16.4 12.8 17.8C11.2 11.4 12.4 6 15 2Z;M17 2.4C17.6 8.6 21.6 10.4 23.4 15.6C25.8 19 27.8 22.2 27 27.4C26.4 33.6 22 39 16 39C10 39 5.6 33.6 5 27.4C4.8 22.4 5.2 17.8 7.6 11.4C8.4 14.4 10.6 16.6 12.4 17C12.2 11.8 14 6.2 17 2.4Z;M16 1.5C17.2 8 21 11 23.6 15C26 18.8 27.6 22.4 27 27.4C26.4 33.6 22 39 16 39C10 39 5.6 33.6 5 27.4C4.6 22 5.4 16.5 8 10C8.6 14 10.4 16.8 12.6 17.4C11.6 11 13 5.6 16 1.5Z" calcMode="spline" keyTimes="0;.33;.66;1" keySplines=".45 0 .55 1;.45 0 .55 1;.45 0 .55 1" repeatCount="indefinite"/></path>
+                  <path class="p8n-fl p8n-fl-b" fill="url(#p8fgMid)" d="M16 13C16.8 18 22.8 20.6 22.8 28C22.8 34 19.8 37.6 16 37.6C12.2 37.6 9.2 34 9.2 28C9.2 24 11 21.6 12.4 17.8C13.4 19.8 14.4 20.4 15.4 20.2C14.8 17.2 15 15 16 13Z"><animate attributeName="d" dur="1.7s" values="M16 13C16.8 18 22.8 20.6 22.8 28C22.8 34 19.8 37.6 16 37.6C12.2 37.6 9.2 34 9.2 28C9.2 24 11 21.6 12.4 17.8C13.4 19.8 14.4 20.4 15.4 20.2C14.8 17.2 15 15 16 13Z;M15.2 13.6C16.4 18.4 22.4 21 22.8 28C22.8 34 19.8 37.6 16 37.6C12.2 37.6 9.2 34 9.2 28C9.2 23.8 11.4 21 13.2 16.6C13.8 19 14.6 20 15.6 20.2C14.4 17.6 14.4 15.4 15.2 13.6Z;M16.8 13.2C17.4 18 22.6 20.2 22.8 28C22.8 34 19.8 37.6 16 37.6C12.2 37.6 9.2 34 9.2 28C9.2 24.4 10.8 22.2 12 18.6C13 20 14.2 20.8 15.2 20.4C15 17.4 15.6 15 16.8 13.2Z;M16 13C16.8 18 22.8 20.6 22.8 28C22.8 34 19.8 37.6 16 37.6C12.2 37.6 9.2 34 9.2 28C9.2 24 11 21.6 12.4 17.8C13.4 19.8 14.4 20.4 15.4 20.2C14.8 17.2 15 15 16 13Z" calcMode="spline" keyTimes="0;.33;.66;1" keySplines=".45 0 .55 1;.45 0 .55 1;.45 0 .55 1" repeatCount="indefinite"/></path>
+                  <path class="p8n-fl p8n-fl-c" fill="url(#p8fgIn)" opacity=".95" d="M16 23C16.9 26.4 20 27.8 20 32C20 34.8 18.3 36.4 16 36.4C13.7 36.4 12 34.8 12 32C12 29.8 13.4 28.6 14.2 26.6C14.8 27.8 15.4 28.2 16 28.2C15.6 26 15.4 24.4 16 23Z"/>
+                </g>
+                <circle class="p8n-ember e1" cx="11" cy="8" r="1.1" fill="#ffb347"/>
+                <circle class="p8n-ember e2" cx="21" cy="10" r="1" fill="#ffd23f"/>
+                <circle class="p8n-ember e3" cx="16" cy="6" r=".9" fill="#ff8a1f"/>
+              </svg>
+            </span>
+            <span class="p8n-flame-num" id="p8nFlameNum">0</span>
+          </div>
+          <div class="p8n-stat" id="p8nStat" aria-live="polite"></div>
+          <button type="button" class="p8n-notesbtn p8n-newgrpbtn" id="p8nNewBtn" aria-expanded="false">
+            <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+            <span>Yeni grup</span>
+          </button>
           <button type="button" class="p8n-notesbtn" id="p8nNtBtn">
             <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13 7l4 4"/></svg>
             <span>Notlarım</span>
           </button>
-          <button type="button" class="p8n-notesbtn p8n-second" id="p8nNotesBtn">
-            <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h11l3 3v13H5z"/><path d="M8.5 11h7M8.5 15h5"/></svg>
-            <span>Aklımdakiler</span><b class="p8n-count-badge" id="p8nNotesCount" hidden></b>
-          </button>
         </div>
         <div id="p8nMain">
-          <section class="p8n-hero" id="p8nHero"></section>
-          <div class="p8n-groups" id="p8nGroups"></div>
           <div id="p8nNewGroup"></div>
-        </div>
-        <div class="p8n-notes" id="p8nNotesView" hidden>
-          <div class="n-composer" id="p8nComposer"></div>
-          <div class="n-toolbar" id="p8nNToolbar"></div>
-          <div id="p8nNoteList"></div>
+          <div class="p8n-groups" id="p8nGroups"></div>
+          <div id="p8nTip"></div>
         </div>
         <div class="n-toast" id="p8nToast" hidden></div>
-      </div>
-      <button type="button" class="p8n-fab" id="p8nFab" aria-label="Hızlı not">
-        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Hızlı Not
-      </button>
-      <div class="p8n-quick" id="p8nQuick" hidden>
-        <textarea id="p8nQuickText" placeholder="Aklındaki ne? Yaz ve Enter'a bas…"></textarea>
-        <div class="p8n-quick-bar"><span>Enter kaydeder · Shift+Enter yeni satır · Esc kapatır</span><button type="button" class="p8n-pill" id="p8nQuickSave">Kaydet</button></div>
       </div>
     </div>
   </section>
@@ -46759,10 +46751,20 @@
     settingsConfirmConfirm.addEventListener('click', () => {
       try {
         localStorage.removeItem(APP_STORAGE_KEY);
+        localStorage.removeItem('nt_focus');
       } catch (err) {
         console.warn('Uygulama verisi silinemedi:', err);
       }
-      location.reload();
+      // Notlarım verisi (IndexedDB: notlar, klasörler, ekler) de silinir.
+      let reloaded = false;
+      const finish = () => { if (reloaded) return; reloaded = true; location.reload(); };
+      try {
+        const req = indexedDB.deleteDatabase('gundelik-notes');
+        req.onsuccess = finish; req.onerror = finish; req.onblocked = finish;
+        setTimeout(finish, 1500);
+      } catch (err) {
+        finish();
+      }
     });
   }
 
@@ -47118,8 +47120,7 @@
   const page8NextColor = (count) => WHEEL_PALETTE[count % WHEEL_PALETTE.length];
 
   // ---------- Gündelik yeni arayüz (büyük ekran, #p8n) ----------
-  // Aynı page8State'i kullanır: rutin grupları ana ekran, "Aklımdakiler"
-  // (kategori görevleri) not paneli. Hızlı notlar "Notlar" kategorisine düşer.
+  // Aynı page8State'i kullanır: rutin grupları ana ekran.
   (() => {
     const root = document.getElementById('p8n');
     if (!root) return;
@@ -47130,19 +47131,26 @@
     const tickColor = (c) => (lum(c) > 0.62 ? '#1a1a1a' : '#fff');
     const dayKey = (d) => `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
     if (!page8State.routineHistory || typeof page8State.routineHistory !== 'object') page8State.routineHistory = {};
+    // Grup başına gün kaydı: { [grupAnahtarı]: { 'Y-A-G': { d, t } } } — takvimler bunu okur.
+    if (!page8State.groupHistory || typeof page8State.groupHistory !== 'object') page8State.groupHistory = {};
+    const grpKey = (g) => g.id || g.name;
+    const recordGroups = (day) => page8State.routineGroups.forEach((g) => {
+      const h = page8State.groupHistory[grpKey(g)] || (page8State.groupHistory[grpKey(g)] = {});
+      h[day] = { d: g.routines.filter((r) => r.done).length, t: g.routines.length };
+    });
 
     const totals = () => {
       let d = 0, t = 0;
       page8State.routineGroups.forEach((g) => g.routines.forEach((r) => { t++; if (r.done) d++; }));
       return { d, t };
     };
-    const snapshot = () => { const { d, t } = totals(); page8State.routineHistory[page8TodayStr()] = { d, t }; };
+    const snapshot = () => { const { d, t } = totals(); page8State.routineHistory[page8TodayStr()] = { d, t }; recordGroups(page8TodayStr()); };
     const save = () => { snapshot(); savePage8State(); render(); };
 
     // Gece yarısı geçtiyse (sayfa açık kaldıysa) dünü kaydedip rutinleri sıfırla.
     const rollover = () => {
       if (page8State.routinesResetDate === page8TodayStr()) return;
-      if (page8State.routinesResetDate) { const { d, t } = totals(); page8State.routineHistory[page8State.routinesResetDate] = { d, t }; }
+      if (page8State.routinesResetDate) { const { d, t } = totals(); page8State.routineHistory[page8State.routinesResetDate] = { d, t }; recordGroups(page8State.routinesResetDate); }
       page8State.routineGroups.forEach((g) => g.routines.forEach((r) => { r.done = false; }));
       page8State.routinesResetDate = page8TodayStr();
       save();
@@ -47173,48 +47181,66 @@
       return f;
     };
 
-    // ---- İlerleme özeti ----
+    // ---- Başlıktaki ilerleme halkası + seri alevi ----
+    const stat = $('p8nStat');
+    const SC = 2 * Math.PI * 18;
+    stat.innerHTML = `<div class="p8n-stat-ring"><svg viewBox="0 0 44 44"><circle class="bg" cx="22" cy="22" r="18"/><circle class="fg" cx="22" cy="22" r="18" stroke-dasharray="${SC}" stroke-dashoffset="${SC}"/></svg><b>0</b></div>`;
+    const sFg = stat.querySelector('.fg'), sPct = stat.querySelector('b');
+    const flame = $('p8nFlame'), fNum = $('p8nFlameNum');
+    const tween = (node, to, fmt) => {
+      const from = node._v || 0; node._v = to; cancelAnimationFrame(node._raf);
+      if (from === to) { node.textContent = fmt(to); return; }
+      const t0 = performance.now(), dur = 800;
+      const step = (now) => { const k = Math.min(1, (now - t0) / dur), e = 1 - Math.pow(1 - k, 3); node.textContent = fmt(Math.round(from + (to - from) * e)); if (k < 1) node._raf = requestAnimationFrame(step); };
+      node._raf = requestAnimationFrame(step);
+    };
+    let lastDone = null, lastStreak = null;
     const renderHero = () => {
-      const hero = $('p8nHero');
-      hero.innerHTML = '';
       const { d, t } = totals();
       const pct = t ? Math.round((d / t) * 100) : 0;
-      const C = 2 * Math.PI * 42;
-      const ring = el('div', 'p8n-ring');
-      const from = window.__p8nLastPct == null ? 0 : window.__p8nLastPct;
-      ring.innerHTML = `<svg viewBox="0 0 104 104"><circle class="bg" cx="52" cy="52" r="42"/><circle class="fg" cx="52" cy="52" r="42" stroke-dasharray="${C}" stroke-dashoffset="${C * (1 - from / 100)}"/></svg><b>%${pct}</b>`;
-      hero.appendChild(ring);
-      requestAnimationFrame(() => requestAnimationFrame(() => { const fg = ring.querySelector('.fg'); if (fg) fg.style.strokeDashoffset = String(C * (1 - pct / 100)); }));
-      window.__p8nLastPct = pct;
-
-      // Seri: bugün tamamsa bugünden, değilse dünden geriye ardışık %100 günler.
       const hist = page8State.routineHistory;
       const full = (key, isToday) => { const x = isToday ? { d, t } : hist[key]; return x && x.t > 0 && x.d >= x.t; };
-      let streak = 0;
-      const c = new Date();
-      if (full(dayKey(c), true)) streak++;
+      let streak = 0; const c = new Date();
+      const todayFull = full(dayKey(c), true);
+      if (todayFull) streak++;
       c.setDate(c.getDate() - 1);
       while (full(dayKey(c), false)) { streak++; c.setDate(c.getDate() - 1); }
-
-      const txt = el('div', 'p8n-hero-txt');
-      const big = !t ? 'Rutinini kurarak başla' : d === t ? 'Bugünkü rutinlerin tamam!' : `${t - d} rutin kaldı`;
-      const sub = t ? `${d}/${t} tamamlandı` + (streak ? ` · ${streak} günlük seri` : '') : 'Aşağıdan Sabah, Öğle ya da Akşam grubu ekle.';
-      txt.append(el('div', 'p8n-hero-big', big), el('div', 'p8n-hero-sub', sub));
-      hero.appendChild(txt);
-
-      const week = el('div', 'p8n-week');
-      for (let i = 6; i >= 0; i--) {
-        const dt = new Date(); dt.setDate(dt.getDate() - i);
-        const x = i === 0 ? { d, t } : hist[dayKey(dt)];
-        const p = x && x.t ? Math.round((x.d / x.t) * 100) : 0;
-        const col = el('div', 'p8n-day' + (i === 0 ? ' is-today' : ''));
-        const bar = el('div', 'p8n-bar'); const fill = document.createElement('i'); fill.style.height = p + '%'; bar.appendChild(fill);
-        col.append(bar, el('span', '', dt.toLocaleDateString('tr-TR', { weekday: 'short' })));
-        col.title = x && x.t ? `${x.d}/${x.t}` : 'Kayıt yok';
-        week.appendChild(col);
+      tween(sPct, pct, (v) => String(v));
+      stat.title = t ? `${d}/${t} rutin tamamlandı` : 'Henüz rutin yok';
+      requestAnimationFrame(() => requestAnimationFrame(() => { sFg.style.strokeDashoffset = String(SC * (1 - pct / 100)); }));
+      stat.classList.toggle('is-complete', !!t && d === t);
+      if (lastDone !== null && d > lastDone) { stat.classList.remove('is-bump'); void stat.offsetWidth; stat.classList.add('is-bump'); }
+      lastDone = d;
+      // Alev: seri varsa görünür; bugün tamamlanınca canlanır ve sayı artarken pop animasyonu oynar
+      const fSvg = flame.querySelector('.p8n-flame-ico');
+      try { (!todayFull || matchMedia('(prefers-reduced-motion: reduce)').matches) ? fSvg.pauseAnimations() : fSvg.unpauseAnimations(); } catch (e) {}
+      flame.hidden = streak < 1;
+      flame.classList.toggle('is-off', !todayFull);
+      flame.title = todayFull ? `${streak} günlük seri` : `${streak} günlük seri — bugünü tamamla, devam etsin`;
+      if (streak >= 1) {
+        tween(fNum, streak, (v) => String(v));
+        if (lastStreak !== null && streak > lastStreak) { flame.classList.remove('is-pop'); void flame.offsetWidth; flame.classList.add('is-pop'); }
       }
-      hero.appendChild(week);
+      lastStreak = streak;
     };
+
+    // ---- Uygulama içi onay penceresi ----
+    const askConfirm = (title, msg, okLabel) => new Promise((resolve) => {
+      const back = el('div', 'p8n-dlg-back'), dlg = el('div', 'p8n-dlg');
+      dlg.setAttribute('role', 'dialog'); dlg.setAttribute('aria-modal', 'true');
+      const cancel = el('button', 'p8n-dlg-btn', 'Vazgeç'), ok = el('button', 'p8n-dlg-btn danger', okLabel || 'Sil');
+      cancel.type = 'button'; ok.type = 'button';
+      const row = el('div', 'p8n-dlg-row'); row.append(cancel, ok);
+      dlg.append(el('h3', '', title), el('p', '', msg), row); back.appendChild(dlg);
+      let fin = false;
+      const done = (v) => { if (fin) return; fin = true; document.removeEventListener('keydown', onKey, true); back.classList.remove('is-in'); setTimeout(() => back.remove(), 320); resolve(v); };
+      const onKey = (e) => { if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); done(false); } };
+      document.addEventListener('keydown', onKey, true);
+      cancel.onclick = () => done(false); ok.onclick = () => done(true);
+      back.addEventListener('pointerdown', (e) => { if (e.target === back) done(false); });
+      root.appendChild(back);
+      requestAnimationFrame(() => requestAnimationFrame(() => { back.classList.add('is-in'); cancel.focus({ preventScroll: true }); }));
+    });
 
     // ---- Rutin kartları ----
     const startEditText = (span, item, after) => {
@@ -47233,7 +47259,8 @@
     // Havuzu'ndaki bağlam menüsü (.page11-context-menu) açılır. Rutin
     // işaretleme yerinde (DOM'u yeniden kurmadan) yapılır ki animasyonlar
     // kesilmesin.
-    const addOpenGroups = new Set();
+    const addOpenGroups = new Map(); // grup -> rutinin ekleneceği alt başlık id'si ('' = doğrudan gruba)
+    const addSecOpen = new Set();   // "yeni alt başlık" kutusu açık olan gruplar
     const seenKeys = new Set();
     let firstPaint = true;
     const gKey = (g) => g.id || g.name;
@@ -47315,34 +47342,79 @@
     };
 
     // ---- Kart durumunu yerinde güncelle ----
-    const RING_C = 2 * Math.PI * 21;
-    const paintCard = (card, group, celebrate) => {
+    // Mini takvim: bu ayın günleri. Tamamlanan gün ✕ ile işaretlenir, kısmi gün yumuşak dolgu alır.
+    const CROSS = '<svg viewBox="0 0 24 24"><path d="M6 6l12 12"/><path d="M18 6L6 18"/></svg>';
+    const calView = new Map(); // grup -> ay farkı (0 = bu ay, -1 = geçen ay ...)
+    const ARW = { l: '<svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>', r: '<svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>' };
+    const paintCal = (card, group, drawToday, dir) => {
+      const cal = card.querySelector('.p8g-cal'); if (!cal) return;
+      const gk = grpKey(group), off = calView.get(gk) || 0;
+      const now = new Date(), tg = new Date(now.getFullYear(), now.getMonth() + off, 1);
+      const y = tg.getFullYear(), m = tg.getMonth(), isCur = off === 0, today = now.getDate();
+      const hist = page8State.groupHistory[gk] || {};
+      let minOff = -12;
+      Object.keys(hist).forEach((k) => { const [hy, hm] = k.split('-').map(Number); minOff = Math.min(minOff, (hy - now.getFullYear()) * 12 + (hm - 1 - now.getMonth())); });
+      const tot = group.routines.length, dn = group.routines.filter((r) => r.done).length;
+      cal.innerHTML = '';
+      const head = el('div', 'p8g-cal-h');
+      const prev = el('button', 'p8g-cal-nav'); prev.type = 'button'; prev.setAttribute('aria-label', 'Önceki ay'); prev.innerHTML = ARW.l; prev.disabled = off <= minOff;
+      const next = el('button', 'p8g-cal-nav'); next.type = 'button'; next.setAttribute('aria-label', 'Sonraki ay'); next.innerHTML = ARW.r; next.disabled = off >= 0;
+      prev.onclick = (e) => { e.stopPropagation(); calView.set(gk, off - 1); paintCal(card, group, false, -1); };
+      next.onclick = (e) => { e.stopPropagation(); calView.set(gk, off + 1); paintCal(card, group, false, 1); };
+      const ttl = el('button', 'p8g-cal-title' + (isCur ? '' : ' is-away'), tg.toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' }));
+      ttl.type = 'button'; ttl.title = isCur ? '' : 'Bugüne dön'; ttl.setAttribute('aria-label', isCur ? 'Bu ay' : 'Bugüne dön');
+      ttl.onclick = (e) => { e.stopPropagation(); if (isCur) return; calView.set(gk, 0); paintCal(card, group, false, 1); };
+      head.append(prev, ttl, next);
+      cal.appendChild(head);
+      // Sağa / sola kaydırma: sola = sonraki ay, sağa = önceki ay (sınırlarda düğme kapalıysa işlem yok)
+      cal._swipe = (delta) => { const b = delta < 0 ? prev : next; if (!b.disabled) b.click(); };
+      if (!cal._wired) {
+        cal._wired = true;
+        let sx = 0, sy = 0, sid = null;
+        cal.addEventListener('pointerdown', (e) => { if (e.button > 0) return; sid = e.pointerId; sx = e.clientX; sy = e.clientY; });
+        cal.addEventListener('pointerup', (e) => {
+          if (e.pointerId !== sid) return; sid = null;
+          const dx = e.clientX - sx, dy = e.clientY - sy;
+          if (Math.abs(dx) > 42 && Math.abs(dx) > Math.abs(dy) * 1.4) cal._swipe(dx < 0 ? 1 : -1);
+        });
+        cal.addEventListener('pointercancel', () => { sid = null; });
+      }
+      const grid = el('div', 'p8g-cal-g' + (dir ? (dir > 0 ? ' sw-r' : ' sw-l') : ''));
+      ['P', 'S', 'Ç', 'P', 'C', 'C', 'P'].forEach((w) => grid.appendChild(el('span', 'wd', w)));
+      const lead = (tg.getDay() + 6) % 7;
+      for (let i = 0; i < lead; i++) grid.appendChild(el('span', 'gap'));
+      const days = new Date(y, m + 1, 0).getDate();
+      for (let d = 1; d <= days; d++) {
+        const isToday = isCur && d === today;
+        const x = isToday ? { d: dn, t: tot } : hist[`${y}-${m + 1}-${d}`];
+        const full = !!(x && x.t > 0 && x.d >= x.t), part = !!(x && x.d > 0 && !full);
+        const c = el('span', 'day' + (isToday ? ' is-today' : '') + (isCur && d > today ? ' is-future' : '') + (full ? ' is-full' : '') + (part ? ' is-part' : ''));
+        c.title = x && x.t ? `${d}: ${x.d}/${x.t}` : '';
+        if (full) { c.innerHTML = CROSS; if (isToday && drawToday) c.classList.add('is-draw'); } else c.textContent = String(d);
+        grid.appendChild(c);
+      }
+      cal.appendChild(grid);
+    };
+    const paintCard = (card, group, drawToday) => {
       const total = group.routines.length;
       const done = group.routines.filter((r) => r.done).length;
       const complete = total > 0 && done === total;
-      const wasComplete = card.classList.contains('is-complete');
-      const isNow = groupSlot(group.name) === nowGroupKey();
       card.classList.toggle('is-complete', complete);
-      card.classList.toggle('is-now', isNow && !complete);
-      card.querySelector('.p8g-ring .fg').style.strokeDashoffset = String(RING_C * (1 - (total ? done / total : 0)));
-      card.querySelector('.p8g-ring b').textContent = complete ? '' : (total ? String(total - done) : '+');
-      card.querySelector('.p8g-sub').textContent = !total ? 'Henüz rutin yok' : complete ? 'Hepsi tamam' : `${done} / ${total} tamamlandı`;
-      const eb = card.querySelector('.p8g-eyebrow');
-      eb.textContent = complete ? 'Tamamlandı' : (isNow ? 'Şimdi' : '');
-      eb.classList.toggle('is-live', isNow && !complete);
-      if (celebrate && complete && !wasComplete) {
-        card.classList.remove('is-cele'); void card.offsetWidth; card.classList.add('is-cele');
-        setTimeout(() => card.classList.remove('is-cele'), 1200);
-      }
+      card.classList.toggle('is-now', groupSlot(group.name) === nowGroupKey() && !complete);
+      card.querySelector('.p8g-count').textContent = total ? (complete ? `${done}/${total} ✓` : `${done}/${total}`) : '';
+      const nw = card.querySelector('.p8g-now'); if (nw) nw.hidden = complete || groupSlot(group.name) !== nowGroupKey();
+      card.querySelectorAll('.p8g-sec-count').forEach((n) => {
+        const items = group.routines.filter((r) => r.sec === n.dataset.sec);
+        n.textContent = items.length ? `${items.filter((r) => r.done).length}/${items.length}` : '';
+      });
+      paintCal(card, group, drawToday);
     };
 
     const toggleRoutine = (group, r, row, card) => {
       r.done = !r.done;
       snapshot(); savePage8State();
       row.classList.toggle('is-done', r.done);
-      row.classList.remove('is-burst');
-      if (r.done) { void row.offsetWidth; row.classList.add('is-burst'); }
-      paintCard(card, group, true);
+      paintCard(card, group, r.done);
       renderHero();
     };
 
@@ -47358,8 +47430,9 @@
       }, 300);
     };
 
-    const removeGroup = (group, card) => {
-      if (!window.confirm(`"${group.name}" grubu ve içindeki rutinler silinsin mi?`)) return;
+    const removeGroup = async (group, card) => {
+      const n = group.routines.length;
+      if (!(await askConfirm(`"${group.name}" grubu silinsin mi?`, n ? `Grubun içindeki ${n} rutin de silinecek. Hemen ardından geri alabilirsin.` : 'Bu grup silinecek. Hemen ardından geri alabilirsin.', 'Grubu sil'))) return;
       const idx = page8State.routineGroups.indexOf(group);
       card.classList.add('is-leave');
       setTimeout(() => {
@@ -47380,10 +47453,43 @@
       inp.addEventListener('blur', () => commit(true));
     };
 
-    const openAddForm = (group) => {
-      addOpenGroups.add(gKey(group)); render();
+    const focusForm = (group) => {
       const c = [...document.querySelectorAll('#p8nGroups .p8g')][page8State.routineGroups.indexOf(group)];
-      const inp = c && c.querySelector('.p8g-in'); if (inp) inp.focus();
+      const i = c && c.querySelector('.p8g-in'); if (i) i.focus();
+    };
+    const openAddForm = (group, secId) => { addOpenGroups.set(gKey(group), secId || ''); addSecOpen.delete(gKey(group)); render(); focusForm(group); };
+    const openSecForm = (group) => { addSecOpen.add(gKey(group)); addOpenGroups.delete(gKey(group)); render(); focusForm(group); };
+
+    const editSecName = (group, sec, card) => {
+      const h = [...card.querySelectorAll('.p8g-sec')].find((x) => x.dataset.sec === sec.id); if (!h) return;
+      const nameEl = h.querySelector('.p8g-sec-name');
+      const inp = el('input', 'p8g-sec-in'); inp.value = sec.name; inp.enterKeyHint = 'done'; inp.maxLength = 60;
+      nameEl.replaceWith(inp); inp.focus(); inp.select();
+      let fin = false;
+      const commit = (ok) => { if (fin) return; fin = true; const v = inp.value.trim(); if (ok && v && v !== sec.name) { sec.name = v; savePage8State(); } render(); };
+      inp.addEventListener('keydown', (e) => { if (e.key === 'Enter') commit(true); else if (e.key === 'Escape') commit(false); });
+      inp.addEventListener('blur', () => commit(true));
+    };
+    const removeSection = async (group, sec) => {
+      const n = group.routines.filter((r) => r.sec === sec.id).length;
+      if (!(await askConfirm(`"${sec.name}" alt başlığı silinsin mi?`, n ? `İçindeki ${n} rutin de silinecek. Hemen ardından geri alabilirsin.` : 'Bu alt başlık silinecek. Hemen ardından geri alabilirsin.', 'Alt başlığı sil'))) return;
+      const oldS = (group.sections || []).slice(), oldR = group.routines.slice();
+      group.sections = oldS.filter((s) => s !== sec); group.routines = oldR.filter((r) => r.sec !== sec.id);
+      addOpenGroups.delete(gKey(group)); save();
+      toast(`"${sec.name}" silindi`, () => { group.sections = oldS; group.routines = oldR; save(); });
+    };
+
+    // Yazı kutusu + gönder düğmesi (rutin ve alt başlık ekleme için ortak)
+    const mkForm = (placeholder, onSubmit, onCancel, isOpen) => {
+      const f = el('form', 'p8g-form'); f.autocomplete = 'off'; f.noValidate = true;
+      const inp = el('input', 'p8g-in'); inp.type = 'text'; inp.placeholder = placeholder; inp.enterKeyHint = 'done'; inp.maxLength = 120;
+      const go = el('button', 'p8g-go'); go.type = 'submit'; go.setAttribute('aria-label', 'Ekle');
+      go.innerHTML = '<svg viewBox="0 0 24 24"><path d="M12 19V6M6.5 11.5L12 6l5.5 5.5"/></svg>';
+      f.append(inp, go);
+      f.addEventListener('submit', (e) => { e.preventDefault(); const v = inp.value.trim(); if (!v) { inp.focus(); return; } onSubmit(v); });
+      inp.addEventListener('keydown', (e) => { if (e.key === 'Escape') onCancel(); });
+      inp.addEventListener('blur', () => { setTimeout(() => { if (!inp.value.trim() && !f.contains(document.activeElement) && isOpen()) onCancel(); }, 120); });
+      return f;
     };
 
     const renderGroups = () => {
@@ -47394,25 +47500,19 @@
         const key = gKey(group);
         const enterCard = firstPaint || !seenKeys.has('g:' + key);
         const card = el('div', 'p8g' + (enterCard ? ' is-enter' : ''));
+        card.style.setProperty('--i', String(firstPaint ? gi : 0));
         card.style.setProperty('--gc', group.color);
         card.style.setProperty('--gt', tickColor(group.color));
-        card.style.setProperty('--i', String(firstPaint ? gi : 0));
 
-        // Başlık: eyebrow + ad + alt yazı · ilerleme halkası
+        // Başlık: ad · (Şimdi) · sayaç
         const head = el('div', 'p8g-head');
-        const tb = el('div', 'p8g-titlebox');
-        tb.append(el('div', 'p8g-eyebrow'), el('div', 'p8g-name', group.name), el('div', 'p8g-sub'));
-        const ring = el('div', 'p8g-ring');
-        ring.innerHTML = `<svg viewBox="0 0 52 52"><circle class="bg" cx="26" cy="26" r="21"/><circle class="fg" cx="26" cy="26" r="21" stroke-dasharray="${RING_C}" stroke-dashoffset="${RING_C}"/></svg><b></b><i class="tick"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 5L19 7"/></svg></i>`;
-        head.append(tb, ring);
-        card.appendChild(head);
+        const nw = el('span', 'p8g-now', 'Şimdi'); nw.hidden = true;
+        const tb = el('div', 'p8g-titlebox'); tb.appendChild(el('div', 'p8g-name', group.name));
+        head.append(tb, nw, el('span', 'p8g-count'));
+        const main = el('div', 'p8g-main'); main.appendChild(head);
 
-        // Satırlar
-        const list = el('div', 'p8g-list');
-        group.routines.forEach((r, ri) => {
-          const rk = rKey(group, r);
-          const enterRow = !firstPaint && !seenKeys.has('r:' + rk) && !enterCard;
-          const row = el('div', 'p8g-r' + (r.done ? ' is-done' : '') + (enterRow ? ' is-enter' : ''));
+        const buildRow = (r) => {
+          const row = el('div', 'p8g-r' + (r.done ? ' is-done' : ''));
           const c = el('span', 'p8g-c'); c.innerHTML = TICK;
           const t = el('span', 'p8g-t'); t.appendChild(el('span', 'p8g-tt', r.text));
           row.append(c, t);
@@ -47423,41 +47523,65 @@
               { ic: IC.trash, title: 'Sil', sub: 'Bu rutini kaldır', danger: true, fn: () => removeRoutine(group, r, row) }
             ], x, y);
           });
-          seenKeys.add('r:' + rk);
-          list.appendChild(row);
+          seenKeys.add('r:' + rKey(group, r));
+          return row;
+        };
+        const secHead = (sec) => {
+          const h = el('div', 'p8g-sec'); h.dataset.sec = sec.id;
+          const cnt = el('span', 'p8g-sec-count'); cnt.dataset.sec = sec.id;
+          const plus = el('button', 'p8g-sec-add'); plus.type = 'button'; plus.setAttribute('aria-label', `${sec.name} altına rutin ekle`); plus.innerHTML = IC.plus;
+          plus.addEventListener('click', (e) => { e.stopPropagation(); openAddForm(group, sec.id); });
+          h.append(el('span', 'p8g-sec-name', sec.name), cnt, el('span', 'p8g-sec-line'), plus);
+          bindHold(h, (x, y) => openCtx(h, [
+            { ic: IC.edit, title: 'Adı Değiştir', sub: 'Alt başlığın ismini düzenle', fn: () => editSecName(group, sec, card) },
+            { ic: IC.plus, title: 'Rutin Ekle', sub: 'Bu alt başlığa yeni rutin', fn: () => openAddForm(group, sec.id) },
+            { ic: IC.trash, title: 'Alt Başlığı Sil', sub: 'İçindeki rutinlerle birlikte', danger: true, fn: () => removeSection(group, sec) }
+          ], x, y));
+          return h;
+        };
+
+        // Bloklar: önce alt başlıksız rutinler, sonra her alt başlık ve rutinleri
+        const secs = group.sections || [], known = new Set(secs.map((s) => s.id));
+        const blocks = [{ sec: null, items: group.routines.filter((r) => !r.sec || !known.has(r.sec)) }, ...secs.map((s) => ({ sec: s, items: group.routines.filter((r) => r.sec === s.id) }))];
+        blocks.forEach(({ sec, items }) => {
+          const sid = sec ? sec.id : '';
+          const formOpen = addOpenGroups.get(key) === sid;
+          if (!sec && !items.length && !formOpen) return;
+          if (sec) main.appendChild(secHead(sec));
+          const list = el('div', 'p8g-list');
+          items.forEach((r) => list.appendChild(buildRow(r)));
+          main.appendChild(list);
+          if (formOpen) {
+            main.appendChild(mkForm(sec ? `${sec.name} altına rutin ekle` : 'Yeni rutin (örn. Su iç)',
+              (v) => { const r = { id: page8GenId(), text: v, done: false }; if (sec) r.sec = sec.id; group.routines.push(r); save(); focusForm(group); },
+              () => { addOpenGroups.delete(key); render(); },
+              () => addOpenGroups.has(key)));
+          }
         });
-        card.appendChild(list);
 
-        // Alt: ekle
-        if (addOpenGroups.has(key)) {
-          const f = el('form', 'p8g-form'); f.autocomplete = 'off'; f.noValidate = true;
-          const inp = el('input', 'p8g-in'); inp.type = 'text'; inp.placeholder = 'Yeni rutin (örn. Su iç)'; inp.enterKeyHint = 'done'; inp.maxLength = 120;
-          const go = el('button', 'p8g-go'); go.type = 'submit'; go.setAttribute('aria-label', 'Ekle');
-          go.innerHTML = '<svg viewBox="0 0 24 24"><path d="M12 19V6M6.5 11.5L12 6l5.5 5.5"/></svg>';
-          f.append(inp, go);
-          f.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const v = inp.value.trim(); if (!v) { inp.focus(); return; }
-            group.routines.push({ id: page8GenId(), text: v, done: false }); save();
-            const c2 = [...document.querySelectorAll('#p8nGroups .p8g')][page8State.routineGroups.indexOf(group)];
-            const i2 = c2 && c2.querySelector('.p8g-in'); if (i2) i2.focus();
-          });
-          inp.addEventListener('keydown', (e) => { if (e.key === 'Escape') { addOpenGroups.delete(key); render(); } });
-          inp.addEventListener('blur', () => { setTimeout(() => { if (!inp.value.trim() && !f.contains(document.activeElement) && addOpenGroups.has(key)) { addOpenGroups.delete(key); render(); } }, 120); });
-          card.appendChild(f);
+        // Alt: ekleme düğmeleri
+        if (addSecOpen.has(key)) {
+          main.appendChild(mkForm('Alt başlık adı (örn. Hap, Su)',
+            (v) => { const s = { id: page8GenId(), name: v }; group.sections = (group.sections || []).concat(s); addSecOpen.delete(key); addOpenGroups.set(key, s.id); save(); focusForm(group); },
+            () => { addSecOpen.delete(key); render(); },
+            () => addSecOpen.has(key)));
         } else {
-          const ab = el('button', 'p8g-add'); ab.type = 'button';
-          ab.innerHTML = '<i>+</i><span>Rutin ekle</span>';
-          ab.addEventListener('click', () => openAddForm(group));
-          card.appendChild(ab);
+          const acts = el('div', 'p8g-actions');
+          if (!secs.length && !addOpenGroups.has(key)) {
+            const ab = el('button', 'p8g-add', '+ Rutin ekle'); ab.type = 'button'; ab.addEventListener('click', () => openAddForm(group)); acts.appendChild(ab);
+          }
+          const sb = el('button', 'p8g-add', '+ Alt başlık'); sb.type = 'button'; sb.addEventListener('click', () => openSecForm(group)); acts.appendChild(sb);
+          main.appendChild(acts);
         }
+        card.append(main, el('div', 'p8g-cal'));
 
-        // Kartın kendisine basılı tutma → grup menüsü (satırlar kendi menüsünü açar)
+        // Kartın kendisine basılı tutma → grup menüsü (satır ve alt başlıklar kendi menüsünü açar)
         bindHold(card, (x, y, target) => {
-          if (target && target.closest && target.closest('.p8g-r')) return;
+          if (target && target.closest && target.closest('.p8g-r, .p8g-sec')) return;
           const done = group.routines.filter((r) => r.done).length;
           const items = [
             { ic: IC.edit, title: 'Adı Değiştir', sub: 'Grubun ismini düzenle', fn: () => renameGroup(group, card) },
+            { ic: IC.plus, title: 'Alt Başlık Ekle', sub: 'Rutinleri bölümlere ayır', fn: () => openSecForm(group) },
             { ic: IC.color, title: 'Rengi Değiştir', sub: 'Kartın vurgu rengi', fn: () => openColorPicker(group.name, group.color, (color) => { group.color = color; savePage8State(); render(); }) },
             { ic: IC.plus, title: 'Rutin Ekle', sub: 'Bu gruba yeni rutin', fn: () => openAddForm(group) }
           ];
@@ -47468,7 +47592,7 @@
 
         seenKeys.add('g:' + key);
         box.appendChild(card);
-        paintCard(card, group, false);
+        paintCard(card, group);
       });
       firstPaint = false;
     };
@@ -47482,7 +47606,7 @@
     let newGroupOpen = false;
     const renderNewGroup = () => {
       const wrap = $('p8nNewGroup');
-      wrap.innerHTML = '';
+      wrap.innerHTML = ''; $('p8nTip').innerHTML = '';
       const has = (k) => page8State.routineGroups.some((g) => groupSlot(g.name) === k);
       const empty = !page8State.routineGroups.length;
       const buildPanel = () => {
@@ -47507,248 +47631,30 @@
       } else if (newGroupOpen) {
         wrap.appendChild(buildPanel());
       } else {
-        const b = el('button', 'p8n-newbtn', '+ Yeni grup'); b.type = 'button';
-        b.addEventListener('click', () => {
-          newGroupOpen = true; renderNewGroup();
-          const inp = wrap.querySelector('.p8n-add .p8n-input'); if (inp) inp.focus();
-        });
-        wrap.appendChild(b);
-        wrap.appendChild(el('div', 'p8g-tip', 'İpucu: Bir karta ya da rutine basılı tut, seçenekler açılsın.'));
+        $('p8nTip').appendChild(el('div', 'p8g-tip', 'İpucu: Bir karta ya da rutine basılı tut, seçenekler açılsın.'));
       }
+      $('p8nNewBtn').setAttribute('aria-expanded', String(empty || newGroupOpen));
     };
+    // Başlıktaki "Yeni grup" düğmesi: ekleme panelini aç/kapat
+    $('p8nNewBtn').addEventListener('click', () => {
+      if (page8State.routineGroups.length) newGroupOpen = !newGroupOpen;
+      renderNewGroup();
+      const inp = $('p8nNewGroup').querySelector('.p8n-add .p8n-input'); if (inp && (newGroupOpen || !page8State.routineGroups.length)) inp.focus();
+    });
 
-    // ---- Aklımdakiler (notlar) ----
-    const quickCat = () => {
-      let c = page8State.categories.find((x) => x.id === 'p8-quick' || x.name === 'Notlar');
-      if (!c) { c = { id: 'p8-quick', name: 'Notlar', color: WHEEL_PALETTE[1], tasks: [] }; page8State.categories.unshift(c); }
-      return c;
-    };
-    // ---- Aklımdakiler: gelişmiş not alanı ----
-    // Görev alanları (geriye uyumlu, hepsi isteğe bağlı): kind, pinned, created, due.
-    const KINDS = [
-      { k: 'not', l: 'Not', c: '#9aa0a6' },
-      { k: 'fikir', l: 'Fikir', c: '#ffd23f' },
-      { k: 'bilgi', l: 'Bilgi', c: '#6ec6ff' },
-      { k: 'yapilacak', l: 'Yapılacak', c: '#ff90e8' }
-    ];
-    const kindOf = (k) => KINDS.find((x) => x.k === k) || KINDS[0];
-    const N = { kind: 'all', q: '', sort: 'new', showDone: false, convertId: null, compKind: 'not', compDue: '', editId: null };
-
-    const normalizeNotes = () => {
-      let idx = 0, changed = false; const base = Date.now();
-      page8State.categories.forEach((c) => c.tasks.forEach((t) => { if (!t.created) { t.created = base - (++idx) * 1000; changed = true; } }));
-      if (changed) savePage8State();
-    };
-    const addNote = (text, opts) => {
-      const v = (text || '').trim(); if (!v) return false;
-      const o = opts || {};
-      const t = { id: page8GenId(), text: v, done: false, created: Date.now(), kind: o.kind || 'not', pinned: false };
-      if (o.due) t.due = o.due;
-      quickCat().tasks.unshift(t); savePage8State(); renderNotes(); return true;
-    };
-    const relTime = (ts) => {
-      const m = Math.floor((Date.now() - ts) / 60000);
-      if (m < 1) return 'az önce'; if (m < 60) return `${m} dk önce`;
-      const h = Math.floor(m / 60); if (h < 24) return `${h} sa önce`;
-      const d = Math.floor(h / 24); if (d < 7) return `${d} gün önce`;
-      return new Date(ts).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' });
-    };
-    const dueInfo = (due) => {
-      if (!due) return null;
-      const [y, m, d] = due.split('-').map(Number);
-      const t0 = new Date(); t0.setHours(0, 0, 0, 0);
-      const diff = Math.round((new Date(y, m - 1, d) - t0) / 86400000);
-      if (diff < 0) return { t: `${-diff} gün gecikti`, cls: 'late' };
-      if (diff === 0) return { t: 'Bugün', cls: 'today' };
-      if (diff === 1) return { t: 'Yarın', cls: '' };
-      return { t: new Date(y, m - 1, d).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' }), cls: '' };
-    };
+    // ---- Bildirim (Geri al) ----
     let toastTimer = null;
     const toast = (msg, undo) => {
       const t = $('p8nToast'); t.innerHTML = ''; t.appendChild(el('span', '', msg));
       if (undo) { const b = el('button', '', 'Geri al'); b.type = 'button'; b.addEventListener('click', () => { undo(); t.hidden = true; }); t.appendChild(b); }
       t.hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => { t.hidden = true; }, 5000);
     };
-    const growTA = (ta) => { ta.style.height = 'auto'; ta.style.height = Math.min(ta.scrollHeight, 240) + 'px'; };
-
-    const buildNotesUI = () => {
-      // Yazma kartı
-      const comp = $('p8nComposer'); comp.innerHTML = '';
-      const ta = el('textarea'); ta.placeholder = 'Aklındaki ne? Fikir, bilgi, yapılacak…'; ta.rows = 2; ta.id = 'p8nCompText';
-      ta.addEventListener('input', () => growTA(ta));
-      const bar = el('div', 'n-comp-bar');
-      const kchips = KINDS.map((kd) => {
-        const b = el('button', 'n-chip' + (kd.k === N.compKind ? ' is-on' : ''), kd.l); b.type = 'button'; b.style.setProperty('--kc', kd.c);
-        b.addEventListener('click', () => { N.compKind = kd.k; kchips.forEach((x, i) => x.classList.toggle('is-on', KINDS[i].k === kd.k)); });
-        return b;
-      });
-      const date = el('input', 'n-date'); date.type = 'date'; date.title = 'Tarih (isteğe bağlı)'; date.addEventListener('change', () => { N.compDue = date.value; });
-      const add = el('button', 'p8n-addbtn', 'Ekle'); add.type = 'button';
-      const submit = () => {
-        if (!addNote(ta.value, { kind: N.compKind, due: N.compDue })) { ta.focus(); return; }
-        ta.value = ''; date.value = ''; N.compDue = ''; growTA(ta); ta.focus();
-      };
-      add.addEventListener('click', submit);
-      ta.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); submit(); } });
-      bar.append(...kchips, date, el('span', 'n-spacer'), add);
-      comp.append(ta, bar);
-
-      // Araç çubuğu (bir kez kurulur; sadece sayaçlar güncellenir)
-      const tb = $('p8nNToolbar'); tb.innerHTML = '';
-      const filters = [{ k: 'all', l: 'Tümü', c: 'transparent', nd: true }, { k: 'pinned', l: 'Sabit', c: 'transparent', nd: true }, ...KINDS];
-      filters.forEach((f) => {
-        const b = el('button', 'n-chip' + (f.nd ? ' no-dot' : '') + (f.k === N.kind ? ' is-on' : ''), f.l); b.type = 'button'; b.dataset.k = f.k; b.style.setProperty('--kc', f.c === 'transparent' ? 'var(--accent-color, #ff90e8)' : f.c);
-        const cnt = el('small', '', ''); b.appendChild(cnt);
-        b.addEventListener('click', () => { N.kind = f.k; renderNotes(); });
-        tb.appendChild(b);
-      });
-      tb.appendChild(el('span', 'n-spacer'));
-      const sw = el('div', 'n-search'); const si = el('input'); si.type = 'search'; si.placeholder = 'Notlarda ara…';
-      si.addEventListener('input', () => { N.q = si.value.trim().toLocaleLowerCase('tr-TR'); renderNotes(); });
-      sw.appendChild(si); tb.appendChild(sw);
-      const so = el('button', 'n-chip no-dot', 'En yeni'); so.type = 'button'; so.id = 'p8nSortBtn';
-      so.addEventListener('click', () => { N.sort = N.sort === 'new' ? 'old' : 'new'; renderNotes(); });
-      tb.appendChild(so);
-    };
-
-    const noteCard = (cat, t) => {
-      const kd = kindOf(t.kind);
-      const card = el('div', 'nc' + (t.done ? ' is-done' : '') + (t.pinned ? ' is-pinned' : ''));
-      card.style.setProperty('--kc', kd.c); card.style.setProperty('--kt', tickColor(kd.c));
-      const top = el('div', 'nc-top');
-      const kb = el('button', 'nc-kind', kd.l); kb.type = 'button'; kb.title = 'Türü değiştir';
-      kb.addEventListener('click', () => { t.kind = KINDS[(KINDS.indexOf(kd) + 1) % KINDS.length].k; savePage8State(); renderNotes(); });
-      const pin = el('button', 'nc-pin'); pin.type = 'button'; pin.title = t.pinned ? 'Sabitlemeyi kaldır' : 'Sabitle';
-      pin.innerHTML = '<svg viewBox="0 0 24 24"><path d="M12 17v5M9 3h6l-1 6 3 4H7l3-4z"/></svg>';
-      pin.addEventListener('click', () => { t.pinned = !t.pinned; savePage8State(); renderNotes(); });
-      top.append(kb, el('span', 'nc-time', relTime(t.created)), pin);
-      card.appendChild(top);
-
-      const txt = el('div', 'nc-txt', t.text); txt.title = 'Düzenlemek için dokun';
-      txt.addEventListener('click', () => {
-        const e = el('textarea', 'nc-edit'); e.value = t.text; txt.replaceWith(e); growTA(e); e.focus();
-        let fin = false;
-        const commit = (ok) => { if (fin) return; fin = true; const v = e.value.trim(); if (ok && v) { t.text = v; savePage8State(); } renderNotes(); };
-        e.addEventListener('input', () => growTA(e));
-        e.addEventListener('keydown', (ev) => { if (ev.key === 'Enter' && !ev.shiftKey) { ev.preventDefault(); commit(true); } else if (ev.key === 'Escape') commit(false); });
-        e.addEventListener('blur', () => commit(true));
-      });
-      card.appendChild(txt);
-
-      const meta = el('div', 'nc-meta');
-      const di = dueInfo(t.due); if (di && !t.done) meta.appendChild(el('span', 'nc-badge ' + di.cls, di.t));
-      if (cat.name !== 'Notlar') meta.appendChild(el('span', 'nc-badge', cat.name));
-      if (meta.children.length) card.appendChild(meta);
-
-      const acts = el('div', 'nc-acts');
-      const mk = (label, cls, fn) => { const b = el('button', 'nc-act ' + (cls || ''), label); b.type = 'button'; b.addEventListener('click', fn); acts.appendChild(b); return b; };
-      mk(t.done ? 'Geri Aç' : 'Tamam', t.done ? '' : 'ok', () => {
-        t.done = !t.done; if (t.done && page8State.autoDeleteTasks) cat.tasks = cat.tasks.filter((x) => x !== t);
-        savePage8State(); renderNotes();
-      });
-      mk('Kopyala', '', () => { try { navigator.clipboard.writeText(t.text); toast('Kopyalandı'); } catch (e) { toast('Kopyalanamadı'); } });
-      if (!t.done) mk('Rutine Çevir', '', () => { N.convertId = N.convertId === t.id ? null : t.id; renderNotes(); });
-      mk('Sil', 'danger', () => {
-        const i = cat.tasks.indexOf(t); cat.tasks.splice(i, 1); savePage8State(); renderNotes();
-        toast('Not silindi', () => { cat.tasks.splice(i, 0, t); savePage8State(); renderNotes(); });
-      });
-      card.appendChild(acts);
-
-      if (N.convertId === t.id) {
-        const conv = el('div', 'nc-conv'); conv.appendChild(el('span', '', 'Hangi gruba?'));
-        if (!page8State.routineGroups.length) conv.appendChild(el('span', '', 'Önce bir rutin grubu ekle.'));
-        page8State.routineGroups.forEach((g) => {
-          const b = el('button', 'n-chip', g.name); b.type = 'button'; b.style.setProperty('--kc', g.color);
-          b.addEventListener('click', () => {
-            g.routines.push({ id: page8GenId(), text: t.text.split('\n')[0].slice(0, 120), done: false });
-            cat.tasks = cat.tasks.filter((x) => x !== t); N.convertId = null; save(); toast(`"${g.name}" rutinine eklendi`);
-          });
-          conv.appendChild(b);
-        });
-        card.appendChild(conv);
-      }
-      return card;
-    };
-
-    const renderNotes = () => {
-      nBadge();
-      const list = $('p8nNoteList'); list.innerHTML = '';
-      const all = [];
-      page8State.categories.forEach((cat) => cat.tasks.forEach((t) => all.push({ cat, t })));
-      const open = all.filter((x) => !x.t.done), closed = all.filter((x) => x.t.done);
-
-      // Filtre çubuğu sayaçları/durumu
-      const cnt = (k) => (k === 'all' ? open.length : k === 'pinned' ? open.filter((x) => x.t.pinned).length : open.filter((x) => kindOf(x.t.kind).k === k).length);
-      document.querySelectorAll('#p8nNToolbar .n-chip[data-k]').forEach((b) => { b.classList.toggle('is-on', b.dataset.k === N.kind); b.querySelector('small').textContent = cnt(b.dataset.k) || ''; });
-      const sb = $('p8nSortBtn'); if (sb) sb.textContent = N.sort === 'new' ? 'En yeni' : 'En eski';
-
-      const pass = (x) => (N.kind === 'all' || (N.kind === 'pinned' ? x.t.pinned : kindOf(x.t.kind).k === N.kind)) && (!N.q || x.t.text.toLocaleLowerCase('tr-TR').includes(N.q));
-      const sortFn = (a, b) => (N.sort === 'new' ? b.t.created - a.t.created : a.t.created - b.t.created);
-      const shown = open.filter(pass).sort(sortFn);
-      const pinned = shown.filter((x) => x.t.pinned), rest = shown.filter((x) => !x.t.pinned);
-
-      const late = open.filter((x) => { const i = dueInfo(x.t.due); return i && i.cls === 'late'; }).length;
-      const dueToday = open.filter((x) => { const i = dueInfo(x.t.due); return i && i.cls === 'today'; }).length;
-      list.appendChild(el('div', 'n-stats', `${open.length} açık not` + (dueToday ? ` · ${dueToday} tanesi bugün` : '') + (late ? ` · ${late} gecikmiş` : '')));
-
-      if (!shown.length) {
-        const em = el('div', 'n-empty');
-        em.append(el('b', '', all.length ? 'Eşleşen not yok' : 'Aklında bir şey mi var?'), el('p', '', all.length ? 'Aramayı ya da filtreyi değiştirmeyi dene.' : 'Yukarıya yaz; fikir, bilgi ya da yapılacak olarak ayır.'));
-        list.appendChild(em);
-      }
-      const grid = (items) => { const g = el('div', 'n-grid'); items.forEach((x) => g.appendChild(noteCard(x.cat, x.t))); return g; };
-      if (pinned.length) { list.appendChild(el('div', 'n-sec', 'Sabitlenenler')); list.appendChild(grid(pinned)); }
-      if (rest.length) { if (pinned.length) list.appendChild(el('div', 'n-sec', 'Diğerleri')); list.appendChild(grid(rest)); }
-
-      if (closed.length) {
-        const sec = el('div', 'n-sec');
-        const tg = el('button', 'n-chip no-dot', `${N.showDone ? 'Gizle' : 'Göster'}: Tamamlananlar (${closed.length})`); tg.type = 'button';
-        tg.addEventListener('click', () => { N.showDone = !N.showDone; renderNotes(); });
-        sec.appendChild(tg);
-        if (N.showDone) { const cl = el('button', 'n-chip no-dot', 'Temizle'); cl.type = 'button'; cl.addEventListener('click', () => { page8State.categories.forEach((c) => { c.tasks = c.tasks.filter((t) => !t.done); }); savePage8State(); renderNotes(); }); sec.appendChild(cl); }
-        list.appendChild(sec);
-        if (N.showDone) list.appendChild(grid(closed.filter(pass).sort(sortFn)));
-      }
-    };
-
-    const nBadge = () => {
-      const n = page8State.categories.reduce((a, c) => a + c.tasks.filter((t) => !t.done).length, 0);
-      const b = $('p8nNotesCount'); b.textContent = n; b.hidden = !n;
-    };
-    const setNotesView = (on) => {
-      root.classList.toggle('is-notes', on);
-      $('p8nMain').hidden = on; $('p8nNotesView').hidden = !on;
-      $('p8nBack').hidden = !on; $('p8nNotesBtn').hidden = on; $('p8nNtBtn').hidden = on;
-      $('p8nTitle').textContent = on ? 'Aklımdakiler' : 'Gündelik';
-      $('p8nQuick').hidden = true;
-      root.scrollTop = 0;
-      if (on) { renderNotes(); const i = $('p8nCompText'); if (i) i.focus(); }
-    };
-    $('p8nNotesBtn').addEventListener('click', () => setNotesView(true));
-    $('p8nBack').addEventListener('click', () => setNotesView(false));
 
     function render() {
       $('p8nDate').textContent = new Date().toLocaleDateString('tr-TR', { weekday: 'long', day: 'numeric', month: 'long' });
-      renderHero(); renderGroups(); renderNewGroup(); renderNotes();
+      renderHero(); renderGroups(); renderNewGroup();
     }
 
-    // ---- Notlar: satır içi giriş ----
-
-    // ---- Hızlı Not: FAB -> anında yazı kutusu ----
-    const quick = $('p8nQuick'), qText = $('p8nQuickText');
-    const openQuick = () => { quick.hidden = false; qText.focus(); };
-    const closeQuick = () => { quick.hidden = true; };
-    const saveQuick = () => { if (addNote(qText.value)) { qText.value = ''; closeQuick(); } };
-    $('p8nFab').addEventListener('click', () => (quick.hidden ? openQuick() : closeQuick()));
-    $('p8nQuickSave').addEventListener('click', saveQuick);
-    qText.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); saveQuick(); }
-      else if (e.key === 'Escape') closeQuick();
-    });
-    document.addEventListener('mousedown', (e) => { if (!quick.hidden && !quick.contains(e.target) && !$('p8nFab').contains(e.target)) closeQuick(); });
-
-    normalizeNotes();
-    buildNotesUI();
     snapshot();
     render();
   })();
@@ -47768,7 +47674,7 @@
     const db = () => dbp || (dbp = new Promise((res, rej) => {
       const r = indexedDB.open('gundelik-notes', 1);
       r.onupgradeneeded = () => { const d = r.result; d.createObjectStore('notes', { keyPath: 'id' }); d.createObjectStore('files'); d.createObjectStore('meta'); };
-      r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error);
+      r.onsuccess = () => { r.result.onversionchange = () => { r.result.close(); dbp = null; }; res(r.result); }; r.onerror = () => rej(r.error);
     }));
     const tx = async (st, mode, fn) => { const d = await db(); return new Promise((res, rej) => { const t = d.transaction(st, mode); const q = fn(t.objectStore(st)); t.oncomplete = () => res(q && q.result); t.onerror = () => rej(t.error); }); };
 
@@ -47870,8 +47776,10 @@
           <button class="nt-pill" id="ntClose" type="button">‹ Gündelik'e dön</button></aside>
         <section class="nt-list"><div class="nt-list-h"><h2 id="ntListTitle"></h2>
           <button class="nt-ic" id="ntFolderEdit" type="button" hidden aria-label="Klasörü düzenle">${svg('pen')}</button>
-          <button class="nt-ic" id="ntNew" type="button" aria-label="Yeni not">${svg('plus')}</button></div>
-          <input class="nt-search" id="ntSearch" type="search" placeholder="Notlarda ara"><div class="nt-items" id="ntItems"></div></section>
+          <button class="nt-pill" id="ntSel" type="button" aria-pressed="false">Seç</button>
+           <button class="nt-ic" id="ntNew" type="button" aria-label="Yeni not">${svg('plus')}</button></div>
+          <input class="nt-search" id="ntSearch" type="search" placeholder="Notlarda ara"><div class="nt-items" id="ntItems"></div>
+           <div class="nt-selbar" id="ntSelBar" hidden><button class="nt-pill" id="ntSelAll" type="button">Tümünü seç</button><span id="ntSelCount">Seçim yok</span><button class="nt-pill dng" id="ntSelDel" type="button" disabled>Sil</button></div></section>
         <main class="nt-ed" id="ntEd" data-bg="device">
           <button class="nt-dock nt-toggle" id="ntToggle" type="button" aria-label="Panelleri gizle / göster">${svg('panel')}</button>
           <button class="nt-dock nt-backdock" id="ntBackDock" type="button" aria-label="Gündelik'e dön" title="Gündelik'e dön">${svg('back')}</button>
@@ -47896,6 +47804,9 @@
       $('ntNew').onclick = newNote;
       $('ntSearch').oninput = (e) => { q = e.target.value.trim().toLocaleLowerCase('tr-TR'); renderList(); };
       $('ntNewFolder').onclick = newFolder;
+      $('ntSel').onclick = () => setSelMode(!selMode);
+      $('ntSelAll').onclick = selectAll;
+      $('ntSelDel').onclick = deleteSelected;
       $('ntFolderEdit').onclick = editFolder;
       $('ntToggle').onclick = () => setFocus(!focusMode);
       setFocus(focusMode);
@@ -47932,25 +47843,68 @@
       });
       document.addEventListener('keydown', (e) => {
         if (!root || root.hidden) return;
-        if (e.key === 'Escape') hidePop();
+        if (e.key === 'Escape') { hidePop(); if (selMode && !document.querySelector('.nt-dlg-back')) setSelMode(false); }
         if ((e.ctrlKey || e.metaKey) && e.key === '\\') { e.preventDefault(); setFocus(!focusMode); }
       });
     };
 
     // ---- Sol / orta sütun ----
+    // ---- Seçim modu: notlar ve klasörler seçilip tek tek ya da toplu silinir ----
+    let selMode = false; const selN = new Set(), selF = new Set();
+    const visibleNotes = () => notes.filter(inFolder).filter((n) => !q || (n.title + ' ' + n.text).toLocaleLowerCase('tr-TR').includes(q));
+    const updateSel = () => {
+      root.classList.toggle('is-sel', selMode);
+      const b = $('ntSel'); b.textContent = selMode ? 'Bitti' : 'Seç'; b.classList.toggle('acc', selMode); b.setAttribute('aria-pressed', selMode ? 'true' : 'false');
+      $('ntSelBar').hidden = !selMode;
+      const c = selN.size + selF.size, vis = visibleNotes();
+      $('ntSelCount').textContent = c ? `${c} seçili` : 'Seçim yok';
+      $('ntSelDel').disabled = !c;
+      $('ntSelAll').textContent = vis.length && vis.every((n) => selN.has(n.id)) ? 'Seçimi kaldır' : 'Tümünü seç';
+    };
+    const setSelMode = (on) => { selMode = !!on; if (!selMode) { selN.clear(); selF.clear(); } renderAll(); };
+    const selectAll = () => { const vis = visibleNotes(); if (vis.every((n) => selN.has(n.id))) vis.forEach((n) => selN.delete(n.id)); else vis.forEach((n) => selN.add(n.id)); renderList(); };
+    const deleteSelected = async () => {
+      hidePop(); await flush();
+      const ns = notes.filter((n) => selN.has(n.id)), fs = folders.filter((f) => selF.has(f.id));
+      if (!ns.length && !fs.length) return;
+      const parts = []; if (ns.length) parts.push(`${ns.length} not`); if (fs.length) parts.push(`${fs.length} klasör`);
+      const r = await dialog({ title: `${parts.join(' ve ')} silinsin mi?`, msg: (fs.length ? 'Silinen klasörlerdeki diğer notlar “Klasörsüz” bölümüne taşınır. ' : '') + 'İstersen hemen ardından geri alabilirsin.', buttons: [{ id: 'cancel', label: 'Vazgeç' }, { id: 'ok', label: 'Sil', kind: 'danger', submit: true }] });
+      if (r.id !== 'ok') return;
+      const moved = notes.filter((n) => selF.has(n.folder) && !selN.has(n.id)).map((n) => [n, n.folder]);
+      const oldFolders = folders.slice(), oldSel = sel;
+      if (cur && selN.has(cur.id)) { clearTimeout(saveT); saveT = null; cur = null; }
+      notes = notes.filter((n) => !selN.has(n.id));
+      await Promise.all(ns.map((n) => tx('notes', 'readwrite', (s) => s.delete(n.id))));
+      moved.forEach(([n]) => { n.folder = ''; saveNote(n); });
+      folders = folders.filter((f) => !selF.has(f.id)); await saveFolders();
+      if (selF.has(sel)) sel = 'all';
+      selN.clear(); selF.clear(); selMode = false;
+      renderAll(true); if (!cur) showEmpty();
+      toast(`${parts.join(' ve ')} silindi`, 'Geri al', async () => {
+        folders = oldFolders; await saveFolders();
+        for (const n of ns) { if (!notes.some((x) => x.id === n.id)) { notes.push(n); await saveNote(n); } }
+        for (const [n, f] of moved) { n.folder = f; await saveNote(n); }
+        sel = oldSel; renderAll(true);
+      });
+    };
     const inFolder = (n) => sel === 'all' || (sel === 'pinned' ? n.pinned : sel === 'none' ? !n.folder : n.folder === sel);
     const renderFolders = () => {
       const box = $('ntFolders'), st = box.scrollTop; box.innerHTML = '';
-      const add = (id, name, icon, count) => {
+      const add = (id, name, icon, count, isUser) => {
         const isNew = enterIds.delete(id);
         const b = el('button', 'nt-fold' + (sel === id ? ' is-on' : '') + (isNew ? ' is-new' : '')); b.type = 'button';
         b.innerHTML = svg(icon); b.appendChild(el('span', '', name)); b.appendChild(el('small', '', count || '')); b.dataset.fid = id;
+        if (selMode && isUser) {
+          const ck = el('i', 'nt-fchk' + (selF.has(id) ? ' is-picked' : '')); ck.setAttribute('role', 'checkbox');
+          ck.onclick = (e) => { e.stopPropagation(); if (selF.has(id)) selF.delete(id); else selF.add(id); ck.classList.toggle('is-picked', selF.has(id)); updateSel(); };
+          b.prepend(ck);
+        }
         b.onclick = () => { if (sel === id) return; sel = id; renderAll(true); };
         box.appendChild(b);
       };
       add('all', 'Tüm Notlar', 'all', notes.length);
       add('pinned', 'Sabitlenenler', 'pin', notes.filter((n) => n.pinned).length);
-      folders.forEach((f) => add(f.id, f.name, 'fold', notes.filter((n) => n.folder === f.id).length));
+      folders.forEach((f) => add(f.id, f.name, 'fold', notes.filter((n) => n.folder === f.id).length, true));
       add('none', 'Klasörsüz', 'none', notes.filter((n) => !n.folder).length);
       box.scrollTop = st;
     };
@@ -47974,14 +47928,14 @@
         groups.forEach(([title, arr]) => {
           if (!arr.length) return; box.appendChild(el('div', 'nt-sec', title));
           arr.forEach((n) => {
-            const r = el('button', 'nt-row' + (cur && cur.id === n.id ? ' is-on' : '')); r.type = 'button'; r.dataset.id = n.id;
+            const r = el('button', 'nt-row' + (cur && cur.id === n.id && !selMode ? ' is-on' : '') + (selMode && selN.has(n.id) ? ' is-picked' : '')); r.type = 'button'; r.dataset.id = n.id;
             const sp = el('span'); sp.appendChild(el('i', '', fmtDate(n.updated))); sp.appendChild(document.createTextNode(n.text.slice(0, 80) || 'Ek metin yok'));
             r.append(el('b', '', n.title || 'Yeni Not'), sp);
-            r.onclick = () => { if (dragMoved) { dragMoved = false; return; } openNote(n.id); }; wireDrag(r, n); box.appendChild(r); rows.set(n.id, r);
+            r.onclick = () => { if (selMode) { if (selN.has(n.id)) selN.delete(n.id); else selN.add(n.id); r.classList.toggle('is-picked', selN.has(n.id)); updateSel(); return; } if (dragMoved) { dragMoved = false; return; } openNote(n.id); }; if (!selMode) wireDrag(r, n); box.appendChild(r); rows.set(n.id, r);
           });
         });
       }
-      box.scrollTop = st;
+      box.scrollTop = st; updateSel();
       if (fresh) { let i = 0; rows.forEach((r) => { r.style.setProperty('--i', Math.min(i++, 14)); r.classList.add('is-enter'); }); enterIds.forEach((id) => { if (rows.has(id)) enterIds.delete(id); }); return; }
       rows.forEach((r, id) => {
         const p = prev.get(id);
@@ -48360,7 +48314,7 @@
       showEmpty();
       toast('Not silindi', 'Geri al', async () => { if (notes.some((x) => x.id === n.id)) return; notes.push(n); await saveNote(n); enterIds.add(n.id); renderAll(); openNote(n.id); });
     };
-    const closeApp = async () => { hidePop(); await flush(); root.classList.remove('is-in'); setTimeout(() => { if (!root.classList.contains('is-in')) root.hidden = true; }, 440); };
+    const closeApp = async () => { if (selMode) { selMode = false; selN.clear(); selF.clear(); renderAll(); } hidePop(); await flush(); root.classList.remove('is-in'); setTimeout(() => { if (!root.classList.contains('is-in')) root.hidden = true; }, 440); };
     const openApp = async () => {
       if (!root) build();
       root.hidden = false; void root.offsetWidth; root.classList.add('is-in');
@@ -58067,11 +58021,22 @@
     const pageEl = document.getElementById('page-camera');
     const actionsEl = pageEl && pageEl.querySelector('.qhavuz-topbar-actions');
     const barEl = pageEl && pageEl.querySelector('.qhavuz-filter-bar');
+    const topbarEl = pageEl && pageEl.querySelector('.qhavuz-topbar');
+    const countEl = document.getElementById('qhavuzCount');
     if (!actionsEl || !barEl || !qhavuzEditBtn) return;
     const mq = window.matchMedia('not all and (min-width: 768px) and (min-height: 600px)');
     const place = () => {
       const target = mq.matches ? barEl : actionsEl;
       if (qhavuzEditBtn.parentElement !== target) target.appendChild(qhavuzEditBtn);
+      // Soru sayacı: telefonda üst çubuğun sağına (başlıkla aynı satır),
+      // tablette eski yerine (filtre bloğunun ilk çocuğu).
+      if (topbarEl && countEl) {
+        if (mq.matches) {
+          if (countEl.parentElement !== topbarEl) topbarEl.appendChild(countEl);
+        } else if (countEl.parentElement !== barEl) {
+          barEl.insertBefore(countEl, barEl.firstChild);
+        }
+      }
     };
     place();
     if (mq.addEventListener) mq.addEventListener('change', place);
