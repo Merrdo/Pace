@@ -37218,34 +37218,38 @@
 
   
   /* ==========================================================================
-     TELEFON (yalnızca mobil): Ana sayfa geri sayım kartı — rakamlar animasyon
-     sonunda "tık tık" diye sert yerleşiyordu.
-     Sebep: rulo hane, (1) sona doğru neredeyse durup son 1-2 pikseli birden
-     atlayan çok sert bir yavaşlama eğrisi kullanıyordu; bu, küçük rakamlarda
-     (kısa kayma mesafesi) kademeli "tık" gibi görünüyor. (2) Kart 3D çevirme
-     (preserve-3d / backface-visibility) bağlamının içinde durduğu için
-     rulolar ve kenar solma maskesi her karede ana iş parçacığında yeniden
-     çiziliyordu.
-     Çözüm: kayma boyunca hızı dengeli dağıtan, sona yumuşakça inen bir eğri
-     (Material standart: 0.4, 0, 0.2, 1) ve ruloların kendi GPU katmanında
-     animasyonlanması. Seçiciler .home-flip-num ile sınırlı: yalnızca mobil
-     kartı etkiler; büyük ekrandaki sayaç (.home-cd-flat-num) ve takvimdeki
-     sayaç ortak .cd-reel kurallarıyla AYNEN kalır.
+     TELEFON (yalnızca mobil): Ana sayfa geri sayım kartı — "tık tık" düzeltmesi.
+     Büyük ekrandaki sayaç (.home-cd-flat-*) düz, 3B olmayan bir katmanda
+     durur ve akıcıdır. Telefondaki sayaç ise kartın ARKA YÜZÜDÜR: çevirme
+     animasyonu için preserve-3d + perspective + rotateY(180deg) katmanlarının
+     içinde kalır. Tarayıcı (özellikle iOS Safari) 3B bağlam içindeki
+     ruloları (overflow + maske + kayan şerit) kesirli pikselde ve farklı
+     rasterleştirir; her kayma bitişinde son kare yeniden çizilirken "tık"
+     olur. Çevirme bitince kart "yerleşik" (.is-settled) sayılır: 3B bağlam
+     kaldırılır, arka yüz düz (transform: none) olur — görsel olarak aynı
+     kalır, ama rulolar artık büyük ekrandaki gibi düz bir katmanda çalışır.
+     Kart tekrar çevrilirken JS bu sınıfı geri alır (bkz. JS: applyFace).
+     Rulo kuralları (.cd-reel*) DEĞİŞTİRİLMEDİ; büyük ekranla aynıdır.
      ========================================================================== */
   @media not all and (min-width: 768px) and (min-height: 600px) {
-    .home-flip-num .cd-reel {
-      transform: translateZ(0);
-      -webkit-transform: translateZ(0);
-      contain: paint;
+    .home-flip.is-settled {
+      perspective: none;
+      -webkit-perspective: none;
     }
 
-    .home-flip-num .cd-reel-strip {
-      --cd-reel-ease: cubic-bezier(0.4, 0, 0.2, 1);
-      transition-timing-function: var(--cd-reel-ease);
-      -webkit-backface-visibility: hidden;
-      backface-visibility: hidden;
-      -webkit-font-smoothing: antialiased;
-      text-rendering: geometricPrecision;
+    .home-flip.is-settled .home-flip-inner {
+      transform: none;
+      transform-style: flat;
+      -webkit-transform-style: flat;
+      transition: none;
+    }
+
+    .home-flip.is-settled .home-flip-back {
+      transform: none;
+    }
+
+    .home-flip.is-settled .home-live-widget {
+      visibility: hidden;
     }
   }
 
@@ -68016,10 +68020,29 @@
       tickTimer = setTimeout(tick, total + 20);
     };
 
+    // Çevirme bitince arka yüzü 3B bağlamdan çıkarıp düz katmana alır (bkz.
+    // CSS: .home-flip.is-settled) — rulo haneler büyük ekrandaki gibi akıcı
+    // çalışsın. Yüz değişirken (çevirme başlamadan) geçişsiz geri alınır.
+    const innerEl = document.getElementById('homeFlipInner');
+    let settleTimer = 0;
+    const unsettle = () => {
+      clearTimeout(settleTimer);
+      if (!flipEl.classList.contains('is-settled')) return;
+      if (innerEl) innerEl.style.transition = 'none';
+      flipEl.classList.remove('is-settled');
+      void flipEl.offsetWidth;
+      if (innerEl) innerEl.style.transition = '';
+    };
+
     const applyFace = (animate) => {
       const back = state.face === 'back';
       const split = isSplit(); // iki kart da aynı anda görünür ve kullanılabilir
+      unsettle();
       flipEl.classList.toggle('is-flipped', back);
+      if (back && !split) {
+        if (animate) settleTimer = setTimeout(() => flipEl.classList.add('is-settled'), 1000);
+        else flipEl.classList.add('is-settled');
+      }
       frontEl.inert = !split && back;
       backEl.inert = !split && !back;
       frontEl.setAttribute('aria-hidden', !split && back ? 'true' : 'false');
@@ -68078,7 +68101,6 @@
     else if (SPLIT_MQ.addListener) SPLIT_MQ.addListener(() => applyFace(false));
 
     // Açılışta kayıtlı yüzü animasyonsuz uygula.
-    const innerEl = document.getElementById('homeFlipInner');
     innerEl.style.transition = 'none';
     applyFace(false);
     void innerEl.offsetWidth;
