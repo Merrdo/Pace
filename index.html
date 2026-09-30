@@ -37216,7 +37216,53 @@
     }
   }
 
-  </style>
+  
+  /* ==========================================================================
+     TELEFON (yalnızca mobil): Ana sayfa geri sayım kartı — rakamlar animasyon
+     sonunda "tık tık" diye sert yerleşiyordu.
+     Sebep: rulo hane, (1) sona doğru neredeyse durup son 1-2 pikseli birden
+     atlayan çok sert bir yavaşlama eğrisi kullanıyordu; bu, küçük rakamlarda
+     (kısa kayma mesafesi) kademeli "tık" gibi görünüyor. (2) Kart 3D çevirme
+     (preserve-3d / backface-visibility) bağlamının içinde durduğu için
+     rulolar ve kenar solma maskesi her karede ana iş parçacığında yeniden
+     çiziliyordu.
+     Çözüm: kayma boyunca hızı dengeli dağıtan, sona yumuşakça inen bir eğri
+     (Material standart: 0.4, 0, 0.2, 1) ve ruloların kendi GPU katmanında
+     animasyonlanması. Seçiciler .home-flip-num ile sınırlı: yalnızca mobil
+     kartı etkiler; büyük ekrandaki sayaç (.home-cd-flat-num) ve takvimdeki
+     sayaç ortak .cd-reel kurallarıyla AYNEN kalır.
+     ========================================================================== */
+  @media not all and (min-width: 768px) and (min-height: 600px) {
+    .home-flip-num .cd-reel {
+      transform: translateZ(0);
+      -webkit-transform: translateZ(0);
+      contain: paint;
+    }
+
+    .home-flip-num .cd-reel-strip {
+      --cd-reel-ease: cubic-bezier(0.4, 0, 0.2, 1);
+      transition-timing-function: var(--cd-reel-ease);
+      -webkit-backface-visibility: hidden;
+      backface-visibility: hidden;
+      -webkit-font-smoothing: antialiased;
+      text-rendering: geometricPrecision;
+    }
+  }
+
+  /* ==========================================================================
+     TELEFON (yalnızca mobil): Takvim — etkinlik noktası seçili günle çakışıyordu.
+     Nokta, gün rakamının altına yalnızca ~0.1rem boşlukla konuyordu; seçili
+     günün vurgu dairesi (hafif büyütülmüş + gölgeli) ve noktanın rengi aynı
+     (vurgu) olduğundan ikisi birleşip damla gibi görünüyordu. Nokta daha
+     aşağı alındı (dairenin altında ~0.45rem net boşluk). Büyük ekran
+     kuralları DEĞİŞTİRİLMEDİ.
+     ========================================================================== */
+  @media not all and (min-width: 768px) and (min-height: 600px) {
+    .calendar-day.has-events .calendar-day-num::after {
+      bottom: -0.85rem;
+    }
+  }
+</style>
 </head>
 <body oncopy="return false" oncut="return false" onselectstart="return false" ondragstart="return false">
 
