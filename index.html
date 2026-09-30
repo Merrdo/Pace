@@ -33783,6 +33783,811 @@
   }
 
   /* ==========================================================================
+     TELEFON (yalnızca mobil): Denemelerim — Soru Havuzu ile aynı yapı.
+     - Deneme sayfasında alt navbar çekilir; yerine kendi sabit çubuğu
+       (#page11FabBar) gelir: sol Geri, ortada Deneme Ekle.
+     - Sol üstte "Denemelerim", tam karşısında (sağ üst) toplam deneme sayısı.
+     - Üstteki Analiz / Düzenle / Yedekle düğmeleri ile sayfa içi "+ Deneme
+       Ekle" düğmesi telefonda gizlenir (DOM ve JS yerinde; ekle düğmesi alt
+       çubuktan tetiklenir).
+     Büyük ekran kuralları DEĞİŞTİRİLMEDİ: sayaç ve çubuk orada hiç görünmez.
+     ========================================================================== */
+  .page11-count {
+    display: none;
+  }
+  @media not all and (min-width: 768px) and (min-height: 600px) {
+    body.is-page11-page .navbar {
+      opacity: 0;
+      transform: translateY(28px);
+      pointer-events: none;
+      visibility: hidden;
+      transition: opacity 0.3s ease, transform 0.3s ease, visibility 0s linear 0.3s;
+    }
+
+    /* Soru Havuzu çubuğunun görünürlük kuralları .qhavuz-fab-bar / .qhavuz-fab
+       sınıflarını paylaştığı için, Denemelerim çubuğu Soru Havuzu'nda da
+       görünüp üst üste biniyordu: orada kesin olarak gizlenir. */
+    body.is-qhavuz-page .page11-fab-bar {
+      visibility: hidden !important;
+      pointer-events: none !important;
+    }
+    body.is-qhavuz-page .page11-fab-bar .qhavuz-fab {
+      opacity: 0 !important;
+      pointer-events: none !important;
+    }
+
+    body.is-page11-page .page11-fab-bar {
+      visibility: visible;
+      transition-delay: 0s;
+    }
+    body.is-page11-page .page11-fab-bar .qhavuz-fab {
+      opacity: 1;
+      transform: none;
+      pointer-events: auto;
+      transition-delay: var(--d, 0s), var(--d, 0s), 0s;
+    }
+
+    /* Analizlerim: Deneme Ekle'nin sağında, Geri'nin karşısında yuvarlak
+       ikon butonu (Geri ile aynı nötr zemin). */
+    .page11-fab-analytics {
+      --d: 0.14s;
+      justify-self: end;
+      width: 2.7rem;
+      height: 2.7rem;
+      padding: 0;
+      border-radius: 50%;
+      color: color-mix(in srgb, var(--theme-text, #121212) 94%, transparent);
+      background: color-mix(in srgb, var(--theme-text, #121212) 8%, transparent);
+      box-shadow: inset 0 1px 3px 0 color-mix(in srgb, var(--theme-text, #121212) 10%, transparent);
+    }
+    .page11-fab-analytics:active {
+      background: color-mix(in srgb, var(--theme-text, #121212) 13%, transparent);
+    }
+    .page11-fab-analytics .qhavuz-fab-icon {
+      width: 20px;
+      height: 20px;
+      stroke-width: 2.3;
+    }
+
+    #page-11 .page11-header-top {
+      align-items: baseline;
+    }
+    #page-11 .page11-header-actions,
+    #page-11 #page11AddExamBtn,
+    #page-11 .page11-header > .page11-subtitle {
+      display: none;
+    }
+
+    #page-11 .page11-count {
+      display: flex;
+      align-items: baseline;
+      gap: 0.4rem;
+      flex: 0 0 auto;
+      min-width: 0;
+      line-height: 1;
+    }
+    #page-11 .page11-count-num {
+      font-family: "Baloo 2", "Space Grotesk", sans-serif;
+      font-weight: 800;
+      font-size: 1.6rem;
+      letter-spacing: -0.02em;
+      font-variant-numeric: tabular-nums;
+      color: var(--theme-text, #f2f2f7);
+      transition: color 0.5s ease;
+    }
+    #page-11 .page11-count-num.is-bump {
+      animation: p9Bump 0.32s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    #page-11 .page11-count-unit {
+      font-family: "Baloo 2", "Space Grotesk", sans-serif;
+      font-weight: 600;
+      font-size: 0.88rem;
+      color: var(--theme-text, #f2f2f7);
+      opacity: 0.5;
+      transition: color 0.5s ease;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    #page-11 .page11-count-num.is-bump {
+      animation: none;
+    }
+  }
+
+  /* ==========================================================================
+     TELEFON (yalnızca mobil): Analizlerim — büyük ekrandaki sağ sütunla aynı.
+     Genel Performans + Hata Analizi + Net Trend bölümleri (#page11AnalyticsCol)
+     telefonda JS ile bu sayfaya taşınır (aynı elemanlar, aynı hesaplamalar);
+     üstte Tümü/TYT/AYT seçici durur. Eski telefon düzeni (özet kart, trend
+     kartı, branş listesi) gizlenir; DOM ve JS'i yerinde duruyor.
+     Büyük ekran kuralları DEĞİŞTİRİLMEDİ.
+     ========================================================================== */
+  .analytics-mobile-panel {
+    display: none;
+  }
+  @media not all and (min-width: 768px) and (min-height: 600px) {
+    #page-analytics .analytics-sidebar,
+    #page-analytics .exam-detail-subject-list {
+      display: none;
+    }
+
+    #page-analytics .analytics-mobile-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 1.4rem;
+    }
+
+    /* Tümü / TYT / AYT: büyük ekrandaki #page11CanvasTypeSegmented ile aynı görünüm. */
+    #analyticsPerfTypeSegmented.settings-segmented {
+      background: color-mix(in srgb, var(--theme-text, #121212) 8%, transparent);
+      box-shadow: inset 0 1px 3px 0 color-mix(in srgb, var(--theme-text, #121212) 10%, transparent);
+      border: none;
+      border-radius: 999px;
+      height: 2.7rem;
+    }
+    #analyticsPerfTypeSegmented .settings-segmented-slider {
+      width: calc((100% - 6px) / 3);
+      background: linear-gradient(180deg, color-mix(in srgb, var(--accent-color, #ff90e8) 100%, white 12%), var(--accent-color, #ff90e8));
+      border-radius: 999px;
+      box-shadow:
+        0 3px 12px 0 color-mix(in srgb, var(--accent-color, #ff90e8) 50%, transparent),
+        inset 0 1px 0 0 rgba(255, 255, 255, 0.35);
+      transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    #analyticsPerfTypeSegmented .settings-segmented-option {
+      font-family: "Baloo 2", "Space Grotesk", sans-serif;
+      color: color-mix(in srgb, var(--theme-text, #121212) 94%, transparent);
+      font-size: 0.8rem;
+      transition: color 0.35s ease;
+    }
+    body.is-anthracite #analyticsPerfTypeSegmented .settings-segmented-option {
+      color: color-mix(in srgb, var(--theme-text, #f2f2f4) 82%, transparent);
+    }
+    #analyticsPerfTypeSegmented .settings-segmented-option.is-active {
+      color: #fff;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.18);
+    }
+
+    /* Büyük ekrandaki yan sütun kuralları (aynen kopya; yalnızca kapsayıcı
+       #page-analytics). Sütun telefonda tam genişlikte akar. */
+    #page-analytics .page11-canvas-side {
+      flex: 0 0 auto;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 1.6rem;
+      align-self: flex-start;
+      /* Kaydırılan bir kutunun içinde değil: sticky/transform yok, hareket
+         edecek bir şey yok. */
+      position: static;
+      min-height: 0;
+    }
+
+    #page-analytics .page11-perf-section {
+      display: flex;
+      flex-direction: column;
+      gap: 0.9rem;
+    }
+
+    #page-analytics .page11-perf-heading {
+      font-family: "Baloo 2", "Space Grotesk", sans-serif;
+      font-weight: 700;
+      font-size: 1rem;
+      letter-spacing: -0.01em;
+      color: var(--theme-text, #fff);
+    }
+
+    #page-analytics .page11-perf-body {
+      display: flex;
+      align-items: center;
+      gap: 1.3rem;
+    }
+
+    #page-analytics .page11-perf-donut-wrap {
+      position: relative;
+      flex: 0 0 auto;
+      width: 128px;
+      height: 128px;
+    }
+
+    #page-analytics .page11-perf-donut-svg {
+      width: 100%;
+      height: 100%;
+    }
+
+    #page-analytics .page11-perf-donut-track {
+      stroke: var(--theme-text, #000);
+      opacity: 0.1;
+    }
+
+    #page-analytics .page11-perf-donut-progress {
+      transition: stroke-dashoffset 0.5s ease, stroke 0.3s ease;
+    }
+
+    #page-analytics .page11-perf-donut-center {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.1rem;
+      text-align: center;
+    }
+
+    #page-analytics .page11-perf-donut-value {
+      font-family: "Baloo 2", "Space Grotesk", sans-serif;
+      font-weight: 700;
+      font-size: 1.5rem;
+      line-height: 1;
+      color: var(--theme-text, #fff);
+    }
+
+    #page-analytics .page11-perf-donut-label {
+      font-family: "Baloo 2", "Space Grotesk", sans-serif;
+      font-size: 0.68rem;
+      font-weight: 500;
+      color: var(--theme-text, #fff);
+      opacity: 0.55;
+    }
+
+    #page-analytics .page11-perf-side-stats {
+      flex: 1 1 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 0.95rem;
+    }
+
+    #page-analytics .page11-perf-side-stat {
+      display: flex;
+      align-items: baseline;
+      gap: 0.5rem;
+    }
+
+    #page-analytics .page11-perf-side-value {
+      flex: 0 0 auto;
+      font-family: "Baloo 2", "Space Grotesk", sans-serif;
+      font-weight: 700;
+      font-size: 1.3rem;
+      line-height: 1;
+      color: var(--theme-text, #fff);
+    }
+
+    #page-analytics .page11-perf-side-label {
+      font-family: "Baloo 2", "Space Grotesk", sans-serif;
+      font-weight: 600;
+      font-size: 0.66rem;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      color: var(--theme-text, #fff);
+      opacity: 0.5;
+      white-space: nowrap;
+    }
+
+    /* ---- Hata Analizi: Genel Performans'ın hemen altında, düz akan
+       (kartsız) ikinci analiz bloğu; ince bir çizgiyle ayrılır. ---- */
+    #page-analytics .page11-canvas-side-divider {
+      height: 2px;
+      background: var(--theme-text, #000);
+      opacity: 0.12;
+    }
+
+    #page-analytics .page11-mistake-section {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    #page-analytics .page11-mistake-stats {
+      display: flex;
+      gap: 1.8rem;
+    }
+
+    #page-analytics .page11-mistake-chart {
+      display: flex;
+      flex-direction: column;
+      gap: 0.7rem;
+    }
+
+    #page-analytics .page11-mistake-bar-row {
+      display: flex;
+      align-items: center;
+      gap: 0.7rem;
+    }
+
+    #page-analytics .page11-mistake-bar-label {
+      flex: 0 0 56px;
+      font-family: "Baloo 2", "Space Grotesk", sans-serif;
+      font-weight: 600;
+      font-size: 0.68rem;
+      letter-spacing: 0.02em;
+      color: var(--theme-text, #fff);
+      opacity: 0.55;
+      white-space: nowrap;
+    }
+
+    /* Dolgu (fill) ve arka plan (bg) kardeş katmanlar: donut grafiğindeki
+       track/progress deseniyle aynı mantık — opacity yalnızca arka plana
+       uygulanır, dolgu her zaman tam renkte kalır. */
+    #page-analytics .page11-mistake-bar-track {
+      position: relative;
+      flex: 1 1 auto;
+      height: 10px;
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    #page-analytics .page11-mistake-bar-bg {
+      position: absolute;
+      inset: 0;
+      background: var(--theme-text, #000);
+      opacity: 0.1;
+    }
+
+    #page-analytics .page11-mistake-bar-fill {
+      position: absolute;
+      inset: 0;
+      width: 0%;
+      border-radius: 999px;
+      transition: width 0.5s ease;
+    }
+
+    #page-analytics .page11-mistake-bar-fill.is-wrong {
+      background: #ff5c5c;
+    }
+
+    #page-analytics .page11-mistake-bar-fill.is-fixed {
+      background: #5cd68a;
+    }
+
+    #page-analytics .page11-mistake-bar-value {
+      flex: 0 0 24px;
+      text-align: right;
+      font-family: "Baloo 2", "Space Grotesk", sans-serif;
+      font-weight: 700;
+      font-size: 0.85rem;
+      color: var(--theme-text, #fff);
+    }
+
+    /* "0 Hata Testlerim" erişimi artık kalın çerçeveli/gölgeli eski buton
+       değil; Hata Analizi'nin geri kalanıyla aynı düz, kartsız dil: kalın
+       Baloo 2 metin + üzerine gelince kayan bir ok. */
+    #page-analytics .page11-mistake-cta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      margin: 0;
+      padding: 0;
+      border: none;
+      background: none;
+      font-family: "Baloo 2", "Space Grotesk", sans-serif;
+      font-weight: 700;
+      font-size: 0.95rem;
+      letter-spacing: -0.01em;
+      color: var(--theme-text, #fff);
+      cursor: pointer;
+    }
+
+    #page-analytics .page11-mistake-cta-icon {
+      flex: 0 0 auto;
+      transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      #page-analytics .page11-mistake-cta:hover .page11-mistake-cta-icon {
+        transform: translateX(4px);
+      }
+    }
+
+    /* ---- Net Trend: "0 Hata Testlerim" butonunun altında kalan boşluğa
+       eklenen, denemelerin (seçili Tümü/TYT/AYT türüne göre) NET
+       değerlerini eskiden yeniye bir çizgi grafikte gösteren bölüm.
+       Kronometre'nin (Sayfa 10) Günlük Trend grafiğiyle AYNI görsel dili
+       (kartsız akış, ızgara + tooltip + artış/azalış rozeti) paylaşır,
+       ama TAMAMEN KENDİ sınıflarıyla — mobile hiç dokunulmadı, bu bölüm
+       sadece .page11-canvas (yalnızca büyük ekran) içinde var. Sütunu
+       (page11-canvas-side) dolduran esnek son eleman olarak kalan boş
+       alanı kaplar. ---- */
+    #page-analytics .page11-nettrend-section {
+      display: flex;
+      flex-direction: column;
+      gap: 0.85rem;
+      flex: 1 1 auto;
+      min-height: 9rem;
+    }
+
+    #page-analytics .page11-nettrend-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 0.5rem;
+    }
+
+    #page-analytics .page11-nettrend-badge {
+      font-family: "Baloo 2", "Space Grotesk", sans-serif;
+      font-weight: 800;
+      font-size: 0.76rem;
+      padding: 0.3rem 0.7rem;
+      border: none;
+      border-radius: 999px;
+      background: color-mix(in srgb, var(--theme-text, #fff) 10%, transparent);
+      color: color-mix(in srgb, var(--theme-text, #fff) 75%, transparent);
+      transition: background-color 0.35s ease, color 0.35s ease;
+    }
+
+    #page-analytics .page11-nettrend-badge.is-up {
+      background: color-mix(in srgb, #00e6a0 24%, transparent);
+      color: #4dffc2;
+    }
+
+    #page-analytics .page11-nettrend-badge.is-down {
+      background: color-mix(in srgb, #ff3d68 20%, transparent);
+      color: #ff87a1;
+    }
+
+    #page-analytics .page11-nettrend-chart-wrap {
+      position: relative;
+      width: 100%;
+      flex: 1 1 auto;
+      min-height: 6.5rem;
+    }
+
+    #page-analytics .page11-nettrend-chart {
+      width: 100%;
+      height: 100%;
+      min-height: 6.5rem;
+      display: block;
+      overflow: visible;
+    }
+
+    #page-analytics .page11-nettrend-grid-line {
+      stroke: color-mix(in srgb, var(--theme-text, #fff) 14%, transparent);
+      stroke-dasharray: 3 3;
+    }
+
+    #page-analytics .page11-nettrend-axis-label {
+      fill: color-mix(in srgb, var(--theme-text, #fff) 48%, transparent);
+      font-family: "Baloo 2", "Space Grotesk", sans-serif;
+      font-weight: 600;
+      font-size: 7.5px;
+    }
+
+    #page-analytics .page11-nettrend-line {
+      fill: none;
+      stroke: var(--accent-color, #ff90e8);
+      stroke-width: 2px;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    #page-analytics .page11-nettrend-dot {
+      fill: var(--accent-color, #ff90e8);
+      stroke: var(--theme-bg, #121212);
+      stroke-width: 1.4px;
+      transform-box: fill-box;
+      transform-origin: center;
+      transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    #page-analytics .page11-nettrend-dot.is-active {
+      transform: scale(1.8);
+    }
+
+    #page-analytics .page11-nettrend-hit {
+      cursor: pointer;
+    }
+
+    #page-analytics .page11-nettrend-cursor-line {
+      stroke: var(--accent-color, #ff90e8);
+      stroke-width: 1px;
+      stroke-dasharray: 4 4;
+      opacity: 0;
+      transition: opacity 0.15s ease;
+    }
+
+    #page-analytics .page11-nettrend-cursor-line.is-active {
+      opacity: 1;
+    }
+
+    #page-analytics .page11-nettrend-tooltip {
+      position: absolute;
+      left: 0;
+      top: 0;
+      transform: translate(-50%, calc(-100% - 8px)) scale(0.92);
+      background: var(--theme-bg, #ffffff);
+      color: var(--theme-text, #121212);
+      border: 1px solid color-mix(in srgb, var(--theme-text, #121212) 14%, transparent);
+      border-radius: 0.7rem;
+      padding: 0.4rem 0.65rem;
+      font-family: "Baloo 2", "Space Grotesk", sans-serif;
+      line-height: 1.35;
+      white-space: nowrap;
+      text-align: left;
+      pointer-events: none;
+      box-shadow: 0 10px 24px -10px color-mix(in srgb, var(--theme-text, #121212) 45%, transparent);
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.2s ease, transform 0.25s cubic-bezier(0.34, 1.4, 0.64, 1), visibility 0s linear 0.2s, background-color 0.5s ease, color 0.5s ease, border-color 0.5s ease;
+      z-index: 5;
+    }
+
+    #page-analytics .page11-nettrend-tooltip.is-visible {
+      opacity: 1;
+      visibility: visible;
+      transform: translate(-50%, calc(-100% - 14px)) scale(1);
+      transition: opacity 0.2s ease, transform 0.25s cubic-bezier(0.34, 1.4, 0.64, 1), visibility 0s linear;
+    }
+
+    #page-analytics .page11-nettrend-tooltip-date {
+      display: block;
+      font-size: 0.62rem;
+      font-weight: 600;
+      color: color-mix(in srgb, var(--theme-text, #121212) 55%, transparent);
+      margin-bottom: 0.1rem;
+    }
+
+    #page-analytics .page11-nettrend-tooltip-value {
+      display: block;
+      font-size: 0.78rem;
+      font-weight: 800;
+      color: var(--theme-text, #121212);
+    }
+
+    #page-analytics .page11-nettrend-tooltip-change {
+      display: block;
+      font-size: 0.64rem;
+      font-weight: 700;
+      color: color-mix(in srgb, var(--theme-text, #121212) 55%, transparent);
+      font-variant-numeric: tabular-nums;
+    }
+
+    #page-analytics .page11-nettrend-empty {
+      font-family: "Baloo 2", "Space Grotesk", sans-serif;
+      font-weight: 600;
+      font-size: 0.85rem;
+      color: color-mix(in srgb, var(--theme-text, #fff) 50%, transparent);
+      display: none;
+    }
+  }
+
+  /* ==========================================================================
+     TELEFON (yalnızca mobil): Denemelerim — başlığın altındaki araç alanı.
+     1. satır: Tümü / TYT / AYT seçici + sağında En Yeni / En Eski filtresi.
+     2. satır: Arama kutusu + sağında Yedekle ikonu.
+     Elemanlar büyük ekrandakilerin AYNISI: telefonda JS ile buraya taşınır
+     (aynı seçim/arama/sıralama/yedek mantığı), büyük ekrana dönülürse tuvaldeki
+     yerlerine geri konur. Aşağıdaki görünüm kuralları büyük ekran kurallarının
+     kopyasıdır; büyük ekran kuralları DEĞİŞTİRİLMEDİ.
+     ========================================================================== */
+  .page11-mobile-tools {
+    display: none;
+  }
+  @media not all and (min-width: 768px) and (min-height: 600px) {
+    #page-11 .page11-mobile-tools {
+      display: flex;
+      flex-direction: column;
+      gap: 0.7rem;
+      margin-top: 0.5rem;
+    }
+    #page-11 .page11-mobile-tools-row {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+    /* Bu sayfada alt başlık/eski eylemler zaten gizli; Yedekle menüsü fixed. */
+    #page-11 .page11-mobile-tools .page11-canvas-backup-wrap {
+      flex: 0 0 auto;
+    }
+
+    #page-11.page .page11-canvas-search {
+      flex: 0 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 0.55rem;
+      width: 100%;
+      max-width: 260px;
+      height: 2.7rem;
+      padding: 0 1rem;
+      border-radius: 999px;
+      background-color: color-mix(in srgb, var(--theme-text, #121212) 8%, transparent);
+      box-shadow: inset 0 1px 3px 0 color-mix(in srgb, var(--theme-text, #121212) 10%, transparent);
+      transition: background-color 0.5s ease;
+    }
+
+    #page-11.page .page11-canvas-search-icon {
+      flex: 0 0 auto;
+      color: color-mix(in srgb, var(--theme-text, #121212) 55%, transparent);
+      transition: color 0.5s ease;
+    }
+
+    #page-11.page .page11-canvas-search-input {
+      flex: 1 1 auto;
+      min-width: 0;
+      border: none;
+      background: none;
+      outline: none;
+      padding: 0;
+      font-family: "Baloo 2", "Space Grotesk", sans-serif;
+      font-weight: 600;
+      font-size: 0.85rem;
+      color: var(--theme-text, #121212);
+      transition: color 0.5s ease;
+    }
+
+    #page-11.page .page11-canvas-search-input::placeholder {
+      color: color-mix(in srgb, var(--theme-text, #121212) 45%, transparent);
+    }
+
+    #page-11.page .page11-canvas-search-clear {
+      flex: 0 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 0;
+      height: 1.35rem;
+      margin-left: -0.55rem;
+      padding: 0;
+      border: none;
+      border-radius: 50%;
+      color: color-mix(in srgb, var(--theme-text, #121212) 62%, transparent);
+      background-color: color-mix(in srgb, var(--theme-text, #121212) 11%, transparent);
+      cursor: pointer;
+      opacity: 0;
+      transform: scale(0.4) rotate(-45deg);
+      pointer-events: none;
+      overflow: hidden;
+      transition:
+        width 0.24s cubic-bezier(0.34, 1.56, 0.64, 1),
+        margin-left 0.24s cubic-bezier(0.34, 1.56, 0.64, 1),
+        transform 0.24s cubic-bezier(0.34, 1.56, 0.64, 1),
+        opacity 0.16s ease,
+        background-color 0.18s ease,
+        color 0.35s ease;
+    }
+
+    #page-11.page .page11-canvas-search-clear.is-visible {
+      width: 1.35rem;
+      margin-left: 0;
+      opacity: 1;
+      transform: scale(1) rotate(0deg);
+      pointer-events: auto;
+    }
+
+    #page-11.page .page11-canvas-search-clear:active {
+      transform: scale(0.85) rotate(0deg);
+    }
+
+    body.is-anthracite #page-11.page .page11-canvas-search-clear {
+      color: color-mix(in srgb, var(--theme-text, #f2f2f4) 78%, transparent);
+      background-color: color-mix(in srgb, var(--theme-text, #f2f2f4) 18%, transparent);
+    }
+
+    body.is-anthracite #page-11.page .page11-canvas-search-icon,
+    body.is-anthracite #page-11.page .page11-canvas-search-input {
+      color: color-mix(in srgb, var(--theme-text, #f2f2f4) 82%, transparent);
+    }
+
+    body.is-anthracite #page-11.page .page11-canvas-search-input::placeholder {
+      color: color-mix(in srgb, var(--theme-text, #f2f2f4) 45%, transparent);
+    }
+
+    #page-11.page .page11-canvas-icon-btn {
+      flex: 0 0 auto;
+      display: grid;
+      place-items: center;
+      width: 2.7rem;
+      height: 2.7rem;
+      color: color-mix(in srgb, var(--theme-text, #121212) 94%, transparent);
+      background-color: color-mix(in srgb, var(--theme-text, #121212) 8%, transparent);
+      box-shadow: inset 0 1px 3px 0 color-mix(in srgb, var(--theme-text, #121212) 10%, transparent);
+      border: none;
+      border-radius: 50%;
+      cursor: pointer;
+      transition: background-color 0.18s ease, transform 0.15s ease, color 0.35s ease;
+    }
+
+    #page-11.page .page11-canvas-icon-btn:active {
+      transform: translate(1px, 1px);
+    }
+
+    body.is-anthracite #page-11.page .page11-canvas-icon-btn {
+      color: color-mix(in srgb, var(--theme-text, #f2f2f4) 82%, transparent);
+    }
+
+    #page-11.page .page11-canvas-sort-btn {
+      flex: 0 0 auto;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      height: 2.7rem;
+      padding: 0 1.1rem;
+      font-family: "Baloo 2", "Space Grotesk", sans-serif;
+      font-weight: 700;
+      font-size: 0.8rem;
+      color: color-mix(in srgb, var(--theme-text, #121212) 94%, transparent);
+      background-color: color-mix(in srgb, var(--theme-text, #121212) 8%, transparent);
+      box-shadow: inset 0 1px 3px 0 color-mix(in srgb, var(--theme-text, #121212) 10%, transparent);
+      border: none;
+      border-radius: 999px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background-color 0.18s ease, transform 0.15s ease, color 0.35s ease;
+    }
+
+    #page-11.page .page11-canvas-sort-btn:active {
+      transform: translate(1px, 1px);
+    }
+
+    #page-11.page .page11-canvas-sort-icon {
+      flex: 0 0 auto;
+      transition: transform 0.2s ease;
+    }
+
+    #page-11.page .page11-canvas-sort-btn.is-asc .page11-canvas-sort-icon {
+      transform: rotate(180deg);
+    }
+
+    body.is-anthracite #page-11.page .page11-canvas-sort-btn {
+      color: color-mix(in srgb, var(--theme-text, #f2f2f4) 82%, transparent);
+    }
+
+    #page-11.page .page11-canvas-backup-wrap {
+      position: relative;
+      display: inline-flex;
+    }
+
+    #page11CanvasTypeSegmented.settings-segmented.page11-canvas-type-segmented {
+      background: color-mix(in srgb, var(--theme-text, #121212) 8%, transparent);
+      box-shadow: inset 0 1px 3px 0 color-mix(in srgb, var(--theme-text, #121212) 10%, transparent);
+      border: none;
+      border-radius: 999px;
+      height: 2.7rem;
+    }
+    #page11CanvasTypeSegmented .settings-segmented-slider {
+      /* calc((100% - 6px) / 3): Sayfa 10'daki gibi, seçenekler flex:1 ile
+         konteynerin (100% - 6px) genişliğini 3 eşit parçaya böldüğü için
+         gösterge de birebir aynı formülü kullanmalı; yoksa translateX(N*100%)
+         her adımda ~1px kayar. */
+      width: calc((100% - 6px) / 3);
+      background: linear-gradient(180deg, color-mix(in srgb, var(--accent-color, #ff90e8) 100%, white 12%), var(--accent-color, #ff90e8));
+      border-radius: 999px;
+      box-shadow:
+        0 3px 12px 0 color-mix(in srgb, var(--accent-color, #ff90e8) 50%, transparent),
+        inset 0 1px 0 0 rgba(255, 255, 255, 0.35);
+      transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .page11-canvas-type-segmented .settings-segmented-option {
+      font-family: "Baloo 2", "Space Grotesk", sans-serif;
+      color: color-mix(in srgb, var(--theme-text, #121212) 94%, transparent);
+      font-size: 0.8rem;
+      transition: color 0.35s ease;
+    }
+    body.is-anthracite .page11-canvas-type-segmented .settings-segmented-option {
+      color: color-mix(in srgb, var(--theme-text, #f2f2f4) 82%, transparent);
+    }
+    .page11-canvas-type-segmented .settings-segmented-option.is-active {
+      color: #fff;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.18);
+    }
+
+    /* Yerleşim (kopyalanan kuralların ÜSTÜNE yazılır): seçici ve arama kutusu
+       satırda kalan genişliği doldurur, sağdaki düğme kendi boyutunda kalır. */
+    #page-11.page .page11-mobile-tools-row .page11-canvas-type-segmented {
+      flex: 1 1 auto;
+      width: auto;
+      min-width: 0;
+      max-width: none;
+      margin: 0;
+    }
+    #page-11.page .page11-mobile-tools-row .page11-canvas-search {
+      flex: 1 1 auto;
+      min-width: 0;
+      max-width: none;
+      width: auto;
+    }
+  }
+
+  /* ==========================================================================
      TELEFON (yalnızca mobil): Soru penceresindeki sınav türü + ders hapı
      ("TYT – Din"). Sınav türü küçük punto + geniş harf aralığıyla, ders ise
      büyük puntoyla yazıldığından TYT daha ince görünüyordu. İkisi artık aynı
@@ -36266,7 +37071,851 @@
       text-overflow: ellipsis;
     }
   }
-</style>
+
+  /* ==========================================================================
+     TELEFON (yalnızca mobil): Denemelerim — büyük ekran tasarımının mobile uyarlanması
+     1) "Yeni Deneme" pop-up'ı (#page11AddBackdrop): büyük ekrandaki sabit siyah,
+        kenarlıksız, gradyanlı accent butonlu yüzeyin aynısı; telefona sığması için
+        form tek sütun.
+     2) Deneme kartı: büyük ekrandaki yatay şerit kart (.page11-wide-card) aynen.
+     3) Basılı tutunca açılan Düzenle / Yedekle / Sil bağlam menüsü (.page11-context-menu).
+     Büyük ekran kuralları DEĞİŞTİRİLMEDİ; bu blok yalnızca telefonda geçerli.
+     ========================================================================== */
+  @media not all and (min-width: 768px) and (min-height: 600px) {
+    /* ---- 1) Yeni Deneme pop-up'ı (büyük ekran kurallarının kopyası) ---- */
+    /* Kart artık site temasından (açık/antresit) bağımsız, sabit saf
+       siyah bir yüzey — böylece açık temada zeminle karışıp okunurluğu
+       düşüren metinler ortadan kalkıyor. İçerideki tüm renkler bu yüzden
+       var(--theme-text) yerine sabit beyaz tabanlı değerlere geçirildi. */
+    #page11AddBackdrop .page11-modal-card {
+      max-width: 600px;
+      padding: 2.3rem 2.6rem 2.2rem;
+      border: none;
+      border-radius: 1.9em;
+      font-family: "Baloo 2", "Space Grotesk", sans-serif;
+      background: #000;
+      box-shadow:
+        0 28px 60px -18px rgba(0, 0, 0, 0.55),
+        0 2px 10px 0 rgba(0, 0, 0, 0.3);
+    }
+
+    /* 2 sütunlu form yerleşimi artık kartın kendisinde değil, "form"
+       görünümünün (.page11-add-panel-form) üzerinde tanımlı — kart iki
+       görünümü (form/takvim) üst üste tutan sabit boyutlu bir kap,
+       grid şablonu yalnızca aktif görünümün kendi iç düzenine ait. */
+    #page11AddBackdrop .page11-add-panel-form {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      column-gap: 1.4rem;
+      row-gap: 1.35rem;
+    }
+
+    /* Takvim görünümü: artık kendi max-width'iyle kartın ortasında
+       sıkışıp kalmıyor — geniş 600px'lik kartın tüm iç genişliğine
+       (kenar payı dışında) yayılıyor, tıpkı Sayfa 6'daki büyük takvim
+       gibi. Sütunlar zaten repeat(7, 1fr) olduğu için ızgara otomatik
+       olarak bu genişliğe oranlı dağılır. */
+    #page11AddBackdrop .page11-add-panel-date {
+      width: 100%;
+      max-width: none;
+    }
+
+    #page11AddBackdrop .page11-datepicker {
+      max-width: none;
+    }
+
+    #page11AddBackdrop .page11-add-panel-date .page11-datepicker-nav {
+      position: relative;
+      justify-content: space-between;
+      padding-bottom: 1.1rem;
+      margin-bottom: 0.15rem;
+      border-bottom: 1.5px solid rgba(255, 255, 255, 0.12);
+    }
+
+    /* "Eylül 2026": sol taraftaki Geri butonu ile sağdaki ok grubu farklı
+       genişliklerde olduğu için flex ile ortalamak metni gerçek merkezden
+       kaydırıyordu. Bunun yerine satırın tam ortasına mutlak konumla
+       sabitleniyor — Geri butonu ve ok grubu ne genişlikte olursa olsun
+       başlık her zaman tam ortada durur. */
+    #page11AddBackdrop .page11-datepicker-month {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      flex: none;
+      font-size: 1.2rem;
+      pointer-events: none;
+    }
+
+    #page11AddBackdrop .page11-datepicker-back-btn {
+      width: 2.15rem;
+      height: 2.15rem;
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      #page11AddBackdrop .page11-datepicker-back-btn:hover {
+        background: rgba(255, 255, 255, 0.18);
+      }
+    }
+
+    #page11AddBackdrop .page11-datepicker-nav-btn {
+      width: 1.9rem;
+      height: 1.9rem;
+    }
+
+    #page11AddBackdrop .page11-datepicker-day-num {
+      width: 2.05rem;
+      height: 2.05rem;
+      font-size: 0.9rem;
+    }
+
+    #page11AddBackdrop .page11-datepicker-grid {
+      grid-auto-rows: minmax(2.65rem, 1fr);
+    }
+
+    /* Başlık satırı: başlık solda (esnek), kapat butonu sağda — kartın
+       en üstünde tam genişlik bir satır. Altına ince bir ayraç çizgisi,
+       alandan görsel olarak ayırıyor. */
+    #page11AddBackdrop .page11-add-modal-header {
+      grid-column: 1 / -1;
+      padding-bottom: 1.1rem;
+      margin-bottom: 0.15rem;
+      border-bottom: 1.5px solid rgba(255, 255, 255, 0.12);
+    }
+
+    #page11AddBackdrop .page11-modal-title {
+      flex: 1 1 auto;
+      font-family: "Baloo 2", "Space Grotesk", sans-serif;
+      font-size: 1.55rem;
+      color: #f5f5f7;
+    }
+
+    #page11AddBackdrop .page11-add-modal-close {
+      display: flex;
+      flex-shrink: 0;
+      align-items: center;
+      justify-content: center;
+      width: 2.15rem;
+      height: 2.15rem;
+      border: none;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.1);
+      color: rgba(255, 255, 255, 0.75);
+      cursor: pointer;
+      transition: background-color 0.18s ease, color 0.18s ease;
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      #page11AddBackdrop .page11-add-modal-close:hover {
+        background: rgba(255, 255, 255, 0.18);
+        color: #fff;
+      }
+    }
+
+    #page11AddBackdrop .page11-field:has(#page11ExamNameInput) {
+      grid-column: 1 / -1;
+    }
+
+    #page11AddBackdrop .page11-field:has(#page11ExamDateBtn) {
+      grid-column: 1;
+    }
+
+    #page11AddBackdrop .page11-field:has(#page11TypeSegmented) {
+      grid-column: 2;
+    }
+
+    #page11AddBackdrop .page11-modal-actions {
+      grid-column: 1 / -1;
+      margin-top: 0.5rem;
+      padding-top: 1.2rem;
+      border-top: 1.5px solid rgba(255, 255, 255, 0.12);
+      display: flex;
+      justify-content: flex-end;
+      gap: 0.7rem;
+    }
+
+    /* Etiketler: saf siyah zeminde net okunması için açık gri. */
+    #page11AddBackdrop .page11-field-label {
+      font-family: "Baloo 2", "Space Grotesk", sans-serif;
+      font-size: 0.8rem;
+      color: rgba(255, 255, 255, 0.62);
+    }
+
+    /* Kalın çerçeveli kutulardan, canvas'ın kenarlıksız/soft yüzey
+       diline geçiş: çerçeve yok, siyah zemine göre hafif açık dolgu. */
+    #page11AddBackdrop .page11-field-input {
+      font-family: "Baloo 2", "Space Grotesk", sans-serif;
+      font-size: 1.05rem;
+      padding: 1rem 1.15rem;
+      border: none;
+      border-radius: 1rem;
+      color: #f5f5f7;
+      background-color: rgba(255, 255, 255, 0.1);
+      transition: background-color 0.18s ease;
+    }
+
+    #page11AddBackdrop .page11-date-btn {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      #page11AddBackdrop .page11-field-input:hover {
+        background-color: rgba(255, 255, 255, 0.15);
+      }
+    }
+
+    /* Tür segmented'i: Ayarlar'daki #weekStartSegmented'de kurulan aynı
+       kenarlıksız/pil + gradyanlı gösterge dönüşümü. Metin renkleri,
+       açık pastel accent tonlarında (ör. varsayılan pembe) okunurluğu
+       garanti altına almak için koyu tonlarda tutuluyor. */
+    #page11AddBackdrop .settings-segmented {
+      height: 3.3rem;
+      background: rgba(255, 255, 255, 0.1);
+      border: none;
+      border-radius: 999px;
+      box-shadow: none;
+    }
+
+    #page11AddBackdrop .settings-segmented-slider {
+      background: linear-gradient(180deg, color-mix(in srgb, var(--accent-color, #ff90e8) 100%, white 12%), var(--accent-color, #ff90e8));
+      border-radius: 999px;
+      box-shadow: 0 3px 12px 0 color-mix(in srgb, var(--accent-color, #ff90e8) 55%, transparent);
+    }
+
+    #page11AddBackdrop .settings-segmented-option {
+      font-family: "Baloo 2", "Space Grotesk", sans-serif;
+      font-size: 0.94rem;
+      color: rgba(255, 255, 255, 0.75);
+    }
+
+    #page11AddBackdrop .settings-segmented-option.is-active {
+      color: color-mix(in srgb, var(--accent-color, #ff90e8) 30%, #1a1108);
+      text-shadow: none;
+    }
+
+    /* Düzenleme modunda (bkz. openPage11EditExamModal) tür artık
+       değiştirilemez; segmented kontrol soluklaşır ve tıklamaları
+       yok sayar, seçili tür yine de okunur kalır. */
+    #page11TypeSegmented.is-locked {
+      opacity: 0.5;
+      pointer-events: none;
+    }
+
+    /* Vazgeç: kenarlıksız, nötr pil — canvas'taki arama/sıralama
+       yüzeyleriyle aynı dil, açık gri metin. */
+    #page11AddBackdrop .settings-confirm-cancel {
+      padding: 0.9rem 1.55rem;
+      font-size: 0.95rem;
+      font-family: "Baloo 2", "Space Grotesk", sans-serif;
+      border: none;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.1);
+      color: rgba(255, 255, 255, 0.85);
+      box-shadow: none;
+    }
+
+    /* Ekle: Sayfa 11 canvas'ındaki "+ Deneme Ekle" butonuyla birebir aynı
+       gradyanlı accent dili; metin beyaz yerine accent'in koyu tonu —
+       açık pastel accent renklerinde beyaz metin zayıf kontrast
+       verdiğinden okunurluk için değiştirildi. */
+    #page11AddBackdrop .page11-modal-confirm {
+      padding: 0.9rem 1.95rem;
+      font-size: 0.95rem;
+      font-family: "Baloo 2", "Space Grotesk", sans-serif;
+      font-weight: 700;
+      border: none;
+      border-radius: 999px;
+      background: linear-gradient(180deg, color-mix(in srgb, var(--accent-color, #ff90e8) 100%, white 12%), var(--accent-color, #ff90e8));
+      color: color-mix(in srgb, var(--accent-color, #ff90e8) 30%, #1a1108);
+      text-shadow: none;
+      box-shadow:
+        0 3px 12px 0 color-mix(in srgb, var(--accent-color, #ff90e8) 50%, transparent),
+        inset 0 1px 0 0 rgba(255, 255, 255, 0.35);
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      #page11AddBackdrop .settings-confirm-cancel:hover {
+        background: rgba(255, 255, 255, 0.18);
+      }
+
+      #page11AddBackdrop .page11-modal-confirm:hover {
+        transform: translateY(-1px);
+        box-shadow:
+          0 5px 16px 0 color-mix(in srgb, var(--accent-color, #ff90e8) 60%, transparent),
+          inset 0 1px 0 0 rgba(255, 255, 255, 0.35);
+      }
+    }
+
+    #page11AddBackdrop .settings-confirm-cancel:active,
+    #page11AddBackdrop .page11-modal-confirm:active {
+      transform: translate(1px, 1px);
+      box-shadow: none;
+    }
+    #page11AddBackdrop .page11-modal-card,
+    #page11AddBackdrop.is-date-view .page11-modal-card {
+      max-width: 340px;
+      padding: 1.5rem 1.35rem 1.35rem;
+      border-radius: 1.7em;
+      background: #000;
+      box-shadow: 0 28px 60px -18px rgba(0, 0, 0, 0.55), 0 2px 10px 0 rgba(0, 0, 0, 0.3);
+    }
+    #page11AddBackdrop .page11-add-panel-form {
+      grid-template-columns: 1fr;
+      row-gap: 1.05rem;
+    }
+    #page11AddBackdrop .page11-field:has(#page11ExamDateBtn),
+    #page11AddBackdrop .page11-field:has(#page11TypeSegmented) {
+      grid-column: 1 / -1;
+    }
+    #page11AddBackdrop .page11-modal-title { font-size: 1.35rem; }
+    #page11AddBackdrop .page11-field-input {
+      font-size: 1rem;
+      padding: 0.9rem 1rem;
+    }
+    #page11AddBackdrop .settings-segmented { height: 3rem; }
+    #page11AddBackdrop .page11-modal-actions {
+      padding-top: 1.05rem;
+      gap: 0.6rem;
+    }
+    #page11AddBackdrop .settings-confirm-cancel,
+    #page11AddBackdrop .page11-modal-confirm {
+      flex: 1 1 0;
+      padding: 0.85rem 1rem;
+    }
+    #page11AddBackdrop .page11-datepicker-day-num {
+      width: 1.9rem;
+      height: 1.9rem;
+      font-size: 0.85rem;
+    }
+    #page11AddBackdrop .page11-datepicker-grid { grid-auto-rows: minmax(2.35rem, 1fr); }
+    #page11AddBackdrop .page11-datepicker-month { font-size: 1.05rem; }
+
+    /* ---- 2) Deneme kartı: büyük ekrandaki şerit kartın kopyası ---- */
+    /* ---------- Geniş ekran: yatay "şerit" deneme kartı (.page11-wide-card) ----------
+       Yüzey dokusu artık aynı sayfadaki arama kutusuyla (.page11-canvas-search)
+       BİREBİR aynı reçete: kenarlıksız, düz color-mix dolgu + iç gölge —
+       ayrı bir "cam kart" icat etmek yerine canvas'ın zaten kullandığı
+       dokuyla tam tutarlı. Kararlı/tema-bağımsız kalması için TÜM renkler
+       var(--theme-text) üzerinden türetilir (sabit #fff YOK). Tüm yazı
+       tipi Baloo 2. Kart: solda TYT/AYT'yi hem renk hem YAZIYLA belli eden
+       KARE amblem, ortada isim (öne çıkan, büyük) ve tarih, sağda NET
+       (sayı + birim yan yana, en öne çıkan eleman). Kart eskisinden daha
+       ferah/yüksek: amblemin kare oranı ve dikey nefes payı için boyu
+       aşağı doğru genişletildi. */
+    .page11-wide-card {
+      position: relative;
+      width: 100%;
+      box-sizing: border-box;
+      display: flex;
+      align-items: center;
+      gap: 1.15rem;
+      padding: 1.25rem 1.4rem;
+      border-radius: 1.15em;
+      font-family: "Baloo 2", "Space Grotesk", sans-serif;
+      background-color: color-mix(in srgb, var(--theme-text, #121212) 8%, transparent);
+      box-shadow: inset 0 1px 3px 0 color-mix(in srgb, var(--theme-text, #121212) 10%, transparent);
+      cursor: pointer;
+      transition: background-color 0.18s ease, transform 0.15s ease, box-shadow 0.22s ease;
+    }
+
+    @media (any-hover: hover) {
+      /* Hover'da tür rengiyle (--wide-accent) yumuşak bir "glow" belirir;
+         iç gölge korunur, dışına tür renginde geniş/soluk bir parlama
+         eklenir — kartın canlanması, tür kimliğinin (TYT/AYT) hover'da da
+         hissedilmesi için. "hover/pointer" (birincil giriş aygıtına göre)
+         yerine "any-hover" kullanılıyor: dokunmatik ekranlı bir tablette
+         birincil giriş touch (coarse, hover'sız) sayıldığından, kalem/
+         işaretçi ekrana değmeden yaklaştığında da hover edebilen ikincil
+         bir giriş varsa "any-hover: hover" bunu da yakalar — böylece kalem
+         ekrana dokunmadan üzerine gelince de glow beliriyor. */
+      .page11-wide-card:hover {
+        background-color: color-mix(in srgb, var(--theme-text, #121212) 13%, transparent);
+        box-shadow:
+          inset 0 1px 3px 0 color-mix(in srgb, var(--theme-text, #121212) 10%, transparent),
+          0 0 0 1.5px color-mix(in srgb, var(--wide-accent, #3f5aa8) 40%, transparent),
+          0 10px 28px -10px color-mix(in srgb, var(--wide-accent, #3f5aa8) 55%, transparent);
+        transform: translateY(-2px);
+      }
+    }
+
+    .page11-wide-card:active {
+      transform: translateY(0) scale(0.997);
+      background-color: color-mix(in srgb, var(--theme-text, #121212) 13%, transparent);
+      box-shadow:
+        inset 0 1px 3px 0 color-mix(in srgb, var(--theme-text, #121212) 10%, transparent),
+        0 0 0 1.5px color-mix(in srgb, var(--wide-accent, #3f5aa8) 40%, transparent),
+        0 10px 28px -10px color-mix(in srgb, var(--wide-accent, #3f5aa8) 55%, transparent);
+    }
+
+    /* TYT/AYT amblemi: tür rengiyle dolgulu, KARE (bir önceki sürümdeki
+       oranla aynı) rozet; içinde türün TAM adı ("TYT"/"AYT") yazılı. */
+    .page11-wide-emblem {
+      flex: 0 0 auto;
+      width: 3rem;
+      height: 3rem;
+      border-radius: 0.85em;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(155deg, color-mix(in srgb, var(--wide-accent, #3f5aa8) 100%, white 22%), var(--wide-accent, #3f5aa8) 65%, color-mix(in srgb, var(--wide-accent, #3f5aa8) 100%, black 12%));
+      box-shadow:
+        0 4px 12px -3px color-mix(in srgb, var(--wide-accent, #3f5aa8) 65%, transparent),
+        inset 0 1px 0 0 rgba(255, 255, 255, 0.32),
+        inset 0 -1px 2px 0 rgba(0, 0, 0, 0.18);
+      border: none;
+      padding: 0;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      transition: filter 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      .page11-wide-emblem:hover {
+        filter: brightness(1.06);
+      }
+    }
+
+    .page11-wide-emblem:active {
+      transform: scale(0.94);
+      filter: brightness(1.1);
+    }
+
+    .page11-wide-emblem-letter {
+      font-family: "Baloo 2", sans-serif;
+      font-weight: 800;
+      font-size: 0.74rem;
+      letter-spacing: 0.01em;
+      color: #fff;
+      line-height: 1;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    }
+
+    /* İsim + tarih: isim ön planda (büyük/kalın), tarih altında sakin/
+       ikincil bilgi olarak durur; tür artık amblemde yazılı olduğu için
+       ayrı bir rozet pili burada tekrar etmiyor. */
+    .page11-wide-main {
+      flex: 1 1 auto;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0.28rem;
+    }
+
+    .page11-wide-name {
+      display: block;
+      font-family: "Baloo 2", sans-serif;
+      font-weight: 700;
+      font-size: 1.22rem;
+      letter-spacing: -0.008em;
+      color: var(--theme-text, #000);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .page11-wide-date {
+      font-family: "Baloo 2", sans-serif;
+      font-weight: 600;
+      font-size: 0.78rem;
+      color: color-mix(in srgb, var(--theme-text, #000) 50%, transparent);
+      white-space: nowrap;
+    }
+
+    /* Sağ uç: NET — kartın en öne çıkan elemanı, isimden sonra ikinci
+       odak noktası. Tür rengiyle boyanır (TYT/AYT ayrımı burada da
+       sürer), büyük punto ve yüksek kontrastla. Birim ("net") artık
+       sayının ALTINDA değil, YANINDA, taban hizalı duruyor. Trend oku
+       varsa net'in altında, küçük ve sakin bir ek bilgi olarak durur. */
+    .page11-wide-side {
+      flex: 0 0 auto;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 0.15rem;
+      min-width: 4.8rem;
+      text-align: right;
+    }
+
+    .page11-wide-net {
+      display: flex;
+      align-items: baseline;
+      gap: 0.35rem;
+      font-family: "Baloo 2", sans-serif;
+      font-weight: 800;
+      font-size: 1.85rem;
+      letter-spacing: -0.015em;
+      color: var(--wide-accent, var(--theme-text, #000));
+      line-height: 1;
+      white-space: nowrap;
+    }
+
+    .page11-wide-net span {
+      font-family: "Baloo 2", sans-serif;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+      color: color-mix(in srgb, var(--theme-text, #000) 42%, transparent);
+    }
+
+    /* Trend oku: aynı türdeki bir önceki denemeye göre net farkı. Yeşil/
+       kırmızı ton fark yönünü, ok ikonu da aynı bilgiyi ikinci kez ama
+       renkten bağımsız (renk körlüğü dahil) okunur kılar. */
+    .page11-wide-trend {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.22rem;
+      font-family: "Baloo 2", sans-serif;
+      font-weight: 700;
+      font-size: 0.72rem;
+      line-height: 1;
+      padding: 0.15rem 0.4rem;
+      border-radius: 999px;
+    }
+
+    .page11-wide-trend.is-up {
+      color: #1f8a4d;
+      background: color-mix(in srgb, #5cd68a 22%, transparent);
+    }
+
+    .page11-wide-trend.is-down {
+      color: #d8394a;
+      background: color-mix(in srgb, #ff5c5c 18%, transparent);
+    }
+
+    /* Silme rozeti: sağ kenarda, kartın normal akışının dışında (mutlak
+       konumlu) — düzenleme modu aktifken belirir, mobildeki köşe rozeti
+       mantığının aynısı ama artık kartın dışına taşmıyor. */
+    .page11-wide-delete {
+      position: absolute;
+      top: 50%;
+      right: 0.6rem;
+      transform: translateY(-50%) scale(0.6);
+      width: 1.7rem;
+      height: 1.7rem;
+      font-size: 0.85rem;
+      font-family: "Baloo 2", sans-serif;
+      border-radius: 50%;
+      border: none;
+      background: color-mix(in srgb, var(--theme-text, #000) 14%, transparent);
+      color: var(--theme-text, #000);
+      opacity: 0;
+      pointer-events: none;
+      transition: transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.2s ease,
+        background-color 0.2s ease, color 0.2s ease;
+    }
+
+    .page11-wide-delete:hover {
+      background: #ff5c5c;
+      color: #fff;
+    }
+
+    .page11-list.is-edit-mode .page11-wide-card {
+      padding-right: 3rem;
+    }
+
+    .page11-list.is-edit-mode .page11-wide-delete {
+      opacity: 1;
+      transform: translateY(-50%) scale(1);
+      pointer-events: auto;
+    }
+
+    .page11-wide-card.is-locked .page11-wide-delete {
+      display: none;
+    }
+
+    /* Seçim rozeti: kartı sağa iten, amblemden önce ayrı bir sütun açan
+       bir alan DEĞİL — doğrudan TYT/AYT amblemi üzerine iliştirilmiş,
+       sabit boyutlu küçük bir köşe rozeti (bkz. CSS:
+       .page11-wide-emblem position:relative). Böylece emblem ve isim
+       her zaman aynı yerde durur. Kilit durumu artık ayrı bir köşe
+       rozetiyle DEĞİL, amblemin kendi içeriğinin (harf ↔ kilit ikonu)
+       yavaşça birbirine dönüşmesiyle gösteriliyor (bkz. aşağıdaki
+       .page11-wide-emblem-cycle). */
+    .page11-wide-emblem {
+      position: relative;
+    }
+
+    .page11-wide-select {
+      position: absolute;
+      bottom: -0.35rem;
+      right: -0.35rem;
+      width: 1.2rem;
+      height: 1.2rem;
+      box-sizing: border-box;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      opacity: 0;
+      transform: scale(0.5);
+      pointer-events: none;
+      transition: transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.2s ease,
+        background-color 0.2s ease, border-color 0.2s ease;
+    }
+
+    /* Kilitli deneme amblemi: harf (TYT/AYT) ile kilit ikonu aynı
+       konumda üst üste durur; CSS animasyonu ikisi arasında yumuşak bir
+       crossfade (opacity çapraz geçiş) yapar, döngü halinde tekrarlar.
+       ÖNEMLİ — senkronizasyon: animation-delay YOK, çünkü CSS
+       animasyonları sayfanın (dokümanın) yüklendiği andan itibaren aynı
+       zaman eksenini kullanır. Aynı süreye (6s) ve aynı keyframe'e sahip
+       her .page11-wide-emblem-cycle otomatik olarak aynı fazda kalır —
+       yani listeye yeni bir kilitli deneme eklendiğinde onun amblemi de
+       hiçbir ekstra kodlama gerekmeden diğerleriyle senkron döner. */
+    .page11-wide-emblem-letter {
+      transition: opacity 0.4s ease;
+    }
+
+    .page11-wide-emblem-cycle .page11-wide-emblem-letter,
+    .page11-wide-emblem-cycle .page11-wide-emblem-lock {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      animation: page11EmblemCycle 6s ease-in-out infinite;
+    }
+
+    .page11-wide-emblem-cycle .page11-wide-emblem-lock {
+      animation-name: page11EmblemCycleLock;
+      color: #fff;
+    }
+
+    @keyframes page11EmblemCycle {
+      0%, 38% { opacity: 1; }
+      50%, 88% { opacity: 0; }
+      100% { opacity: 1; }
+    }
+
+    @keyframes page11EmblemCycleLock {
+      0%, 38% { opacity: 0; }
+      50%, 88% { opacity: 1; }
+      100% { opacity: 0; }
+    }
+
+    /* Seçim modunda amblem döngüsü durur ve emblem sabit halde harfte
+       kalır; o anda köşedeki seçim onay kutusu görünür olur (kilit
+       durumu ayrı bir köşe rozetiyle çakışmadığı için burada başka bir
+       özel kural gerekmiyor). */
+    .page11-list.is-select-mode .page11-wide-emblem-cycle .page11-wide-emblem-letter,
+    .page11-list.is-select-mode .page11-wide-emblem-cycle .page11-wide-emblem-lock {
+      animation-play-state: paused;
+    }
+
+    .page11-list.is-select-mode .page11-wide-emblem-cycle .page11-wide-emblem-letter {
+      opacity: 1;
+    }
+
+    .page11-list.is-select-mode .page11-wide-emblem-cycle .page11-wide-emblem-lock {
+      opacity: 0;
+    }
+
+    .page11-wide-select {
+      background: color-mix(in srgb, var(--theme-text, #000) 55%, transparent);
+      color: #fff;
+      border: 2px solid var(--theme-bg, #fff);
+    }
+
+    .page11-wide-select svg {
+      opacity: 0;
+      transition: opacity 0.15s ease;
+    }
+
+    .page11-list.is-select-mode .page11-wide-select {
+      opacity: 1;
+      transform: scale(1);
+      pointer-events: auto;
+    }
+
+    .page11-wide-card.is-selected .page11-wide-select {
+      background: var(--accent-color, #ff90e8);
+      border-color: var(--theme-bg, #fff);
+    }
+
+    .page11-wide-card.is-selected .page11-wide-select svg {
+      opacity: 1;
+    }
+
+    .page11-list.is-select-mode .page11-wide-card.is-selected {
+      background: color-mix(in srgb, var(--accent-color, #ff90e8) 16%, transparent);
+    }
+    #page11ExamList { gap: 0.7rem; }
+    #page11ExamList .page11-wide-card {
+      gap: 0.85rem;
+      padding: 1rem 1.05rem;
+      -webkit-user-select: none;
+      user-select: none;
+      -webkit-touch-callout: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+    #page11ExamList .page11-wide-emblem { width: 2.7rem; height: 2.7rem; }
+    #page11ExamList .page11-wide-name { font-size: 1.05rem; }
+    #page11ExamList .page11-wide-date { font-size: 0.74rem; }
+    #page11ExamList .page11-wide-side { min-width: 0; }
+    #page11ExamList .page11-wide-net { font-size: 1.5rem; }
+    #page11ExamList.is-edit-mode .page11-wide-card { padding-right: 2.9rem; }
+
+    /* ---- 3) Basılı tutunca açılan bağlam menüsü (büyük ekran kopyası) ---- */
+    /* ---- Büyük ekran deneme kartına basılı tutulunca/sağ tıklanınca
+       açılan "Düzenle / Yedekle / Sil" bağlam menüsü — Planlayıcı'daki
+       görev eylem sayfasıyla (.task-sheet-action / bkz. ~satır 4245)
+       AYNI liste dilini kullanır: renkli ikon rozetli, başlık+alt yazılı,
+       yuvarlak "tile" satırlar. Kendisi hâlâ Planlayıcı'daki gibi alttan
+       açılan tam sayfa bir sheet DEĞİL — dokunulan noktanın yakınında
+       beliren kompakt, yüzen bir kart; sadece satırların GÖRSEL dili
+       (ikon rozeti + başlık/alt metin + tile) taşınmıştır. Yüzey, Sayfa
+       11'in kendi "sabit siyah" modal kartıyla aynı (bkz.
+       #page11AddBackdrop .page11-modal-card). Konumu JS ile left/top
+       olarak satır içi ayarlanır. */
+    .page11-context-menu {
+      position: fixed;
+      left: 0;
+      top: 0;
+      z-index: 250;
+      width: 248px;
+      box-sizing: border-box;
+      padding: 0.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+      background: #000;
+      border-radius: 1.3em;
+      box-shadow:
+        0 20px 44px -16px rgba(0, 0, 0, 0.55),
+        0 2px 10px 0 rgba(0, 0, 0, 0.3);
+      opacity: 0;
+      pointer-events: none;
+      transform: scale(0.94) translateY(4px);
+      transform-origin: bottom center;
+      transition: opacity 0.15s ease, transform 0.15s ease;
+      font-family: "Baloo 2", "Space Grotesk", sans-serif;
+    }
+
+    .page11-context-menu.is-open {
+      opacity: 1;
+      pointer-events: auto;
+      transform: scale(1) translateY(0);
+    }
+
+    /* Koyu (antrasit) temada menü tamamen siyah (#000) olduğu için siyah
+       arka plan üzerinde neredeyse hiç ayrışmıyordu. Sadece bu temada,
+       menünün etrafına çok hafif, yumuşak bir "aydınlatma" halesi
+       ekleniyor — menünün kendi rengini değiştirmeden, arkasındaki
+       koyu alandan hafifçe ayrışmasını sağlıyor. Açık temada hiçbir
+       görsel değişiklik yok. */
+    body.is-anthracite .page11-context-menu {
+      box-shadow:
+        0 0 0 1px rgba(255, 255, 255, 0.07),
+        0 0 32px 6px rgba(255, 255, 255, 0.055),
+        0 20px 44px -16px rgba(0, 0, 0, 0.55),
+        0 2px 10px 0 rgba(0, 0, 0, 0.3);
+    }
+
+    /* Eylem satırı: Planlayıcı'daki .task-sheet-action ile aynı yapı
+       (ikon rozeti solda, başlık + alt yazı sağda), yalnızca bu kompakt
+       menüye sığacak şekilde küçültülmüş boyutlarla. */
+    .page11-context-menu-item {
+      --ic-bg: rgba(255, 255, 255, 0.12);
+      --ic-fg: #fff;
+      position: relative;
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      width: 100%;
+      padding: 0.55rem 0.7rem;
+      border: none;
+      border-radius: 1em;
+      background: transparent;
+      color: inherit;
+      font: inherit;
+      text-align: left;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      transition: background-color 0.18s ease, transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .page11-context-menu-item:hover,
+    .page11-context-menu-item:active {
+      background: rgba(255, 255, 255, 0.09);
+    }
+
+    .page11-context-menu-item:active {
+      transform: scale(0.97);
+    }
+
+    .page11-context-menu-item.is-danger {
+      --ic-bg: color-mix(in srgb, #ff5c5c 22%, transparent);
+      --ic-fg: #ff8a8a;
+    }
+
+    .page11-context-menu-item.is-danger .page11-context-menu-item-title {
+      color: #ff8a8a;
+    }
+
+    .page11-context-menu-item:disabled {
+      opacity: 0.35;
+      pointer-events: none;
+    }
+
+    .page11-context-menu-item-ic {
+      position: relative;
+      display: grid;
+      place-items: center;
+      flex: none;
+      width: 2.2rem;
+      height: 2.2rem;
+      border-radius: 50%;
+      background: var(--ic-bg);
+      color: var(--ic-fg);
+      transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .page11-context-menu-item:active .page11-context-menu-item-ic {
+      transform: scale(0.9) rotate(-6deg);
+    }
+
+    .page11-context-menu-item-ic svg {
+      width: 15px;
+      height: 15px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2.2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .page11-context-menu-item-text {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      line-height: 1.18;
+    }
+
+    .page11-context-menu-item-title {
+      font-weight: 700;
+      font-size: 0.9rem;
+      color: #fff;
+    }
+
+    .page11-context-menu-item-sub {
+      margin-top: 0.05rem;
+      font-weight: 600;
+      font-size: 0.7rem;
+      color: rgba(255, 255, 255, 0.5);
+    }
+    .page11-context-menu {
+      width: min(268px, calc(100vw - 24px));
+      -webkit-user-select: none;
+      user-select: none;
+      -webkit-touch-callout: none;
+    }
+    .page11-context-menu-item { padding: 0.65rem 0.75rem; }
+  }
+  </style>
 </head>
 <body oncopy="return false" oncut="return false" onselectstart="return false" ondragstart="return false">
 
@@ -36741,7 +38390,226 @@
   .nt-toast-act { border: none; cursor: pointer; height: 2rem; padding: 0 .95rem; border-radius: 999px; font: inherit; font-weight: 800; font-size: .82rem; color: #fff; background: var(--accent-color, #ff90e8); transition: transform .3s var(--nt-ease); }
 
   @media (prefers-reduced-motion: reduce) { .nt, .nt * { animation-duration: .01ms !important; animation-delay: 0ms !important; transition-duration: .01ms !important; } }
-</style>
+
+  /* ==========================================================================
+     TELEFON (yalnızca mobil): Gündelik — sıfırdan yeniden tasarım
+     ==========================================================================
+     Eski Gündelik içeriği telefonda gizli (HTML/JS/veri silinmedi; Denemelerim'deki
+     "boşaltma" ile aynı yöntem). Yeni düzen Soru Havuzu ile aynı iskelet:
+     - .p8m-topbar: sayfanın üstünde SABİT çubuk (sayfa kaymaz; yalnızca altındaki
+       .p8m-scroll kayar). Sol: "Gündelik" (Soru Havuzu başlığıyla aynı ölçü:
+       Baloo 2 / 800 / 1.25rem, sola yaslı, aynı dolgu ve satır yüksekliği).
+       Sağ uç: rutin tamamlama halkası (#p8nStat; JS ile buraya taşınır, veriyi
+       büyük ekrandaki renderHero aynen güncellemeye devam eder).
+     Büyük ekran kuralları DEĞİŞTİRİLMEDİ. */
+  .p8m-topbar, .p8m-scroll { display: none; }
+  @media not all and (min-width: 768px) and (min-height: 600px) {
+    #page-8 > .page8-header,
+    #page-8 > .page8-scroll,
+    #page-8 > .p8n { display: none !important; }
+    #page-8 { flex-direction: column; align-items: center; justify-content: flex-start; padding: 0; overflow: hidden; }
+    #page-8 > .p8m-topbar {
+      --p8-surf2: color-mix(in srgb, var(--theme-text, #121212) 11%, transparent);
+      --p8-mute: color-mix(in srgb, var(--theme-text, #121212) 55%, transparent);
+      flex: 0 0 auto;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      grid-auto-rows: minmax(2.6rem, auto);
+      align-items: center;
+      gap: 0.5rem;
+      width: 100%;
+      max-width: 428px;
+      margin: 0 auto;
+      box-sizing: border-box;
+      padding: calc(20px + env(safe-area-inset-top)) 24px 0.5rem;
+      font-family: "Baloo 2", "Space Grotesk", sans-serif;
+      color: var(--theme-text, #f2f2f7);
+    }
+    #page-8 .p8m-title {
+      grid-column: 1;
+      grid-row: 1;
+      margin: 0;
+      font-family: "Baloo 2", "Space Grotesk", sans-serif;
+      font-weight: 800;
+      font-size: 1.25rem;
+      line-height: 1.3;
+      text-align: left;
+      white-space: nowrap;
+      color: var(--theme-text, #f2f2f7);
+      transition: color 0.5s ease;
+    }
+    /* Sağ küme: ilerleme halkası solda, "Yeni grup" ve "Notlarım" düğmeleri onun
+       sağında (ikon düğme; büyük ekrandaki hapların telefona sığan hâli). */
+    #page-8 .p8m-actions {
+      grid-column: 2;
+      grid-row: 1;
+      justify-self: end;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    #page-8 .p8m-topbar .p8n-stat { margin: 0 0.15rem 0 0; }
+    #page-8 .p8m-topbar .p8n-notesbtn {
+      flex: 0 0 auto;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 2.6rem;
+      height: 2.6rem;
+      padding: 0;
+      margin: 0;
+      border: none;
+      border-radius: 50%;
+      cursor: pointer;
+      font: inherit;
+      color: color-mix(in srgb, var(--theme-text, #121212) 94%, transparent);
+      background: color-mix(in srgb, var(--theme-text, #121212) 6%, transparent);
+      box-shadow: inset 0 1px 3px 0 color-mix(in srgb, var(--theme-text, #121212) 10%, transparent);
+      -webkit-tap-highlight-color: transparent;
+      transition: background-color 0.18s ease, transform 0.15s ease;
+    }
+    #page-8 .p8m-topbar .p8n-notesbtn > span { display: none; }
+    #page-8 .p8m-topbar .p8n-notesbtn svg { width: 18px; height: 18px; }
+    #page-8 .p8m-topbar .p8n-notesbtn:active { transform: scale(0.92); }
+    #page-8 .p8m-topbar .p8n-notesbtn[aria-expanded="true"] {
+      background: color-mix(in srgb, var(--theme-text, #121212) 11%, transparent);
+    }
+    #page-8 .p8m-topbar .p8n-stat-ring { width: 44px; height: 44px; }
+    #page-8 .p8m-topbar .p8n-stat-ring b { font-size: 0.74rem; }
+    /* Kayan alan: yeni içerik buraya eklenecek; çubuk sabit kalır. */
+    #page-8 > .p8m-scroll {
+      display: block;
+      flex: 1 1 auto;
+      min-height: 0;
+      width: 100%;
+      max-width: 428px;
+      box-sizing: border-box;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      scrollbar-width: none;
+      padding: 0.9rem 24px calc(96px + env(safe-area-inset-bottom));
+    }
+    #page-8 > .p8m-scroll::-webkit-scrollbar { display: none; }
+
+    /* Başlıkta ilerleme halkası: kart yok, doğrudan arka planın üzerinde */
+    .p8n-stat { display: inline-flex; align-items: center; margin-left: auto; align-self: center; flex: 0 0 auto; }
+    .p8n-stat[hidden] { display: none; }
+    .p8n-stat.is-bump { animation: p8nBump .6s cubic-bezier(.34,1.56,.64,1); }
+    @keyframes p8nBump { 0% { transform: scale(1); } 35% { transform: scale(1.1); } 100% { transform: scale(1); } }
+    .p8n-stat-ring { position: relative; width: 58px; height: 58px; flex: 0 0 auto; }
+    .p8n-stat-ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+    .p8n-stat-ring circle { fill: none; stroke-width: 4.5; stroke-linecap: round; }
+    .p8n-stat-ring .bg { stroke: var(--p8-surf2); }
+    .p8n-stat-ring .fg { stroke: var(--accent-color, #ff90e8); transition: stroke-dashoffset .9s cubic-bezier(.22,1,.36,1), filter .5s ease; }
+    .p8n-stat.is-complete .fg { filter: drop-shadow(0 0 4px color-mix(in srgb, var(--accent-color, #ff90e8) 70%, transparent)); }
+    .p8n-stat-ring b { position: absolute; inset: 0; display: grid; place-items: center; font-size: .86rem; font-weight: 800; font-variant-numeric: tabular-nums; }
+  }
+
+  /* ==========================================================================
+     GÜNDELİK (telefon) — büyük ekrandaki kart tasarımının mobil uyarlaması
+     ==========================================================================
+     Büyük ekrandaki (.p8g) kart tasarımının BAŞLIK (grup adı · Şimdi · sayaç)
+     ve İÇERİK (alt başlıklar, rutin satırları, ekleme düğmeleri/formları)
+     kısımları telefona uygulanır. Kartın sağındaki MİNİ TAKVİM (.p8g-cal)
+     telefonda bilinçli olarak GÖSTERİLMEZ. Kartlar tek sütun, tam genişlik.
+     Büyük ekran kuralları DEĞİŞTİRİLMEDİ; bu blok yalnızca telefonda geçerli. */
+  @media not all and (min-width: 768px) and (min-height: 600px) {
+    #p8mScroll {
+      --p8-surf: color-mix(in srgb, var(--theme-text, #121212) 6%, transparent);
+      --p8-surf2: color-mix(in srgb, var(--theme-text, #121212) 11%, transparent);
+      --p8-mute: color-mix(in srgb, var(--theme-text, #121212) 55%, transparent);
+      color: var(--theme-text, #121212);
+      font-family: "Baloo 2", "Space Grotesk", sans-serif;
+    }
+    @keyframes p8gIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+    #p8mScroll #p8nMain { display: block; }
+    #p8mScroll .p8n-groups { display: flex; flex-direction: column; gap: .85rem; }
+    #p8mScroll .p8g { --gc: #ff90e8; --gt: #121212; display: block; padding: 1.15rem 1.1rem 1rem; border-radius: 1.7rem; background: var(--p8-surf); transition: background-color .3s ease, box-shadow .4s ease, opacity .35s ease, transform .35s ease; }
+    #p8mScroll .p8g.is-now { box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--gc) 60%, transparent); }
+    #p8mScroll .p8g.is-pressing, #p8mScroll .p8g.is-ctx-active { background: var(--p8-surf2); }
+    #p8mScroll .p8g.is-leave { opacity: 0; transform: scale(.985); }
+    #p8mScroll .p8g.is-enter { animation: p8gIn .6s cubic-bezier(.22,1,.36,1) backwards; animation-delay: calc(var(--i, 0) * 80ms); }
+    /* Takvim telefona uygulanmaz */
+    #p8mScroll .p8g-cal { display: none !important; }
+    /* --- Başlık --- */
+    #p8mScroll .p8g-head { display: flex; align-items: baseline; gap: .6rem; margin-bottom: .5rem; }
+    #p8mScroll .p8g-titlebox { flex: 0 1 auto; min-width: 0; display: flex; flex-direction: column; gap: .2rem; }
+    #p8mScroll .p8g-name { flex: 0 1 auto; min-width: 0; font-size: 1.6rem; font-weight: 800; letter-spacing: -.02em; line-height: 1.05; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    #p8mScroll .p8g-name-in { flex: 1 1 auto; min-width: 0; box-sizing: border-box; font: inherit; font-size: 1.3rem; font-weight: 800; color: inherit; background: var(--p8-surf2); border: none; outline: none; border-radius: 999px; padding: .1rem .8rem; }
+    #p8mScroll .p8g-dot { display: none; }
+    #p8mScroll .p8g-count { font-size: .9rem; font-weight: 700; color: var(--p8-mute); font-variant-numeric: tabular-nums; }
+    #p8mScroll .p8g.is-complete .p8g-count { color: var(--gc); }
+    #p8mScroll .p8g-now { align-self: baseline; font-size: .66rem; font-weight: 800; letter-spacing: .04em; padding: .16rem .6rem; border-radius: 999px; background: var(--gc); color: var(--gt); }
+    /* --- Alt başlıklar --- */
+    #p8mScroll .p8g-sec { display: flex; align-items: center; gap: .5rem; margin: 1rem 0 .1rem; padding: 0 .3rem; user-select: none; -webkit-user-select: none; }
+    #p8mScroll .p8g-head + .p8g-sec { margin-top: .4rem; }
+    #p8mScroll .p8g-sec-name { font-size: .98rem; font-weight: 800; letter-spacing: .01em; display: inline-flex; align-items: center; gap: .5rem; }
+    #p8mScroll .p8g-sec-name::before { content: ''; width: .45rem; height: .45rem; border-radius: 50%; background: var(--gc); flex: 0 0 auto; }
+    #p8mScroll .p8g-sec-in { flex: 0 1 200px; min-width: 0; box-sizing: border-box; font: inherit; font-size: 1rem; font-weight: 800; color: inherit; background: var(--p8-surf2); border: none; outline: none; border-radius: 999px; padding: .2rem .7rem; }
+    #p8mScroll .p8g-sec-count { font-size: .8rem; font-weight: 700; color: var(--p8-mute); font-variant-numeric: tabular-nums; }
+    #p8mScroll .p8g-sec-line { flex: 1 1 auto; height: 1px; background: color-mix(in srgb, var(--theme-text, #121212) 10%, transparent); }
+    #p8mScroll .p8g-sec-add { flex: 0 0 auto; width: 2.1rem; height: 2.1rem; border: none; border-radius: 50%; display: grid; place-items: center; cursor: pointer; color: var(--p8-mute); background: none; transition: background-color .2s ease, color .2s ease, transform .2s ease; -webkit-tap-highlight-color: transparent; }
+    #p8mScroll .p8g-sec-add:active { transform: scale(.88); background: var(--p8-surf2); }
+    #p8mScroll .p8g-sec-add svg { width: 1rem; height: 1rem; fill: none; stroke: currentColor; stroke-width: 2.8; stroke-linecap: round; }
+    /* --- Rutin satırları --- */
+    #p8mScroll .p8g-list { display: flex; flex-direction: column; }
+    #p8mScroll .p8g-r { display: flex; align-items: center; gap: .85rem; padding: .7rem .3rem; border-radius: 1rem; cursor: pointer; overflow: hidden; max-height: 7rem; transition: background-color .25s ease, opacity .3s ease, max-height .3s ease, padding .3s ease; -webkit-tap-highlight-color: transparent; user-select: none; -webkit-user-select: none; }
+    #p8mScroll .p8g-r.is-pressing, #p8mScroll .p8g-r.is-ctx-active { background: color-mix(in srgb, var(--gc) 14%, transparent); }
+    #p8mScroll .p8g-r.is-leave { opacity: 0; max-height: 0 !important; padding-top: 0; padding-bottom: 0; }
+    #p8mScroll .p8g-c { flex: 0 0 auto; width: 1.7rem; height: 1.7rem; box-sizing: border-box; border-radius: 50%; border: 2px solid color-mix(in srgb, var(--theme-text, #121212) 26%, transparent); display: grid; place-items: center; transition: background-color .35s ease, border-color .35s ease, transform .35s cubic-bezier(.34,1.56,.64,1); }
+    #p8mScroll .p8g-r:active .p8g-c { transform: scale(.88); }
+    #p8mScroll .p8g-c svg { width: .95rem; height: .95rem; fill: none; stroke: var(--gt); stroke-width: 3.4; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 26; stroke-dashoffset: 26; transition: stroke-dashoffset .4s ease .05s; }
+    #p8mScroll .p8g-r.is-done .p8g-c { background: var(--gc); border-color: var(--gc); }
+    #p8mScroll .p8g-r.is-done .p8g-c svg { stroke-dashoffset: 0; }
+    #p8mScroll .p8g-t { flex: 1 1 auto; min-width: 0; font-size: 1.1rem; font-weight: 700; line-height: 1.25; overflow-wrap: anywhere; transition: opacity .35s ease; }
+    #p8mScroll .p8g-tt { background: linear-gradient(currentColor, currentColor) no-repeat 0 55% / 0 2px; transition: background-size .4s ease; }
+    #p8mScroll .p8g-r.is-done .p8g-t { opacity: .4; }
+    #p8mScroll .p8g-r.is-done .p8g-tt { background-size: 100% 2px; }
+    /* --- Ekleme düğmeleri / formlar --- */
+    #p8mScroll .p8g-actions { display: flex; flex-wrap: wrap; gap: .2rem; margin-top: .2rem; }
+    #p8mScroll .p8g-add { display: block; width: 100%; box-sizing: border-box; padding: .7rem .3rem; border: none; background: none; text-align: left; font: inherit; font-weight: 700; font-size: .95rem; color: var(--p8-mute); cursor: pointer; border-radius: 1rem; -webkit-tap-highlight-color: transparent; transition: color .2s ease; }
+    #p8mScroll .p8g-add:active { color: var(--theme-text, #121212); }
+    #p8mScroll .p8g-actions .p8g-add { width: auto; padding: .65rem 1rem .65rem .3rem; }
+    #p8mScroll .p8g-form { display: flex; align-items: center; gap: .5rem; padding: .3rem 0 .4rem; animation: p8gIn .35s ease backwards; }
+    #p8mScroll .p8g-in { flex: 1 1 auto; min-width: 0; box-sizing: border-box; font: inherit; font-weight: 600; font-size: 1rem; color: inherit; background: var(--p8-surf2); border: none; outline: none; border-radius: 999px; padding: .65rem 1rem; }
+    #p8mScroll .p8g-in::placeholder { color: var(--p8-mute); }
+    #p8mScroll .p8g-go { flex: 0 0 auto; width: 2.6rem; height: 2.6rem; border: none; border-radius: 50%; display: grid; place-items: center; cursor: pointer; background: var(--gc); }
+    #p8mScroll .p8g-go svg { width: 1.05rem; height: 1.05rem; fill: none; stroke: var(--gt); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+    /* --- Yeni grup paneli / boş durum / ipucu --- */
+    #p8mScroll .p8n-newgroup { display: flex; flex-direction: column; align-items: stretch; gap: .7rem; margin: 0 0 .85rem; }
+    #p8mScroll .p8n-pills { display: flex; gap: .5rem; flex-wrap: wrap; }
+    #p8mScroll .p8n-pill { font: inherit; font-weight: 700; font-size: .85rem; border: none; border-radius: 999px; padding: 0 1.1rem; height: 2.5rem; cursor: pointer; color: color-mix(in srgb, var(--theme-text, #121212) 94%, transparent); background: var(--p8-surf); transition: background-color .15s, transform .15s; -webkit-tap-highlight-color: transparent; }
+    #p8mScroll .p8n-pill:active { transform: scale(.95); background: var(--p8-surf2); }
+    #p8mScroll .p8n-add { display: flex; gap: .5rem; margin: 0; }
+    #p8mScroll .p8n-add .p8n-input { flex: 1 1 auto; min-width: 0; width: auto; }
+    #p8mScroll .p8n-input { width: 100%; box-sizing: border-box; font: inherit; font-weight: 600; font-size: 1rem; color: inherit; background: var(--p8-surf); border: none; outline: none; border-radius: 999px; padding: .65rem 1rem; }
+    #p8mScroll .p8n-input::placeholder { color: var(--p8-mute); }
+    #p8mScroll .p8n-input:focus { background: var(--p8-surf2); }
+    #p8mScroll .p8n-addbtn { flex: 0 0 auto; height: 2.7rem; padding: 0 1.2rem; border: none; border-radius: 999px; cursor: pointer; font: inherit; font-weight: 700; font-size: .9rem; color: #fff; background: var(--accent-color, #ff90e8); text-shadow: 0 1px 2px rgba(0,0,0,.18); -webkit-tap-highlight-color: transparent; }
+    #p8mScroll .p8n-addbtn:active { transform: scale(.96); }
+    #p8mScroll .p8n-empty { padding: 1.6rem 1.2rem; border-radius: 1.7rem; background: var(--p8-surf); text-align: center; }
+    #p8mScroll .p8n-empty b { font-size: 1.2rem; display: block; margin-bottom: .3rem; }
+    #p8mScroll .p8n-empty p { margin: 0 0 1rem; color: var(--p8-mute); font-weight: 600; font-size: .95rem; }
+    #p8mScroll .p8n-empty .p8n-newgroup { margin: 0; align-items: stretch; }
+    #p8mScroll .p8n-empty .p8n-pills { justify-content: center; }
+    #p8mScroll .p8g-tip { margin: 1rem 0 0; text-align: center; font-size: .8rem; font-weight: 600; color: var(--p8-mute); }
+    /* --- Onay penceresi ve "Geri al" bildirimi --- */
+    .p8n-dlg-back { position: fixed; inset: 0; z-index: 90; display: grid; place-items: center; background: rgba(0,0,0,0); transition: background-color .3s ease, backdrop-filter .3s ease; }
+    .p8n-dlg-back.is-in { background: rgba(0,0,0,.42); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
+    .p8n-dlg { --p8-mute: color-mix(in srgb, var(--theme-text, #121212) 55%, transparent); --p8-surf2: color-mix(in srgb, var(--theme-text, #121212) 11%, transparent); box-sizing: border-box; width: min(380px, calc(100vw - 40px)); padding: 1.5rem 1.3rem 1.2rem; border-radius: 1.7rem; background: var(--theme-bg, #F6F4EF); color: var(--theme-text, #121212); font-family: "Baloo 2", "Space Grotesk", sans-serif; box-shadow: 0 24px 70px rgba(0,0,0,.35); opacity: 0; transform: translateY(16px) scale(.95); transition: opacity .3s ease, transform .4s cubic-bezier(.22,1,.36,1); }
+    .p8n-dlg-back.is-in .p8n-dlg { opacity: 1; transform: none; }
+    .p8n-dlg h3 { margin: 0 0 .4rem; font-size: 1.25rem; font-weight: 800; line-height: 1.2; }
+    .p8n-dlg p { margin: 0 0 1.2rem; font-size: .95rem; font-weight: 600; line-height: 1.4; color: var(--p8-mute); }
+    .p8n-dlg-row { display: flex; gap: .6rem; justify-content: flex-end; }
+    .p8n-dlg-btn { height: 2.7rem; padding: 0 1.3rem; border: none; border-radius: 999px; cursor: pointer; font: inherit; font-weight: 800; font-size: .92rem; color: inherit; background: var(--p8-surf2); transition: transform .2s ease, filter .2s ease; }
+    .p8n-dlg-btn:active { transform: scale(.95); }
+    .p8n-dlg-btn.danger { color: #fff; background: #e5484d; }
+    .n-toast { position: fixed; left: 50%; bottom: calc(84px + env(safe-area-inset-bottom)); transform: translateX(-50%); z-index: 70; display: flex; align-items: center; gap: .8rem; max-width: calc(100vw - 32px); box-sizing: border-box; padding: .6rem .7rem .6rem 1.1rem; border-radius: 999px; background: #121212; color: #fff; font-family: "Baloo 2", "Space Grotesk", sans-serif; font-weight: 700; font-size: .88rem; box-shadow: 0 12px 30px -10px rgba(0,0,0,.5); }
+    .n-toast[hidden] { display: none; }
+    .n-toast button { border: none; cursor: pointer; font: inherit; font-weight: 800; font-size: .85rem; padding: .35rem .9rem; border-radius: 999px; background: var(--accent-color, #ff90e8); color: #fff; }
+    @media (prefers-reduced-motion: reduce) { #p8mScroll .p8g, #p8mScroll .p8g * { animation: none !important; transition-duration: .01ms !important; } }
+  }
+  </style>
 <script>
   // Splash ekranının arka plan rengini, kullanıcının en son seçtiği temaya
   // göre boyar. Bu script #app-splash elementinin CSS'i uygulandıktan hemen
@@ -38629,6 +40497,12 @@
   </div>
 
   <section class="page" id="page-8">
+    <div class="p8m-topbar" id="p8mTopbar">
+      <h1 class="p8m-title">Gündelik</h1>
+      <div class="p8m-actions" id="p8mStatSlot"></div>
+    </div>
+    <div class="p8m-scroll" id="p8mScroll"></div>
+
     <div class="page8-header">
       <div class="page8-titlebar">
         <h1>Gündelik</h1>
@@ -38909,6 +40783,12 @@
       <div class="page11-header">
         <div class="page11-header-top">
           <h1 class="page11-title">Denemelerim</h1>
+          <!-- Telefon: toplam deneme sayısı, başlığın tam karşısında (sağ üst).
+               Soru Havuzu'ndaki .qhavuz-count ile aynı dil. Büyük ekranda gizli. -->
+          <div class="page11-count" id="page11Count" aria-live="polite">
+            <span class="page11-count-num" id="page11CountNum">0</span>
+            <span class="page11-count-unit">deneme</span>
+          </div>
           <div class="page11-header-actions">
             <button type="button" class="add-task-btn edit-task-btn" id="page11AnalyticsBtn" aria-label="Analizlerim">
               <svg viewBox="0 0 24 24" width="16" height="16">
@@ -38976,6 +40856,12 @@
               <input type="file" id="page11ImportInput" accept="application/json,.json" hidden>
             </div>
           </div>
+        </div>
+        <!-- Telefon: başlığın altındaki araç alanı. Büyük ekrandaki seçici, sıralama,
+             arama ve yedek elemanları telefonda JS ile buraya taşınır. -->
+        <div class="page11-mobile-tools" id="page11MobileTools">
+          <div class="page11-mobile-tools-row" id="page11MobileToolsRow1"></div>
+          <div class="page11-mobile-tools-row" id="page11MobileToolsRow2"></div>
         </div>
         <span class="page11-subtitle">Deneme ekle, branşına göre netlerini işaretle</span>
       </div>
@@ -39420,6 +41306,19 @@
         </button>
         <span class="calendar-topbar-title">Analizlerim</span>
         <span class="calendar-topbar-spacer"></span>
+      </div>
+
+      <!-- Telefon: büyük ekrandaki sağ sütunun (Genel Performans / Hata Analizi /
+           Net Trend) taşındığı yer. Tümü/TYT/AYT seçici bu sütunun hesapladığı
+           türü (page11PerfType) değiştirir. Büyük ekranda gizli. -->
+      <div class="analytics-mobile-panel" id="analyticsMobilePanel">
+        <div class="settings-segmented" id="analyticsPerfTypeSegmented">
+          <div class="settings-segmented-slider" id="analyticsPerfTypeSlider"></div>
+          <button type="button" class="settings-segmented-option is-active" data-value="all">Tümü</button>
+          <button type="button" class="settings-segmented-option" data-value="tyt">TYT</button>
+          <button type="button" class="settings-segmented-option" data-value="ayt">AYT</button>
+        </div>
+        <div id="analyticsMobileHost"></div>
       </div>
 
       <!-- Segmented + özet kart + trend grafiği + "0 Hata" butonu: telefonda
@@ -41272,6 +43171,29 @@
   </div>
 </div>
 
+<!-- Denemelerim (telefon): Geri / Deneme Ekle. Soru Havuzu çubuğuyla aynı görünüm;
+     yalnızca Denemelerim sayfasında görünür (body.is-page11-page), büyük ekranda hiç gösterilmez. -->
+<div class="qhavuz-fab-bar page11-fab-bar" id="page11FabBar" role="group" aria-label="Denemelerim işlemleri">
+  <div class="qhavuz-fab-inner">
+    <button type="button" class="qhavuz-fab qhavuz-fab-back" id="page11FabBackBtn" aria-label="Ana sayfaya dön">
+      <svg class="qhavuz-fab-icon" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="m14.5 17-5-5 5-5"/>
+      </svg>
+    </button>
+    <button type="button" class="qhavuz-fab qhavuz-fab-add" id="page11FabAddBtn" aria-label="Deneme ekle">
+      <svg class="qhavuz-fab-icon" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M12 5v14M5 12h14"/>
+      </svg>
+      <span>Deneme Ekle</span>
+    </button>
+    <button type="button" class="qhavuz-fab page11-fab-analytics" id="page11FabAnalyticsBtn" aria-label="Analizlerim">
+      <svg class="qhavuz-fab-icon" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M5 19V10M12 19V5M19 19v-7"/>
+      </svg>
+    </button>
+  </div>
+</div>
+
 <script>
   // Alt nav bar: seçili radio'ya göre ilgili sayfayı gösterir.
   // Takvim ikonunun içindeki rakam her zaman bugünün gün numarasını
@@ -41325,6 +43247,24 @@
     }
   };
 
+  // Denemelerim (telefon): sayfa açıkken alt navbar çekilir, yerine sayfaya
+  // ait Geri / Deneme Ekle çubuğu (#page11FabBar) görünür. Görünürlüğü
+  // body.is-page11-page sınıfı yönetir (CSS yalnızca telefonda uygular).
+  const setPage11PageMode = (on) => {
+    if (document.body.classList.contains('is-page11-page') === on) return;
+    document.body.classList.toggle('is-page11-page', on);
+    if (!on) {
+      // Navbar geri gelirken gösterge, işaretli sekmenin altına animasyonsuz yerleşir.
+      const checked = document.querySelector('.nav-input:checked');
+      if (checked) {
+        navSlider.style.transition = 'none';
+        moveSlider(checked);
+        void navSlider.offsetWidth;
+        navSlider.style.transition = '';
+      }
+    }
+  };
+
   // Sayfalar aynı alanda üst üste durur; geçiş sırayla (önce eski sayfa
   // yumuşakça solup gider, o bitince yeni sayfa belirir) yapılır ki
   // metinler asla aynı anda görünüp iç içe girmesin.
@@ -41344,6 +43284,7 @@
     if (!nextPage || nextPage === activePage) return;
 
     setQhavuzPageMode(QHAVUZ_NAV_PAGES.has(id));
+    setPage11PageMode(id === 'page-11');
 
     const prevPage = activePage;
     activePage = nextPage;
@@ -51410,6 +53351,44 @@
     render();
   })();
 
+  // ---- Gündelik (telefon): rutin tamamlama halkası (#p8nStat) ile "Yeni grup" ve
+  // "Notlarım" düğmeleri sabit üst çubuğun sağ ucuna taşınır (sıra: halka, Yeni grup,
+  // Notlarım; düğmelerin dinleyicileri aynı elemanlarda kalır); büyük ekrana dönülürse başlığındaki yerine geri konur.
+  // Halkayı güncelleyen kod (renderHero) aynı elemanı tuttuğu için değişmez.
+  (() => {
+    const stat = document.getElementById('p8nStat');
+    const slot = document.getElementById('p8mStatSlot');
+    const head = document.querySelector('#p8n .p8n-head');
+    const newBtn = document.getElementById('p8nNewBtn');
+    const ntBtn = document.getElementById('p8nNtBtn');
+    if (!stat || !slot || !head || !newBtn || !ntBtn) return;
+    newBtn.setAttribute('aria-label', 'Yeni grup');
+    ntBtn.setAttribute('aria-label', 'Notlarım');
+    const mq = window.matchMedia('not all and (min-width: 768px) and (min-height: 600px)');
+    // Kartların bulunduğu alan (#p8nMain) ve "Geri al" bildirimi (#p8nToast) telefonda
+    // kayan alana (#p8mScroll) taşınır; büyük ekrana dönülürse kendi yerine geri konur.
+    // Kartları çizen kod elemanları kimlikle bulduğu için değişmez.
+    const scroll = document.getElementById('p8mScroll');
+    const inner = document.querySelector('#p8n .p8n-inner');
+    const main = document.getElementById('p8nMain');
+    const toast = document.getElementById('p8nToast');
+    const place = () => {
+      const host = mq.matches ? slot : head;
+      host.append(stat, newBtn, ntBtn);
+      if (scroll && inner && main) {
+        if (mq.matches) {
+          scroll.appendChild(main);
+          if (toast) scroll.appendChild(toast);
+        } else {
+          inner.appendChild(main);
+          if (toast) inner.appendChild(toast);
+        }
+      }
+    };
+    if (mq.addEventListener) mq.addEventListener('change', place); else mq.addListener(place);
+    place();
+  })();
+
   // ---------- Notlarım: Apple Notes tarzı not uygulaması ----------
   (() => {
     const btn = document.getElementById('p8nNtBtn');
@@ -56454,7 +58433,10 @@
     if (page11ExamContextDelete) page11ExamContextDelete.disabled = !!exam.locked;
     const GUESS_WIDTH = 248, GUESS_HEIGHT = 232, GAP = 10;
     page11ExamContextMenu.style.left = `${x - GUESS_WIDTH / 2}px`;
-    page11ExamContextMenu.style.top = `${Math.max(8, y - GAP - GUESS_HEIGHT)}px`;
+    const page11IsPhone = window.matchMedia('not all and (min-width: 768px) and (min-height: 600px)').matches;
+    const page11MenuBelow = page11IsPhone && (y - GAP - GUESS_HEIGHT < 8);
+    page11ExamContextMenu.style.transformOrigin = page11MenuBelow ? 'top center' : '';
+    page11ExamContextMenu.style.top = page11MenuBelow ? `${y + GAP + 18}px` : `${Math.max(8, y - GAP - GUESS_HEIGHT)}px`;
     page11ExamContextMenu.classList.add('is-open');
     requestAnimationFrame(() => {
       if (!page11ExamContextMenu.classList.contains('is-open')) return;
@@ -56674,7 +58656,7 @@
     return idx > 0 ? sameType[idx - 1] : null;
   };
 
-  const createPage11WideExamCard = (exam) => {
+  const createPage11WideExamCard = (exam, counterPrefix = 'examWideCardNet') => {
     const result = page11ComputeExam(exam);
     const card = document.createElement('div');
     card.className = 'page11-wide-card';
@@ -56724,7 +58706,7 @@
 
     const net = document.createElement('div');
     net.className = 'page11-wide-net';
-    page11AnimateCounter(net, `examWideCardNet:${exam.id}`, result.totalNet, { decimals: true, suffix: 'net', spacer: true });
+    page11AnimateCounter(net, `${counterPrefix}:${exam.id}`, result.totalNet, { decimals: true, suffix: 'net', spacer: true });
     side.appendChild(net);
 
     // Trend oku: aynı türdeki bir önceki denemeye göre net farkı.
@@ -56874,6 +58856,36 @@
       renderPage11Performance();
       if (typeof renderPage11NetTrend === 'function') renderPage11NetTrend();
       renderPage11CanvasResults();
+      renderPage11List(); // telefon listesi
+    });
+  });
+
+  // Analizlerim (telefon): Tümü/TYT/AYT seçici. Büyük ekrandaki seçiciyle aynı
+  // page11PerfType değerini değiştirir; iki seçici birbirine senkron tutulur.
+  const analyticsPerfSeg = document.getElementById('analyticsPerfTypeSegmented');
+  const analyticsPerfSlider = document.getElementById('analyticsPerfTypeSlider');
+  const analyticsPerfOptions = analyticsPerfSeg
+    ? Array.from(analyticsPerfSeg.querySelectorAll('.settings-segmented-option'))
+    : [];
+  const syncAnalyticsPerfSeg = () => {
+    analyticsPerfOptions.forEach((b) => b.classList.toggle('is-active', b.dataset.value === page11PerfType));
+    if (analyticsPerfSlider) {
+      const idx = Math.max(0, analyticsPerfOptions.findIndex((b) => b.dataset.value === page11PerfType));
+      analyticsPerfSlider.style.transform = `translateX(${idx * 100}%)`;
+    }
+  };
+  analyticsPerfOptions.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const value = btn.dataset.value;
+      if (value === page11PerfType) return;
+      page11PerfType = value;
+      page11CanvasTypeOptions.forEach((b) => b.classList.toggle('is-active', b.dataset.value === value));
+      page11MoveCanvasTypeSlider();
+      syncAnalyticsPerfSeg();
+      renderPage11Performance();
+      if (typeof renderPage11NetTrend === 'function') renderPage11NetTrend();
+      renderPage11CanvasResults();
+      renderPage11List(); // telefon listesi
     });
   });
 
@@ -56966,6 +58978,7 @@
     page11CanvasSearchInput.addEventListener('input', () => {
       updatePage11CanvasSearchClear();
       renderPage11CanvasResults();
+      renderPage11List(); // telefon listesi
     });
   }
 
@@ -56981,6 +58994,7 @@
       page11CanvasSearchInput.value = '';
       updatePage11CanvasSearchClear();
       renderPage11CanvasResults();
+      renderPage11List(); // telefon listesi
       page11CanvasSearchInput.focus();
     });
   }
@@ -57329,15 +59343,39 @@
     }
   };
 
+  // Telefon başlığının karşısındaki toplam deneme sayısı (bkz. #page11Count).
+  const page11CountNum = document.getElementById('page11CountNum');
+  let page11LastCount = null;
+  const updatePage11Count = () => {
+    if (!page11CountNum) return;
+    const total = page11State.exams.length;
+    page11CountNum.textContent = total;
+    if (page11LastCount !== null && page11LastCount !== total) {
+      page11CountNum.classList.remove('is-bump');
+      void page11CountNum.offsetWidth; // reflow: animasyon baştan başlasın
+      page11CountNum.classList.add('is-bump');
+    }
+    page11LastCount = total;
+  };
+
   const renderPage11List = () => {
+    updatePage11Count();
     renderPage11Performance();
     renderPage11MistakeStats();
     renderPage11NetTrend();
     page11ExamList.innerHTML = '';
-    if (!page11State.exams.length) {
+    // Telefon listesi de büyük ekrandaki gibi seçili türe (Tümü/TYT/AYT) ve
+    // arama kutusuna göre süzülür (arama: deneme adı yazılan harflerle başlar).
+    const page11ListSearchEl = document.getElementById('page11CanvasSearchInput');
+    const page11ListQuery = (page11ListSearchEl ? page11ListSearchEl.value : '').trim().toLocaleLowerCase('tr-TR');
+    const page11ListExams = page11State.exams.filter((exam) => (
+      (page11PerfType === 'all' || exam.type === page11PerfType)
+      && (!page11ListQuery || (exam.name || '').toLocaleLowerCase('tr-TR').startsWith(page11ListQuery))
+    ));
+    if (!page11ListExams.length) {
       const empty = document.createElement('div');
       empty.className = 'page11-empty';
-      empty.textContent = 'Henüz deneme eklenmedi.';
+      empty.textContent = page11State.exams.length ? 'Eşleşen deneme bulunamadı.' : 'Henüz deneme eklenmedi.';
       page11ExamList.appendChild(empty);
       // Büyük ekrandaki (wide) kart listesi ayrı bir konteynerde
       // (page11CanvasResultsEl) tutulur ve kendi boş-durum mesajını
@@ -57351,10 +59389,10 @@
     // sırası korunur. page11CanvasSortOrder 'asc' ise (bkz. #page11CanvasSortBtn)
     // sıra tersine döner, en eski deneme en üstte görünür.
     const page11SortDir = page11CanvasSortOrder === 'asc' ? 1 : -1;
-    const sorted = [...page11State.exams].sort((a, b) => page11SortDir * (
+    const sorted = [...page11ListExams].sort((a, b) => page11SortDir * (
       (a.date || '').localeCompare(b.date || '') || (a.ts || 0) - (b.ts || 0)
     ));
-    sorted.forEach((exam) => page11ExamList.appendChild(createPage11ExamCard(exam)));
+    sorted.forEach((exam) => page11ExamList.appendChild(createPage11WideExamCard(exam, 'examPhoneCardNet')));
     renderPage11CanvasResults();
   };
 
@@ -58113,6 +60151,23 @@
   };
 
   page11AddExamBtn.addEventListener('click', openPage11AddModal);
+
+  // Telefon alt çubuğu: Deneme Ekle aynı pop-up'ı açar; Geri ana sayfaya döner.
+  const page11FabAddBtn = document.getElementById('page11FabAddBtn');
+  const page11FabBackBtn = document.getElementById('page11FabBackBtn');
+  if (page11FabAddBtn) page11FabAddBtn.addEventListener('click', openPage11AddModal);
+  // Analizlerim: üstteki (telefonda gizli) Analiz düğmesiyle aynı ekranı açar.
+  // openAnalytics bu noktadan sonra tanımlandığı için tıklama anında çağrılır.
+  const page11FabAnalyticsBtn = document.getElementById('page11FabAnalyticsBtn');
+  if (page11FabAnalyticsBtn) page11FabAnalyticsBtn.addEventListener('click', () => openAnalytics());
+  if (page11FabBackBtn) {
+    page11FabBackBtn.addEventListener('click', () => {
+      const homeInput = document.querySelector('.nav-input[value="page-1"]');
+      if (homeInput) homeInput.checked = true;
+      goToPage('page-1');
+      setActiveSidebarItem('page-1');
+    });
+  }
   const page11CanvasAddExamBtn = document.getElementById('page11CanvasAddExamBtn');
   if (page11CanvasAddExamBtn) page11CanvasAddExamBtn.addEventListener('click', openPage11AddModal);
   page11AddCancelBtn.addEventListener('click', closePage11AddModal);
@@ -60717,6 +62772,11 @@
 
   const openAnalytics = () => {
     setAnalyticsType('tyt');
+    // Telefon: taşınan analiz sütununu güncel veriyle çiz, seçiciyi senkronla.
+    syncAnalyticsPerfSeg();
+    renderPage11Performance();
+    renderPage11MistakeStats();
+    if (typeof renderPage11NetTrend === 'function') renderPage11NetTrend();
     document.body.classList.add('is-analytics-open');
     goToPage('page-analytics');
   };
@@ -60727,6 +62787,60 @@
   };
 
   page11AnalyticsBtn.addEventListener('click', openAnalytics);
+
+  // Telefonda Denemelerim başlığının altına, büyük ekrandaki seçici / sıralama /
+  // arama / yedek elemanları taşınır (aynı elemanlar, aynı olay bağları). Büyük
+  // ekrana dönülürse her biri özgün yerine (eski komşusunun önüne) geri konur.
+  (() => {
+    const row1 = document.getElementById('page11MobileToolsRow1');
+    const row2 = document.getElementById('page11MobileToolsRow2');
+    const searchEl = document.querySelector('#page11Canvas .page11-canvas-search');
+    const items = [
+      [document.getElementById('page11CanvasTypeSegmented'), row1],
+      [document.getElementById('page11CanvasSortBtn'), row1],
+      [searchEl, row2],
+      [document.getElementById('page11CanvasBackupWrap'), row2],
+    ].filter(([el, row]) => el && row).map(([el, row]) => ({
+      el, row, parent: el.parentNode, next: el.nextSibling,
+    }));
+    if (!items.length) return;
+    const mq = window.matchMedia('not all and (min-width: 768px) and (min-height: 600px)');
+    const place = () => {
+      if (mq.matches) {
+        items.forEach((it) => { if (it.el.parentNode !== it.row) it.row.appendChild(it.el); });
+      } else {
+        // Geri koyarken özgün sıra korunsun diye sondan başa yerleştirilir.
+        [...items].reverse().forEach((it) => {
+          if (it.el.parentNode === it.parent) return;
+          it.parent.insertBefore(it.el, it.next && it.next.parentNode === it.parent ? it.next : null);
+        });
+      }
+    };
+    place();
+    if (mq.addEventListener) mq.addEventListener('change', place);
+    else if (mq.addListener) mq.addListener(place);
+  })();
+
+  // Telefonda büyük ekranın sağ analiz sütunu (#page11AnalyticsCol) Analizlerim
+  // sayfasına taşınır; büyük ekrana dönülürse tuvaldeki yerine geri konur.
+  // Aynı elemanlar taşındığı için tüm hesaplamalar/olay bağları çalışmaya devam eder.
+  (() => {
+    const col = document.getElementById('page11AnalyticsCol');
+    const host = document.getElementById('analyticsMobileHost');
+    const canvas = document.getElementById('page11Canvas');
+    if (!col || !host || !canvas) return;
+    const mq = window.matchMedia('not all and (min-width: 768px) and (min-height: 600px)');
+    const place = () => {
+      if (mq.matches) {
+        if (col.parentNode !== host) host.appendChild(col);
+      } else if (col.parentNode !== canvas) {
+        canvas.appendChild(col);
+      }
+    };
+    place();
+    if (mq.addEventListener) mq.addEventListener('change', place);
+    else if (mq.addListener) mq.addListener(place);
+  })();
   analyticsBackBtn.addEventListener('click', closeAnalytics);
 
   // ---------- Sayfa 11 - 0 Hata Testlerim ----------
