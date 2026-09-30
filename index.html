@@ -37076,6 +37076,107 @@
     }
     .page11-context-menu-item { padding: 0.65rem 0.75rem; }
   }
+
+  /* ==========================================================================
+     TELEFON (yalnızca mobil): Soru Havuzu — SABİT ÜST ÇUBUK + OPAK ALT DÜĞMELER
+     - Başlık, sayaç, Kaynaklarım / Test Oluştur / Paketlerim düğmeleri ve
+       arama satırı (.qhavuz-topbar) artık Ayarlar sayfasındaki başlık gibi
+       aşağı kaydırılsa da ekranın üstünde SABİT kalır. Altından kayan kartlar
+       opak bir zeminle kesilir, ardından yumuşakça solar.
+     - Alttaki Geri ve Seç düğmeleri artık saydam değil: zemin, sayfa
+       rengiyle karışmış OPAK bir tondur; kartlar düğmelerin arkasından
+       görünmez.
+     Büyük ekran kuralları DEĞİŞTİRİLMEDİ (hepsi yalnızca telefon medya
+     bloğunda).
+     ========================================================================== */
+  @media not all and (min-width: 768px) and (min-height: 600px) {
+    #page-camera .qhavuz-topbar {
+      position: sticky;
+      top: 0;
+      z-index: 45;
+      isolation: isolate;
+    }
+
+    /* Opak zemin: 428px'lik çubuğun dışına taşıp tam ekran genişliğine
+       yayılır; alt kenarda ~10px'lik yumuşak geçişle erir. */
+    #page-camera .qhavuz-topbar::before {
+      content: '';
+      position: absolute;
+      left: 50%;
+      width: 100vw;
+      transform: translateX(-50%);
+      top: 0;
+      bottom: -10px;
+      z-index: -1;
+      pointer-events: none;
+      background-color: var(--theme-bg, #F6F4EF);
+      -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 10px), transparent);
+      mask-image: linear-gradient(to bottom, #000 calc(100% - 10px), transparent);
+      transition: background-color var(--theme-transition-duration, 480ms) var(--theme-transition-easing, ease);
+    }
+
+    /* Geri + Seç: saydam yerine opak zemin (sayfa rengi + %8 yazı tonu). */
+    .qhavuz-fab-back,
+    .qhavuz-fab-select {
+      background: color-mix(in srgb, var(--theme-text, #121212) 8%, var(--theme-bg, #F6F4EF));
+    }
+    .qhavuz-fab-back:active,
+    .qhavuz-fab-select:active {
+      background: color-mix(in srgb, var(--theme-text, #121212) 13%, var(--theme-bg, #F6F4EF));
+    }
+  }
+
+  /* ==========================================================================
+     TELEFON (yalnızca mobil): Denemelerim — SABİT ÜST ÇUBUK + OPAK ALT DÜĞMELER
+     - Başlık, deneme sayacı ve araç alanı (Tümü/TYT/AYT, En Yeni, arama,
+       Yedekle) .page11-header içinde durur; artık Ayarlar sayfasındaki başlık
+       gibi aşağı kaydırılsa da ekranın üstünde SABİT kalır. Üst boşluk
+       sayfadan başlığın kendisine taşındı (görünüm aynı), böylece yapışma
+       tam ekranın üst kenarında olur. Altından kayan kartlar opak bir
+       zeminle kesilir ve yumuşakça solar.
+     - Alttaki Geri ve Analizlerim düğmeleri artık saydam değil: sayfa
+       rengiyle karışmış opak bir zemin kullanırlar (Geri, Soru Havuzu ile
+       ortak .qhavuz-fab-back sınıfından zaten opak oldu).
+     Büyük ekran kuralları DEĞİŞTİRİLMEDİ.
+     ========================================================================== */
+  @media not all and (min-width: 768px) and (min-height: 600px) {
+    #page-11 {
+      padding-top: 0;
+    }
+
+    #page-11 .page11-header {
+      position: sticky;
+      top: 0;
+      z-index: 45;
+      isolation: isolate;
+      /* Soru Havuzu üst çubuğuyla (20px + güvenli alan) aynı hizaya çekildi. */
+      padding-top: calc(20px + env(safe-area-inset-top));
+    }
+
+    #page-11 .page11-header::before {
+      content: '';
+      position: absolute;
+      left: 50%;
+      width: 100vw;
+      transform: translateX(-50%);
+      top: 0;
+      bottom: -10px;
+      z-index: -1;
+      pointer-events: none;
+      background-color: var(--theme-bg, #F6F4EF);
+      -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 10px), transparent);
+      mask-image: linear-gradient(to bottom, #000 calc(100% - 10px), transparent);
+      transition: background-color var(--theme-transition-duration, 480ms) var(--theme-transition-easing, ease);
+    }
+
+    .page11-fab-analytics {
+      background: color-mix(in srgb, var(--theme-text, #121212) 8%, var(--theme-bg, #F6F4EF));
+    }
+    .page11-fab-analytics:active {
+      background: color-mix(in srgb, var(--theme-text, #121212) 13%, var(--theme-bg, #F6F4EF));
+    }
+  }
+
   </style>
 </head>
 <body oncopy="return false" oncut="return false" onselectstart="return false" ondragstart="return false">
@@ -37607,7 +37708,12 @@
       overflow-y: auto;
       overscroll-behavior: contain;
       scrollbar-width: none;
-      padding: 0.9rem 24px calc(96px + env(safe-area-inset-bottom));
+      padding: 1rem 24px calc(96px + env(safe-area-inset-bottom));
+      /* Ayarlar sayfasındaki (.settings-scroll) gibi: liste yukarı kayarken
+         başlığın altında sert bir kenarda değil, son 16px'lik bantta
+         yumuşakça saydamlaşarak (hafif bulanık) kaybolur. */
+      -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 16px, #000 100%);
+      mask-image: linear-gradient(to bottom, transparent 0, #000 16px, #000 100%);
     }
     #page-8 > .p8m-scroll::-webkit-scrollbar { display: none; }
 
@@ -40004,8 +40110,49 @@
   .sfsp.s1 { --sx: -5px; } .sfsp.s2 { --sx: 6px; } .sfsp.s3 { --sx: 1px; }
   @media (prefers-reduced-motion: reduce) { .sflame *, .sflame { animation: none !important; } }
   .p8n-head .sflame { font-size: 2.3rem; }
-  #page-8 .p8m-titlewrap { grid-column: 1; grid-row: 1; display: flex; align-items: center; gap: .55rem; min-width: 0; }
+  #page-8 .p8m-titlewrap { grid-column: 1; grid-row: 1; display: flex; align-items: baseline; gap: .55rem; min-width: 0; }
   #page-8 .p8m-titlewrap .sflame { font-size: 1.5rem; }
+  /* Telefon başlık satırı hizası (yazı tipinden BAĞIMSIZ, sabit düzen):
+     - Yazının taban çizgisi alevin alt kenarına oturur (align-items: baseline).
+     - Başlığın satır kutusu 0 yüksekliğe çekilir; böylece yazının satır
+       aralığı (Baloo 2'nin yüksek metrikleri) kabın yüksekliğini ve konumunu
+       bozamaz: kap tam alev boyunda kalır.
+     - Kap, satırın ortasında (grid align-items: center) durur; alev, ilerleme
+       halkası ve düğmeler aynı yatay eksende, yazı ise alevle aynı alt çizgide
+       olur. Alev canlı/soluk ya da seri hanesi değişse bile kutu boyutu
+       değişmediği için hiza bozulmaz. */
+  @media not all and (min-width: 768px) and (min-height: 600px) {
+    #page-8 .p8m-topbar { align-items: center; }
+    #page-8 .p8m-titlewrap { align-self: center; align-items: baseline; flex-wrap: nowrap; }
+    #page-8 .p8m-titlewrap .p8m-title { line-height: 0; }
+    #page-8 .p8m-titlewrap .sflame { align-self: baseline; align-items: baseline; }
+    /* Seri sayısı "Gündelik" yazısıyla AYNI taban çizgisinde yazılır; satır
+       kutusu 0'lanır ki kabın boyu/konumu değişmesin. */
+    #page-8 .p8m-titlewrap .sflame-num { line-height: 0; margin-top: 0; }
+    /* Alev simgesi yazının taban çizgisinin biraz altına kayar (yalnızca görsel
+       kaydırma; yerleşimi etkilemez, böylece halka/düğme hizası bozulmaz). */
+    #page-8 .p8m-titlewrap .sflame-wrap { transform: translateY(0.15em); }
+  }
+  /* Dar telefonlarda (≤380px) 2-3 haneli seri sayısı halkanın üstüne binmesin
+     diye başlık satırı orantılı küçülür; hizalama mantığı aynı kalır. */
+  @media (max-width: 380px) {
+    #page-8 .p8m-topbar { gap: 0.4rem; }
+    #page-8 .p8m-titlewrap { gap: 0.4rem; }
+    #page-8 .p8m-title { font-size: 1.4rem; }
+    #page-8 .p8m-titlewrap .sflame { font-size: 1.3rem; }
+    #page-8 .p8m-actions { gap: 0.4rem; }
+    #page-8 .p8m-topbar .p8n-notesbtn { width: 2.4rem; height: 2.4rem; }
+    #page-8 .p8m-topbar .p8n-stat-ring { width: 40px; height: 40px; }
+  }
+  @media (max-width: 340px) {
+    #page-8 > .p8m-topbar { padding-left: 16px; padding-right: 16px; gap: 0.3rem; }
+    #page-8 .p8m-titlewrap { gap: 0.3rem; }
+    #page-8 .p8m-title { font-size: 1.2rem; }
+    #page-8 .p8m-titlewrap .sflame { font-size: 1.15rem; }
+    #page-8 .p8m-actions { gap: 0.3rem; }
+    #page-8 .p8m-topbar .p8n-notesbtn { width: 2.2rem; height: 2.2rem; }
+    #page-8 .p8m-topbar .p8n-stat-ring { width: 36px; height: 36px; }
+  }
 </style>
   <section class="page" id="page-8">
     <div class="p8m-topbar" id="p8mTopbar">
