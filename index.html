@@ -37079,10 +37079,10 @@
 
   /* ==========================================================================
      TELEFON (yalnızca mobil): Soru Havuzu — SABİT ÜST ÇUBUK + OPAK ALT DÜĞMELER
-     - Başlık, sayaç, Kaynaklarım / Test Oluştur / Paketlerim düğmeleri ve
-       arama satırı (.qhavuz-topbar) artık Ayarlar sayfasındaki başlık gibi
-       aşağı kaydırılsa da ekranın üstünde SABİT kalır. Altından kayan kartlar
-       opak bir zeminle kesilir, ardından yumuşakça solar.
+     - Aşağı kaydırınca yalnızca Kaynaklarım / Test Oluştur / Paketlerim
+       düğmeleri ve arama satırı ekranın üstünde SABİT kalır; başlık satırı
+       (Soru Havuzu + soru sayısı) içerikle birlikte kayar. Altından kayan
+       kartlar opak bir zeminle kesilir, ardından yumuşakça solar.
      - Alttaki Geri ve Seç düğmeleri artık saydam değil: zemin, sayfa
        rengiyle karışmış OPAK bir tondur; kartlar düğmelerin arkasından
        görünmez.
@@ -37090,11 +37090,36 @@
      bloğunda).
      ========================================================================== */
   @media not all and (min-width: 768px) and (min-height: 600px) {
+    /* Yalnızca BUTON alanı (Kaynaklarım / Test Oluştur / Paketlerim + arama)
+       sabit kalır; başlık satırı (Soru Havuzu + soru sayısı) içerikle
+       birlikte kayıp gider. Çubuk, başlık satırı kadar (güvenli alan +
+       20px üst boşluk + 2.6rem satır + 0.5rem aralık + 0.4rem düğme
+       boşluğu) EKSİ ofsetle yapışır: böylece kaydırınca başlık satırı
+       ekranın üstüne çıkar, düğmeler güvenli alanın 12px altında kalır.
+       (Güvenli alan iki tarafta birbirini götürdüğü için hesapta yok.) */
     #page-camera .qhavuz-topbar {
       position: sticky;
-      top: 0;
+      top: calc(-8px - 3.5rem);
       z-index: 45;
       isolation: isolate;
+    }
+
+    /* Kayan başlığın güvenli alan / durum çubuğu bölgesinde görünmesini
+       engelleyen opak şerit: sayfanın üstüne yapışık, yüksekliği sıfıra
+       düşürülmüş (negatif alt boşluk) olduğundan akışı etkilemez. */
+    #page-camera::before {
+      content: '';
+      display: block;
+      flex: 0 0 auto;
+      align-self: stretch;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      height: calc(env(safe-area-inset-top) + 12px);
+      margin-bottom: calc(-1 * (env(safe-area-inset-top) + 12px));
+      pointer-events: none;
+      background-color: var(--theme-bg, #F6F4EF);
+      transition: background-color var(--theme-transition-duration, 480ms) var(--theme-transition-easing, ease);
     }
 
     /* Opak zemin: 428px'lik çubuğun dışına taşıp tam ekran genişliğine
@@ -37128,12 +37153,10 @@
 
   /* ==========================================================================
      TELEFON (yalnızca mobil): Denemelerim — SABİT ÜST ÇUBUK + OPAK ALT DÜĞMELER
-     - Başlık, deneme sayacı ve araç alanı (Tümü/TYT/AYT, En Yeni, arama,
-       Yedekle) .page11-header içinde durur; artık Ayarlar sayfasındaki başlık
-       gibi aşağı kaydırılsa da ekranın üstünde SABİT kalır. Üst boşluk
-       sayfadan başlığın kendisine taşındı (görünüm aynı), böylece yapışma
-       tam ekranın üst kenarında olur. Altından kayan kartlar opak bir
-       zeminle kesilir ve yumuşakça solar.
+     - Aşağı kaydırınca yalnızca araç alanı (Tümü/TYT/AYT, En Yeni, arama,
+       Yedekle) ekranın üstünde SABİT kalır; başlık satırı (Denemelerim +
+       deneme sayısı) içerikle birlikte kayar. Altından kayan kartlar opak
+       bir zeminle kesilir ve yumuşakça solar.
      - Alttaki Geri ve Analizlerim düğmeleri artık saydam değil: sayfa
        rengiyle karışmış opak bir zemin kullanırlar (Geri, Soru Havuzu ile
        ortak .qhavuz-fab-back sınıfından zaten opak oldu).
@@ -37144,22 +37167,38 @@
       padding-top: 0;
     }
 
+    /* Başlık satırı (Denemelerim + deneme sayısı) normal akışta kayar; yalnızca
+       altındaki araç alanı (Tümü/TYT/AYT, En Yeni, arama, Yedekle) sabit kalır.
+       Bunun için .page11-header "display: contents" olur: çocukları doğrudan
+       uzun .page11-wrap'in akışına girer ve sticky, tüm sayfa boyunca çalışır. */
     #page-11 .page11-header {
-      position: sticky;
-      top: 0;
-      z-index: 45;
-      isolation: isolate;
-      /* Soru Havuzu üst çubuğuyla (20px + güvenli alan) aynı hizaya çekildi. */
-      padding-top: calc(20px + env(safe-area-inset-top));
+      display: contents;
     }
 
-    #page-11 .page11-header::before {
+    #page-11 .page11-header-top {
+      /* Üst boşluk Soru Havuzu ile aynı (20px + güvenli alan). Eskiden
+         başlık-araç arası 0.3rem idi; wrap aralığı 1rem olduğundan fark
+         negatif marjla kapatılır, görünüm değişmez. */
+      padding-top: calc(20px + env(safe-area-inset-top));
+      margin-bottom: -0.7rem;
+    }
+
+    #page-11 .page11-mobile-tools {
+      position: sticky;
+      top: calc(env(safe-area-inset-top) + 12px);
+      z-index: 45;
+      isolation: isolate;
+    }
+
+    /* Opak zemin: ekranın en üstüne (güvenli alan dahil) kadar ve tam
+       genişlikte uzanır; alt kenarda ~10px'lik yumuşak geçişle erir. */
+    #page-11 .page11-mobile-tools::before {
       content: '';
       position: absolute;
       left: 50%;
       width: 100vw;
       transform: translateX(-50%);
-      top: 0;
+      top: calc(-1 * (env(safe-area-inset-top) + 12px));
       bottom: -10px;
       z-index: -1;
       pointer-events: none;
