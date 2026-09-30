@@ -34025,6 +34025,566 @@
   }
 
   /* ==========================================================================
+     TELEFON (yalnızca mobil): Soru Havuzu soru penceresi + Soru Bilgisi.
+     Büyük ekran kuralları DEĞİŞTİRİLMEDİ; hepsi telefon medya sorgusunda.
+     1) Görsel kaydırma gerekmeden, pencere açılır açılmaz tam görünür:
+        görsel karesi ekran yüksekliğine göre küçülür, alttaki panel
+        (ders başlığı + doğru cevap + Çözüldü) sığacak kadar yer bırakılır.
+        Kaynak/Sayfa/Eklenme satırları artık panelde değil, (i) penceresinde.
+     2) Sağ üstteki (i) ve × ikonları düğmenin tam ortasına oturtulur
+        (× artık yazı karakteri değil, iki çizgiyle çizilir).
+     3) (i) Bilgi penceresinde Kaynak / Sayfa / Eklenme Tarihi de görünür.
+     ========================================================================== */
+  @media not all and (min-width: 768px) and (min-height: 600px) {
+    /* -- 1) Görsel direkt, kaydırmasız -- */
+    #qhavuzLightboxBackdrop .qhavuz-lightbox-card {
+      gap: 0.6rem;
+      overflow-y: auto;
+      scrollbar-width: none;
+    }
+    #qhavuzLightboxBackdrop .qhavuz-lightbox-card::-webkit-scrollbar {
+      display: none;
+    }
+    #qhavuzLightboxBackdrop .qhavuz-lightbox-img-wrap {
+      width: min(100%, calc(92vh - 16.5rem));
+      width: min(100%, calc(92dvh - 16.5rem));
+      align-self: center;
+    }
+    #qhavuzLightboxBackdrop .qhavuz-lightbox-side {
+      gap: 0.7rem;
+      padding: 0.1rem 0.4rem 0.3rem;
+    }
+    #qhavuzLightboxBackdrop .qhavuz-lightbox-meta {
+      display: none;
+    }
+
+    /* -- 2) (i) ve × ikonları tam ortada -- */
+    #qhavuzLightboxBackdrop .qhavuz-lightbox-close,
+    #qhavuzLightboxBackdrop .qhavuz-lightbox-info {
+      display: grid;
+      place-items: center;
+      padding: 0;
+      line-height: 0;
+    }
+    #qhavuzLightboxBackdrop .qhavuz-lightbox-info svg {
+      display: block;
+      width: 1.15rem;
+      height: 1.15rem;
+      margin: 0;
+    }
+    #qhavuzLightboxBackdrop .qhavuz-lightbox-close {
+      font-size: 0;
+    }
+    #qhavuzLightboxBackdrop .qhavuz-lightbox-close::before,
+    #qhavuzLightboxBackdrop .qhavuz-lightbox-close::after {
+      content: '';
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 1rem;
+      height: 2.4px;
+      border-radius: 2px;
+      background: currentColor;
+      transform: translate(-50%, -50%) rotate(45deg);
+    }
+    #qhavuzLightboxBackdrop .qhavuz-lightbox-close::after {
+      transform: translate(-50%, -50%) rotate(-45deg);
+    }
+
+    /* -- 3) Soru Bilgisi: Kaynak / Sayfa / Eklenme Tarihi de görünür -- */
+    #qhavuzInfoBackdrop .qhavuz-info-card {
+      gap: 0.9rem;
+      max-height: calc(100vh - 28px);
+      max-height: calc(100dvh - 28px);
+      overflow-y: auto;
+      scrollbar-width: none;
+    }
+    #qhavuzInfoBackdrop .qhavuz-info-card::-webkit-scrollbar {
+      display: none;
+    }
+    #qhavuzInfoBackdrop .qhavuz-info-row:not(.qhavuz-info-row--desc) {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: 0.8rem 0.2rem;
+      background: transparent;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    #qhavuzInfoBackdrop .qhavuz-info-row:nth-child(3) {
+      border-bottom: none;
+    }
+    #qhavuzInfoBackdrop .qhavuz-info-row--desc {
+      margin-top: 0.9rem;
+    }
+    #qhavuzInfoBackdrop .qhavuz-info-row:not(.qhavuz-info-row--desc) .qhavuz-info-label {
+      flex: 0 0 auto;
+      padding: 0;
+      white-space: nowrap;
+    }
+    #qhavuzInfoBackdrop .qhavuz-info-row:not(.qhavuz-info-row--desc) .qhavuz-info-value {
+      flex: 1 1 auto;
+      min-width: 0;
+      max-height: none;
+      padding: 0;
+      border-radius: 0;
+      background: transparent;
+      text-align: right;
+      font-size: 0.95rem;
+      font-weight: 700;
+      line-height: 1.35;
+    }
+    #qhavuzInfoBackdrop .qhavuz-info-row:not(.qhavuz-info-row--desc) .qhavuz-info-input {
+      min-height: 0;
+      padding: 0.3rem 0;
+      border-radius: 0;
+      background: transparent;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.28);
+      text-align: right;
+      font-size: 0.95rem;
+    }
+  }
+
+  /* ==========================================================================
+     TELEFON (yalnızca mobil): Soru Havuzu'nda alt nav bar kaldırıldı.
+     Büyük ekran kuralları DEĞİŞTİRİLMEDİ; hepsi telefon medya sorgusunda.
+     - Nav bar'ın zemini, üst çizgisi, çentiği ve tıklama alanı kalkar; sayfa
+       alta kadar serbest kalır.
+     - Geri: sol altta, kutusuz/zeminsiz küçük ok ikonu (Planlayıcı'daki
+       hayalet geri butonu gibi, doğrudan arka planın üstünde).
+     - Yeni Soru Ekle: ekranın alt-orta noktasında vurgu renginde hap.
+     - Seç (sağ altta) ve Seç modundaki Vazgeç / Test / Paketle eylemleri de
+       aynı sade dille yerinde kalır; işlevleri değişmedi.
+     ========================================================================== */
+  @media not all and (min-width: 768px) and (min-height: 600px) {
+    .navbar::before {
+      transition: opacity 0.3s ease, background-color var(--theme-transition-duration, 480ms) var(--theme-transition-easing, ease);
+    }
+    .navbar::after {
+      transition: opacity 0.3s ease, background-color 0.5s ease;
+    }
+    .nav-slider {
+      transition: transform 0.55s cubic-bezier(0.34, 1.4, 0.64, 1), opacity 0.25s ease;
+    }
+
+    .navbar:has(.wrapper.is-qhavuz-mode) {
+      pointer-events: none;
+    }
+    .navbar:has(.wrapper.is-qhavuz-mode)::before,
+    .navbar:has(.wrapper.is-qhavuz-mode)::after {
+      opacity: 0;
+    }
+    .wrapper.is-qhavuz-mode {
+      pointer-events: none;
+    }
+    .wrapper.is-qhavuz-mode .nav-slider {
+      opacity: 0;
+    }
+
+    /* Orta düğme yan sütunlarla kesiştiği için hepsi aynı satıra sabitlenir
+       (aksi halde ızgara üst üste binen öğeyi alt satıra iterdi). */
+    .wrapper.is-qhavuz-mode .nav-action {
+      grid-row: 1;
+    }
+
+    /* Geri / Vazgeç (sol) ve Seç / Paketle (sağ): yalnızca küçük ikon, zeminsiz. */
+    .wrapper.is-qhavuz-mode .nav-action-back,
+    .wrapper.is-qhavuz-mode .nav-action-cancel {
+      grid-column: 1 / 3;
+      margin: 0;
+      padding: 0 0 0 10px;
+      justify-content: flex-start;
+    }
+    .wrapper.is-qhavuz-mode .nav-action-select,
+    .wrapper.is-qhavuz-mode .nav-action-package {
+      grid-column: 6 / 8;
+      margin: 0;
+      padding: 0 10px 0 0;
+      justify-content: flex-end;
+    }
+    .wrapper.is-qhavuz-mode .nav-action-back .nav-action-label,
+    .wrapper.is-qhavuz-mode .nav-action-cancel .nav-action-label,
+    .wrapper.is-qhavuz-mode .nav-action-select .nav-action-label,
+    .wrapper.is-qhavuz-mode .nav-action-package .nav-action-label {
+      display: none;
+    }
+    .wrapper.is-qhavuz-mode .nav-action-back .nav-action-icon,
+    .wrapper.is-qhavuz-mode .nav-action-cancel .nav-action-icon,
+    .wrapper.is-qhavuz-mode .nav-action-select .nav-action-icon,
+    .wrapper.is-qhavuz-mode .nav-action-package .nav-action-icon {
+      width: 20px;
+      height: 20px;
+      stroke-width: 2;
+    }
+    .wrapper.is-qhavuz-mode .nav-action-back,
+    .wrapper.is-qhavuz-mode .nav-action-back:hover,
+    .wrapper.is-qhavuz-mode .nav-action-back:active,
+    .wrapper.is-qhavuz-mode .nav-action-cancel,
+    .wrapper.is-qhavuz-mode .nav-action-cancel:hover,
+    .wrapper.is-qhavuz-mode .nav-action-cancel:active,
+    .wrapper.is-qhavuz-mode .nav-action-select,
+    .wrapper.is-qhavuz-mode .nav-action-select:hover,
+    .wrapper.is-qhavuz-mode .nav-action-select:active,
+    .wrapper.is-qhavuz-mode .nav-action-package:hover:not(:disabled),
+    .wrapper.is-qhavuz-mode .nav-action-package:active:not(:disabled) {
+      background: transparent;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .wrapper.is-qhavuz-mode .nav-action-back:active,
+    .wrapper.is-qhavuz-mode .nav-action-cancel:active,
+    .wrapper.is-qhavuz-mode .nav-action-select:active,
+    .wrapper.is-qhavuz-mode .nav-action-package:active:not(:disabled) {
+      opacity: 0.55;
+    }
+
+    /* Soru Ekle: büyük ekrandaki (#page-camera .qhavuz-canvas-add-btn) butonun
+       BİREBİR aynısı — vurgu renginde gradyanlı düz hap, beyaz yazı, parlama,
+       "+" ikonu. Ekranın alt-orta noktasında durur. */
+    .wrapper.is-qhavuz-mode .nav-action-add {
+      grid-column: 2 / 7;
+      justify-self: center;
+      align-self: center;
+      width: auto;
+      max-width: 100%;
+      height: 2.7rem;
+      padding: 0 1.15rem;
+      gap: 0.35rem;
+      border: none;
+      border-radius: 999px;
+      font-family: "Baloo 2", "Space Grotesk", sans-serif;
+      font-weight: 700;
+      font-size: 0.8rem;
+      letter-spacing: 0;
+      color: #fff;
+      background: linear-gradient(180deg, color-mix(in srgb, var(--accent-color, #ff90e8) 100%, white 12%), var(--accent-color, #ff90e8));
+      box-shadow:
+        0 3px 12px 0 color-mix(in srgb, var(--accent-color, #ff90e8) 50%, transparent),
+        inset 0 1px 0 0 rgba(255, 255, 255, 0.35);
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.18);
+    }
+    .wrapper.is-qhavuz-mode .nav-action-add .nav-action-icon {
+      width: 14px;
+      height: 14px;
+      stroke-width: 2.6;
+      filter: none;
+    }
+    .wrapper.is-qhavuz-mode .nav-action-add:active {
+      background: linear-gradient(180deg, color-mix(in srgb, var(--accent-color, #ff90e8) 100%, white 12%), var(--accent-color, #ff90e8));
+      transform: translate(1px, 1px);
+    }
+    /* Legacy Seç modundaki Test düğmesi (artık nav'da kullanılmıyor) eski
+       davranışını korur. */
+    .wrapper.is-qhavuz-mode .nav-action-test {
+      grid-column: 2 / 7;
+      justify-self: center;
+      align-self: center;
+      width: auto;
+      max-width: 100%;
+      height: 46px;
+      padding: 0 20px;
+      gap: 8px;
+      border-radius: 999px;
+      font-size: 14px;
+      font-weight: 700;
+      color: #121212;
+      background-color: var(--accent-color, #ff90e8);
+    }
+
+    /* Test seçim yokken: soluk nötr hap + "Sorulara dokun" ipucu. */
+    .wrapper.is-qhavuz-mode.is-qhavuz-select:not(.has-qhavuz-selection) .nav-action-test {
+      background-color: color-mix(in srgb, var(--theme-text, #1a1a1a) 10%, transparent);
+      color: var(--theme-text, #1a1a1a);
+      box-shadow: none;
+    }
+    .wrapper.is-qhavuz-mode.is-qhavuz-select.has-qhavuz-selection .nav-action-test {
+      color: #121212;
+    }
+    .wrapper.is-qhavuz-mode.has-qhavuz-selection .nav-action-badge {
+      background-color: #121212;
+      color: #fff;
+    }
+  }
+
+  /* ==========================================================================
+     TELEFON (yalnızca mobil): Soru penceresindeki sınav türü + ders hapı
+     ("TYT – Din"). Sınav türü küçük punto + geniş harf aralığıyla, ders ise
+     büyük puntoyla yazıldığından TYT daha ince görünüyordu. İkisi artık aynı
+     yazı tipi, punto, kalınlık ve satır yüksekliğinde; aradaki tire de aynı
+     kalınlıkta (yazıyla orantılı, em cinsinden). Tüm dersler/sınav türleri
+     aynı hapı kullandığından hepsi için geçerli.
+     ========================================================================== */
+  @media not all and (min-width: 768px) and (min-height: 600px) {
+    #qhavuzLightboxBackdrop .qhavuz-lightbox-track,
+    #qhavuzLightboxBackdrop .qhavuz-lightbox-subject {
+      font-family: "Baloo 2", "Space Grotesk", sans-serif;
+      font-size: 1.15rem;
+      font-weight: 800;
+      line-height: 1.25;
+      letter-spacing: 0.02em;
+    }
+    #qhavuzLightboxBackdrop .qhavuz-lightbox-track::after {
+      width: 0.5em;
+      height: 0.16em;
+      border-radius: 0.1em;
+    }
+  }
+
+  /* ==========================================================================
+     TELEFON (yalnızca mobil): Kaynaklarım ve Paketlerim pop-up'ları —
+     sağ üstteki × (ve Paketlerim'deki sil / geri düğmeleri) başlığın ilk
+     satırıyla hizalanır (eskiden başlık + alt başlık bloğunun ortasında,
+     yani aşağıda duruyordu) ve × artık yazı karakteri değil iki çizgiyle
+     çizildiğinden düğmenin tam ortasına oturur.
+     ========================================================================== */
+  @media not all and (min-width: 768px) and (min-height: 600px) {
+    #qhavuzBooksBackdrop .page9-add-header,
+    #qhavuzPackagesBackdrop .page9-add-header {
+      align-items: flex-start;
+    }
+    #qhavuzBooksBackdrop .qhavuz-books-head-actions,
+    #qhavuzPackagesBackdrop .qhavuz-books-head-actions,
+    #qhavuzPackagesBackdrop .qhavuz-pk-back {
+      margin-top: -0.19rem;
+    }
+    #qhavuzBooksBackdrop .page9-add-close,
+    #qhavuzPackagesBackdrop .page9-add-close {
+      position: relative;
+      font-size: 0;
+      line-height: 0;
+    }
+    #qhavuzBooksBackdrop .page9-add-close::before,
+    #qhavuzBooksBackdrop .page9-add-close::after,
+    #qhavuzPackagesBackdrop .page9-add-close::before,
+    #qhavuzPackagesBackdrop .page9-add-close::after {
+      content: '';
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 0.95rem;
+      height: 2.2px;
+      border-radius: 2px;
+      background: currentColor;
+      transform: translate(-50%, -50%) rotate(45deg);
+    }
+    #qhavuzBooksBackdrop .page9-add-close::after,
+    #qhavuzPackagesBackdrop .page9-add-close::after {
+      transform: translate(-50%, -50%) rotate(-45deg);
+    }
+    #qhavuzBooksBackdrop .page9-add-close:active,
+    #qhavuzPackagesBackdrop .page9-add-close:active {
+      background: rgba(255, 255, 255, 0.2);
+      box-shadow: none;
+      transform: scale(0.94);
+    }
+    #qhavuzPackagesBackdrop .qhavuz-pk-icon-btn svg {
+      display: block;
+    }
+  }
+
+  /* ==========================================================================
+     TELEFON (yalnızca mobil): "Seç" modu — alttan açılan seçim paneli.
+     Büyük ekrandaki seçim dock'unun (#qhavuzCanvasSelectBar) TÜM içeriği
+     (sayaç halkası, Tümünü Seç, Vazgeç, Paketle, Düzenle, Yedekle, Test
+     Oluştur, Sil) telefonda aynı düğümlerle, aynı işleyicilerle çalışır; tek
+     fark yerleşim: yatay kapsül sığmadığı için iki satırlı alt panel olur.
+       Satır 1: [ halka + "N soru seçildi" ]   [ Tümünü Seç ]   [ Vazgeç ]
+       Satır 2: 5 eşit kutucuk (ikon üstte, yazı altta)
+     Panel açıkken alt nav eylemleri (Geri / Soru Ekle / Seç) gizlenir.
+     Büyük ekran kuralları DEĞİŞTİRİLMEDİ.
+     ========================================================================== */
+  @media not all and (min-width: 768px) and (min-height: 600px) {
+    .wrapper.is-qhavuz-mode.is-qhavuz-canvas-select .nav-actions {
+      display: none;
+    }
+
+    #qhavuzCanvasSelectBar {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 55;
+      box-sizing: border-box;
+      padding: 0 12px calc(12px + env(safe-area-inset-bottom));
+      pointer-events: none;
+    }
+    #qhavuzCanvasSelectBar .qhavuz-select-dock-track {
+      display: block;
+      width: 100%;
+      max-width: 440px;
+      margin: 0 auto;
+    }
+    #qhavuzCanvasSelectBar .qhavuz-select-dock {
+      --dock-accent: var(--accent-color, #ff90e8);
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto auto;
+      align-items: center;
+      gap: 0.85rem 0.5rem;
+      padding: 0.85rem;
+      border-radius: 1.7rem;
+      background: #000;
+      color: #fff;
+      font-family: "Baloo 2", "Space Grotesk", sans-serif;
+      box-shadow:
+        0 0 0 1px rgba(255, 255, 255, 0.07),
+        0 24px 48px -14px rgba(0, 0, 0, 0.6),
+        0 0 40px -10px color-mix(in srgb, var(--dock-accent) 40%, transparent);
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transform: translate3d(0, 28px, 0);
+      transition: opacity 0.18s ease, transform 0.3s cubic-bezier(0.22, 1, 0.36, 1), visibility 0s linear 0.3s;
+    }
+    #qhavuzCanvasSelectBar.is-open .qhavuz-select-dock {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+      transform: translate3d(0, 0, 0);
+      transition: opacity 0.18s ease, transform 0.3s cubic-bezier(0.22, 1, 0.36, 1), visibility 0s;
+    }
+
+    /* Satır 1 */
+    #qhavuzCanvasSelectBar .qhavuz-select-dock-count {
+      grid-row: 1;
+      grid-column: 1;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      min-width: 0;
+      padding-left: 0.1rem;
+      white-space: nowrap;
+    }
+    #qhavuzCanvasSelectBar #qhavuzCanvasSelectAllBtn { grid-row: 1; grid-column: 2; }
+    #qhavuzCanvasSelectBar #qhavuzCanvasSelectCancelBtn { grid-row: 1; grid-column: 3; }
+    #qhavuzCanvasSelectBar .qhavuz-select-dock-ring {
+      position: relative;
+      width: 2.5rem;
+      height: 2.5rem;
+      flex: none;
+      display: grid;
+      place-items: center;
+    }
+    #qhavuzCanvasSelectBar .qhavuz-select-dock-ring svg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      transform: rotate(-90deg);
+    }
+    #qhavuzCanvasSelectBar .qhavuz-select-dock-ring circle {
+      fill: none;
+      stroke-width: 3;
+      stroke-linecap: round;
+    }
+    #qhavuzCanvasSelectBar .qhavuz-select-dock-ring .track { stroke: rgba(255, 255, 255, 0.14); }
+    #qhavuzCanvasSelectBar .qhavuz-select-dock-ring .fill {
+      stroke: var(--dock-accent);
+      stroke-dasharray: 94.25;
+      stroke-dashoffset: 94.25;
+      transition: stroke-dashoffset 0.25s ease-out;
+    }
+    #qhavuzCanvasSelectBar .qhavuz-select-dock-num {
+      position: relative;
+      font-weight: 800;
+      font-size: 0.95rem;
+      line-height: 1;
+      font-variant-numeric: tabular-nums;
+    }
+    #qhavuzCanvasSelectBar .qhavuz-select-dock-label {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      font-weight: 700;
+      font-size: 0.95rem;
+      opacity: 0.85;
+    }
+    #qhavuzCanvasSelectBar .qhavuz-select-dock-icon-btn {
+      flex: none;
+      width: 2.5rem;
+      height: 2.5rem;
+      padding: 0;
+      display: grid;
+      place-items: center;
+      border: none;
+      border-radius: 50%;
+      color: #fff;
+      background: rgba(255, 255, 255, 0.1);
+      -webkit-tap-highlight-color: transparent;
+      transition: background-color 0.18s ease, transform 0.2s ease, opacity 0.2s ease, color 0.2s ease;
+    }
+    #qhavuzCanvasSelectBar .qhavuz-select-dock-icon-btn svg {
+      width: 17px;
+      height: 17px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2.3;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    #qhavuzCanvasSelectBar .qhavuz-select-dock-icon-btn:active { transform: scale(0.88); }
+    #qhavuzCanvasSelectBar .qhavuz-select-dock-icon-btn:disabled { opacity: 0.35; }
+    #qhavuzCanvasSelectBar .qhavuz-select-dock-icon-btn.is-all {
+      background: var(--dock-accent);
+      color: #121212;
+    }
+
+    /* Satır 2: eylem kutucukları — seçim yokken soluk, seçince canlı. */
+    #qhavuzCanvasSelectBar .qhavuz-select-dock-actions {
+      grid-row: 2;
+      grid-column: 1 / -1;
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 0.4rem;
+      max-width: none;
+      overflow: visible;
+      opacity: 1;
+    }
+    #qhavuzCanvasSelectBar .qhavuz-select-dock-action {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 0.4rem;
+      min-width: 0;
+      height: 4.1rem;
+      padding: 0.65rem 0.15rem 0;
+      box-sizing: border-box;
+      border: none;
+      border-radius: 1.05rem;
+      font-family: inherit;
+      font-weight: 700;
+      font-size: 0.7rem;
+      line-height: 1.05;
+      text-align: center;
+      white-space: normal;
+      overflow-wrap: anywhere;
+      color: #fff;
+      background: rgba(255, 255, 255, 0.12);
+      -webkit-tap-highlight-color: transparent;
+      transition: background-color 0.15s ease, opacity 0.15s ease, transform 0.15s ease;
+    }
+    #qhavuzCanvasSelectBar .qhavuz-select-dock-action svg {
+      flex: none;
+      width: 20px;
+      height: 20px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2.2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    #qhavuzCanvasSelectBar .qhavuz-select-dock-action--primary {
+      background: var(--dock-accent);
+      color: #121212;
+    }
+    #qhavuzCanvasSelectBar .qhavuz-select-dock-action--danger {
+      background: rgba(229, 72, 77, 0.22);
+      color: #ff7a7e;
+    }
+    #qhavuzCanvasSelectBar .qhavuz-select-dock-action:disabled { opacity: 0.38; }
+    #qhavuzCanvasSelectBar .qhavuz-select-dock-action:not(:disabled):active { transform: scale(0.94); }
+  }
+
+  /* ==========================================================================
      TELEFON: "Kaynaklarım" ve "Paketlerim" pop-up'larının içi.
      Yukarıdaki dört blok, büyük ekran kurallarının BİREBİR kopyasıdır (yalnızca
      medya sorgusu telefona çevrildi). Aşağıdaki blok sadece dar ekrana uyum
@@ -39219,11 +39779,7 @@
       </button>
       <button type="button" class="nav-action nav-action-add" id="navQhavuzAddBtn" aria-label="Soru ekle">
         <svg class="nav-action-icon" viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M16 5h6"/>
-          <path d="M19 2v6"/>
-          <path d="M21 11.5V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7.5"/>
-          <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>
-          <circle cx="9" cy="9" r="2"/>
+          <path d="M12 5v14M5 12h14"/>
         </svg>
         <span class="nav-action-label">Soru Ekle</span>
       </button>
@@ -59757,7 +60313,9 @@
   if (qhavuzSelectBtn) qhavuzSelectBtn.addEventListener('click', () => setQhavuzSelectMode(!qhavuzSelectMode));
   if (qhavuzSelectCancelBtn) qhavuzSelectCancelBtn.addEventListener('click', () => setQhavuzSelectMode(false));
 
-  if (navQhavuzSelectBtn) navQhavuzSelectBtn.addEventListener('click', () => setQhavuzSelectMode(!qhavuzSelectMode));
+  // Telefonda Seç, büyük ekrandaki seçim paneliyle (Paketle / Düzenle / Yedekle /
+  // Test Oluştur / Sil / Tümünü Seç) aynı modu açar: setQhavuzCanvasSelectMode.
+  if (navQhavuzSelectBtn) navQhavuzSelectBtn.addEventListener('click', () => setQhavuzCanvasSelectMode(!qhavuzCanvasSelectMode));
   if (navQhavuzAddBtn) navQhavuzAddBtn.addEventListener('click', () => qhavuzFileInput.click());
 
   // Seç modu eylemleri: yüzen çubuğun (tablette hâlâ kullanılan) düğmeleriyle
@@ -59792,6 +60350,30 @@
         if (grid.nextSibling !== oldGrid) oldGrid.parentNode.insertBefore(grid, oldGrid);
       } else if (grid.previousSibling !== home) {
         home.parentNode.insertBefore(grid, home.nextSibling);
+      }
+    };
+    place();
+    if (mq.addEventListener) mq.addEventListener('change', place);
+    else if (mq.addListener) mq.addListener(place);
+  })();
+
+  // ---- Telefon seçim paneli ----
+  // Büyük ekranın seçim dock'u (#qhavuzCanvasSelectBar) telefonda, gizli
+  // #qhavuzCanvas kapsayıcısından çıkarılıp ekranın altına sabitlenen panel
+  // olarak <body>'ye TAŞINIR; aynı düğümler olduğu için tüm işleyiciler
+  // (Paketle, Düzenle, Yedekle, Test, Sil, Tümünü Seç, Vazgeç) aynen çalışır.
+  // Büyük ekrana geçilince eski yerine döner.
+  (() => {
+    const bar = document.getElementById('qhavuzCanvasSelectBar');
+    if (!bar || !bar.parentNode) return;
+    const home = document.createComment('qhavuz-select-dock-home');
+    bar.parentNode.insertBefore(home, bar);
+    const mq = window.matchMedia('not all and (min-width: 768px) and (min-height: 600px)');
+    const place = () => {
+      if (mq.matches) {
+        if (bar.parentNode !== document.body) document.body.appendChild(bar);
+      } else if (bar.previousSibling !== home) {
+        home.parentNode.insertBefore(bar, home.nextSibling);
       }
     };
     place();
@@ -62130,6 +62712,14 @@
     if (qhavuzCanvasSelectBtn) {
       qhavuzCanvasSelectBtn.classList.toggle('is-active', qhavuzCanvasSelectMode);
       qhavuzCanvasSelectBtn.setAttribute('aria-pressed', qhavuzCanvasSelectMode ? 'true' : 'false');
+    }
+    // Telefon: alt nav çubuğundaki Seç düğmesi ve nav eylemlerinin gizlenmesi.
+    if (typeof navWrapper !== 'undefined' && navWrapper) {
+      navWrapper.classList.toggle('is-qhavuz-canvas-select', qhavuzCanvasSelectMode);
+    }
+    if (typeof navQhavuzSelectBtn !== 'undefined' && navQhavuzSelectBtn) {
+      navQhavuzSelectBtn.classList.toggle('is-active', qhavuzCanvasSelectMode);
+      navQhavuzSelectBtn.setAttribute('aria-pressed', qhavuzCanvasSelectMode ? 'true' : 'false');
     }
     updateQhavuzCanvasSelectBar();
   };
