@@ -16472,16 +16472,30 @@
      tutunca Gün Geri Sayımı açılır. Etkinlikli günlerin altında küçük nokta
      görünür; seçili günün etkinlikleri bilgi satırının altında listelenir. */
   .calendar-day.has-events .calendar-day-num { position: relative; }
-  .calendar-day.has-events .calendar-day-num::after {
-    content: '';
+  /* Etkinlik noktaları: her etkinlik kendi renginde bir nokta. Yan yana en
+     fazla 3 nokta; 4. nokta bir alt satıra geçer (en fazla 6 nokta = 3 + 3).
+     Genişlik tam 3 noktaya ayarlı olduğundan taşma otomatik alt satıra iner. */
+  .calendar-day-dots {
+    --dot-size: 0.28rem;
+    --dot-gap: 0.14rem;
     position: absolute;
     left: 50%;
-    bottom: -0.42rem;
-    width: 0.32rem;
-    height: 0.32rem;
-    margin-left: -0.16rem;
+    top: calc(100% + 0.3rem);
+    transform: translateX(-50%);
+    width: calc(var(--dot-size) * 3 + var(--dot-gap) * 2);
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--dot-gap);
+    pointer-events: none;
+  }
+  .calendar-day-dots i {
+    display: block;
+    flex: 0 0 auto;
+    width: var(--dot-size);
+    height: var(--dot-size);
     border-radius: 50%;
-    background-color: var(--accent-color, #ff90e8);
+    background-color: var(--dot-c, var(--accent-color, #ff90e8));
   }
   .calendar-events {
     flex-shrink: 0;
@@ -16518,79 +16532,176 @@
   .calendar-events .calendar-event-add::before { content: ''; width: .55rem; height: .55rem; border-radius: 50%; background: var(--accent-color, #ff90e8); }
   .calendar-event-hint { margin: 0; padding: 0 0.2rem; font-weight: 600; font-size: 0.82rem; opacity: 0.4; }
 
+  /* ---------- Etkinlik pop-up'ı ----------
+     Genişlik sabit (min(24rem, 100%)); görünümler (liste / düzenle / saat)
+     arasında yalnızca içerik kayarak solar, yükseklik ise yumuşakça uyum
+     sağlar. Saat seçici iPhone'daki gibi 3B dönen çarklardır. */
   .cal-ev-backdrop {
     position: fixed; inset: 0; z-index: 300;
     display: flex; align-items: center; justify-content: center;
     padding: 20px; box-sizing: border-box;
-    background: rgba(0, 0, 0, 0.5);
-    opacity: 0; pointer-events: none;
-    transition: opacity 0.2s ease;
+    background: rgba(0, 0, 0, 0.42);
+    -webkit-backdrop-filter: blur(0px); backdrop-filter: blur(0px);
+    opacity: 0; pointer-events: none; visibility: hidden;
+    transition: opacity .35s ease, backdrop-filter .45s ease, -webkit-backdrop-filter .45s ease, visibility 0s linear .45s;
   }
-  .cal-ev-backdrop.is-open { opacity: 1; pointer-events: auto; }
+  .cal-ev-backdrop.is-open {
+    opacity: 1; pointer-events: auto; visibility: visible;
+    -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+    transition: opacity .35s ease, backdrop-filter .45s ease, -webkit-backdrop-filter .45s ease, visibility 0s;
+  }
   .cal-ev-sheet {
-    width: 100%; max-width: 26rem; box-sizing: border-box;
-    padding: 1.3rem 1.3rem 1.1rem;
-    border-radius: 1.6rem;
-    background: color-mix(in srgb, var(--theme-text, #f2f2f7) 10%, var(--theme-bg, #1c1c22));
+    --ce-bg: color-mix(in srgb, var(--theme-text, #f2f2f7) 10%, var(--theme-bg, #1c1c22));
+    width: min(24rem, 100%); box-sizing: border-box;
+    padding: 1.25rem 1.25rem 1.15rem;
+    border-radius: 1.9rem;
+    background: var(--ce-bg);
     color: var(--theme-text, #f2f2f7);
     font-family: "Baloo 2", "Space Grotesk", sans-serif;
-    box-shadow: 0 24px 60px -18px rgba(0, 0, 0, 0.6);
-    transform: translateY(14px) scale(0.97);
-    transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 30px 80px -24px rgba(0, 0, 0, 0.65), 0 0 0 1px color-mix(in srgb, var(--theme-text, #f2f2f7) 8%, transparent);
+    opacity: 0; transform: translateY(22px) scale(0.95);
+    transition: transform .5s cubic-bezier(.22, 1, .36, 1), opacity .3s ease;
   }
-  .cal-ev-backdrop.is-open .cal-ev-sheet { transform: none; }
-  .cal-ev-title { margin: 0; font-weight: 800; font-size: 1.25rem; }
-  .cal-ev-date { margin: 0.1rem 0 0.9rem; font-weight: 600; font-size: 0.88rem; opacity: 0.55; }
-  .cal-ev-input, .cal-ev-time {
-    -webkit-user-select: text; user-select: text;
-    width: 100%; box-sizing: border-box; height: 2.9rem; padding: 0 1rem;
-    border: none; outline: none; border-radius: 1rem;
-    background: color-mix(in srgb, var(--theme-text, #f2f2f7) 9%, transparent);
-    color: inherit; font: inherit; font-weight: 700; font-size: 1rem;
-    color-scheme: dark light;
-  }
-  .cal-ev-input::placeholder { color: inherit; opacity: 0.4; }
-  .cal-ev-timerow { display: flex; align-items: center; gap: 0.8rem; margin-top: 0.6rem; font-weight: 700; font-size: 0.9rem; }
-  .cal-ev-timerow span { flex: 0 0 auto; opacity: 0.6; }
-  .cal-ev-time { flex: 1; }
-  .cal-ev-clear { flex: 0 0 auto; border: none; background: none; color: inherit; font: inherit; font-weight: 700; font-size: 0.8rem; opacity: 0.5; cursor: pointer; padding: 0.3rem 0.2rem; }
-  .cal-ev-actions { display: flex; gap: 0.5rem; margin-top: 1.1rem; }
-  .cal-ev-actions button {
-    flex: 1; height: 2.8rem; border: none; border-radius: 999px; cursor: pointer;
-    font: inherit; font-weight: 800; font-size: 0.95rem; color: inherit;
-    background: color-mix(in srgb, var(--theme-text, #f2f2f7) 10%, transparent);
-    transition: transform 0.15s ease;
-  }
-  .cal-ev-actions button:active { transform: scale(0.96); }
-  .cal-ev-actions .cal-ev-save { background: var(--accent-color, #ff90e8); color: #16171b; }
-  .cal-ev-actions .cal-ev-delete { color: #ff453a; }
-  .cal-ev-actions [hidden] { display: none; }
+  .cal-ev-backdrop.is-open .cal-ev-sheet { opacity: 1; transform: none; }
   .cal-ev-sheet [hidden] { display: none !important; }
-  .cal-ev-head { display: flex; align-items: flex-start; gap: 0.4rem; }
+  .cal-ev-head { display: flex; align-items: flex-start; gap: .6rem; margin-bottom: 1rem; }
   .cal-ev-headtxt { flex: 1; min-width: 0; }
-  .cal-ev-ic { flex: 0 0 auto; width: 2.4rem; height: 2.4rem; display: grid; place-items: center; border: none; border-radius: 50%; cursor: pointer; color: inherit; background: color-mix(in srgb, var(--theme-text, #f2f2f7) 9%, transparent); transition: transform .15s ease, background-color .2s ease; }
-  .cal-ev-ic:active { transform: scale(0.92); }
-  .cal-ev-ic.is-on { background: var(--accent-color, #ff90e8); color: #16171b; }
-  .cal-ev-colors { display: flex; gap: 0.55rem; flex-wrap: wrap; margin-top: 0.9rem; }
-  .cal-ev-colors button { width: 1.9rem; height: 1.9rem; border-radius: 50%; border: 3px solid transparent; padding: 0; cursor: pointer; transition: transform .15s ease; }
-  .cal-ev-colors button.is-on { border-color: var(--theme-text, #f2f2f7); transform: scale(1.12); }
-  .cal-ev-chip { display: inline-flex; align-items: center; gap: .4rem; margin-top: .9rem; height: 2.2rem; padding: 0 .9rem; border: none; border-radius: 999px; cursor: pointer; font: inherit; font-weight: 800; font-size: .92rem; color: inherit; background: color-mix(in srgb, var(--theme-text, #f2f2f7) 9%, transparent); }
-  .cal-ev-clock { margin-top: .9rem; padding: .7rem; border-radius: 1.2rem; background: color-mix(in srgb, var(--theme-text, #f2f2f7) 7%, transparent); }
-  .cal-ev-cols { display: flex; align-items: center; justify-content: center; gap: .5rem; }
-  .cal-ev-colon { font-weight: 800; font-size: 1.4rem; opacity: .5; }
-  .cal-ev-col { width: 4.6rem; height: 9.5rem; overflow-y: auto; scroll-snap-type: y mandatory; scrollbar-width: none; display: flex; flex-direction: column; gap: .2rem; padding: 3.4rem 0; box-sizing: border-box; }
-  .cal-ev-col::-webkit-scrollbar { display: none; }
-  .cal-ev-col button { flex: 0 0 2.2rem; scroll-snap-align: center; border: none; border-radius: .8rem; background: none; color: inherit; font: inherit; font-weight: 800; font-size: 1.15rem; opacity: .4; cursor: pointer; }
-  .cal-ev-col button.is-on { opacity: 1; background: var(--accent-color, #ff90e8); color: #16171b; }
-  .cal-ev-clockact { display: flex; gap: .5rem; margin-top: .6rem; }
-  .cal-ev-clockact button { flex: 1; height: 2.4rem; border: none; border-radius: 999px; cursor: pointer; font: inherit; font-weight: 800; font-size: .85rem; color: inherit; background: color-mix(in srgb, var(--theme-text, #f2f2f7) 10%, transparent); }
-  .cal-ev-clockact #calEvClockOk { background: var(--accent-color, #ff90e8); color: #16171b; }
-  #calEvListView { display: flex; flex-direction: column; gap: .45rem; max-height: 50vh; overflow-y: auto; }
-  .cal-ev-item { display: flex; align-items: center; gap: .7rem; width: 100%; box-sizing: border-box; padding: .8rem 1rem; border: none; border-radius: 1.1rem; cursor: pointer; text-align: left; font: inherit; color: inherit; background: color-mix(in srgb, var(--theme-text, #f2f2f7) 8%, transparent); }
-  .cal-ev-item i { flex: 0 0 auto; width: .75rem; height: .75rem; border-radius: 50%; }
-  .cal-ev-item em { flex: 0 0 auto; min-width: 2.9rem; font-style: normal; font-weight: 700; font-size: .86rem; opacity: .6; }
-  .cal-ev-item b { flex: 1; min-width: 0; font-weight: 800; font-size: 1rem; overflow-wrap: anywhere; }
-  .cal-ev-add { height: 2.7rem; border: none; border-radius: 999px; cursor: pointer; font: inherit; font-weight: 800; font-size: .9rem; color: #16171b; background: var(--accent-color, #ff90e8); margin-top: .3rem; }
+  .cal-ev-headtxt.is-swap > * { animation: ceTxt .4s cubic-bezier(.22, 1, .36, 1) both; }
+  .cal-ev-headtxt.is-swap > .cal-ev-date { animation-delay: .04s; }
+  @keyframes ceTxt { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+  .cal-ev-title { margin: 0; font-weight: 800; font-size: 1.32rem; line-height: 1.2; letter-spacing: -.01em; }
+  .cal-ev-date { margin: .15rem 0 0; font-weight: 600; font-size: .86rem; opacity: .55; }
+  .cal-ev-ic {
+    flex: 0 0 auto; width: 2.4rem; height: 2.4rem; display: grid; place-items: center;
+    border: none; border-radius: 50%; cursor: pointer; color: inherit;
+    background: color-mix(in srgb, var(--theme-text, #f2f2f7) 9%, transparent);
+    transition: transform .15s ease, background-color .2s ease;
+  }
+  .cal-ev-ic:active { transform: scale(.9); }
+
+  /* Görünüm sahnesi: yükseklik JS ile animasyonlanır; taşma ve odak halkası
+     kırpılmasın diye iç boşluk + negatif kenar boşluğu kullanılır. */
+  .cal-ev-stage {
+    position: relative; overflow: hidden; margin: -.5rem; padding: .5rem;
+    transition: height .45s cubic-bezier(.22, 1, .36, 1);
+  }
+  .cal-ev-view { transition: opacity .3s ease, transform .5s cubic-bezier(.22, 1, .36, 1); }
+  .cal-ev-view.is-leaving {
+    opacity: 0; transform: translateX(calc(var(--dir, 1) * -18px));
+    transition-duration: .15s, .15s;
+  }
+  .cal-ev-view.is-entering { opacity: 0; transform: translateX(calc(var(--dir, 1) * 18px)); }
+
+  /* Düzenle görünümü */
+  .cal-ev-input {
+    -webkit-user-select: text; user-select: text;
+    width: 100%; box-sizing: border-box; height: 3.1rem; padding: 0 1.1rem;
+    border: none; outline: none; border-radius: 1.15rem;
+    background: color-mix(in srgb, var(--theme-text, #f2f2f7) 8%, transparent);
+    box-shadow: 0 0 0 2px transparent;
+    color: inherit; font: inherit; font-weight: 700; font-size: 1.05rem;
+    transition: box-shadow .25s ease, background-color .25s ease;
+  }
+  .cal-ev-input:focus { box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent-color, #ff90e8) 75%, transparent); background: color-mix(in srgb, var(--theme-text, #f2f2f7) 11%, transparent); }
+  .cal-ev-input::placeholder { color: inherit; opacity: .38; }
+  .cal-ev-lbl { margin: 1.15rem 0 .65rem .15rem; font-weight: 800; font-size: .7rem; letter-spacing: .09em; text-transform: uppercase; opacity: .45; }
+  .cal-ev-colors { display: flex; justify-content: space-between; gap: .4rem; padding: .3rem .25rem; }
+  .cal-ev-colors button {
+    flex: 0 0 auto; width: 1.95rem; height: 1.95rem; border-radius: 50%; border: none; padding: 0; cursor: pointer;
+    background: var(--c);
+    transition: transform .3s cubic-bezier(.34, 1.56, .64, 1), box-shadow .25s ease;
+  }
+  .cal-ev-colors button:active { transform: scale(.88); }
+  .cal-ev-colors button.is-on { transform: scale(1.1); box-shadow: 0 0 0 3px var(--ce-bg), 0 0 0 5px var(--c); }
+  .cal-ev-row {
+    display: flex; align-items: center; gap: .7rem; width: 100%; box-sizing: border-box;
+    height: 3.2rem; margin-top: 1.15rem; padding: 0 1rem; border: none; border-radius: 1.15rem; cursor: pointer;
+    text-align: left; font: inherit; font-weight: 800; font-size: .98rem; color: inherit;
+    background: color-mix(in srgb, var(--theme-text, #f2f2f7) 8%, transparent);
+    transition: transform .15s ease, background-color .2s ease;
+  }
+  .cal-ev-row:active { transform: scale(.98); background: color-mix(in srgb, var(--theme-text, #f2f2f7) 12%, transparent); }
+  .cal-ev-row > svg { flex: 0 0 auto; opacity: .55; }
+  .cal-ev-row-lbl { flex: 1; }
+  .cal-ev-row-val { font-weight: 800; font-size: .92rem; padding: .22rem .7rem; border-radius: 999px; opacity: .55; transition: background-color .25s ease, color .25s ease, opacity .25s ease; font-variant-numeric: tabular-nums; }
+  .cal-ev-row.is-set .cal-ev-row-val { opacity: 1; background: var(--accent-color, #ff90e8); color: #16171b; }
+  .cal-ev-actions { display: flex; gap: .5rem; margin-top: 1.25rem; }
+  .cal-ev-actions button, .cal-ev-clockact button {
+    flex: 1; height: 2.9rem; border: none; border-radius: 999px; cursor: pointer;
+    font: inherit; font-weight: 800; font-size: .95rem; color: inherit;
+    background: color-mix(in srgb, var(--theme-text, #f2f2f7) 10%, transparent);
+    transition: transform .15s ease, background-color .2s ease;
+  }
+  .cal-ev-actions button:active, .cal-ev-clockact button:active { transform: scale(.96); }
+  .cal-ev-actions .cal-ev-save, .cal-ev-clockact #calEvClockOk { background: var(--accent-color, #ff90e8); color: #16171b; }
+  .cal-ev-actions .cal-ev-delete { color: #ff453a; }
+
+  /* Liste görünümü */
+  .cal-ev-list { display: flex; flex-direction: column; gap: .5rem; max-height: min(46vh, 22rem); overflow-y: auto; scrollbar-width: none; padding: .1rem; margin: -.1rem; }
+  .cal-ev-list::-webkit-scrollbar { display: none; }
+  .cal-ev-item {
+    display: flex; align-items: center; gap: .85rem; width: 100%; box-sizing: border-box;
+    padding: .8rem .95rem .8rem .85rem; border: none; border-radius: 1.25rem; cursor: pointer;
+    text-align: left; font: inherit; color: inherit;
+    background: color-mix(in srgb, var(--c) 13%, var(--ce-bg));
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--c) 18%, transparent);
+    animation: ceItem .55s cubic-bezier(.22, 1, .36, 1) both;
+    animation-delay: calc(var(--i, 0) * 50ms + 100ms);
+    transition: transform .15s ease;
+  }
+  .cal-ev-item:active { transform: scale(.98); }
+  @keyframes ceItem { from { opacity: 0; transform: translateY(10px) scale(.98); } to { opacity: 1; transform: none; } }
+  .cal-ev-bar { flex: 0 0 auto; align-self: stretch; width: .3rem; min-height: 2.1rem; border-radius: 999px; background: var(--c); }
+  .cal-ev-meta { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: .05rem; }
+  .cal-ev-meta b { font-weight: 800; font-size: 1.02rem; line-height: 1.25; overflow-wrap: anywhere; }
+  .cal-ev-meta em { font-style: normal; font-weight: 700; font-size: .8rem; opacity: .55; font-variant-numeric: tabular-nums; }
+  .cal-ev-item > svg { flex: 0 0 auto; opacity: .4; }
+  .cal-ev-add {
+    width: 100%; height: 2.9rem; margin-top: .85rem; border: none; border-radius: 999px; cursor: pointer;
+    font: inherit; font-weight: 800; font-size: .95rem; color: #16171b; background: var(--accent-color, #ff90e8);
+    transition: transform .15s ease;
+  }
+  .cal-ev-add:active { transform: scale(.97); }
+
+  /* Saat görünümü: iPhone tarzı 3B çarklar. Ortadaki satır otomatik seçilir;
+     baştaki/sondaki saatler silindirin kıvrımı gibi eğilip solar. */
+  .cal-ev-wheels { --ih: 2.6rem; position: relative; display: flex; justify-content: center; margin: .15rem 0 .3rem; }
+  .cal-ev-wheels::before {
+    content: ''; position: absolute; left: .3rem; right: .3rem; top: 50%; height: var(--ih);
+    transform: translateY(-50%); border-radius: 1rem; pointer-events: none;
+    background: color-mix(in srgb, var(--theme-text, #f2f2f7) 11%, transparent);
+  }
+  .cal-ev-wheel {
+    position: relative; z-index: 1; width: 6.4rem; height: calc(var(--ih) * 5);
+    overflow-y: auto; overscroll-behavior: contain; scroll-snap-type: y mandatory;
+    scrollbar-width: none; -webkit-overflow-scrolling: touch; touch-action: pan-y;
+    -webkit-mask-image: linear-gradient(transparent, #000 24%, #000 76%, transparent);
+    mask-image: linear-gradient(transparent, #000 24%, #000 76%, transparent);
+  }
+  .cal-ev-wheel::-webkit-scrollbar { display: none; }
+  .cal-ev-wi {
+    height: var(--ih); display: flex; align-items: center; scroll-snap-align: center;
+    font-weight: 700; font-size: 1.65rem; font-variant-numeric: tabular-nums; cursor: pointer;
+    opacity: 0; will-change: transform, opacity; -webkit-user-select: none; user-select: none;
+  }
+  #calEvHours .cal-ev-wi { justify-content: flex-end; padding-right: 1.05rem; }
+  #calEvMins .cal-ev-wi { justify-content: flex-start; padding-left: 1.05rem; }
+  .cal-ev-clockact { display: flex; gap: .5rem; margin-top: 1rem; }
+
+  /* Silme onayı (aynı pop-up içinde, diğer görünümler gibi kayarak gelir) */
+  .cal-ev-confirm { display: flex; flex-direction: column; align-items: center; text-align: center; padding: .4rem .2rem 0; }
+  .cal-ev-confirm-ic {
+    width: 3.6rem; height: 3.6rem; display: grid; place-items: center; border-radius: 50%;
+    color: #ff453a; background: color-mix(in srgb, #ff453a 16%, transparent);
+    box-shadow: 0 0 0 .55rem color-mix(in srgb, #ff453a 7%, transparent);
+  }
+  .cal-ev-confirm-q { margin: 1.15rem 0 0; font-weight: 800; font-size: 1.12rem; line-height: 1.3; overflow-wrap: anywhere; }
+  .cal-ev-confirm-s { margin: .3rem 0 0; font-weight: 600; font-size: .86rem; opacity: .55; }
+  .cal-ev-actions .cal-ev-danger { background: #ff453a; color: #fff; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cal-ev-backdrop, .cal-ev-sheet, .cal-ev-stage, .cal-ev-view, .cal-ev-item { transition-duration: .01s !important; animation-duration: .01s !important; animation-delay: 0s !important; }
+  }
 
   /* ---------- Takvim animasyonları ----------
      Tek bir sahnelenmiş an: sayfa açılınca başlık, gün adları ve alttaki
@@ -37262,9 +37373,7 @@
      kuralları DEĞİŞTİRİLMEDİ.
      ========================================================================== */
   @media not all and (min-width: 768px) and (min-height: 600px) {
-    .calendar-day.has-events .calendar-day-num::after {
-      bottom: -0.85rem;
-    }
+    /* Nokta ölçüleri artık tüm ekranlar için ana kuralda (.calendar-day-dots). */
   }
 </style>
 </head>
@@ -39540,22 +39649,38 @@
     <div class="cal-ev-sheet" role="dialog" aria-modal="true" aria-labelledby="calEvTitle">
       <div class="cal-ev-head">
         <div class="cal-ev-headtxt"><h3 class="cal-ev-title" id="calEvTitle">Etkinlik ekle</h3><p class="cal-ev-date" id="calEvDate"></p></div>
-        <button type="button" class="cal-ev-ic" id="calEvClockBtn" aria-label="Saat ayarla" title="Saat ayarla"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12.5" r="8"/><path d="M12 8.5v4l2.5 1.5"/></svg></button>
         <button type="button" class="cal-ev-ic" id="calEvX" aria-label="Kapat"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
       </div>
-      <div id="calEvListView"></div>
-      <div id="calEvEditView">
-        <input class="cal-ev-input" id="calEvName" type="text" maxlength="60" placeholder="Örn. Ali'nin doğum günü" autocomplete="off">
-        <div class="cal-ev-colors" id="calEvColors" role="radiogroup" aria-label="Etkinlik rengi"></div>
-        <button type="button" class="cal-ev-chip" id="calEvTimeChip" hidden></button>
-        <div class="cal-ev-clock" id="calEvClock" hidden>
-          <div class="cal-ev-cols"><div class="cal-ev-col" id="calEvHours"></div><span class="cal-ev-colon">:</span><div class="cal-ev-col" id="calEvMins"></div></div>
-          <div class="cal-ev-clockact"><button type="button" id="calEvTimeClear">Saati kaldır</button><button type="button" id="calEvClockOk">Tamam</button></div>
+      <div class="cal-ev-stage" id="calEvStage">
+        <div class="cal-ev-view" id="calEvListView">
+          <div class="cal-ev-list" id="calEvList"></div>
+          <button type="button" class="cal-ev-add" id="calEvAddBtn">+ Etkinlik ekle</button>
         </div>
-        <div class="cal-ev-actions">
-          <button type="button" class="cal-ev-delete" id="calEvDelete" hidden>Sil</button>
-          <button type="button" id="calEvCancel">Vazgeç</button>
-          <button type="button" class="cal-ev-save" id="calEvSave">Kaydet</button>
+        <div class="cal-ev-view" id="calEvEditView" hidden>
+          <input class="cal-ev-input" id="calEvName" type="text" maxlength="60" placeholder="Örn. Ali'nin doğum günü" autocomplete="off">
+          <div class="cal-ev-lbl">Renk</div>
+          <div class="cal-ev-colors" id="calEvColors" role="radiogroup" aria-label="Etkinlik rengi"></div>
+          <button type="button" class="cal-ev-row" id="calEvTimeRow"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12.5" r="8"/><path d="M12 8.5v4l2.5 1.5"/></svg><span class="cal-ev-row-lbl">Saat</span><span class="cal-ev-row-val" id="calEvTimeVal">Ekle</span><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>
+          <div class="cal-ev-actions">
+            <button type="button" class="cal-ev-delete" id="calEvDelete" hidden>Sil</button>
+            <button type="button" id="calEvCancel">Vazgeç</button>
+            <button type="button" class="cal-ev-save" id="calEvSave">Kaydet</button>
+          </div>
+        </div>
+        <div class="cal-ev-view" id="calEvConfirmView" hidden>
+          <div class="cal-ev-confirm">
+            <div class="cal-ev-confirm-ic"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M9 7V4.5h6V7M6.5 7l.8 12a1.5 1.5 0 0 0 1.5 1.4h6.4a1.5 1.5 0 0 0 1.5-1.4l.8-12M10 11v6M14 11v6"/></svg></div>
+            <p class="cal-ev-confirm-q" id="calEvConfirmQ"></p>
+            <p class="cal-ev-confirm-s">Bu işlem geri alınamaz.</p>
+          </div>
+          <div class="cal-ev-actions">
+            <button type="button" id="calEvConfirmNo">Vazgeç</button>
+            <button type="button" class="cal-ev-danger" id="calEvConfirmYes">Sil</button>
+          </div>
+        </div>
+        <div class="cal-ev-view" id="calEvClockView" hidden>
+          <div class="cal-ev-wheels"><div class="cal-ev-wheel" id="calEvHours" aria-label="Saat"></div><div class="cal-ev-wheel" id="calEvMins" aria-label="Dakika"></div></div>
+          <div class="cal-ev-clockact"><button type="button" id="calEvTimeClear">Saati kaldır</button><button type="button" id="calEvClockOk">Tamam</button></div>
         </div>
       </div>
     </div>
@@ -46667,7 +46792,27 @@
       const cd = getDayCountdown(date);
       const label = `${day} ${CALENDAR_MONTHS[calendarViewMonth]}`;
       cell.classList.toggle('has-countdown', !!cd);
-      cell.classList.toggle('has-events', getDayEvents(date).length > 0);
+      const dayEvs = getDayEvents(date);
+      cell.classList.toggle('has-events', dayEvs.length > 0);
+      // Etkinlik renklerine göre noktalar (en fazla 6: 3 + 3 iki satır).
+      const numEl = cell.firstElementChild;
+      let dotsEl = numEl.querySelector('.calendar-day-dots');
+      if (!dayEvs.length) {
+        if (dotsEl) dotsEl.remove();
+      } else {
+        if (!dotsEl) {
+          dotsEl = document.createElement('span');
+          dotsEl.className = 'calendar-day-dots';
+          dotsEl.setAttribute('aria-hidden', 'true');
+          numEl.appendChild(dotsEl);
+        }
+        dotsEl.innerHTML = '';
+        dayEvs.slice(0, 6).forEach((ev) => {
+          const dot = document.createElement('i');
+          dot.style.setProperty('--dot-c', ce_evColor(ev));
+          dotsEl.appendChild(dot);
+        });
+      }
       if (cd) {
         cell.style.setProperty('--cd-color', cd.color);
         cell.style.setProperty('--cd-on', dayCdOnColor(cd.color));
@@ -48297,67 +48442,195 @@
 
   const ce_dateLabel = (d) => `${d.getDate()} ${CALENDAR_MONTHS[d.getMonth()]} ${d.getFullYear()} · ${CALENDAR_WEEKDAYS_LONG[(d.getDay() + 6) % 7]}`;
   const ce_showBackdrop = () => { calEvBackdrop.classList.add('is-open'); calEvBackdrop.setAttribute('aria-hidden', 'false'); };
-  const ce_setMode = (list) => { $ce('calEvListView').hidden = !list; $ce('calEvEditView').hidden = list; $ce('calEvClockBtn').hidden = list; };
+  const ce_isOpen = () => calEvBackdrop.classList.contains('is-open');
 
-  // Saat seçici (uygulamanın kendi tasarımı; tarayıcı saat seçicisi ve klavye yok)
+  // ---- Görünüm geçişi: genişlik sabit; yalnızca içerik kayarak solar, yükseklik yumuşakça değişir.
+  const ce_views = { list: $ce('calEvListView'), edit: $ce('calEvEditView'), clock: $ce('calEvClockView'), confirm: $ce('calEvConfirmView') };
+  const ce_stage = $ce('calEvStage');
+  let ce_view = null, ce_switchTok = 0;
+  const ce_editHead = () => (calEvEditId ? 'Etkinliği düzenle' : 'Etkinlik ekle');
+  const ce_setHead = (title, sub, animate) => {
+    const t = $ce('calEvTitle'), d = $ce('calEvDate'), box = t.parentElement;
+    t.textContent = title; d.textContent = sub;
+    if (animate) { box.classList.remove('is-swap'); void box.offsetWidth; box.classList.add('is-swap'); }
+  };
+  const ce_go = (name, dir, head) => {
+    const next = ce_views[name], prev = ce_view ? ce_views[ce_view] : null;
+    const tok = ++ce_switchTok;
+    const animate = ce_isOpen() && prev && prev !== next && !prev.hidden;
+    if (head) ce_setHead(head[0], head[1], animate);
+    ce_view = name;
+    Object.keys(ce_views).forEach((k) => {
+      const v = ce_views[k];
+      if (v !== next && !(animate && v === prev)) v.hidden = true;
+      if (v !== prev || !animate) v.classList.remove('is-leaving', 'is-entering');
+    });
+    if (!animate) {
+      next.hidden = false; ce_stage.style.height = '';
+      if (name === 'clock') ce_initWheels();
+      return;
+    }
+    const h0 = ce_stage.offsetHeight;
+    ce_stage.style.height = h0 + 'px';
+    ce_stage.style.setProperty('--dir', String(dir));
+    prev.classList.add('is-leaving');
+    setTimeout(() => {
+      if (tok !== ce_switchTok) return;
+      prev.hidden = true; prev.classList.remove('is-leaving');
+      next.hidden = false; next.classList.add('is-entering');
+      if (name === 'clock') ce_initWheels();
+      ce_stage.style.height = 'auto';
+      const h1 = ce_stage.offsetHeight;
+      ce_stage.style.height = h0 + 'px';
+      void ce_stage.offsetHeight;
+      ce_stage.style.height = h1 + 'px';
+      requestAnimationFrame(() => requestAnimationFrame(() => next.classList.remove('is-entering')));
+      setTimeout(() => { if (tok === ce_switchTok) ce_stage.style.height = ''; }, 480);
+    }, 150);
+  };
+
+  // ---- Saat: iPhone tarzı 3B çarklar (sonsuz döngülü, ortadaki satır otomatik seçilir)
+  const ce_W = { h: { el: $ce('calEvHours'), n: 24, val: 0, built: false }, m: { el: $ce('calEvMins'), n: 60, val: 0, built: false } };
+  let ce_ih = 0;
   const ce_syncTimeUi = () => {
-    const chip = $ce('calEvTimeChip');
-    chip.hidden = !calEvTimeVal; chip.textContent = calEvTimeVal ? `🕒 ${calEvTimeVal}` : '';
-    $ce('calEvClockBtn').classList.toggle('is-on', !!calEvTimeVal);
-    $ce('calEvHours').querySelectorAll('button').forEach((x) => x.classList.toggle('is-on', +x.dataset.v === ce_clockH));
-    $ce('calEvMins').querySelectorAll('button').forEach((x) => x.classList.toggle('is-on', +x.dataset.v === ce_clockM));
+    $ce('calEvTimeVal').textContent = calEvTimeVal || 'Ekle';
+    $ce('calEvTimeRow').classList.toggle('is-set', !!calEvTimeVal);
   };
-  const ce_centerSel = () => ['calEvHours', 'calEvMins'].forEach((id) => { const c = $ce(id), s = c.querySelector('.is-on'); if (s) c.scrollTop = s.offsetTop - c.clientHeight / 2 + s.offsetHeight / 2; });
-  const ce_buildClock = () => {
-    const H = $ce('calEvHours'), M = $ce('calEvMins');
-    if (H.children.length) return;
-    for (let h = 0; h < 24; h++) { const b = document.createElement('button'); b.type = 'button'; b.dataset.v = h; b.textContent = ce_pad2(h); b.onclick = () => { ce_clockH = h; calEvTimeVal = `${ce_pad2(ce_clockH)}:${ce_pad2(ce_clockM)}`; ce_syncTimeUi(); }; H.appendChild(b); }
-    for (let m = 0; m < 60; m += 5) { const b = document.createElement('button'); b.type = 'button'; b.dataset.v = m; b.textContent = ce_pad2(m); b.onclick = () => { ce_clockM = m; calEvTimeVal = `${ce_pad2(ce_clockH)}:${ce_pad2(ce_clockM)}`; ce_syncTimeUi(); }; M.appendChild(b); }
+  const ce_pos = (w, k) => k * ce_ih + ce_ih / 2 - w.el.clientHeight / 2;
+  const ce_centerIdx = (w) => (w.el.scrollTop + w.el.clientHeight / 2 - ce_ih / 2) / ce_ih;
+  const ce_commitWheels = () => {
+    ce_clockH = ce_W.h.val; ce_clockM = ce_W.m.val;
+    calEvTimeVal = `${ce_pad2(ce_clockH)}:${ce_pad2(ce_clockM)}`;
+    ce_syncTimeUi();
+    if (navigator.vibrate) { try { navigator.vibrate(3); } catch (err) { /* yok say */ } }
   };
-  const ce_toggleClock = (open) => {
-    const c = $ce('calEvClock'); const show = open === undefined ? c.hidden : open;
-    if (show) {
-      ce_buildClock();
-      if (!calEvTimeVal) { const n = new Date(); ce_clockH = n.getHours(); ce_clockM = Math.floor(n.getMinutes() / 5) * 5; calEvTimeVal = `${ce_pad2(ce_clockH)}:${ce_pad2(ce_clockM)}`; }
-      c.hidden = false; ce_syncTimeUi(); ce_centerSel();
-    } else { c.hidden = true; }
+  // Her satır silindir üzerinde konumlanır: merkezden uzaklaştıkça eğilir, küçülür, solar.
+  const ce_fx = (w) => {
+    const c = ce_centerIdx(w), kids = w.el.children;
+    const R = ce_ih * 2.6, step = 22 * Math.PI / 180;
+    const lo = Math.max(0, Math.floor(c) - 4), hi = Math.min(kids.length - 1, Math.ceil(c) + 4);
+    for (let k = lo; k <= hi; k++) {
+      const d = k - c;
+      const th = Math.max(-1.35, Math.min(1.35, d * step));
+      const dy = R * Math.sin(th) - d * ce_ih;
+      const st = kids[k].style;
+      st.transform = `translateY(${dy.toFixed(1)}px) perspective(${(ce_ih * 9).toFixed(0)}px) rotateX(${(-th * 180 / Math.PI).toFixed(1)}deg)`;
+      st.opacity = Math.max(0, 1 - Math.abs(d) / 2.7).toFixed(2);
+    }
+    const v = ((Math.round(c) % w.n) + w.n) % w.n;
+    if (v !== w.val) { w.val = v; ce_commitWheels(); }
   };
+  // Hareket durunca, çarkı döngünün ortasına sessizce geri al (sonsuz kaydırma).
+  const ce_settle = (w) => {
+    if (w.down) return;
+    const c = ce_centerIdx(w);
+    if (c < w.n * 0.75 || c > w.n * 2.25) {
+      const shift = c < w.n ? w.n : -w.n;
+      w.el.style.scrollSnapType = 'none';
+      w.el.scrollTop += shift * ce_ih;
+      requestAnimationFrame(() => { w.el.style.scrollSnapType = ''; });
+    }
+  };
+  const ce_buildWheel = (w) => {
+    if (w.built) return;
+    w.built = true;
+    const frag = document.createDocumentFragment();
+    for (let c = 0; c < 3; c++) for (let i = 0; i < w.n; i++) {
+      const it = document.createElement('div');
+      it.className = 'cal-ev-wi'; it.textContent = ce_pad2(i);
+      frag.appendChild(it);
+    }
+    w.el.appendChild(frag);
+    w.el.addEventListener('scroll', () => {
+      if (!w.raf) w.raf = requestAnimationFrame(() => { w.raf = 0; ce_fx(w); });
+      clearTimeout(w.t); w.t = setTimeout(() => ce_settle(w), 120);
+    }, { passive: true });
+    w.el.addEventListener('touchstart', () => { w.down = true; }, { passive: true });
+    const up = () => { w.down = false; clearTimeout(w.t); w.t = setTimeout(() => ce_settle(w), 200); };
+    w.el.addEventListener('touchend', up, { passive: true });
+    w.el.addEventListener('touchcancel', up, { passive: true });
+    w.el.addEventListener('click', (e) => {
+      const it = e.target.closest('.cal-ev-wi');
+      if (!it) return;
+      const k = Array.prototype.indexOf.call(w.el.children, it);
+      w.el.scrollTo({ top: ce_pos(w, k), behavior: 'smooth' });
+    });
+  };
+  const ce_initWheels = () => {
+    ce_buildWheel(ce_W.h); ce_buildWheel(ce_W.m);
+    ce_ih = parseFloat(getComputedStyle(ce_W.h.el.firstElementChild).height); // offsetHeight yuvarlar; 3x kopyada kayma yapar
+    ce_W.h.val = ce_clockH; ce_W.m.val = ce_clockM;
+    [ce_W.h, ce_W.m].forEach((w) => {
+      w.el.style.scrollSnapType = 'none';
+      w.el.scrollTop = ce_pos(w, w.n + w.val);
+      ce_fx(w);
+      requestAnimationFrame(() => { w.el.style.scrollSnapType = ''; });
+    });
+  };
+  const ce_openClock = () => {
+    if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
+    if (!calEvTimeVal) {
+      const n = new Date(); ce_clockH = n.getHours(); ce_clockM = n.getMinutes();
+      calEvTimeVal = `${ce_pad2(ce_clockH)}:${ce_pad2(ce_clockM)}`;
+    } else { ce_clockH = +calEvTimeVal.slice(0, 2); ce_clockM = +calEvTimeVal.slice(3, 5); }
+    ce_syncTimeUi();
+    ce_go('clock', 1, ['Saat seç', ce_dateLabel(calEvDay)]);
+  };
+  // Silmeden önce aynı pop-up içinde onay istenir.
+  const ce_askDelete = () => {
+    if (!calEvDay || !calEvEditId) return;
+    const ev = getDayEvents(calEvDay).find((x) => x.id === calEvEditId);
+    $ce('calEvConfirmQ').textContent = `“${(ev && ev.name) || calEvName.value.trim() || 'Etkinlik'}” silinsin mi?`;
+    if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
+    ce_go('confirm', 1, ['Etkinliği sil', ce_dateLabel(calEvDay)]);
+  };
+  const ce_closeClock = () => ce_go('edit', -1, [ce_editHead(), ce_dateLabel(calEvDay)]);
+
   const ce_renderColors = () => {
     const w = $ce('calEvColors'); w.innerHTML = '';
-    ce_EV_COLORS.forEach((c) => { const b = document.createElement('button'); b.type = 'button'; b.style.background = c; b.setAttribute('role', 'radio'); b.setAttribute('aria-label', c); b.classList.toggle('is-on', c === calEvColor); b.onclick = () => { calEvColor = c; ce_renderColors(); }; w.appendChild(b); });
+    ce_EV_COLORS.forEach((c) => {
+      const b = document.createElement('button');
+      b.type = 'button'; b.style.setProperty('--c', c);
+      b.setAttribute('role', 'radio'); b.setAttribute('aria-label', c);
+      b.classList.toggle('is-on', c === calEvColor);
+      b.onclick = () => { calEvColor = c; w.querySelectorAll('button').forEach((x) => x.classList.toggle('is-on', x === b)); };
+      w.appendChild(b);
+    });
   };
 
+  const CE_CHEV = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>';
   const openCalEventList = (date) => {
     const d = new Date(date.getFullYear(), date.getMonth(), date.getDate());
     const list = getDayEvents(d);
     if (!list.length) { openCalEventSheet(d, null); return; }
     calEvDay = d; calEvEditId = null;
-    $ce('calEvTitle').textContent = 'Etkinlikler'; $ce('calEvDate').textContent = ce_dateLabel(d);
-    const box = $ce('calEvListView'); box.innerHTML = '';
-    list.forEach((ev) => {
+    const box = $ce('calEvList'); box.innerHTML = '';
+    list.forEach((ev, i) => {
       const r = document.createElement('button'); r.type = 'button'; r.className = 'cal-ev-item';
-      const dot = document.createElement('i'); dot.style.background = ce_evColor(ev);
-      const t = document.createElement('em'); t.textContent = ev.time || 'Tüm gün';
-      const n = document.createElement('b'); n.textContent = ev.name;
-      r.append(dot, t, n); r.onclick = () => openCalEventSheet(d, ev); box.appendChild(r);
+      r.style.setProperty('--c', ce_evColor(ev)); r.style.setProperty('--i', String(i));
+      r.innerHTML = `<span class="cal-ev-bar"></span><span class="cal-ev-meta"><b></b><em></em></span>${CE_CHEV}`;
+      r.querySelector('b').textContent = ev.name;
+      r.querySelector('em').textContent = ev.time || 'Tüm gün';
+      r.onclick = () => openCalEventSheet(d, ev);
+      box.appendChild(r);
     });
-    const add = document.createElement('button'); add.type = 'button'; add.className = 'cal-ev-add'; add.textContent = '+ Etkinlik ekle';
-    add.onclick = () => openCalEventSheet(d, null); box.appendChild(add);
-    ce_setMode(true); ce_showBackdrop();
+    ce_go('list', -1, ['Etkinlikler', ce_dateLabel(d)]);
+    ce_showBackdrop();
   };
 
   const openCalEventSheet = (date, ev) => {
+    const wasOpen = ce_isOpen();
     calEvDay = new Date(date.getFullYear(), date.getMonth(), date.getDate());
     calEvEditId = ev ? ev.id : null;
-    $ce('calEvTitle').textContent = ev ? 'Etkinliği düzenle' : 'Etkinlik ekle';
-    $ce('calEvDate').textContent = ce_dateLabel(calEvDay);
     calEvName.value = ev ? ev.name : '';
     calEvColor = ce_evColor(ev); calEvTimeVal = ev ? ev.time : '';
-    if (calEvTimeVal) { ce_clockH = +calEvTimeVal.slice(0, 2); ce_clockM = Math.round(+calEvTimeVal.slice(3) / 5) * 5 % 60; }
+    if (calEvTimeVal) { ce_clockH = +calEvTimeVal.slice(0, 2); ce_clockM = +calEvTimeVal.slice(3, 5); }
     calEvDelete.hidden = !ev;
-    ce_renderColors(); ce_toggleClock(false); ce_syncTimeUi(); ce_setMode(false); ce_showBackdrop();
-    // Klavye sadece yeni etkinlikte (isim yazılacağı için) açılır.
-    if (!ev) setTimeout(() => calEvName.focus(), 120);
+    ce_renderColors(); ce_syncTimeUi();
+    ce_go('edit', 1, [ce_editHead(), ce_dateLabel(calEvDay)]);
+    ce_showBackdrop();
+    // Klavye sadece yeni etkinlikte (isim yazılacağı için) açılır; geçiş bittikten sonra.
+    if (!ev) setTimeout(() => { if (ce_view === 'edit') calEvName.focus(); }, wasOpen ? 440 : 180);
   };
 
   const closeCalEventSheet = () => {
@@ -48400,11 +48673,13 @@
   $ce('calEvSave').addEventListener('click', saveCalEvent);
   $ce('calEvCancel').addEventListener('click', () => { const d = calEvDay; if (d && getDayEvents(d).length) openCalEventList(d); else closeCalEventSheet(); });
   $ce('calEvX').addEventListener('click', closeCalEventSheet);
-  $ce('calEvClockBtn').addEventListener('click', () => { if (document.activeElement && document.activeElement.blur) document.activeElement.blur(); ce_toggleClock(); });
-  $ce('calEvTimeChip').addEventListener('click', () => ce_toggleClock(true));
-  $ce('calEvClockOk').addEventListener('click', () => ce_toggleClock(false));
-  $ce('calEvTimeClear').addEventListener('click', () => { calEvTimeVal = ''; ce_toggleClock(false); ce_syncTimeUi(); });
-  calEvDelete.addEventListener('click', deleteCalEvent);
+  $ce('calEvTimeRow').addEventListener('click', ce_openClock);
+  $ce('calEvClockOk').addEventListener('click', ce_closeClock);
+  $ce('calEvTimeClear').addEventListener('click', () => { calEvTimeVal = ''; ce_syncTimeUi(); ce_closeClock(); });
+  $ce('calEvAddBtn').addEventListener('click', () => { if (calEvDay) openCalEventSheet(calEvDay, null); });
+  calEvDelete.addEventListener('click', ce_askDelete);
+  $ce('calEvConfirmYes').addEventListener('click', deleteCalEvent);
+  $ce('calEvConfirmNo').addEventListener('click', () => ce_go('edit', -1, [ce_editHead(), ce_dateLabel(calEvDay)]));
   calEvBackdrop.addEventListener('click', (e) => { if (e.target === calEvBackdrop) closeCalEventSheet(); });
   calEvName.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); saveCalEvent(); } });
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && calEvBackdrop.classList.contains('is-open')) closeCalEventSheet(); });
