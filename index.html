@@ -8865,6 +8865,21 @@
       padding-left: 0;
     }
 
+    /* Telefonda sayaç tıklanabilir: dokununca "N soru" ↔ "N çözüldü"
+       arasında geçer (bkz. JS: qhavuzCountToggle). Rakam, büyük ekrandaki
+       "Çözülen Soru" ile aynı oran renklerini alır. */
+    #page-camera .qhavuz-topbar > .qhavuz-count {
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: manipulation;
+    }
+
+    #page-camera .qhavuz-count-num.is-rate-low { color: #e5484d; }
+    #page-camera .qhavuz-count-num.is-rate-mid { color: #e2a03f; }
+    #page-camera .qhavuz-count-num.is-rate-high { color: #46a758; }
+
     /* Sayaç filtre bloğundan çıktığı için Düzenle hapına (sağ üst köşe)
        ayrılan üst boşluk padding ile korunur; Filtrele satırı hapın altında kalır. */
     #page-camera .qhavuz-filter-bar {
@@ -8886,6 +8901,307 @@
 
     .qhavuz-scroll:has(.qhavuz-grid.is-select-mode) {
       padding-bottom: calc(96px + env(safe-area-inset-bottom));
+    }
+  }
+
+  /* ---- Soru Havuzu (telefon): yeniden tasarım için temizlik ----
+     Filtrele / Yeni / Düzenle, Test Modu / Paketlerim kutuları ve
+     "İşlemler" / "Filtrele & Sırala" etiketleri telefonda gizlendi (DOM ve
+     JS'ler yerinde duruyor, silinmedi). Başlığın altına büyük ekrandaki
+     Test Oluştur + Paketlerim düğmeleri eklendi. Büyük ekrana dokunmaz. */
+  @media not all and (min-width: 768px) and (min-height: 600px) {
+    #page-camera .qhavuz-quick-actions,
+    #page-camera .qhavuz-filter-bar,
+    #page-camera .qhavuz-toolbar-label {
+      display: none !important;
+    }
+
+    /* Sayaç JS ile topbar'a taşındığı için satırlar açıkça sabitlenir. */
+    #page-camera .qhavuz-topbar-title,
+    #page-camera .qhavuz-topbar > .qhavuz-count {
+      grid-row: 1;
+    }
+
+    /* Kısayol düğmeleri: büyük ekrandaki yan panel düğmelerinin (.qhavuz-canvas-side-btn
+       ve --soft) BİREBİR kopyası — aynı ölçü, renk, gölge, font. Yalnızca
+       telefonda yan yana iki eşit sütun. */
+    #page-camera .qhavuz-topbar-tools {
+      grid-column: 1 / -1;
+      grid-row: 2;
+      display: flex;
+      gap: 0.8rem;
+      margin-top: 0.4rem;
+    }
+
+    #page-camera .qhavuz-topbar-tools .qhavuz-canvas-side-btn {
+      flex: 1 1 0;
+      min-width: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 2.7rem;
+      padding: 0 1.15rem;
+      font-family: "Baloo 2", "Space Grotesk", sans-serif;
+      font-weight: 700;
+      font-size: 0.85rem;
+      color: #fff;
+      background: linear-gradient(180deg, color-mix(in srgb, var(--accent-color, #ff90e8) 100%, white 12%), var(--accent-color, #ff90e8));
+      box-shadow:
+        0 3px 12px 0 color-mix(in srgb, var(--accent-color, #ff90e8) 50%, transparent),
+        inset 0 1px 0 0 rgba(255, 255, 255, 0.35);
+      border: none;
+      border-radius: 999px;
+      cursor: pointer;
+      white-space: nowrap;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.18);
+      transition: transform 0.15s ease, box-shadow 0.18s ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    #page-camera .qhavuz-topbar-tools .qhavuz-canvas-side-btn svg { flex: 0 0 auto; }
+    #page-camera .qhavuz-topbar-tools .qhavuz-canvas-side-btn:active { transform: translate(1px, 1px); }
+
+    #page-camera .qhavuz-topbar-tools .qhavuz-canvas-side-btn--soft {
+      gap: 0.45rem;
+      color: var(--theme-text, #121212);
+      background: color-mix(in srgb, var(--theme-text, #121212) 10%, transparent);
+      box-shadow: none;
+      text-shadow: none;
+    }
+  }
+
+  /* ---- Soru Havuzu (telefon): arama satırı ----
+     Arama kutusu + Yedekle (ikon) + En Yeni/En Eski, kısayol düğmelerinin
+     altında tek satır. Görünüm büyük ekrandaki yumuşak yüzey diliyle aynı;
+     büyük ekranın kuralları yalnızca geniş ekran medya bloğunda olduğundan
+     burada telefon için yeniden tanımlanır. Büyük ekrana dokunmaz. */
+  @media not all and (min-width: 768px) and (min-height: 600px) {
+    #page-camera .qhavuz-topbar-search {
+      grid-column: 1 / -1;
+      grid-row: 3;
+      display: flex;
+      align-items: center;
+      gap: 0.55rem;
+      margin-top: 0.1rem;
+      min-width: 0;
+    }
+
+    #page-camera .qhavuz-topbar-search .qhavuz-canvas-search {
+      flex: 1 1 auto;
+      min-width: 0;
+      display: flex;
+      align-items: center;
+      gap: 0.55rem;
+      height: 2.7rem;
+      padding: 0 1rem;
+      border-radius: 999px;
+      background-color: color-mix(in srgb, var(--theme-text, #121212) 8%, transparent);
+      box-shadow: inset 0 1px 3px 0 color-mix(in srgb, var(--theme-text, #121212) 10%, transparent);
+      transition: background-color 0.5s ease;
+    }
+
+    #page-camera .qhavuz-topbar-search .qhavuz-canvas-search-icon {
+      flex: 0 0 auto;
+      color: color-mix(in srgb, var(--theme-text, #121212) 55%, transparent);
+    }
+
+    #page-camera .qhavuz-topbar-search .qhavuz-canvas-search-input {
+      flex: 1 1 auto;
+      min-width: 0;
+      border: none;
+      background: none;
+      outline: none;
+      padding: 0;
+      font-family: "Baloo 2", "Space Grotesk", sans-serif;
+      font-weight: 600;
+      font-size: 0.85rem;
+      color: var(--theme-text, #121212);
+    }
+
+    #page-camera .qhavuz-topbar-search .qhavuz-canvas-search-input::placeholder {
+      color: color-mix(in srgb, var(--theme-text, #121212) 45%, transparent);
+    }
+
+    #page-camera .qhavuz-topbar-search .qhavuz-canvas-search-clear {
+      flex: 0 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 0;
+      height: 1.35rem;
+      margin-left: -0.55rem;
+      padding: 0;
+      border: none;
+      border-radius: 50%;
+      color: color-mix(in srgb, var(--theme-text, #121212) 62%, transparent);
+      background-color: color-mix(in srgb, var(--theme-text, #121212) 11%, transparent);
+      cursor: pointer;
+      opacity: 0;
+      transform: scale(0.4) rotate(-45deg);
+      pointer-events: none;
+      overflow: hidden;
+      transition: width 0.24s cubic-bezier(0.34, 1.56, 0.64, 1), margin-left 0.24s cubic-bezier(0.34, 1.56, 0.64, 1), transform 0.24s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.16s ease;
+    }
+
+    #page-camera .qhavuz-topbar-search .qhavuz-canvas-search-clear.is-visible {
+      width: 1.35rem;
+      margin-left: 0;
+      opacity: 1;
+      transform: scale(1) rotate(0deg);
+      pointer-events: auto;
+    }
+
+    #page-camera .qhavuz-topbar-search .qhavuz-canvas-backup-wrap {
+      position: relative;
+      display: inline-flex;
+      flex: 0 0 auto;
+    }
+
+    #page-camera .qhavuz-topbar-search .qhavuz-canvas-icon-btn {
+      flex: 0 0 auto;
+      display: grid;
+      place-items: center;
+      width: 2.7rem;
+      height: 2.7rem;
+      padding: 0;
+      color: color-mix(in srgb, var(--theme-text, #121212) 94%, transparent);
+      background-color: color-mix(in srgb, var(--theme-text, #121212) 8%, transparent);
+      box-shadow: inset 0 1px 3px 0 color-mix(in srgb, var(--theme-text, #121212) 10%, transparent);
+      border: none;
+      border-radius: 50%;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      transition: transform 0.15s ease, color 0.35s ease;
+    }
+
+    #page-camera .qhavuz-topbar-search .qhavuz-canvas-sort-btn {
+      flex: 0 0 auto;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      height: 2.7rem;
+      padding: 0 1.1rem;
+      font-family: "Baloo 2", "Space Grotesk", sans-serif;
+      font-weight: 700;
+      font-size: 0.8rem;
+      color: color-mix(in srgb, var(--theme-text, #121212) 94%, transparent);
+      background-color: color-mix(in srgb, var(--theme-text, #121212) 8%, transparent);
+      box-shadow: inset 0 1px 3px 0 color-mix(in srgb, var(--theme-text, #121212) 10%, transparent);
+      border: none;
+      border-radius: 999px;
+      cursor: pointer;
+      white-space: nowrap;
+      -webkit-tap-highlight-color: transparent;
+      transition: transform 0.15s ease, color 0.35s ease;
+    }
+
+    #page-camera .qhavuz-topbar-search .qhavuz-canvas-icon-btn:active,
+    #page-camera .qhavuz-topbar-search .qhavuz-canvas-sort-btn:active {
+      transform: translate(1px, 1px);
+    }
+
+    #page-camera .qhavuz-topbar-search .qhavuz-canvas-sort-icon {
+      flex: 0 0 auto;
+      transition: transform 0.2s ease;
+    }
+
+    #page-camera .qhavuz-topbar-search .qhavuz-canvas-sort-btn.is-asc .qhavuz-canvas-sort-icon {
+      transform: rotate(180deg);
+    }
+
+    body.is-anthracite #page-camera .qhavuz-topbar-search .qhavuz-canvas-search-icon,
+    body.is-anthracite #page-camera .qhavuz-topbar-search .qhavuz-canvas-search-input,
+    body.is-anthracite #page-camera .qhavuz-topbar-search .qhavuz-canvas-icon-btn,
+    body.is-anthracite #page-camera .qhavuz-topbar-search .qhavuz-canvas-sort-btn {
+      color: color-mix(in srgb, var(--theme-text, #f2f2f4) 82%, transparent);
+    }
+
+    /* Yedekle açılır menüsü: stili yalnızca büyük ekranda tanımlı olduğundan
+       telefon için (sadece bu menüye özel) yeniden tanımlandı. Konumu JS
+       (left/top) ayarlar; açılınca .is-open ile görünür. */
+    #qhavuzCanvasBackupMenu.page11-context-menu {
+      width: min(248px, calc(100vw - 16px));
+      box-sizing: border-box;
+      padding: 0.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+      background: #000;
+      border-radius: 1.3em;
+      box-shadow: 0 20px 44px -16px rgba(0, 0, 0, 0.55), 0 2px 10px 0 rgba(0, 0, 0, 0.3);
+      transform: scale(0.94) translateY(4px);
+      transform-origin: top left;
+      transition: opacity 0.15s ease, transform 0.15s ease;
+      font-family: "Baloo 2", "Space Grotesk", sans-serif;
+    }
+
+    #qhavuzCanvasBackupMenu.page11-context-menu.is-open {
+      opacity: 1;
+      pointer-events: auto;
+      transform: scale(1) translateY(0);
+    }
+
+    #qhavuzCanvasBackupMenu .page11-context-menu-item {
+      --ic-bg: rgba(255, 255, 255, 0.12);
+      --ic-fg: #fff;
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      width: 100%;
+      padding: 0.55rem 0.7rem;
+      border: none;
+      border-radius: 1em;
+      background: transparent;
+      color: #fff;
+      font: inherit;
+      text-align: left;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    #qhavuzCanvasBackupMenu .page11-context-menu-item:active {
+      background: rgba(255, 255, 255, 0.09);
+    }
+
+    #qhavuzCanvasBackupMenu .page11-context-menu-item-ic {
+      display: grid;
+      place-items: center;
+      flex: none;
+      width: 2.2rem;
+      height: 2.2rem;
+      border-radius: 50%;
+      background: var(--ic-bg);
+      color: var(--ic-fg);
+    }
+
+    #qhavuzCanvasBackupMenu .page11-context-menu-item-ic svg {
+      width: 15px;
+      height: 15px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2.2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    #qhavuzCanvasBackupMenu .page11-context-menu-item-text {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      line-height: 1.18;
+    }
+
+    #qhavuzCanvasBackupMenu .page11-context-menu-item-title {
+      font-weight: 700;
+      font-size: 0.9rem;
+      color: #fff;
+    }
+
+    #qhavuzCanvasBackupMenu .page11-context-menu-item-sub {
+      margin-top: 0.05rem;
+      font-weight: 600;
+      font-size: 0.7rem;
+      color: rgba(255, 255, 255, 0.5);
     }
   }
 
@@ -32361,6 +32677,1425 @@
     }
   }
 
+  /* ---- TELEFON: Kaynaklarım + Paketlerim (büyük ekranın kopyası) ---- */
+  @media not all and (min-width: 768px) and (min-height: 600px) {
+    #qhavuzBooksBackdrop {
+      background: rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+    #qhavuzBooksBackdrop .qhavuz-add-card {
+      max-width: 580px;
+      height: min(44rem, 88vh);
+      max-height: 88vh;
+      padding: 2rem 2.3rem 1.8rem;
+      border: none;
+      border-radius: 1.9em;
+      background: #000;
+      font-family: "Baloo 2", "Space Grotesk", sans-serif;
+      box-shadow:
+        0 28px 60px -18px rgba(0, 0, 0, 0.55),
+        0 2px 10px 0 rgba(0, 0, 0, 0.3);
+    }
+    #qhavuzBooksBackdrop .page9-add-header {
+      align-items: center;
+      margin-bottom: 1.2rem;
+      padding-bottom: 1.1rem;
+      border-bottom: 1.5px solid rgba(255, 255, 255, 0.12);
+    }
+    #qhavuzBooksBackdrop .page9-add-title {
+      font-family: "Baloo 2", "Space Grotesk", sans-serif;
+      font-weight: 700;
+      font-size: 1.55rem;
+      line-height: 1.15;
+      color: #f5f5f7;
+    }
+    #qhavuzBooksBackdrop .page9-add-subtitle {
+      font-family: "Baloo 2", "Space Grotesk", sans-serif;
+      font-weight: 500;
+      font-size: 0.9rem;
+      color: rgba(255, 255, 255, 0.55);
+      opacity: 1;
+    }
+    #qhavuzBooksBackdrop .page9-add-close {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 2.15rem;
+      height: 2.15rem;
+      padding: 0;
+      border: none;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.1);
+      box-shadow: none;
+      color: rgba(255, 255, 255, 0.75);
+      font-size: 1.3rem;
+      line-height: 1;
+      cursor: pointer;
+      transition: background-color 0.18s ease, color 0.18s ease;
+    }
+    #qhavuzBooksBackdrop .qhavuz-add-body {
+      scrollbar-width: none;
+    }
+    #qhavuzBooksBackdrop .qhavuz-add-body::-webkit-scrollbar {
+      display: none;
+    }
+    /* Parlama (box-shadow) kaydırma kutusunun kenarında kesilmesin diye
+       gövdeye iç boşluk verilip aynı miktarda negatif dış boşlukla
+       yerleşim korunur. */
+    #qhavuzBooksBackdrop .qhavuz-books-body {
+      padding: 1.1rem 1.2rem;
+      margin: -1.1rem -1.2rem;
+    }
+    #qhavuzBooksBackdrop .qhavuz-books-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.55rem;
+    }
+    #qhavuzBooksBackdrop .qhavuz-books-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: 0.85rem 1.1rem;
+      border-radius: 1.1rem;
+      background: rgba(255, 255, 255, 0.08);
+      color: #f5f5f7;
+      font-family: "Baloo 2", "Space Grotesk", sans-serif;
+      font-weight: 600;
+      font-size: 1rem;
+    }
+    #qhavuzBooksBackdrop .qhavuz-books-item-name {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    #qhavuzBooksBackdrop .qhavuz-books-item-count {
+      flex: 0 0 auto;
+      font-weight: 500;
+      font-size: 0.85rem;
+      color: rgba(255, 255, 255, 0.55);
+    }
+    #qhavuzBooksBackdrop .qhavuz-books-head-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+    #qhavuzBooksBackdrop .qhavuz-books-select-btn {
+      height: 2.15rem;
+      padding: 0 1rem;
+      border: none;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.1);
+      color: rgba(255, 255, 255, 0.85);
+      font-family: "Baloo 2", "Space Grotesk", sans-serif;
+      font-weight: 700;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: background-color 0.2s ease, color 0.2s ease, transform 0.15s ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+    #qhavuzBooksBackdrop .qhavuz-books-select-btn[aria-pressed="true"] {
+      background: #fff;
+      color: #000;
+    }
+    #qhavuzBooksBackdrop .qhavuz-books-item {
+      position: relative;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
+      transition: background-color 0.22s ease, box-shadow 0.28s ease, transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    #qhavuzBooksBackdrop .qhavuz-books-item-right {
+      flex: 0 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 0.7rem;
+    }
+    /* Onay dairesi: Gündelik'teki Düzenle modunda beliren silme (×)
+       butonlarıyla AYNI hareket dili — ölçek 0.6→1 yaylı (spring) büyüme,
+       opaklık ve kayan kenar boşluğu; yanındaki sayı da aynı anda yumuşakça
+       yana kayar. Boyutlar sabit, yalnızca margin/transform/opacity değişir
+       (yerleşim sıçramaz). */
+    #qhavuzBooksBackdrop .qhavuz-books-check {
+      flex: 0 0 auto;
+      width: 1.3rem;
+      height: 1.3rem;
+      margin-left: -2rem;
+      opacity: 0;
+      transform: scale(0.6);
+      pointer-events: none;
+      border-radius: 50%;
+      box-sizing: border-box;
+      border: 2px solid rgba(255, 255, 255, 0.35);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition:
+        transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1),
+        opacity 0.2s ease,
+        margin 0.22s cubic-bezier(0.34, 1.56, 0.64, 1),
+        background-color 0.2s ease,
+        border-color 0.2s ease;
+    }
+    #qhavuzBooksBackdrop .qhavuz-books-check svg {
+      opacity: 0;
+      transform: scale(0.4);
+      transition: opacity 0.15s ease, transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    #qhavuzBooksBackdrop .qhavuz-books-list.is-select-mode .qhavuz-books-check {
+      opacity: 1;
+      transform: scale(1);
+      margin-left: 0;
+      pointer-events: auto;
+    }
+    #qhavuzBooksBackdrop .qhavuz-books-item { cursor: pointer; }
+    #qhavuzBooksBackdrop .qhavuz-books-item.is-selected {
+      background: color-mix(in srgb, var(--accent-color, #ff90e8) 16%, rgba(255, 255, 255, 0.08));
+      box-shadow:
+        0 0 0 1.5px color-mix(in srgb, var(--accent-color, #ff90e8) 85%, transparent),
+        0 0 18px 2px color-mix(in srgb, var(--accent-color, #ff90e8) 45%, transparent);
+    }
+    #qhavuzBooksBackdrop .qhavuz-books-item.is-selected .qhavuz-books-check {
+      background: var(--accent-color, #ff90e8);
+      border-color: var(--accent-color, #ff90e8);
+    }
+    #qhavuzBooksBackdrop .qhavuz-books-item.is-selected .qhavuz-books-check svg { opacity: 1; transform: scale(1); }
+    #qhavuzBooksBackdrop .qhavuz-books-item.is-pressing { transform: scale(0.985); }
+    #qhavuzBooksBackdrop .qhavuz-books-footer {
+      flex: 0 0 auto;
+      box-sizing: border-box;
+      max-height: 0;
+      padding-top: 0;
+      margin-top: 0;
+      overflow: hidden;
+      opacity: 0;
+      transform: translateY(12px) scale(0.96);
+      pointer-events: none;
+      border-top: 1.5px solid transparent;
+      transition:
+        max-height 0.26s cubic-bezier(0.34, 1.56, 0.64, 1),
+        padding-top 0.26s cubic-bezier(0.34, 1.56, 0.64, 1),
+        margin-top 0.26s cubic-bezier(0.34, 1.56, 0.64, 1),
+        opacity 0.2s ease,
+        transform 0.26s cubic-bezier(0.34, 1.56, 0.64, 1),
+        border-color 0.2s ease;
+    }
+    #qhavuzBooksBackdrop .qhavuz-books-footer.is-visible {
+      max-height: 6rem;
+      padding-top: 1.1rem;
+      margin-top: 0.4rem;
+      opacity: 1;
+      transform: translateY(0) scale(1);
+      pointer-events: auto;
+      overflow: visible; /* butonun parlayan gölgesi kesilmesin */
+      border-top-color: rgba(255, 255, 255, 0.12);
+    }
+    #qhavuzBooksBackdrop .qhavuz-books-apply-btn {
+      width: 100%;
+      height: 2.9rem;
+      border: none;
+      border-radius: 999px;
+      color: #fff;
+      font-family: "Baloo 2", "Space Grotesk", sans-serif;
+      font-weight: 700;
+      font-size: 0.95rem;
+      background: linear-gradient(180deg, color-mix(in srgb, var(--accent-color, #ff90e8) 100%, white 12%), var(--accent-color, #ff90e8));
+      box-shadow: 0 3px 12px 0 color-mix(in srgb, var(--accent-color, #ff90e8) 50%, transparent), inset 0 1px 0 0 rgba(255, 255, 255, 0.35);
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.18);
+      cursor: pointer;
+    }
+    #qhavuzBooksBackdrop .qhavuz-books-apply-btn { transition: transform 0.15s ease, box-shadow 0.18s ease; }
+    #qhavuzBooksBackdrop .qhavuz-books-apply-btn:active { transform: translate(1px, 1px); }
+    #qhavuzBooksBackdrop .qhavuz-books-empty {
+      padding: 2rem 0;
+      text-align: center;
+      font-family: "Baloo 2", "Space Grotesk", sans-serif;
+      font-weight: 500;
+      font-size: 0.95rem;
+      color: rgba(255, 255, 255, 0.55);
+    }
+  }
+
+  @media not all and (min-width: 768px) and (min-height: 600px) {
+    /* ---- Paketlerim pop-up'ı (yeni tasarım için iskelet; Kaynaklarım ile aynı yüzey) ---- */
+    #qhavuzPackagesBackdrop {
+      background: rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+    #qhavuzPackagesBackdrop .qhavuz-add-card {
+      max-width: 580px;
+      height: min(44rem, 88vh);
+      max-height: 88vh;
+      padding: 2rem 2.3rem 1.8rem;
+      border: none;
+      border-radius: 1.9em;
+      background: #000;
+      font-family: "Baloo 2", "Space Grotesk", sans-serif;
+      box-shadow:
+        0 28px 60px -18px rgba(0, 0, 0, 0.55),
+        0 2px 10px 0 rgba(0, 0, 0, 0.3);
+    }
+    #qhavuzPackagesBackdrop .page9-add-header {
+      align-items: center;
+      margin-bottom: 1.2rem;
+      padding-bottom: 1.1rem;
+      border-bottom: 1.5px solid rgba(255, 255, 255, 0.12);
+    }
+    #qhavuzPackagesBackdrop .page9-add-title {
+      font-family: "Baloo 2", "Space Grotesk", sans-serif;
+      font-weight: 700;
+      font-size: 1.55rem;
+      line-height: 1.15;
+      color: #f5f5f7;
+    }
+    #qhavuzPackagesBackdrop .page9-add-subtitle {
+      font-family: "Baloo 2", "Space Grotesk", sans-serif;
+      font-weight: 500;
+      font-size: 0.9rem;
+      color: rgba(255, 255, 255, 0.55);
+      opacity: 1;
+    }
+    #qhavuzPackagesBackdrop .page9-add-close {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 2.15rem;
+      height: 2.15rem;
+      padding: 0;
+      border: none;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.1);
+      box-shadow: none;
+      color: rgba(255, 255, 255, 0.75);
+      font-size: 1.3rem;
+      line-height: 1;
+      cursor: pointer;
+      transition: background-color 0.18s ease, color 0.18s ease;
+    }
+    #qhavuzPackagesBackdrop .qhavuz-add-body {
+      scrollbar-width: none;
+    }
+    #qhavuzPackagesBackdrop .qhavuz-add-body::-webkit-scrollbar {
+      display: none;
+    }
+    /* Parlama (box-shadow) kaydırma kutusunun kenarında kesilmesin diye
+       gövdeye iç boşluk verilip aynı miktarda negatif dış boşlukla
+       yerleşim korunur. */
+    #qhavuzPackagesBackdrop .qhavuz-books-body {
+      padding: 1.1rem 1.2rem;
+      margin: -1.1rem -1.2rem;
+    }
+    #qhavuzPackagesBackdrop .qhavuz-books-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.55rem;
+    }
+    #qhavuzPackagesBackdrop .qhavuz-books-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: 0.85rem 1.1rem;
+      border-radius: 1.1rem;
+      background: rgba(255, 255, 255, 0.08);
+      color: #f5f5f7;
+      font-family: "Baloo 2", "Space Grotesk", sans-serif;
+      font-weight: 600;
+      font-size: 1rem;
+    }
+    #qhavuzPackagesBackdrop .qhavuz-books-item-name {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    #qhavuzPackagesBackdrop .qhavuz-books-item-count {
+      flex: 0 0 auto;
+      font-weight: 500;
+      font-size: 0.85rem;
+      color: rgba(255, 255, 255, 0.55);
+    }
+    #qhavuzPackagesBackdrop .qhavuz-packages-empty { padding: 2rem 0; text-align: center; font-weight: 500; color: rgba(255, 255, 255, 0.5); }
+  }
+
+  @media not all and (min-width: 768px) and (min-height: 600px) {
+    /* ---- Paketlerim: kart ızgarası + paket detayı ---- */
+    #qhavuzPackagesBackdrop .page9-add-header { gap: 0.8rem; }
+    #qhavuzPackagesBackdrop .page9-add-heading { flex: 1 1 auto; min-width: 0; }
+    #qhavuzPackagesBackdrop .page9-add-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: block; }
+    #qhavuzPackagesBackdrop .qhavuz-pk-icon-btn {
+      flex: 0 0 auto; display: flex; align-items: center; justify-content: center;
+      width: 2.15rem; height: 2.15rem; padding: 0; border: none; border-radius: 50%;
+      background: rgba(255, 255, 255, 0.1); color: rgba(255, 255, 255, 0.8); cursor: pointer;
+      transition: background-color 0.15s ease, color 0.15s ease;
+    }
+    #qhavuzPackagesBackdrop .qhavuz-pk-icon-btn[hidden] { display: none; }
+    @media (hover: hover) and (pointer: fine) {
+      #qhavuzPackagesBackdrop .qhavuz-pk-icon-btn:hover { background: rgba(255, 255, 255, 0.18); color: #fff; }
+      #qhavuzPackagesBackdrop .qhavuz-pk-del:hover { background: #e5484d; }
+    }
+    #qhavuzPackagesBackdrop .qhavuz-pk-view { animation: qhavuzPkIn 0.18s ease-out; }
+    @keyframes qhavuzPkIn { from { opacity: 0; } to { opacity: 1; } }
+
+    #qhavuzPackagesBackdrop .qhavuz-pk-grid {
+      display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.2rem 1rem;
+    }
+    #qhavuzPackagesBackdrop .qhavuz-pk-card {
+      display: flex; flex-direction: column; gap: 0.6rem; padding: 0; border: none; background: none;
+      text-align: left; cursor: pointer; color: #f5f5f7;
+      font-family: "Baloo 2", "Space Grotesk", sans-serif;
+      transition: transform 0.12s ease;
+    }
+    #qhavuzPackagesBackdrop .qhavuz-pk-card:active { transform: scale(0.98); }
+    #qhavuzPackagesBackdrop .qhavuz-pk-cover {
+      position: relative; isolation: isolate; overflow: hidden; display: grid; place-items: center;
+      aspect-ratio: 4 / 3; border-radius: 1.3rem;
+    }
+    #qhavuzPackagesBackdrop .qhavuz-pk-cover::before {
+      content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none; opacity: 0.12;
+      background-image: repeating-linear-gradient(135deg, currentColor 0, currentColor 2px, transparent 2px, transparent 14px);
+    }
+    #qhavuzPackagesBackdrop .qhavuz-pk-initial {
+      font-weight: 800; font-size: 2.4rem; line-height: 1; text-transform: uppercase; letter-spacing: 0.01em;
+    }
+    #qhavuzPackagesBackdrop .qhavuz-pk-initial.is-triple { font-size: 2rem; letter-spacing: 0; }
+    #qhavuzPackagesBackdrop .qhavuz-pk-count {
+      position: absolute; top: 0.7rem; left: 0.7rem; padding: 0.15rem 0.6rem; border-radius: 999px;
+      background: rgba(0, 0, 0, 0.32); color: #fff; font-weight: 700; font-size: 0.72rem; line-height: 1.5;
+    }
+    #qhavuzPackagesBackdrop .qhavuz-pk-play {
+      position: absolute; right: 0.7rem; bottom: 0.7rem; width: 2.2rem; height: 2.2rem; padding: 0;
+      display: flex; align-items: center; justify-content: center; border: none; border-radius: 50%;
+      background: #000; color: #fff; cursor: pointer; transition: transform 0.12s ease;
+    }
+    #qhavuzPackagesBackdrop .qhavuz-pk-play:active { transform: scale(0.9); }
+    @media (hover: hover) and (pointer: fine) {
+      #qhavuzPackagesBackdrop .qhavuz-pk-play:hover { background: var(--accent-color, #ff90e8); color: #121212; }
+    }
+    #qhavuzPackagesBackdrop .qhavuz-pk-name {
+      font-weight: 700; font-size: 0.98rem; line-height: 1.2; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    #qhavuzPackagesBackdrop .qhavuz-pk-meta { margin-top: -0.4rem; font-weight: 500; font-size: 0.78rem; color: rgba(255, 255, 255, 0.5); }
+
+    #qhavuzPackagesBackdrop .qhavuz-pk-test {
+      display: flex; align-items: center; justify-content: center; gap: 0.5rem; width: 100%; height: 2.9rem;
+      margin-bottom: 1.1rem; border: none; border-radius: 999px; cursor: pointer;
+      background: var(--accent-color, #ff90e8); color: #121212;
+      font-family: inherit; font-weight: 700; font-size: 0.95rem; transition: filter 0.15s ease, transform 0.12s ease;
+    }
+    #qhavuzPackagesBackdrop .qhavuz-pk-test:active { transform: scale(0.98); }
+    @media (hover: hover) and (pointer: fine) { #qhavuzPackagesBackdrop .qhavuz-pk-test:hover { filter: brightness(1.07); } }
+    #qhavuzPackagesBackdrop .qhavuz-pk-qgrid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.7rem; }
+    #qhavuzPackagesBackdrop .qhavuz-pk-thumb {
+      position: relative; aspect-ratio: 1 / 1; overflow: hidden; padding: 0; border: none; border-radius: 1rem;
+      background: #fff; cursor: pointer; transition: transform 0.12s ease;
+    }
+    #qhavuzPackagesBackdrop .qhavuz-pk-thumb:active { transform: scale(0.97); }
+    #qhavuzPackagesBackdrop .qhavuz-pk-thumb img { display: block; width: 100%; height: 100%; object-fit: cover; }
+    #qhavuzPackagesBackdrop .qhavuz-pk-tag {
+      position: absolute; left: 0.4rem; bottom: 0.4rem; max-width: calc(100% - 0.8rem); padding: 0.05rem 0.5rem;
+      border-radius: 999px; font-family: "Baloo 2", sans-serif; font-weight: 700; font-size: 0.65rem; line-height: 1.6;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    #qhavuzPackagesBackdrop .qhavuz-packages-empty { line-height: 1.5; }
+  }
+
+  @media not all and (min-width: 768px) and (min-height: 600px) {
+    /* ---- Paket detayı (2. tasarım): özet, filtre çipleri, numaralı soru kartları ---- */
+    #qhavuzPackagesBackdrop .qhavuz-pk-hero { display: flex; align-items: center; gap: 1.1rem; margin-bottom: 1.1rem; }
+    #qhavuzPackagesBackdrop .qhavuz-pk-hero-cover {
+      position: relative; isolation: isolate; overflow: hidden; flex: 0 0 auto; display: grid; place-items: center;
+      width: 5.4rem; height: 5.4rem; border-radius: 1.4rem;
+      font-family: "Baloo 2", sans-serif; font-weight: 800; font-size: 1.7rem; line-height: 1; text-transform: uppercase;
+    }
+    #qhavuzPackagesBackdrop .qhavuz-pk-hero-cover::before {
+      content: ''; position: absolute; inset: 0; z-index: -1; opacity: 0.12; pointer-events: none;
+      background-image: repeating-linear-gradient(135deg, currentColor 0, currentColor 2px, transparent 2px, transparent 12px);
+    }
+    #qhavuzPackagesBackdrop .qhavuz-pk-stats { flex: 1 1 auto; min-width: 0; }
+    #qhavuzPackagesBackdrop .qhavuz-pk-solved { display: flex; align-items: baseline; gap: 0.45rem; margin-bottom: 0.55rem; color: #f5f5f7; font-family: "Baloo 2", sans-serif; }
+    #qhavuzPackagesBackdrop .qhavuz-pk-solved-num { font-weight: 800; font-size: 2.2rem; line-height: 1; font-variant-numeric: tabular-nums; }
+    #qhavuzPackagesBackdrop .qhavuz-pk-solved-of { font-weight: 600; font-size: 0.9rem; color: rgba(255, 255, 255, 0.55); }
+    #qhavuzPackagesBackdrop .qhavuz-pk-bar { display: block; height: 6px; border-radius: 6px; overflow: hidden; background: rgba(255, 255, 255, 0.12); }
+    #qhavuzPackagesBackdrop .qhavuz-pk-bar > i { display: block; height: 100%; border-radius: 6px; background: var(--accent-color, #ff90e8); }
+
+    #qhavuzPackagesBackdrop .qhavuz-pk-actions { display: flex; gap: 0.6rem; margin-bottom: 1rem; }
+    #qhavuzPackagesBackdrop .qhavuz-pk-actions .qhavuz-pk-test { flex: 1 1 auto; width: auto; margin: 0; min-width: 0; }
+    #qhavuzPackagesBackdrop .qhavuz-pk-test span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    #qhavuzPackagesBackdrop .qhavuz-pk-ghost {
+      flex: 0 0 auto; display: flex; align-items: center; gap: 0.4rem; height: 2.9rem; padding: 0 1.1rem;
+      border: none; border-radius: 999px; cursor: pointer; background: rgba(255, 255, 255, 0.1); color: rgba(255, 255, 255, 0.8);
+      font-family: "Baloo 2", sans-serif; font-weight: 700; font-size: 0.9rem;
+      transition: background-color 0.15s ease, color 0.15s ease, transform 0.12s ease;
+    }
+    #qhavuzPackagesBackdrop .qhavuz-pk-ghost:active { transform: scale(0.97); }
+    @media (hover: hover) and (pointer: fine) { #qhavuzPackagesBackdrop .qhavuz-pk-ghost:hover { background: #e5484d; color: #fff; } }
+
+    #qhavuzPackagesBackdrop .qhavuz-pk-chips { display: flex; flex-wrap: wrap; gap: 0.45rem; margin-bottom: 1rem; }
+    #qhavuzPackagesBackdrop .qhavuz-pk-chip {
+      display: inline-flex; align-items: center; gap: 0.45rem; height: 2rem; padding: 0 0.8rem;
+      border: none; border-radius: 999px; cursor: pointer; background: rgba(255, 255, 255, 0.08); color: rgba(255, 255, 255, 0.8);
+      font-family: "Baloo 2", sans-serif; font-weight: 600; font-size: 0.8rem;
+      transition: background-color 0.15s ease, color 0.15s ease;
+    }
+    #qhavuzPackagesBackdrop .qhavuz-pk-chip-dot { width: 0.5rem; height: 0.5rem; border-radius: 50%; }
+    #qhavuzPackagesBackdrop .qhavuz-pk-chip-n { opacity: 0.55; font-variant-numeric: tabular-nums; }
+    #qhavuzPackagesBackdrop .qhavuz-pk-chip.is-on { background: #f5f5f7; color: #121212; }
+    @media (hover: hover) and (pointer: fine) { #qhavuzPackagesBackdrop .qhavuz-pk-chip:not(.is-on):hover { background: rgba(255, 255, 255, 0.15); } }
+
+    #qhavuzPackagesBackdrop .qhavuz-pk-qgrid { gap: 0.8rem; }
+    #qhavuzPackagesBackdrop .qhavuz-pk-thumb { border-radius: 1.1rem; }
+    #qhavuzPackagesBackdrop .qhavuz-pk-thumb.is-solved img { opacity: 0.4; }
+    #qhavuzPackagesBackdrop .qhavuz-pk-num {
+      position: absolute; top: 0.45rem; left: 0.45rem; min-width: 1.45rem; height: 1.45rem; padding: 0 0.35rem;
+      display: grid; place-items: center; border-radius: 999px; background: rgba(20, 20, 22, 0.7); color: #fff;
+      font-family: "Baloo 2", sans-serif; font-weight: 700; font-size: 0.7rem; line-height: 1; font-variant-numeric: tabular-nums;
+    }
+    #qhavuzPackagesBackdrop .qhavuz-pk-ok {
+      position: absolute; right: 0.45rem; bottom: 0.45rem; width: 1.4rem; height: 1.4rem; display: grid; place-items: center;
+      border-radius: 50%; background: #2fbf71; color: #fff;
+    }
+    #qhavuzPackagesBackdrop .qhavuz-pk-x {
+      position: absolute; top: 0.45rem; right: 0.45rem; min-width: 1.45rem; height: 1.45rem; padding: 0 0.4rem;
+      border: none; border-radius: 999px; cursor: pointer; background: rgba(20, 20, 22, 0.7); color: #fff;
+      font-family: "Baloo 2", sans-serif; font-weight: 700; font-size: 0.78rem; line-height: 1;
+      transition: opacity 0.15s ease, background-color 0.15s ease;
+    }
+    #qhavuzPackagesBackdrop .qhavuz-pk-x.is-armed { background: #e5484d; opacity: 1; }
+    @media (hover: hover) and (pointer: fine) {
+      #qhavuzPackagesBackdrop .qhavuz-pk-x { opacity: 0; }
+      #qhavuzPackagesBackdrop .qhavuz-pk-thumb:hover .qhavuz-pk-x { opacity: 1; }
+    }
+  }
+
+  
+  @media not all and (min-width: 768px) and (min-height: 600px) {
+    #page-camera .qhavuz-wide-select {
+      position: absolute;
+      top: 0.9rem;
+      right: 0.9rem;
+      z-index: 4;
+      width: 1.6rem;
+      height: 1.6rem;
+      box-sizing: border-box;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      color: #fff;
+      background: rgba(20, 20, 22, 0.55);
+      border: 2px solid #fff;
+      -webkit-backdrop-filter: blur(8px);
+      backdrop-filter: blur(8px);
+      opacity: 0;
+      transform: scale(0.5);
+      pointer-events: none;
+      transition: transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.2s ease, background-color 0.2s ease;
+    }
+    #page-camera .qhavuz-wide-select svg { opacity: 0; transition: opacity 0.15s ease; }
+    #page-camera .qhavuz-canvas-grid.is-select-mode .qhavuz-wide-select {
+      opacity: 1;
+      transform: scale(1);
+    }
+    #page-camera .qhavuz-wide-card.is-selected .qhavuz-wide-select {
+      background: var(--accent-color, #ff90e8);
+    }
+    #page-camera .qhavuz-wide-card.is-selected .qhavuz-wide-select svg { opacity: 1; }
+    #page-camera .qhavuz-canvas-grid.is-select-mode .qhavuz-wide-card.is-selected .qhavuz-wide-thumb {
+      box-shadow:
+        0 0 0 3px var(--accent-color, #ff90e8),
+        0 10px 28px -10px color-mix(in srgb, var(--accent-color, #ff90e8) 60%, transparent),
+        0 22px 38px -16px rgba(0, 0, 0, 0.45);
+    }
+    @keyframes qhavuzWideCardIn {
+      from { opacity: 0; transform: translateY(14px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    #page-camera .qhavuz-wide-card {
+      --q-color: var(--accent-color, #ff90e8);
+      --q-ink: var(--theme-text, #f2f2f4);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      gap: 0.9rem;
+      font-family: "Baloo 2", "Space Grotesk", sans-serif;
+      background: none;
+      box-shadow: none;
+      border-radius: 0;
+      cursor: pointer;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-tap-highlight-color: transparent;
+      outline: none;
+      animation: qhavuzWideCardIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+      transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    #page-camera .qhavuz-wide-thumb {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      overflow: hidden;
+      isolation: isolate;
+      background: #fff;
+      border-radius: 1.5rem;
+      box-shadow:
+        0 1px 2px rgba(0, 0, 0, 0.06),
+        0 12px 28px -14px rgba(0, 0, 0, 0.35);
+      transition: box-shadow 0.35s ease;
+    }
+    #page-camera .qhavuz-wide-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      pointer-events: none;
+      -webkit-user-drag: none;
+      transition: transform 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+                  filter 0.4s ease;
+    }
+    #page-camera .qhavuz-wide-track {
+      position: absolute;
+      top: 0.9rem;
+      left: 0.9rem;
+      z-index: 3;
+      padding: 0.2rem 0.65rem 0.12rem;
+      border-radius: 0.5rem;
+      font-weight: 700;
+      font-size: 0.7rem;
+      line-height: 1.5;
+      letter-spacing: 0.1em;
+      color: #fff;
+      background: rgba(20, 20, 22, 0.55);
+      -webkit-backdrop-filter: blur(8px);
+      backdrop-filter: blur(8px);
+      pointer-events: none;
+    }
+    @media (hover: hover) and (pointer: fine) {
+      #page-camera .qhavuz-wide-card:hover {
+        transform: translateY(-5px);
+      }
+
+      #page-camera .qhavuz-wide-card:hover .qhavuz-wide-thumb {
+        box-shadow:
+          0 2px 4px rgba(0, 0, 0, 0.08),
+          0 22px 38px -16px rgba(0, 0, 0, 0.45);
+      }
+
+      #page-camera .qhavuz-wide-card:hover .qhavuz-wide-thumb img {
+        transform: scale(1.03);
+      }
+    }
+    #page-camera .qhavuz-wide-card:focus-visible .qhavuz-wide-thumb {
+      box-shadow: 0 0 0 3px var(--q-color);
+    }
+    #page-camera .qhavuz-wide-card:active {
+      transform: scale(0.985);
+    }
+    #page-camera .qhavuz-wide-card:active .qhavuz-wide-thumb,
+    #page-camera .qhavuz-wide-card.is-pressing .qhavuz-wide-thumb,
+    #page-camera .qhavuz-wide-card.is-ctx-active .qhavuz-wide-thumb {
+      box-shadow:
+        0 0 0 1.5px color-mix(in srgb, var(--q-color) 40%, transparent),
+        0 10px 28px -10px color-mix(in srgb, var(--q-color) 55%, transparent),
+        0 22px 38px -16px rgba(0, 0, 0, 0.45);
+    }
+    #page-camera .qhavuz-wide-card.is-ctx-active {
+      transform: translateY(-2px);
+    }
+    #page-camera .qhavuz-wide-card.is-solved .qhavuz-wide-thumb img,
+    #page-camera .qhavuz-wide-card.is-solved:hover .qhavuz-wide-thumb img {
+      filter: blur(6px) brightness(0.7);
+      transform: scale(1.08);
+    }
+    #page-camera .qhavuz-wide-solved {
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+      visibility: hidden;
+    }
+    #page-camera .qhavuz-wide-card.is-solved .qhavuz-wide-solved {
+      visibility: visible;
+    }
+    #page-camera .qhavuz-wide-solved svg {
+      width: 5rem;
+      height: 5rem;
+      overflow: visible;
+      filter: drop-shadow(0 3px 10px rgba(0, 0, 0, 0.35));
+    }
+    #page-camera .qhavuz-wide-check {
+      fill: none;
+      stroke: #fff;
+      stroke-width: 9;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      stroke-dasharray: 1;
+      stroke-dashoffset: 1;
+      opacity: 0;
+    }
+    #page-camera .qhavuz-wide-card.is-solved .qhavuz-wide-check {
+      animation: qhavuzCheckDraw 0.5s 0.05s both;
+    }
+    #page-camera .qhavuz-wide-info {
+      display: flex;
+      flex-direction: column;
+      gap: 0.55rem;
+      min-width: 0;
+      padding: 0 0.3rem;
+      box-sizing: border-box;
+      border: none;
+      background: transparent;
+    }
+    #page-camera .qhavuz-wide-info::before {
+      content: '';
+      width: 1.8rem;
+      height: 3px;
+      min-height: 0;
+      border-radius: 999px;
+      background: var(--q-color);
+      box-shadow: none;
+      transform: none;
+      transition: width 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    @media (hover: hover) and (pointer: fine) {
+      #page-camera .qhavuz-wide-card:hover .qhavuz-wide-info::before {
+        width: 3rem;
+      }
+    }
+    #page-camera .qhavuz-wide-text {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      gap: 0.05rem;
+    }
+    #page-camera .qhavuz-wide-subject {
+      display: block;
+      min-width: 0;
+      font-weight: 700;
+      font-size: 1.3rem;
+      line-height: 1.25;
+      letter-spacing: -0.005em;
+      text-transform: none;
+      color: var(--q-ink);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      transition: opacity 0.3s ease;
+    }
+    #page-camera .qhavuz-wide-meta {
+      display: block;
+      min-height: 1.15rem;
+      min-width: 0;
+      font-weight: 500;
+      font-size: 0.85rem;
+      line-height: 1.4;
+      color: color-mix(in srgb, var(--q-ink) 50%, transparent);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    #page-camera .qhavuz-wide-card.is-solved .qhavuz-wide-subject {
+      opacity: 0.5;
+    }
+    #page-camera .qhavuz-wide-card { animation-fill-mode: backwards; }
+    #page-camera .qhavuz-wide-select {
+      -webkit-backdrop-filter: none;
+      backdrop-filter: none;
+      background: rgba(20, 20, 22, 0.66);
+      transition: transform 0.18s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.14s ease, background-color 0.14s ease;
+    }
+    #page-camera .qhavuz-canvas-grid.is-select-mode .qhavuz-wide-card.is-selected .qhavuz-wide-thumb {
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06), 0 12px 28px -14px rgba(0, 0, 0, 0.35);
+    }
+    #page-camera .qhavuz-wide-thumb::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      z-index: 3;
+      border-radius: inherit;
+      box-shadow: inset 0 0 0 4px var(--accent-color, #ff90e8);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.16s ease;
+    }
+    #page-camera .qhavuz-canvas-grid.is-select-mode .qhavuz-wide-card.is-selected .qhavuz-wide-thumb::after { opacity: 1; }
+    #page-camera .qhavuz-wide-select,
+    #page-camera .qhavuz-canvas-grid.is-select-mode .qhavuz-wide-select {
+      transform: none;
+      transition: opacity 0.14s ease-out;
+    }
+    #page-camera .qhavuz-wide-select { will-change: auto; }
+  }
+
+  /* ==========================================================================
+     TELEFON: Soru Havuzu soru kartları — büyük ekrandaki kartın kopyası.
+     Yukarıdaki .qhavuz-wide-* kuralları aynen taşındı (yalnızca medya
+     sorgusu telefona çevrildi); ızgara telefonda 2 sütun. Büyük ekran
+     kuralları değiştirilmedi. Eski .qhavuz-grid telefonda gizli (silinmedi).
+     ========================================================================== */
+  @media not all and (min-width: 768px) and (min-height: 600px) {
+    #page-camera #qhavuzGrid { display: none !important; }
+    #page-camera .qhavuz-scroll { align-items: stretch; }
+    #page-camera .qhavuz-canvas-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 1.6rem 1rem;
+      width: 100%;
+      box-sizing: border-box;
+      padding: 0.4rem 0 1.5rem;
+      align-content: start;
+    }
+    #page-camera .qhavuz-canvas-empty {
+      grid-column: 1 / -1;
+      padding: 2.5rem 0;
+      text-align: center;
+      font-family: "Baloo 2", "Space Grotesk", sans-serif;
+      font-weight: 500;
+      font-size: 0.95rem;
+      color: color-mix(in srgb, var(--theme-text, #121212) 55%, transparent);
+    }
+    #page-camera .qhavuz-wide-thumb { border-radius: 1.2rem; }
+    #page-camera .qhavuz-wide-card { gap: 0.7rem; }
+    #page-camera .qhavuz-wide-track { top: 0.6rem; left: 0.6rem; font-size: 0.62rem; padding: 0.15rem 0.5rem 0.08rem; }
+    /* Seç modunda sabit çubuğun altında kalmasın */
+    #page-camera .qhavuz-scroll:has(.qhavuz-canvas-grid.is-select-mode) { padding-bottom: calc(216px + env(safe-area-inset-bottom)); }
+    /* Düzenle modu: sil (×) düğmesi */
+    #page-camera .qhavuz-wide-del {
+      position: absolute; top: 0.5rem; right: 0.5rem; z-index: 5;
+      width: 1.9rem; height: 1.9rem; padding: 0; display: grid; place-items: center;
+      border: none; border-radius: 50%; cursor: pointer;
+      background: #e5484d; color: #fff; font-size: 1.05rem; line-height: 1; font-weight: 700;
+      box-shadow: 0 2px 8px rgba(0,0,0,.35);
+      animation: qhavuzWideDelIn .22s cubic-bezier(0.34,1.56,0.64,1) both;
+    }
+    @keyframes qhavuzWideDelIn { from { opacity: 0; transform: scale(.5); } to { opacity: 1; transform: scale(1); } }
+  }
+
+  
+  /* ==========================================================================
+     TELEFON: basılı tutunca açılan bağlam menüsü (#qhavuzWideContextMenu),
+     soru penceresi (#qhavuzLightboxBackdrop) ve Soru Bilgisi penceresi
+     (#qhavuzInfoBackdrop). Kurallar büyük ekrandakilerin BİREBİR kopyasıdır
+     (yalnızca medya sorgusu telefona çevrildi); büyük ekran kuralları
+     değiştirilmedi. Sonda yalnızca dar ekran ölçü ayarı var.
+     ========================================================================== */
+  @media not all and (min-width: 768px) and (min-height: 600px) {
+    /* -- Bağlam menüsü -- */
+    .page11-context-menu {
+      position: fixed;
+      left: 0;
+      top: 0;
+      z-index: 250;
+      width: 248px;
+      box-sizing: border-box;
+      padding: 0.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+      background: #000;
+      border-radius: 1.3em;
+      box-shadow:
+        0 20px 44px -16px rgba(0, 0, 0, 0.55),
+        0 2px 10px 0 rgba(0, 0, 0, 0.3);
+      opacity: 0;
+      pointer-events: none;
+      transform: scale(0.94) translateY(4px);
+      transform-origin: bottom center;
+      transition: opacity 0.15s ease, transform 0.15s ease;
+      font-family: "Baloo 2", "Space Grotesk", sans-serif;
+    }
+    .page11-context-menu.is-open {
+      opacity: 1;
+      pointer-events: auto;
+      transform: scale(1) translateY(0);
+    }
+    body.is-anthracite .page11-context-menu {
+      box-shadow:
+        0 0 0 1px rgba(255, 255, 255, 0.07),
+        0 0 32px 6px rgba(255, 255, 255, 0.055),
+        0 20px 44px -16px rgba(0, 0, 0, 0.55),
+        0 2px 10px 0 rgba(0, 0, 0, 0.3);
+    }
+    .page11-context-menu-item {
+      --ic-bg: rgba(255, 255, 255, 0.12);
+      --ic-fg: #fff;
+      position: relative;
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      width: 100%;
+      padding: 0.55rem 0.7rem;
+      border: none;
+      border-radius: 1em;
+      background: transparent;
+      color: inherit;
+      font: inherit;
+      text-align: left;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      transition: background-color 0.18s ease, transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .page11-context-menu-item:hover,
+    .page11-context-menu-item:active {
+      background: rgba(255, 255, 255, 0.09);
+    }
+    .page11-context-menu-item:active {
+      transform: scale(0.97);
+    }
+    .page11-context-menu-item.is-danger {
+      --ic-bg: color-mix(in srgb, #ff5c5c 22%, transparent);
+      --ic-fg: #ff8a8a;
+    }
+    .page11-context-menu-item.is-danger .page11-context-menu-item-title {
+      color: #ff8a8a;
+    }
+    .page11-context-menu-item:disabled {
+      opacity: 0.35;
+      pointer-events: none;
+    }
+    .page11-context-menu-item-ic {
+      position: relative;
+      display: grid;
+      place-items: center;
+      flex: none;
+      width: 2.2rem;
+      height: 2.2rem;
+      border-radius: 50%;
+      background: var(--ic-bg);
+      color: var(--ic-fg);
+      transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .page11-context-menu-item:active .page11-context-menu-item-ic {
+      transform: scale(0.9) rotate(-6deg);
+    }
+    .page11-context-menu-item-ic svg {
+      width: 15px;
+      height: 15px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2.2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    .page11-context-menu-item-text {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      line-height: 1.18;
+    }
+    .page11-context-menu-item-title {
+      font-weight: 700;
+      font-size: 0.9rem;
+      color: #fff;
+    }
+    .page11-context-menu-item-sub {
+      margin-top: 0.05rem;
+      font-weight: 600;
+      font-size: 0.7rem;
+      color: rgba(255, 255, 255, 0.5);
+    }
+    /* -- Soru penceresi (lightbox) -- */
+    #qhavuzLightboxBackdrop {
+      background: rgba(0, 0, 0, 0.55);
+      -webkit-backdrop-filter: blur(10px);
+      backdrop-filter: blur(10px);
+    }
+    #qhavuzLightboxBackdrop .qhavuz-lightbox-card {
+      flex-direction: row;
+      width: auto;
+      max-width: 100%;
+      max-height: 90vh;
+      gap: 0.8rem;
+      padding: 0.8rem;
+      border: none;
+      border-radius: 1.9em;
+      background: #000;
+      font-family: "Baloo 2", "Space Grotesk", sans-serif;
+      box-shadow:
+        0 32px 70px -18px rgba(0, 0, 0, 0.7),
+        0 2px 10px 0 rgba(0, 0, 0, 0.35),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.07);
+    }
+    #qhavuzLightboxBackdrop .qhavuz-lightbox-img-wrap {
+      flex: 0 0 auto;
+      width: min(560px, calc(88vh - 1.6rem), calc(100vw - 2.8rem - 340px - 2.4rem));
+      border-radius: 1.3rem;
+      background: rgba(255, 255, 255, 0.06);
+    }
+    #qhavuzLightboxBackdrop .qhavuz-lightbox-side {
+      display: flex;
+      flex-direction: column;
+      flex: 0 0 340px;
+      min-width: 0;
+      padding: 0.6rem 0.7rem 0.4rem 0.5rem;
+      gap: 1rem;
+      overflow-y: auto;
+      scrollbar-width: none;
+    }
+    #qhavuzLightboxBackdrop .qhavuz-lightbox-side::-webkit-scrollbar {
+      display: none;
+    }
+    #qhavuzLightboxBackdrop .qhavuz-lightbox-close,
+    #qhavuzLightboxBackdrop .qhavuz-lightbox-info {
+      top: 1.1rem;
+      width: 2.3rem;
+      height: 2.3rem;
+      border: none;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.1);
+      color: rgba(255, 255, 255, 0.8);
+      box-shadow: none;
+      transform: none;
+      font-size: 1.3rem;
+    }
+    #qhavuzLightboxBackdrop .qhavuz-lightbox-close {
+      right: 1.1rem;
+    }
+    #qhavuzLightboxBackdrop .qhavuz-lightbox-info {
+      right: 3.7rem;
+    }
+    #qhavuzLightboxBackdrop .qhavuz-lightbox-close:active,
+    #qhavuzLightboxBackdrop .qhavuz-lightbox-info:active {
+      background: rgba(255, 255, 255, 0.28);
+      box-shadow: none;
+      transform: scale(0.94);
+    }
+    #qhavuzLightboxBackdrop .qhavuz-lightbox-head {
+      display: flex;
+      flex-direction: row;
+      align-items: stretch;
+      align-self: flex-start;
+      max-width: 100%;
+      gap: 0;
+      padding: 0.5rem 5.6rem 0 0;
+      box-sizing: border-box;
+    }
+    #qhavuzLightboxBackdrop .qhavuz-lightbox-track {
+      order: -1;
+      flex: 0 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+      padding: 0.35rem 0 0.35rem 1.05rem;
+      border-radius: 999px 0 0 999px;
+      font-weight: 800;
+      font-size: 0.95rem;
+      line-height: 1.25;
+      letter-spacing: 0.08em;
+      color: #121212;
+      /* Branşla AYNI renk; TYT/AYT ile branş arasında düz siyah tire. */
+      background: var(--lb-color, var(--accent-color, #ff90e8));
+    }
+    #qhavuzLightboxBackdrop .qhavuz-lightbox-track::after {
+      content: '';
+      flex: 0 0 auto;
+      width: 0.55rem;
+      height: 3px;
+      border-radius: 2px;
+      background: #121212;
+    }
+    #qhavuzLightboxBackdrop .qhavuz-lightbox-track.is-hidden { display: none; }
+    #qhavuzLightboxBackdrop .qhavuz-lightbox-subject {
+      display: inline-block;
+      min-width: 0;
+      padding: 0.35rem 1.05rem;
+      border-radius: 999px;
+      font-weight: 800;
+      font-size: 1.25rem;
+      line-height: 1.25;
+      color: #121212;
+      background: var(--lb-color, var(--accent-color, #ff90e8));
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    #qhavuzLightboxBackdrop .qhavuz-lightbox-head:has(.qhavuz-lightbox-track:not(.is-hidden)) .qhavuz-lightbox-subject {
+      border-radius: 0 999px 999px 0;
+      padding-left: 0.3rem;
+    }
+    #qhavuzLightboxBackdrop .qhavuz-lightbox-label {
+      display: block;
+      margin: 0 0 -0.35rem;
+      font-weight: 600;
+      font-size: 0.8rem;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.55);
+    }
+    #qhavuzLightboxBackdrop .qhavuz-lightbox-answer-wrap {
+      border-radius: 1.1rem;
+      /* Opak (siyah + %8 beyazın karşılığı): yarı saydam kenar/köşe kalmasın. */
+      background: #141416;
+      overflow: hidden;
+      isolation: isolate;
+    }
+    #qhavuzLightboxBackdrop .qhavuz-lightbox-answer-row {
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      padding: 0.9rem 1rem;
+      background: transparent;
+    }
+    #qhavuzLightboxBackdrop .qhavuz-lightbox-answer-btn {
+      width: 2.7rem;
+      height: 2.7rem;
+      border: none;
+      border-radius: 0.85rem;
+      background-color: rgba(255, 255, 255, 0.1);
+      color: rgba(255, 255, 255, 0.85);
+      box-shadow: none;
+      font-family: "Baloo 2", "Space Grotesk", sans-serif;
+      font-size: 1.05rem;
+      font-weight: 700;
+      opacity: 1;
+    }
+    #qhavuzLightboxBackdrop .qhavuz-lightbox-answer-btn.is-editable:active {
+      transform: scale(0.94);
+      box-shadow: none;
+    }
+    #qhavuzLightboxBackdrop .qhavuz-lightbox-answer-btn.is-correct {
+      background-color: #3ddc84;
+      color: #0d3d20;
+      box-shadow: 0 6px 16px -6px rgba(61, 220, 132, 0.75);
+    }
+    #qhavuzLightboxBackdrop .qhavuz-lightbox-open-answer-label {
+      color: rgba(255, 255, 255, 0.6);
+      opacity: 1;
+      font-family: inherit;
+    }
+    #qhavuzLightboxBackdrop .qhavuz-lightbox-open-answer-text {
+      color: #fff;
+      font-family: inherit;
+    }
+    #qhavuzLightboxBackdrop .qhavuz-answer-reveal {
+      /* Perde, kutuyla aynı yuvarlaklıkta; backdrop-filter köşelerden taşıp
+         kare/yarı saydam köşe göstermesin diye kapalı (zaten opak). */
+      border-radius: inherit;
+      -webkit-backdrop-filter: none;
+      backdrop-filter: none;
+      background: #1d1d22;
+      color: rgba(255, 255, 255, 0.85);
+      font-family: inherit;
+      font-weight: 700;
+      font-size: 0.9rem;
+      transition: opacity 0.2s ease, background-color 0.18s ease;
+    }
+    #qhavuzLightboxBackdrop .qhavuz-lightbox-meta {
+      display: flex;
+      flex-direction: column;
+      gap: 0.15rem;
+      margin: 0;
+    }
+    #qhavuzLightboxBackdrop .qhavuz-lightbox-meta-row {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: 0.55rem 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    #qhavuzLightboxBackdrop .qhavuz-lightbox-meta-row:last-child {
+      border-bottom: none;
+    }
+    #qhavuzLightboxBackdrop .qhavuz-lightbox-meta dt {
+      flex: 0 0 auto;
+      font-weight: 600;
+      font-size: 0.85rem;
+      color: rgba(255, 255, 255, 0.5);
+    }
+    #qhavuzLightboxBackdrop .qhavuz-lightbox-meta dd {
+      margin: 0;
+      min-width: 0;
+      text-align: right;
+      font-weight: 700;
+      font-size: 0.95rem;
+      color: #f5f5f7;
+      overflow-wrap: anywhere;
+    }
+    #qhavuzLightboxBackdrop .qhavuz-lightbox-meta dd.is-empty {
+      color: rgba(255, 255, 255, 0.3);
+      font-weight: 600;
+    }
+    #qhavuzLightboxBackdrop .qhavuz-lightbox-solve {
+      position: static;
+      order: 99;
+      margin-top: auto;
+      width: 100%;
+      height: 3.1rem;
+      gap: 0.5rem;
+      border: none;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.1);
+      color: rgba(255, 255, 255, 0.85);
+      box-shadow: none;
+      transform: none;
+      font-family: inherit;
+      font-weight: 700;
+      font-size: 0.95rem;
+    }
+    #qhavuzLightboxBackdrop .qhavuz-lightbox-solve .qhavuz-lightbox-solve-label {
+      display: inline;
+    }
+    #qhavuzLightboxBackdrop .qhavuz-lightbox-solve svg {
+      width: 16px;
+      height: 16px;
+    }
+    @media (hover: hover) and (pointer: fine) {
+      #qhavuzLightboxBackdrop .qhavuz-lightbox-solve:hover {
+        background: rgba(255, 255, 255, 0.18);
+        box-shadow: none;
+        transform: none;
+      }
+    }
+    #qhavuzLightboxBackdrop .qhavuz-lightbox-solve:active {
+      background: rgba(255, 255, 255, 0.22);
+      box-shadow: none;
+      transform: scale(0.985);
+    }
+    #qhavuzLightboxBackdrop .qhavuz-lightbox-solve.is-checked,
+    #qhavuzLightboxBackdrop .qhavuz-lightbox-solve.is-checked:hover,
+    #qhavuzLightboxBackdrop .qhavuz-lightbox-solve.is-checked:active {
+      background: #3ddc84;
+      color: #0d3d20;
+      box-shadow: 0 8px 20px -8px rgba(61, 220, 132, 0.8);
+    }
+    /* -- Soru Bilgisi -- */
+    #qhavuzInfoBackdrop {
+      background: rgba(0, 0, 0, 0.55);
+      -webkit-backdrop-filter: blur(10px);
+      backdrop-filter: blur(10px);
+    }
+    #qhavuzInfoBackdrop .qhavuz-info-card {
+      max-width: 440px;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      padding: 1.3rem;
+      border: none;
+      border-radius: 1.9rem;
+      background: #000;
+      text-align: left;
+      font-family: "Baloo 2", "Space Grotesk", sans-serif;
+      box-shadow:
+        0 32px 70px -18px rgba(0, 0, 0, 0.7),
+        0 2px 10px 0 rgba(0, 0, 0, 0.35),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.07);
+    }
+    #qhavuzInfoBackdrop .qhavuz-info-card .settings-confirm-title,
+    #qhavuzInfoBackdrop .qhavuz-info-badge,
+    #qhavuzInfoBackdrop .qhavuz-info-row:not(.qhavuz-info-row--desc) {
+      display: none;
+    }
+    #qhavuzInfoBackdrop .qhavuz-info-rows {
+      margin: 0;
+      gap: 0;
+    }
+    #qhavuzInfoBackdrop .qhavuz-info-row {
+      gap: 0.55rem;
+      padding: 0;
+      border: none;
+    }
+    #qhavuzInfoBackdrop .qhavuz-info-label {
+      font-family: inherit;
+      font-weight: 600;
+      font-size: 0.8rem;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: #8c8c92;
+      padding-left: 0.2rem;
+    }
+    #qhavuzInfoBackdrop .qhavuz-info-value {
+      max-height: 50vh;
+      overflow-y: auto;
+      padding: 1rem 1.1rem;
+      border-radius: 1.1rem;
+      background: #1d1d22;
+      font-family: inherit;
+      font-weight: 600;
+      font-size: 1rem;
+      line-height: 1.5;
+      color: #f5f5f7;
+      scrollbar-width: none;
+    }
+    #qhavuzInfoBackdrop .qhavuz-info-value::-webkit-scrollbar {
+      display: none;
+    }
+    #qhavuzInfoBackdrop .qhavuz-info-value.is-empty {
+      color: #6d6d75;
+      font-weight: 500;
+      font-style: normal;
+    }
+    #qhavuzInfoBackdrop .qhavuz-info-value:has(.qhavuz-info-input) {
+      padding: 0;
+    }
+    #qhavuzInfoBackdrop .qhavuz-info-input {
+      display: block;
+      width: 100%;
+      min-height: 7rem;
+      padding: 1rem 1.1rem;
+      border: none;
+      border-radius: 1.1rem;
+      outline: none;
+      box-shadow: none;
+      background: #1d1d22;
+      color: #f5f5f7;
+      font-family: inherit;
+      font-weight: 600;
+      font-size: 1rem;
+      line-height: 1.5;
+    }
+    #qhavuzInfoBackdrop .qhavuz-info-input::placeholder {
+      color: #6d6d75;
+    }
+    #qhavuzInfoBackdrop .settings-confirm-actions {
+      margin: 0;
+    }
+    #qhavuzInfoBackdrop .settings-confirm-actions button {
+      width: 100%;
+      height: 3rem;
+      border: none;
+      border-radius: 999px;
+      background: #1d1d22;
+      color: rgba(255, 255, 255, 0.85);
+      box-shadow: none;
+      transform: none;
+      font-family: inherit;
+      font-weight: 700;
+      font-size: 0.95rem;
+    }
+    @media (hover: hover) and (pointer: fine) {
+      #qhavuzInfoBackdrop .settings-confirm-actions button:hover {
+        background: #26262c;
+        box-shadow: none;
+        transform: none;
+      }
+    }
+    #qhavuzInfoBackdrop .settings-confirm-actions button:active {
+      background: #2e2e35;
+      box-shadow: none;
+      transform: scale(0.985);
+    }
+  }
+
+  /* TELEFON: soru penceresi dar ekranda dikey dizilir (görsel üstte, panel altta). */
+  @media not all and (min-width: 768px) and (min-height: 600px) {
+    #qhavuzLightboxBackdrop { padding: 14px; }
+    #qhavuzLightboxBackdrop .qhavuz-lightbox-card {
+      flex-direction: column;
+      width: 100%;
+      max-width: 440px;
+      max-height: 92vh;
+      max-height: 92dvh;
+      overflow-y: auto;
+      gap: 0.7rem;
+      padding: 0.7rem;
+      border-radius: 1.7em;
+    }
+    #qhavuzLightboxBackdrop .qhavuz-lightbox-img-wrap {
+      flex: 0 0 auto;
+      width: 100%;
+      border-radius: 1.2rem;
+    }
+    #qhavuzLightboxBackdrop .qhavuz-lightbox-side {
+      flex: 0 0 auto;
+      width: 100%;
+      min-width: 0;
+      overflow: visible;
+      padding: 0.2rem 0.5rem 0.6rem;
+      box-sizing: border-box;
+    }
+    #qhavuzWideContextMenu { width: min(248px, calc(100vw - 24px)); }
+    /* Telefonda düğmeler görselin üstüne biner: koyu cam zemin, her görselde okunur. */
+    #qhavuzLightboxBackdrop .qhavuz-lightbox-close,
+    #qhavuzLightboxBackdrop .qhavuz-lightbox-info {
+      top: 1.15rem;
+      z-index: 6;
+      background: rgba(20, 20, 22, 0.62);
+      color: #fff;
+      -webkit-backdrop-filter: blur(8px);
+      backdrop-filter: blur(8px);
+    }
+    #qhavuzLightboxBackdrop .qhavuz-lightbox-close { right: 1.15rem; }
+    #qhavuzLightboxBackdrop .qhavuz-lightbox-info { right: 3.75rem; }
+  }
+
+  /* ==========================================================================
+     TELEFON: "Kaynaklarım" ve "Paketlerim" pop-up'larının içi.
+     Yukarıdaki dört blok, büyük ekran kurallarının BİREBİR kopyasıdır (yalnızca
+     medya sorgusu telefona çevrildi). Aşağıdaki blok sadece dar ekrana uyum
+     için ölçüleri (kenar boşluğu, punto, ızgara aralığı) ayarlar. Büyük ekran
+     kuralları değiştirilmedi.
+     ========================================================================== */
+  @media not all and (min-width: 768px) and (min-height: 600px) {
+    #qhavuzBooksBackdrop,
+    #qhavuzPackagesBackdrop {
+      padding: 14px;
+    }
+    #qhavuzBooksBackdrop .qhavuz-add-card,
+    #qhavuzPackagesBackdrop .qhavuz-add-card {
+      width: 100%;
+      max-width: 460px;
+      height: min(40rem, 84vh);
+      height: min(40rem, 84dvh);
+      max-height: 84vh;
+      max-height: 84dvh;
+      padding: 1.4rem 1.25rem 1.25rem;
+      border-radius: 1.7em;
+    }
+    #qhavuzBooksBackdrop .page9-add-header,
+    #qhavuzPackagesBackdrop .page9-add-header {
+      margin-bottom: 1rem;
+      padding-bottom: 0.9rem;
+    }
+    #qhavuzBooksBackdrop .page9-add-title,
+    #qhavuzPackagesBackdrop .page9-add-title {
+      font-size: 1.4rem;
+    }
+    #qhavuzBooksBackdrop .page9-add-subtitle,
+    #qhavuzPackagesBackdrop .page9-add-subtitle {
+      font-size: 0.84rem;
+    }
+    /* Kaynaklarım satırları */
+    #qhavuzBooksBackdrop .qhavuz-books-item {
+      padding: 0.8rem 1rem;
+      font-size: 0.95rem;
+      min-height: 3rem;
+    }
+    #qhavuzBooksBackdrop .qhavuz-books-footer.is-visible { padding-top: 0.9rem; }
+    #qhavuzBooksBackdrop .qhavuz-books-apply-btn { height: 3rem; }
+    /* Paketlerim: kart ızgarası */
+    #qhavuzPackagesBackdrop .qhavuz-pk-grid { gap: 1rem 0.8rem; }
+    #qhavuzPackagesBackdrop .qhavuz-pk-cover { border-radius: 1.15rem; }
+    #qhavuzPackagesBackdrop .qhavuz-pk-initial { font-size: 2rem; }
+    #qhavuzPackagesBackdrop .qhavuz-pk-initial.is-triple { font-size: 1.7rem; }
+    #qhavuzPackagesBackdrop .qhavuz-pk-name { font-size: 0.92rem; }
+    /* Paket detayı */
+    #qhavuzPackagesBackdrop .qhavuz-pk-hero { gap: 0.9rem; }
+    #qhavuzPackagesBackdrop .qhavuz-pk-hero-cover {
+      width: 4.6rem; height: 4.6rem; border-radius: 1.2rem; font-size: 1.45rem;
+    }
+    #qhavuzPackagesBackdrop .qhavuz-pk-solved-num { font-size: 1.9rem; }
+    #qhavuzPackagesBackdrop .qhavuz-pk-solved-of { font-size: 0.82rem; }
+    /* Yedekle / Sil: dar ekranda yalnızca ikon (Test butonuna yer kalsın) */
+    #qhavuzPackagesBackdrop .qhavuz-pk-ghost {
+      justify-content: center;
+      width: 2.9rem;
+      padding: 0;
+    }
+    #qhavuzPackagesBackdrop .qhavuz-pk-ghost span { display: none; }
+    #qhavuzPackagesBackdrop .qhavuz-pk-test { font-size: 0.9rem; padding: 0 0.9rem; }
+    #qhavuzPackagesBackdrop .qhavuz-pk-qgrid { gap: 0.6rem; }
+    #qhavuzPackagesBackdrop .qhavuz-pk-thumb { border-radius: 1rem; }
+    /* Dokunmatik: sil (×) her zaman görünür kalsın */
+    #qhavuzPackagesBackdrop .qhavuz-pk-x { opacity: 1; }
+  }
+
+
   /* ==========================================================================
      TABLET / GENİŞ EKRAN: "Paketi sil" onay pop-up'ı (yeniden tasarım).
      Pakete İsim Ver ile aynı siyah yüzey; telefon düzeni değişmez.
@@ -36087,6 +37822,25 @@
           <span class="qhavuz-pill-label-trash">Sil</span>
         </button>
       </div>
+
+      <!-- Telefon: başlığın altındaki iki kısayol. Büyük ekrandaki yan panel
+           düğmeleriyle (#qhavuzBooksBtn, #qhavuzWidePackagesBtn) aynı
+           pop-up'ları açar (JS: aşağıdaki tıklama yönlendirmesi). -->
+      <div class="qhavuz-topbar-tools">
+        <button type="button" class="qhavuz-canvas-side-btn" id="qhavuzMobileBooksBtn">
+          <span>Kaynaklarım</span>
+        </button>
+        <button type="button" class="qhavuz-canvas-side-btn qhavuz-canvas-side-btn--soft" id="qhavuzMobilePackagesBtn" aria-haspopup="dialog">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 4.2v9.6L12 21l-8-4.2V7.2L12 3z"/><path d="M4 7.2l8 4.3 8-4.3"/><path d="M12 11.5V21"/></svg>
+          <span>Paketlerim</span>
+        </button>
+      </div>
+
+      <!-- Telefon: arama kutusu + Yedekle + Eski/Yeni. Büyük ekrandaki GERÇEK
+           öğeler (#qhavuzCanvasSearchInput, #qhavuzCanvasBackupWrap,
+           #qhavuzCanvasSortBtn) telefonda JS ile buraya taşınır (bkz. "Telefon
+           arama satırı"), böylece olay dinleyicileri ve durum aynen korunur. -->
+      <div class="qhavuz-topbar-search" id="qhavuzTopbarSearch"></div>
     </div>
 
     <div class="qhavuz-scroll" id="qhavuzScroll">
@@ -36112,7 +37866,7 @@
           <!-- Filtreye göre güncellenen soru sayısı. Filtre bloğunun parçası
                olduğu için telefonda Filtrele / Yeni ile birlikte üstte sabit
                kalır (JS: updateQhavuzCount). -->
-          <div class="qhavuz-count" id="qhavuzCount" role="status" aria-live="polite">
+          <div class="qhavuz-count" id="qhavuzCount" role="button" tabindex="0" aria-live="polite" aria-label="Çözülen soru sayısını göster">
             <span class="qhavuz-count-num" id="qhavuzCountNum">0</span>
             <span class="qhavuz-count-unit" id="qhavuzCountUnit">soru</span>
           </div>
@@ -37463,7 +39217,7 @@
         </svg>
         <span class="nav-action-label">Geri</span>
       </button>
-      <button type="button" class="nav-action nav-action-add" id="navQhavuzAddBtn" aria-label="Görsel ekle">
+      <button type="button" class="nav-action nav-action-add" id="navQhavuzAddBtn" aria-label="Soru ekle">
         <svg class="nav-action-icon" viewBox="0 0 24 24" aria-hidden="true">
           <path d="M16 5h6"/>
           <path d="M19 2v6"/>
@@ -37471,7 +39225,7 @@
           <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>
           <circle cx="9" cy="9" r="2"/>
         </svg>
-        <span class="nav-action-label">Görsel Ekle</span>
+        <span class="nav-action-label">Soru Ekle</span>
       </button>
       <button type="button" class="nav-action nav-action-select" id="navQhavuzSelectBtn" aria-label="Soru seç" aria-pressed="false">
         <svg class="nav-action-icon" viewBox="0 0 24 24" aria-hidden="true">
@@ -57878,6 +59632,8 @@
     // Düzenleme (silme) modu açılırsa, karışıklık olmasın diye soru seçme
     // modu otomatik kapatılır (aşağıda tanımlı setQhavuzSelectMode).
     if (on && typeof setQhavuzSelectMode === 'function' && qhavuzSelectMode) setQhavuzSelectMode(false);
+    // Yeni kartlarda sil (×) düğmeleri render sırasında eklendiği için yeniden çiz.
+    renderQhavuzGrid();
   };
 
   // Soru Seç modu açıkken Düzenle hapı kırmızı "Sil" hapına dönüşür
@@ -58009,6 +59765,68 @@
   if (navQhavuzCancelBtn) navQhavuzCancelBtn.addEventListener('click', () => setQhavuzSelectMode(false));
   if (navQhavuzTestBtn) navQhavuzTestBtn.addEventListener('click', () => { if (qhavuzSelectTestBtn) qhavuzSelectTestBtn.click(); });
   if (navQhavuzPackageBtn) navQhavuzPackageBtn.addEventListener('click', () => { if (qhavuzSelectPackageBtn) qhavuzSelectPackageBtn.click(); });
+
+  // Başlığın altındaki telefon kısayolları: büyük ekranın yan panel
+  // düğmelerini tetikler; böylece aynı pop-up'lar ve mantık kullanılır.
+  [['qhavuzMobileBooksBtn', 'qhavuzBooksBtn'],
+   ['qhavuzMobilePackagesBtn', 'qhavuzWidePackagesBtn']].forEach(([from, to]) => {
+    const a = document.getElementById(from);
+    const b = document.getElementById(to);
+    if (a && b) a.addEventListener('click', () => b.click());
+  });
+
+  // ---- Telefon soru ızgarası ----
+  // Büyük ekranın yeni kart ızgarası (#qhavuzCanvasGrid) telefonda eski
+  // ızgaranın (#qhavuzGrid) hemen önüne TAŞINIR; aynı düğüm olduğu için
+  // render, tıklama, basılı tutma ve seçim mantığı aynen çalışır. Büyük
+  // ekrana geçilince eski yerine döner.
+  (() => {
+    const grid = document.getElementById('qhavuzCanvasGrid');
+    const oldGrid = document.getElementById('qhavuzGrid');
+    if (!grid || !oldGrid) return;
+    const home = document.createComment('qhavuz-canvas-grid-home');
+    grid.parentNode.insertBefore(home, grid);
+    const mq = window.matchMedia('not all and (min-width: 768px) and (min-height: 600px)');
+    const place = () => {
+      if (mq.matches) {
+        if (grid.nextSibling !== oldGrid) oldGrid.parentNode.insertBefore(grid, oldGrid);
+      } else if (grid.previousSibling !== home) {
+        home.parentNode.insertBefore(grid, home.nextSibling);
+      }
+    };
+    place();
+    if (mq.addEventListener) mq.addEventListener('change', place);
+    else if (mq.addListener) mq.addListener(place);
+  })();
+
+  // ---- Telefon arama satırı ----
+  // Büyük ekrandaki arama kutusu, Yedekle butonu (menüsüyle) ve Eski/Yeni
+  // filtresi telefonda başlığın altındaki satıra TAŞINIR; aynı düğümler
+  // olduğu için olay dinleyicileri, arama/sıralama durumu ve yedek menüsü
+  // olduğu gibi çalışır. Büyük ekrana geçilince eski yerlerine döner.
+  (() => {
+    const host = document.getElementById('qhavuzTopbarSearch');
+    const left = document.querySelector('#qhavuzCanvas .qhavuz-canvas-headrow-left');
+    const search = document.querySelector('#qhavuzCanvas .qhavuz-canvas-search');
+    const backup = document.getElementById('qhavuzCanvasBackupWrap');
+    const sort = document.getElementById('qhavuzCanvasSortBtn');
+    const selectBtn = document.getElementById('qhavuzCanvasSelectBtn');
+    if (!host || !left || !search || !backup || !sort) return;
+    const mq = window.matchMedia('not all and (min-width: 768px) and (min-height: 600px)');
+    const place = () => {
+      if (mq.matches) {
+        [search, backup, sort].forEach((el) => { if (el.parentElement !== host) host.appendChild(el); });
+      } else {
+        // Orijinal sıra: arama, yedek, sırala, (Seç).
+        [search, backup, sort].forEach((el) => {
+          if (el.parentElement !== left) left.insertBefore(el, selectBtn || null);
+        });
+      }
+    };
+    place();
+    if (mq.addEventListener) mq.addEventListener('change', place);
+    else if (mq.addListener) mq.addListener(place);
+  })();
 
   // ---- Düzenle hapının konumu ----
   // Telefonda üst çubuk (başlık + Düzenle) içerikle birlikte yukarı kayıp
@@ -60090,17 +61908,75 @@
   const qhavuzCountNum = document.getElementById('qhavuzCountNum');
   const qhavuzCountUnit = document.getElementById('qhavuzCountUnit');
   let qhavuzLastShownCount = null;
-  const updateQhavuzCount = (shown, total) => {
+  // Telefonda sayaca dokununca "soru" ↔ "çözüldü" görünümü arasında geçilir.
+  // Çözülen sayı, filtreye uyan sorular içinden hesaplanır (sayaçla tutarlı).
+  let qhavuzCountShowSolved = false;
+  let qhavuzCountShown = 0;
+  let qhavuzCountTotal = 0;
+  let qhavuzCountFilteredIds = null; // son filtre sonucundaki soru id'leri
+  const qhavuzRenderCount = (bump) => {
     if (!qhavuzCountNum || !qhavuzCountUnit) return;
-    qhavuzCountNum.textContent = shown;
-    qhavuzCountUnit.textContent = shown === total ? 'soru' : `/ ${total} soru`;
-    if (qhavuzLastShownCount !== null && qhavuzLastShownCount !== shown) {
+    const shown = qhavuzCountShown;
+    const total = qhavuzCountTotal;
+    qhavuzCountNum.classList.remove('is-rate-low', 'is-rate-mid', 'is-rate-high');
+    let text;
+    if (qhavuzCountShowSolved) {
+      // Büyük ekrandaki "Çözülen Soru" gibi: filtreden bağımsız, havuzdaki
+      // tüm çözülen soruların sayısı; yanında sadece "çözüldü" yazar.
+      const solved = qhavuzState.items.reduce((acc, it) => acc + (it.solved ? 1 : 0), 0);
+      const all = qhavuzState.items.length;
+      text = solved;
+      qhavuzCountUnit.textContent = 'çözüldü';
+      if (all > 0) {
+        const rate = solved / all;
+        qhavuzCountNum.classList.add(rate < 0.5 ? 'is-rate-low' : rate < 0.8 ? 'is-rate-mid' : 'is-rate-high');
+      }
+    } else {
+      text = shown;
+      qhavuzCountUnit.textContent = shown === total ? 'soru' : `/ ${total} soru`;
+    }
+    const changed = String(qhavuzCountNum.textContent) !== String(text);
+    qhavuzCountNum.textContent = text;
+    if (bump || changed) {
       qhavuzCountNum.classList.remove('is-bump');
       void qhavuzCountNum.offsetWidth; // reflow: animasyonu baştan başlat
       qhavuzCountNum.classList.add('is-bump');
     }
+    const box = document.getElementById('qhavuzCount');
+    if (box) {
+      box.setAttribute(
+        'aria-label',
+        qhavuzCountShowSolved ? 'Soru sayısını göster' : 'Çözülen soru sayısını göster'
+      );
+    }
+  };
+  const updateQhavuzCount = (shown, total, filteredIds) => {
+    if (!qhavuzCountNum || !qhavuzCountUnit) return;
+    const firstRender = qhavuzLastShownCount === null;
+    qhavuzCountShown = shown;
+    qhavuzCountTotal = total;
+    if (filteredIds) qhavuzCountFilteredIds = filteredIds;
+    // İlk çizimde animasyon yok; sonrasında sayı değişirse bump yapar.
+    if (firstRender) {
+      qhavuzCountNum.classList.remove('is-bump');
+      qhavuzCountNum.textContent = '';
+    }
+    qhavuzRenderCount(false);
+    if (firstRender) qhavuzCountNum.classList.remove('is-bump');
     qhavuzLastShownCount = shown;
   };
+  const qhavuzCountToggle = () => {
+    qhavuzCountShowSolved = !qhavuzCountShowSolved;
+    qhavuzRenderCount(true);
+  };
+  (() => {
+    const box = document.getElementById('qhavuzCount');
+    if (!box) return;
+    box.addEventListener('click', qhavuzCountToggle);
+    box.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); qhavuzCountToggle(); }
+    });
+  })();
 
   // Canvas başlığının karşısındaki (yalnızca masaüstü/tablet) toplam soru +
   // çözülen soru özeti (bkz. .qhavuz-canvas-stats). Filtreden bağımsız
@@ -60117,6 +61993,7 @@
     const solved = qhavuzState.items.reduce((acc, item) => acc + (item.solved ? 1 : 0), 0);
     qhavuzCanvasTotalNum.textContent = total;
     qhavuzCanvasSolvedNum.textContent = solved;
+    if (typeof qhavuzRenderCount === 'function') qhavuzRenderCount(false);
 
     // Çözülen soru rakamının rengi çözülme oranına göre değişir: %50 altı
     // kırmızı, %50–%80 arası sarı, %80 ve üzeri yeşil. Havuzda hiç soru
@@ -60306,7 +62183,7 @@
   const renderQhavuzCanvasGrid = (items, totalCount) => {
     if (!qhavuzCanvasGrid) return;
     qhavuzCanvasVisibleItems = items;
-    qhavuzCanvasGrid.classList.toggle('is-select-mode', qhavuzCanvasSelectMode);
+    qhavuzCanvasGrid.classList.toggle('is-select-mode', qhavuzCanvasSelectMode || qhavuzSelectMode);
     updateQhavuzCanvasSelectBar();
     qhavuzCanvasGrid.innerHTML = '';
     if (!items.length) {
@@ -60387,8 +62264,24 @@
 
       if (item.solved) card.classList.add('is-solved');
       if (qhavuzCanvasSelectMode && qhavuzCanvasSelected.has(item.id)) card.classList.add('is-selected');
+      // Telefon seçim modu (nav bar "Seç") kendi kümesini kullanır.
+      if (qhavuzSelectMode && qhavuzSelectedIds.has(item.id)) card.classList.add('is-selected');
       card.appendChild(thumb);
       card.appendChild(info);
+
+      // Telefon Düzenle modu: kartın köşesinde sil (×) düğmesi.
+      if (qhavuzEditMode) {
+        const wDel = document.createElement('button');
+        wDel.type = 'button';
+        wDel.className = 'qhavuz-wide-del';
+        wDel.setAttribute('aria-label', 'Soruyu sil');
+        wDel.textContent = '×';
+        wDel.addEventListener('click', (e) => {
+          e.stopPropagation();
+          openQhavuzDeleteConfirm(item.id);
+        });
+        card.appendChild(wDel);
+      }
 
       // Tıklama: soru görseli büyük açılır. Sağ tık / basılı tutma: bağlam menüsü.
       let lpTimer = null;
@@ -60403,7 +62296,7 @@
       };
       card.addEventListener('pointerdown', (e) => {
         if (e.pointerType === 'mouse') return;
-        if (qhavuzCanvasSelectMode) return;
+        if (qhavuzCanvasSelectMode || qhavuzSelectMode || qhavuzEditMode) return;
         lpTriggered = false;
         lpX = e.clientX;
         lpY = e.clientY;
@@ -60425,11 +62318,19 @@
       card.addEventListener('contextmenu', (e) => {
         e.preventDefault();
         cancelLp();
-        if (qhavuzCanvasSelectMode) return;
+        if (qhavuzCanvasSelectMode || qhavuzSelectMode || qhavuzEditMode) return;
         openQhavuzWideContextMenu(item, card, e.clientX, e.clientY);
       });
       card.addEventListener('click', () => {
         if (lpTriggered) { lpTriggered = false; return; }
+        if (qhavuzEditMode) return;
+        if (qhavuzSelectMode) {
+          if (qhavuzSelectedIds.has(item.id)) qhavuzSelectedIds.delete(item.id);
+          else qhavuzSelectedIds.add(item.id);
+          card.classList.toggle('is-selected', qhavuzSelectedIds.has(item.id));
+          updateQhavuzSelectBar();
+          return;
+        }
         if (qhavuzCanvasSelectMode) {
           if (qhavuzCanvasSelected.has(item.id)) qhavuzCanvasSelected.delete(item.id);
           else qhavuzCanvasSelected.add(item.id);
@@ -60489,7 +62390,7 @@
       return true;
     });
 
-    updateQhavuzCount(filteredItems.length, qhavuzState.items.length);
+    updateQhavuzCount(filteredItems.length, qhavuzState.items.length, new Set(filteredItems.map((it) => it.id)));
     updateQhavuzCanvasStats();
 
     // Tarihe göre sırala: eski kayıtlarda "ts" alanı olmayabilir, bunlar
@@ -60511,7 +62412,7 @@
       // Telefonda görsel ekleme nav bar'da; geniş ekranda soldaki araç panelinde.
       const addBtnInNavBar = !window.matchMedia('(min-width: 768px) and (min-height: 600px)').matches;
       empty.textContent = addBtnInNavBar
-        ? 'Henüz soru eklemedin. Aşağıdaki "Görsel Ekle" butonuyla bir görsel yükle.'
+        ? 'Henüz soru eklemedin. Aşağıdaki "Soru Ekle" butonuyla bir soru yükle.'
         : 'Henüz soru eklemedin. Yukarıdaki butondan bir görsel yükle.';
       qhavuzGrid.appendChild(empty);
       return;
