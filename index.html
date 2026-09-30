@@ -37189,7 +37189,7 @@
     /* Uygulama içi onay penceresi */
     .p8n-dlg-back { position: fixed; inset: 0; z-index: 90; display: grid; place-items: center; background: rgba(0,0,0,0); transition: background-color .3s ease, backdrop-filter .3s ease; }
     .p8n-dlg-back.is-in { background: rgba(0,0,0,.42); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
-    .p8n-dlg { box-sizing: border-box; width: min(410px, calc(100vw - 48px)); padding: 1.7rem 1.6rem 1.4rem; border-radius: 1.9rem; background: var(--theme-bg, #F6F4EF); color: var(--theme-text, #121212); box-shadow: 0 24px 70px rgba(0,0,0,.35); opacity: 0; transform: translateY(16px) scale(.95); transition: opacity .3s ease, transform .4s cubic-bezier(.22,1,.36,1); }
+    .p8n-dlg { --p8-surf: color-mix(in srgb, var(--theme-text, #121212) 6%, transparent); --p8-surf2: color-mix(in srgb, var(--theme-text, #121212) 11%, transparent); --p8-mute: color-mix(in srgb, var(--theme-text, #121212) 55%, transparent); font-family: "Baloo 2", "Space Grotesk", sans-serif; box-sizing: border-box; width: min(410px, calc(100vw - 48px)); padding: 1.7rem 1.6rem 1.4rem; border-radius: 1.9rem; background: var(--theme-bg, #F6F4EF); color: var(--theme-text, #121212); box-shadow: 0 24px 70px rgba(0,0,0,.35); opacity: 0; transform: translateY(16px) scale(.95); transition: opacity .3s ease, transform .4s cubic-bezier(.22,1,.36,1); }
     .p8n-dlg-back.is-in .p8n-dlg { opacity: 1; transform: none; }
     .p8n-dlg h3 { margin: 0 0 .4rem; font-size: 1.35rem; font-weight: 800; line-height: 1.2; }
     .p8n-dlg p { margin: 0 0 1.3rem; font-size: 1rem; font-weight: 600; line-height: 1.4; color: var(--p8-mute); }
@@ -37731,16 +37731,18 @@
   }
 
   /* ==========================================================================
-     TELEFON (yalnızca mobil): Kronometre — üst butonlar + "Branşlarım" pop-up'ı
+     KRONOMETRE (mobil + masaüstü): üst butonlar + "Branşlarım" pop-up'ı
      ==========================================================================
-     Büyük ekran kuralları DEĞİŞTİRİLMEDİ: hepsi aşağıdaki mobil @media içinde.
+     Artık her iki modda da aynı tasarım geçerli (eskiden yalnızca mobildi).
+     Masaüstüne özgü eski kurallar (2 sütun, kalın çerçeve) en alttaki
+     "ortak ölçüler" bloğunda nötrlenir.
      1) İstatistik / Branşlarım butonları: Gündelik'teki (+ / kalem) yuvarlak,
         yumuşak yüzeyli ikon düğmeleriyle aynı dil (2.6rem, tema metninin %6'sı).
      2) Branşlarım pop-up'ı: Soru Takibi "Ders Ekle" pop-up'ıyla aynı yeni dil —
         yumuşak beyaz kart, hap düğmeler, ince tonlu satırlar (kalın çerçeve /
         sert gölge yok). */
   #stopwatchPage .stopwatch-header-actions .page5-icon-btn > svg.sw-ico-m { display: none; }
-  @media not all and (min-width: 768px) and (min-height: 600px) {
+  @media all {
     #stopwatchPage .stopwatch-header-actions { gap: 0.5rem; }
     #stopwatchPage .stopwatch-header-actions .page5-icon-btn {
       width: 2.6rem;
@@ -37961,6 +37963,77 @@
       background: #fff;
       color: #000;
     }
+  }
+
+  /* ---- Ortak ölçüler (mobil + masaüstü) ----
+     1) Masaüstündeki eski 2 sütunlu ızgara / kalın çerçeve / geniş kart
+        nötrlenir; pop-up her ekranda aynı minimal siyah tek sütun kalır.
+     2) TYT <-> AYT geçişinde boyut ASLA değişmez: kart sabit yükseklikte,
+        liste kendi içinde kayar, "Kendi dersini yaz" satırı hep altta durur.
+        (TYT 9, AYT 4 branş olsa da sayfa sıçramaz.) */
+  #stopwatchPage .stopwatch-header-actions .page5-icon-btn > svg.sw-ico-m {
+    width: 20px;
+    height: 20px;
+  }
+  #stopwatchSubjectsBackdrop .page9-add-card {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 420px;
+    height: min(40rem, 88vh);
+    max-height: none;
+    overflow: hidden;
+  }
+  #stopwatchSubjectsBackdrop .page9-add-header,
+  #stopwatchSubjectsBackdrop .settings-segmented.page9-segmented,
+  #stopwatchSubjectsBackdrop .page9-add-custom-row { flex: 0 0 auto; }
+  #stopwatchSubjectsBackdrop .page9-add-grid {
+    display: flex;
+    flex-direction: column;
+    grid-template-columns: none;
+    gap: 0;
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    touch-action: pan-y;
+    overscroll-behavior: contain;
+    scrollbar-width: none;
+  }
+  #stopwatchSubjectsBackdrop .page9-add-grid::-webkit-scrollbar { display: none; }
+  #stopwatchSubjectsBackdrop .page9-add-chip {
+    padding: 0.8rem 0.1rem;
+    gap: 0.7rem;
+  }
+  #stopwatchSubjectsBackdrop .page9-add-chip-box { width: 1rem; height: 1rem; }
+  #stopwatchSubjectsBackdrop .page9-add-chip-color-dot { width: 0.8rem; height: 0.8rem; }
+  #stopwatchSubjectsBackdrop .page9-add-chip-name { font-size: 1rem; }
+  #stopwatchSubjectsBackdrop .page9-add-chip-note { font-size: 0.74rem; }
+  #stopwatchSubjectsBackdrop .page9-add-title { font-size: 1.1rem; }
+  #stopwatchSubjectsBackdrop .page9-add-subtitle { font-size: 0.8rem; }
+  #stopwatchSubjectsBackdrop .stopwatch-subjects-segmented {
+    height: 2.4rem;
+    margin-bottom: 0.4rem;
+  }
+  #stopwatchSubjectsBackdrop .stopwatch-subjects-segmented .settings-segmented-option { font-size: 0.92rem; }
+  #stopwatchSubjectsBackdrop .page9-add-custom-row {
+    margin-top: 0.9rem;
+    padding-top: 0.2rem;
+  }
+  #stopwatchSubjectsBackdrop .page9-add-custom-input {
+    padding: 0.55rem 0.1rem;
+    font-size: 0.95rem;
+  }
+  #stopwatchSubjectsBackdrop .page9-add-custom-btn {
+    width: 2.3rem;
+    height: 2.3rem;
+    font-size: 1.2rem;
+  }
+  @media (hover: hover) and (pointer: fine) {
+    #stopwatchPage .stopwatch-header-actions .page5-icon-btn:hover {
+      background: color-mix(in srgb, var(--theme-text, #121212) 11%, transparent);
+    }
+    #stopwatchSubjectsBackdrop .page9-add-chip:hover { opacity: 0.75; }
+    #stopwatchSubjectsBackdrop .page9-add-close:hover { opacity: 1; }
   }
   </style>
 <script>
@@ -52317,7 +52390,9 @@
       document.addEventListener('keydown', onKey, true);
       cancel.onclick = () => done(false); ok.onclick = () => done(true);
       back.addEventListener('pointerdown', (e) => { if (e.target === back) done(false); });
-      root.appendChild(back);
+      // Telefonda #p8n (root) gizli (display:none) olduğu için pencere içinde
+      // görünmüyordu; bu yüzden onay penceresi doğrudan body'ye eklenir.
+      document.body.appendChild(back);
       requestAnimationFrame(() => requestAnimationFrame(() => { back.classList.add('is-in'); cancel.focus({ preventScroll: true }); }));
     });
 
