@@ -40404,6 +40404,90 @@
     </div>
   </section>
 
+
+<style id="p8-steps-css">
+  /* Aşamalı rutin: onay dairesi, işaretledikçe saat yönünde dolan pasta dilimi gibi dolar.
+     Masaüstü ve telefonda aynı kurallar (kutu boyutunu mevcut .p8g-c belirler). */
+  #p8nMain .p8g-c.has-pie { position: relative; overflow: hidden; }
+  #p8nMain .p8g-c svg.p8g-pie { position: absolute; inset: 0; width: 100%; height: 100%; }
+  #p8nMain .p8g-c.has-pie svg:not(.p8g-pie) { position: relative; z-index: 1; }
+  #p8nMain .p8g-r.is-part .p8g-c { border-color: var(--gc); }
+  #p8nMain .p8g-r.is-done .p8g-c.has-pie svg:not(.p8g-pie) { transition-delay: .4s; }
+  #p8nMain .p8g-c.is-step { animation: p8gStep .45s cubic-bezier(.34,1.56,.64,1); }
+  @keyframes p8gStep { 0% { transform: scale(1); } 40% { transform: scale(1.2); } 100% { transform: scale(1); } }
+  #p8nMain .p8g-stp { flex: 0 0 auto; font-size: .78rem; font-weight: 800; color: var(--p8-mute, rgba(128,128,128,.8)); font-variant-numeric: tabular-nums; padding: .12rem .55rem; border-radius: 999px; background: color-mix(in srgb, var(--theme-text, #121212) 7%, transparent); transition: opacity .3s ease; }
+  #p8nMain .p8g-r.is-done .p8g-stp { opacity: .5; }
+  #p8nMain .p8g-stpbtn { flex: 0 0 auto; border: none; cursor: pointer; font: inherit; font-weight: 700; font-size: .8rem; white-space: nowrap; height: 2.3rem; padding: 0 .85rem; border-radius: 999px; color: var(--p8-mute, rgba(128,128,128,.9)); background: var(--p8-surf2, rgba(128,128,128,.14)); -webkit-tap-highlight-color: transparent; transition: background-color .2s ease, color .2s ease, transform .15s ease; }
+  #p8nMain .p8g-stpbtn:active { transform: scale(.93); }
+  #p8nMain .p8g-stpbtn.is-on { color: var(--gt, #fff); background: var(--gc, var(--accent-color, #ff90e8)); }
+  .p8g-stprow { display: flex; align-items: center; justify-content: center; gap: 1.2rem; margin: 0 0 1.3rem; }
+  .p8g-stpd { width: 2.8rem; height: 2.8rem; border: none; border-radius: 50%; cursor: pointer; font: inherit; font-size: 1.5rem; font-weight: 800; line-height: 1; color: inherit; background: var(--p8-surf2, rgba(128,128,128,.14)); -webkit-tap-highlight-color: transparent; transition: transform .15s ease, opacity .2s ease; }
+  .p8g-stpd:active { transform: scale(.9); }
+  .p8g-stpd:disabled { opacity: .3; }
+  .p8g-stpv { min-width: 4.5rem; text-align: center; font-size: 2.2rem; font-weight: 800; line-height: 1; font-variant-numeric: tabular-nums; }
+  .p8g-stpv small { display: block; margin-top: .25rem; font-size: .75rem; font-weight: 700; color: var(--p8-mute, rgba(128,128,128,.8)); }
+  .p8n-dlg-btn.p8g-okbtn { color: #fff; background: var(--accent-color, #ff90e8); text-shadow: 0 1px 2px rgba(0,0,0,.18); }
+  @media (prefers-reduced-motion: reduce) { #p8nMain .p8g-c.is-step { animation: none; } }
+</style>
+<style id="hatirla-css">
+  /* ===== Hatırlanacaklar (YALNIZCA telefon) =====
+     Gündelik başlığına dokununca açılır. Kart yok: yazılar doğrudan arka planda,
+     sade todo listesi. Seri / takvim / gece yarısı sıfırlaması YOK. */
+  @media (min-width: 768px) and (min-height: 600px) { #page-hatirla { display: none !important; } }
+  @media not all and (min-width: 768px) and (min-height: 600px) {
+    #page-8 .p8m-title { cursor: pointer; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; }
+    #page-hatirla { flex-direction: column; align-items: center; justify-content: flex-start; padding: 0; overflow: hidden;
+      --hl-mute: color-mix(in srgb, var(--theme-text, #121212) 55%, transparent);
+      --hl-soft: color-mix(in srgb, var(--theme-text, #121212) 9%, transparent);
+      color: var(--theme-text, #121212); font-family: "Baloo 2", "Space Grotesk", sans-serif; }
+    #page-hatirla .hl-top { flex: 0 0 auto; display: flex; align-items: center; justify-content: space-between; gap: .5rem; width: 100%; max-width: 428px; box-sizing: border-box; min-height: 2.6rem; padding: calc(20px + env(safe-area-inset-top)) 24px .5rem; }
+    #page-hatirla .hl-title { margin: 0; min-width: 0; font-family: inherit; font-weight: 800; font-size: 1.6rem; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; color: var(--theme-text, #f2f2f7); }
+    #page-hatirla .hl-new { flex: 0 0 auto; width: 2.6rem; height: 2.6rem; padding: 0; border: none; border-radius: 50%; display: grid; place-items: center; cursor: pointer; color: inherit; background: color-mix(in srgb, var(--theme-text, #121212) 6%, transparent); box-shadow: inset 0 1px 3px 0 color-mix(in srgb, var(--theme-text, #121212) 10%, transparent); -webkit-tap-highlight-color: transparent; transition: transform .15s ease; }
+    #page-hatirla .hl-new:active { transform: scale(.92); }
+    #page-hatirla .hl-new svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; }
+    #page-hatirla .hl-scroll { flex: 1 1 auto; min-height: 0; width: 100%; max-width: 428px; box-sizing: border-box; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: none; padding: 1rem 24px calc(96px + env(safe-area-inset-bottom)); -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 16px, #000 100%); mask-image: linear-gradient(to bottom, transparent 0, #000 16px, #000 100%); }
+    #page-hatirla .hl-scroll::-webkit-scrollbar { display: none; }
+    #page-hatirla .hl-g { --gc: #ff90e8; --gt: #121212; margin: 0 0 1.6rem; animation: hlIn .45s cubic-bezier(.22,1,.36,1) backwards; }
+    @keyframes hlIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+    #page-hatirla .hl-head { display: flex; align-items: baseline; gap: .6rem; padding: .2rem .3rem .3rem; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; border-radius: .8rem; transition: background-color .25s ease; }
+    #page-hatirla .hl-head.is-pressing, #page-hatirla .hl-head.is-ctx-active { background: var(--hl-soft); }
+    #page-hatirla .hl-name { font-size: 1.35rem; font-weight: 800; letter-spacing: -.01em; line-height: 1.15; display: inline-flex; align-items: center; gap: .5rem; min-width: 0; overflow-wrap: anywhere; }
+    #page-hatirla .hl-name::before { content: ''; width: .55rem; height: .55rem; border-radius: 50%; background: var(--gc); flex: 0 0 auto; }
+    #page-hatirla .hl-count { font-size: .85rem; font-weight: 700; color: var(--hl-mute); font-variant-numeric: tabular-nums; }
+    #page-hatirla .hl-r { display: flex; align-items: center; gap: .85rem; padding: .65rem .3rem; border-radius: 1rem; cursor: pointer; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; transition: background-color .25s ease; }
+    #page-hatirla .hl-r.is-pressing, #page-hatirla .hl-r.is-ctx-active { background: color-mix(in srgb, var(--gc) 14%, transparent); }
+    #page-hatirla .hl-c { flex: 0 0 auto; width: 1.7rem; height: 1.7rem; box-sizing: border-box; border-radius: 50%; border: 2px solid color-mix(in srgb, var(--theme-text, #121212) 26%, transparent); display: grid; place-items: center; transition: background-color .3s ease, border-color .3s ease, transform .35s cubic-bezier(.34,1.56,.64,1); }
+    #page-hatirla .hl-r:active .hl-c { transform: scale(.88); }
+    #page-hatirla .hl-c svg { width: .95rem; height: .95rem; fill: none; stroke: var(--gt); stroke-width: 3.4; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 26; stroke-dashoffset: 26; transition: stroke-dashoffset .4s ease .05s; }
+    #page-hatirla .hl-r.is-done .hl-c { background: var(--gc); border-color: var(--gc); }
+    #page-hatirla .hl-r.is-done .hl-c svg { stroke-dashoffset: 0; }
+    #page-hatirla .hl-t { flex: 1 1 auto; min-width: 0; font-size: 1.1rem; font-weight: 700; line-height: 1.25; overflow-wrap: anywhere; transition: opacity .3s ease; }
+    #page-hatirla .hl-tt { background: linear-gradient(currentColor, currentColor) no-repeat 0 58% / 0 2px; -webkit-box-decoration-break: clone; box-decoration-break: clone; transition: background-size .45s ease; }
+    #page-hatirla .hl-r.is-done .hl-t { opacity: .4; }
+    #page-hatirla .hl-r.is-done .hl-tt { background-size: 100% 2px; }
+    #page-hatirla .hl-add { display: block; width: 100%; box-sizing: border-box; padding: .65rem .3rem; border: none; background: none; text-align: left; font: inherit; font-weight: 700; font-size: .95rem; color: var(--hl-mute); cursor: pointer; -webkit-tap-highlight-color: transparent; }
+    #page-hatirla .hl-add:active { color: var(--theme-text, #121212); }
+    #page-hatirla .hl-form { display: flex; align-items: center; gap: .5rem; padding: .3rem 0 .4rem; }
+    #page-hatirla .hl-in, #page-hatirla .hl-edit { flex: 1 1 auto; min-width: 0; box-sizing: border-box; font: inherit; font-weight: 600; font-size: 1rem; color: inherit; background: var(--hl-soft); border: none; outline: none; border-radius: 999px; padding: .65rem 1rem; }
+    #page-hatirla .hl-edit { font-size: 1.05rem; padding: .3rem .8rem; }
+    #page-hatirla .hl-in::placeholder { color: var(--hl-mute); }
+    #page-hatirla .hl-go { flex: 0 0 auto; width: 2.6rem; height: 2.6rem; border: none; border-radius: 50%; display: grid; place-items: center; cursor: pointer; background: var(--gc, var(--accent-color, #ff90e8)); }
+    #page-hatirla .hl-go svg { width: 1.05rem; height: 1.05rem; fill: none; stroke: var(--gt, #fff); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+    #page-hatirla .hl-newform { margin: 0 0 1.4rem; }
+    #page-hatirla .hl-empty { margin: 2rem 0; text-align: center; font-weight: 600; color: var(--hl-mute); }
+    #page-hatirla .hl-tip { margin: 0; text-align: center; font-size: .8rem; font-weight: 600; color: var(--hl-mute); }
+  }
+  @media (max-width: 340px) { #page-hatirla .hl-title { font-size: 1.25rem; } #page-hatirla .hl-top { padding-left: 16px; padding-right: 16px; } }
+  @media (prefers-reduced-motion: reduce) { #page-hatirla * { animation: none !important; transition-duration: .01ms !important; } }
+</style>
+  <section class="page" id="page-hatirla" aria-label="Hatırlanacaklar">
+    <div class="hl-top">
+      <h1 class="hl-title" id="hlTitle" role="button" tabindex="0" title="Gündelik'e dön">Hatırlanacaklar</h1>
+      <button type="button" class="hl-new" id="hlNew" aria-label="Yeni liste"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
+    </div>
+    <div class="hl-scroll" id="hlScroll"><div id="hlNewForm"></div><div id="hlList"></div><p class="hl-tip" id="hlTip"></p></div>
+  </section>
+
   <!-- Sayfa 9: Soru Takibi. TYT/AYT sekmesinden ders seçilip günlük
        çözülen soru sayısı girilir; alttaki özet kartı gün/hafta/ay
        bazında hem genel toplamı hem branş dağılımını gösterir. -->
@@ -52768,7 +52852,7 @@
   // kalıcıdır, sadece rutinler her gün yeniden başlar).
   if (page8State.routinesResetDate !== page8TodayStr()) {
     page8State.routineGroups.forEach((group) => {
-      group.routines.forEach((routine) => { routine.done = false; });
+      group.routines.forEach((routine) => { routine.done = false; if (routine.steps) routine.prog = 0; });
     });
     page8State.routinesResetDate = page8TodayStr();
   }
@@ -52786,6 +52870,9 @@
     const $ = (id) => document.getElementById(id);
     const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
     const TICK = '<svg viewBox="0 0 24 24"><path d="M4 12.5l5 5.5 11-13"/></svg>';
+    // Aşamalı rutin: dolan pasta dilimi (r=6 + kalınlık 12 => tüm daireyi kaplar; dashoffset ile dolar)
+    const PIE_C = 2 * Math.PI * 6;
+    const PIE = `<svg class="p8g-pie" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="6" transform="rotate(-90 12 12)" style="fill:none;stroke:var(--gc);stroke-width:12;stroke-linecap:butt;stroke-dasharray:${PIE_C};stroke-dashoffset:${PIE_C};transition:stroke-dashoffset .6s cubic-bezier(.22,1,.36,1)"></circle></svg>`;
     const lum = (hex) => { const m = /^#?([0-9a-f]{6})$/i.exec(hex || ''); if (!m) return 0; const n = parseInt(m[1], 16); return (0.299 * (n >> 16) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255)) / 255; };
     const tickColor = (c) => (lum(c) > 0.62 ? '#1a1a1a' : '#fff');
     const dayKey = (d) => `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
@@ -52810,11 +52897,21 @@
     const rollover = () => {
       if (page8State.routinesResetDate === page8TodayStr()) return;
       if (page8State.routinesResetDate) { const { d, t } = totals(); page8State.routineHistory[page8State.routinesResetDate] = { d, t }; recordGroups(page8State.routinesResetDate); }
-      page8State.routineGroups.forEach((g) => g.routines.forEach((r) => { r.done = false; }));
+      page8State.routineGroups.forEach((g) => g.routines.forEach((r) => { r.done = false; if (r.steps) r.prog = 0; }));
       page8State.routinesResetDate = page8TodayStr();
       save();
     };
     document.addEventListener('visibilitychange', () => { if (!document.hidden) rollover(); });
+    // Gece 00.00'da (uygulama açık kalsa bile) rutin işaretlerini yenile; arka planda
+    // geciken zamanlayıcıya karşı odaklanınca ve sayfa geri yüklenince de kontrol edilir.
+    const armMidnight = () => {
+      const n = new Date();
+      const ms = new Date(n.getFullYear(), n.getMonth(), n.getDate() + 1, 0, 0, 1).getTime() - n.getTime();
+      setTimeout(() => { rollover(); armMidnight(); }, Math.max(1000, ms));
+    };
+    armMidnight();
+    window.addEventListener('focus', rollover);
+    window.addEventListener('pageshow', rollover);
 
     const nowGroupKey = () => {
       const h = new Date().getHours();
@@ -52934,6 +53031,8 @@
       edit: '<svg viewBox="0 0 24 24"><path d="M4 20h4L19 9a2.1 2.1 0 0 0-3-3L5 17v3z"/><path d="M14.5 7.5l3 3"/></svg>',
       color: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><circle cx="8.6" cy="11" r="1"/><circle cx="12" cy="7.9" r="1"/><circle cx="15.4" cy="11" r="1"/></svg>',
       plus: '<svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>',
+      steps: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 12V3.5"/><path d="M12 12l6 6" /></svg>',
+      undo: '<svg viewBox="0 0 24 24"><path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/></svg>',
       reset: '<svg viewBox="0 0 24 24"><path d="M4 12a8 8 0 1 0 2.6-5.9"/><path d="M4 4v4.5h4.5"/></svg>',
       trash: '<svg viewBox="0 0 24 24"><path d="M3.5 6h17"/><path d="M8.5 6V4.3a1 1 0 0 1 1-1h5a1 1 0 0 1 1 1V6"/><path d="M6 6l.9 13.2a2 2 0 0 0 2 1.8h6.2a2 2 0 0 0 2-1.8L18 6"/><path d="M10 10.5v6M14 10.5v6"/></svg>'
     };
@@ -53136,12 +53235,57 @@
       paintCal(card, group, drawToday);
     };
 
+    // Satırın görünümünü (dolu/kısmi/pasta dilimi/sayaç) yerinde günceller; animasyonlar kesilmez.
+    const paintRow = (row, r, bump) => {
+      const n = r.steps || 1, k = r.done ? n : Math.min(r.prog || 0, n);
+      row.classList.toggle('is-done', !!r.done);
+      row.classList.toggle('is-part', n > 1 && !r.done && k > 0);
+      const pie = row.querySelector('.p8g-pie circle');
+      if (pie) pie.style.strokeDashoffset = String(PIE_C * (1 - k / n));
+      const b = row.querySelector('.p8g-stp'); if (b) b.textContent = `${k}/${n}`;
+      if (bump) { const c = row.querySelector('.p8g-c'); c.classList.remove('is-step'); void c.offsetWidth; c.classList.add('is-step'); }
+    };
+
     const toggleRoutine = (group, r, row, card) => {
-      r.done = !r.done;
+      const n = r.steps || 1;
+      if (n > 1) {
+        // Aşamalı: her dokunuş bir aşama ilerletir; tamamlanmışa dokunmak baştan başlatır.
+        if (r.done) { r.done = false; r.prog = 0; }
+        else { r.prog = (r.prog || 0) + 1; if (r.prog >= n) { r.done = true; r.prog = n; } }
+      } else r.done = !r.done;
       snapshot(); savePage8State();
-      row.classList.toggle('is-done', r.done);
+      paintRow(row, r, n > 1);
       paintCard(card, group, r.done);
       renderHero();
+    };
+
+    const stepBack = (group, r, row, card) => {
+      const n = r.steps || 1;
+      if (r.done) { r.done = false; r.prog = n - 1; } else r.prog = Math.max(0, (r.prog || 0) - 1);
+      snapshot(); savePage8State();
+      paintRow(row, r, false); paintCard(card, group, false); renderHero();
+    };
+
+    const askSteps = (cur) => new Promise((resolve) => {
+      const MAX = 12; let n = cur || 1;
+      const bk = el('div', 'p8n-dlg-back'), d = el('div', 'p8n-dlg'); d.setAttribute('role', 'dialog'); d.setAttribute('aria-modal', 'true');
+      const minus = el('button', 'p8g-stpd', '−'), plus = el('button', 'p8g-stpd', '+'), val = el('div', 'p8g-stpv');
+      minus.type = plus.type = 'button'; minus.setAttribute('aria-label', 'Azalt'); plus.setAttribute('aria-label', 'Artır');
+      const row = el('div', 'p8g-stprow'); row.append(minus, val, plus);
+      const lab = () => { val.textContent = String(n); val.appendChild(el('small', '', n === 1 ? 'normal rutin' : 'aşama')); minus.disabled = n <= 1; plus.disabled = n >= MAX; };
+      minus.onclick = () => { if (n > 1) { n--; lab(); } }; plus.onclick = () => { if (n < MAX) { n++; lab(); } }; lab();
+      const no = el('button', 'p8n-dlg-btn', 'Vazgeç'), ok = el('button', 'p8n-dlg-btn p8g-okbtn', 'Kaydet'); no.type = ok.type = 'button';
+      const btns = el('div', 'p8n-dlg-row'); btns.append(no, ok);
+      d.append(el('h3', '', 'Kaç aşamalı?'), el('p', '', 'Rutini tamamlamak için kaç kez işaretlemen gerekiyor? Her işarette kutu o kadar dolar.'), row, btns); bk.appendChild(d);
+      const fin = (v) => { bk.classList.remove('is-in'); setTimeout(() => bk.remove(), 320); resolve(v); };
+      no.onclick = () => fin(null); ok.onclick = () => fin(n);
+      bk.addEventListener('pointerdown', (e) => { if (e.target === bk) fin(null); });
+      document.body.appendChild(bk); requestAnimationFrame(() => requestAnimationFrame(() => bk.classList.add('is-in')));
+    });
+    const setSteps = async (group, r) => {
+      const n = await askSteps(r.steps || 1); if (n == null) return;
+      if (n > 1) { r.steps = n; r.prog = r.done ? n : Math.min(r.prog || 0, n - 1); } else { delete r.steps; delete r.prog; }
+      save();
     };
 
     const removeRoutine = (group, r, row) => {
@@ -53206,13 +53350,23 @@
     };
 
     // Yazı kutusu + gönder düğmesi (rutin ve alt başlık ekleme için ortak)
-    const mkForm = (placeholder, onSubmit, onCancel, isOpen) => {
+    const mkForm = (placeholder, onSubmit, onCancel, isOpen, withSteps) => {
       const f = el('form', 'p8g-form'); f.autocomplete = 'off'; f.noValidate = true;
       const inp = el('input', 'p8g-in'); inp.type = 'text'; inp.placeholder = placeholder; inp.enterKeyHint = 'done'; inp.maxLength = 120;
       const go = el('button', 'p8g-go'); go.type = 'submit'; go.setAttribute('aria-label', 'Ekle');
       go.innerHTML = '<svg viewBox="0 0 24 24"><path d="M12 19V6M6.5 11.5L12 6l5.5 5.5"/></svg>';
-      f.append(inp, go);
-      f.addEventListener('submit', (e) => { e.preventDefault(); const v = inp.value.trim(); if (!v) { inp.focus(); return; } onSubmit(v); });
+      let steps = 1;
+      if (withSteps) {
+        // Aşama düğmesi: dokundukça 1 → 2 → … → 9 → 1 (odak yazı kutusunda kalır, klavye kapanmaz)
+        const sb = el('button', 'p8g-stpbtn'); sb.type = 'button';
+        const lab = () => { sb.textContent = steps + ' aşama'; sb.classList.toggle('is-on', steps > 1); sb.setAttribute('aria-label', `Aşama sayısı: ${steps}. Değiştirmek için dokun`); };
+        lab();
+        sb.addEventListener('pointerdown', (e) => e.preventDefault());
+        sb.addEventListener('mousedown', (e) => e.preventDefault());
+        sb.addEventListener('click', () => { steps = steps >= 9 ? 1 : steps + 1; lab(); inp.focus(); });
+        f.append(inp, sb, go);
+      } else f.append(inp, go);
+      f.addEventListener('submit', (e) => { e.preventDefault(); const v = inp.value.trim(); if (!v) { inp.focus(); return; } onSubmit(v, steps); });
       inp.addEventListener('keydown', (e) => { if (e.key === 'Escape') onCancel(); });
       inp.addEventListener('blur', () => { setTimeout(() => { if (!inp.value.trim() && !f.contains(document.activeElement) && isOpen()) onCancel(); }, 120); });
       return f;
@@ -53245,14 +53399,18 @@
         const main = el('div', 'p8g-main'); main.appendChild(head);
 
         const buildRow = (r) => {
-          const row = el('div', 'p8g-r' + (r.done ? ' is-done' : ''));
-          const c = el('span', 'p8g-c'); c.innerHTML = TICK;
+          const row = el('div', 'p8g-r');
+          const c = el('span', 'p8g-c' + (r.steps > 1 ? ' has-pie' : '')); c.innerHTML = (r.steps > 1 ? PIE : '') + TICK;
           const t = el('span', 'p8g-t'); t.appendChild(el('span', 'p8g-tt', r.text));
           row.append(c, t);
+          if (r.steps > 1) row.appendChild(el('span', 'p8g-stp'));
+          paintRow(row, r);
           row.addEventListener('click', () => toggleRoutine(group, r, row, card));
           bindHold(row, (x, y) => {
             openCtx(row, [
               { ic: IC.edit, title: 'Metni Düzenle', sub: 'Rutinin adını değiştir', fn: () => startEditText(t, r, render) },
+              { ic: IC.steps, title: 'Aşama Sayısı', sub: r.steps > 1 ? `Şu an ${r.steps} aşamalı` : 'Birden çok işaretle tamamlanan rutin', fn: () => setSteps(group, r) },
+              ...((r.steps > 1 && (r.done || r.prog > 0)) ? [{ ic: IC.undo, title: 'Bir Aşama Geri Al', sub: 'Son işareti kaldır', fn: () => stepBack(group, r, row, card) }] : []),
               { ic: IC.trash, title: 'Sil', sub: 'Bu rutini kaldır', danger: true, fn: () => removeRoutine(group, r, row) }
             ], x, y);
           });
@@ -53286,9 +53444,9 @@
           main.appendChild(list);
           if (formOpen) {
             main.appendChild(mkForm(sec ? `${sec.name} altına rutin ekle` : 'Yeni rutin (örn. Su iç)',
-              (v) => { const r = { id: page8GenId(), text: v, done: false }; if (sec) r.sec = sec.id; group.routines.push(r); save(); focusForm(group); },
+              (v, n) => { const r = { id: page8GenId(), text: v, done: false }; if (n > 1) { r.steps = n; r.prog = 0; } if (sec) r.sec = sec.id; group.routines.push(r); save(); focusForm(group); },
               () => { addOpenGroups.delete(key); render(); },
-              () => addOpenGroups.has(key)));
+              () => addOpenGroups.has(key), true));
           }
         });
 
@@ -53318,7 +53476,7 @@
             { ic: IC.color, title: 'Rengi Değiştir', sub: 'Kartın vurgu rengi', fn: () => openColorPicker(group.name, group.color, (color) => { group.color = color; savePage8State(); render(); }) },
             { ic: IC.plus, title: 'Rutin Ekle', sub: 'Bu gruba yeni rutin', fn: () => openAddForm(group) }
           ];
-          if (done) items.push({ ic: IC.reset, title: 'İşaretleri Sıfırla', sub: 'Bugünkü tikleri kaldır', fn: () => { group.routines.forEach((r) => { r.done = false; }); snapshot(); savePage8State(); render(); } });
+          if (done) items.push({ ic: IC.reset, title: 'İşaretleri Sıfırla', sub: 'Bugünkü tikleri kaldır', fn: () => { group.routines.forEach((r) => { r.done = false; if (r.steps) r.prog = 0; }); snapshot(); savePage8State(); render(); } });
           items.push({ ic: IC.trash, title: 'Grubu Sil', sub: 'İçindeki rutinlerle birlikte', danger: true, fn: () => removeGroup(group, card) });
           openCtx(card, items, x, y);
         });
@@ -67494,7 +67652,7 @@
           routineGroups: importArr(p8.routineGroups).map((g) => ({
             ...g,
             routines: importArr(g && g.routines).map((r) => {
-              const { done, ...rest } = r || {};
+              const { done, prog, ...rest } = r || {};
               return rest;
             })
           }))
@@ -67717,7 +67875,7 @@
   // Kaydırma ve diğer davranışlara dokunulmaz, yalnızca bir body sınıfı
   // açılıp kapatılır.
   (function () {
-    const TYPING_SELECTOR = '.page8-item-input, .page8-item-edit-input';
+    const TYPING_SELECTOR = '.page8-item-input, .page8-item-edit-input, .hl-in, .hl-edit';
     const sync = () => {
       const el = document.activeElement;
       const typing = !!(el && el.matches && el.matches(TYPING_SELECTOR));
@@ -68632,6 +68790,179 @@
     if (mq.addEventListener) mq.addEventListener('change', place);
     else if (mq.addListener) mq.addListener(place);
   })();
+</script>
+
+<script>
+  // ---------- Hatırlanacaklar (telefon) ----------
+  // Gündelik başlığına dokununca açılır; başlığa tekrar dokununca Gündelik'e döner.
+  // Veri: APP_STATE.hatirla (rutinlerden bağımsız). Seri/takvim/gece sıfırlaması yok.
+  (() => {
+    const page = document.getElementById('page-hatirla'); if (!page) return;
+    const $ = (id) => document.getElementById(id);
+    const el = (t, c, x) => { const e = document.createElement(t); if (c) e.className = c; if (x != null) e.textContent = x; return e; };
+    const TICK = '<svg viewBox="0 0 24 24"><path d="M4 12.5l5 5.5 11-13"/></svg>';
+    const UP = '<svg viewBox="0 0 24 24"><path d="M12 19V6M6.5 11.5L12 6l5.5 5.5"/></svg>';
+    const IC = {
+      edit: '<svg viewBox="0 0 24 24"><path d="M4 20h4L19 9a2.1 2.1 0 0 0-3-3L5 17v3z"/><path d="M14.5 7.5l3 3"/></svg>',
+      color: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><circle cx="8.6" cy="11" r="1"/><circle cx="12" cy="7.9" r="1"/><circle cx="15.4" cy="11" r="1"/></svg>',
+      clean: '<svg viewBox="0 0 24 24"><path d="M4 12.5l5 5.5 11-13"/></svg>',
+      trash: '<svg viewBox="0 0 24 24"><path d="M3.5 6h17"/><path d="M8.5 6V4.3a1 1 0 0 1 1-1h5a1 1 0 0 1 1 1V6"/><path d="M6 6l.9 13.2a2 2 0 0 0 2 1.8h6.2a2 2 0 0 0 2-1.8L18 6"/></svg>'
+    };
+    const gid = () => 'hl-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+    const pal = (typeof WHEEL_PALETTE !== 'undefined' && WHEEL_PALETTE.length) ? WHEEL_PALETTE : ['#ff90e8', '#ffc900', '#23a094', '#90a8ed', '#ff7a00'];
+    const lum = (hex) => { const m = /^#?([0-9a-f]{6})$/i.exec(hex || ''); if (!m) return 0; const n = parseInt(m[1], 16); return (0.299 * (n >> 16) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255)) / 255; };
+    const tickColor = (c) => (lum(c) > 0.62 ? '#1a1a1a' : '#fff');
+
+    let st = APP_STATE.hatirla;
+    if (!st || !Array.isArray(st.groups)) st = { groups: [{ id: gid(), name: 'Genel', color: pal[0], items: [] }] };
+    const save = () => saveAppState({ hatirla: st });
+    const list = $('hlList');
+    let addOpen = null, newOpen = false, firstPaint = true;
+
+    // ---- Sayfa geçişi ----
+    const phone = window.matchMedia('not all and (min-width: 768px) and (min-height: 600px)');
+    if (typeof SIDEBAR_PARENT_PAGE !== 'undefined') SIDEBAR_PARENT_PAGE['page-hatirla'] = 'page-8';
+    const go = (id) => { if (phone.matches) goToPage(id); };
+    const gTitle = document.querySelector('#page-8 .p8m-title');
+    if (gTitle) {
+      gTitle.setAttribute('role', 'button'); gTitle.tabIndex = 0;
+      gTitle.addEventListener('click', () => go('page-hatirla'));
+      gTitle.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go('page-hatirla'); } });
+    }
+    const back = () => go('page-8');
+    $('hlTitle').addEventListener('click', back);
+    $('hlTitle').addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); back(); } });
+    // Alt barda Gündelik sekmesi zaten seçili olduğundan, ona dokunmak da Gündelik'e döndürür.
+    const navIn = document.querySelector('.nav-input[value="page-8"]');
+    if (navIn && navIn.nextElementSibling) navIn.nextElementSibling.addEventListener('click', () => { if (page.classList.contains('is-active')) back(); });
+    const onMq = () => { if (!phone.matches && page.classList.contains('is-active')) goToPage('page-8'); };
+    if (phone.addEventListener) phone.addEventListener('change', onMq); else phone.addListener(onMq);
+
+    // ---- Bağlam menüsü (basılı tut / sağ tık) ----
+    let menu = null, target = null;
+    const closeMenu = () => { if (target) target.classList.remove('is-ctx-active'); target = null; if (menu) menu.classList.remove('is-open'); };
+    const openMenu = (node, items, x, y) => {
+      if (!menu) {
+        menu = el('div', 'page11-context-menu p8g-menu'); menu.setAttribute('role', 'menu'); document.body.appendChild(menu);
+        document.addEventListener('pointerdown', (e) => { if (menu.classList.contains('is-open') && !menu.contains(e.target)) closeMenu(); });
+        window.addEventListener('scroll', closeMenu, true);
+      }
+      closeMenu(); target = node; node.classList.remove('is-pressing'); node.classList.add('is-ctx-active');
+      menu.innerHTML = '';
+      items.forEach((it) => {
+        const b = el('button', 'page11-context-menu-item' + (it.danger ? ' is-danger' : '')); b.type = 'button'; b.setAttribute('role', 'menuitem');
+        const ic = el('span', 'page11-context-menu-item-ic'); ic.innerHTML = it.ic;
+        const tx = el('span', 'page11-context-menu-item-text'); tx.append(el('span', 'page11-context-menu-item-title', it.title), el('span', 'page11-context-menu-item-sub', it.sub));
+        b.append(ic, tx); b.addEventListener('click', () => { closeMenu(); it.fn(); }); menu.appendChild(b);
+      });
+      menu.style.left = `${x - 124}px`; menu.style.top = `${Math.max(8, y - 26 - items.length * 58 - 16)}px`;
+      menu.classList.add('is-open');
+      requestAnimationFrame(() => {
+        const r = menu.getBoundingClientRect(); let l = x - r.width / 2, t = y - 26 - r.height;
+        if (t < 8) t = y + 26;
+        menu.style.left = `${Math.min(Math.max(8, l), window.innerWidth - r.width - 8)}px`;
+        menu.style.top = `${Math.min(Math.max(8, t), window.innerHeight - r.height - 8)}px`;
+      });
+    };
+    const hold = (node, onOpen) => {
+      let timer = null, sx = 0, sy = 0, fired = false;
+      const cancel = () => { if (timer) { clearTimeout(timer); timer = null; } node.classList.remove('is-pressing'); };
+      node.addEventListener('pointerdown', (e) => {
+        fired = false; if (e.pointerType === 'mouse' || e.button > 0) return;
+        if (e.target.closest && e.target.closest('input')) return;
+        sx = e.clientX; sy = e.clientY; cancel(); node.classList.add('is-pressing');
+        timer = setTimeout(() => { timer = null; fired = true; if (navigator.vibrate) navigator.vibrate(12); onOpen(sx, sy); }, 480);
+      });
+      node.addEventListener('pointermove', (e) => { if (timer && Math.hypot(e.clientX - sx, e.clientY - sy) > 10) cancel(); });
+      ['pointerup', 'pointercancel', 'pointerleave'].forEach((ev) => node.addEventListener(ev, cancel));
+      node.addEventListener('contextmenu', (e) => { e.preventDefault(); cancel(); if (!fired) onOpen(e.clientX, e.clientY); });
+      node.addEventListener('click', (e) => { if (fired) { fired = false; e.stopImmediatePropagation(); e.preventDefault(); } }, true);
+    };
+
+    // ---- Yardımcılar: geri al bildirimi, onay, yerinde düzenleme, form ----
+    let toastEl = null, toastT = null;
+    const toast = (msg, undo) => {
+      if (toastEl) toastEl.remove(); clearTimeout(toastT);
+      const t = el('div', 'n-toast'); t.appendChild(el('span', '', msg));
+      if (undo) { const b = el('button', '', 'Geri al'); b.type = 'button'; b.onclick = () => { undo(); t.remove(); }; t.appendChild(b); }
+      document.body.appendChild(t); toastEl = t; toastT = setTimeout(() => t.remove(), 5000);
+    };
+    const confirmDel = (title, msg) => new Promise((resolve) => {
+      const bk = el('div', 'p8n-dlg-back'), d = el('div', 'p8n-dlg'); d.setAttribute('role', 'dialog');
+      const no = el('button', 'p8n-dlg-btn', 'Vazgeç'), ok = el('button', 'p8n-dlg-btn danger', 'Sil'); no.type = ok.type = 'button';
+      const row = el('div', 'p8n-dlg-row'); row.append(no, ok); d.append(el('h3', '', title), el('p', '', msg), row); bk.appendChild(d);
+      const fin = (v) => { bk.classList.remove('is-in'); setTimeout(() => bk.remove(), 320); resolve(v); };
+      no.onclick = () => fin(false); ok.onclick = () => fin(true);
+      bk.addEventListener('pointerdown', (e) => { if (e.target === bk) fin(false); });
+      document.body.appendChild(bk); requestAnimationFrame(() => requestAnimationFrame(() => bk.classList.add('is-in')));
+    });
+    const editInline = (node, text, commitFn) => {
+      const inp = el('input', 'hl-edit'); inp.value = text; inp.maxLength = 120; inp.enterKeyHint = 'done';
+      node.replaceWith(inp); inp.focus(); inp.select();
+      let fin = false;
+      const done = (ok) => { if (fin) return; fin = true; const v = inp.value.trim(); if (ok && v && v !== text) commitFn(v); render(); };
+      inp.addEventListener('keydown', (e) => { if (e.key === 'Enter') done(true); else if (e.key === 'Escape') done(false); });
+      inp.addEventListener('blur', () => done(true)); inp.addEventListener('click', (e) => e.stopPropagation());
+    };
+    const mkForm = (ph, onSubmit, onCancel) => {
+      const f = el('form', 'hl-form'); f.autocomplete = 'off'; f.noValidate = true;
+      const inp = el('input', 'hl-in'); inp.type = 'text'; inp.placeholder = ph; inp.enterKeyHint = 'done'; inp.maxLength = 120;
+      const go2 = el('button', 'hl-go'); go2.type = 'submit'; go2.setAttribute('aria-label', 'Ekle'); go2.innerHTML = UP;
+      f.append(inp, go2);
+      f.addEventListener('submit', (e) => { e.preventDefault(); const v = inp.value.trim(); if (!v) { inp.focus(); return; } onSubmit(v); });
+      inp.addEventListener('keydown', (e) => { if (e.key === 'Escape') onCancel(); });
+      inp.addEventListener('blur', () => setTimeout(() => { if (!inp.value.trim() && !f.contains(document.activeElement)) onCancel(); }, 120));
+      return f;
+    };
+    const focusIn = () => { const i = page.querySelector('.hl-in'); if (i) i.focus(); };
+
+    // ---- Çizim ----
+    function render() {
+      closeMenu(); list.innerHTML = '';
+      const nf = $('hlNewForm'); nf.innerHTML = '';
+      if (newOpen) { const f = mkForm('Yeni liste adı (örn. Market)', (v) => { newOpen = false; st.groups.push({ id: gid(), name: v, color: pal[st.groups.length % pal.length], items: [] }); addOpen = st.groups[st.groups.length - 1].id; save(); render(); focusIn(); }, () => { newOpen = false; render(); }); f.classList.add('hl-newform'); nf.appendChild(f); }
+      $('hlTip').textContent = st.groups.length ? 'İpucu: Bir listeye ya da maddeye basılı tut, seçenekler açılsın.' : '';
+      if (!st.groups.length) { list.appendChild(el('p', 'hl-empty', 'Henüz listen yok. Sağ üstteki + ile ekle.')); return; }
+      st.groups.forEach((g, gi) => {
+        const box = el('section', 'hl-g'); box.style.setProperty('--gc', g.color); box.style.setProperty('--gt', tickColor(g.color));
+        if (firstPaint) box.style.animationDelay = `${gi * 70}ms`;
+        const head = el('div', 'hl-head'), cnt = el('span', 'hl-count');
+        head.append(el('span', 'hl-name', g.name), cnt);
+        const upd = () => { const d = g.items.filter((i) => i.done).length; cnt.textContent = g.items.length ? `${d}/${g.items.length}` : ''; };
+        upd(); box.appendChild(head);
+        hold(head, (x, y) => openMenu(head, [
+          { ic: IC.edit, title: 'Adı Değiştir', sub: 'Listenin ismini düzenle', fn: () => editInline(head.querySelector('.hl-name'), g.name, (v) => { g.name = v; save(); }) },
+          { ic: IC.color, title: 'Rengi Değiştir', sub: 'Listenin vurgu rengi', fn: () => { if (typeof openColorPicker === 'function') openColorPicker(g.name, g.color, (c) => { g.color = c; save(); render(); }); } },
+          ...(g.items.some((i) => i.done) ? [{ ic: IC.clean, title: 'Tamamlananları Temizle', sub: 'İşaretli maddeleri kaldır', fn: () => { const old = g.items.slice(); g.items = g.items.filter((i) => !i.done); save(); render(); toast('Tamamlananlar temizlendi', () => { g.items = old; save(); render(); }); } }] : []),
+          { ic: IC.trash, title: 'Listeyi Sil', sub: 'İçindeki maddelerle birlikte', danger: true, fn: async () => {
+            if (!(await confirmDel(`"${g.name}" listesi silinsin mi?`, g.items.length ? `İçindeki ${g.items.length} madde de silinecek. Hemen ardından geri alabilirsin.` : 'Bu liste silinecek. Hemen ardından geri alabilirsin.'))) return;
+            const idx = st.groups.indexOf(g); st.groups = st.groups.filter((x) => x !== g); save(); render();
+            toast(`"${g.name}" silindi`, () => { st.groups.splice(Math.min(idx, st.groups.length), 0, g); save(); render(); });
+          } }
+        ], x, y));
+        g.items.forEach((it) => {
+          const row = el('div', 'hl-r' + (it.done ? ' is-done' : '')), c = el('span', 'hl-c'), t = el('span', 'hl-t'); t.appendChild(el('span', 'hl-tt', it.text));
+          c.innerHTML = TICK; row.append(c, t);
+          row.addEventListener('click', () => { it.done = !it.done; row.classList.toggle('is-done', it.done); save(); upd(); });
+          hold(row, (x, y) => openMenu(row, [
+            { ic: IC.edit, title: 'Metni Düzenle', sub: 'Maddenin adını değiştir', fn: () => editInline(t, it.text, (v) => { it.text = v; save(); }) },
+            { ic: IC.trash, title: 'Sil', sub: 'Bu maddeyi kaldır', danger: true, fn: () => { const idx = g.items.indexOf(it); g.items = g.items.filter((x2) => x2 !== it); save(); render(); toast('Madde silindi', () => { g.items.splice(Math.min(idx, g.items.length), 0, it); save(); render(); }); } }
+          ], x, y));
+          box.appendChild(row);
+        });
+        if (addOpen === g.id) box.appendChild(mkForm('Yeni madde ekle', (v) => { g.items.push({ id: gid(), text: v, done: false }); save(); render(); focusIn(); }, () => { addOpen = null; render(); }));
+        else { const b = el('button', 'hl-add', '+ Madde ekle'); b.type = 'button'; b.onclick = () => { addOpen = g.id; render(); focusIn(); }; box.appendChild(b); }
+        list.appendChild(box);
+      });
+      firstPaint = false;
+    }
+    $('hlNew').addEventListener('click', () => { newOpen = !newOpen; render(); if (newOpen) focusIn(); });
+    render();
+  })();
+
+  // ---- Rutinler: gece 00.00'da işaretleri yenileme (sayfa/uygulama açık kalsa bile) ----
+  // Gün değişimi yüklemede ve sekmeye dönüşte zaten kontrol ediliyordu; burada ayrıca gece yarısına
+  // kurulu bir zamanlayıcı var. Sıfırlama p8n içindeki rollover() ile yapılır (dünün kaydı takvime yazılır).
 </script>
 </body>
 </html>
