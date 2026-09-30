@@ -35431,6 +35431,56 @@
   }
 
   /* ==========================================================================
+     ÇÖZÜLDÜ TİKİ — çerçevesiz, sade, büyük ve dolgun tik (masaüstü + telefon)
+     Kare/daire zemin ve halka yok; yalnızca yuvarlak uçlu, eşit kalınlıkta
+     beyaz bir tik. Belirirken hafifçe büyüyüp yerine oturur, ardından
+     çizilir.
+     ========================================================================== */
+  @keyframes qhavuzTickPop {
+    0%   { transform: scale(0.4); opacity: 0; }
+    60%  { transform: scale(1.12); opacity: 1; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+  @keyframes qhavuzTickDraw {
+    0%   { stroke-dashoffset: 1; opacity: 0; }
+    6%   { stroke-dashoffset: 1; opacity: 1; }
+    100% { stroke-dashoffset: 0; opacity: 1; }
+  }
+  #page-camera .qhavuz-wide-disc,
+  #page-camera .qhavuz-wide-ring { display: none; }
+
+  #page-camera .qhavuz-wide-solved svg,
+  .qhavuz-card-solved-overlay svg {
+    overflow: visible;
+    transform-origin: 50% 50%;
+    filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.45));
+  }
+  #page-camera .qhavuz-wide-solved svg {
+    width: 6.4rem;
+    height: 6.4rem;
+  }
+  #page-camera .qhavuz-wide-check,
+  .qhavuz-solved-tick {
+    fill: none;
+    stroke: #fff;
+    stroke-width: 15;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+    opacity: 0;
+    animation: none;
+  }
+  #page-camera .qhavuz-wide-card.is-solved .qhavuz-wide-solved svg,
+  .qhavuz-card-solved-overlay svg {
+    animation: qhavuzTickPop 0.45s cubic-bezier(0.34, 1.4, 0.64, 1) both;
+  }
+  #page-camera .qhavuz-wide-card.is-solved .qhavuz-wide-check,
+  .qhavuz-solved-tick {
+    animation: qhavuzTickDraw 0.5s cubic-bezier(0.65, 0, 0.35, 1) 0.08s both;
+  }
+
+  /* ==========================================================================
      TELEFON: Soru Ekle pop-up'ı — kırpma kutusu her zaman KARE kalır.
      Kart sabit yükseklikli flex sütun olduğu için kutu (aspect-ratio) dikeyde
      eziliyor, kare olmaktan çıkıyordu. Küçülmesi engellenir; taşan içerik
@@ -36745,6 +36795,131 @@
     }
     #page-camera .qhavuz-topbar-search .qhavuz-canvas-search:has(.qhavuz-canvas-side-active:not([hidden])) .qhavuz-canvas-search-input::placeholder {
       color: transparent;
+    }
+  }
+
+  /* ==========================================================================
+     Çözüldü tiki: daire yerine yuvarlatılmış kare rozet (mobil + büyük ekran).
+     Paket içindeki küçük tik rozeti de aynı dilde.
+     ========================================================================== */
+  #qhavuzPackagesBackdrop .qhavuz-pk-ok { border-radius: 0.45rem; }
+
+  /* Test Oluştur: kapat (×) düğmesi — yazı karakteri yerine çizilmiş artı;
+     ortalı, dönmeyen/kaymayan, diğer pop-up kapatma düğmeleriyle aynı yüzey. */
+  #qhavuzTestCreateBackdrop #qhavuzTcClose {
+    position: relative;
+    flex: 0 0 2.15rem;
+    box-sizing: border-box;
+    width: 2.15rem;
+    min-width: 2.15rem;
+    height: 2.15rem;
+    padding: 0;
+    font-size: 0;
+    line-height: 0;
+    border: none;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+    box-shadow: none;
+    color: rgba(255, 255, 255, 0.75);
+    transform: none;
+    -webkit-tap-highlight-color: transparent;
+    transition: background-color 0.18s ease, color 0.18s ease;
+  }
+  #qhavuzTestCreateBackdrop #qhavuzTcClose::before,
+  #qhavuzTestCreateBackdrop #qhavuzTcClose::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 0.85rem;
+    height: 2px;
+    margin: -1px 0 0 -0.425rem;
+    border-radius: 2px;
+    background: currentColor;
+  }
+  #qhavuzTestCreateBackdrop #qhavuzTcClose::before { transform: rotate(45deg); }
+  #qhavuzTestCreateBackdrop #qhavuzTcClose::after { transform: rotate(-45deg); }
+  #qhavuzTestCreateBackdrop #qhavuzTcClose:hover,
+  #qhavuzTestCreateBackdrop #qhavuzTcClose:active {
+    transform: none;
+    box-shadow: none;
+    background: rgba(255, 255, 255, 0.2);
+    color: #fff;
+  }
+
+  /* ==========================================================================
+     TELEFON: Seç modu paneli — masaüstü dock'la aynı dil, daha derli toplu.
+     Satır 1: halka + "N soru seçildi" · Tümü · ×    Satır 2: 5 eylem kutucuğu
+     (tek satır yazı, ikon üstte; Test Oluştur telefonda "Test").
+     ========================================================================== */
+  @media not all and (min-width: 768px) and (min-height: 600px) {
+    #qhavuzCanvasSelectBar .qhavuz-select-dock {
+      gap: 0.8rem 0.45rem;
+      padding: 0.8rem 0.8rem 0.85rem;
+      border-radius: 1.8rem;
+    }
+    #qhavuzCanvasSelectBar .qhavuz-select-dock-count { gap: 0.65rem; }
+    #qhavuzCanvasSelectBar .qhavuz-select-dock-ring { width: 2.4rem; height: 2.4rem; }
+    #qhavuzCanvasSelectBar .qhavuz-select-dock-num { font-size: 0.92rem; }
+    #qhavuzCanvasSelectBar .qhavuz-select-dock-label {
+      font-size: 0.98rem;
+      font-weight: 700;
+      letter-spacing: 0.005em;
+      opacity: 0.92;
+    }
+
+    #qhavuzCanvasSelectBar .qhavuz-select-dock-icon-btn {
+      width: 2.4rem;
+      height: 2.4rem;
+      border-radius: 0.95rem;
+      background: rgba(255, 255, 255, 0.12);
+    }
+    #qhavuzCanvasSelectBar #qhavuzCanvasSelectAllBtn {
+      width: auto;
+      padding: 0 0.85rem 0 0.75rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-family: inherit;
+      font-weight: 700;
+      font-size: 0.82rem;
+      line-height: 1;
+    }
+    #qhavuzCanvasSelectBar #qhavuzCanvasSelectAllBtn::after { content: "Tümü"; }
+    #qhavuzCanvasSelectBar .qhavuz-select-dock-icon-btn svg { width: 18px; height: 18px; }
+
+    #qhavuzCanvasSelectBar .qhavuz-select-dock-actions { gap: 0.4rem; }
+    #qhavuzCanvasSelectBar .qhavuz-select-dock-action {
+      height: 3.9rem;
+      padding: 0 0.1rem;
+      justify-content: center;
+      gap: 0.4rem;
+      border-radius: 1.1rem;
+      font-size: 0.74rem;
+      font-weight: 700;
+      letter-spacing: 0.01em;
+      line-height: 1;
+      white-space: nowrap;
+      overflow-wrap: normal;
+      background: rgba(255, 255, 255, 0.1);
+    }
+    #qhavuzCanvasSelectBar .qhavuz-select-dock-action svg { width: 21px; height: 21px; }
+    #qhavuzCanvasSelectBar .qhavuz-select-dock-action--primary span { display: none; }
+    #qhavuzCanvasSelectBar .qhavuz-select-dock-action--primary::after { content: "Test"; }
+    #qhavuzCanvasSelectBar .qhavuz-select-dock-action:disabled { opacity: 0.4; }
+
+    /* Panel yükseldiği için kart ızgarasının son satırı altında kalmasın. */
+    .qhavuz-scroll:has(.qhavuz-grid.is-select-mode),
+    #page-camera:has(.qhavuz-canvas-grid.is-select-mode) .qhavuz-scroll {
+      padding-bottom: calc(172px + env(safe-area-inset-bottom));
+    }
+
+    /* Test Oluştur: uzun alt başlık tek satırda kalsın (kaydırma gerekmesin). */
+    #qhavuzTestCreateBackdrop .page9-add-heading { min-width: 0; }
+    #qhavuzTestCreateBackdrop .page9-add-subtitle {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
   }
 </style>
@@ -62976,7 +63151,7 @@
         const overlay = document.createElement('span');
         overlay.className = 'qhavuz-card-solved-overlay';
         overlay.setAttribute('aria-label', 'Bu soru test modunda doğru yapıldı');
-        overlay.innerHTML = '<svg viewBox="0 0 100 100" width="56" height="56"><circle cx="50" cy="50" r="42" fill="#22c55e"/><circle cx="50" cy="50" r="42" fill="none" stroke="#fff" stroke-opacity="0.9" stroke-width="5"/><path d="M30 52L45 67L71 35" fill="none" stroke="#fff" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+        overlay.innerHTML = '<svg viewBox="0 0 100 100" width="68" height="68" aria-hidden="true"><path class="qhavuz-solved-tick" pathLength="1" d="M23 53L42 72L77 29"/></svg>';
         refs.thumb.appendChild(overlay);
         refs.checkEl = overlay;
       }
@@ -64014,6 +64189,11 @@
     book: 'Teste dahil edilecek kaynakları seç',
     track: 'TYT, AYT ya da ikisinden test kur'
   };
+  const QHAVUZ_TC_UNSOLVED_HINTS = {
+    subject: 'Seçilen derslerden çözülmemiş sorular',
+    book: 'Seçilen kaynaklardan çözülmemiş sorular',
+    track: 'Seçilen türden çözülmemiş sorular'
+  };
   const QHAVUZ_TC_NOUNS = { subject: 'Ders', book: 'Kaynak', track: 'Sınav Türü' };
 
   // Bir sorunun seçili moddaki grup anahtarı (yoksa null: gruba girmez).
@@ -64080,8 +64260,8 @@
     const effective = qhavuzTcLimit && qhavuzTcLimit < total ? qhavuzTcLimit : total;
     if (qhavuzTcSubtitle) {
       qhavuzTcSubtitle.textContent = qhavuzTcSel.size
-        ? `${qhavuzTcSel.size} seçildi · ${total} soru${qhavuzTcUnsolved ? ' · çözülmemiş' : ''}`
-        : QHAVUZ_TC_HINTS[qhavuzTcMode] + (qhavuzTcUnsolved ? ' · yalnızca çözülmemişler' : '');
+        ? `${qhavuzTcSel.size} seçildi · ${total} ${qhavuzTcUnsolved ? 'çözülmemiş soru' : 'soru'}`
+        : (qhavuzTcUnsolved ? QHAVUZ_TC_UNSOLVED_HINTS[qhavuzTcMode] : QHAVUZ_TC_HINTS[qhavuzTcMode]);
     }
 
     // Süre önerisi: seçilen soruların branşa göre ortalama süresi x soru sayısı.
@@ -64861,7 +65041,7 @@
       const solvedMark = document.createElement('span');
       solvedMark.className = 'qhavuz-wide-solved';
       solvedMark.setAttribute('aria-label', 'Bu soru test modunda doğru yapıldı');
-      solvedMark.innerHTML = '<svg viewBox="0 0 100 100" aria-hidden="true"><circle class="qhavuz-wide-disc" cx="50" cy="50" r="42"/><circle class="qhavuz-wide-ring" cx="50" cy="50" r="42"/><path class="qhavuz-wide-check" pathLength="1" d="M30 52L45 67L71 35"/></svg>';
+      solvedMark.innerHTML = '<svg viewBox="0 0 100 100" aria-hidden="true"><path class="qhavuz-wide-check" pathLength="1" d="M23 53L42 72L77 29"/></svg>';
       thumb.appendChild(solvedMark);
 
       // Sağ üst: seçim rozeti (yalnızca seçim modunda görünür).
@@ -65123,7 +65303,7 @@
         checkEl = document.createElement('span');
         checkEl.className = 'qhavuz-card-solved-overlay';
         checkEl.setAttribute('aria-label', 'Bu soru test modunda doğru yapıldı');
-        checkEl.innerHTML = '<svg viewBox="0 0 100 100" width="56" height="56"><circle cx="50" cy="50" r="42" fill="#22c55e"/><circle cx="50" cy="50" r="42" fill="none" stroke="#fff" stroke-opacity="0.9" stroke-width="5"/><path d="M30 52L45 67L71 35" fill="none" stroke="#fff" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+        checkEl.innerHTML = '<svg viewBox="0 0 100 100" width="68" height="68" aria-hidden="true"><path class="qhavuz-solved-tick" pathLength="1" d="M23 53L42 72L77 29"/></svg>';
         thumb.appendChild(checkEl);
       }
 
