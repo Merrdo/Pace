@@ -45247,6 +45247,8 @@ body.is-countdown-fs.is-countdown-paused .countdown-fullscreen-time-row .stopwat
     // Havuzu'ndaki "Bilgi" pop-up'ında (lightbox'ın üstünde) görülen
     // uyumsuzluk buydu. Artık açık olan TÜM backdrop'ları en alttakinden
     // en üsttekine doğru sırayla teker teker harmanlıyoruz.
+    Array.from(openThemeBackdrops).forEach((el) => { if (!el.isConnected) openThemeBackdrops.delete(el); });
+    if (openThemeBackdrops.size === 0) { updateThemeColorMeta(baseColor); return; }
     const openList = Array.from(openThemeBackdrops).sort((a, b) => {
       const za = parseFloat(getComputedStyle(a).zIndex) || 0;
       const zb = parseFloat(getComputedStyle(b).zIndex) || 0;
@@ -45263,12 +45265,13 @@ body.is-countdown-fs.is-countdown-paused .countdown-fullscreen-time-row .stopwat
     if (!backdrop || backdrop.dataset.themeColorWatched) return;
     backdrop.dataset.themeColorWatched = '1';
     const observer = new MutationObserver(() => {
-      const isOpen = backdrop.classList.contains('is-open');
+      const isOpen = backdrop.classList.contains('is-open') || backdrop.classList.contains('is-in');
       if (isOpen) openThemeBackdrops.add(backdrop);
       else openThemeBackdrops.delete(backdrop);
       refreshThemeColorMeta();
     });
     observer.observe(backdrop, { attributes: true, attributeFilter: ['class'] });
+    if (backdrop.classList.contains('is-open') || backdrop.classList.contains('is-in')) { openThemeBackdrops.add(backdrop); refreshThemeColorMeta(); }
   };
   // Başka <script> bloklarında (ör. Mini Oyunlar sürpriz pop-up'ı gibi
   // sonradan/dinamik olarak DOM'a eklenen pop-up'lar) da bu fonksiyona
@@ -45306,6 +45309,31 @@ body.is-countdown-fs.is-countdown-paused .countdown-fullscreen-time-row .stopwat
     }
     watchBackdropForThemeColor(backdrop);
   });
+  // Koda sonradan (JS ile) eklenen ya da farklı sınıf kullanan pop-up'lar da aynı şekilde eşlenir:
+  // Rutinler/Hatırlanacaklar pop-up'ı (.gk-pop-back), onay/aşama pencereleri (.p8n-dlg-back),
+  // Notlar pencereleri (.nt-dlg-back), takvim etkinlik ve test çıkış pencereleri.
+  // Bunlar karartmayı geçişle açtığı için tonlar (CSS'teki rgba ile aynı) burada sabitlenir.
+  const POPUP_TINTS = [
+    ['.gk-pop-back', { r: 0, g: 0, b: 0, alpha: 0.4 }],
+    ['.p8n-dlg-back', { r: 0, g: 0, b: 0, alpha: 0.42 }],
+    ['.nt-dlg-back', { r: 0, g: 0, b: 0, alpha: 0.26 }],
+    ['.cal-ev-backdrop', { r: 0, g: 0, b: 0, alpha: 0.42 }],
+    ['.qt-exit-backdrop', { r: 8, g: 8, b: 12, alpha: 0.6 }]
+  ];
+  const POPUP_ALL = POPUP_TINTS.map((t) => t[0]).join(',');
+  const adoptPopups = (node) => {
+    if (!node || node.nodeType !== 1) return;
+    // Tek seçiciyle hızlı ön eleme: liste çizimleri gibi sık DOM eklemelerinde maliyet düşük kalır.
+    if (!node.matches(POPUP_ALL) && !node.querySelector(POPUP_ALL)) return;
+    POPUP_TINTS.forEach(([sel, tint]) => {
+      const apply = (el) => { el._themeTint = tint; watchBackdropForThemeColor(el); };
+      if (node.matches(sel)) apply(node);
+      node.querySelectorAll(sel).forEach(apply);
+    });
+  };
+  adoptPopups(document.body);
+  document.addEventListener('DOMContentLoaded', () => adoptPopups(document.body));
+  new MutationObserver((muts) => muts.forEach((m) => m.addedNodes.forEach(adoptPopups))).observe(document.body, { childList: true, subtree: true });
 
   const layerA = document.getElementById('themeLayerA');
   const layerB = document.getElementById('themeLayerB');
@@ -50700,14 +50728,12 @@ body.is-countdown-fs.is-countdown-paused .countdown-fullscreen-time-row .stopwat
     // ---------------- Durum ----------------
     const STEP = 15;                    // çark adımı (dk)
     const COUNT = (24 * 60) / STEP;     // 96 satır: 00:00 … 23:45
-    const DURATIONS = [30, 45, 60, 90, 120];
-    const DEFAULT_DURATION = 60;
 
     let selectedIconId = TASK_ADD_ICONS[0].id;
     let selectedColor = null;           // null = varsayılan (vurgu rengi)
     let selectedDate = startOfDay(new Date());
     let selectedIndex = 0;
-    let durationMin = DEFAULT_DURATION;
+    let durationMin = 60;
     let currentStep = 'icon';           // 'icon' → 'color' → 'time'
     let iconChosen = false;             // bu oturumda bir ikon (ya da "Boş") seçildi mi
     let iconEmpty = false;              // "Boş" ikon: halkada adın baş harfi görünür
@@ -50794,6 +50820,30 @@ body.is-countdown-fs.is-countdown-paused .countdown-fullscreen-time-row .stopwat
       overlay.style.setProperty('--ta-head-chip', darkText ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.22)');
       overlay.classList.add('has-color');
       if (themeMeta) themeMeta.setAttribute('content', color);
+    };
+
+    // ---- Pop-up (süre / tarih) açıkken üst güvenli alanı da boya ----
+    // Pop-up'ların arka karartması (.task-add-dur-back.is-in) sayfanın üstünü
+    // rgba(0,0,0,POPUP_DIM) ile örter; ama iPhone'daki çentik/Dynamic Island
+    // şeridi yalnızca <meta name="theme-color"> ile boyandığından eski renkte
+    // kalıyordu. Uygulamanın diğer pop-up'larındaki mantığın aynısı: o anki
+    // renk (seçili görev rengi ya da tema rengi) karartmayla harmanlanıp meta'ya
+    // yazılır, pop-up kapanırken eski renge dönülür.
+    // NOT: POPUP_DIM, CSS'teki .task-add-dur-back.is-in alfasıyla aynı olmalı.
+    const POPUP_DIM = 0.42;
+    let dimmedBase = null;
+    const dimThemeMeta = () => {
+      if (!themeMeta) return;
+      if (dimmedBase === null) dimmedBase = themeMeta.getAttribute('content') || '';
+      if (!/^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(dimmedBase)) return;
+      const { r, g, b } = hexToRgb(dimmedBase);
+      const mix = (c) => Math.round(c * (1 - POPUP_DIM)).toString(16).padStart(2, '0');
+      themeMeta.setAttribute('content', `#${mix(r)}${mix(g)}${mix(b)}`);
+    };
+    const undimThemeMeta = () => {
+      if (dimmedBase === null) return;
+      if (themeMeta) themeMeta.setAttribute('content', dimmedBase);
+      dimmedBase = null;
     };
 
     const applyColor = (color, chosen = true) => {
@@ -51155,65 +51205,164 @@ body.is-countdown-fs.is-countdown-paused .countdown-fullscreen-time-row .stopwat
       const mk = (t, c, x) => { const n = document.createElement(t); if (c) n.className = c; if (x != null) n.textContent = x; return n; };
       const back = mk('div', 'task-add-dur-back'), card = mk('div', 'task-add-dur task-add-cal');
       card.setAttribute('role', 'dialog'); card.setAttribute('aria-modal', 'true'); card.setAttribute('aria-label', 'Tarih seç');
+      const EASE = 'cubic-bezier(.16,1,.3,1)';
+      const today = startOfDay(new Date());
+      const todayIdx = today.getFullYear() * 12 + today.getMonth();
       let pick = startOfDay(selectedDate);
-      let vy = pick.getFullYear(), vm = pick.getMonth();
+      let vy = pick.getFullYear(), vm = pick.getMonth();   // görünen ay
+
+      // Üst satır: ‹  [Ay Yıl]  ›  — başlığa dokununca bugünün ayına dönülür.
       const head = mk('div', 'task-add-cal-head');
       const prev = mk('button', 'task-add-cal-nav', '‹'); prev.type = 'button'; prev.setAttribute('aria-label', 'Önceki ay');
       const next = mk('button', 'task-add-cal-nav', '›'); next.type = 'button'; next.setAttribute('aria-label', 'Sonraki ay');
-      const title = mk('div', 'task-add-cal-title');
+      const title = mk('button', 'task-add-cal-title'); title.type = 'button'; title.setAttribute('aria-label', 'Bugüne dön');
+      const titleText = mk('span', 'task-add-cal-title-text');
+      title.appendChild(titleText);
       head.append(prev, title, next);
       const wd = mk('div', 'task-add-cal-wd');
       ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'].forEach((d) => wd.appendChild(mk('span', '', d)));
-      const grid = mk('div', 'task-add-cal-grid');
-      const today = startOfDay(new Date());
-      const render = () => {
-        title.textContent = `${MONTHS_LONG_TR[vm]} ${vy}`;
-        grid.textContent = '';
-        const first = new Date(vy, vm, 1);
-        const lead = (first.getDay() + 6) % 7; // Pazartesi başlangıç
+
+      // Gün ızgarası: [önceki ay | görünen ay | sonraki ay] üçlü şerit; parmakla
+      // sürüklenebilir, bırakınca yumuşakça yerine oturur.
+      const view = mk('div', 'task-add-cal-view');
+      const track = mk('div', 'task-add-cal-track');
+      view.appendChild(track);
+
+      const buildPanel = (idx) => {
+        const y = Math.floor(idx / 12), m = idx - y * 12;
+        const g = mk('div', 'task-add-cal-grid');
+        g.dataset.idx = String(idx);
+        const lead = (new Date(y, m, 1).getDay() + 6) % 7; // Pazartesi başlangıç
         for (let i = 0; i < 42; i++) {
-          const d = new Date(vy, vm, 1 - lead + i);
+          const d = new Date(y, m, 1 - lead + i);
           const b = mk('button', 'task-add-cal-day'); b.type = 'button';
-          const num = mk('span', 'task-add-cal-num', String(d.getDate()));
-          b.appendChild(num);
-          if (d.getMonth() !== vm) b.classList.add('is-out');
+          b.appendChild(mk('span', 'task-add-cal-num', String(d.getDate())));
+          b.dataset.t = String(+d);
+          if (d.getMonth() !== m) b.classList.add('is-out');
           if (+d === +today) b.classList.add('is-today');
           if (+d === +pick) b.classList.add('is-selected');
           b.addEventListener('click', () => {
             pick = d;
-            if (d.getMonth() !== vm) { vy = d.getFullYear(); vm = d.getMonth(); }
-            render();
+            paintSelection();
+            const di = d.getFullYear() * 12 + d.getMonth();
+            if (di !== vy * 12 + vm) goTo(di);
           });
-          grid.appendChild(b);
+          g.appendChild(b);
+        }
+        return g;
+      };
+      const paintSelection = () => {
+        track.querySelectorAll('.task-add-cal-day').forEach((b) => b.classList.toggle('is-selected', Number(b.dataset.t) === +pick));
+      };
+      const setTrack = (xPct, px, ease, ms) => {
+        track.style.transition = ease ? `transform ${ms}ms ${ease}` : 'none';
+        track.style.transform = `translate3d(calc(${xPct}% + ${px}px), 0, 0)`;
+      };
+      const rebuild = () => {
+        const cur = vy * 12 + vm;
+        track.textContent = '';
+        track.append(buildPanel(cur - 1), buildPanel(cur), buildPanel(cur + 1));
+        setTrack(-100, 0, null);
+      };
+      // Başlık: ay bugünün ayı değilse vurgu rengiyle yazılır (dokununca bugüne döner).
+      const paintTitle = (dir) => {
+        titleText.textContent = `${MONTHS_LONG_TR[vm]} ${vy}`;
+        title.classList.toggle('is-away', vy * 12 + vm !== todayIdx);
+        if (dir && titleText.animate && !(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches)) {
+          titleText.animate([{ opacity: 0, transform: `translateX(${dir * 16}px)` }, { opacity: 1, transform: 'none' }], { duration: 460, easing: EASE });
         }
       };
-      const shift = (n) => { const d = new Date(vy, vm + n, 1); vy = d.getFullYear(); vm = d.getMonth(); render(); };
-      prev.addEventListener('click', () => shift(-1));
-      next.addEventListener('click', () => shift(1));
+
+      let busy = false;
+      // dir: +1 ileri / -1 geri. Komşu panel hedef ayı göstermiyorsa (bugüne dönüş gibi
+      // uzak atlamalar) önce o panel hedef ayla değiştirilir, sonra kayılır.
+      const slide = (targetIdx, fromPx) => {
+        const cur = vy * 12 + vm;
+        if (targetIdx === cur) { setTrack(-100, 0, EASE, 520); return; }
+        const dir = targetIdx > cur ? 1 : -1;
+        busy = true;
+        const panels = track.children;
+        const slot = dir > 0 ? 2 : 0;
+        if (Number(panels[slot].dataset.idx) !== targetIdx) track.replaceChild(buildPanel(targetIdx), panels[slot]);
+        if (fromPx != null) setTrack(-100, fromPx, null);
+        void track.offsetWidth;
+        setTrack(dir > 0 ? -200 : 0, 0, EASE, 560);
+        vy = Math.floor(targetIdx / 12); vm = targetIdx - vy * 12;
+        paintTitle(dir);
+        let done = false;
+        const finish = () => { if (done) return; done = true; track.removeEventListener('transitionend', onEnd); rebuild(); busy = false; };
+        const onEnd = (e) => { if (e.target === track && e.propertyName === 'transform') finish(); };
+        track.addEventListener('transitionend', onEnd);
+        setTimeout(finish, 640);
+      };
+      const goTo = (targetIdx) => { if (!busy) slide(targetIdx); };
+      prev.addEventListener('click', () => goTo(vy * 12 + vm - 1));
+      next.addEventListener('click', () => goTo(vy * 12 + vm + 1));
+      title.addEventListener('click', () => goTo(todayIdx));
+
+      // Sağa / sola kaydırarak ay değiştirme
+      let tracking = false, dragging = false, sx = 0, sy = 0, dx = 0, t0 = 0, pid = null, justDragged = false;
+      view.addEventListener('pointerdown', (e) => {
+        if (busy || (e.pointerType === 'mouse' && e.button !== 0)) return;
+        tracking = true; dragging = false; sx = e.clientX; sy = e.clientY; dx = 0; t0 = performance.now(); pid = e.pointerId;
+      });
+      view.addEventListener('pointermove', (e) => {
+        if (!tracking) return;
+        const mx = e.clientX - sx, my = e.clientY - sy;
+        if (!dragging) {
+          if (Math.abs(mx) > 8 && Math.abs(mx) > Math.abs(my) * 1.2) {
+            dragging = true;
+            try { view.setPointerCapture(pid); } catch (err) { /* yoksay */ }
+          } else { if (Math.abs(my) > 10) tracking = false; return; }
+        }
+        dx = mx;
+        setTrack(-100, dx, null);
+      });
+      const endDrag = () => {
+        if (!tracking) return;
+        tracking = false;
+        if (!dragging) return;
+        dragging = false;
+        justDragged = true; setTimeout(() => { justDragged = false; }, 60);
+        const w = view.clientWidth || 1;
+        const v = dx / Math.max(1, performance.now() - t0);      // px/ms
+        const cur = vy * 12 + vm;
+        if (Math.abs(dx) > w * 0.26 || (Math.abs(v) > 0.45 && Math.abs(dx) > 24)) slide(cur + (dx < 0 ? 1 : -1), dx);
+        else setTrack(-100, 0, 'cubic-bezier(.34,1.35,.64,1)', 520);
+      };
+      view.addEventListener('pointerup', endDrag);
+      view.addEventListener('pointercancel', endDrag);
+      view.addEventListener('click', (e) => { if (justDragged) { e.stopPropagation(); e.preventDefault(); } }, true);
+
       const actions = mk('div', 'task-add-dur-actions');
       const cancel = mk('button', 'task-add-dur-btn', 'Vazgeç'); cancel.type = 'button';
       const ok = mk('button', 'task-add-dur-btn is-primary', 'Tamam'); ok.type = 'button';
       actions.append(cancel, ok);
-      card.append(head, wd, grid, actions);
+      card.append(head, wd, view, actions);
       back.appendChild(card);
       let closed = false;
       const close = () => {
         if (closed) return; closed = true; datePicker = null;
         document.removeEventListener('keydown', onKey, true);
+        undimThemeMeta();
         back.classList.remove('is-in'); back.classList.add('is-out');
         setTimeout(() => back.remove(), 480);
       };
       const onKey = (e) => {
         if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); close(); }
         else if (e.key === 'Enter') { e.preventDefault(); e.stopPropagation(); close(); applyDate(pick); }
+        else if (e.key === 'ArrowLeft') { e.preventDefault(); goTo(vy * 12 + vm - 1); }
+        else if (e.key === 'ArrowRight') { e.preventDefault(); goTo(vy * 12 + vm + 1); }
       };
       document.addEventListener('keydown', onKey, true);
       cancel.addEventListener('click', close);
       ok.addEventListener('click', () => { close(); applyDate(pick); });
       back.addEventListener('pointerdown', (e) => { if (e.target === back) close(); });
-      render();
+      paintTitle(0);
+      rebuild();
       overlay.appendChild(back); datePicker = back;
       requestAnimationFrame(() => requestAnimationFrame(() => back.classList.add('is-in')));
+      dimThemeMeta();
     };
     const dateRowEl = $('taskAddDateRow');
     if (dateRowEl) {
@@ -51294,52 +51443,156 @@ body.is-countdown-fs.is-countdown-paused .countdown-fullscreen-time-row .stopwat
     };
 
     // ---------------- Süre segmentleri ----------------
-    let customMin = 0; // hazır süreler dışında seçilen özel dakika (0 = yok)
+    // Hazır süreler artık kalıcı ve düzenlenebilir: seçili süreye bir kez daha
+    // dokunup dakikayı değiştirince YENİ değer o çipin yerini alır (60 → 80
+    // gibi), localStorage'a (APP_STATE.taskDurations) yazılır ve bir sonraki
+    // girişte de öyle kalır. Çipler her zaman küçükten büyüğe sıralı görünür;
+    // yani 90 → 20 yapılırsa çip en başa kayar. `slots` kayıt sırasını tutar
+    // (varsayılan seçili çip her zaman 3. yuva = ilk kurulumdaki 60 dk yuvası).
     const DUR_MIN = 5, DUR_MAX = 1440;
+    const DEFAULT_SLOTS = [30, 45, 60, 90, 120];
     const humanDur = (m) => (m < 60 ? `${m} dk` : `${Math.floor(m / 60)} sa${m % 60 ? ' ' + (m % 60) + ' dk' : ''}`);
+    const loadSlots = () => {
+      try {
+        const saved = APP_STATE && APP_STATE.taskDurations;
+        if (Array.isArray(saved) && saved.length === DEFAULT_SLOTS.length
+            && saved.every((n) => Number.isInteger(n) && n >= DUR_MIN && n <= DUR_MAX)
+            && new Set(saved).size === saved.length) return saved.slice();
+      } catch (e) { /* yoksay */ }
+      return DEFAULT_SLOTS.slice();
+    };
+    const slots = loadSlots();
+    const saveSlots = () => { try { saveAppState({ taskDurations: slots.slice() }); } catch (e) { /* yoksay */ } };
+    const defaultDuration = () => slots[2];
 
+    const SEG_EASE = 'cubic-bezier(.16,1,.3,1)';
+    const reduceMotion = () => window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const chipEls = [];          // slots[i] için çip elemanı
+    let tempChip = null;         // düzenlenen görevin hazır olmayan süresi için geçici çip
+    let tempMin = 0;
+    let segInd = null;           // kayan vurgu hapı
+
+    const makeDurChip = (m, temp) => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'task-add-seg-btn' + (temp ? ' is-custom' : '');
+      btn.dataset.minutes = String(m);
+      btn.setAttribute('role', 'radio');
+      const label = document.createElement('span');
+      label.className = 'task-add-seg-label';
+      label.textContent = `${m} dk`;
+      btn.appendChild(label);
+      btn.addEventListener('click', () => onDurChipClick(Number(btn.dataset.minutes)));
+      return btn;
+    };
     const onDurChipClick = (m) => {
       // Zaten seçili süreye bir kez daha dokunmak: dakikayı özelleştirme penceresini açar.
       if (durationMin === m) openDurationEditor(); else applyDuration(m);
     };
-    const makeDurChip = (m, custom) => {
-      const btn = document.createElement('button');
-      btn.type = 'button';
-      btn.className = 'task-add-seg-btn' + (custom ? ' is-custom' : '');
-      btn.dataset.minutes = String(m);
-      btn.setAttribute('role', 'radio');
-      btn.textContent = `${m} dk`;
-      btn.addEventListener('click', () => onDurChipClick(Number(btn.dataset.minutes)));
-      return btn;
+
+    // Çipin rakamını yumuşakça değiştirir (eski rakam yukarı solar, yenisi aşağıdan gelir).
+    const setChipValue = (el, m, animate) => {
+      el.dataset.minutes = String(m);
+      const label = el.firstChild;
+      if (!animate || reduceMotion() || !label.animate) { label.textContent = `${m} dk`; return Promise.resolve(); }
+      const out = label.animate([{ opacity: 1, transform: 'translateY(0)' }, { opacity: 0, transform: 'translateY(-45%)' }], { duration: 170, easing: 'ease-in', fill: 'forwards' });
+      return out.finished.then(() => {
+        label.textContent = `${m} dk`;
+        const inn = label.animate([{ opacity: 0, transform: 'translateY(45%)' }, { opacity: 1, transform: 'translateY(0)' }], { duration: 380, easing: SEG_EASE });
+        out.cancel();
+        return inn.finished;
+      }).catch(() => { label.textContent = `${m} dk`; });
     };
-    const syncCustomChip = () => {
-      let c = durationRow.querySelector('.is-custom');
-      if (!customMin) { if (c) c.remove(); return; }
-      if (!c) { c = makeDurChip(customMin, true); durationRow.appendChild(c); }
-      c.dataset.minutes = String(customMin);
-      c.textContent = `${customMin} dk`;
+
+    // Çipleri değere göre sıralı dizer; yer değiştirenler FLIP ile süzülerek kayar.
+    const layoutChips = (animate) => {
+      const all = chipEls.slice();
+      if (tempChip) all.push(tempChip);
+      const before = new Map(all.map((el) => [el, el.offsetLeft]));
+      const sorted = all.slice().sort((x, y) => Number(x.dataset.minutes) - Number(y.dataset.minutes));
+      sorted.forEach((el) => durationRow.appendChild(el));
+      if (animate && !reduceMotion()) {
+        sorted.forEach((el) => {
+          const dx = before.get(el) - el.offsetLeft;
+          if (el.animate && Math.abs(dx) > 1) {
+            el.animate([{ transform: `translateX(${dx}px)` }, { transform: 'translateX(0)' }], { duration: 620, easing: SEG_EASE });
+          }
+        });
+      }
+    };
+
+    // Vurgu hapı: seçili çipin altına kayar (genişliği de çipe uyar).
+    const placeIndicator = (animate) => {
+      if (!segInd) return;
+      const el = durationRow.querySelector('.task-add-seg-btn.is-selected');
+      if (!el || !el.offsetWidth) return;
+      if (!animate) segInd.style.transition = 'none';
+      segInd.style.width = `${el.offsetWidth}px`;
+      segInd.style.transform = `translateX(${el.offsetLeft}px)`;
+      segInd.classList.add('is-ready');
+      if (!animate) { void segInd.offsetWidth; segInd.style.transition = ''; }
+    };
+    // Seçili çipi satırın ortasına yumuşakça kaydırır (satır taşıyorsa).
+    const revealSelected = () => {
+      const el = durationRow.querySelector('.task-add-seg-btn.is-selected');
+      if (!el || durationRow.scrollWidth <= durationRow.clientWidth + 1) return;
+      const left = el.offsetLeft - (durationRow.clientWidth - el.offsetWidth) / 2;
+      try { durationRow.scrollTo({ left, behavior: reduceMotion() ? 'auto' : 'smooth' }); } catch (e) { durationRow.scrollLeft = left; }
     };
 
     const renderDurations = () => {
       if (durationRow.childElementCount) return;
-      DURATIONS.forEach((m) => durationRow.appendChild(makeDurChip(m, false)));
+      segInd = document.createElement('span');
+      segInd.className = 'task-add-seg-ind';
+      segInd.setAttribute('aria-hidden', 'true');
+      durationRow.appendChild(segInd);
+      slots.forEach((m, i) => { chipEls[i] = makeDurChip(m, false); });
+      layoutChips(false);
       const hint = document.createElement('p');
       hint.className = 'task-add-dur-hint';
       hint.textContent = 'Seçili süreye bir kez daha dokunarak dakikayı istediğin gibi ayarla.';
       durationRow.insertAdjacentElement('afterend', hint);
+      // Adım gizliyken ölçü 0 olur; görünür olunca / yazı tipi yüklenince hap yerine oturur.
+      if (window.ResizeObserver) new ResizeObserver(() => placeIndicator(false)).observe(durationRow);
     };
 
-    const applyDuration = (m) => {
+    const clearTempChip = () => {
+      if (tempChip) { tempChip.remove(); tempChip = null; }
+      tempMin = 0;
+    };
+
+    // opts.animate: kalıcı değişimlerde (özel süre) yumuşak animasyon.
+    const applyDuration = (m, opts) => {
+      const animate = !!(opts && opts.animate);
       durationMin = m;
-      if (!DURATIONS.includes(m)) customMin = m;
-      syncCustomChip();
+      renderDurations();
+      if (!slots.includes(m)) {
+        // Hazır olmayan süre (ör. düzenlenen görevin süresi): sıralı yerinde geçici çip.
+        if (!tempChip) { tempChip = makeDurChip(m, true); tempMin = m; layoutChips(false); }
+        else if (tempMin !== m) { tempMin = m; setChipValue(tempChip, m, animate); layoutChips(animate); }
+      }
       durationRow.querySelectorAll('.task-add-seg-btn').forEach((el) => {
         const on = Number(el.dataset.minutes) === m;
         el.classList.toggle('is-selected', on);
         el.setAttribute('aria-checked', String(on));
-        if (on && el.scrollIntoView) { try { el.scrollIntoView({ block: 'nearest', inline: 'nearest' }); } catch (e) { /* yoksay */ } }
       });
+      placeIndicator(animate || !!(opts && opts.slide));
+      revealSelected();
       updateLabels();
+    };
+
+    // Seçili çipin değerini yenisiyle değiştirir: yuva güncellenir, kaydedilir, sıralama
+    // ve hap animasyonla yeni yerine akar. Aynı değer başka bir çipte varsa o çip seçilir.
+    const replaceDuration = (oldM, newM) => {
+      if (newM === oldM) { applyDuration(oldM, { slide: true }); return; }
+      const idx = slots.indexOf(oldM);
+      if (idx < 0) { applyDuration(newM, { animate: true }); return; } // geçici çip
+      if (slots.includes(newM)) { applyDuration(newM, { slide: true }); return; }
+      slots[idx] = newM;
+      saveSlots();
+      setChipValue(chipEls[idx], newM, true).then(() => placeIndicator(true));
+      layoutChips(true);
+      applyDuration(newM, { animate: true });
     };
 
     // ---- Özel süre penceresi: − / + ile ya da doğrudan yazarak 5 dk – 24 sa arası ----
@@ -51401,10 +51654,12 @@ body.is-countdown-fs.is-countdown-paused .countdown-fullscreen-time-row .stopwat
         if (closed) return; closed = true; durEd = null;
         document.removeEventListener('keydown', onKey, true);
         if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
+        undimThemeMeta();
         back.classList.remove('is-in'); back.classList.add('is-out');
         setTimeout(() => back.remove(), 480);
       };
-      const confirm = () => { const v = clamp(input.value ? parseInt(input.value, 10) : val); close(); applyDuration(v); };
+      const startVal = durationMin;
+      const confirm = () => { const v = clamp(input.value ? parseInt(input.value, 10) : val); close(); replaceDuration(startVal, v); };
       const onKey = (e) => {
         if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); close(); }
         else if (e.key === 'Enter') { e.preventDefault(); e.stopPropagation(); confirm(); }
@@ -51423,6 +51678,7 @@ body.is-countdown-fs.is-countdown-paused .countdown-fullscreen-time-row .stopwat
         }
       } catch (err) { /* yok say */ }
       requestAnimationFrame(() => requestAnimationFrame(() => back.classList.add('is-in')));
+      dimThemeMeta();
     };
 
     // ---------------- Aç / kapat / kaydet ----------------
@@ -51505,8 +51761,8 @@ body.is-countdown-fs.is-countdown-paused .countdown-fullscreen-time-row .stopwat
 
       const now = new Date();
       selectedIndex = Math.round((now.getHours() * 60 + now.getMinutes()) / STEP) % COUNT;
-      customMin = 0;
-      applyDuration(DEFAULT_DURATION);
+      clearTempChip();
+      applyDuration(defaultDuration());
     };
 
     const openTaskAddOverlay = () => {
@@ -54878,6 +55134,96 @@ body.is-countdown-fs.is-countdown-paused .countdown-fullscreen-time-row .stopwat
 </script>
 
 <script>
+// ---- Gündelik / Hatırlanacaklar ortak yumuşak animasyon yardımcıları ----
+// flip(root, fn): fn() listeyi baştan çizer; çizimden önce/sonra [data-fk] anahtarlı elemanların
+//   yerleri ölçülür, yer değiştirenler eski yerlerinden yeni yerlerine süzülür (FLIP), yeni gelenler
+//   yumuşakça belirir. Kaydırma konumu korunur, sayfa "şak" diye zıplamaz.
+// leave(els, done): elemanlar yükseklik + solma ile kapanır, bitince done() çağrılır (veri o zaman silinir).
+// focus(input): kaydırmadan odaklar, ardından alanı yumuşakça görünür bölgeye kaydırır.
+(() => {
+  if (window.gkAnim) return;
+  const EASE = 'cubic-bezier(.16,1,.3,1)';
+  const reduce = () => !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  const scroller = (el) => {
+    for (let n = el && el.parentElement; n && n !== document.body; n = n.parentElement) {
+      const oy = getComputedStyle(n).overflowY;
+      if ((oy === 'auto' || oy === 'scroll') && n.scrollHeight > n.clientHeight + 1) return n;
+    }
+    return null;
+  };
+  const parentKeyed = (e, root) => {
+    let n = e.parentElement;
+    while (n && n !== root && !(n.dataset && n.dataset.fk)) n = n.parentElement;
+    return n && n !== root ? n : null;
+  };
+  const isForm = (e) => e.classList.contains('p8g-form') || e.classList.contains('hl-form');
+  const flip = (root, fn) => {
+    if (!root) { fn(); return; }
+    const sc = scroller(root);
+    const st = sc ? sc.scrollTop : 0;
+    const before = new Map();
+    root.querySelectorAll('[data-fk]').forEach((e) => before.set(e.dataset.fk, e.getBoundingClientRect().top));
+    fn();
+    if (sc) sc.scrollTop = st;
+    if (!before.size || reduce()) return;
+    const items = Array.from(root.querySelectorAll('[data-fk]')).map((e) => ({ e, k: e.dataset.fk, top: e.getBoundingClientRect().top }));
+    const now = new Map(items.map((x) => [x.k, x.top]));
+    items.forEach(({ e, k, top }) => {
+      const had = before.has(k);
+      if (isForm(e) && had) { e.style.animation = 'none'; return; }   // zaten açık form yeniden "açılmasın"
+      const P = parentKeyed(e, root);
+      if (P && !before.has(P.dataset.fk)) return;                      // yeni gelen kartın içi kartla birlikte belirir
+      if (!had) {
+        if (isForm(e) || e.classList.contains('is-enter') || (k.charAt(0) === 'a' && k.charAt(1) === ':')) return;
+        if (e.animate) e.animate([{ opacity: 0, transform: 'translateY(-8px) scale(.985)' }, { opacity: 1, transform: 'none' }], { duration: 520, easing: EASE, delay: 120, fill: 'backwards' });
+        return;
+      }
+      let dy;
+      if (P) dy = (before.get(k) - before.get(P.dataset.fk)) - (top - now.get(P.dataset.fk));
+      else dy = before.get(k) - top;
+      if (Math.abs(dy) > 1 && Math.abs(dy) < 4000 && e.animate) e.animate([{ transform: `translateY(${dy}px)` }, { transform: 'none' }], { duration: 560, easing: EASE });
+    });
+  };
+  const leave = (els, done) => {
+    const list = [].concat(els || []).filter((x) => x && x.isConnected);
+    let fired = false;
+    const fin = () => { if (fired) return; fired = true; done && done(); };
+    if (!list.length || reduce()) { fin(); return; }
+    let n = list.length;
+    list.forEach((el) => {
+      const cs = getComputedStyle(el), h = el.offsetHeight;
+      el.style.overflow = 'hidden'; el.style.pointerEvents = 'none';
+      const from = { height: h + 'px', opacity: 1, transform: 'none', marginTop: cs.marginTop, marginBottom: cs.marginBottom, paddingTop: cs.paddingTop, paddingBottom: cs.paddingBottom };
+      const to = { height: '0px', opacity: 0, transform: 'scale(.97)', marginTop: '0px', marginBottom: '0px', paddingTop: '0px', paddingBottom: '0px' };
+      const a = el.animate([from, to], { duration: 420, easing: 'cubic-bezier(.4,0,.2,1)', fill: 'forwards' });
+      a.onfinish = a.oncancel = () => { if (--n <= 0) fin(); };
+    });
+    setTimeout(fin, 620);
+  };
+  const reveal = (el) => {
+    const sc = scroller(el); if (!sc || !el) return;
+    const run = () => {
+      if (!el.isConnected) return;
+      const vv = window.visualViewport;
+      const vh = vv ? vv.height : window.innerHeight, vt = vv ? vv.offsetTop : 0;
+      const r = el.getBoundingClientRect();
+      const m = Math.min(130, vh * 0.2);
+      let d = 0;
+      if (r.bottom > vt + vh - m) d = r.bottom - (vt + vh - m);
+      else if (r.top < vt + m) d = r.top - (vt + m);
+      if (Math.abs(d) > 4) sc.scrollTo({ top: sc.scrollTop + d, behavior: reduce() ? 'auto' : 'smooth' });
+    };
+    setTimeout(run, 160); setTimeout(run, 560);
+  };
+  const focus = (inp) => {
+    if (!inp) return;
+    try { inp.focus({ preventScroll: true }); } catch (e) { inp.focus(); }
+    reveal(inp.closest('form') || inp);
+  };
+  window.gkAnim = { flip, leave, reveal, focus };
+})();
+</script>
+<script>
   // ---------- Sayfa 8: Gündelik (Görevler / Rutinler) ----------
   // Kategorilere ayrılabilen bir yapılacaklar listesi ve her gün otomatik
   // sıfırlanan, gruplanabilir rutinler. Her iki grup türü de Sayfa 4'te
@@ -55159,6 +55505,7 @@ body.is-countdown-fs.is-countdown-paused .countdown-fullscreen-time-row .stopwat
     const addOpenGroups = new Map(); // grup -> rutinin ekleneceği alt başlık id'si ('' = doğrudan gruba)
     const addSecOpen = new Set();   // "yeni alt başlık" kutusu açık olan gruplar
     const seenKeys = new Set();
+    const fkf = (n, k) => { n.dataset.fk = k; return n; };
     let firstPaint = true;
     const gKey = (g) => g.id || g.name;
     const rKey = (g, r) => (r.id || r.text) + '@' + gKey(g);
@@ -55429,13 +55776,12 @@ body.is-countdown-fs.is-countdown-paused .countdown-fullscreen-time-row .stopwat
       const n = group.routines.length;
       if (!(await askConfirm(`"${group.name}" grubu silinsin mi?`, n ? `Grubun içindeki ${n} rutin de silinecek. Hemen ardından geri alabilirsin.` : 'Bu grup silinecek. Hemen ardından geri alabilirsin.', 'Grubu sil'))) return;
       const idx = page8State.routineGroups.indexOf(group);
-      card.classList.add('is-leave');
-      setTimeout(() => {
+      window.gkAnim.leave(card, () => {
         page8State.routineGroups = page8State.routineGroups.filter((g) => g !== group); addOpenGroups.delete(gKey(group)); save();
         toast(`"${group.name}" grubu silindi`, () => {
           page8State.routineGroups.splice(Math.min(idx, page8State.routineGroups.length), 0, group); save();
         });
-      }, 320);
+      });
     };
 
     const renameGroup = (group, card) => {
@@ -55450,7 +55796,7 @@ body.is-countdown-fs.is-countdown-paused .countdown-fullscreen-time-row .stopwat
 
     const focusForm = (group) => {
       const c = [...document.querySelectorAll('#p8nGroups .p8g')][page8State.routineGroups.indexOf(group)];
-      const i = c && c.querySelector('.p8g-in'); if (i) i.focus();
+      const i = c && c.querySelector('.p8g-in'); if (i) window.gkAnim.focus(i);
     };
     const openAddForm = (group, secId) => { addOpenGroups.set(gKey(group), secId || ''); addSecOpen.delete(gKey(group)); render(); focusForm(group); };
     const openSecForm = (group) => { addSecOpen.add(gKey(group)); addOpenGroups.delete(gKey(group)); render(); focusForm(group); };
@@ -55469,9 +55815,14 @@ body.is-countdown-fs.is-countdown-paused .countdown-fullscreen-time-row .stopwat
       const n = group.routines.filter((r) => r.sec === sec.id).length;
       if (!(await askConfirm(`"${sec.name}" alt başlığı silinsin mi?`, n ? `İçindeki ${n} rutin de silinecek. Hemen ardından geri alabilirsin.` : 'Bu alt başlık silinecek. Hemen ardından geri alabilirsin.', 'Alt başlığı sil'))) return;
       const oldS = (group.sections || []).slice(), oldR = group.routines.slice();
-      group.sections = oldS.filter((s) => s !== sec); group.routines = oldR.filter((r) => r.sec !== sec.id);
-      addOpenGroups.delete(gKey(group)); save();
-      toast(`"${sec.name}" silindi`, () => { group.sections = oldS; group.routines = oldR; save(); });
+      const cardEl = [...document.querySelectorAll('#p8nGroups .p8g')][page8State.routineGroups.indexOf(group)];
+      const hd = cardEl && [...cardEl.querySelectorAll('.p8g-sec')].find((x) => x.dataset.sec === sec.id);
+      const lst = hd && hd.nextElementSibling && hd.nextElementSibling.classList.contains('p8g-list') ? hd.nextElementSibling : null;
+      window.gkAnim.leave([hd, lst], () => {
+        group.sections = oldS.filter((s) => s !== sec); group.routines = oldR.filter((r) => r.sec !== sec.id);
+        addOpenGroups.delete(gKey(group)); save();
+        toast(`"${sec.name}" silindi`, () => { group.sections = oldS; group.routines = oldR; save(); });
+      });
     };
 
     // Yazı kutusu + gönder düğmesi (rutin ve alt başlık ekleme için ortak)
@@ -55508,7 +55859,7 @@ body.is-countdown-fs.is-countdown-paused .countdown-fullscreen-time-row .stopwat
       return f;
     };
 
-    const renderGroups = () => {
+    const renderGroupsNow = () => {
       const box = $('p8nGroups');
       closeCtx();
       box.innerHTML = '';
@@ -55516,6 +55867,7 @@ body.is-countdown-fs.is-countdown-paused .countdown-fullscreen-time-row .stopwat
         const key = gKey(group);
         const enterCard = firstPaint || !seenKeys.has('g:' + key);
         const card = el('div', 'p8g' + (enterCard ? ' is-enter' : ''));
+        card.dataset.fk = 'g:' + key;
         card.style.setProperty('--i', String(firstPaint ? gi : 0));
         card.style.setProperty('--gc', group.color);
         card.style.setProperty('--gt', tickColor(group.color));
@@ -55535,7 +55887,7 @@ body.is-countdown-fs.is-countdown-paused .countdown-fullscreen-time-row .stopwat
         const main = el('div', 'p8g-main'); main.appendChild(head);
 
         const buildRow = (r) => {
-          const row = el('div', 'p8g-r');
+          const row = el('div', 'p8g-r'); row.dataset.fk = 'r:' + rKey(group, r);
           const c = el('span', 'p8g-c' + (r.steps > 1 ? ' has-pie' : '')); c.innerHTML = (r.steps > 1 ? PIE : '') + TICK;
           const t = el('span', 'p8g-t'); t.appendChild(el('span', 'p8g-tt', r.text));
           row.append(c, t);
@@ -55555,7 +55907,7 @@ body.is-countdown-fs.is-countdown-paused .countdown-fullscreen-time-row .stopwat
           return row;
         };
         const secHead = (sec) => {
-          const h = el('div', 'p8g-sec'); h.dataset.sec = sec.id;
+          const h = el('div', 'p8g-sec'); h.dataset.sec = sec.id; h.dataset.fk = 's:' + sec.id + '@' + key;
           const cnt = el('span', 'p8g-sec-count'); cnt.dataset.sec = sec.id;
           const plus = el('button', 'p8g-sec-add'); plus.type = 'button'; plus.setAttribute('aria-label', `${sec.name} altına rutin ekle`); plus.innerHTML = IC.plus;
           plus.addEventListener('click', (e) => { e.stopPropagation(); openAddForm(group, sec.id); });
@@ -55580,21 +55932,21 @@ body.is-countdown-fs.is-countdown-paused .countdown-fullscreen-time-row .stopwat
           items.forEach((r) => list.appendChild(buildRow(r)));
           main.appendChild(list);
           if (formOpen) {
-            main.appendChild(mkForm(sec ? `${sec.name} altına rutin ekle` : 'Yeni rutin (örn. Su iç)',
+            main.appendChild(fkf(mkForm(sec ? `${sec.name} altına rutin ekle` : 'Yeni rutin (örn. Su iç)',
               (v, n) => { const r = { id: page8GenId(), text: v, done: false }; if (n > 1) { r.steps = n; r.prog = 0; } if (sec) r.sec = sec.id; group.routines.push(r); save(); focusForm(group); },
               () => { addOpenGroups.delete(key); render(); },
-              () => addOpenGroups.has(key), true));
+              () => addOpenGroups.has(key), true), 'f:' + key + ':' + sid));
           }
         });
 
         // Alt: ekleme düğmeleri
         if (addSecOpen.has(key)) {
-          main.appendChild(mkForm('Alt başlık adı (örn. Hap, Su)',
+          main.appendChild(fkf(mkForm('Alt başlık adı (örn. Hap, Su)',
             (v) => { const s = { id: page8GenId(), name: v }; group.sections = (group.sections || []).concat(s); addSecOpen.delete(key); addOpenGroups.set(key, s.id); save(); focusForm(group); },
             () => { addSecOpen.delete(key); render(); },
-            () => addSecOpen.has(key)));
+            () => addSecOpen.has(key)), 'fs:' + key));
         } else {
-          const acts = el('div', 'p8g-actions');
+          const acts = el('div', 'p8g-actions'); acts.dataset.fk = 'a:' + key;
           if (!secs.length && !addOpenGroups.has(key)) {
             const ab = el('button', 'p8g-add', '+ Rutin ekle'); ab.type = 'button'; ab.addEventListener('click', () => openAddForm(group)); acts.appendChild(ab);
           }
@@ -55624,6 +55976,7 @@ body.is-countdown-fs.is-countdown-paused .countdown-fullscreen-time-row .stopwat
       });
       firstPaint = false;
     };
+    const renderGroups = () => window.gkAnim.flip($('p8nGroups'), renderGroupsNow);
 
     // ---- Grup ekleme / boş durum ----
     const addGroup = (name) => {
@@ -55646,15 +55999,21 @@ body.is-countdown-fs.is-countdown-paused .countdown-fullscreen-time-row .stopwat
       if (document.querySelector('.gk-pop-back')) return;
       const mk = (t, c, x) => { const n = document.createElement(t); if (c) n.className = c; if (x) n.textContent = x; return n; };
       const back = mk('div', 'gk-pop-back'), card = mk('div', 'gk-pop');
+      const vv = window.visualViewport;
+      // Klavye açılırken iOS görsel görünümü kaydırabilir; pop-up ekrana sabit kalsın diye ofset telafi edilir.
+      const pin = () => { back.style.transform = vv && vv.offsetTop ? `translate3d(0, ${vv.offsetTop}px, 0)` : ''; };
+      if (vv) { vv.addEventListener('scroll', pin); vv.addEventListener('resize', pin); }
+      document.body.classList.add('has-modal-open');
       card.setAttribute('role', 'dialog'); card.setAttribute('aria-modal', 'true'); card.setAttribute('aria-label', opts.title);
       card.appendChild(mk('h3', '', opts.title));
       let closed = false;
       const close = () => {
         if (closed) return; closed = true;
         document.removeEventListener('keydown', onKey, true);
+        if (vv) { vv.removeEventListener('scroll', pin); vv.removeEventListener('resize', pin); }
         const a = document.activeElement; if (a && card.contains(a) && a.blur) a.blur();
         back.classList.remove('is-in'); back.classList.add('is-out');
-        setTimeout(() => back.remove(), 480);
+        setTimeout(() => { back.remove(); if (!document.querySelector('.gk-pop-back')) document.body.classList.remove('has-modal-open'); }, 480);
       };
       const submit = (v) => { v = (v || '').trim(); if (!v) return false; close(); opts.onSubmit(v); return true; };
       const onKey = (e) => { if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); close(); } };
@@ -55672,8 +56031,11 @@ body.is-countdown-fs.is-countdown-paused .countdown-fullscreen-time-row .stopwat
       card.appendChild(f); back.appendChild(card);
       back.addEventListener('pointerdown', (e) => { if (e.target === back) close(); });
       document.body.appendChild(back);
-      // Klavye, dokunuşun içinde açılsın diye odak hemen verilir (sayfayı kaydırmadan).
+      // Klavye, dokunuşun içinde açılsın diye odak hemen verilir (sayfayı kaydırmadan). Kart yerine
+      // süzülürken imleç rastgele bir noktada görünmesin diye imleç, kart oturana kadar gizlenir.
+      inp.style.caretColor = 'transparent';
       try { inp.focus({ preventScroll: true }); } catch (e) { /* yoksay */ }
+      setTimeout(() => { inp.style.caretColor = ''; }, 420);
       requestAnimationFrame(() => requestAnimationFrame(() => back.classList.add('is-in')));
     };
     const softCloseNewGroup = () => {
@@ -71189,6 +71551,7 @@ body.is-countdown-fs.is-countdown-paused .countdown-fullscreen-time-row .stopwat
       clean: '<svg viewBox="0 0 24 24"><path d="M4 12.5l5 5.5 11-13"/></svg>',
       trash: '<svg viewBox="0 0 24 24"><path d="M3.5 6h17"/><path d="M8.5 6V4.3a1 1 0 0 1 1-1h5a1 1 0 0 1 1 1V6"/><path d="M6 6l.9 13.2a2 2 0 0 0 2 1.8h6.2a2 2 0 0 0 2-1.8L18 6"/></svg>'
     };
+    const fk = (n, k) => { n.dataset.fk = k; return n; };
     const gid = () => 'hl-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
     const pal = (typeof WHEEL_PALETTE !== 'undefined' && WHEEL_PALETTE.length) ? WHEEL_PALETTE : ['#ff90e8', '#ffc900', '#23a094', '#90a8ed', '#ff7a00'];
     const lum = (hex) => { const m = /^#?([0-9a-f]{6})$/i.exec(hex || ''); if (!m) return 0; const n = parseInt(m[1], 16); return (0.299 * (n >> 16) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255)) / 255; };
@@ -71330,17 +71693,18 @@ body.is-countdown-fs.is-countdown-paused .countdown-fullscreen-time-row .stopwat
       inp.addEventListener('blur', () => setTimeout(() => { if (!inp.value.trim() && !f.contains(document.activeElement)) softCancel(); }, 120));
       return f;
     };
-    const focusIn = () => { const i = page.querySelector('.hl-in'); if (i) i.focus(); };
+    const focusIn = () => { const i = page.querySelector('.hl-in'); if (i) window.gkAnim.focus(i); };
 
     // ---- Çizim ----
-    function render() {
+    function render() { window.gkAnim.flip(list, renderNow); }
+    function renderNow() {
       closeMenu(); list.innerHTML = '';
       const nf = $('hlNewForm'); nf.innerHTML = '';
       if (newOpen) { const f = mkForm('Yeni liste adı (örn. Market)', (v) => { newOpen = false; st.groups.push({ id: gid(), name: v, color: pal[st.groups.length % pal.length], items: [] }); addOpen = st.groups[st.groups.length - 1].id; save(); render(); focusIn(); }, () => softCloseNew()); f.classList.add('hl-newform'); const sw = el('div', 'soft-wrap'); sw.appendChild(f); nf.appendChild(sw); if (newAnim) { newAnim = false; window.softOpen(sw); } }
       $('hlTip').textContent = st.groups.length ? 'İpucu: Bir listeye ya da maddeye basılı tut, seçenekler açılsın.' : '';
       if (!st.groups.length) { list.appendChild(el('p', 'hl-empty', 'Henüz listen yok. Sağ üstteki + ile ekle.')); return; }
       st.groups.forEach((g, gi) => {
-        const box = el('section', 'hl-g'); box.style.setProperty('--gc', g.color); box.style.setProperty('--gt', tickColor(g.color));
+        const box = el('section', 'hl-g'); box.dataset.fk = 'hg:' + g.id; box.style.setProperty('--gc', g.color); box.style.setProperty('--gt', tickColor(g.color));
         if (firstPaint) box.style.animationDelay = `${gi * 70}ms`;
         const head = el('div', 'hl-head'), cnt = el('span', 'hl-count');
         head.append(el('span', 'hl-name', g.name), cnt);
@@ -71349,26 +71713,28 @@ body.is-countdown-fs.is-countdown-paused .countdown-fullscreen-time-row .stopwat
         hold(head, (x, y) => openMenu(head, [
           { ic: IC.edit, title: 'Adı Değiştir', sub: 'Listenin ismini düzenle', fn: () => editInline(head.querySelector('.hl-name'), g.name, (v) => { g.name = v; save(); }) },
           { ic: IC.color, title: 'Rengi Değiştir', sub: 'Listenin vurgu rengi', fn: () => { if (typeof openColorPicker === 'function') openColorPicker(g.name, g.color, (c) => { g.color = c; save(); render(); }); } },
-          ...(g.items.some((i) => i.done) ? [{ ic: IC.clean, title: 'Tamamlananları Temizle', sub: 'İşaretli maddeleri kaldır', fn: () => { const old = g.items.slice(); g.items = g.items.filter((i) => !i.done); save(); render(); toast('Tamamlananlar temizlendi', () => { g.items = old; save(); render(); }); } }] : []),
+          ...(g.items.some((i) => i.done) ? [{ ic: IC.clean, title: 'Tamamlananları Temizle', sub: 'İşaretli maddeleri kaldır', fn: () => window.gkAnim.leave(Array.from(box.querySelectorAll('.hl-r.is-done')), () => { const old = g.items.slice(); g.items = g.items.filter((i) => !i.done); save(); render(); toast('Tamamlananlar temizlendi', () => { g.items = old; save(); render(); }); }) }] : []),
           { ic: IC.trash, title: 'Listeyi Sil', sub: 'İçindeki maddelerle birlikte', danger: true, fn: async () => {
             if (!(await confirmDel(`"${g.name}" listesi silinsin mi?`, g.items.length ? `İçindeki ${g.items.length} madde de silinecek. Hemen ardından geri alabilirsin.` : 'Bu liste silinecek. Hemen ardından geri alabilirsin.'))) return;
-            const idx = st.groups.indexOf(g); st.groups = st.groups.filter((x) => x !== g); save(); render();
-            toast(`"${g.name}" silindi`, () => { st.groups.splice(Math.min(idx, st.groups.length), 0, g); save(); render(); });
+            window.gkAnim.leave(box, () => {
+              const idx = st.groups.indexOf(g); st.groups = st.groups.filter((x) => x !== g); save(); render();
+              toast(`"${g.name}" silindi`, () => { st.groups.splice(Math.min(idx, st.groups.length), 0, g); save(); render(); });
+            });
           } }
         ], x, y));
         g.items.forEach((it) => {
           const row = el('div', 'hl-r' + (it.done ? ' is-done' : '')), c = el('span', 'hl-c'), t = el('span', 'hl-t'); t.appendChild(el('span', 'hl-tt', it.text));
-          c.innerHTML = TICK; row.append(c, t);
+          c.innerHTML = TICK; row.append(c, t); row.dataset.fk = 'hr:' + it.id;
           row.addEventListener('click', () => { it.done = !it.done; row.classList.toggle('is-done', it.done); save(); upd(); });
           hold(row, (x, y) => openMenu(row, [
             { ic: IC.copy, title: 'Kopyala', sub: 'Metni panoya al', fn: async () => { const ok = await window.gundelikCopyText(it.text); toast(ok ? 'Kopyalandı' : 'Kopyalanamadı'); } },
             { ic: IC.edit, title: 'Metni Düzenle', sub: 'Maddenin adını değiştir', fn: () => editInline(t, it.text, (v) => { it.text = v; save(); }, true) },
-            { ic: IC.trash, title: 'Sil', sub: 'Bu maddeyi kaldır', danger: true, fn: () => { const idx = g.items.indexOf(it); g.items = g.items.filter((x2) => x2 !== it); save(); render(); toast('Madde silindi', () => { g.items.splice(Math.min(idx, g.items.length), 0, it); save(); render(); }); } }
+            { ic: IC.trash, title: 'Sil', sub: 'Bu maddeyi kaldır', danger: true, fn: () => window.gkAnim.leave(row, () => { const idx = g.items.indexOf(it); g.items = g.items.filter((x2) => x2 !== it); save(); render(); toast('Madde silindi', () => { g.items.splice(Math.min(idx, g.items.length), 0, it); save(); render(); }); }) }
           ], x, y));
           box.appendChild(row);
         });
-        if (addOpen === g.id) box.appendChild(mkForm('Yeni madde ekle', (v) => { g.items.push({ id: gid(), text: v, done: false }); save(); render(); focusIn(); }, () => { addOpen = null; render(); }, true));
-        else { const b = el('button', 'hl-add', '+ Madde ekle'); b.type = 'button'; b.onclick = () => { addOpen = g.id; render(); focusIn(); }; box.appendChild(b); }
+        if (addOpen === g.id) box.appendChild(fk(mkForm('Yeni madde ekle', (v) => { g.items.push({ id: gid(), text: v, done: false }); save(); render(); focusIn(); }, () => { addOpen = null; render(); }, true), 'hf:' + g.id));
+        else { const b = el('button', 'hl-add', '+ Madde ekle'); b.type = 'button'; b.dataset.fk = 'ha:' + g.id; b.onclick = () => { addOpen = g.id; render(); focusIn(); }; box.appendChild(b); }
         list.appendChild(box);
       });
       firstPaint = false;
@@ -71394,7 +71760,6 @@ body.is-countdown-fs.is-countdown-paused .countdown-fullscreen-time-row .stopwat
           if (!st.groups.length) return;
           openMenu(gAdd, st.groups.map((g, gi) => ({ ic: dot(g.color), title: g.name || 'Liste', sub: 'Maddesini ekle', fn: () => {
             addOpen = g.id; render(); focusIn();
-            setTimeout(() => { const b = list.children[gi]; if (b && b.scrollIntoView) b.scrollIntoView({ block: 'center', behavior: 'smooth' }); }, 60);
           } })), cx, cy);
         } else {
           const gs = (window.p8nFab && window.p8nFab.groups()) || [];
@@ -71688,6 +72053,34 @@ body.is-countdown-fs.is-countdown-paused .countdown-fullscreen-time-row .stopwat
   .task-add-dur-back.is-dur.is-out { transition-duration: .4s; }
   .task-add-dur-back.is-dur .task-add-dur { --ta-accent: var(--ta-color); }
   .task-add-dur-back.is-dur .task-add-dur-btn.is-primary { box-shadow: 0 8px 16px -8px color-mix(in srgb, var(--ta-accent) 70%, transparent); }
+  /* ===== Süre çipleri: kayan vurgu hapı + yumuşak rakam geçişi ===== */
+  .task-add-seg { position: relative; }
+  .task-add-seg-ind {
+    position: absolute; top: .3rem; bottom: .3rem; left: 0; z-index: 0; width: 0;
+    border-radius: 999px; background: var(--ta-accent); pointer-events: none; opacity: 0;
+    transition: transform .6s cubic-bezier(.16,1,.3,1), width .6s cubic-bezier(.16,1,.3,1), opacity .25s ease;
+    will-change: transform, width;
+  }
+  .task-add-seg-ind.is-ready { opacity: 1; }
+  .task-add-overlay .task-add-seg .task-add-seg-btn { position: relative; z-index: 1; transition: color .35s ease, transform .15s ease; }
+  .task-add-overlay .task-add-seg .task-add-seg-btn.is-selected { background: transparent; }
+  .task-add-seg-label { display: inline-block; will-change: transform, opacity; }
+  @media (prefers-reduced-motion: reduce) { .task-add-seg-ind { transition-duration: .01ms; } }
+
+  /* ===== Tarih seçici: kaydırmalı aylar, vurgu renkli ay başlığı ===== */
+  .task-add-cal-title {
+    flex: 1 1 auto; min-width: 0; margin: 0 .3rem; padding: .35rem .5rem; border: none; border-radius: .9rem; background: none;
+    font: 800 1.15rem/1.2 var(--ta-title-font); color: var(--ta-text); cursor: pointer; text-align: center;
+    -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+    transition: color .45s ease, transform .25s cubic-bezier(.22,1,.36,1);
+  }
+  .task-add-cal-title:active { transform: scale(.96); }
+  .task-add-cal-title.is-away { color: var(--ta-accent); }
+  .task-add-cal-title-text { display: inline-block; will-change: transform, opacity; }
+  .task-add-cal-view { overflow: hidden; touch-action: pan-y; padding-bottom: .65rem; margin-bottom: .35rem; -webkit-user-select: none; user-select: none; }
+  .task-add-cal-track { display: flex; width: 100%; transform: translate3d(-100%, 0, 0); will-change: transform; }
+  .task-add-cal-track > .task-add-cal-grid { flex: 0 0 100%; min-width: 0; margin-bottom: 0; }
+  .task-add-cal-num { transition: background-color .3s ease, color .3s ease, transform .2s ease, border-color .3s ease; }
   .task-add-date-row { cursor: pointer; -webkit-tap-highlight-color: transparent; }
   .task-add-date-row:focus-visible { outline: 2px solid var(--ta-accent); outline-offset: 2px; }
 </style>
@@ -71709,10 +72102,12 @@ body.is-countdown-fs.is-countdown-paused .countdown-fullscreen-time-row .stopwat
     background: var(--theme-bg, #F6F4EF); color: var(--theme-text, #121212);
     font-family: "Baloo 2", "Space Grotesk", sans-serif;
     box-shadow: 0 30px 80px -20px rgba(0,0,0,.42), 0 2px 12px rgba(0,0,0,.12);
-    opacity: 0; transform: translateY(28px) scale(.94);
-    transition: opacity .5s cubic-bezier(.22,1,.36,1), transform .75s cubic-bezier(.16,1,.3,1);
+    opacity: 0; transform: translateY(16px) scale(.97);
+    transition: opacity .5s cubic-bezier(.22,1,.36,1), transform .6s cubic-bezier(.16,1,.3,1);
     will-change: transform, opacity;
   }
+  .gk-pop-back { overscroll-behavior: none; touch-action: none; }
+  .gk-pop-input, .gk-pop-pill, .gk-pop-ok { touch-action: manipulation; }
   .gk-pop-back.is-in .gk-pop { opacity: 1; transform: none; }
   .gk-pop-back.is-out .gk-pop { opacity: 0; transform: translateY(14px) scale(.97); transition: opacity .34s ease, transform .45s cubic-bezier(.4,0,.2,1); }
   .gk-pop h3 { margin: 0 0 .9rem .2rem; font-size: 1.3rem; font-weight: 800; letter-spacing: -.01em; line-height: 1.2; }
