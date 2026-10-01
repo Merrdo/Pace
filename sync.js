@@ -6,7 +6,7 @@
   var SUPABASE_KEY = 'sb_publishable_vooRR4tCBcpl1Cpn7arj1g_wAQB6ByB';
   var META_KEY = 'pace_sync_meta_v1';
   var BACKUP_KEY = 'pace_pre_sync_backup_v1';
-  var SKIP = { updatedAt: 1, schemaVersion: 1, page: 1 };          // cihaza özel alanlar
+  var SKIP = { updatedAt: 1, schemaVersion: 1, page: 1, _paceEpoch: 1 };          // cihaza özel alanlar
   var UNION = { stopwatchLogs: 1, stopwatchSubjectLogs: 1 };       // çakışmada anahtar bazlı birleştirilir
 
   if (!window.supabase || typeof APP_STATE === 'undefined' || typeof saveAppState === 'undefined') {
@@ -29,7 +29,20 @@
     try { var m = JSON.parse(localStorage.getItem(META_KEY)); if (m) return m; } catch (e) {}
     return { uid: null, lastPull: null, times: {}, hashes: {}, dirty: {} };
   }
+  function rnd() { return Math.random().toString(36).slice(2) + Date.now().toString(36); }
+  function newMeta(u) { return { uid: u || null, epoch: rnd(), lastPull: null, times: {}, hashes: {}, dirty: {}, imgUp: {}, linked: false }; }
   var meta = loadMeta(); meta.imgUp = meta.imgUp || {};
+  // Uygulamanın "Sıfırla" düğmesi yalnızca kendi verisini siler; eşitleme kaydı (imleç, özetler) kalırsa
+  // cihaz "güncel" sanılır ve buluttan hiçbir şey inmez. Sıfırlanmış cihaz burada tespit edilip yeniden bağlanır.
+  function wasWiped() {
+    var hk = Object.keys(meta.hashes); if (!hk.length) return false;
+    var miss = hk.filter(function (k) { return !(k in APP_STATE); }).length;
+    return miss > 0 && (miss >= Math.ceil(hk.length / 2) || (meta.epoch && !APP_STATE._paceEpoch));
+  }
+  function stampEpoch() {
+    if (!meta.epoch) meta.epoch = rnd();
+    if (APP_STATE._paceEpoch !== meta.epoch) { APP_STATE._paceEpoch = meta.epoch; try { persistState(); } catch (e) {} }
+  }
   function saveMeta() { try { localStorage.setItem(META_KEY, JSON.stringify(meta)); } catch (e) {} }
   function persistState() { localStorage.setItem(APP_STORAGE_KEY, JSON.stringify(APP_STATE)); }
   function trErr(e) {
@@ -193,7 +206,8 @@
       localStorage.removeItem(APP_STORAGE_KEY); localStorage.removeItem(META_KEY);
       sessionStorage.setItem('pace_sync_rl', '1'); location.reload(); return;
     }
-    uid = id; meta.uid = id; saveMeta();
+    if (wasWiped()) { meta = newMeta(id); sessionStorage.removeItem('pace_sync_rl'); }   // sıfırlanmış cihaz: bulut kazanır
+    uid = id; meta.uid = id; stampEpoch(); saveMeta();
     setStatus('Bağlandı'); closeModal();
     if (channel) sb.removeChannel(channel);
     channel = sb.channel('pace-sync-' + id).on('postgres_changes',
@@ -245,7 +259,7 @@
   function render() {
     var c = document.getElementById('paceSyncCard'); if (!c) return;
     if (uid) {
-      c.innerHTML = '<h3>Bulut eşitleme</h3><p>' + status + '</p><button class="pri" data-a="sync">Şimdi eşitle</button><button data-a="out">Çıkış yap</button><button data-a="close">Kapat</button>';
+      c.innerHTML = '<h3>Bulut eşitleme</h3><p>' + status + '</p><button class="pri" data-a="sync">Şimdi eşitle</button><button data-a="re">Buluttan yeniden yükle</button><button data-a="out">Çıkış yap</button><button data-a="close">Kapat</button>';
     } else {
       c.innerHTML = '<h3>Giriş yap</h3><p>Verilerin cihazların arasında eşitlensin.</p><input id="psEmail" type="email" placeholder="E-posta" autocomplete="email"><input id="psPass" type="password" placeholder="Şifre (en az 6 karakter)" autocomplete="current-password"><button class="pri" data-a="in">Giriş yap</button><button data-a="up">Kayıt ol</button><div id="paceSyncMsg"></div>';
     }
@@ -254,6 +268,10 @@
       var msg = document.getElementById('paceSyncMsg');
       if (a === 'close') return closeModal();
       if (a === 'sync') return syncNow(false);
+      if (a === 're') {
+        if (!confirm('Bu cihazdaki veri, buluttaki veriyle değiştirilecek (önce yedeklenir). Devam edilsin mi?')) return;
+        backup(); meta = newMeta(uid); stampEpoch(); saveMeta(); sessionStorage.removeItem('pace_sync_rl'); closeModal(); return syncNow(true);
+      }
       if (a === 'out') { await sb.auth.signOut(); return; }
       var em = document.getElementById('psEmail').value.trim(), pw = document.getElementById('psPass').value;
       if (!em || pw.length < 6) { msg.textContent = 'E-posta ve en az 6 karakterli şifre gir.'; return; }
