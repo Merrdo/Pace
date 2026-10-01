@@ -41730,6 +41730,21 @@ body.is-countdown-fs.is-countdown-paused .countdown-fullscreen-time-row .stopwat
     #page-hatirla .hl-new { flex: 0 0 auto; width: 2.6rem; height: 2.6rem; padding: 0; border: none; border-radius: 50%; display: grid; place-items: center; cursor: pointer; color: inherit; background: color-mix(in srgb, var(--theme-text, #121212) 6%, transparent); box-shadow: inset 0 1px 3px 0 color-mix(in srgb, var(--theme-text, #121212) 10%, transparent); -webkit-tap-highlight-color: transparent; transition: transform .15s ease; }
     #page-hatirla .hl-new:active { transform: scale(.92); }
     #page-hatirla .hl-new svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; }
+    /* Otomatik silme anahtarı (başlığın sağ üstü): yuvarlak tikli ikon (bir görevin tamamlanıp kaybolması).
+       KAPALI: ikon soluk, üstünde çapraz çizgi (kamera-kapalı gibi). AÇIK: çizgi silinir,
+       tik çizilir, köşede yıldız belirir, düğme hafifçe dolar. */
+    #page-hatirla .hl-auto { flex: 0 0 auto; width: 2.6rem; height: 2.6rem; padding: 0; border: none; border-radius: 50%; display: grid; place-items: center; cursor: pointer; color: inherit; background: transparent; -webkit-tap-highlight-color: transparent; transition: transform .15s ease, background-color .35s ease, box-shadow .35s ease; }
+    #page-hatirla .hl-auto:active { transform: scale(.9); }
+    #page-hatirla .hl-auto.is-on { background: color-mix(in srgb, var(--theme-text, #121212) 9%, transparent); box-shadow: inset 0 1px 3px 0 color-mix(in srgb, var(--theme-text, #121212) 10%, transparent); }
+    #page-hatirla .hl-auto svg { width: 22px; height: 22px; overflow: visible; fill: none; stroke: currentColor; stroke-width: 2.1; stroke-linecap: round; stroke-linejoin: round; opacity: .5; transition: opacity .35s ease; }
+    #page-hatirla .hl-auto.is-on svg { opacity: 1; }
+    #page-hatirla .hl-auto .ad-spark { fill: currentColor; stroke-width: 1; transform-box: fill-box; transform-origin: center; transform: scale(0) rotate(-90deg); transition: transform .25s ease; }
+    #page-hatirla .hl-auto.is-on .ad-spark { transform: none; transition: transform .5s cubic-bezier(.34,1.56,.64,1) .25s; }
+    #page-hatirla .hl-auto .ad-check { stroke-dasharray: 10; stroke-dashoffset: 10; transition: stroke-dashoffset .3s ease; }
+    #page-hatirla .hl-auto.is-on .ad-check { stroke-dashoffset: 0; transition: stroke-dashoffset .4s ease .15s; }
+    #page-hatirla .hl-auto .ad-slash, #page-hatirla .hl-auto .ad-slash-gap { stroke-dasharray: 25; stroke-dashoffset: 0; transition: stroke-dashoffset .4s cubic-bezier(.65,0,.35,1); }
+    #page-hatirla .hl-auto.is-on .ad-slash, #page-hatirla .hl-auto.is-on .ad-slash-gap { stroke-dashoffset: 25; }
+    #page-hatirla .hl-auto .ad-slash { stroke-width: 2.3; }
     #page-hatirla .hl-scroll { flex: 1 1 auto; min-height: 0; width: 100%; max-width: 428px; box-sizing: border-box; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: none; padding: 1rem 24px calc(96px + env(safe-area-inset-bottom)); -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 16px, #000 100%); mask-image: linear-gradient(to bottom, transparent 0, #000 16px, #000 100%); }
     #page-hatirla .hl-scroll::-webkit-scrollbar { display: none; }
     #page-hatirla .hl-g { --gc: #ff90e8; --gt: #121212; margin: 0 0 1.6rem; animation: hlIn .45s cubic-bezier(.22,1,.36,1) backwards; }
@@ -41768,6 +41783,17 @@ body.is-countdown-fs.is-countdown-paused .countdown-fullscreen-time-row .stopwat
   <section class="page" id="page-hatirla" aria-label="Hatırlanacaklar">
     <div class="hl-top">
       <h1 class="hl-title" id="hlTitle" role="button" tabindex="0" title="Gündelik'e dön">Hatırlanacaklar</h1>
+      <button type="button" class="hl-auto" id="hlAuto" role="switch" aria-checked="false" aria-label="Yapılanları otomatik sil" title="Yapılanları otomatik sil">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <defs><mask id="hlAutoMask" maskUnits="userSpaceOnUse" x="-4" y="-4" width="32" height="32"><rect x="-4" y="-4" width="32" height="32" fill="#fff"/><path class="ad-slash-gap" d="M4 4l16 16" stroke="#000" stroke-width="6"/></mask></defs>
+          <g mask="url(#hlAutoMask)">
+            <circle class="ad-ring" cx="10.5" cy="13.5" r="7"/>
+            <path class="ad-check" d="M7.2 13.8l2.4 2.4 4.3-4.9"/>
+            <path class="ad-spark" d="M19 1.6Q19.4 4.6 22.4 5Q19.4 5.4 19 8.4Q18.6 5.4 15.6 5Q18.6 4.6 19 1.6Z"/>
+          </g>
+          <path class="ad-slash" d="M4 4l16 16"/>
+        </svg>
+      </button>
       <button type="button" class="hl-new" id="hlNew" aria-label="Yeni liste"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
     </div>
     <div class="hl-scroll" id="hlScroll"><div id="hlNewForm"></div><div id="hlList"></div><p class="hl-tip" id="hlTip"></p></div>
@@ -71695,6 +71721,36 @@ body.is-countdown-fs.is-countdown-paused .countdown-fullscreen-time-row .stopwat
     };
     const focusIn = () => { const i = page.querySelector('.hl-in'); if (i) window.gkAnim.focus(i); };
 
+    // ---- Otomatik silme anahtarı ----
+    // AÇIK iken yapıldı işaretlenen madde, üstü çizilme animasyonu görünsün diye kısa bir süre
+    // sonra silinir (Geri al bildirimiyle). O sürede işaret geri alınırsa silinmez.
+    // KAPALI iken her şey eskisi gibi: işaretli maddeler listede kalır.
+    // Anahtarı açmak önceden işaretli olanlara dokunmaz; yalnızca bundan sonra işaretlenenleri etkiler.
+    const autoBtn = $('hlAuto'), autoTimers = new Map();
+    const paintAuto = () => { const on = !!st.autoDelete; autoBtn.classList.toggle('is-on', on); autoBtn.setAttribute('aria-checked', on ? 'true' : 'false'); };
+    paintAuto();
+    function autoSweep(g, it) {
+      clearTimeout(autoTimers.get(it.id)); autoTimers.delete(it.id);
+      if (!st.autoDelete || !it.done) return;
+      autoTimers.set(it.id, setTimeout(() => {
+        autoTimers.delete(it.id);
+        if (!st.autoDelete || !it.done || g.items.indexOf(it) < 0) return;
+        const row = list.querySelector('[data-fk="hr:' + it.id + '"]');
+        const rm = () => {
+          const idx = g.items.indexOf(it); if (idx < 0) return;
+          g.items = g.items.filter((x) => x !== it); save(); render();
+          toast('Madde silindi', () => { it.done = false; g.items.splice(Math.min(idx, g.items.length), 0, it); save(); render(); });
+        };
+        if (row) window.gkAnim.leave(row, rm); else rm();
+      }, 750));
+    }
+    autoBtn.addEventListener('click', () => {
+      st.autoDelete = !st.autoDelete;
+      if (!st.autoDelete) { autoTimers.forEach((t) => clearTimeout(t)); autoTimers.clear(); }
+      paintAuto(); save();
+      toast(st.autoDelete ? 'Otomatik silme açık: yapılanlar silinir' : 'Otomatik silme kapalı: yapılanlar listede kalır');
+    });
+
     // ---- Çizim ----
     function render() { window.gkAnim.flip(list, renderNow); }
     function renderNow() {
@@ -71725,7 +71781,7 @@ body.is-countdown-fs.is-countdown-paused .countdown-fullscreen-time-row .stopwat
         g.items.forEach((it) => {
           const row = el('div', 'hl-r' + (it.done ? ' is-done' : '')), c = el('span', 'hl-c'), t = el('span', 'hl-t'); t.appendChild(el('span', 'hl-tt', it.text));
           c.innerHTML = TICK; row.append(c, t); row.dataset.fk = 'hr:' + it.id;
-          row.addEventListener('click', () => { it.done = !it.done; row.classList.toggle('is-done', it.done); save(); upd(); });
+          row.addEventListener('click', () => { it.done = !it.done; row.classList.toggle('is-done', it.done); save(); upd(); autoSweep(g, it); });
           hold(row, (x, y) => openMenu(row, [
             { ic: IC.copy, title: 'Kopyala', sub: 'Metni panoya al', fn: async () => { const ok = await window.gundelikCopyText(it.text); toast(ok ? 'Kopyalandı' : 'Kopyalanamadı'); } },
             { ic: IC.edit, title: 'Metni Düzenle', sub: 'Maddenin adını değiştir', fn: () => editInline(t, it.text, (v) => { it.text = v; save(); }, true) },
