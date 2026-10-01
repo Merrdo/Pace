@@ -39979,12 +39979,10 @@ body.is-countdown-fs.is-countdown-paused .countdown-fullscreen-time-row .stopwat
         <!-- Zaman: dikey çark, 15 dk adımlı -->
         <div class="task-add-card">
           <h3 class="task-add-card-title">Zaman</h3>
-          <div class="task-add-wheels">
-            <div class="task-add-w" id="taskAddHours" aria-label="Saat"></div>
-            <span class="task-add-w-colon" aria-hidden="true">:</span>
-            <div class="task-add-w" id="taskAddMins" aria-label="Dakika"></div>
+          <div class="task-add-wheel-wrap">
+            <div class="task-add-wheel-pill" aria-hidden="true"></div>
+            <div class="task-add-wheel" id="taskAddWheel" aria-label="Başlangıç saatini kaydırarak seç"></div>
           </div>
-          <p class="task-add-range" id="taskAddRange" aria-live="polite"></p>
         </div>
 
         <!-- Çalışılacak süre: bitişi belirler -->
@@ -50496,9 +50494,7 @@ body.is-countdown-fs.is-countdown-paused .countdown-fullscreen-time-row .stopwat
     const dateInput = $('taskAddDateInput');
     const dateTextEl = $('taskAddDateText');
     const dateRelEl = $('taskAddDateRel');
-    const wheelH = $('taskAddHours');
-    const wheelM = $('taskAddMins');
-    const rangeEl = $('taskAddRange');
+    const wheel = $('taskAddWheel');
     const durationRow = $('taskAddDurationRow');
     const repeatOptionsRow = $('taskAddRepeatOptions');
     const repeatDaysRow = $('taskAddRepeatDays');
@@ -50702,8 +50698,8 @@ body.is-countdown-fs.is-countdown-paused .countdown-fullscreen-time-row .stopwat
     ));
 
     // ---------------- Durum ----------------
-    const STEP = 1;                     // dakika hassasiyeti: selectedIndex = günün dakikası
-    const COUNT = 24 * 60;
+    const STEP = 15;                    // çark adımı (dk)
+    const COUNT = (24 * 60) / STEP;     // 96 satır: 00:00 … 23:45
     const DURATIONS = [30, 45, 60, 90, 120];
     const DEFAULT_DURATION = 60;
 
@@ -51226,97 +51222,75 @@ body.is-countdown-fs.is-countdown-paused .countdown-fullscreen-time-row .stopwat
     }
 
     // ---------------- Zaman çarkı ----------------
-    // Takvimdeki etkinlik saat seçicisiyle aynı 3B silindir çark: saat + dakika, sonsuz kaydırma.
-    const TW = { h: { el: wheelH, n: 24, built: false }, m: { el: wheelM, n: 60, built: false } };
+    // Tek dikey çark (15 dk adımlı): ortadaki hap seçili aralığı gösterir.
+    // Satırlar silindir üzerinde 3B perspektifle eğilir (eski çarktaki perspektif efekti).
+    const items = [];
     let rowPx = 0;
+    let activeEl = null;
+    let raf = 0;
 
     const updateLabels = () => {
       const startMin = selectedIndex * STEP;
-      if (rangeEl) rangeEl.textContent = `${fmt(startMin)} – ${fmt(startMin + durationMin)}`;
+      if (!items.length) return;
+      const next = items[selectedIndex];
+      if (activeEl && activeEl !== next) {
+        activeEl.classList.remove('is-active');
+        activeEl.textContent = fmt(Number(activeEl.dataset.min));
+      }
+      activeEl = next;
+      activeEl.classList.add('is-active');
+      activeEl.textContent = `${fmt(startMin)}–${fmt(startMin + durationMin)}`;
     };
 
-    const twCenter = (w) => (w.el.scrollTop + w.el.clientHeight / 2 - rowPx / 2) / rowPx;
-    const twPos = (w, k) => k * rowPx + rowPx / 2 - w.el.clientHeight / 2;
-    // Her satır silindir üzerinde konumlanır: merkezden uzaklaştıkça eğilir, solar.
-    const twFx = (w) => {
+    const scrollToIndex = (i, instant) => {
+      wheel.scrollTo({ top: i * rowPx, behavior: instant ? 'auto' : 'smooth' });
+    };
+
+    const paint = () => {
+      raf = 0;
       if (!rowPx) return;
-      const c = twCenter(w), kids = w.el.children;
+      const f = wheel.scrollTop / rowPx;
       const R = rowPx * 2.6, step = 22 * Math.PI / 180;
-      const lo = Math.max(0, Math.floor(c) - 4), hi = Math.min(kids.length - 1, Math.ceil(c) + 4);
-      for (let k = lo; k <= hi; k++) {
-        const d = k - c;
+      for (let i = 0; i < COUNT; i += 1) {
+        const d = i - f;
+        const s = items[i].style;
+        if (Math.abs(d) > 3.2) { s.opacity = '0'; continue; }
+        // Merkezden uzaklaştıkça silindirde eğilir ve solar (perspektif).
         const th = Math.max(-1.35, Math.min(1.35, d * step));
         const dy = R * Math.sin(th) - d * rowPx;
-        const st = kids[k].style;
-        st.transform = `translateY(${dy.toFixed(1)}px) perspective(${(rowPx * 9).toFixed(0)}px) rotateX(${(-th * 180 / Math.PI).toFixed(1)}deg)`;
-        st.opacity = Math.max(0, 1 - Math.abs(d) / 2.7).toFixed(2);
-        kids[k].classList.toggle('is-active', Math.abs(d) < 0.5);
+        s.transform = `translateY(${dy.toFixed(1)}px) perspective(${(rowPx * 9).toFixed(0)}px) rotateX(${(-th * 180 / Math.PI).toFixed(1)}deg)`;
+        s.opacity = Math.max(0, 1 - Math.abs(d) / 2.7).toFixed(2);
       }
-      const v = ((Math.round(c) % w.n) + w.n) % w.n;
-      if (v !== w.val) {
-        w.val = v;
-        const h = TW.h.val || 0, m = TW.m.val || 0;
-        selectedIndex = (h * 60 + m) % COUNT;
+      const idx = Math.max(0, Math.min(COUNT - 1, Math.round(f)));
+      if (idx !== selectedIndex) {
+        selectedIndex = idx;
         updateLabels();
         if (navigator.vibrate) { try { navigator.vibrate(3); } catch (err) { /* yok say */ } }
       }
     };
-    const paint = () => { twFx(TW.h); twFx(TW.m); };
-    const twSettle = (w) => {
-      if (w.down) return;
-      const c = twCenter(w);
-      if (c < w.n * 0.75 || c > w.n * 2.25) {
-        const shift = c < w.n ? w.n : -w.n;
-        w.el.style.scrollSnapType = 'none';
-        w.el.scrollTop += shift * rowPx;
-        requestAnimationFrame(() => { w.el.style.scrollSnapType = ''; });
-      }
-    };
+
+    const schedulePaint = () => { if (!raf) raf = requestAnimationFrame(paint); };
 
     const buildWheel = () => {
-      [TW.h, TW.m].forEach((w) => {
-        if (w.built) return;
-        w.built = true;
-        const frag = document.createDocumentFragment();
-        for (let c = 0; c < 3; c++) for (let i = 0; i < w.n; i++) {
-          const it = document.createElement('div');
-          it.className = 'task-add-wi'; it.textContent = pad2(i);
-          frag.appendChild(it);
-        }
-        w.el.appendChild(frag);
-        w.el.addEventListener('scroll', () => {
-          if (!w.raf) w.raf = requestAnimationFrame(() => { w.raf = 0; twFx(w); });
-          clearTimeout(w.t); w.t = setTimeout(() => twSettle(w), 120);
-        }, { passive: true });
-        w.el.addEventListener('touchstart', () => { w.down = true; }, { passive: true });
-        const up = () => { w.down = false; clearTimeout(w.t); w.t = setTimeout(() => twSettle(w), 200); };
-        w.el.addEventListener('touchend', up, { passive: true });
-        w.el.addEventListener('touchcancel', up, { passive: true });
-        w.el.addEventListener('click', (e) => {
-          const it = e.target.closest('.task-add-wi'); if (!it) return;
-          const k = Array.prototype.indexOf.call(w.el.children, it);
-          w.el.scrollTo({ top: twPos(w, k), behavior: 'smooth' });
-        });
-      });
+      if (items.length) return;
+      const frag = document.createDocumentFragment();
+      for (let i = 0; i < COUNT; i += 1) {
+        const el = document.createElement('div');
+        el.className = 'task-add-wheel-item';
+        el.dataset.min = String(i * STEP);
+        el.textContent = fmt(i * STEP);
+        el.addEventListener('click', () => scrollToIndex(i, false));
+        items.push(el);
+        frag.appendChild(el);
+      }
+      wheel.appendChild(frag);
+      wheel.addEventListener('scroll', schedulePaint, { passive: true });
     };
 
     const measureRow = () => {
-      const f = wheelH.firstElementChild;
-      const h = f ? parseFloat(getComputedStyle(f).height) : 0;
+      // offsetHeight: transform etkisinden bağımsız gerçek satır yüksekliği.
+      const h = items[0] ? items[0].offsetHeight : 0;
       if (h) rowPx = h;
-    };
-
-    // Seçili saate getir (animasyonsuz); zaman adımı görünür olunca çağrılır.
-    const scrollToIndex = (i, instant) => {
-      if (!rowPx) return;
-      const h = Math.floor(i / 60) % 24, m = i % 60;
-      TW.h.val = h; TW.m.val = m;
-      [[TW.h, h], [TW.m, m]].forEach(([w, v]) => {
-        w.el.style.scrollSnapType = 'none';
-        w.el.scrollTop = twPos(w, w.n + v);
-        requestAnimationFrame(() => { w.el.style.scrollSnapType = ''; });
-      });
-      updateLabels();
     };
 
     // ---------------- Süre segmentleri ----------------
@@ -51373,7 +51347,7 @@ body.is-countdown-fs.is-countdown-paused .countdown-fullscreen-time-row .stopwat
     const openDurationEditor = () => {
       if (durEd) return;
       const mk = (t, c, x) => { const n = document.createElement(t); if (c) n.className = c; if (x != null) n.textContent = x; return n; };
-      const back = mk('div', 'task-add-dur-back'), card = mk('div', 'task-add-dur');
+      const back = mk('div', 'task-add-dur-back is-dur'), card = mk('div', 'task-add-dur');
       card.setAttribute('role', 'dialog'); card.setAttribute('aria-modal', 'true'); card.setAttribute('aria-label', 'Süreyi ayarla');
       card.appendChild(mk('h3', '', 'Süreyi ayarla'));
       const clamp = (v) => Math.min(DUR_MAX, Math.max(DUR_MIN, Math.round(v)));
@@ -51439,6 +51413,15 @@ body.is-countdown-fs.is-countdown-paused .countdown-fullscreen-time-row .stopwat
       cancel.addEventListener('click', close); ok.addEventListener('click', confirm);
       back.addEventListener('pointerdown', (e) => { if (e.target === back) close(); });
       overlay.appendChild(back); durEd = back;
+      // Vurgu rengi (görev rengi ya da uygulama vurgusu) ne olursa olsun "Tamam" yazısı okunur kalsın.
+      try {
+        const acc = getComputedStyle(card).getPropertyValue('--ta-accent').trim();
+        if (acc) {
+          const probe = document.createElement('i'); probe.style.color = acc; card.appendChild(probe);
+          const m = (getComputedStyle(probe).color.match(/[\d.]+/g) || []).map(Number); probe.remove();
+          if (m.length >= 3) card.style.setProperty('--ta-on-accent', (m[0] * 299 + m[1] * 587 + m[2] * 114) / 1000 >= 150 ? '#16171b' : '#ffffff');
+        }
+      } catch (err) { /* yok say */ }
       requestAnimationFrame(() => requestAnimationFrame(() => back.classList.add('is-in')));
     };
 
@@ -71554,6 +71537,13 @@ body.is-countdown-fs.is-countdown-paused .countdown-fullscreen-time-row .stopwat
   #taskAddMins .task-add-wi { justify-content: flex-start; padding-left: .9rem; }
   .task-add-w-colon { position: relative; z-index: 2; font-weight: 800; font-size: 1.75rem; line-height: 1; margin-top: -.1rem; color: var(--ta-head-fg, var(--ta-text)); }
   .task-add-range { margin: .5rem 0 0; text-align: center; font-weight: 800; font-size: .95rem; letter-spacing: .01em; font-variant-numeric: tabular-nums; color: var(--ta-head-muted, var(--ta-muted)); }
+  /* Tek çark (index-12 saati): yazı renkleri üst bloğun rengine / temaya göre eşlenir. */
+  .task-add-wheel { scrollbar-width: none; touch-action: pan-y; }
+  .task-add-wheel::-webkit-scrollbar { display: none; }
+  .task-add-wheel-item { color: var(--ta-head-fg, var(--ta-text)); -webkit-user-select: none; user-select: none; }
+  .task-add-overlay.ta-dark .task-add-wheel-item:not(.is-active),
+  body.is-anthracite .task-add-overlay .task-add-wheel-item:not(.is-active) { color: #ffffff; }
+  .task-add-wheel .task-add-wheel-item.is-active { color: var(--ta-on-accent) !important; }
 </style>
 <style id="task-add-premium-css">
   /* ===== Görev ekleme: daha şık kartlar + ikon kategorileri + geçici ikon adı ===== */
@@ -71691,6 +71681,13 @@ body.is-countdown-fs.is-countdown-paused .countdown-fullscreen-time-row .stopwat
   .task-add-cal-day.is-out .task-add-cal-num { opacity: .3; }
   .task-add-cal-day.is-today .task-add-cal-num { border-color: var(--ta-accent); }
   .task-add-cal-day.is-selected .task-add-cal-num { background: var(--ta-accent); border-color: transparent; color: var(--ta-on-accent); box-shadow: 0 8px 16px -8px rgba(0,0,0,.35); }
+  /* Süreyi ayarla penceresi: arka plana blur uygulanmaz (yalnızca hafif karartma); renkler görev rengine / temaya eşlenir. */
+  .task-add-dur-back.is-dur,
+  .task-add-dur-back.is-dur.is-in { -webkit-backdrop-filter: none; backdrop-filter: none; }
+  .task-add-dur-back.is-dur { transition: background-color .55s cubic-bezier(.22,1,.36,1); }
+  .task-add-dur-back.is-dur.is-out { transition-duration: .4s; }
+  .task-add-dur-back.is-dur .task-add-dur { --ta-accent: var(--ta-color); }
+  .task-add-dur-back.is-dur .task-add-dur-btn.is-primary { box-shadow: 0 8px 16px -8px color-mix(in srgb, var(--ta-accent) 70%, transparent); }
   .task-add-date-row { cursor: pointer; -webkit-tap-highlight-color: transparent; }
   .task-add-date-row:focus-visible { outline: 2px solid var(--ta-accent); outline-offset: 2px; }
 </style>
