@@ -40616,6 +40616,70 @@
     .nt button, .nt .nt-row, .nt .nt-fold { -webkit-tap-highlight-color: transparent; }
   }
 </style>
+<style id="nt-soft-css">
+  /* ===== Notlarım: yumuşak geçişler, sade pop-up'lar, yeni tablo ve panel tasarımı ===== */
+  .nt { --nt-slide: cubic-bezier(.32, .72, 0, 1); }
+  /* Tablo (tüm ekranlar): yuvarlak köşeli, ince çizgili, başlık satırı belirgin */
+  .nt-tbl { width: 100%; margin: .9rem 0; border-collapse: separate; border-spacing: 0; table-layout: fixed; border: 1px solid var(--pl); border-radius: 1rem; overflow: hidden; font-size: .96em; }
+  .nt-tbl td { min-width: 3rem; padding: .65rem .8rem; border: 0; border-right: 1px solid var(--pl); border-bottom: 1px solid var(--pl); vertical-align: top; line-height: 1.45; overflow-wrap: anywhere; background-image: none; }
+  .nt-tbl td:last-child { border-right: 0; }
+  .nt-tbl tr:last-child td { border-bottom: 0; }
+  .nt-tbl tr:first-child td { font-weight: 700; background-color: var(--ps); }
+  .nt-step { padding: .1rem 0 .1rem .2rem; margin-bottom: .35rem; }
+  .nt-step button { width: 2.3rem; height: 2.3rem; font-size: 1.2rem; }
+  .nt-step b { min-width: 1.6rem; text-align: center; font-variant-numeric: tabular-nums; }
+  .nt-step + .nt-step + .nt-act { margin-top: .6rem; justify-content: center; background: var(--accent-color, #ff90e8); color: #fff; }
+  /* Pop-up / bildirim: daha ince, daha yumuşak */
+  .nt-dlg-back { background: rgba(0, 0, 0, .26); transition: opacity .45s ease, backdrop-filter .6s ease, -webkit-backdrop-filter .6s ease; }
+  .nt-dlg-back.is-in { -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
+  .nt-dlg { padding: 1.4rem 1.25rem 1.1rem; border-radius: 1.7rem; box-shadow: 0 30px 70px -28px rgba(0, 0, 0, .5), 0 0 0 1px var(--nt-surf); transform: translateY(22px) scale(.97); transition: transform .55s var(--nt-slide), opacity .4s ease; }
+  .nt-dlg h3 { font-size: 1.2rem; }
+  .nt-dlg p { font-size: .9rem; }
+  .nt-dlg-btn { height: 2.75rem; border-radius: 1rem; }
+  .nt-toast { padding: .65rem 1.1rem; background: rgba(34, 34, 36, .86); font-size: .85rem; font-weight: 600; transform: translate(-50%, 14px) scale(.97); transition: opacity .4s ease, transform .55s var(--nt-slide); }
+  .nt-pop:not([hidden]) { animation: ntPopIn .42s var(--nt-slide); }
+  @keyframes ntPopIn { from { opacity: 0; transform: translateY(-4px) scale(.98); } to { opacity: 1; transform: none; } }
+  .nt-pop { border-radius: 1.3rem; box-shadow: 0 18px 44px -18px rgba(0, 0, 0, .45), 0 0 0 1px var(--pl); }
+  .nt-pop h4 { margin: .9rem .1rem .45rem; font-size: .68rem; letter-spacing: .09em; }
+  .nt-pop h4:first-child { margin-top: .1rem; }
+  .nt-opts { gap: .4rem; margin-bottom: .3rem; }
+  .nt-opts button { flex: 1 1 auto; height: 2.5rem; border-radius: .85rem; }
+  .nt-sw { gap: .7rem; padding: .1rem; }
+  .nt-sw button { border: 0; box-shadow: inset 0 0 0 1.5px var(--pl); }
+  .nt-pop .nt-act { display: flex; align-items: center; justify-content: flex-start; height: 2.9rem; margin-top: .4rem; padding: 0 1rem; border-radius: .95rem; font-size: .93rem; }
+  .nt-pop .nt-act.danger { background: color-mix(in srgb, #ff453a 11%, transparent); }
+
+  @media not all and (min-width: 768px) and (min-height: 600px) {
+    /* Sayfa geçişleri: tek yumuşak eğri, ağır iş yok, metin geç belirmez */
+    .nt { transform: translate3d(0, 3%, 0); transition: opacity .35s ease, transform .55s var(--nt-slide); }
+    .nt.is-in { transform: none; }
+    .nt .nt-side, .nt .nt-list, .nt .nt-ed { will-change: transform; backface-visibility: hidden; transition: transform .5s var(--nt-slide), opacity .35s ease, visibility 0s linear .5s; }
+    .nt[data-view="folders"] .nt-side, .nt[data-view="list"] .nt-list, .nt[data-view="editor"] .nt-ed { transition: transform .5s var(--nt-slide), opacity .35s ease, visibility 0s; }
+    .nt .nt-row.is-enter, .nt .nt-fold.is-new, .nt .nt-none, .nt .nt-edc.is-in { animation: none; }
+    /* Editör içi */
+    .nt-page { padding: .5rem 1.25rem calc(4rem + var(--nt-sab)); }
+    .nt-title { font-size: 1.85rem; letter-spacing: -.025em; }
+    .nt-meta { margin: .25rem 0 1rem; font-size: .78rem; letter-spacing: .01em; }
+    .nt-body { font-size: 1.05rem; line-height: 1.68; }
+    .nt .nt-edc .nt-tools { -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); gap: .3rem; }
+    .nt-tools .nt-grp { height: 2.5rem; padding: 0 .9rem 0 .75rem; border-radius: 999px; }
+    .nt-tools .nt-grp span { font-size: .85rem; }
+    .nt-tools .nt-sep { margin: 0 .2rem; }
+    /* Alttan açılan panel */
+    .nt .nt-pop { padding: 1.55rem 1.1rem 1.25rem; border-radius: 1.7rem 1.7rem 0 0; box-shadow: 0 -18px 50px -20px rgba(0, 0, 0, .5), 0 0 0 1px var(--pl); }
+    .nt .nt-pop::before { content: ''; position: absolute; top: .5rem; left: 50%; width: 2.4rem; height: .28rem; margin-left: -1.2rem; border-radius: 9px; background: var(--pl); }
+    .nt .nt-pop:not([hidden]) { animation: ntSheetIn .5s var(--nt-slide); }
+    .nt .nt-pop.is-out { animation: ntSheetOut .25s ease forwards; }
+    @keyframes ntSheetIn { from { opacity: 0; transform: translateY(36px); } to { opacity: 1; transform: none; } }
+    .nt-sw button { width: 2.4rem; height: 2.4rem; }
+    .nt-pop .nt-ins { height: 3rem; border-radius: .95rem; }
+    /* Tablo: dar ekranda yana kayar */
+    .nt-tbl { display: block; overflow-x: auto; table-layout: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+    .nt-tbl tbody { display: table; width: 100%; min-width: max-content; }
+    .nt-tbl td { min-width: 6.5rem; }
+    .nt-dlg { border-radius: 1.8rem; }
+  }
+</style>
 <style id="gundelik-nav-hide-css">
   /* ===== Gündelik + Hatırlanacaklar (YALNIZCA telefon): Soru Havuzu ile aynı mantık =====
      Alt navbar bu iki sayfada çekilir; yerine sol altta sabit bir Geri düğmesi gelir
@@ -53996,9 +54060,10 @@
 
     // ---- Telefon: 3 ekranlı gezinme (Klasörler → Liste → Not) ----
     const mob = window.matchMedia('not all and (min-width: 768px) and (min-height: 600px)');
-    let view = 'folders';
+    let view = 'folders', listDirty = false;
     const setView = (v) => {
       view = v; if (!root) return; root.dataset.view = v;
+      if (v !== 'editor' && listDirty) { listDirty = false; renderAll(); } else if (v === 'folders') renderFolders();
       if (v === 'editor') { const l = $('ntListTitle'); const lb = $('ntEdBackLbl'); if (lb && l) lb.textContent = l.textContent || 'Notlar'; }
       else { const a = document.activeElement; if (a && root.contains(a) && a.blur) a.blur(); }
     };
@@ -54014,11 +54079,11 @@
     if (mob.addEventListener) mob.addEventListener('change', onMob); else mob.addListener(onMob);
     // Editörden geri: kaydet; boş kalan not silinir (iOS Notlar gibi); listeye dön.
     const edBack = async () => {
+      setView('list');
       await flush();
       if (cur && !cur.title && !cur.text && !/data-fid/.test(cur.html || '')) {
         const n = cur; clearTimeout(saveT); saveT = null; notes = notes.filter((x) => x.id !== n.id); await tx('notes', 'readwrite', (st) => st.delete(n.id)); cur = null; renderAll();
       }
-      setView('list');
     };
 
     // ---- Toast: uygulama içi, yumuşak giriş/çıkış; isteğe bağlı eylem düğmesi ("Geri al") ----
@@ -54252,7 +54317,7 @@
           b.prepend(ck);
         }
         b.onclick = () => {
-          if (mob.matches) { if (selMode && isUser) { const k = b.querySelector('.nt-fchk'); if (k) k.click(); return; } q = ''; const si = $('ntSearch'); if (si) si.value = ''; if (sel !== id) { sel = id; renderAll(true); } else renderList(true); setView('list'); return; }
+          if (mob.matches) { if (selMode && isUser) { const k = b.querySelector('.nt-fchk'); if (k) k.click(); return; } q = ''; const si = $('ntSearch'); if (si) si.value = ''; sel = id; renderList(true); setView('list'); return; }
           if (sel === id) return; sel = id; renderAll(true);
         };
         box.appendChild(b);
@@ -54358,14 +54423,14 @@
       const b = $('ntBody'); if (!cur || !b) return;
       const c = b.cloneNode(true); c.querySelectorAll('[data-fid]').forEach((n) => { n.querySelectorAll('img,audio').forEach((m) => m.removeAttribute('src')); });
       cur.html = c.innerHTML; cur.text = plain(cur.html); cur.title = $('ntTitle').value.trim(); cur.updated = Date.now();
-      await saveNote(cur); renderAll(); const m = $('ntMeta'); if (m) m.textContent = new Date(cur.updated).toLocaleString('tr-TR', { dateStyle: 'long', timeStyle: 'short' });
+      await saveNote(cur); if (mob.matches && view === 'editor') listDirty = true; else renderAll(); const m = $('ntMeta'); if (m) m.textContent = new Date(cur.updated).toLocaleString('tr-TR', { dateStyle: 'long', timeStyle: 'short' });
     };
     const queue = () => { clearTimeout(saveT); saveT = setTimeout(flush, 500); };
 
     const newNote = async () => {
-      await flush();
+      if (saveT) await flush();
       const n = { id: uid(), title: '', html: '', text: '', folder: folders.some((f) => f.id === sel) ? sel : '', pinned: sel === 'pinned', bg: 'device', paper: 'blank', created: Date.now(), updated: Date.now() };
-      notes.push(n); await saveNote(n); enterIds.add(n.id); openNote(n.id, true);
+      notes.push(n); saveNote(n); enterIds.add(n.id); openNote(n.id, true);
     };
     const hydrate = async () => {
       const b = $('ntBody');
@@ -54378,10 +54443,9 @@
     let openSeq = 0;
     const openNote = async (id, focusTitle) => {
       const seq = ++openSeq;
-      await flush();
+      if (saveT) await flush();
       const nx = notes.find((n) => n.id === id); if (!nx) return;
-      if (mob.matches) setView('editor');
-      if (cur && cur.id !== nx.id && $('ntBody')) { hidePop(); edc.classList.add('is-out'); await wait(130); if (seq !== openSeq) return; }
+      if (cur && cur.id !== nx.id && $('ntBody') && !mob.matches) { hidePop(); edc.classList.add('is-out'); await wait(130); if (seq !== openSeq) return; }
       cur = nx; edc.classList.remove('is-out');
       ed.dataset.bg = cur.bg || 'device';
       edc.innerHTML = `
@@ -54395,9 +54459,9 @@
       $('ntMeta').textContent = new Date(cur.updated).toLocaleString('tr-TR', { dateStyle: 'long', timeStyle: 'short' });
       $('ntTitle').oninput = queue; $('ntBody').oninput = () => { queue(); syncSoon(); };
       $('ntTitle').onkeydown = (e) => { if (e.key === 'Enter') { e.preventDefault(); const nb = $('ntBody'); nb.removeAttribute('inputmode'); nb.focus(); } };
-      wireBody(); buildTools(); await hydrate(); renderList();
+      wireBody(); buildTools(); if (mob.matches) setView('editor'); await hydrate(); if (!mob.matches) renderList();
       { const nb = $('ntBody'); nb.setAttribute('inputmode', 'none'); nb.addEventListener('blur', () => nb.setAttribute('inputmode', 'none')); }
-      if (focusTitle) $('ntTitle').focus();
+      if (focusTitle) { if (mob.matches) setTimeout(() => { if (view === 'editor' && cur === nx) $('ntTitle').focus(); }, 460); else $('ntTitle').focus(); }
     };
 
     const restore = () => { const b = $('ntBody'); const s0 = getSelection(); if (document.activeElement === b && s0.rangeCount && b.contains(s0.anchorNode)) return; if (document.activeElement !== b) b.setAttribute('inputmode', 'none'); /* araç çubuğundan gelen odak: ekran klavyesi açılmasın */ b.focus(); if (lastRange) { const s = getSelection(); s.removeAllRanges(); s.addRange(lastRange); } };
@@ -54534,6 +54598,7 @@
     // ---- Renk / sayfa açılır menüleri ----
     const hidePop = () => { const P = $('ntPop'); if (!P || P.hidden || P.classList.contains('is-out')) return; P.classList.add('is-out'); setTimeout(() => { if (P.classList.contains('is-out')) { P.hidden = true; P.classList.remove('is-out'); } }, 170); };
     const pop = (kind, anchor, keep) => {
+      if (mob.matches) { const nb = $('ntBody'); if (nb) { nb.setAttribute('inputmode', 'none'); if (document.activeElement === nb || document.activeElement === $('ntTitle')) document.activeElement.blur(); } }
       const P = $('ntPop'); if (!keep && !P.hidden && !P.classList.contains('is-out') && P.dataset.k === kind) { hidePop(); return; }
       P.classList.remove('is-out'); P.dataset.k = kind; P.innerHTML = '';
       if (kind === 'color' || kind === 'hl') {
