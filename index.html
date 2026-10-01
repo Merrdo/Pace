@@ -53523,18 +53523,7 @@
         b.addEventListener('click', () => { closeCtx(); it.fn(); });
         ctxMenu.appendChild(b);
       });
-      const GAP = 26, W = 248, H = items.length * 58 + 16;
-      ctxMenu.style.left = `${x - W / 2}px`; ctxMenu.style.top = `${Math.max(8, y - GAP - H)}px`;
-      ctxMenu.classList.add('is-open');
-      requestAnimationFrame(() => {
-        if (!ctxMenu.classList.contains('is-open')) return;
-        const r = ctxMenu.getBoundingClientRect();
-        let l = x - r.width / 2, t = y - GAP - r.height;
-        if (t < 8) t = y + GAP;
-        l = Math.min(Math.max(8, l), window.innerWidth - r.width - 8);
-        t = Math.min(Math.max(8, t), window.innerHeight - r.height - 8);
-        ctxMenu.style.left = `${l}px`; ctxMenu.style.top = `${t}px`;
-      });
+      window.gundelikPlaceMenu(ctxMenu, x, y);
     };
 
     // Basılı tutma / sağ tık bağlayıcısı
@@ -69432,14 +69421,7 @@
         const tx = el('span', 'page11-context-menu-item-text'); tx.append(el('span', 'page11-context-menu-item-title', it.title), el('span', 'page11-context-menu-item-sub', it.sub));
         b.append(ic, tx); b.addEventListener('click', () => { closeMenu(); it.fn(); }); menu.appendChild(b);
       });
-      menu.style.left = `${x - 124}px`; menu.style.top = `${Math.max(8, y - 26 - items.length * 58 - 16)}px`;
-      menu.classList.add('is-open');
-      requestAnimationFrame(() => {
-        const r = menu.getBoundingClientRect(); let l = x - r.width / 2, t = y - 26 - r.height;
-        if (t < 8) t = y + 26;
-        menu.style.left = `${Math.min(Math.max(8, l), window.innerWidth - r.width - 8)}px`;
-        menu.style.top = `${Math.min(Math.max(8, t), window.innerHeight - r.height - 8)}px`;
-      });
+      window.gundelikPlaceMenu(menu, x, y);
     };
     const hold = (node, onOpen) => {
       let timer = null, sx = 0, sy = 0, fired = false;
@@ -69594,6 +69576,87 @@
   // ---- Rutinler: gece 00.00'da işaretleri yenileme (sayfa/uygulama açık kalsa bile) ----
   // Gün değişimi yüklemede ve sekmeye dönüşte zaten kontrol ediliyordu; burada ayrıca gece yarısına
   // kurulu bir zamanlayıcı var. Sıfırlama p8n içindeki rollover() ile yapılır (dünün kaydı takvime yazılır).
+</script>
+
+<style id="gundelik-polish-css">
+  /* Gündelik + Hatırlanacaklar: "+" basılı tutma menüsü (ve satır/başlık menüleri) animasyonlu açılır.
+     Menü imlecin/parmağın bulunduğu noktadan büyüyerek çıkar, satırlar sırayla belirir. */
+  .page11-context-menu.p8g-menu {
+    transform: scale(.78) translateY(12px);
+    transition: opacity .12s ease, transform .16s ease;
+    will-change: transform, opacity;
+  }
+  .page11-context-menu.p8g-menu.is-open {
+    transform: none;
+    transition: opacity .2s ease, transform .38s cubic-bezier(.34, 1.5, .64, 1);
+  }
+  .page11-context-menu.p8g-menu.is-open .page11-context-menu-item {
+    animation: gkMenuItemIn .34s cubic-bezier(.22, 1, .36, 1) backwards;
+    animation-delay: calc(var(--i, 0) * 38ms + 50ms);
+  }
+  @keyframes gkMenuItemIn { from { opacity: 0; transform: translateY(8px) scale(.97); } to { opacity: 1; transform: none; } }
+  /* Klavye açıkken kaydırma alanının sonuna klavye kadar boşluk: son madde formu klavyenin üstüne çıkabilsin. */
+  #hlScroll::after, #p8mScroll::after { content: ''; display: block; height: var(--gk, 0px); flex: 0 0 auto; }
+  @media (prefers-reduced-motion: reduce) {
+    .page11-context-menu.p8g-menu, .page11-context-menu.p8g-menu.is-open { transition: opacity .01s; transform: none; }
+    .page11-context-menu.p8g-menu.is-open .page11-context-menu-item { animation: none; }
+  }
+</style>
+<script>
+(() => {
+  // ---- Bağlam menüsünü konumla + animasyonlu aç ----
+  // Önce (kapalıyken) konumlanır ve geçiş başlangıç noktası ayarlanır; sonra zorunlu yeniden hesaplama
+  // yapılıp is-open eklenir. Böylece menü ilk açılışta da, art arda açılışta da "pat" diye değil geçişle çıkar.
+  window.gundelikPlaceMenu = (m, x, y) => {
+    const W = m.offsetWidth, H = m.offsetHeight, GAP = 26, vw = window.innerWidth, vh = window.innerHeight;
+    let l = x - W / 2, t = y - GAP - H;
+    if (t < 8) t = y + GAP;
+    l = Math.min(Math.max(8, l), vw - W - 8);
+    t = Math.min(Math.max(8, t), vh - H - 8);
+    m.style.left = l + 'px'; m.style.top = t + 'px';
+    const ox = Math.min(Math.max(0, x - l), W), oy = Math.min(Math.max(0, y - t), H);
+    m.style.transformOrigin = ox + 'px ' + oy + 'px';
+    m.querySelectorAll('.page11-context-menu-item').forEach((b, i) => b.style.setProperty('--i', i));
+    void m.offsetWidth;
+    m.classList.add('is-open');
+  };
+
+  // ---- Klavye açılınca odaklanan alanı görünür tut ----
+  // iOS'ta klavye açılınca düzen alanı küçülmez, klavye alttaki içeriğin üstüne biner. Kaydırma alanının
+  // sonuna klavye yüksekliği kadar boşluk (--gk) eklenir ve odaklı form klavyenin hemen üstüne kaydırılır.
+  const vv = window.visualViewport; if (!vv) return;
+  const SC = '#hlScroll, #p8mScroll';
+  const root = document.documentElement;
+  const kb = () => Math.max(0, Math.round(window.innerHeight - vv.height - vv.offsetTop));
+  const reveal = (smooth) => {
+    const el = document.activeElement;
+    if (!el || (el.tagName !== 'INPUT' && el.tagName !== 'TEXTAREA')) return;
+    const sc = el.closest(SC); if (!sc) return;
+    const box = el.closest('form, .hl-editwrap, .p8g-form, .p8n-editwrap') || el;
+    const r = box.getBoundingClientRect();
+    const limit = vv.offsetTop + vv.height - 16;
+    const top = Math.max(sc.getBoundingClientRect().top, vv.offsetTop) + 8;
+    let d = 0;
+    if (r.bottom > limit) d = r.bottom - limit;
+    else if (r.top < top) d = r.top - top;
+    if (Math.abs(d) > 1) sc.scrollBy({ top: d, behavior: smooth ? 'smooth' : 'auto' });
+  };
+  const sync = () => {
+    root.style.setProperty('--gk', kb() + 'px');
+    requestAnimationFrame(() => reveal(false));
+  };
+  vv.addEventListener('resize', sync);
+  vv.addEventListener('scroll', sync);
+  document.addEventListener('focusin', (e) => {
+    if (!e.target.closest || !e.target.closest(SC)) return;
+    sync();
+    // Klavye animasyonu sürerken yükseklik adım adım değişir; bitişe kadar birkaç kez hizala.
+    [120, 260, 420].forEach((ms) => setTimeout(() => { root.style.setProperty('--gk', kb() + 'px'); reveal(true); }, ms));
+  });
+  document.addEventListener('focusout', () => setTimeout(() => {
+    if (!document.activeElement || document.activeElement === document.body) root.style.setProperty('--gk', '0px');
+  }, 200));
+})();
 </script>
 </body>
 </html>
