@@ -18619,7 +18619,33 @@
       gap: 0.5rem;
       font-weight: 700;
       font-size: 1rem;
+      min-width: 0;
+      max-width: 62%;
     }
+    .home-cal-link-go svg { flex: 0 0 auto; }
+    .home-cal-link-ev {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 0.05rem;
+      min-width: 0;
+      text-align: right;
+    }
+    .home-cal-link-ev-name {
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      line-height: 1.15;
+    }
+    .home-cal-link-ev-when {
+      font-weight: 600;
+      font-size: 0.8rem;
+      line-height: 1.1;
+      color: color-mix(in srgb, var(--theme-text, #1a1a1a) 62%, transparent);
+      white-space: nowrap;
+    }
+    .home-cal-link-ev-when[hidden] { display: none; }
 
     /* --- Durum satırı: Rahatla / Yatış --- */
     .home-relax-widget {
@@ -38757,7 +38783,11 @@
         <span class="home-cal-link-weekday" id="homeCalLinkWeekday">Perşembe</span>
       </span>
       <span class="home-cal-link-go">
-        Takvim
+        <!-- Yaklaşan en yakın etkinlik (JS: renderNext). Etkinlik yoksa "Takvim" yazısı kalır. -->
+        <span class="home-cal-link-ev" id="homeCalLinkEv">
+          <span class="home-cal-link-ev-name" id="homeCalLinkEvName">Takvim</span>
+          <span class="home-cal-link-ev-when" id="homeCalLinkEvWhen" hidden></span>
+        </span>
         <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </span>
     </button>
@@ -38778,6 +38808,64 @@
         };
         update();
         setInterval(update, 60000);
+
+        // ---- Yaklaşan en yakın etkinlik ("Takvim" yazısının yerinde) ----
+        // Veri: Takvim sayfasındaki etkinlikler (APP_STATE.dayEvents: 'yyyy-aa-gg' -> [{ name, time, createdAt }]).
+        // Saatli etkinlik: başlangıcı şimdiden sonraysa; saatsiz etkinlik: günü bugün ya da sonrasıysa
+        // "yaklaşan" sayılır. En erken olan gösterilir; yoksa "Takvim" yazısı kalır.
+        const MON_SHORT = ['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara'];
+        const evNameEl = document.getElementById('homeCalLinkEvName');
+        const evWhenEl = document.getElementById('homeCalLinkEvWhen');
+        const readEvents = () => {
+          try { const st = APP_STATE.dayEvents; return st && typeof st === 'object' && !Array.isArray(st) ? st : {}; } catch (e) { return null; }
+        };
+        const pickNext = () => {
+          const all = readEvents(); if (!all) return null;
+          const now = new Date(), nowMs = now.getTime();
+          const todayMs = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+          let best = null;
+          Object.keys(all).forEach((key) => {
+            const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(key); if (!m || !Array.isArray(all[key])) return;
+            const dayMs = new Date(+m[1], +m[2] - 1, +m[3]).getTime();
+            if (dayMs < todayMs) return;
+            all[key].forEach((ev) => {
+              if (!ev || typeof ev !== 'object') return;
+              const tm = /^(\d{2}):(\d{2})$/.exec(ev.time || '');
+              const startMs = tm ? new Date(+m[1], +m[2] - 1, +m[3], +tm[1], +tm[2]).getTime() : dayMs;
+              if (tm && startMs < nowMs) return;
+              const c = ev.createdAt || 0;
+              if (!best || startMs < best.startMs || (startMs === best.startMs && c < best.c)) {
+                best = { startMs, c, dayMs, time: tm ? ev.time : '', name: String(ev.name || '').trim() || 'Etkinlik' };
+              }
+            });
+          });
+          return best;
+        };
+        const renderNext = () => {
+          if (!evNameEl || !evWhenEl) return;
+          const ev = pickNext();
+          if (!ev) {
+            evNameEl.textContent = 'Takvim'; evWhenEl.hidden = true; evWhenEl.textContent = '';
+            btn.setAttribute('aria-label', "Takvim'e git"); return;
+          }
+          const d = new Date(ev.dayMs), now = new Date();
+          const diff = Math.round((ev.dayMs - new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime()) / 86400000);
+          const day = diff === 0 ? 'Bugün' : diff === 1 ? 'Yarın' : `${d.getDate()} ${MON_SHORT[d.getMonth()]}`;
+          const when = ev.time ? `${day} · ${ev.time}` : day;
+          evNameEl.textContent = ev.name; evWhenEl.textContent = when; evWhenEl.hidden = false;
+          btn.setAttribute('aria-label', `Takvim'e git, yaklaşan etkinlik: ${ev.name}, ${when}`);
+        };
+        let nextRaf = 0;
+        const scheduleNext = () => { cancelAnimationFrame(nextRaf); nextRaf = requestAnimationFrame(renderNext); };
+        renderNext();
+        window.addEventListener('load', renderNext);
+        window.addEventListener('app-state-saved', scheduleNext);
+        document.addEventListener('visibilitychange', () => { if (!document.hidden) scheduleNext(); });
+        setInterval(renderNext, 30000);
+        // Ana sayfaya dönüldüğünde de güncel olsun (etkinlik eklendi/silindi).
+        const homePg = document.getElementById('page-1');
+        if (homePg && 'MutationObserver' in window) new MutationObserver(scheduleNext).observe(homePg, { attributes: true, attributeFilter: ['class'] });
+
         // Ana sayfadaki Tarih/Saat widget'ıyla aynı akış: gizli nav radio'sunu
         // işaretleyip 'change' tetikler; böylece alt çubuk da senkron kalır.
         btn.addEventListener('click', () => {
@@ -40429,6 +40517,105 @@
   .p8n-dlg-btn.p8g-okbtn { color: #fff; background: var(--accent-color, #ff90e8); text-shadow: 0 1px 2px rgba(0,0,0,.18); }
   @media (prefers-reduced-motion: reduce) { #p8nMain .p8g-c.is-step { animation: none; } }
 </style>
+<style id="nt-mobile-css">
+  /* ===== Notlarım — TELEFON: iOS Notlar mantığı, tek sütun, 3 ekran (Klasörler → Liste → Not) =====
+     Büyük ekran kuralları değişmedi; aşağıdaki her şey yalnızca telefonda geçerli. */
+  .nt-mtop, .nt-lback, .nt-fnew, .nt-fsearch, #ntFSel, .nt-fselbar { display: none; }
+  .nt-foot { display: contents; }
+  @keyframes ntSheetIn { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: none; } }
+  @keyframes ntSheetOut { to { opacity: 0; transform: translateY(24px); } }
+  @media not all and (min-width: 768px) and (min-height: 600px) {
+    .nt { display: block; inset: auto; left: 0; right: 0; top: var(--nt-top, 0px); height: var(--nt-h, 100dvh); padding-top: 0; overflow: hidden; --nt-sab: env(safe-area-inset-bottom, 0px); --nt-sat: env(safe-area-inset-top, 0px); overscroll-behavior: none; }
+    .nt.is-kb { --nt-sab: 0px; }
+    .nt .nt-side, .nt .nt-list, .nt .nt-ed { position: absolute; inset: 0; width: auto; box-sizing: border-box; border: 0; transition: transform .42s var(--nt-ease), opacity .3s ease, visibility 0s linear .42s; }
+    .nt .nt-side, .nt .nt-list { display: flex; flex-direction: column; padding: calc(var(--nt-sat) + .5rem) 1rem 0; background: var(--theme-bg, #F6F4EF); }
+    .nt .nt-list { box-shadow: -10px 0 28px -14px rgba(0,0,0,.35); z-index: 1; }
+    .nt .nt-ed { z-index: 2; box-shadow: -10px 0 28px -14px rgba(0,0,0,.4); }
+    /* Ekran geçişleri (soldan itme) */
+    .nt[data-view="folders"] .nt-list, .nt[data-view="folders"] .nt-ed, .nt[data-view="list"] .nt-ed { transform: translateX(104%); visibility: hidden; }
+    .nt[data-view="list"] .nt-side, .nt[data-view="editor"] .nt-side, .nt[data-view="editor"] .nt-list { transform: translateX(-24%); opacity: .55; visibility: hidden; }
+    .nt[data-view="folders"] .nt-side, .nt[data-view="list"] .nt-list, .nt[data-view="editor"] .nt-ed { transform: none; opacity: 1; visibility: visible; transition: transform .42s var(--nt-ease), opacity .3s ease, visibility 0s; }
+    .nt.is-focus .nt-side, .nt.is-focus .nt-list { padding-left: 1rem; padding-right: 1rem; }
+    .nt-dock, .nt-grip { display: none !important; }
+
+    /* ---- 1) Klasörler ---- */
+    .nt-side #ntClose { order: -3; align-self: flex-start; height: 2.4rem; margin: 0 0 0 -.4rem; padding: 0 .6rem; background: none; box-shadow: none; color: var(--accent-color, #ff90e8); font-size: .95rem; }
+    .nt-side .nt-h { order: -2; margin: .1rem .1rem .8rem; font-size: 2.3rem; line-height: 1.1; }
+    .nt-side #ntFSel { display: block; position: absolute; top: calc(var(--nt-sat) + .55rem); right: 1rem; height: 2.4rem; }
+    .nt-side .nt-fsearch { order: -1; display: flex; align-items: center; gap: .55rem; height: 2.7rem; margin: 0 0 1rem; padding: 0 1rem; border: 0; border-radius: 999px; background: var(--nt-surf); color: var(--nt-mute); font: inherit; font-size: 1rem; font-weight: 600; text-align: left; cursor: pointer; }
+    .nt-fsearch svg { width: 1.1rem; height: 1.1rem; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+    .nt-side .nt-folders { flex: 0 1 auto; padding: .25rem; border-radius: 1.4rem; background: var(--nt-surf); overscroll-behavior: contain; }
+    .nt-side .nt-fold { padding: .85rem .8rem; border-radius: 1.1rem; font-size: 1.02rem; }
+    .nt-side .nt-fold::after { content: '›'; margin-left: .1rem; font-size: 1.4rem; line-height: 1; font-weight: 600; opacity: .35; }
+    .nt.is-sel .nt-side .nt-fold::after { display: none; }
+    .nt-side .nt-fold.is-on { background: none; color: inherit; }
+    .nt-side .nt-foot { display: flex; align-items: center; justify-content: space-between; gap: .6rem; margin-top: auto; padding: .8rem 0 calc(.8rem + var(--nt-sab)); }
+    .nt-side .nt-foot .nt-pill { margin: 0; height: 2.8rem; }
+    .nt-side #ntNewFolder { padding: 0 .4rem 0 .1rem; background: none; color: var(--accent-color, #ff90e8); font-size: .95rem; }
+    .nt-side .nt-fnew { display: inline-flex; align-items: center; gap: .45rem; padding: 0 1.2rem; font-size: .95rem; box-shadow: 0 3px 12px color-mix(in srgb, var(--accent-color, #ff90e8) 45%, transparent); }
+    .nt-fnew svg { width: 1.05rem; height: 1.05rem; fill: none; stroke: currentColor; stroke-width: 2.6; stroke-linecap: round; }
+    .nt.is-sel .nt-side .nt-foot { display: none; }
+    .nt-side .nt-fselbar { order: 2; margin: 0; padding: .8rem 0 calc(.8rem + var(--nt-sab)); }
+    .nt.is-sel .nt-side .nt-fselbar:not([hidden]) { display: flex; margin-top: auto; }
+
+    /* ---- 2) Not listesi ---- */
+    .nt-list .nt-list-h { flex-wrap: wrap; gap: .4rem; margin-bottom: .6rem; }
+    .nt-list .nt-lback { display: grid; margin-right: auto; }
+    .nt-list .nt-list-h h2 { order: 9; flex: 1 0 100%; margin: .2rem .1rem 0; font-size: 2rem; line-height: 1.15; }
+    .nt-list .nt-ic, .nt-list .nt-pill { height: 2.6rem; }
+    .nt-list .nt-ic { width: 2.6rem; }
+    .nt-list .nt-search { height: 2.7rem; font-size: 1rem; margin-bottom: .5rem; padding: 0 1.1rem; }
+    .nt-list .nt-items { margin: 0 -.5rem; padding: 0 .5rem calc(1rem + var(--nt-sab)); overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
+    .nt-list .nt-row { padding: .8rem 1rem; }
+    .nt-list .nt-row.is-on { background: none; }
+    .nt-list .nt-row + .nt-row { box-shadow: 0 -1px 0 var(--nt-surf); }
+    .nt-list .nt-row b { font-size: 1.04rem; }
+    .nt-list .nt-selbar { margin: 0 -1rem; padding: .7rem 1rem calc(.7rem + var(--nt-sab)); background: var(--theme-bg, #F6F4EF); }
+
+    /* ---- 3) Editör ---- */
+    .nt-ed .nt-mtop { display: flex; align-items: center; gap: .3rem; flex: 0 0 auto; padding: calc(var(--nt-sat) + .3rem) .6rem .3rem .4rem; background: var(--pg); }
+    .nt-mtop .nt-mgrow { flex: 1 1 auto; }
+    .nt-mback { display: inline-flex; align-items: center; gap: .15rem; max-width: 55%; height: 2.6rem; padding: 0 .5rem 0 .2rem; border: 0; background: none; color: var(--accent-color, #ff90e8); font: 700 1rem "Baloo 2", sans-serif; cursor: pointer; }
+    .nt-mback svg { flex: 0 0 auto; width: 1.4rem; height: 1.4rem; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+    .nt-mback span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .nt-mdone { display: none; height: 2.4rem; padding: 0 1rem; border: 0; border-radius: 999px; background: var(--accent-color, #ff90e8); color: #fff; font: 700 .9rem "Baloo 2", sans-serif; cursor: pointer; }
+    .nt.is-kb .nt-mdone { display: block; }
+    .nt-mmore { background: var(--ps); color: var(--pt); }
+    .nt-edc { display: flex; flex-direction: column; }
+    .nt-edc .nt-find { order: 1; padding: .4rem .8rem; }
+    .nt-edc .nt-find input { font-size: 1rem; }
+    .nt-edc .nt-scroll { order: 2; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
+    .nt-page { padding: .6rem 1.15rem calc(4rem + var(--nt-sab)); }
+    .nt-title { font-size: 1.75rem; }
+    .nt-meta { margin: .2rem 0 .8rem; }
+    .nt-body { font-size: 1.06rem; min-height: 40vh; }
+    .nt-body[data-paper="grid"] { line-height: 1.75rem; }
+    .nt-img img { max-height: 70vh; }
+    .nt-x { opacity: 1; }
+    /* Araç çubuğu: klavyenin hemen üstünde, tek satır, yana kayar */
+    .nt .nt-edc .nt-tools, .nt.is-focus .nt-tools { order: 3; flex-wrap: nowrap; overflow-x: auto; overflow-y: hidden; gap: .2rem; box-sizing: border-box; min-height: calc(3.5rem + var(--nt-sab)); padding: .4rem .6rem calc(.4rem + var(--nt-sab)); border-bottom: 0; border-top: 1px solid var(--ps); background: var(--pg); scrollbar-width: none; overscroll-behavior-x: contain; -webkit-overflow-scrolling: touch; }
+    .nt-tb { min-width: 2.7rem; height: 2.7rem; border-radius: .85rem; }
+    .nt-sel { height: 2.7rem; font-size: 1rem; }
+    /* Açılır menüler: alttan çıkan sayfa */
+    .nt .nt-pop { left: 0 !important; right: 0; top: auto !important; bottom: calc(3.5rem + var(--nt-sab)); width: auto; min-width: 0; max-height: min(55%, 24rem); overflow-y: auto; box-sizing: border-box; padding: 1rem 1rem 1.1rem; border-radius: 1.5rem 1.5rem 0 0; box-shadow: 0 -14px 36px -14px rgba(0,0,0,.45), 0 0 0 1px var(--pl); overscroll-behavior: contain; }
+    .nt .nt-pop:not([hidden]) { animation: ntSheetIn .32s var(--nt-ease); }
+    .nt .nt-pop.is-out { animation: ntSheetOut .2s ease forwards; }
+    .nt-sw { max-width: none; gap: .65rem; }
+    .nt-sw button { width: 2.3rem; height: 2.3rem; }
+    .nt-opts button, .nt-pop .nt-act { height: 2.6rem; font-size: .9rem; }
+    .nt-pop select { height: 2.7rem; font-size: 1rem; }
+    .nt-pop .nt-ins { height: 3rem; }
+    /* Pop-up ve bildirim */
+    .nt-dlg-back { place-items: end center; padding: .6rem .6rem calc(.6rem + var(--nt-sab)); }
+    .nt-dlg { width: 100%; border-radius: 1.8rem; }
+    .nt-dlg-row { flex-wrap: wrap; }
+    .nt-dlg-btn { flex: 1 1 auto; height: 2.9rem; }
+    .nt-dlg-btn.is-left { flex-basis: 100%; margin: 0 0 .1rem; }
+    .nt-toast { bottom: calc(4.6rem + var(--nt-sab)); }
+    .nt[data-view="folders"] .nt-toast, .nt[data-view="list"] .nt-toast { bottom: calc(1.2rem + var(--nt-sab)); }
+    .nt button, .nt .nt-row, .nt .nt-fold { -webkit-tap-highlight-color: transparent; }
+  }
+</style>
 <style id="gundelik-nav-hide-css">
   /* ===== Gündelik + Hatırlanacaklar (YALNIZCA telefon): Soru Havuzu ile aynı mantık =====
      Alt navbar bu iki sayfada çekilir; yerine sol altta sabit bir Geri düğmesi gelir
@@ -40439,6 +40626,30 @@
       transition: opacity 0.3s ease, transform 0.3s ease, visibility 0s linear 0.3s;
     }
     body.is-gundelik-page .gundelik-fab-bar { visibility: visible; transition-delay: 0s; }
+    /* Sağdaki Notlarım düğmesi: Geri ile aynı nötr zemin, yuvarlak ikon. */
+    .gundelik-fab-notes {
+      --d: 0.14s; justify-self: end; width: 2.7rem; height: 2.7rem; padding: 0; border-radius: 50%;
+      color: color-mix(in srgb, var(--theme-text, #121212) 94%, transparent);
+      background: color-mix(in srgb, var(--theme-text, #121212) 8%, transparent);
+      box-shadow: inset 0 1px 3px 0 color-mix(in srgb, var(--theme-text, #121212) 10%, transparent);
+    }
+    .gundelik-fab-notes:active { background: color-mix(in srgb, var(--theme-text, #121212) 13%, transparent); }
+    .gundelik-fab-notes .qhavuz-fab-icon { width: 20px; height: 20px; stroke-width: 2.3; }
+    /* Soru Havuzu / Denemelerim açıkken Gündelik çubuğu kesinlikle görünmez
+       (ortak .qhavuz-fab kuralları yüzünden orada da beliriyordu). */
+    body:not(.is-gundelik-page) .gundelik-fab-bar { visibility: hidden !important; pointer-events: none !important; }
+    body:not(.is-gundelik-page) .gundelik-fab-bar .qhavuz-fab { opacity: 0 !important; pointer-events: none !important; }
+    /* Orta düğme: sabit genişlik; etiket değişirken yumuşak çapraz geçiş. */
+    .gundelik-fab-switch { position: relative; width: 10.5rem; padding: 0; overflow: hidden; }
+    .gundelik-fab-lbl {
+      position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+      transition: opacity 0.3s ease, transform 0.35s cubic-bezier(0.65, 0, 0.35, 1);
+    }
+    .gundelik-fab-lbl-b { opacity: 0; transform: translateY(60%); }
+    .gundelik-fab-switch.is-alt .gundelik-fab-lbl-a { opacity: 0; transform: translateY(-60%); }
+    .gundelik-fab-switch.is-alt .gundelik-fab-lbl-b { opacity: 1; transform: none; }
+    /* Notlarım artık altta; üst çubuktaki kopyası telefonda gizlenir. */
+    #page-8 #p8nNtBtn { display: none; }
     body.is-gundelik-page .gundelik-fab-bar .qhavuz-fab {
       opacity: 1; transform: none; pointer-events: auto;
       transition-delay: var(--d, 0s), var(--d, 0s), 0s;
@@ -43146,6 +43357,15 @@
         <path d="m14.5 17-5-5 5-5"/>
       </svg>
     </button>
+    <button type="button" class="qhavuz-fab qhavuz-fab-add gundelik-fab-switch" id="gundelikFabSwitchBtn" aria-label="Hatırlanacaklar sayfasına geç">
+      <span class="gundelik-fab-lbl gundelik-fab-lbl-a">Hatırlanacaklar</span>
+      <span class="gundelik-fab-lbl gundelik-fab-lbl-b" aria-hidden="true">Gündelik</span>
+    </button>
+    <button type="button" class="qhavuz-fab gundelik-fab-notes" id="gundelikFabNotesBtn" aria-label="Notlarım">
+      <svg class="qhavuz-fab-icon" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13 7l4 4"/>
+      </svg>
+    </button>
   </div>
 </div>
 
@@ -43188,6 +43408,13 @@
   // Gündelik + Hatırlanacaklar (telefon): Soru Havuzu ile aynı yapı — navbar çekilir,
   // sol altta Geri düğmesi (#gundelikFabBar) görünür. Sınıf: body.is-gundelik-page.
   const GUNDELIK_NAV_PAGES = new Set(['page-8', 'page-hatirla']);
+  const gundelikFabSwitch = document.getElementById('gundelikFabSwitchBtn');
+  const updateGundelikFab = (id) => {
+    if (!gundelikFabSwitch) return;
+    const onHatirla = id === 'page-hatirla';
+    gundelikFabSwitch.classList.toggle('is-alt', onHatirla);
+    gundelikFabSwitch.setAttribute('aria-label', onHatirla ? 'Gündelik sayfasına geç' : 'Hatırlanacaklar sayfasına geç');
+  };
   const setGundelikPageMode = (on) => {
     if (document.body.classList.contains('is-gundelik-page') === on) return;
     document.body.classList.toggle('is-gundelik-page', on);
@@ -43259,6 +43486,7 @@
     setQhavuzPageMode(QHAVUZ_NAV_PAGES.has(id));
     setPage11PageMode(id === 'page-11');
     setGundelikPageMode(GUNDELIK_NAV_PAGES.has(id));
+    updateGundelikFab(id);
 
     const prevPage = activePage;
     activePage = nextPage;
@@ -43663,6 +43891,7 @@
       APP_STATE.updatedAt = new Date().toISOString();
       APP_STATE.schemaVersion = APP_SCHEMA_VERSION;
       localStorage.setItem(APP_STORAGE_KEY, JSON.stringify(APP_STATE));
+      try { window.dispatchEvent(new Event('app-state-saved')); } catch (e2) { /* yok say */ }
       return true;
     } catch (err) {
       console.warn('Uygulama verisi kaydedilemedi:', err);
@@ -53765,6 +53994,33 @@
     const saveFolders = () => tx('meta', 'readwrite', (s) => s.put(folders, 'folders'));
     const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 
+    // ---- Telefon: 3 ekranlı gezinme (Klasörler → Liste → Not) ----
+    const mob = window.matchMedia('not all and (min-width: 768px) and (min-height: 600px)');
+    let view = 'folders';
+    const setView = (v) => {
+      view = v; if (!root) return; root.dataset.view = v;
+      if (v === 'editor') { const l = $('ntListTitle'); const lb = $('ntEdBackLbl'); if (lb && l) lb.textContent = l.textContent || 'Notlar'; }
+      else { const a = document.activeElement; if (a && root.contains(a) && a.blur) a.blur(); }
+    };
+    // Klavye açılınca kabuğu görünür alana sığdır (araç çubuğu klavyenin hemen üstünde kalır).
+    const fit = () => {
+      if (!root || root.hidden) return; const vv = window.visualViewport;
+      if (!mob.matches || !vv) { root.style.removeProperty('--nt-h'); root.style.removeProperty('--nt-top'); root.classList.remove('is-kb'); return; }
+      root.style.setProperty('--nt-h', vv.height + 'px'); root.style.setProperty('--nt-top', vv.offsetTop + 'px');
+      root.classList.toggle('is-kb', window.innerHeight - vv.height > 120);
+    };
+    if (window.visualViewport) { window.visualViewport.addEventListener('resize', fit); window.visualViewport.addEventListener('scroll', fit); }
+    const onMob = () => { if (root) { setView('folders'); fit(); } };
+    if (mob.addEventListener) mob.addEventListener('change', onMob); else mob.addListener(onMob);
+    // Editörden geri: kaydet; boş kalan not silinir (iOS Notlar gibi); listeye dön.
+    const edBack = async () => {
+      await flush();
+      if (cur && !cur.title && !cur.text && !/data-fid/.test(cur.html || '')) {
+        const n = cur; clearTimeout(saveT); saveT = null; notes = notes.filter((x) => x.id !== n.id); await tx('notes', 'readwrite', (st) => st.delete(n.id)); cur = null; renderAll();
+      }
+      setView('list');
+    };
+
     // ---- Toast: uygulama içi, yumuşak giriş/çıkış; isteğe bağlı eylem düğmesi ("Geri al") ----
     let toastEl = null, toastT = null;
     const toast = (m, actLabel, actFn) => {
@@ -53822,7 +54078,7 @@
 
     // ---- Kabuk ----
     const setFocus = (on) => {
-      focusMode = !!on; if (!root) return;
+      focusMode = !!on && !mob.matches; if (!root) return;
       root.classList.toggle('is-focus', focusMode);
       root.querySelector('.nt-side').toggleAttribute('inert', focusMode); root.querySelector('.nt-list').toggleAttribute('inert', focusMode);
       const tg = $('ntToggle'); tg.setAttribute('aria-pressed', focusMode ? 'true' : 'false'); tg.title = focusMode ? 'Panelleri göster (Ctrl + \\)' : 'Sadece notu göster (Ctrl + \\)';
@@ -53846,18 +54102,23 @@
     };
 
     const build = () => {
-      root = el('div', 'nt'); root.id = 'ntRoot'; root.hidden = true;
+      root = el('div', 'nt'); root.id = 'ntRoot'; root.hidden = true; root.dataset.view = 'folders';
       root.innerHTML = `
         <aside class="nt-side"><div class="nt-h">Notlarım</div><div class="nt-folders" id="ntFolders"></div>
-          <button class="nt-pill" id="ntNewFolder" type="button">+ Yeni Klasör</button>
+          <button class="nt-pill" id="ntFSel" type="button" aria-pressed="false">Seç</button>
+          <button class="nt-fsearch" id="ntFSearch" type="button">${svg('search')}<span>Notlarda ara</span></button>
+          <div class="nt-foot"><button class="nt-pill" id="ntNewFolder" type="button">+ Yeni Klasör</button>
+            <button class="nt-pill acc nt-fnew" id="ntFNew" type="button">${svg('plus')}<span>Yeni Not</span></button></div>
+          <div class="nt-selbar nt-fselbar" id="ntFSelBar" hidden><span id="ntFSelCount">Seçim yok</span><button class="nt-pill dng" id="ntFSelDel" type="button" disabled>Sil</button></div>
           <button class="nt-pill" id="ntClose" type="button">‹ Gündelik'e dön</button></aside>
-        <section class="nt-list"><div class="nt-list-h"><h2 id="ntListTitle"></h2>
+        <section class="nt-list"><div class="nt-list-h"><button class="nt-ic nt-lback" id="ntListBack" type="button" aria-label="Klasörler">${svg('back')}</button><h2 id="ntListTitle"></h2>
           <button class="nt-ic" id="ntFolderEdit" type="button" hidden aria-label="Klasörü düzenle">${svg('pen')}</button>
           <button class="nt-pill" id="ntSel" type="button" aria-pressed="false">Seç</button>
            <button class="nt-ic" id="ntNew" type="button" aria-label="Yeni not">${svg('plus')}</button></div>
           <input class="nt-search" id="ntSearch" type="search" placeholder="Notlarda ara"><div class="nt-items" id="ntItems"></div>
            <div class="nt-selbar" id="ntSelBar" hidden><button class="nt-pill" id="ntSelAll" type="button">Tümünü seç</button><span id="ntSelCount">Seçim yok</span><button class="nt-pill dng" id="ntSelDel" type="button" disabled>Sil</button></div></section>
         <main class="nt-ed" id="ntEd" data-bg="device">
+          <div class="nt-mtop"><button class="nt-mback" id="ntEdBack" type="button" aria-label="Not listesine dön">${svg('back')}<span id="ntEdBackLbl">Notlar</span></button><span class="nt-mgrow"></span><button class="nt-mdone" id="ntEdDone" type="button">Bitti</button><button class="nt-ic nt-mmore" id="ntEdMore" type="button" aria-label="Not ayarları"><svg viewBox="0 0 24 24"><path d="M5 12h.01M12 12h.01M19 12h.01" stroke-width="3.2"/></svg></button></div>
           <button class="nt-dock nt-toggle" id="ntToggle" type="button" aria-label="Panelleri gizle / göster">${svg('panel')}</button>
           <button class="nt-dock nt-backdock" id="ntBackDock" type="button" aria-label="Gündelik'e dön" title="Gündelik'e dön">${svg('back')}</button>
           <div class="nt-grip" id="ntGrip" aria-hidden="true"></div>
@@ -53885,6 +54146,18 @@
       $('ntSelAll').onclick = selectAll;
       $('ntSelDel').onclick = deleteSelected;
       $('ntFolderEdit').onclick = editFolder;
+      $('ntListBack').onclick = () => setView('folders');
+      $('ntFNew').onclick = newNote;
+      $('ntFSel').onclick = () => setSelMode(!selMode);
+      $('ntFSelDel').onclick = deleteSelected;
+      $('ntFSearch').onclick = () => { sel = 'all'; q = ''; $('ntSearch').value = ''; renderAll(true); setView('list'); setTimeout(() => $('ntSearch').focus(), 380); };
+      $('ntEdBack').onclick = edBack;
+      $('ntEdDone').onclick = () => { const a = document.activeElement; if (a && a.blur) a.blur(); };
+      $('ntEdMore').onclick = () => { if (cur) pop('page', $('ntEdMore')); };
+      // Sol kenardan sağa kaydır = bir ekran geri.
+      let sx0 = 0, sy0 = 0, edge = false;
+      root.addEventListener('touchstart', (e) => { const t = e.touches[0]; sx0 = t.clientX; sy0 = t.clientY; edge = mob.matches && view !== 'folders' && t.clientX < 24; }, { passive: true });
+      root.addEventListener('touchend', (e) => { if (!edge) return; edge = false; const t = e.changedTouches[0]; if (t.clientX - sx0 > 70 && Math.abs(t.clientY - sy0) < 60) { if (view === 'editor') edBack(); else setView('folders'); } }, { passive: true });
       $('ntToggle').onclick = () => setFocus(!focusMode);
       setFocus(focusMode);
 
@@ -53936,6 +54209,8 @@
       const c = selN.size + selF.size, vis = visibleNotes();
       $('ntSelCount').textContent = c ? `${c} seçili` : 'Seçim yok';
       $('ntSelDel').disabled = !c;
+      const fb = $('ntFSel'); if (fb) { fb.textContent = selMode ? 'Bitti' : 'Seç'; fb.classList.toggle('acc', selMode); fb.setAttribute('aria-pressed', selMode ? 'true' : 'false'); }
+      const fbar = $('ntFSelBar'); if (fbar) { fbar.hidden = !selMode; $('ntFSelCount').textContent = c ? `${c} seçili` : 'Seçim yok'; $('ntFSelDel').disabled = !c; }
       $('ntSelAll').textContent = vis.length && vis.every((n) => selN.has(n.id)) ? 'Seçimi kaldır' : 'Tümünü seç';
     };
     const setSelMode = (on) => { selMode = !!on; if (!selMode) { selN.clear(); selF.clear(); } renderAll(); };
@@ -53976,7 +54251,10 @@
           ck.onclick = (e) => { e.stopPropagation(); if (selF.has(id)) selF.delete(id); else selF.add(id); ck.classList.toggle('is-picked', selF.has(id)); updateSel(); };
           b.prepend(ck);
         }
-        b.onclick = () => { if (sel === id) return; sel = id; renderAll(true); };
+        b.onclick = () => {
+          if (mob.matches) { if (selMode && isUser) { const k = b.querySelector('.nt-fchk'); if (k) k.click(); return; } q = ''; const si = $('ntSearch'); if (si) si.value = ''; if (sel !== id) { sel = id; renderAll(true); } else renderList(true); setView('list'); return; }
+          if (sel === id) return; sel = id; renderAll(true);
+        };
         box.appendChild(b);
       };
       add('all', 'Tüm Notlar', 'all', notes.length);
@@ -54008,7 +54286,7 @@
             const r = el('button', 'nt-row' + (cur && cur.id === n.id && !selMode ? ' is-on' : '') + (selMode && selN.has(n.id) ? ' is-picked' : '')); r.type = 'button'; r.dataset.id = n.id;
             const sp = el('span'); sp.appendChild(el('i', '', fmtDate(n.updated))); sp.appendChild(document.createTextNode(n.text.slice(0, 80) || 'Ek metin yok'));
             r.append(el('b', '', n.title || 'Yeni Not'), sp);
-            r.onclick = () => { if (selMode) { if (selN.has(n.id)) selN.delete(n.id); else selN.add(n.id); r.classList.toggle('is-picked', selN.has(n.id)); updateSel(); return; } if (dragMoved) { dragMoved = false; return; } openNote(n.id); }; if (!selMode) wireDrag(r, n); box.appendChild(r); rows.set(n.id, r);
+            r.onclick = () => { if (selMode) { if (selN.has(n.id)) selN.delete(n.id); else selN.add(n.id); r.classList.toggle('is-picked', selN.has(n.id)); updateSel(); return; } if (dragMoved) { dragMoved = false; return; } openNote(n.id); }; if (!selMode && !mob.matches) wireDrag(r, n); box.appendChild(r); rows.set(n.id, r);
           });
         });
       }
@@ -54102,6 +54380,7 @@
       const seq = ++openSeq;
       await flush();
       const nx = notes.find((n) => n.id === id); if (!nx) return;
+      if (mob.matches) setView('editor');
       if (cur && cur.id !== nx.id && $('ntBody')) { hidePop(); edc.classList.add('is-out'); await wait(130); if (seq !== openSeq) return; }
       cur = nx; edc.classList.remove('is-out');
       ed.dataset.bg = cur.bg || 'device';
@@ -54218,8 +54497,10 @@
 
     const buildTools = () => {
       const T = $('ntTools'); T.onmousedown = (e) => { if (!/SELECT|OPTION|INPUT/.test(e.target.nodeName)) e.preventDefault(); };
-      T.addEventListener('touchstart', (e) => { if (!/SELECT|OPTION|INPUT/.test(e.target.nodeName) && e.cancelable) e.preventDefault(); }, { passive: false });
-      T.addEventListener('touchend', (e) => { const bt = e.target.closest && e.target.closest('button'); if (bt) { e.preventDefault(); bt.click(); } }, { passive: false });
+      let tx0 = 0, ty0 = 0, tmv = false;
+      T.addEventListener('touchstart', (e) => { const t0 = e.touches[0]; tx0 = t0.clientX; ty0 = t0.clientY; tmv = false; if (!mob.matches && !/SELECT|OPTION|INPUT/.test(e.target.nodeName) && e.cancelable) e.preventDefault(); }, { passive: false });
+      T.addEventListener('touchmove', (e) => { const t0 = e.touches[0]; if (Math.hypot(t0.clientX - tx0, t0.clientY - ty0) > 8) tmv = true; }, { passive: true });
+      T.addEventListener('touchend', (e) => { if (tmv) return; const bt = e.target.closest && e.target.closest('button'); if (bt) { e.preventDefault(); bt.click(); } }, { passive: false });
       const tb = (icon, title, fn, id) => { const b = el('button', 'nt-tb'); b.type = 'button'; b.title = title; b.setAttribute('aria-label', title); if (id) b.id = id; b.innerHTML = svg(icon); b.onclick = fn; T.appendChild(b); return b; };
       const grp = (icon, label, kind) => { const b = el('button', 'nt-tb nt-grp'); b.type = 'button'; b.setAttribute('aria-label', label); b.innerHTML = (icon === 'Aa' ? '<b class="nt-aa">Aa</b>' : svg(icon)) + '<span>' + label + '</span>'; b.onclick = (e) => pop(kind, e.currentTarget); T.appendChild(b); return b; };
       const sep = () => T.appendChild(el('span', 'nt-sep'));
@@ -54321,7 +54602,7 @@
       const r = anchor.getBoundingClientRect(), er = ed.getBoundingClientRect();
       P.hidden = false; P.style.top = (r.bottom - er.top + 6) + 'px'; P.style.left = Math.max(8, Math.min(r.left - er.left, er.width - P.offsetWidth - 8)) + 'px';
     };
-    document.addEventListener('pointerdown', (e) => { const P = document.getElementById('ntPop'); if (P && !P.hidden && !P.contains(e.target) && !e.target.closest('.nt-tools')) hidePop(); });
+    document.addEventListener('pointerdown', (e) => { const P = document.getElementById('ntPop'); if (P && !P.hidden && !P.contains(e.target) && !e.target.closest('.nt-tools, .nt-mtop')) hidePop(); });
 
     // ---- Ekler: görsel / ses / dosya / kayıt ----
     const sizeStr = (n) => (n > 1048576 ? (n / 1048576).toFixed(1) + ' MB' : Math.max(1, Math.round(n / 1024)) + ' KB');
@@ -54388,13 +54669,14 @@
       notes = notes.filter((x) => x.id !== n.id); await tx('notes', 'readwrite', (s) => s.delete(n.id)); cur = null;
       edc.classList.add('is-out'); renderAll(); await wait(240);
       if (cur) return;
-      showEmpty();
+      showEmpty(); if (mob.matches) setView('list');
       toast('Not silindi', 'Geri al', async () => { if (notes.some((x) => x.id === n.id)) return; notes.push(n); await saveNote(n); enterIds.add(n.id); renderAll(); openNote(n.id); });
     };
-    const closeApp = async () => { if (selMode) { selMode = false; selN.clear(); selF.clear(); renderAll(); } hidePop(); await flush(); root.classList.remove('is-in'); setTimeout(() => { if (!root.classList.contains('is-in')) root.hidden = true; }, 440); };
+    const closeApp = async () => { if (selMode) { selMode = false; selN.clear(); selF.clear(); renderAll(); } hidePop(); await flush(); root.classList.remove('is-in'); setTimeout(() => { if (!root.classList.contains('is-in')) { root.hidden = true; if (mob.matches) setView('folders'); } }, 440); };
     const openApp = async () => {
       if (!root) build();
-      root.hidden = false; void root.offsetWidth; root.classList.add('is-in');
+      if (mob.matches) setView('folders');
+      root.hidden = false; fit(); void root.offsetWidth; root.classList.add('is-in');
       if (!loaded) {
         try { notes = (await tx('notes', 'readonly', (s) => s.getAll())) || []; folders = (await tx('meta', 'readonly', (s) => s.get('folders'))) || []; }
         catch (e) { notes = []; folders = []; }
@@ -68989,6 +69271,10 @@
 
     // Sol alttaki Geri düğmesi (nav bar bu sayfalarda gizli): Hatırlanacaklar → Gündelik,
     // Gündelik → Ana sayfa (Soru Havuzu'ndaki Geri ile aynı akış).
+    const gSwitch = document.getElementById('gundelikFabSwitchBtn');
+    if (gSwitch) gSwitch.addEventListener('click', () => goToPage(page.classList.contains('is-active') ? 'page-8' : 'page-hatirla'));
+    const gNotes = document.getElementById('gundelikFabNotesBtn');
+    if (gNotes) gNotes.addEventListener('click', () => { const nb = document.getElementById('p8nNtBtn'); if (nb) nb.click(); });
     const gBack = document.getElementById('gundelikFabBackBtn');
     if (gBack) gBack.addEventListener('click', () => {
       if (page.classList.contains('is-active')) { goToPage('page-8'); return; }
