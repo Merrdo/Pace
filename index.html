@@ -40517,6 +40517,27 @@
   .p8n-dlg-btn.p8g-okbtn { color: #fff; background: var(--accent-color, #ff90e8); text-shadow: 0 1px 2px rgba(0,0,0,.18); }
   @media (prefers-reduced-motion: reduce) { #p8nMain .p8g-c.is-step { animation: none; } }
 </style>
+<script id="notlarim-switch">
+  /* ===== NOTLARIM ANAHTARI =====
+     false: Notlarım özelliği tamamen kapalı (hiçbir yerde görünmez, açılamaz, hiçbir kod çalışmaz).
+     true : Özellik geri gelir. Kodun hiçbir parçası silinmedi; yalnızca bu değer değişir. */
+  window.NOTLARIM_ENABLED = false;
+  document.documentElement.classList.toggle('notlarim-off', !window.NOTLARIM_ENABLED);
+</script>
+<style id="soft-form-css">
+  /* Yeni grup / yeni liste adı alanı: yumuşak açılır, boşluğa dokununca yumuşak kapanır. */
+  .soft-wrap.soft-open, .soft-wrap.soft-close { overflow: hidden; }
+  .soft-wrap.soft-open { animation: softFormIn .5s cubic-bezier(.32, .72, 0, 1) both; }
+  .soft-wrap.soft-close { animation: softFormOut .34s cubic-bezier(.4, 0, .6, 1) both; pointer-events: none; }
+  @keyframes softFormIn { from { opacity: 0; max-height: 0; transform: translateY(-10px); } to { opacity: 1; max-height: var(--h, 20rem); transform: none; } }
+  @keyframes softFormOut { from { opacity: 1; max-height: var(--h, 20rem); transform: none; } to { opacity: 0; max-height: 0; transform: translateY(-8px); } }
+  @media (prefers-reduced-motion: reduce) { .soft-wrap.soft-open, .soft-wrap.soft-close { animation-duration: .01ms; } }
+</style>
+<style id="notlarim-off-css">
+  html.notlarim-off #p8nNtBtn,
+  html.notlarim-off #gundelikFabNotesBtn,
+  html.notlarim-off #ntRoot { display: none !important; }
+</style>
 <style id="nt-mobile-css">
   /* ===== Notlarım — TELEFON: iOS Notlar mantığı, tek sütun, 3 ekran (Klasörler → Liste → Not) =====
      Büyük ekran kuralları değişmedi; aşağıdaki her şey yalnızca telefonda geçerli. */
@@ -40691,14 +40712,14 @@
     }
     body.is-gundelik-page .gundelik-fab-bar { visibility: visible; transition-delay: 0s; }
     /* Sağdaki Notlarım düğmesi: Geri ile aynı nötr zemin, yuvarlak ikon. */
-    .gundelik-fab-notes {
+    .gundelik-fab-extra {
       --d: 0.14s; justify-self: end; width: 2.7rem; height: 2.7rem; padding: 0; border-radius: 50%;
       color: color-mix(in srgb, var(--theme-text, #121212) 94%, transparent);
       background: color-mix(in srgb, var(--theme-text, #121212) 8%, transparent);
       box-shadow: inset 0 1px 3px 0 color-mix(in srgb, var(--theme-text, #121212) 10%, transparent);
     }
-    .gundelik-fab-notes:active { background: color-mix(in srgb, var(--theme-text, #121212) 13%, transparent); }
-    .gundelik-fab-notes .qhavuz-fab-icon { width: 20px; height: 20px; stroke-width: 2.3; }
+    .gundelik-fab-extra:active { background: color-mix(in srgb, var(--theme-text, #121212) 13%, transparent); }
+    .gundelik-fab-extra .qhavuz-fab-icon { width: 20px; height: 20px; stroke-width: 2.3; }
     /* Soru Havuzu / Denemelerim açıkken Gündelik çubuğu kesinlikle görünmez
        (ortak .qhavuz-fab kuralları yüzünden orada da beliriyordu). */
     body:not(.is-gundelik-page) .gundelik-fab-bar { visibility: hidden !important; pointer-events: none !important; }
@@ -40714,6 +40735,9 @@
     .gundelik-fab-switch.is-alt .gundelik-fab-lbl-b { opacity: 1; transform: none; }
     /* Notlarım artık altta; üst çubuktaki kopyası telefonda gizlenir. */
     #page-8 #p8nNtBtn { display: none; }
+    /* Başlıktaki ekle düğmeleri telefonda kaldırıldı: ekleme artık alttaki "+" düğmesinden (#gundelikFabAddBtn).
+       Elemanlar DOM'da duruyor (kod onlara bağlı); büyük ekranda görünmeye devam ederler. */
+    #page-8 #p8nNewBtn, #page-hatirla #hlNew { display: none; }
     body.is-gundelik-page .gundelik-fab-bar .qhavuz-fab {
       opacity: 1; transform: none; pointer-events: auto;
       transition-delay: var(--d, 0s), var(--d, 0s), 0s;
@@ -43425,9 +43449,9 @@
       <span class="gundelik-fab-lbl gundelik-fab-lbl-a">Hatırlanacaklar</span>
       <span class="gundelik-fab-lbl gundelik-fab-lbl-b" aria-hidden="true">Gündelik</span>
     </button>
-    <button type="button" class="qhavuz-fab gundelik-fab-notes" id="gundelikFabNotesBtn" aria-label="Notlarım">
+    <button type="button" class="qhavuz-fab gundelik-fab-extra" id="gundelikFabAddBtn" aria-label="Görev ekle">
       <svg class="qhavuz-fab-icon" viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13 7l4 4"/>
+        <path d="M12 5v14M5 12h14"/>
       </svg>
     </button>
   </div>
@@ -53935,7 +53959,20 @@
       page8State.routineGroups.push({ id: page8GenId(), name: v, color: page8NextColor(page8State.routineGroups.length + 2), routines: [] });
       save();
     };
-    let newGroupOpen = false;
+    let newGroupOpen = false, newGroupAnimate = false;
+    // Ortak yardımcılar (Hatırlanacaklar da kullanır): yumuşak aç / kapat
+    window.softOpen = (w) => { w.style.setProperty('--h', w.scrollHeight + 'px'); w.classList.add('soft-open'); w.addEventListener('animationend', () => w.classList.remove('soft-open'), { once: true }); };
+    window.softClose = (w, done) => {
+      if (!w || w.classList.contains('soft-close')) return;
+      w.style.setProperty('--h', w.offsetHeight + 'px'); w.classList.remove('soft-open'); w.classList.add('soft-close');
+      let d = false; const fin = () => { if (d) return; d = true; if (done) done(); };
+      w.addEventListener('animationend', fin, { once: true }); setTimeout(fin, 480);
+    };
+    const softCloseNewGroup = () => {
+      if (!newGroupOpen) return; newGroupOpen = false;
+      const w = $('p8nNewGroup').querySelector('.soft-wrap');
+      if (w) window.softClose(w, () => { if (!newGroupOpen) renderNewGroup(); }); else renderNewGroup();
+    };
     const renderNewGroup = () => {
       const wrap = $('p8nNewGroup');
       wrap.innerHTML = ''; $('p8nTip').innerHTML = '';
@@ -53961,7 +53998,8 @@
         box.append(el('b', '', 'Henüz rutin grubun yok'), el('p', '', 'Gününü Sabah, Öğle ve Akşam olarak bölüp rutinlerini buraya ekle.'));
         box.appendChild(buildPanel()); wrap.appendChild(box);
       } else if (newGroupOpen) {
-        wrap.appendChild(buildPanel());
+        const sw = el('div', 'soft-wrap'); sw.appendChild(buildPanel()); wrap.appendChild(sw);
+        if (newGroupAnimate) { newGroupAnimate = false; window.softOpen(sw); }
       } else {
         $('p8nTip').appendChild(el('div', 'p8g-tip', 'İpucu: Bir karta ya da rutine basılı tut, seçenekler açılsın.'));
       }
@@ -53969,10 +54007,34 @@
     };
     // Başlıktaki "Yeni grup" düğmesi: ekleme panelini aç/kapat
     $('p8nNewBtn').addEventListener('click', () => {
-      if (page8State.routineGroups.length) newGroupOpen = !newGroupOpen;
+      if (page8State.routineGroups.length) { if (newGroupOpen) { softCloseNewGroup(); return; } newGroupOpen = true; newGroupAnimate = true; }
       renderNewGroup();
       const inp = $('p8nNewGroup').querySelector('.p8n-add .p8n-input'); if (inp && (newGroupOpen || !page8State.routineGroups.length)) inp.focus();
     });
+
+    // Alanın dışına (boş bir yere) dokunulunca yumuşakça kapanır.
+    document.addEventListener('pointerdown', (e) => {
+      if (!newGroupOpen || !page8State.routineGroups.length) return;
+      const w = $('p8nNewGroup').querySelector('.soft-wrap');
+      if (!w || w.classList.contains('soft-close') || w.contains(e.target)) return;
+      if (e.target.closest && e.target.closest('#gundelikFabAddBtn, #p8nNewBtn, .page11-context-menu, .p8n-dlg-back')) return;
+      softCloseNewGroup();
+    }, true);
+
+    // Alt çubuktaki "Görev ekle" düğmesi için köprü (bkz. #gundelikFabAddBtn).
+    window.p8nFab = {
+      newGroup: () => {
+        if (!newGroupOpen) { newGroupOpen = true; newGroupAnimate = true; renderNewGroup(); }
+        const sc = $('p8mScroll'); if (sc && sc.scrollTo) sc.scrollTo({ top: 0, behavior: 'smooth' });
+        const inp = $('p8nNewGroup').querySelector('.p8n-add .p8n-input'); if (inp) inp.focus({ preventScroll: true });
+      },
+      groups: () => page8State.routineGroups.map((g) => ({ name: g.name, color: g.color })),
+      addSection: (i) => {
+        const g = page8State.routineGroups[i]; if (!g) return;
+        openSecForm(g);
+        const c = [...document.querySelectorAll('#p8nGroups .p8g')][i]; if (c && c.scrollIntoView) c.scrollIntoView({ block: 'center', behavior: 'smooth' });
+      }
+    };
 
     // ---- Bildirim (Geri al) ----
     let toastTimer = null;
@@ -54031,6 +54093,7 @@
 
   // ---------- Notlarım: Apple Notes tarzı not uygulaması ----------
   (() => {
+    if (!window.NOTLARIM_ENABLED) return; // Notlarım kapalı: IndexedDB'ye dokunma, dinleyici bağlama
     const btn = document.getElementById('p8nNtBtn');
     if (!btn) return;
     const I = { all: 'M4 5h16v14H4zM8 9h8M8 13h5', pin: 'M12 17v5M9 3h6l-1 6 3 4H7l3-4z', none: 'M3 7h7l2 2h9v10H3z', fold: 'M3 7h7l2 2h9v10H3z', plus: 'M12 5v14M5 12h14', pen: 'M4 20h4L19 9l-4-4L4 16z', close: 'M6 6l12 12M18 6L6 18', search: 'M11 4a7 7 0 100 14 7 7 0 000-14zM20 20l-4-4', undo: 'M9 14L4 9l5-5M4 9h10a6 6 0 010 12h-3', redo: 'M15 14l5-5-5-5M20 9H10a6 6 0 000 12h3', ul: 'M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01', ol: 'M10 6h10M10 12h10M10 18h10M4 5v4M4 15h2l-2 3h2', todo: 'M4 6h4v4H4zM11 8h9M4 14h4v4H4zM11 16h9', img: 'M4 5h16v14H4zM8 10a1.5 1.5 0 100-3 1.5 1.5 0 000 3zM4 17l5-5 4 4 3-3 4 4', aud: 'M9 18V6l10-2v12M9 18a3 3 0 11-6 0 3 3 0 016 0zM19 16a3 3 0 11-6 0 3 3 0 016 0z', mic: 'M12 3a3 3 0 013 3v6a3 3 0 01-6 0V6a3 3 0 013-3zM6 11a6 6 0 0012 0M12 17v4', file: 'M6 3h8l4 4v14H6zM14 3v4h4', panel: 'M4 5h16v14H4zM9 5v14', back: 'M15 6l-6 6 6 6', note: 'M6 3h9l4 4v14H6zM9 12h7M9 16h5', table: 'M3 5h18v14H3zM3 10h18M9 5v14M15 5v14', page: 'M12 15a3 3 0 100-6 3 3 0 000 6zM19 12a7 7 0 00-.2-1.6l2-1.5-2-3.4-2.3 1a7 7 0 00-2.8-1.6L13.3 2h-2.6l-.4 2.9a7 7 0 00-2.8 1.6l-2.3-1-2 3.4 2 1.5a7 7 0 000 3.2l-2 1.5 2 3.4 2.3-1a7 7 0 002.8 1.6l.4 2.9h2.6l.4-2.9a7 7 0 002.8-1.6l2.3 1 2-3.4-2-1.5c.1-.5.2-1 .2-1.6z' };
@@ -69313,7 +69376,12 @@
     if (!st || !Array.isArray(st.groups)) st = { groups: [{ id: gid(), name: 'Genel', color: pal[0], items: [] }] };
     const save = () => saveAppState({ hatirla: st });
     const list = $('hlList');
-    let addOpen = null, newOpen = false, firstPaint = true;
+    let addOpen = null, newOpen = false, firstPaint = true, newAnim = false;
+    const softCloseNew = () => {
+      if (!newOpen) return; newOpen = false;
+      const w = $('hlNewForm').querySelector('.soft-wrap');
+      if (w) window.softClose(w, () => { if (!newOpen) render(); }); else render();
+    };
 
     // ---- Sayfa geçişi ----
     const phone = window.matchMedia('not all and (min-width: 768px) and (min-height: 600px)');
@@ -69338,8 +69406,6 @@
     // Gündelik → Ana sayfa (Soru Havuzu'ndaki Geri ile aynı akış).
     const gSwitch = document.getElementById('gundelikFabSwitchBtn');
     if (gSwitch) gSwitch.addEventListener('click', () => goToPage(page.classList.contains('is-active') ? 'page-8' : 'page-hatirla'));
-    const gNotes = document.getElementById('gundelikFabNotesBtn');
-    if (gNotes) gNotes.addEventListener('click', () => { const nb = document.getElementById('p8nNtBtn'); if (nb) nb.click(); });
     const gBack = document.getElementById('gundelikFabBackBtn');
     if (gBack) gBack.addEventListener('click', () => {
       if (page.classList.contains('is-active')) { goToPage('page-8'); return; }
@@ -69451,7 +69517,7 @@
     function render() {
       closeMenu(); list.innerHTML = '';
       const nf = $('hlNewForm'); nf.innerHTML = '';
-      if (newOpen) { const f = mkForm('Yeni liste adı (örn. Market)', (v) => { newOpen = false; st.groups.push({ id: gid(), name: v, color: pal[st.groups.length % pal.length], items: [] }); addOpen = st.groups[st.groups.length - 1].id; save(); render(); focusIn(); }, () => { newOpen = false; render(); }); f.classList.add('hl-newform'); nf.appendChild(f); }
+      if (newOpen) { const f = mkForm('Yeni liste adı (örn. Market)', (v) => { newOpen = false; st.groups.push({ id: gid(), name: v, color: pal[st.groups.length % pal.length], items: [] }); addOpen = st.groups[st.groups.length - 1].id; save(); render(); focusIn(); }, () => softCloseNew()); f.classList.add('hl-newform'); const sw = el('div', 'soft-wrap'); sw.appendChild(f); nf.appendChild(sw); if (newAnim) { newAnim = false; window.softOpen(sw); } }
       $('hlTip').textContent = st.groups.length ? 'İpucu: Bir listeye ya da maddeye basılı tut, seçenekler açılsın.' : '';
       if (!st.groups.length) { list.appendChild(el('p', 'hl-empty', 'Henüz listen yok. Sağ üstteki + ile ekle.')); return; }
       st.groups.forEach((g, gi) => {
@@ -69488,7 +69554,40 @@
       });
       firstPaint = false;
     }
-    $('hlNew').addEventListener('click', () => { newOpen = !newOpen; render(); if (newOpen) focusIn(); });
+    $('hlNew').addEventListener('click', () => { if (newOpen) { softCloseNew(); return; } newOpen = true; newAnim = true; render(); focusIn(); });
+    document.addEventListener('pointerdown', (e) => {
+      if (!newOpen) return; const w = $('hlNewForm').querySelector('.soft-wrap');
+      if (!w || w.classList.contains('soft-close') || w.contains(e.target)) return;
+      if (e.target.closest && e.target.closest('#gundelikFabAddBtn, #hlNew, .page11-context-menu')) return;
+      softCloseNew();
+    }, true);
+
+    // Alt çubuktaki "Görev ekle" düğmesi: hangi sayfadaysak ona ekler.
+    //  Dokun  → Gündelik: yeni grup paneli · Hatırlanacaklar: yeni liste formu
+    //  Basılı tut → bir grup seç: Gündelik'te o gruba alt başlık, Hatırlanacaklar'da o gruba madde ekle
+    const gAdd = document.getElementById('gundelikFabAddBtn');
+    if (gAdd) {
+      const dot = (c) => `<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="6.5" style="fill:${c || 'var(--accent-color,#ff90e8)'};stroke:none"/></svg>`;
+      const onHl = () => page.classList.contains('is-active');
+      hold(gAdd, (x, y) => {
+        const r = gAdd.getBoundingClientRect(); const cx = r.left + r.width / 2, cy = r.top;
+        if (onHl()) {
+          if (!st.groups.length) return;
+          openMenu(gAdd, st.groups.map((g, gi) => ({ ic: dot(g.color), title: g.name || 'Liste', sub: 'Maddesini ekle', fn: () => {
+            addOpen = g.id; render(); focusIn();
+            setTimeout(() => { const b = list.children[gi]; if (b && b.scrollIntoView) b.scrollIntoView({ block: 'center', behavior: 'smooth' }); }, 60);
+          } })), cx, cy);
+        } else {
+          const gs = (window.p8nFab && window.p8nFab.groups()) || [];
+          if (!gs.length) return;
+          openMenu(gAdd, gs.map((g, i) => ({ ic: dot(g.color), title: g.name || 'Grup', sub: 'Alt başlık ekle', fn: () => window.p8nFab.addSection(i) })), cx, cy);
+        }
+      });
+      gAdd.addEventListener('click', () => {
+        if (onHl()) { if (!newOpen) { newOpen = true; newAnim = true; render(); } focusIn(); const sc = $('hlScroll'); if (sc && sc.scrollTo) sc.scrollTo({ top: 0, behavior: 'smooth' }); }
+        else if (window.p8nFab) window.p8nFab.newGroup();
+      });
+    }
     render();
   })();
 
