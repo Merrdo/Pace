@@ -81,12 +81,18 @@
   }
   // ---------- çekme ----------
   async function pull() {
-    var q = sb.from('sync_records').select('*').eq('kind', 'state').order('server_at', { ascending: true });
-    if (meta.lastPull) q = q.gt('server_at', meta.lastPull);
-    var r = await q; if (r.error) throw r.error;
-    var rows = r.data || [], changed = false, max = meta.lastPull;
+    // İmleç yerine: önce hafif liste (id + updated_at), sonra yalnızca bu cihazdakinden yeni olanların verisi
+    var m = await sb.from('sync_records').select('id,updated_at').eq('kind', 'state');
+    if (m.error) throw m.error;
+    var need = (m.data || []).filter(function (x) { return !SKIP[x.id] && (!meta.linked || ts(x.updated_at) > ts(meta.times[x.id])); })
+      .map(function (x) { return x.id; });
+    var rows = [], changed = false;
+    if (need.length) {
+      var d = await sb.from('sync_records').select('*').eq('kind', 'state').in('id', need);
+      if (d.error) throw d.error;
+      rows = d.data || [];
+    }
     rows.forEach(function (row) {
-      if (!max || ts(row.server_at) > ts(max)) max = row.server_at;
       var k = row.id; if (SKIP[k] || row.deleted) return;
       var val = row.data && row.data.v, rh = hash(val);
       var localNewer = meta.linked && meta.dirty[k] && ts(meta.times[k]) > ts(row.updated_at);
@@ -101,7 +107,7 @@
       backup(); stat.down++;
       APP_STATE[k] = val; meta.hashes[k] = rh; meta.times[k] = row.updated_at; delete meta.dirty[k]; changed = true;
     });
-    meta.lastPull = max; saveMeta();
+    saveMeta();
     if (changed) persistState();
     return changed;
   }
@@ -275,7 +281,7 @@
       if (a === 'dx') {
         msg.textContent = 'Kontrol ediliyor…';
         var q = await sb.from('sync_records').select('id,updated_at,device_id').eq('kind', 'state');
-        msg.textContent = 'sürüm 5 · bulutta ' + (q.data ? q.data.length : '?') + ' alan' + (q.error ? ' · HATA: ' + q.error.message : '') +
+        msg.textContent = 'sürüm 6 · bulutta ' + (q.data ? q.data.length : '?') + ' alan' + (q.error ? ' · HATA: ' + q.error.message : '') +
           ' · bu cihazda ' + Object.keys(APP_STATE).length + ' alan · imleç ' + (meta.lastPull || 'yok') + ' · bağlı ' + !!meta.linked +
           ' · ' + (q.data || []).map(function (x) { return x.id + '@' + String(x.updated_at).slice(5, 16); }).join(', ');
         return;
