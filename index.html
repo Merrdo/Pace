@@ -37548,7 +37548,7 @@
     .p8g-r.is-done .p8g-c { background: var(--gc); border-color: var(--gc); }
     .p8g-r.is-done .p8g-c svg { stroke-dashoffset: 0; }
     .p8g-t { flex: 1 1 auto; min-width: 0; font-size: 1.3rem; font-weight: 700; line-height: 1.25; overflow-wrap: anywhere; transition: opacity .35s ease; }
-    .p8g-tt { background: linear-gradient(currentColor, currentColor) no-repeat 0 55% / 0 2px; transition: background-size .4s ease; }
+    .p8g-tt { background: linear-gradient(currentColor, currentColor) no-repeat 0 var(--strike-y, 50%) / 0 2px; transition: background-size .4s ease; }
     .p8g-r.is-done .p8g-t { opacity: .4; }
     .p8g-r.is-done .p8g-tt { background-size: 100% 2px; }
     .p8g-add { display: block; width: 100%; box-sizing: border-box; padding: .7rem .4rem; border: none; background: none; text-align: left; font: inherit; font-weight: 700; font-size: 1rem; color: var(--p8-mute); cursor: pointer; border-radius: 1rem; transition: color .2s ease; }
@@ -37986,7 +37986,7 @@
     #p8mScroll .p8g-r.is-done .p8g-c { background: var(--gc); border-color: var(--gc); }
     #p8mScroll .p8g-r.is-done .p8g-c svg { stroke-dashoffset: 0; }
     #p8mScroll .p8g-t { flex: 1 1 auto; min-width: 0; font-size: 1.1rem; font-weight: 700; line-height: 1.25; overflow-wrap: anywhere; transition: opacity .35s ease; }
-    #p8mScroll .p8g-tt { background: linear-gradient(currentColor, currentColor) no-repeat 0 55% / 0 2px; transition: background-size .4s ease; }
+    #p8mScroll .p8g-tt { background: linear-gradient(currentColor, currentColor) no-repeat 0 var(--strike-y, 50%) / 0 2px; transition: background-size .4s ease; }
     #p8mScroll .p8g-r.is-done .p8g-t { opacity: .4; }
     #p8mScroll .p8g-r.is-done .p8g-tt { background-size: 100% 2px; }
     /* --- Ekleme düğmeleri / formlar --- */
@@ -40429,6 +40429,48 @@
   .p8n-dlg-btn.p8g-okbtn { color: #fff; background: var(--accent-color, #ff90e8); text-shadow: 0 1px 2px rgba(0,0,0,.18); }
   @media (prefers-reduced-motion: reduce) { #p8nMain .p8g-c.is-step { animation: none; } }
 </style>
+<style id="gundelik-nav-hide-css">
+  /* ===== Gündelik + Hatırlanacaklar (YALNIZCA telefon): Soru Havuzu ile aynı mantık =====
+     Alt navbar bu iki sayfada çekilir; yerine sol altta sabit bir Geri düğmesi gelir
+     (#gundelikFabBar; .qhavuz-fab-* görünümünü paylaşır). Görünürlüğü body.is-gundelik-page yönetir. */
+  @media not all and (min-width: 768px) and (min-height: 600px) {
+    body.is-gundelik-page .navbar {
+      opacity: 0; transform: translateY(28px); pointer-events: none; visibility: hidden;
+      transition: opacity 0.3s ease, transform 0.3s ease, visibility 0s linear 0.3s;
+    }
+    body.is-gundelik-page .gundelik-fab-bar { visibility: visible; transition-delay: 0s; }
+    body.is-gundelik-page .gundelik-fab-bar .qhavuz-fab {
+      opacity: 1; transform: none; pointer-events: auto;
+      transition-delay: var(--d, 0s), var(--d, 0s), 0s;
+    }
+  }
+</style>
+<style id="gundelik-multiline-css">
+  /* ===== Gündelik (Rutinler + Hatırlanacaklar): çok satırlı görev metni =====
+     Görev eklerken/düzenlerken harf sınırı yok; metin tek satırda kayıp gitmez,
+     paragraf olarak görünür ve imleç istenen yere taşınabilir. Kutu yazdıkça uzar
+     (en fazla ekranın ~%42'si, sonra kutunun içinde kayar). */
+  textarea.p8g-in, #p8mScroll textarea.p8g-in,
+  textarea.p8n-edit, #p8mScroll textarea.p8n-edit,
+  textarea.hl-in, #page-hatirla textarea.hl-in,
+  textarea.hl-edit, #page-hatirla textarea.hl-edit {
+    display: block; box-sizing: border-box; width: 100%; min-height: 2.6rem; max-height: 42dvh;
+    resize: none; overflow-y: auto; border-radius: 1.2rem; line-height: 1.4;
+    white-space: pre-wrap; overflow-wrap: anywhere; scrollbar-width: thin;
+    user-select: text; -webkit-user-select: text; -webkit-touch-callout: default;
+  }
+  textarea.p8g-in, #p8mScroll textarea.p8g-in, textarea.hl-in, #page-hatirla textarea.hl-in { padding: .65rem 1rem; }
+  textarea.p8n-edit, #p8mScroll textarea.p8n-edit, textarea.hl-edit, #page-hatirla textarea.hl-edit { padding: .5rem .85rem; }
+  .p8g-form:has(textarea), #p8mScroll .p8g-form:has(textarea), #page-hatirla .hl-form:has(textarea) { align-items: flex-end; }
+  .p8n-editwrap, .hl-editwrap { flex: 1 1 auto; min-width: 0; display: flex; align-items: flex-end; gap: .5rem; }
+  .p8n-editwrap > textarea, .hl-editwrap > textarea { flex: 1 1 auto; min-width: 0; width: auto; }
+  .p8n-editok, .hl-editok { flex: 0 0 auto; width: 2.3rem; height: 2.3rem; margin-bottom: .1rem; padding: 0; border: none; border-radius: 50%; display: grid; place-items: center; cursor: pointer; background: var(--gc, var(--accent-color, #ff90e8)); -webkit-tap-highlight-color: transparent; }
+  .p8n-editok:active, .hl-editok:active { transform: scale(.92); }
+  .p8n-editok svg, .hl-editok svg { width: 1rem; height: 1rem; fill: none; stroke: var(--gt, #fff); stroke-width: 3.4; stroke-linecap: round; stroke-linejoin: round; }
+  /* Uzun görevler kesilmesin: satır yükseklik sınırı kalktı, paragraflar (Enter ile) korunur. */
+  .p8g-r, #p8mScroll .p8g-r { max-height: none; }
+  .p8g-tt, .hl-tt { white-space: pre-wrap; -webkit-box-decoration-break: clone; box-decoration-break: clone; }
+</style>
 <style id="hatirla-css">
   /* ===== Hatırlanacaklar (YALNIZCA telefon) =====
      Gündelik başlığına dokununca açılır. Kart yok: yazılar doğrudan arka planda,
@@ -40462,7 +40504,7 @@
     #page-hatirla .hl-r.is-done .hl-c { background: var(--gc); border-color: var(--gc); }
     #page-hatirla .hl-r.is-done .hl-c svg { stroke-dashoffset: 0; }
     #page-hatirla .hl-t { flex: 1 1 auto; min-width: 0; font-size: 1.1rem; font-weight: 700; line-height: 1.25; overflow-wrap: anywhere; transition: opacity .3s ease; }
-    #page-hatirla .hl-tt { background: linear-gradient(currentColor, currentColor) no-repeat 0 58% / 0 2px; -webkit-box-decoration-break: clone; box-decoration-break: clone; transition: background-size .45s ease; }
+    #page-hatirla .hl-tt { background: linear-gradient(currentColor, currentColor) no-repeat 0 var(--strike-y, 50%) / 0 2px; -webkit-box-decoration-break: clone; box-decoration-break: clone; transition: background-size .45s ease; }
     #page-hatirla .hl-r.is-done .hl-t { opacity: .4; }
     #page-hatirla .hl-r.is-done .hl-tt { background-size: 100% 2px; }
     #page-hatirla .hl-add { display: block; width: 100%; box-sizing: border-box; padding: .65rem .3rem; border: none; background: none; text-align: left; font: inherit; font-weight: 700; font-size: .95rem; color: var(--hl-mute); cursor: pointer; -webkit-tap-highlight-color: transparent; }
@@ -43095,6 +43137,18 @@
   </div>
 </div>
 
+<!-- Gündelik + Hatırlanacaklar (telefon): sol altta Geri düğmesi. Soru Havuzu çubuğuyla
+     aynı görünüm; alt navbar bu iki sayfada çekilir (body.is-gundelik-page). Büyük ekranda hiç görünmez. -->
+<div class="qhavuz-fab-bar gundelik-fab-bar" id="gundelikFabBar" role="group" aria-label="Gündelik işlemleri">
+  <div class="qhavuz-fab-inner">
+    <button type="button" class="qhavuz-fab qhavuz-fab-back" id="gundelikFabBackBtn" aria-label="Geri">
+      <svg class="qhavuz-fab-icon" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="m14.5 17-5-5 5-5"/>
+      </svg>
+    </button>
+  </div>
+</div>
+
 <script>
   // Alt nav bar: seçili radio'ya göre ilgili sayfayı gösterir.
   // Takvim ikonunun içindeki rakam her zaman bugünün gün numarasını
@@ -43130,6 +43184,24 @@
   // Soru Havuzu betiği, sayfadan çıkılırken açık kalmış seçim/düzenleme
   // modlarını sıfırlamak için buraya bir işleyici bağlar.
   const qhavuzNavHooks = { onLeave: null };
+
+  // Gündelik + Hatırlanacaklar (telefon): Soru Havuzu ile aynı yapı — navbar çekilir,
+  // sol altta Geri düğmesi (#gundelikFabBar) görünür. Sınıf: body.is-gundelik-page.
+  const GUNDELIK_NAV_PAGES = new Set(['page-8', 'page-hatirla']);
+  const setGundelikPageMode = (on) => {
+    if (document.body.classList.contains('is-gundelik-page') === on) return;
+    document.body.classList.toggle('is-gundelik-page', on);
+    if (!on) {
+      // Navbar geri gelirken gösterge, işaretli sekmenin altına animasyonsuz yerleşir.
+      const checked = document.querySelector('.nav-input:checked');
+      if (checked) {
+        navSlider.style.transition = 'none';
+        moveSlider(checked);
+        void navSlider.offsetWidth;
+        navSlider.style.transition = '';
+      }
+    }
+  };
 
   const setQhavuzPageMode = (on) => {
     if (document.body.classList.contains('is-qhavuz-page') === on) return;
@@ -43186,6 +43258,7 @@
 
     setQhavuzPageMode(QHAVUZ_NAV_PAGES.has(id));
     setPage11PageMode(id === 'page-11');
+    setGundelikPageMode(GUNDELIK_NAV_PAGES.has(id));
 
     const prevPage = activePage;
     activePage = nextPage;
@@ -51304,6 +51377,10 @@
     // Planlayıcı listesindeki gibi renkli, dolan bağlantı çizgisi çizilir
     // (bkz. drawHomeRelaxConnectors).
     const HOME_TASK_ROWS_MAX = 5; // güvenli üst sınır; gerçek görünen sayı ekrana göre daha az olabilir
+    // MOBİL (telefon) için TEK GÖREV modu: şimdiki görev varsa yalnızca o, yoksa sıradaki.
+    // Masaüstü/geniş ekran eski çoklu satır davranışını korur.
+    const homePhoneMQ = window.matchMedia('not all and (min-width: 768px) and (min-height: 600px)');
+    const homeIsPhone = () => homePhoneMQ.matches;
     const homeWidgetEl = $('homeRelaxWidget');
     const homeRowTemplateEl = homeWidgetEl ? homeWidgetEl.querySelector('.home-relax-task-row[data-row-index="0"]') : null;
     const homeConnectorsEl = $('homeRelaxConnectors');
@@ -51434,7 +51511,16 @@
         }
       }
       entries.sort((a, b) => (a.startMs - b.startMs) || (a.idx - b.idx));
-      return entries.slice(0, limit).map((entry) => Object.assign(
+      // Şu an süren görev varsa SADECE o gösterilir (sıradaki gizlenir);
+      // süren yoksa sıradaki ilk görev gösterilir.
+      let ordered = entries;
+      let max = limit;
+      if (homeIsPhone()) {
+        const nowEntries = entries.filter((e) => e.startMs <= now && now < e.endMs);
+        ordered = nowEntries.length ? nowEntries : entries;
+        max = Math.min(limit, 1);
+      }
+      return ordered.slice(0, max).map((entry) => Object.assign(
         { mode: (entry.startMs <= now && now < entry.endMs) ? 'now' : 'next' },
         entry,
       ));
@@ -51647,6 +51733,11 @@
       window.document.fonts.ready.then(drawHomeRelaxConnectorsSettled).catch(() => {});
     }
 
+    homePhoneMQ.addEventListener && homePhoneMQ.addEventListener('change', () => {
+      homeShownList = [];
+      if (typeof syncHomeRelaxWidget === 'function') syncHomeRelaxWidget(true);
+    });
+
     // Gösterilecek görev listesi değiştiyse widget'ı yeniden kurar; birebir
     // aynıysa dokunmaz (satır satır karşılaştırılır).
     const syncHomeRelaxWidget = (force = false) => {
@@ -51655,7 +51746,7 @@
       // dışarıdan yeniden kurmak animasyonu yarıda keser; geçişin sonunda zaten
       // güncel duruma eşitlenir. Geçişin kendi çağrısı force=true ile gelir.
       if (homeSwapPlaying && !force) return;
-      const limit = homeVisibleCount || 1;
+      const limit = homeIsPhone() ? 1 : (homeVisibleCount || 1);
       const picks = pickHomeTasks(limit);
       const keys = homeRows.map((_, i) => (picks[i]
         ? `${picks[i].task.id || ''}|${picks[i].dateStr}|${picks[i].task.start}|${picks[i].mode}|${picks[i].task.name || ''}|${picks[i].task.icon}|${picks[i].task.color || ''}`
@@ -52862,6 +52953,46 @@
 
   const page8NextColor = (count) => WHEEL_PALETTE[count % WHEEL_PALETTE.length];
 
+  // ---------- Gündelik: ortak yardımcılar (Rutinler + Hatırlanacaklar) ----------
+  // Panoya kopyalama (güvenli bağlamda Clipboard API, yoksa eski yöntem) ve
+  // çok satırlı görev kutularının yazdıkça uzaması.
+  window.gundelikCopyText = async (text) => {
+    try { if (navigator.clipboard && window.isSecureContext) { await navigator.clipboard.writeText(text); return true; } } catch (e) { /* eski yönteme düş */ }
+    try {
+      const ta = document.createElement('textarea');
+      ta.value = text; ta.setAttribute('readonly', '');
+      ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0;pointer-events:none;';
+      document.body.appendChild(ta); ta.select(); ta.setSelectionRange(0, text.length);
+      const ok = document.execCommand('copy'); ta.remove(); return !!ok;
+    } catch (e) { return false; }
+  };
+  // Üstü çizili (tamamlandı) çizgisini yazının TAM ORTASINA (küçük ve büyük harf
+  // ortalarının ortası) oturtur. Çizgi, satırın içerik alanına göre yüzdeyle konumlanıyor; Baloo 2'nin
+  // dikey ölçüleri büyük olduğundan sabit bir yüzde yazının biraz altına düşüyordu. Bu yüzden
+  // yüzde, yüklenen yazı tipinin gerçek ölçülerinden hesaplanıp --strike-y değişkenine yazılır.
+  (function () {
+    const calc = () => {
+      try {
+        const ctx = document.createElement('canvas').getContext('2d');
+        ctx.font = '700 200px "Baloo 2", "Space Grotesk", sans-serif';
+        const m = ctx.measureText('x'), mh = ctx.measureText('H');
+        const fa = m.fontBoundingBoxAscent, fd = m.fontBoundingBoxDescent;
+        const xh = m.actualBoundingBoxAscent, ch = mh.actualBoundingBoxAscent;
+        if (!(fa > 0) || !(fd >= 0) || !(xh > 0) || !(ch > 0)) return;
+        // Küçük harf (x-yüksekliği) ve büyük harf (H) ortalarının ortası: kelimenin gözle görülen ortası.
+        const y = ((fa - (xh + ch) / 4) / (fa + fd)) * 100;
+        if (y > 30 && y < 70) document.documentElement.style.setProperty('--strike-y', y.toFixed(2) + '%');
+      } catch (e) { /* varsayılan %50 kalır */ }
+    };
+    calc();
+    if (document.fonts) {
+      if (document.fonts.load) document.fonts.load('700 200px "Baloo 2"').then(calc).catch(() => {});
+      if (document.fonts.ready) document.fonts.ready.then(calc);
+      if (document.fonts.addEventListener) document.fonts.addEventListener('loadingdone', calc);
+    }
+  })();
+  window.gundelikAutoGrow = (ta) => { ta.style.height = 'auto'; ta.style.height = ta.scrollHeight + 'px'; };
+
   // ---------- Gündelik yeni arayüz (büyük ekran, #p8n) ----------
   // Aynı page8State'i kullanır: rutin grupları ana ekran.
   (() => {
@@ -53005,14 +53136,24 @@
     });
 
     // ---- Rutin kartları ----
+    // Çok satırlı düzenleme: harf sınırı yok, paragraf olarak görünür, imleç
+    // istenen yere taşınabilir. Enter = yeni satır; Ctrl/⌘+Enter, ✓ düğmesi
+    // ya da kutunun dışına dokunmak kaydeder; Esc vazgeçer.
     const startEditText = (span, item, after) => {
-      const inp = el('input', 'p8n-edit'); inp.value = item.text;
-      span.replaceWith(inp); inp.focus(); inp.select();
+      const wrap = el('div', 'p8n-editwrap');
+      const inp = el('textarea', 'p8n-edit'); inp.rows = 1; inp.value = item.text; inp.enterKeyHint = 'enter';
+      const okb = el('button', 'p8n-editok'); okb.type = 'button'; okb.setAttribute('aria-label', 'Kaydet'); okb.innerHTML = TICK;
+      wrap.append(inp, okb);
+      span.replaceWith(wrap); inp.focus(); window.gundelikAutoGrow(inp);
+      inp.setSelectionRange(inp.value.length, inp.value.length);
       let done = false;
       const commit = (ok) => { if (done) return; done = true; const v = inp.value.trim(); if (ok && v) { item.text = v; savePage8State(); } after(); };
-      inp.addEventListener('keydown', (e) => { if (e.key === 'Enter') commit(true); else if (e.key === 'Escape') commit(false); });
+      inp.addEventListener('input', () => window.gundelikAutoGrow(inp));
+      inp.addEventListener('keydown', (e) => { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); commit(true); } else if (e.key === 'Escape') commit(false); });
       inp.addEventListener('blur', () => commit(true));
-      inp.addEventListener('click', (e) => e.stopPropagation());
+      okb.addEventListener('pointerdown', (e) => e.preventDefault());
+      okb.addEventListener('click', (e) => { e.stopPropagation(); commit(true); });
+      wrap.addEventListener('click', (e) => e.stopPropagation());
     };
 
     // ==== Rutin kartları (p8g) — basılı tutma ile yönetim ====
@@ -53028,6 +53169,7 @@
     const gKey = (g) => g.id || g.name;
     const rKey = (g, r) => (r.id || r.text) + '@' + gKey(g);
     const IC = {
+      copy: '<svg viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2.5"/><path d="M5 15V6.5A2.5 2.5 0 0 1 7.5 4H15"/></svg>',
       edit: '<svg viewBox="0 0 24 24"><path d="M4 20h4L19 9a2.1 2.1 0 0 0-3-3L5 17v3z"/><path d="M14.5 7.5l3 3"/></svg>',
       color: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><circle cx="8.6" cy="11" r="1"/><circle cx="12" cy="7.9" r="1"/><circle cx="15.4" cy="11" r="1"/></svg>',
       plus: '<svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>',
@@ -53085,7 +53227,7 @@
       node.addEventListener('pointerdown', (e) => {
         fired = false;
         if (e.pointerType === 'mouse' || e.button > 0) return;
-        if (e.target.closest && e.target.closest('input, textarea, .p8g-form')) return;
+        if (e.target.closest && e.target.closest('input, textarea, .p8g-form, .p8n-editwrap')) return;
         sx = e.clientX; sy = e.clientY; cancel();
         node.classList.add('is-pressing');
         timer = setTimeout(() => {
@@ -53352,7 +53494,12 @@
     // Yazı kutusu + gönder düğmesi (rutin ve alt başlık ekleme için ortak)
     const mkForm = (placeholder, onSubmit, onCancel, isOpen, withSteps) => {
       const f = el('form', 'p8g-form'); f.autocomplete = 'off'; f.noValidate = true;
-      const inp = el('input', 'p8g-in'); inp.type = 'text'; inp.placeholder = placeholder; inp.enterKeyHint = 'done'; inp.maxLength = 120;
+      // Rutin eklerken (withSteps): çok satırlı, harf sınırsız metin kutusu.
+      // Alt başlık adı gibi kısa adlar tek satırlık kutuda kalır.
+      const multi = !!withSteps;
+      const inp = el(multi ? 'textarea' : 'input', 'p8g-in'); inp.placeholder = placeholder;
+      if (multi) { inp.rows = 1; inp.enterKeyHint = 'enter'; inp.addEventListener('input', () => window.gundelikAutoGrow(inp)); }
+      else { inp.type = 'text'; inp.enterKeyHint = 'done'; inp.maxLength = 120; }
       const go = el('button', 'p8g-go'); go.type = 'submit'; go.setAttribute('aria-label', 'Ekle');
       go.innerHTML = '<svg viewBox="0 0 24 24"><path d="M12 19V6M6.5 11.5L12 6l5.5 5.5"/></svg>';
       let steps = 1;
@@ -53367,7 +53514,7 @@
         f.append(inp, sb, go);
       } else f.append(inp, go);
       f.addEventListener('submit', (e) => { e.preventDefault(); const v = inp.value.trim(); if (!v) { inp.focus(); return; } onSubmit(v, steps); });
-      inp.addEventListener('keydown', (e) => { if (e.key === 'Escape') onCancel(); });
+      inp.addEventListener('keydown', (e) => { if (e.key === 'Escape') onCancel(); else if (multi && e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); f.dispatchEvent(new Event('submit', { cancelable: true })); } });
       inp.addEventListener('blur', () => { setTimeout(() => { if (!inp.value.trim() && !f.contains(document.activeElement) && isOpen()) onCancel(); }, 120); });
       return f;
     };
@@ -53408,6 +53555,7 @@
           row.addEventListener('click', () => toggleRoutine(group, r, row, card));
           bindHold(row, (x, y) => {
             openCtx(row, [
+              { ic: IC.copy, title: 'Kopyala', sub: 'Metni panoya al', fn: async () => { const ok = await window.gundelikCopyText(r.text); toast(ok ? 'Kopyalandı' : 'Kopyalanamadı'); } },
               { ic: IC.edit, title: 'Metni Düzenle', sub: 'Rutinin adını değiştir', fn: () => startEditText(t, r, render) },
               { ic: IC.steps, title: 'Aşama Sayısı', sub: r.steps > 1 ? `Şu an ${r.steps} aşamalı` : 'Birden çok işaretle tamamlanan rutin', fn: () => setSteps(group, r) },
               ...((r.steps > 1 && (r.done || r.prog > 0)) ? [{ ic: IC.undo, title: 'Bir Aşama Geri Al', sub: 'Son işareti kaldır', fn: () => stepBack(group, r, row, card) }] : []),
@@ -67875,7 +68023,7 @@
   // Kaydırma ve diğer davranışlara dokunulmaz, yalnızca bir body sınıfı
   // açılıp kapatılır.
   (function () {
-    const TYPING_SELECTOR = '.page8-item-input, .page8-item-edit-input, .hl-in, .hl-edit';
+    const TYPING_SELECTOR = '.page8-item-input, .page8-item-edit-input, .hl-in, .hl-edit, .p8g-in, .p8n-edit';
     const sync = () => {
       const el = document.activeElement;
       const typing = !!(el && el.matches && el.matches(TYPING_SELECTOR));
@@ -68805,6 +68953,7 @@
     const IC = {
       edit: '<svg viewBox="0 0 24 24"><path d="M4 20h4L19 9a2.1 2.1 0 0 0-3-3L5 17v3z"/><path d="M14.5 7.5l3 3"/></svg>',
       color: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><circle cx="8.6" cy="11" r="1"/><circle cx="12" cy="7.9" r="1"/><circle cx="15.4" cy="11" r="1"/></svg>',
+      copy: '<svg viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2.5"/><path d="M5 15V6.5A2.5 2.5 0 0 1 7.5 4H15"/></svg>',
       clean: '<svg viewBox="0 0 24 24"><path d="M4 12.5l5 5.5 11-13"/></svg>',
       trash: '<svg viewBox="0 0 24 24"><path d="M3.5 6h17"/><path d="M8.5 6V4.3a1 1 0 0 1 1-1h5a1 1 0 0 1 1 1V6"/><path d="M6 6l.9 13.2a2 2 0 0 0 2 1.8h6.2a2 2 0 0 0 2-1.8L18 6"/></svg>'
     };
@@ -68838,6 +68987,17 @@
     const onMq = () => { if (!phone.matches && page.classList.contains('is-active')) goToPage('page-8'); };
     if (phone.addEventListener) phone.addEventListener('change', onMq); else phone.addListener(onMq);
 
+    // Sol alttaki Geri düğmesi (nav bar bu sayfalarda gizli): Hatırlanacaklar → Gündelik,
+    // Gündelik → Ana sayfa (Soru Havuzu'ndaki Geri ile aynı akış).
+    const gBack = document.getElementById('gundelikFabBackBtn');
+    if (gBack) gBack.addEventListener('click', () => {
+      if (page.classList.contains('is-active')) { goToPage('page-8'); return; }
+      const homeInput = document.querySelector('.nav-input[value="page-1"]');
+      if (homeInput) homeInput.checked = true;
+      goToPage('page-1');
+      if (typeof setActiveSidebarItem === 'function') setActiveSidebarItem('page-1');
+    });
+
     // ---- Bağlam menüsü (basılı tut / sağ tık) ----
     let menu = null, target = null;
     const closeMenu = () => { if (target) target.classList.remove('is-ctx-active'); target = null; if (menu) menu.classList.remove('is-open'); };
@@ -68869,7 +69029,7 @@
       const cancel = () => { if (timer) { clearTimeout(timer); timer = null; } node.classList.remove('is-pressing'); };
       node.addEventListener('pointerdown', (e) => {
         fired = false; if (e.pointerType === 'mouse' || e.button > 0) return;
-        if (e.target.closest && e.target.closest('input')) return;
+        if (e.target.closest && e.target.closest('input, textarea, .hl-editwrap')) return;
         sx = e.clientX; sy = e.clientY; cancel(); node.classList.add('is-pressing');
         timer = setTimeout(() => { timer = null; fired = true; if (navigator.vibrate) navigator.vibrate(12); onOpen(sx, sy); }, 480);
       });
@@ -68896,21 +69056,41 @@
       bk.addEventListener('pointerdown', (e) => { if (e.target === bk) fin(false); });
       document.body.appendChild(bk); requestAnimationFrame(() => requestAnimationFrame(() => bk.classList.add('is-in')));
     });
-    const editInline = (node, text, commitFn) => {
-      const inp = el('input', 'hl-edit'); inp.value = text; inp.maxLength = 120; inp.enterKeyHint = 'done';
-      node.replaceWith(inp); inp.focus(); inp.select();
+    // multi=true: madde metni için çok satırlı, harf sınırsız kutu (Enter = yeni satır;
+    // Ctrl/⌘+Enter, ✓ düğmesi ya da dışarı dokunmak kaydeder; Esc vazgeçer).
+    // multi=false: liste adı gibi kısa adlar tek satırlık kutuda kalır.
+    const editInline = (node, text, commitFn, multi) => {
+      const inp = el(multi ? 'textarea' : 'input', 'hl-edit'); inp.value = text; inp.enterKeyHint = multi ? 'enter' : 'done';
       let fin = false;
       const done = (ok) => { if (fin) return; fin = true; const v = inp.value.trim(); if (ok && v && v !== text) commitFn(v); render(); };
-      inp.addEventListener('keydown', (e) => { if (e.key === 'Enter') done(true); else if (e.key === 'Escape') done(false); });
-      inp.addEventListener('blur', () => done(true)); inp.addEventListener('click', (e) => e.stopPropagation());
+      if (multi) {
+        inp.rows = 1;
+        const wrap = el('div', 'hl-editwrap'), okb = el('button', 'hl-editok'); okb.type = 'button'; okb.setAttribute('aria-label', 'Kaydet'); okb.innerHTML = TICK;
+        wrap.append(inp, okb); node.replaceWith(wrap); inp.focus(); window.gundelikAutoGrow(inp);
+        inp.setSelectionRange(inp.value.length, inp.value.length);
+        inp.addEventListener('input', () => window.gundelikAutoGrow(inp));
+        inp.addEventListener('keydown', (e) => { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); done(true); } else if (e.key === 'Escape') done(false); });
+        okb.addEventListener('pointerdown', (e) => e.preventDefault());
+        okb.addEventListener('click', (e) => { e.stopPropagation(); done(true); });
+        wrap.addEventListener('click', (e) => e.stopPropagation());
+      } else {
+        inp.maxLength = 120;
+        node.replaceWith(inp); inp.focus(); inp.select();
+        inp.addEventListener('keydown', (e) => { if (e.key === 'Enter') done(true); else if (e.key === 'Escape') done(false); });
+        inp.addEventListener('click', (e) => e.stopPropagation());
+      }
+      inp.addEventListener('blur', () => done(true));
     };
-    const mkForm = (ph, onSubmit, onCancel) => {
+    const mkForm = (ph, onSubmit, onCancel, multi) => {
       const f = el('form', 'hl-form'); f.autocomplete = 'off'; f.noValidate = true;
-      const inp = el('input', 'hl-in'); inp.type = 'text'; inp.placeholder = ph; inp.enterKeyHint = 'done'; inp.maxLength = 120;
+      // Madde eklerken (multi): çok satırlı, harf sınırsız kutu. Liste adı tek satırlık kalır.
+      const inp = el(multi ? 'textarea' : 'input', 'hl-in'); inp.placeholder = ph;
+      if (multi) { inp.rows = 1; inp.enterKeyHint = 'enter'; inp.addEventListener('input', () => window.gundelikAutoGrow(inp)); }
+      else { inp.type = 'text'; inp.enterKeyHint = 'done'; inp.maxLength = 120; }
       const go2 = el('button', 'hl-go'); go2.type = 'submit'; go2.setAttribute('aria-label', 'Ekle'); go2.innerHTML = UP;
       f.append(inp, go2);
       f.addEventListener('submit', (e) => { e.preventDefault(); const v = inp.value.trim(); if (!v) { inp.focus(); return; } onSubmit(v); });
-      inp.addEventListener('keydown', (e) => { if (e.key === 'Escape') onCancel(); });
+      inp.addEventListener('keydown', (e) => { if (e.key === 'Escape') onCancel(); else if (multi && e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); f.dispatchEvent(new Event('submit', { cancelable: true })); } });
       inp.addEventListener('blur', () => setTimeout(() => { if (!inp.value.trim() && !f.contains(document.activeElement)) onCancel(); }, 120));
       return f;
     };
@@ -68945,12 +69125,13 @@
           c.innerHTML = TICK; row.append(c, t);
           row.addEventListener('click', () => { it.done = !it.done; row.classList.toggle('is-done', it.done); save(); upd(); });
           hold(row, (x, y) => openMenu(row, [
-            { ic: IC.edit, title: 'Metni Düzenle', sub: 'Maddenin adını değiştir', fn: () => editInline(t, it.text, (v) => { it.text = v; save(); }) },
+            { ic: IC.copy, title: 'Kopyala', sub: 'Metni panoya al', fn: async () => { const ok = await window.gundelikCopyText(it.text); toast(ok ? 'Kopyalandı' : 'Kopyalanamadı'); } },
+            { ic: IC.edit, title: 'Metni Düzenle', sub: 'Maddenin adını değiştir', fn: () => editInline(t, it.text, (v) => { it.text = v; save(); }, true) },
             { ic: IC.trash, title: 'Sil', sub: 'Bu maddeyi kaldır', danger: true, fn: () => { const idx = g.items.indexOf(it); g.items = g.items.filter((x2) => x2 !== it); save(); render(); toast('Madde silindi', () => { g.items.splice(Math.min(idx, g.items.length), 0, it); save(); render(); }); } }
           ], x, y));
           box.appendChild(row);
         });
-        if (addOpen === g.id) box.appendChild(mkForm('Yeni madde ekle', (v) => { g.items.push({ id: gid(), text: v, done: false }); save(); render(); focusIn(); }, () => { addOpen = null; render(); }));
+        if (addOpen === g.id) box.appendChild(mkForm('Yeni madde ekle', (v) => { g.items.push({ id: gid(), text: v, done: false }); save(); render(); focusIn(); }, () => { addOpen = null; render(); }, true));
         else { const b = el('button', 'hl-add', '+ Madde ekle'); b.type = 'button'; b.onclick = () => { addOpen = g.id; render(); focusIn(); }; box.appendChild(b); }
         list.appendChild(box);
       });
