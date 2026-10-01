@@ -39964,7 +39964,7 @@ body.is-countdown-fs.is-countdown-paused .countdown-fullscreen-time-row .stopwat
         <!-- ADIM 3 — Zaman: tarih, saat çarkı ve süre; altta "Ekle" butonu -->
         <div class="task-add-step" data-step="time">
         <!-- Tarih: dokununca üstündeki görünmez tarih alanı native seçiciyi açar -->
-        <label class="task-add-date-row" for="taskAddDateInput">
+        <div class="task-add-date-row" id="taskAddDateRow" role="button" tabindex="0" aria-label="Tarih seç">
           <span class="task-add-date-icon" aria-hidden="true">
             <svg viewBox="0 0 24 24" width="18" height="18">
               <rect x="4" y="5.5" width="16" height="14.5" rx="3" fill="none" stroke="currentColor" stroke-width="1.9"/>
@@ -39973,16 +39973,18 @@ body.is-countdown-fs.is-countdown-paused .countdown-fullscreen-time-row .stopwat
           </span>
           <span class="task-add-date-text" id="taskAddDateText">--</span>
           <span class="task-add-date-rel" id="taskAddDateRel"></span>
-          <input type="date" class="task-add-date-input" id="taskAddDateInput" aria-label="Tarih seç">
-        </label>
+          <input type="hidden" id="taskAddDateInput">
+        </div>
 
         <!-- Zaman: dikey çark, 15 dk adımlı -->
         <div class="task-add-card">
           <h3 class="task-add-card-title">Zaman</h3>
-          <div class="task-add-wheel-wrap">
-            <div class="task-add-wheel-pill" aria-hidden="true"></div>
-            <div class="task-add-wheel" id="taskAddWheel" aria-label="Başlangıç saatini kaydırarak seç"></div>
+          <div class="task-add-wheels">
+            <div class="task-add-w" id="taskAddHours" aria-label="Saat"></div>
+            <span class="task-add-w-colon" aria-hidden="true">:</span>
+            <div class="task-add-w" id="taskAddMins" aria-label="Dakika"></div>
           </div>
+          <p class="task-add-range" id="taskAddRange" aria-live="polite"></p>
         </div>
 
         <!-- Çalışılacak süre: bitişi belirler -->
@@ -50494,7 +50496,9 @@ body.is-countdown-fs.is-countdown-paused .countdown-fullscreen-time-row .stopwat
     const dateInput = $('taskAddDateInput');
     const dateTextEl = $('taskAddDateText');
     const dateRelEl = $('taskAddDateRel');
-    const wheel = $('taskAddWheel');
+    const wheelH = $('taskAddHours');
+    const wheelM = $('taskAddMins');
+    const rangeEl = $('taskAddRange');
     const durationRow = $('taskAddDurationRow');
     const repeatOptionsRow = $('taskAddRepeatOptions');
     const repeatDaysRow = $('taskAddRepeatDays');
@@ -50507,7 +50511,7 @@ body.is-countdown-fs.is-countdown-paused .countdown-fullscreen-time-row .stopwat
 
     // ---- İkonlar: ilki referans tasarımdaki varsayılan "panel" ikonu; kalanlar
     // uygulamada zaten kullanılan sidebar/mini-oyun ikonları. ----
-        const TASK_ADD_ICONS = [
+    const TASK_ADD_ICONS_LEGACY = [
       { id: 'panel', label: 'Ders', svg: '<rect x="4" y="4.5" width="16" height="15" rx="3" fill="none" stroke="currentColor" stroke-width="1.9"/><line x1="12" y1="4.5" x2="12" y2="19.5" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/>' },
       { id: 'checklist', label: 'Görev', svg: '<rect x="5" y="5.5" width="14" height="15" rx="2.4" fill="none" stroke="currentColor" stroke-width="1.8"/><rect x="9" y="3" width="6" height="2.5" rx="1" fill="none" stroke="currentColor" stroke-width="1.8"/><polyline points="8.3 13 10.8 15.5 15.7 9.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>' },
       { id: 'gunluk', label: 'Gündelik', svg: '<path d="m3 17 2 2 4-4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="m3 7 2 2 4-4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><line x1="13" y1="6" x2="21" y2="6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><line x1="13" y1="18" x2="21" y2="18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>' },
@@ -50518,6 +50522,156 @@ body.is-countdown-fs.is-countdown-paused .countdown-fullscreen-time-row .stopwat
       { id: 'analytics', label: 'Analiz', svg: '<path d="M5 19V10M12 19V5M19 19v-7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>' },
       { id: 'camera', label: 'Kamera', svg: '<path d="M3 8.5a1.5 1.5 0 0 1 1.5-1.5h2.4l1.3-1.8a1.5 1.5 0 0 1 1.2-.6h5.2a1.5 1.5 0 0 1 1.2.6l1.3 1.8h2.4A1.5 1.5 0 0 1 21 8.5v9A1.5 1.5 0 0 1 19.5 19h-15A1.5 1.5 0 0 1 3 17.5z" fill="none" stroke="currentColor" stroke-width="1.7"/><circle cx="12" cy="13" r="3.2" fill="none" stroke="currentColor" stroke-width="1.7"/>' },
     ];
+
+    // ---- Yeni ikon seti: tek tip çizgi dili (24x24, 1.8 çizgi, yuvarlak uçlar). Her ikonun benzersiz bir adı var. ----
+    const _g = (inner) => '<g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' + inner + '</g>';
+    const _N = (cat, rows) => rows.map(([id, label, inner]) => ({ id, label, cat, svg: _g(inner) }));
+    const NEW_TASK_ICONS = [
+      ..._N('Ders & Okul', [
+        ['book', 'Kitap', '<path d="M12 6.5C10.5 5 8 4.5 4 4.5v13c4 0 6.5.5 8 2 1.5-1.5 4-2 8-2v-13c-4 0-6.5.5-8 2z"/><path d="M12 6.5v13"/>'],
+        ['pencil', 'Kalem', '<path d="M4 20l1-4L16.5 4.5a2 2 0 0 1 3 3L8 19z"/><path d="M14.5 6.5l3 3"/>'],
+        ['notebook', 'Defter', '<rect x="5" y="3" width="14" height="18" rx="2.2"/><path d="M9 3v18"/><path d="M12.5 8h3M12.5 12h3"/>'],
+        ['gradcap', 'Mezuniyet Şapkası', '<path d="M2.5 9.5L12 5l9.5 4.5L12 14z"/><path d="M6.5 11.5V16c0 1 2.5 2.5 5.5 2.5s5.5-1.5 5.5-2.5v-4.5"/><path d="M21.5 9.5V15"/>'],
+        ['calculator', 'Hesap Makinesi', '<rect x="5" y="3" width="14" height="18" rx="2.5"/><rect x="8" y="6.2" width="8" height="3" rx=".8"/><path d="M8.5 13h.01M12 13h.01M15.5 13h.01M8.5 16.5h.01M12 16.5h.01M15.5 16.5h.01"/>'],
+        ['flask', 'Kimya Deney Şişesi', '<path d="M9.5 3h5"/><path d="M10.5 3v6L5 18.5A1.8 1.8 0 0 0 6.6 21h10.8a1.8 1.8 0 0 0 1.6-2.5L13.5 9V3"/><path d="M8 15h8"/>'],
+        ['atom', 'Atom (Fizik)', '<ellipse cx="12" cy="12" rx="9.5" ry="3.8"/><ellipse cx="12" cy="12" rx="9.5" ry="3.8" transform="rotate(60 12 12)"/><ellipse cx="12" cy="12" rx="9.5" ry="3.8" transform="rotate(120 12 12)"/><circle cx="12" cy="12" r="1" fill="currentColor"/>'],
+        ['globe', 'Dünya (Coğrafya)', '<circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3c2.8 2.8 4 5.8 4 9s-1.2 6.2-4 9c-2.8-2.8-4-5.8-4-9s1.2-6.2 4-9z"/>'],
+        ['leaf', 'Yaprak (Biyoloji)', '<path d="M5 19c0-9 5-14 14-14 0 9-5 14-14 14z"/><path d="M5 19l8-8"/>'],
+        ['ruler', 'Cetvel', '<rect x="2.5" y="7.5" width="19" height="9" rx="2"/><path d="M7 7.5v3M11 7.5v2M15 7.5v3M19 7.5v2"/>'],
+        ['translate', 'Dil / Çeviri', '<path d="M4 6h9M8.5 4v2"/><path d="M6 6c.5 3.5 3 6 6 7.5M11 6c-.5 3.5-3 6-6 7.5"/><path d="M13 20l4-9 4 9M14.3 17h5.4"/>'],
+        ['code', 'Kod', '<path d="M8 7l-5 5 5 5M16 7l5 5-5 5M13.5 5l-3 14"/>'],
+        ['laptop', 'Bilgisayar', '<rect x="5" y="5" width="14" height="10" rx="1.6"/><path d="M2.5 19h19"/>'],
+        ['bulb', 'Ampul (Fikir)', '<path d="M9 17h6M10 20.5h4"/><path d="M12 3.5a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2V17h5v-.6c0-.8.4-1.5 1-2A6 6 0 0 0 12 3.5z"/>'],
+        ['folder', 'Klasör', '<path d="M3.5 7a2 2 0 0 1 2-2H10l2 2.5h6.5a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2z"/>'],
+        ['pencilrule', 'Liste / Yapılacaklar', '<path d="M9 6.5h11M9 12h11M9 17.5h11"/><path d="M4.5 6.5h.01M4.5 12h.01M4.5 17.5h.01"/>']
+      ]),
+      ..._N('Zaman & Planlama', [
+        ['clock', 'Saat', '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>'],
+        ['alarm', 'Çalar Saat', '<circle cx="12" cy="13" r="7.5"/><path d="M12 9.5V13l2.2 1.5"/><path d="M4 5.5l3-2.2M20 5.5l-3-2.2"/>'],
+        ['calendar', 'Takvim', '<rect x="4" y="5.5" width="16" height="15" rx="3"/><path d="M4 10h16M8.5 3.5v4M15.5 3.5v4"/>'],
+        ['hourglass', 'Kum Saati', '<path d="M7 3.5h10M7 20.5h10"/><path d="M7.5 3.5c0 4 4.5 5.5 4.5 8.5s-4.5 4.5-4.5 8.5M16.5 3.5c0 4-4.5 5.5-4.5 8.5s4.5 4.5 4.5 8.5"/>'],
+        ['bell', 'Zil / Hatırlatıcı', '<path d="M6 16.5V11a6 6 0 0 1 12 0v5.5l1.5 2h-15z"/><path d="M10 21h4"/>'],
+        ['bookmark', 'Yer İmi', '<path d="M7 3.5h10v17l-5-4-5 4z"/>'],
+        ['target', 'Hedef', '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1" fill="currentColor"/>'],
+        ['flag', 'Bayrak', '<path d="M5 21V4"/><path d="M5 5h12l-2 4 2 4H5"/>'],
+        ['trophy', 'Kupa', '<path d="M8 4h8v5a4 4 0 0 1-8 0z"/><path d="M8 6H4.5v1.5A3.5 3.5 0 0 0 8 11M16 6h3.5v1.5A3.5 3.5 0 0 1 16 11"/><path d="M12 13v4M9.5 17h5M8.5 20.5h7"/>'],
+        ['star', 'Yıldız', '<path d="M12 3.5l2.6 5.4 5.9.8-4.3 4.1 1 5.8L12 16.8l-5.2 2.8 1-5.8L3.5 9.7l5.9-.8z"/>'],
+        ['sparkle', 'Parıltı', '<path d="M12 3.5l1.8 5.2 5.2 1.8-5.2 1.8L12 17.5l-1.8-5.2L5 10.5l5.2-1.8z"/><path d="M18.5 16.5l.7 1.8 1.8.7-1.8.7-.7 1.8-.7-1.8-1.8-.7 1.8-.7z"/>'],
+        ['chartline', 'Çizgi Grafik', '<path d="M4 4v16h16"/><path d="M7.5 14l3.5-4 3 3 5-6"/>'],
+        ['pie', 'Pasta Grafik', '<path d="M12 3.5a8.5 8.5 0 1 0 8.5 8.5H12z"/><path d="M15 3.9A8.5 8.5 0 0 1 20.1 9H15z"/>'],
+        ['bolt', 'Şimşek (Enerji)', '<path d="M13 2.5L5 13.5h6l-1 8 8-11h-6z"/>'],
+        ['flame', 'Alev (Seri)', '<path d="M12 3c1 3.5 5.5 5.5 5.5 10.5a5.5 5.5 0 0 1-11 0c0-2 1-3.5 2-4.5.3 1.5 1 2.2 1.8 2.5C10 8.5 10.5 5.5 12 3z"/>']
+      ]),
+      ..._N('Sağlık & Spor', [
+        ['dumbbell', 'Dumbbell (Ağırlık)', '<path d="M3 9.5v5M6 7v10M18 7v10M21 9.5v5M6 12h12"/>'],
+        ['bike', 'Bisiklet', '<circle cx="6" cy="16" r="3.5"/><circle cx="18" cy="16" r="3.5"/><path d="M6 16l3.5-7h5l3.5 7M9.5 9L12 16M13.5 6H16"/>'],
+        ['pulse', 'Nabız', '<path d="M3 12h4l2-5 4 10 2-5h6"/>'],
+        ['pill', 'İlaç Hapı', '<g transform="rotate(-45 12 12)"><rect x="2.5" y="8.5" width="19" height="7" rx="3.5"/><path d="M12 8.5v7"/></g>'],
+        ['drop', 'Su Damlası', '<path d="M12 3.5s6 6.2 6 10.5a6 6 0 0 1-12 0c0-4.3 6-10.5 6-10.5z"/>'],
+        ['moon', 'Ay (Uyku)', '<path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z"/>'],
+        ['sun', 'Güneş', '<circle cx="12" cy="12" r="4"/><path d="M12 2.5V5M12 19v2.5M2.5 12H5M19 12h2.5M5.3 5.3l1.8 1.8M16.9 16.9l1.8 1.8M5.3 18.7l1.8-1.8M16.9 7.1l1.8-1.8"/>'],
+        ['wind', 'Nefes / Rüzgâr', '<path d="M3 9h10a2.5 2.5 0 1 0-2.5-2.5"/><path d="M3 13h14a2.5 2.5 0 1 1-2.5 2.5"/><path d="M3 17h6"/>'],
+        ['smile', 'Gülen Yüz', '<circle cx="12" cy="12" r="9"/><path d="M8.5 14c.8 1.4 2 2 3.5 2s2.7-.6 3.5-2M9 9.5h.01M15 9.5h.01"/>'],
+        ['heart', 'Kalp', '<path d="M12 20s-7.5-4.6-7.5-10.2A4.3 4.3 0 0 1 12 7.4a4.3 4.3 0 0 1 7.5 2.4C19.5 15.4 12 20 12 20z"/>']
+      ]),
+      ..._N('Yemek & Ev', [
+        ['apple', 'Elma (Beslenme)', '<path d="M12 7.5c-1.5-1.2-3.5-1.5-5-.5-2 1-2.5 4-1.5 7 1 3 3 6 4.5 6 1 0 1.2-.5 2-.5s1 .5 2 .5c1.5 0 3.5-3 4.5-6 1-3 .5-6-1.5-7-1.5-1-3.5-.7-5 .5z"/><path d="M12 7.5c0-2 1-3.5 2.5-4"/>'],
+        ['coffee', 'Kahve Fincanı', '<path d="M4.5 9h11v6a4 4 0 0 1-4 4h-3a4 4 0 0 1-4-4z"/><path d="M15.5 10.5H17a2.5 2.5 0 0 1 0 5h-1.5M8 3.5v2M12 3.5v2"/>'],
+        ['cutlery', 'Çatal Bıçak (Yemek)', '<path d="M6 3.5v6a2.5 2.5 0 0 0 5 0v-6M8.5 3.5v17"/><path d="M17 20.5V3.5c-2.2 1.5-3 4-3 7h3"/>'],
+        ['home', 'Ev', '<path d="M4 11l8-7 8 7"/><path d="M6 9.5V20h12V9.5"/><path d="M10 20v-5.5h4V20"/>'],
+        ['washer', 'Çamaşır Makinesi', '<rect x="4.5" y="3" width="15" height="18" rx="2.5"/><circle cx="12" cy="13.5" r="4"/><path d="M8 6.5h.01M11 6.5h.01"/>'],
+        ['cart', 'Alışveriş Arabası', '<path d="M3 4h2.5l2 11h10l2-8H7"/><circle cx="9.5" cy="19.5" r="1.2"/><circle cx="17" cy="19.5" r="1.2"/>'],
+        ['bag', 'Alışveriş Çantası', '<path d="M5 8h14l-1 12.5H6z"/><path d="M9 8V6.5a3 3 0 0 1 6 0V8"/>'],
+        ['shirt', 'Tişört (Kıyafet)', '<path d="M8.5 4l-5 3 2 4 2-1V20h10V10l2 1 2-4-5-3a3.5 3.5 0 0 1-7 0z"/>'],
+        ['plant', 'Saksı Bitkisi', '<path d="M12 21v-8"/><path d="M12 13c0-4-3-6.5-7-6.5 0 4 2.5 6.5 7 6.5z"/><path d="M12 11c0-3.5 2.5-6 6.5-6 0 3.5-2.5 6-6.5 6z"/><path d="M8.5 21h7"/>'],
+        ['paw', 'Pati (Evcil Hayvan)', '<circle cx="8" cy="9" r="1.7"/><circle cx="16" cy="9" r="1.7"/><circle cx="4.8" cy="13.5" r="1.5"/><circle cx="19.2" cy="13.5" r="1.5"/><path d="M12 12.5c-3 0-5.5 3-5.5 5.2 0 1.8 1.6 2.3 3 2 1-.2 1.7-.5 2.5-.5s1.5.3 2.5.5c1.4.3 3-.2 3-2 0-2.2-2.5-5.2-5.5-5.2z"/>'],
+        ['wallet', 'Cüzdan (Para)', '<path d="M4 7.5A2.5 2.5 0 0 1 6.5 5H18v3"/><path d="M4 7.5V17a2 2 0 0 0 2 2h13.5a.5.5 0 0 0 .5-.5v-10a.5.5 0 0 0-.5-.5H6.5A2.5 2.5 0 0 1 4 7.5z"/><path d="M16 13.5h.01"/>'],
+        ['gift', 'Hediye Kutusu', '<rect x="4" y="9" width="16" height="4" rx="1"/><path d="M5.5 13v7.5h13V13M12 9v11.5"/><path d="M12 9C10 9 8 8 8 6.2S10 4 12 9c2-5 4-4.2 4-2.8S14 9 12 9z"/>']
+      ]),
+      ..._N('Eğlence & Sosyal', [
+        ['music', 'Müzik Notası', '<path d="M9 18V6l11-2v12"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="17.5" cy="16" r="2.5"/>'],
+        ['headphones', 'Kulaklık', '<path d="M4 15v-3a8 8 0 0 1 16 0v3"/><rect x="3.5" y="13.5" width="4" height="7" rx="1.8"/><rect x="16.5" y="13.5" width="4" height="7" rx="1.8"/>'],
+        ['gamepad', 'Oyun Kolu', '<path d="M7 8h10a4.5 4.5 0 0 1 4.4 5.4l-.7 3.3a2.3 2.3 0 0 1-4 1L15 16H9l-1.7 1.7a2.3 2.3 0 0 1-4-1l-.7-3.3A4.5 4.5 0 0 1 7 8z"/><path d="M8.5 10.5v3M7 12h3M15.5 11.5h.01M17.5 13h.01"/>'],
+        ['film', 'Film Şeridi', '<rect x="3.5" y="4.5" width="17" height="15" rx="2.5"/><path d="M8 4.5v15M16 4.5v15M3.5 9.5H8M3.5 14.5H8M16 9.5h4.5M16 14.5h4.5"/>'],
+        ['palette', 'Boya Paleti (Sanat)', '<path d="M12 3.5a8.5 8.5 0 1 0 0 17c1.3 0 2-.9 2-1.8 0-1.6-1.5-1.8-1.5-3 0-.8.7-1.4 1.6-1.4H17a3.5 3.5 0 0 0 3.5-3.5C20.5 6.9 16.7 3.5 12 3.5z"/><path d="M7.5 11h.01M10 7.5h.01M14.5 7.5h.01"/>'],
+        ['friends', 'Arkadaşlar', '<circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-5.5 6-5.5s6 2.2 6 5.5"/><path d="M16 5.2a3.2 3.2 0 0 1 0 6M18 14.8c2 .6 3.5 2.4 3.5 5.2"/>'],
+        ['chat', 'Sohbet Balonu', '<path d="M4 5.5h16v11H11l-4.5 4v-4H4z"/>'],
+        ['mail', 'Mektup (E-posta)', '<rect x="3" y="5.5" width="18" height="13" rx="2.5"/><path d="M3.5 7.5l8.5 6 8.5-6"/>'],
+        ['phone', 'Telefon', '<rect x="7" y="2.5" width="10" height="19" rx="2.5"/><path d="M11 18.5h2"/>'],
+        ['ticket', 'Bilet', '<path d="M3.5 8A1.5 1.5 0 0 1 5 6.5h14A1.5 1.5 0 0 1 20.5 8v2.2a1.9 1.9 0 0 0 0 3.6V16a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 16v-2.2a1.9 1.9 0 0 0 0-3.6z"/><path d="M14 6.5v11"/>']
+      ]),
+      ..._N('Ders & Okul', [
+        ['microscope', 'Mikroskop', '<path d="M9 3.5l3 1.2-2.5 6.3-3-1.2z"/><path d="M11 8.2a5 5 0 0 1 4.5 8.3"/><path d="M5 20.5h14M8 17h6.5"/>'],
+        ['dna', 'DNA', '<path d="M7 3.5c0 5 10 5 10 10.5s-10 5.5-10 6.5M17 3.5c0 5-10 5-10 10.5s10 5.5 10 6.5"/><path d="M8 7.5h8M8 16.5h8"/>'],
+        ['sigma', 'Matematik (Sigma)', '<path d="M17.5 5.5h-11l6 6.5-6 6.5h11"/>'],
+        ['pi', 'Pi', '<path d="M5 7h14M9 7v11M15 7v8.5a2.5 2.5 0 0 0 3 2.4"/>'],
+        ['compass', 'Pergel', '<path d="M12 4.5v3"/><circle cx="12" cy="4" r="1.2"/><path d="M12 7.5L6.5 20.5M12 7.5l5.5 13M8.2 16h7.6"/>'],
+        ['paperclip', 'Ataş', '<path d="M19 11.5l-7 7a4.5 4.5 0 0 1-6.4-6.4l7.6-7.6a3 3 0 0 1 4.2 4.2l-7.5 7.5a1.5 1.5 0 0 1-2.1-2.1l6.8-6.8"/>'],
+        ['highlighter', 'Fosforlu Kalem', '<path d="M14.5 4.5l5 5-8 8-5-5z"/><path d="M6.5 12.5L4 17l3 .5 1.5 3 4.5-2.5M3.5 21h6"/>'],
+        ['quiz', 'Soru İşareti', '<circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.6 2.2c-.7.4-1.1 1-1.1 1.8M12 16.8h.01"/>'],
+        ['library', 'Kütüphane', '<path d="M4 20.5h16M5.5 20.5V6.5M10 20.5V4.5M14 20.5V6.5l4.5 1v13"/>'],
+        ['scroll', 'Yazı / Metin', '<path d="M5 4.5h14M5 9h14M5 13.5h14M5 18h8"/>']
+      ]),
+      ..._N('Zaman & Planlama', [
+        ['timer', 'Zamanlayıcı', '<circle cx="12" cy="13.5" r="7.5"/><path d="M12 13.5L15 10M10 3h4M12 3v3"/>'],
+        ['repeat', 'Tekrar', '<path d="M4 11V9.5A3.5 3.5 0 0 1 7.5 6H19l-3-3M20 13v1.5a3.5 3.5 0 0 1-3.5 3.5H5l3 3"/>'],
+        ['checkcircle', 'Tamamlandı', '<circle cx="12" cy="12" r="9"/><path d="M7.8 12.3l3 3 5.4-6"/>'],
+        ['rocket', 'Roket (Başlangıç)', '<path d="M12 3c3.5 2 5 5.5 5 9.5l-2 3h-6l-2-3C7 8.5 8.5 5 12 3z"/><circle cx="12" cy="9.5" r="1.6"/><path d="M9 15.5l-2.5 3 3.5-.5M15 15.5l2.5 3-3.5-.5M12 17v3.5"/>'],
+        ['medal', 'Madalya', '<circle cx="12" cy="14.5" r="5"/><path d="M8.5 10L6.5 3.5h4l1.5 3 1.5-3h4L15.5 10"/>'],
+        ['crown', 'Taç', '<path d="M3.5 18.5l-1-11 5 4 4.5-7 4.5 7 5-4-1 11z"/>'],
+        ['lock', 'Odaklan / Kilit', '<rect x="5" y="10.5" width="14" height="10" rx="2.5"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5"/>'],
+        ['eye', 'Göz (Gözden Geçir)', '<path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="2.8"/>'],
+        ['brain', 'Beyin (Zihin)', '<path d="M9 4.5a3 3 0 0 0-3 3 3 3 0 0 0-1.5 5.3A3 3 0 0 0 7 17.5a3 3 0 0 0 5 1.5V6a3 3 0 0 0-3-1.5z"/><path d="M15 4.5a3 3 0 0 1 3 3 3 3 0 0 1 1.5 5.3A3 3 0 0 1 17 17.5a3 3 0 0 1-5 1.5"/>'],
+        ['puzzle', 'Bulmaca', '<path d="M5 8.5h3.5a2 2 0 1 1 4 0H16v3.5a2 2 0 1 1 0 4V19.5H5z"/>']
+      ]),
+      ..._N('Sağlık & Spor', [
+        ['run', 'Koşu', '<circle cx="14.5" cy="4.5" r="1.8"/><path d="M12.5 8.5l-3 2-2 4M12.5 8.5l3.5 3 3 .5M12.5 8.5l1 5.5-3.5 3.5-1.5 3.5M13.5 14l3 2 .5 4"/>'],
+        ['swim', 'Yüzme', '<circle cx="16" cy="6.5" r="1.8"/><path d="M4 14c2 0 2-1.5 4-1.5s2 1.5 4 1.5 2-1.5 4-1.5 2 1.5 4 1.5M4 18.5c2 0 2-1.5 4-1.5s2 1.5 4 1.5 2-1.5 4-1.5 2 1.5 4 1.5M8 11.5l4-3 3 2.5"/>'],
+        ['ball', 'Top (Futbol)', '<circle cx="12" cy="12" r="9"/><path d="M12 8.2l3.4 2.5-1.3 4h-4.2l-1.3-4zM12 3v5.2M20.6 9.7l-5.2 1M17 19.5l-2.9-4.8M7 19.5l2.9-4.8M3.4 9.7l5.2 1"/>'],
+        ['yoga', 'Yoga / Esneme', '<circle cx="12" cy="5" r="2"/><path d="M12 8v5M5 10.5l7 2.5 7-2.5M12 13l-4 7M12 13l4 7"/>'],
+        ['bed', 'Yatak (Uyku)', '<path d="M3.5 19V6M3.5 15h17v4M20.5 15v-3a3 3 0 0 0-3-3H11v6"/><circle cx="7.3" cy="11.8" r="1.8"/>'],
+        ['stethoscope', 'Doktor', '<path d="M6 3.5v6a4 4 0 0 0 8 0v-6M10 13.5v1.5a4.5 4.5 0 0 0 9 0v-1.5"/><circle cx="19" cy="12" r="2"/>'],
+        ['scale', 'Terazi (Tartı)', '<rect x="4" y="4.5" width="16" height="15" rx="3"/><path d="M8.5 10a4.5 4.5 0 0 1 7 0M12 10l1.8-2"/>'],
+        ['shoe', 'Spor Ayakkabı', '<path d="M3.5 16.5v-5l4 1 2.5-3.5 2 1.5 3.5 1.5c2.5 1 4.5 1.5 4.5 3.5v1.5a1 1 0 0 1-1 1h-14.5a1 1 0 0 1-1-1z"/><path d="M3.5 16.5h17"/>']
+      ]),
+      ..._N('Yemek & Ev', [
+        ['pizza', 'Pizza', '<path d="M3.5 6.5C9 3 15 3 20.5 6.5L12 20.5z"/><circle cx="10.5" cy="9.5" r=".8"/><circle cx="14" cy="11.5" r=".8"/><circle cx="12" cy="14.5" r=".8"/>'],
+        ['cake', 'Pasta (Doğum günü)', '<path d="M4.5 20.5h15v-7h-15zM4.5 16.5c2 1.5 3.5 1.5 5 0s3.5-1.5 5 0 3.5 1.5 5 0M12 13.5v-4M12 5.5c1 .8 1 1.8 0 2.5-1-.7-1-1.7 0-2.5z"/>'],
+        ['bottle', 'Su Şişesi', '<path d="M10 3.5h4v3l1.5 2.5v11a1 1 0 0 1-1 1h-5a1 1 0 0 1-1-1V9L10 6.5z"/><path d="M8.5 13h7"/>'],
+        ['bowl', 'Kase (Yemek)', '<path d="M3.5 11.5h17a8.5 8.5 0 0 1-17 0zM8 20.5h8M8.5 4.5c-.8 1.4.8 2 0 3.5M12.5 4.5c-.8 1.4.8 2 0 3.5"/>'],
+        ['broom', 'Süpürge (Temizlik)', '<path d="M15.5 3.5l-5.5 9M7.5 12.5l4 2.5 3-2.5 1.5 2-4 6.5H5.5z"/>'],
+        ['bulbhome', 'Alışveriş Listesi', '<rect x="5" y="4" width="14" height="16.5" rx="2.5"/><path d="M8.5 9h7M8.5 12.5h7M8.5 16h4"/>'],
+        ['key', 'Anahtar', '<circle cx="8" cy="15.5" r="4.5"/><path d="M11.2 12.3L20 3.5M16.5 7l2.5 2.5"/>'],
+        ['sofa', 'Koltuk (Dinlenme)', '<path d="M5 11V8.5A2.5 2.5 0 0 1 7.5 6h9A2.5 2.5 0 0 1 19 8.5V11M3.5 13a2 2 0 0 1 4 0v1.5h9V13a2 2 0 0 1 4 0v5h-17zM6 18v2M18 18v2"/>']
+      ]),
+      ..._N('Eğlence & Sosyal', [
+        ['camera2', 'Fotoğraf', '<rect x="3.5" y="6.5" width="17" height="13" rx="2.5"/><circle cx="12" cy="13" r="3.5"/><path d="M8.5 6.5l1.2-2.5h4.6l1.2 2.5"/>'],
+        ['mic', 'Mikrofon', '<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v3M9 21h6"/>'],
+        ['guitar', 'Gitar', '<path d="M14.5 9.5l5-5M17.5 3.5l3 3M12.5 11.5a3.5 3.5 0 0 0-5 0c-1 1-2.5.5-3 2.5-.8 3 2 6.5 5 6 2-.3 1.5-2 2.5-3a3.5 3.5 0 0 0 .5-5.5z"/>'],
+        ['dice', 'Zar', '<rect x="4" y="4" width="16" height="16" rx="3.5"/><path d="M8.5 8.5h.01M15.5 8.5h.01M12 12h.01M8.5 15.5h.01M15.5 15.5h.01"/>'],
+        ['chess', 'Satranç', '<path d="M9 20.5h6M8 17.5h8l-1-4c1.5-1 2-2.5 1.5-4a4.5 4.5 0 0 0-9 0c-.5 1.5 0 3 1.5 4zM12 2.5v2"/>'],
+        ['share', 'Paylaş', '<circle cx="6" cy="12" r="2.5"/><circle cx="17.5" cy="6" r="2.5"/><circle cx="17.5" cy="18" r="2.5"/><path d="M8.2 10.8l7-3.6M8.2 13.2l7 3.6"/>'],
+        ['balloon', 'Balon (Kutlama)', '<path d="M12 3a6 6 0 0 0-6 6c0 4 4 7.5 6 8.5 2-1 6-4.5 6-8.5a6 6 0 0 0-6-6zM12 17.5l-1 1.8h2zM12 19.5c0 1 1 1.5 1 2.5"/>'],
+        ['tv', 'Televizyon', '<rect x="3" y="5.5" width="18" height="12" rx="2.5"/><path d="M8 21h8M9 2.5l3 3 3-3"/>']
+      ]),
+      ..._N('Ulaşım & Doğa', [
+        ['car', 'Araba', '<path d="M4 12l1.8-4.6A2 2 0 0 1 7.7 6h8.6a2 2 0 0 1 1.9 1.4L20 12v5a1 1 0 0 1-1 1h-1.5a1 1 0 0 1-1-1v-1h-9v1a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z"/><path d="M4 12h16M7.5 14.5h.01M16.5 14.5h.01"/>'],
+        ['plane', 'Uçak', '<path d="M21 15.5l-8.5-5V5.5a1.5 1.5 0 0 0-3 0v5l-8.5 5v2l8.5-2.5v3.5l-2 1.5v1.5l3.5-1 3.5 1v-1.5l-2-1.5V15l8.5 2.5z"/>'],
+        ['bus', 'Otobüs', '<rect x="4.5" y="3.5" width="15" height="14.5" rx="3"/><path d="M4.5 11h15M8 18v2.5M16 18v2.5M8 14.5h.01M16 14.5h.01"/>'],
+        ['pin', 'Konum İğnesi', '<path d="M12 21s-6.5-5.7-6.5-11a6.5 6.5 0 0 1 13 0c0 5.3-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.3"/>'],
+        ['tree', 'Ağaç', '<path d="M12 21v-5"/><path d="M12 3.5c-3.5 2-5.5 5-5.5 8 0 2.3 2.4 4.5 5.5 4.5s5.5-2.2 5.5-4.5c0-3-2-6-5.5-8z"/>'],
+        ['mountain', 'Dağ (Gezi)', '<path d="M3 19.5l6.5-12 3.5 6 2-3 6 9z"/>'],
+        ['cloud', 'Bulut (Hava)', '<path d="M7 18.5a4 4 0 0 1-.6-7.95A5.5 5.5 0 0 1 17 9.5a4.5 4.5 0 0 1 .5 9z"/>']
+      ])
+    ];
+    // Eski (uygulama) ikonları en sonda kalır; kayıtlı görevler bozulmasın diye silinmedi.
+    // Seçiciden kaldırılan eski ikonlar (Ders paneli, Ayarlar, Soru Takibi): yalnızca daha önce eklenmiş görevler ikonunu kaybetmesin diye görünmez arama listesinde durur.
+    const TASK_ICONS_REMOVED = ['panel', 'gear', 'checklist'];
+    const TASK_ICONS_HIDDEN = TASK_ADD_ICONS_LEGACY.filter((i) => TASK_ICONS_REMOVED.includes(i.id));
+    const TASK_ADD_ICONS = [...NEW_TASK_ICONS, ...TASK_ADD_ICONS_LEGACY.filter((i) => !TASK_ICONS_REMOVED.includes(i.id)).map((i) => ({ ...i, cat: 'Eski ikonlar' }))];
+    const TASK_ICON_CAT_ORDER = ['Ders & Okul', 'Zaman & Planlama', 'Sağlık & Spor', 'Yemek & Ev', 'Eğlence & Sosyal', 'Ulaşım & Doğa', 'Eski ikonlar'];
+    // Geçici: ikona dokununca adı kısa süre görünür (silinecek ikonları tarif etmek için). Kapatmak için false yap.
+    const TASK_ICON_NAME_HINT = true;
 
     const pad2 = (n) => String(n).padStart(2, '0');
     const MONTHS_SHORT_TR = ['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara'];
@@ -50548,8 +50702,8 @@ body.is-countdown-fs.is-countdown-paused .countdown-fullscreen-time-row .stopwat
     ));
 
     // ---------------- Durum ----------------
-    const STEP = 15;                    // çark adımı (dk)
-    const COUNT = (24 * 60) / STEP;     // 96 satır: 00:00 … 23:45
+    const STEP = 1;                     // dakika hassasiyeti: selectedIndex = günün dakikası
+    const COUNT = 24 * 60;
     const DURATIONS = [30, 45, 60, 90, 120];
     const DEFAULT_DURATION = 60;
 
@@ -50575,7 +50729,7 @@ body.is-countdown-fs.is-countdown-paused .countdown-fullscreen-time-row .stopwat
     };
 
     // ---------------- İkon / renk seçici ----------------
-    const iconById = (id) => TASK_ADD_ICONS.find((i) => i.id === id) || TASK_ADD_ICONS[0];
+    const iconById = (id) => TASK_ADD_ICONS.find((i) => i.id === id) || TASK_ICONS_HIDDEN.find((i) => i.id === id) || TASK_ADD_ICONS[0];
 
     // mark=false: halkada varsayılan ikon görünür ama menüde "seçilmiş" işaretlenmez.
     const applyIcon = (icon, mark = true) => {
@@ -50696,19 +50850,39 @@ body.is-countdown-fs.is-countdown-paused .countdown-fullscreen-time-row .stopwat
       });
       iconRow.appendChild(emptyBtn);
 
-      TASK_ADD_ICONS.forEach((icon) => {
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        btn.className = 'task-add-icon-btn';
-        btn.dataset.id = icon.id;
-        btn.setAttribute('aria-label', icon.label);
-        btn.innerHTML = `<svg viewBox="0 0 24 24" width="24" height="24">${icon.svg}</svg>`;
-        btn.addEventListener('click', () => {
-          applyIcon(icon);
-          iconChosen = true;
-          updateReady();
+      let nameChip = null, nameTimer = null;
+      const showIconName = (icon) => {
+        if (!TASK_ICON_NAME_HINT) return;
+        if (!nameChip) { nameChip = document.createElement('div'); nameChip.className = 'task-add-icon-name'; nameChip.setAttribute('aria-live', 'polite'); overlay.appendChild(nameChip); }
+        nameChip.innerHTML = '';
+        const b = document.createElement('b'); b.textContent = icon.label;
+        nameChip.append(b);
+        nameChip.classList.remove('is-show'); void nameChip.offsetWidth; nameChip.classList.add('is-show');
+        clearTimeout(nameTimer); nameTimer = setTimeout(() => nameChip.classList.remove('is-show'), 2600);
+      };
+      emptyBtn.addEventListener('click', () => showIconName({ label: 'Boş (baş harf)', id: 'empty' }));
+
+      TASK_ICON_CAT_ORDER.forEach((cat) => {
+        const list = TASK_ADD_ICONS.filter((i) => i.cat === cat);
+        if (!list.length) return;
+        const h = document.createElement('div');
+        h.className = 'task-add-icon-cat'; h.textContent = cat;
+        iconRow.appendChild(h);
+        list.forEach((icon) => {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'task-add-icon-btn';
+          btn.dataset.id = icon.id;
+          btn.setAttribute('aria-label', icon.label);
+          btn.innerHTML = `<svg viewBox="0 0 24 24" width="24" height="24">${icon.svg}</svg>`;
+          btn.addEventListener('click', () => {
+            applyIcon(icon);
+            iconChosen = true;
+            updateReady();
+            showIconName(icon);
+          });
+          iconRow.appendChild(btn);
         });
-        iconRow.appendChild(btn);
       });
     };
 
@@ -50977,105 +51151,295 @@ body.is-countdown-fs.is-countdown-paused .countdown-fullscreen-time-row .stopwat
         applyDate(selectedDate); // boş bırakıldıysa eskisine dön
       }
     };
-    dateInput.addEventListener('change', onDatePicked);
-    dateInput.addEventListener('input', onDatePicked);
-    // Masaüstü tarayıcılarda alanın her yerine basınca seçici açılsın.
-    dateInput.addEventListener('click', () => {
-      try { if (dateInput.showPicker) dateInput.showPicker(); } catch (e) { /* yoksay */ }
-    });
+    // ---- Özel mini takvim (cihazın tarih seçicisi yerine) ----
+    const MONTHS_LONG_TR = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
+    let datePicker = null;
+    const openDatePicker = () => {
+      if (datePicker) return;
+      const mk = (t, c, x) => { const n = document.createElement(t); if (c) n.className = c; if (x != null) n.textContent = x; return n; };
+      const back = mk('div', 'task-add-dur-back'), card = mk('div', 'task-add-dur task-add-cal');
+      card.setAttribute('role', 'dialog'); card.setAttribute('aria-modal', 'true'); card.setAttribute('aria-label', 'Tarih seç');
+      let pick = startOfDay(selectedDate);
+      let vy = pick.getFullYear(), vm = pick.getMonth();
+      const head = mk('div', 'task-add-cal-head');
+      const prev = mk('button', 'task-add-cal-nav', '‹'); prev.type = 'button'; prev.setAttribute('aria-label', 'Önceki ay');
+      const next = mk('button', 'task-add-cal-nav', '›'); next.type = 'button'; next.setAttribute('aria-label', 'Sonraki ay');
+      const title = mk('div', 'task-add-cal-title');
+      head.append(prev, title, next);
+      const wd = mk('div', 'task-add-cal-wd');
+      ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'].forEach((d) => wd.appendChild(mk('span', '', d)));
+      const grid = mk('div', 'task-add-cal-grid');
+      const today = startOfDay(new Date());
+      const render = () => {
+        title.textContent = `${MONTHS_LONG_TR[vm]} ${vy}`;
+        grid.textContent = '';
+        const first = new Date(vy, vm, 1);
+        const lead = (first.getDay() + 6) % 7; // Pazartesi başlangıç
+        for (let i = 0; i < 42; i++) {
+          const d = new Date(vy, vm, 1 - lead + i);
+          const b = mk('button', 'task-add-cal-day'); b.type = 'button';
+          const num = mk('span', 'task-add-cal-num', String(d.getDate()));
+          b.appendChild(num);
+          if (d.getMonth() !== vm) b.classList.add('is-out');
+          if (+d === +today) b.classList.add('is-today');
+          if (+d === +pick) b.classList.add('is-selected');
+          b.addEventListener('click', () => {
+            pick = d;
+            if (d.getMonth() !== vm) { vy = d.getFullYear(); vm = d.getMonth(); }
+            render();
+          });
+          grid.appendChild(b);
+        }
+      };
+      const shift = (n) => { const d = new Date(vy, vm + n, 1); vy = d.getFullYear(); vm = d.getMonth(); render(); };
+      prev.addEventListener('click', () => shift(-1));
+      next.addEventListener('click', () => shift(1));
+      const actions = mk('div', 'task-add-dur-actions');
+      const cancel = mk('button', 'task-add-dur-btn', 'Vazgeç'); cancel.type = 'button';
+      const ok = mk('button', 'task-add-dur-btn is-primary', 'Tamam'); ok.type = 'button';
+      actions.append(cancel, ok);
+      card.append(head, wd, grid, actions);
+      back.appendChild(card);
+      let closed = false;
+      const close = () => {
+        if (closed) return; closed = true; datePicker = null;
+        document.removeEventListener('keydown', onKey, true);
+        back.classList.remove('is-in'); back.classList.add('is-out');
+        setTimeout(() => back.remove(), 480);
+      };
+      const onKey = (e) => {
+        if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); close(); }
+        else if (e.key === 'Enter') { e.preventDefault(); e.stopPropagation(); close(); applyDate(pick); }
+      };
+      document.addEventListener('keydown', onKey, true);
+      cancel.addEventListener('click', close);
+      ok.addEventListener('click', () => { close(); applyDate(pick); });
+      back.addEventListener('pointerdown', (e) => { if (e.target === back) close(); });
+      render();
+      overlay.appendChild(back); datePicker = back;
+      requestAnimationFrame(() => requestAnimationFrame(() => back.classList.add('is-in')));
+    };
+    const dateRowEl = $('taskAddDateRow');
+    if (dateRowEl) {
+      dateRowEl.addEventListener('click', openDatePicker);
+      dateRowEl.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openDatePicker(); } });
+    }
 
     // ---------------- Zaman çarkı ----------------
-    const items = [];
+    // Takvimdeki etkinlik saat seçicisiyle aynı 3B silindir çark: saat + dakika, sonsuz kaydırma.
+    const TW = { h: { el: wheelH, n: 24, built: false }, m: { el: wheelM, n: 60, built: false } };
     let rowPx = 0;
-    let activeEl = null;
-    let raf = 0;
 
     const updateLabels = () => {
       const startMin = selectedIndex * STEP;
-      if (!items.length) return;
-      const next = items[selectedIndex];
-      if (activeEl && activeEl !== next) {
-        activeEl.classList.remove('is-active');
-        activeEl.textContent = fmt(Number(activeEl.dataset.min));
-      }
-      activeEl = next;
-      activeEl.classList.add('is-active');
-      activeEl.textContent = `${fmt(startMin)}–${fmt(startMin + durationMin)}`;
+      if (rangeEl) rangeEl.textContent = `${fmt(startMin)} – ${fmt(startMin + durationMin)}`;
     };
 
-    const scrollToIndex = (i, instant) => {
-      wheel.scrollTo({ top: i * rowPx, behavior: instant ? 'auto' : 'smooth' });
-    };
-
-    const paint = () => {
-      raf = 0;
+    const twCenter = (w) => (w.el.scrollTop + w.el.clientHeight / 2 - rowPx / 2) / rowPx;
+    const twPos = (w, k) => k * rowPx + rowPx / 2 - w.el.clientHeight / 2;
+    // Her satır silindir üzerinde konumlanır: merkezden uzaklaştıkça eğilir, solar.
+    const twFx = (w) => {
       if (!rowPx) return;
-      const f = wheel.scrollTop / rowPx;
-      for (let i = 0; i < COUNT; i += 1) {
-        const d = Math.abs(i - f);
-        // Merkezden uzaklaştıkça solar ve hafifçe küçülür.
-        const op = d <= 1 ? 1 - d * 0.3 : Math.max(0.12, 0.7 - (d - 1) * 0.4);
-        const sc = 1 - Math.min(d, 2) * 0.05;
-        const s = items[i].style;
-        s.opacity = op.toFixed(3);
-        s.transform = `scale(${sc.toFixed(3)})`;
+      const c = twCenter(w), kids = w.el.children;
+      const R = rowPx * 2.6, step = 22 * Math.PI / 180;
+      const lo = Math.max(0, Math.floor(c) - 4), hi = Math.min(kids.length - 1, Math.ceil(c) + 4);
+      for (let k = lo; k <= hi; k++) {
+        const d = k - c;
+        const th = Math.max(-1.35, Math.min(1.35, d * step));
+        const dy = R * Math.sin(th) - d * rowPx;
+        const st = kids[k].style;
+        st.transform = `translateY(${dy.toFixed(1)}px) perspective(${(rowPx * 9).toFixed(0)}px) rotateX(${(-th * 180 / Math.PI).toFixed(1)}deg)`;
+        st.opacity = Math.max(0, 1 - Math.abs(d) / 2.7).toFixed(2);
+        kids[k].classList.toggle('is-active', Math.abs(d) < 0.5);
       }
-      const idx = Math.max(0, Math.min(COUNT - 1, Math.round(f)));
-      if (idx !== selectedIndex) {
-        selectedIndex = idx;
+      const v = ((Math.round(c) % w.n) + w.n) % w.n;
+      if (v !== w.val) {
+        w.val = v;
+        const h = TW.h.val || 0, m = TW.m.val || 0;
+        selectedIndex = (h * 60 + m) % COUNT;
         updateLabels();
+        if (navigator.vibrate) { try { navigator.vibrate(3); } catch (err) { /* yok say */ } }
       }
     };
-
-    const schedulePaint = () => { if (!raf) raf = requestAnimationFrame(paint); };
+    const paint = () => { twFx(TW.h); twFx(TW.m); };
+    const twSettle = (w) => {
+      if (w.down) return;
+      const c = twCenter(w);
+      if (c < w.n * 0.75 || c > w.n * 2.25) {
+        const shift = c < w.n ? w.n : -w.n;
+        w.el.style.scrollSnapType = 'none';
+        w.el.scrollTop += shift * rowPx;
+        requestAnimationFrame(() => { w.el.style.scrollSnapType = ''; });
+      }
+    };
 
     const buildWheel = () => {
-      if (items.length) return;
-      const frag = document.createDocumentFragment();
-      for (let i = 0; i < COUNT; i += 1) {
-        const el = document.createElement('div');
-        el.className = 'task-add-wheel-item';
-        el.dataset.min = String(i * STEP);
-        el.textContent = fmt(i * STEP);
-        el.addEventListener('click', () => scrollToIndex(i, false));
-        items.push(el);
-        frag.appendChild(el);
-      }
-      wheel.appendChild(frag);
-      wheel.addEventListener('scroll', schedulePaint, { passive: true });
+      [TW.h, TW.m].forEach((w) => {
+        if (w.built) return;
+        w.built = true;
+        const frag = document.createDocumentFragment();
+        for (let c = 0; c < 3; c++) for (let i = 0; i < w.n; i++) {
+          const it = document.createElement('div');
+          it.className = 'task-add-wi'; it.textContent = pad2(i);
+          frag.appendChild(it);
+        }
+        w.el.appendChild(frag);
+        w.el.addEventListener('scroll', () => {
+          if (!w.raf) w.raf = requestAnimationFrame(() => { w.raf = 0; twFx(w); });
+          clearTimeout(w.t); w.t = setTimeout(() => twSettle(w), 120);
+        }, { passive: true });
+        w.el.addEventListener('touchstart', () => { w.down = true; }, { passive: true });
+        const up = () => { w.down = false; clearTimeout(w.t); w.t = setTimeout(() => twSettle(w), 200); };
+        w.el.addEventListener('touchend', up, { passive: true });
+        w.el.addEventListener('touchcancel', up, { passive: true });
+        w.el.addEventListener('click', (e) => {
+          const it = e.target.closest('.task-add-wi'); if (!it) return;
+          const k = Array.prototype.indexOf.call(w.el.children, it);
+          w.el.scrollTo({ top: twPos(w, k), behavior: 'smooth' });
+        });
+      });
     };
 
     const measureRow = () => {
-      // offsetHeight: transform (ölçek) etkisinden bağımsız gerçek satır yüksekliği.
-      const h = items[0] ? items[0].offsetHeight : 0;
+      const f = wheelH.firstElementChild;
+      const h = f ? parseFloat(getComputedStyle(f).height) : 0;
       if (h) rowPx = h;
     };
 
+    // Seçili saate getir (animasyonsuz); zaman adımı görünür olunca çağrılır.
+    const scrollToIndex = (i, instant) => {
+      if (!rowPx) return;
+      const h = Math.floor(i / 60) % 24, m = i % 60;
+      TW.h.val = h; TW.m.val = m;
+      [[TW.h, h], [TW.m, m]].forEach(([w, v]) => {
+        w.el.style.scrollSnapType = 'none';
+        w.el.scrollTop = twPos(w, w.n + v);
+        requestAnimationFrame(() => { w.el.style.scrollSnapType = ''; });
+      });
+      updateLabels();
+    };
+
     // ---------------- Süre segmentleri ----------------
+    let customMin = 0; // hazır süreler dışında seçilen özel dakika (0 = yok)
+    const DUR_MIN = 5, DUR_MAX = 1440;
+    const humanDur = (m) => (m < 60 ? `${m} dk` : `${Math.floor(m / 60)} sa${m % 60 ? ' ' + (m % 60) + ' dk' : ''}`);
+
+    const onDurChipClick = (m) => {
+      // Zaten seçili süreye bir kez daha dokunmak: dakikayı özelleştirme penceresini açar.
+      if (durationMin === m) openDurationEditor(); else applyDuration(m);
+    };
+    const makeDurChip = (m, custom) => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'task-add-seg-btn' + (custom ? ' is-custom' : '');
+      btn.dataset.minutes = String(m);
+      btn.setAttribute('role', 'radio');
+      btn.textContent = `${m} dk`;
+      btn.addEventListener('click', () => onDurChipClick(Number(btn.dataset.minutes)));
+      return btn;
+    };
+    const syncCustomChip = () => {
+      let c = durationRow.querySelector('.is-custom');
+      if (!customMin) { if (c) c.remove(); return; }
+      if (!c) { c = makeDurChip(customMin, true); durationRow.appendChild(c); }
+      c.dataset.minutes = String(customMin);
+      c.textContent = `${customMin} dk`;
+    };
+
     const renderDurations = () => {
       if (durationRow.childElementCount) return;
-      DURATIONS.forEach((m) => {
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        btn.className = 'task-add-seg-btn';
-        btn.dataset.minutes = String(m);
-        btn.setAttribute('role', 'radio');
-        btn.textContent = `${m} dk`;
-        btn.addEventListener('click', () => {
-          applyDuration(m);
-        });
-        durationRow.appendChild(btn);
-      });
+      DURATIONS.forEach((m) => durationRow.appendChild(makeDurChip(m, false)));
+      const hint = document.createElement('p');
+      hint.className = 'task-add-dur-hint';
+      hint.textContent = 'Seçili süreye bir kez daha dokunarak dakikayı istediğin gibi ayarla.';
+      durationRow.insertAdjacentElement('afterend', hint);
     };
 
     const applyDuration = (m) => {
       durationMin = m;
+      if (!DURATIONS.includes(m)) customMin = m;
+      syncCustomChip();
       durationRow.querySelectorAll('.task-add-seg-btn').forEach((el) => {
         const on = Number(el.dataset.minutes) === m;
         el.classList.toggle('is-selected', on);
         el.setAttribute('aria-checked', String(on));
+        if (on && el.scrollIntoView) { try { el.scrollIntoView({ block: 'nearest', inline: 'nearest' }); } catch (e) { /* yoksay */ } }
       });
       updateLabels();
+    };
+
+    // ---- Özel süre penceresi: − / + ile ya da doğrudan yazarak 5 dk – 24 sa arası ----
+    let durEd = null;
+    const openDurationEditor = () => {
+      if (durEd) return;
+      const mk = (t, c, x) => { const n = document.createElement(t); if (c) n.className = c; if (x != null) n.textContent = x; return n; };
+      const back = mk('div', 'task-add-dur-back'), card = mk('div', 'task-add-dur');
+      card.setAttribute('role', 'dialog'); card.setAttribute('aria-modal', 'true'); card.setAttribute('aria-label', 'Süreyi ayarla');
+      card.appendChild(mk('h3', '', 'Süreyi ayarla'));
+      const clamp = (v) => Math.min(DUR_MAX, Math.max(DUR_MIN, Math.round(v)));
+      let val = durationMin;
+      const row = mk('div', 'task-add-dur-row');
+      const minus = mk('button', 'task-add-dur-step', '−'); minus.type = 'button'; minus.setAttribute('aria-label', '5 dakika azalt');
+      const plus = mk('button', 'task-add-dur-step', '+'); plus.type = 'button'; plus.setAttribute('aria-label', '5 dakika artır');
+      const field = mk('div', 'task-add-dur-field');
+      const input = mk('input', 'task-add-dur-input'); input.type = 'text'; input.inputMode = 'numeric'; input.pattern = '[0-9]*'; input.maxLength = 4; input.setAttribute('aria-label', 'Dakika');
+      field.append(input, mk('span', '', 'dk'));
+      row.append(minus, field, plus);
+      const human = mk('p', 'task-add-dur-human');
+      const end = mk('p', 'task-add-dur-end');
+      const paint = () => {
+        const v = clamp(val);
+        human.textContent = humanDur(v);
+        const st = selectedIndex * STEP;
+        end.textContent = `${fmt(st)} – ${fmt(st + v)}`;
+      };
+      const fitInput = () => { input.style.width = (Math.max(2, input.value.length) + 0.9) + 'ch'; };
+      const setVal = (v) => { val = clamp(v); input.value = String(val); fitInput(); paint(); };
+      input.value = String(val); fitInput(); paint();
+      input.addEventListener('input', () => {
+        input.value = input.value.replace(/[^0-9]/g, '');
+        fitInput();
+        if (input.value) { val = parseInt(input.value, 10) || DUR_MIN; paint(); }
+      });
+      minus.addEventListener('click', () => setVal(clamp(val) - 5));
+      plus.addEventListener('click', () => setVal(clamp(val) + 5));
+      // Basılı tutunca hızlı artır / azalt
+      [[minus, -5], [plus, 5]].forEach(([btn, d]) => {
+        let t = null, iv = null;
+        const stop = () => { clearTimeout(t); clearInterval(iv); t = iv = null; };
+        btn.addEventListener('pointerdown', () => { stop(); t = setTimeout(() => { iv = setInterval(() => setVal(clamp(val) + d), 90); }, 450); });
+        ['pointerup', 'pointercancel', 'pointerleave'].forEach((e) => btn.addEventListener(e, stop));
+      });
+      const quick = mk('div', 'task-add-dur-quick');
+      [15, 25, 50, 75, 100, 150].forEach((m) => {
+        const q = mk('button', 'task-add-dur-q', String(m)); q.type = 'button';
+        q.addEventListener('click', () => setVal(m));
+        quick.appendChild(q);
+      });
+      const actions = mk('div', 'task-add-dur-actions');
+      const cancel = mk('button', 'task-add-dur-btn', 'Vazgeç'); cancel.type = 'button';
+      const ok = mk('button', 'task-add-dur-btn is-primary', 'Tamam'); ok.type = 'button';
+      actions.append(cancel, ok);
+      card.append(row, human, end, quick, actions);
+      back.appendChild(card);
+      let closed = false;
+      const close = () => {
+        if (closed) return; closed = true; durEd = null;
+        document.removeEventListener('keydown', onKey, true);
+        if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
+        back.classList.remove('is-in'); back.classList.add('is-out');
+        setTimeout(() => back.remove(), 480);
+      };
+      const confirm = () => { const v = clamp(input.value ? parseInt(input.value, 10) : val); close(); applyDuration(v); };
+      const onKey = (e) => {
+        if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); close(); }
+        else if (e.key === 'Enter') { e.preventDefault(); e.stopPropagation(); confirm(); }
+      };
+      document.addEventListener('keydown', onKey, true);
+      cancel.addEventListener('click', close); ok.addEventListener('click', confirm);
+      back.addEventListener('pointerdown', (e) => { if (e.target === back) close(); });
+      overlay.appendChild(back); durEd = back;
+      requestAnimationFrame(() => requestAnimationFrame(() => back.classList.add('is-in')));
     };
 
     // ---------------- Aç / kapat / kaydet ----------------
@@ -51094,6 +51458,28 @@ body.is-countdown-fs.is-countdown-paused .countdown-fullscreen-time-row .stopwat
       overlay.style.setProperty('--ta-page-fg', theme.text);
       overlay.style.setProperty('--ta-page-muted', `rgba(${r}, ${g}, ${b}, 0.55)`);
       overlay.style.setProperty('--ta-page-line', `rgba(${r}, ${g}, ${b}, 0.12)`);
+      // Kart / iz / yazı renkleri uygulamanın o anki temasından türetilir (sabit gri/beyaz yok).
+      // Koyu temada: yazı + ikonlar beyaza döner, kartlar arka planın bir tık açığı olur (beyaza dönmez).
+      const bg = hexToRgb(theme.color);
+      const dark = (bg.r * 299 + bg.g * 587 + bg.b * 114) / 1000 < 140;
+      const mix = (c, t, a) => '#' + [c.r, c.g, c.b].map((v, i) => Math.round(v + (t[i] - v) * a).toString(16).padStart(2, '0')).join('');
+      overlay.classList.toggle('ta-dark', dark);
+      const set = (k, v) => overlay.style.setProperty(k, v);
+      if (dark) {
+        set('--ta-text', '#ffffff');
+        set('--ta-muted', 'rgba(255, 255, 255, 0.5)');
+        set('--ta-line', 'rgba(255, 255, 255, 0.08)');
+        set('--ta-card', mix(bg, [255, 255, 255], 0.075));
+        set('--ta-track', mix(bg, [255, 255, 255], 0.15));
+        set('--ta-chip', mix(bg, [255, 255, 255], 0.1));
+      } else {
+        set('--ta-text', '#16171b');
+        set('--ta-muted', 'rgba(22, 23, 27, 0.48)');
+        set('--ta-line', 'rgba(22, 23, 27, 0.09)');
+        set('--ta-card', mix(bg, [255, 255, 255], 0.6));
+        set('--ta-track', mix(bg, [0, 0, 0], 0.07));
+        set('--ta-chip', mix(bg, [255, 255, 255], 0.6));
+      }
       // Uygulama arka planında desen varsa onu da aynen taşı.
       const patternEl = document.getElementById('patternLayer');
       overlay.style.backgroundImage = patternEl ? patternEl.style.backgroundImage : '';
@@ -51136,6 +51522,7 @@ body.is-countdown-fs.is-countdown-paused .countdown-fullscreen-time-row .stopwat
 
       const now = new Date();
       selectedIndex = Math.round((now.getHours() * 60 + now.getMinutes()) / STEP) % COUNT;
+      customMin = 0;
       applyDuration(DEFAULT_DURATION);
     };
 
@@ -51282,7 +51669,7 @@ body.is-countdown-fs.is-countdown-paused .countdown-fullscreen-time-row .stopwat
       return { wake: makeSleepTask('wake', dateStr, plan), bed: makeSleepTask('bed', dateStr, plan) };
     };
 
-    const findTaskAddIcon = (iconId) => SLEEP_ICONS[iconId] || TASK_ADD_ICONS.find((i) => i.id === iconId) || TASK_ADD_ICONS[0];
+    const findTaskAddIcon = (iconId) => SLEEP_ICONS[iconId] || TASK_ADD_ICONS.find((i) => i.id === iconId) || TASK_ICONS_HIDDEN.find((i) => i.id === iconId) || TASK_ADD_ICONS[0];
 
     // ---------- Gerçek zamanlı ilerleme (cihaz saatine göre) ----------
     // Liste yukarıdan aşağıya tek bir "zincir" gibi dolar:
@@ -55127,8 +55514,14 @@ body.is-countdown-fs.is-countdown-paused .countdown-fullscreen-time-row .stopwat
         f.append(inp, sb, go);
       } else f.append(inp, go);
       f.addEventListener('submit', (e) => { e.preventDefault(); const v = inp.value.trim(); if (!v) { inp.focus(); return; } onSubmit(v, steps); });
-      inp.addEventListener('keydown', (e) => { if (e.key === 'Escape') onCancel(); else if (multi && e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); f.dispatchEvent(new Event('submit', { cancelable: true })); } });
-      inp.addEventListener('blur', () => { setTimeout(() => { if (!inp.value.trim() && !f.contains(document.activeElement) && isOpen()) onCancel(); }, 120); });
+      // Vazgeçilince form bir anda yok olmaz; yumuşakça sönüp kapanır.
+      const softCancel = () => {
+        if (f.classList.contains('is-closing')) return; f.classList.add('is-closing');
+        let d = false; const fin = () => { if (d) return; d = true; if (f.isConnected && isOpen()) onCancel(); };
+        f.addEventListener('animationend', fin, { once: true }); setTimeout(fin, 620);
+      };
+      inp.addEventListener('keydown', (e) => { if (e.key === 'Escape') softCancel(); else if (multi && e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); f.dispatchEvent(new Event('submit', { cancelable: true })); } });
+      inp.addEventListener('blur', () => { setTimeout(() => { if (!inp.value.trim() && !f.contains(document.activeElement) && isOpen()) softCancel(); }, 120); });
       return f;
     };
 
@@ -55264,6 +55657,42 @@ body.is-countdown-fs.is-countdown-paused .countdown-fullscreen-time-row .stopwat
       let d = false; const fin = () => { if (d) return; d = true; if (done) done(); };
       w.addEventListener('animationend', fin, { once: true }); setTimeout(fin, 480);
     };
+    // Telefonda "yeni grup / yeni liste" artık sayfanın en üstünde değil, ekranda açılan yumuşak bir pop-up'ta eklenir.
+    // Sayfa kaydırması hiç değişmez (eskiden en üste atlıyordu). opts: { title, placeholder, pills:[{label,value}], onSubmit }
+    window.gkNewPopup = (opts) => {
+      if (document.querySelector('.gk-pop-back')) return;
+      const mk = (t, c, x) => { const n = document.createElement(t); if (c) n.className = c; if (x) n.textContent = x; return n; };
+      const back = mk('div', 'gk-pop-back'), card = mk('div', 'gk-pop');
+      card.setAttribute('role', 'dialog'); card.setAttribute('aria-modal', 'true'); card.setAttribute('aria-label', opts.title);
+      card.appendChild(mk('h3', '', opts.title));
+      let closed = false;
+      const close = () => {
+        if (closed) return; closed = true;
+        document.removeEventListener('keydown', onKey, true);
+        const a = document.activeElement; if (a && card.contains(a) && a.blur) a.blur();
+        back.classList.remove('is-in'); back.classList.add('is-out');
+        setTimeout(() => back.remove(), 480);
+      };
+      const submit = (v) => { v = (v || '').trim(); if (!v) return false; close(); opts.onSubmit(v); return true; };
+      const onKey = (e) => { if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); close(); } };
+      document.addEventListener('keydown', onKey, true);
+      if (opts.pills && opts.pills.length) {
+        const row = mk('div', 'gk-pop-pills');
+        opts.pills.forEach((p) => { const b = mk('button', 'gk-pop-pill', '+ ' + p.label); b.type = 'button'; b.addEventListener('click', () => submit(p.value)); row.appendChild(b); });
+        card.appendChild(row);
+      }
+      const f = mk('form', 'gk-pop-form'); f.autocomplete = 'off'; f.noValidate = true;
+      const inp = mk('input', 'gk-pop-input'); inp.type = 'text'; inp.placeholder = opts.placeholder || ''; inp.maxLength = 120; inp.enterKeyHint = 'done';
+      const ok = mk('button', 'gk-pop-ok', 'Ekle'); ok.type = 'submit';
+      f.append(inp, ok);
+      f.addEventListener('submit', (e) => { e.preventDefault(); if (!submit(inp.value)) inp.focus({ preventScroll: true }); });
+      card.appendChild(f); back.appendChild(card);
+      back.addEventListener('pointerdown', (e) => { if (e.target === back) close(); });
+      document.body.appendChild(back);
+      // Klavye, dokunuşun içinde açılsın diye odak hemen verilir (sayfayı kaydırmadan).
+      try { inp.focus({ preventScroll: true }); } catch (e) { /* yoksay */ }
+      requestAnimationFrame(() => requestAnimationFrame(() => back.classList.add('is-in')));
+    };
     const softCloseNewGroup = () => {
       if (!newGroupOpen) return; newGroupOpen = false;
       const w = $('p8nNewGroup').querySelector('.soft-wrap');
@@ -55320,9 +55749,16 @@ body.is-countdown-fs.is-countdown-paused .countdown-fullscreen-time-row .stopwat
     // Alt çubuktaki "Görev ekle" düğmesi için köprü (bkz. #gundelikFabAddBtn).
     window.p8nFab = {
       newGroup: () => {
-        if (!newGroupOpen) { newGroupOpen = true; newGroupAnimate = true; renderNewGroup(); }
-        const sc = $('p8mScroll'); if (sc && sc.scrollTo) sc.scrollTo({ top: 0, behavior: 'smooth' });
-        const inp = $('p8nNewGroup').querySelector('.p8n-add .p8n-input'); if (inp) inp.focus({ preventScroll: true });
+        const has = (k) => page8State.routineGroups.some((g) => groupSlot(g.name) === k);
+        const pills = [['Sabah', 'sabah'], ['Öğle', 'öğle'], ['Akşam', 'akşam']].filter(([, k]) => !has(k)).map(([l]) => ({ label: l, value: l + ' Rutinim' }));
+        window.gkNewPopup({
+          title: 'Yeni grup', placeholder: 'Kendi grup adın', pills,
+          onSubmit: (v) => {
+            addGroup(v);
+            // Yeni grup en alta eklenir; pop-up kapanırken yumuşakça görünür alana getirilir.
+            setTimeout(() => { const cs = document.querySelectorAll('#p8nGroups .p8g'); const c = cs[cs.length - 1]; if (c && c.scrollIntoView) c.scrollIntoView({ block: 'center', behavior: 'smooth' }); }, 420);
+          }
+        });
       },
       groups: () => page8State.routineGroups.map((g) => ({ name: g.name, color: g.color })),
       addSection: (i) => {
@@ -70902,8 +71338,13 @@ body.is-countdown-fs.is-countdown-paused .countdown-fullscreen-time-row .stopwat
       const go2 = el('button', 'hl-go'); go2.type = 'submit'; go2.setAttribute('aria-label', 'Ekle'); go2.innerHTML = UP;
       f.append(inp, go2);
       f.addEventListener('submit', (e) => { e.preventDefault(); const v = inp.value.trim(); if (!v) { inp.focus(); return; } onSubmit(v); });
-      inp.addEventListener('keydown', (e) => { if (e.key === 'Escape') onCancel(); else if (multi && e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); f.dispatchEvent(new Event('submit', { cancelable: true })); } });
-      inp.addEventListener('blur', () => setTimeout(() => { if (!inp.value.trim() && !f.contains(document.activeElement)) onCancel(); }, 120));
+      const softCancel = () => {
+        if (f.classList.contains('is-closing')) return; f.classList.add('is-closing');
+        let d = false; const fin = () => { if (d) return; d = true; if (f.isConnected) onCancel(); };
+        f.addEventListener('animationend', fin, { once: true }); setTimeout(fin, 620);
+      };
+      inp.addEventListener('keydown', (e) => { if (e.key === 'Escape') softCancel(); else if (multi && e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); f.dispatchEvent(new Event('submit', { cancelable: true })); } });
+      inp.addEventListener('blur', () => setTimeout(() => { if (!inp.value.trim() && !f.contains(document.activeElement)) softCancel(); }, 120));
       return f;
     };
     const focusIn = () => { const i = page.querySelector('.hl-in'); if (i) i.focus(); };
@@ -70979,7 +71420,16 @@ body.is-countdown-fs.is-countdown-paused .countdown-fullscreen-time-row .stopwat
         }
       });
       gAdd.addEventListener('click', () => {
-        if (onHl()) { if (!newOpen) { newOpen = true; newAnim = true; render(); } focusIn(); const sc = $('hlScroll'); if (sc && sc.scrollTo) sc.scrollTo({ top: 0, behavior: 'smooth' }); }
+        if (onHl()) {
+          window.gkNewPopup({
+            title: 'Yeni liste', placeholder: 'Liste adı (örn. Market)',
+            onSubmit: (v) => {
+              st.groups.push({ id: gid(), name: v, color: pal[st.groups.length % pal.length], items: [] });
+              save(); render();
+              setTimeout(() => { const b = list.lastElementChild; if (b && b.scrollIntoView) b.scrollIntoView({ block: 'center', behavior: 'smooth' }); }, 420);
+            }
+          });
+        }
         else if (window.p8nFab) window.p8nFab.newGroup();
       });
     }
@@ -71013,6 +71463,292 @@ body.is-countdown-fs.is-countdown-paused .countdown-fullscreen-time-row .stopwat
   @media (prefers-reduced-motion: reduce) {
     .page11-context-menu.p8g-menu, .page11-context-menu.p8g-menu.is-open { transition: opacity .01s; transform: none; }
     .page11-context-menu.p8g-menu.is-open .page11-context-menu-item { animation: none; }
+  }
+</style>
+
+
+
+<style id="task-add-duration-css">
+  /* Süre çipleri: özel süre eklenince sığmazsa yana kayar. */
+  .task-add-seg { overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+  .task-add-seg::-webkit-scrollbar { display: none; }
+  .task-add-seg-btn { min-width: 0; }
+  .task-add-seg-btn.is-custom { flex: 0 0 auto; padding-left: .8rem; padding-right: .8rem; animation: task-add-step-in .45s cubic-bezier(.16,1,.3,1); }
+  .task-add-dur-hint { margin: .7rem .2rem 0; font-size: .82rem; font-weight: 600; line-height: 1.35; color: var(--ta-muted); }
+
+  /* Özel süre penceresi (uygulamadaki yumuşak pop-up diliyle) */
+  .task-add-dur-back {
+    position: absolute; inset: 0; z-index: 30; display: flex; align-items: flex-end; justify-content: center;
+    box-sizing: border-box; padding: 20px 20px calc(env(safe-area-inset-bottom, 0px) + 20px);
+    background: rgba(0,0,0,0); -webkit-backdrop-filter: blur(0); backdrop-filter: blur(0);
+    transition: background-color .55s cubic-bezier(.22,1,.36,1), -webkit-backdrop-filter .55s cubic-bezier(.22,1,.36,1), backdrop-filter .55s cubic-bezier(.22,1,.36,1);
+  }
+  .task-add-dur-back.is-in { background: rgba(0,0,0,.42); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
+  .task-add-dur-back.is-out { transition-duration: .4s; }
+  .task-add-dur {
+    box-sizing: border-box; width: min(400px, 100%); padding: 1.3rem 1.2rem 1.15rem; border-radius: 1.9rem;
+    background: var(--ta-bg); color: var(--ta-text); font-family: var(--ta-title-font);
+    box-shadow: 0 30px 80px -20px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.08);
+    opacity: 0; transform: translateY(40px) scale(.96);
+    transition: opacity .45s cubic-bezier(.22,1,.36,1), transform .75s cubic-bezier(.16,1,.3,1);
+  }
+  .task-add-dur-back.is-in .task-add-dur { opacity: 1; transform: none; }
+  .task-add-dur-back.is-out .task-add-dur { opacity: 0; transform: translateY(18px) scale(.98); transition: opacity .3s ease, transform .4s cubic-bezier(.4,0,.2,1); }
+  .task-add-dur h3 { margin: 0 0 .9rem .2rem; font-size: 1.25rem; font-weight: 800; }
+  .task-add-dur-row { display: flex; align-items: center; justify-content: center; gap: 1rem; }
+  .task-add-dur-step { flex: 0 0 auto; width: 3.4rem; height: 3.4rem; border: none; border-radius: 50%; cursor: pointer; font: 700 1.7rem/1 var(--ta-font); color: var(--ta-text); background: var(--ta-track); -webkit-tap-highlight-color: transparent; user-select: none; -webkit-user-select: none; touch-action: manipulation; transition: transform .25s cubic-bezier(.22,1,.36,1), background-color .2s ease; }
+  .task-add-dur-step:active { transform: scale(.9); }
+  .task-add-dur-field { display: flex; align-items: baseline; justify-content: center; gap: .35rem; min-width: 7rem; }
+  .task-add-dur-input { width: 4.6rem; box-sizing: border-box; padding: 0; border: none; outline: none; background: none; text-align: right; font: 800 2.7rem/1.1 var(--ta-title-font); color: var(--ta-text); font-variant-numeric: tabular-nums; caret-color: var(--ta-accent); }
+  .task-add-dur-field span { font-size: 1.05rem; font-weight: 800; color: var(--ta-muted); }
+  .task-add-dur-human { margin: .5rem 0 0; text-align: center; font-size: 1.05rem; font-weight: 800; }
+  .task-add-dur-end { margin: .1rem 0 0; text-align: center; font-size: .9rem; font-weight: 700; color: var(--ta-muted); font-variant-numeric: tabular-nums; }
+  .task-add-dur-quick { display: flex; flex-wrap: wrap; justify-content: center; gap: .45rem; margin: 1rem 0 1.1rem; }
+  .task-add-dur-q { min-width: 3rem; height: 2.3rem; padding: 0 .9rem; border: none; border-radius: 999px; cursor: pointer; font: 700 .88rem var(--ta-font); color: var(--ta-text); background: var(--ta-track); -webkit-tap-highlight-color: transparent; transition: transform .25s cubic-bezier(.22,1,.36,1); }
+  .task-add-dur-q:active { transform: scale(.94); }
+  .task-add-dur-actions { display: flex; gap: .6rem; }
+  .task-add-dur-btn { flex: 1 1 0; height: 2.9rem; border: none; border-radius: 999px; cursor: pointer; font: 800 .95rem var(--ta-title-font); color: var(--ta-text); background: var(--ta-track); -webkit-tap-highlight-color: transparent; transition: transform .25s cubic-bezier(.22,1,.36,1); }
+  .task-add-dur-btn.is-primary { color: var(--ta-on-accent); background: var(--ta-accent); }
+  .task-add-dur-btn:active { transform: scale(.96); }
+  @media (prefers-reduced-motion: reduce) { .task-add-dur-back, .task-add-dur { transition-duration: .01ms !important; } }
+</style>
+
+<style id="task-add-flat-css">
+  /* ===== Kartlar kalktı: içerik doğrudan arka planın üzerinde, ince ayraç çizgileriyle ===== */
+  .task-add-overlay .task-add-card,
+  .task-add-overlay .task-add-date-row,
+  .task-add-overlay.has-color .task-add-card {
+    background: none !important; background-image: none !important; box-shadow: none !important; border-radius: 0;
+    padding-left: 0; padding-right: 0;
+  }
+  .task-add-overlay .task-add-card { padding-top: .35rem; padding-bottom: .9rem; border-bottom: 1px solid var(--ta-head-line, var(--ta-line)); }
+  .task-add-overlay .task-add-card:last-child { border-bottom: none; }
+  .task-add-overlay .task-add-date-row { padding: .5rem 0 .9rem; border-bottom: 1px solid var(--ta-head-line, var(--ta-line)); }
+  .task-add-overlay .task-add-card-title { color: var(--ta-head-fg, var(--ta-text)); }
+  .task-add-overlay .task-add-hint, .task-add-overlay .task-add-dur-hint { color: var(--ta-head-muted, var(--ta-muted)); }
+
+  /* ===== Zaman: takvimdeki gibi 3B (perspektifli) saat + dakika çarkları ===== */
+  .task-add-wheels { --ih: 2.75rem; position: relative; display: flex; justify-content: center; align-items: center; gap: .2rem; margin: .4rem 0 .2rem; }
+  .task-add-wheels::before {
+    content: ''; position: absolute; left: .2rem; right: .2rem; top: 50%; height: var(--ih);
+    transform: translateY(-50%); border-radius: 1.1rem; pointer-events: none;
+    background: color-mix(in srgb, var(--ta-accent) 22%, var(--ta-track));
+    box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--ta-accent) 55%, transparent);
+  }
+  .task-add-w {
+    position: relative; z-index: 1; width: 6.4rem; height: calc(var(--ih) * 5);
+    overflow-y: auto; overscroll-behavior: contain; scroll-snap-type: y mandatory;
+    scrollbar-width: none; -webkit-overflow-scrolling: touch; touch-action: pan-y;
+    -webkit-mask-image: linear-gradient(transparent, #000 24%, #000 76%, transparent);
+    mask-image: linear-gradient(transparent, #000 24%, #000 76%, transparent);
+  }
+  .task-add-w::-webkit-scrollbar { display: none; }
+  .task-add-wi {
+    height: var(--ih); display: flex; align-items: center; scroll-snap-align: center;
+    font-weight: 700; font-size: 1.75rem; font-variant-numeric: tabular-nums; cursor: pointer;
+    color: var(--ta-head-fg, var(--ta-text)); opacity: 0; will-change: transform, opacity;
+    -webkit-user-select: none; user-select: none;
+  }
+  .task-add-wi.is-active { font-weight: 800; }
+  #taskAddHours .task-add-wi { justify-content: flex-end; padding-right: .9rem; }
+  #taskAddMins .task-add-wi { justify-content: flex-start; padding-left: .9rem; }
+  .task-add-w-colon { position: relative; z-index: 2; font-weight: 800; font-size: 1.75rem; line-height: 1; margin-top: -.1rem; color: var(--ta-head-fg, var(--ta-text)); }
+  .task-add-range { margin: .5rem 0 0; text-align: center; font-weight: 800; font-size: .95rem; letter-spacing: .01em; font-variant-numeric: tabular-nums; color: var(--ta-head-muted, var(--ta-muted)); }
+</style>
+<style id="task-add-premium-css">
+  /* ===== Görev ekleme: daha şık kartlar + ikon kategorileri + geçici ikon adı ===== */
+  .task-add-overlay .task-add-card,
+  .task-add-overlay .task-add-date-row {
+    position: relative;
+    border-radius: 1.75rem;
+    background-color: var(--ta-card);
+    /* Üstten alta çok hafif bir ışık: düz gri yerine derinlik hissi. */
+    background-image: linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,0) 55%);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.10),
+      0 1px 2px rgba(0,0,0,.06),
+      0 18px 36px -24px rgba(0,0,0,.45);
+    transition: background-color .45s ease, box-shadow .45s ease;
+  }
+  .task-add-overlay:not(.ta-dark) .task-add-card,
+  .task-add-overlay:not(.ta-dark) .task-add-date-row {
+    background-image: linear-gradient(180deg, rgba(255,255,255,.55), rgba(255,255,255,0) 60%);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.8), 0 1px 2px rgba(0,0,0,.04), 0 18px 34px -24px rgba(60,40,20,.28);
+  }
+  /* Renk seçilince kartlara o rengin çok hafif bir tonu yansır. */
+  .task-add-overlay.has-color .task-add-card {
+    background-image:
+      linear-gradient(180deg, color-mix(in srgb, var(--ta-color) 10%, transparent), transparent 70%),
+      linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,0) 55%);
+  }
+  .task-add-overlay .task-add-card-title { letter-spacing: -.005em; margin-bottom: .6rem; }
+
+  .task-add-overlay .task-add-icon-btn {
+    border-radius: 1.15rem;
+    background: var(--ta-track);
+    transition: transform .25s cubic-bezier(.22,1,.36,1), background-color .25s ease, color .25s ease, box-shadow .25s ease;
+  }
+  /* Seçili ikon: rengi DEĞİŞMEZ (okunaklı kalır); seçim vurgu renkli halka, hafif dolgu ve yumuşak parlama ile belirtilir. */
+  .task-add-overlay .task-add-icon-btn { position: relative; }
+  .task-add-overlay .task-add-icon-btn.is-selected {
+    background: color-mix(in srgb, var(--ta-accent) 20%, var(--ta-track));
+    color: var(--ta-text);
+    box-shadow: inset 0 0 0 2px var(--ta-accent), 0 10px 24px -10px var(--ta-accent);
+    transform: scale(1.05);
+    animation: taIconPick .6s cubic-bezier(.16, 1, .3, 1);
+  }
+  .task-add-overlay .task-add-icon-btn.is-selected svg { animation: taIconSvgPick .6s cubic-bezier(.16, 1, .3, 1); }
+  /* Seçilince dışa doğru açılıp sönen halka */
+  .task-add-overlay .task-add-icon-btn.is-selected::after {
+    content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+    box-shadow: 0 0 0 0 var(--ta-accent);
+    animation: taIconRing .7s cubic-bezier(.22, 1, .36, 1) forwards;
+  }
+  @keyframes taIconPick { 0% { transform: scale(.88); } 45% { transform: scale(1.1); } 100% { transform: scale(1.05); } }
+  @keyframes taIconSvgPick { 0% { transform: scale(.8) rotate(-8deg); } 55% { transform: scale(1.12) rotate(3deg); } 100% { transform: none; } }
+  @keyframes taIconRing { 0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--ta-accent) 70%, transparent); } 100% { box-shadow: 0 0 0 14px transparent; } }
+  @media (prefers-reduced-motion: reduce) {
+    .task-add-overlay .task-add-icon-btn.is-selected, .task-add-overlay .task-add-icon-btn.is-selected svg, .task-add-overlay .task-add-icon-btn.is-selected::after { animation: none; }
+  }
+  .task-add-icon-cat {
+    grid-column: 1 / -1;
+    margin: .7rem .15rem -.1rem;
+    font-size: .74rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase;
+    color: var(--ta-muted);
+  }
+  .task-add-icon-cat:first-of-type { margin-top: .2rem; }
+  .task-add-overlay .task-add-color-swatch { width: 2.8rem; height: 2.8rem; box-shadow: inset 0 0 0 1px rgba(255,255,255,.14), 0 6px 14px -8px rgba(0,0,0,.5); }
+  .task-add-overlay .task-add-color-swatch.is-selected { box-shadow: 0 0 0 2.5px var(--ta-card), 0 0 0 4.5px var(--task-swatch-color, #16171b), 0 8px 18px -8px var(--task-swatch-color, #000); }
+
+  /* Geçici ikon adı: ekranın altında, "Sürdür" düğmesinin üstünde yumuşakça belirip kaybolur. */
+  .task-add-icon-name {
+    position: absolute; left: 50%; bottom: calc(env(safe-area-inset-bottom, 0px) + 6.5rem); z-index: 5;
+    display: flex; align-items: baseline; gap: .55rem; max-width: calc(100% - 40px);
+    padding: .65rem 1.2rem; border-radius: 999px; pointer-events: none;
+    background: var(--ta-text); color: var(--ta-bg); font-family: var(--ta-title-font); font-weight: 800; font-size: 1rem;
+    box-shadow: 0 14px 34px -12px rgba(0,0,0,.55);
+    opacity: 0; transform: translate(-50%, 10px) scale(.96);
+    transition: opacity .35s ease, transform .5s cubic-bezier(.16,1,.3,1);
+  }
+  .task-add-icon-name small { font-size: .74rem; font-weight: 700; opacity: .55; letter-spacing: .02em; }
+  .task-add-icon-name.is-show { opacity: 1; transform: translate(-50%, 0) scale(1); }
+  @media (prefers-reduced-motion: reduce) { .task-add-icon-name, .task-add-overlay .task-add-icon-btn { transition-duration: .01ms; } }
+</style>
+<style id="task-add-readability-css">
+  /* ===== Okunabilirlik: koyu zeminde gövde yazıları beyaz (renkli üst blok kendi kontrast rengini korur) ===== */
+  .task-add-overlay.ta-dark .task-add-scroll,
+  body.is-anthracite .task-add-overlay .task-add-scroll {
+    --ta-head-fg: #ffffff;
+    --ta-text: #ffffff;
+    --ta-head-muted: rgba(255, 255, 255, 0.62);
+    --ta-muted: rgba(255, 255, 255, 0.62);
+  }
+  .task-add-overlay.ta-dark .task-add-scroll .task-add-card-title,
+  .task-add-overlay.ta-dark .task-add-date-text,
+  .task-add-overlay.ta-dark .task-add-wi,
+  .task-add-overlay.ta-dark .task-add-w-colon,
+  .task-add-overlay.ta-dark .task-add-seg-btn:not(.is-selected),
+  body.is-anthracite .task-add-overlay .task-add-scroll .task-add-card-title,
+  body.is-anthracite .task-add-overlay .task-add-date-text,
+  body.is-anthracite .task-add-overlay .task-add-wi,
+  body.is-anthracite .task-add-overlay .task-add-w-colon,
+  body.is-anthracite .task-add-overlay .task-add-seg-btn:not(.is-selected) { color: #ffffff; }
+  .task-add-overlay.ta-dark .task-add-date-rel,
+  .task-add-overlay.ta-dark .task-add-range,
+  body.is-anthracite .task-add-overlay .task-add-date-rel,
+  body.is-anthracite .task-add-overlay .task-add-range { color: rgba(255, 255, 255, 0.62); }
+
+  /* ===== Saat seçici çubuğu: takvimdeki dolu vurgu çubuğuyla aynı (mavimsi iz + halka yok) ===== */
+  .task-add-wheels::before {
+    border-radius: 999px;
+    background: var(--ta-accent);
+    box-shadow: 0 8px 16px -8px rgba(0, 0, 0, 0.35);
+  }
+  .task-add-wheels .task-add-wi.is-active { color: var(--ta-on-accent) !important; }
+  .task-add-wheels .task-add-w-colon { color: var(--ta-on-accent) !important; }
+
+  /* ===== Seçili ikon: iç dolgu yok, yalnızca dış halka + parlama ===== */
+  .task-add-overlay .task-add-icon-btn.is-selected {
+    background: var(--ta-track);
+  }
+</style>
+<style id="task-add-datepicker-css">
+  /* Süre kutusu: rakam sayısına göre genişler, son hane kesilmez. */
+  .task-add-dur-input { letter-spacing: 0; padding-right: .1rem; overflow: visible; min-width: 2ch; }
+  .task-add-dur-field { min-width: 0; }
+  /* Özel mini takvim */
+  .task-add-cal { padding-bottom: 1.1rem; }
+  .task-add-cal-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: .6rem; }
+  .task-add-cal-title { font-weight: 800; font-size: 1.15rem; }
+  .task-add-cal-nav { width: 2.6rem; height: 2.6rem; border: none; border-radius: 50%; cursor: pointer; font: 700 1.5rem/1 var(--ta-font); color: var(--ta-text); background: var(--ta-track); -webkit-tap-highlight-color: transparent; transition: transform .25s cubic-bezier(.22,1,.36,1); }
+  .task-add-cal-nav:active { transform: scale(.9); }
+  .task-add-cal-wd { display: grid; grid-template-columns: repeat(7, 1fr); margin-bottom: .25rem; }
+  .task-add-cal-wd span { text-align: center; font-weight: 700; font-size: .72rem; color: var(--ta-muted); }
+  .task-add-cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); row-gap: .25rem; margin-bottom: 1rem; }
+  .task-add-cal-day { display: flex; align-items: center; justify-content: center; padding: .1rem 0; background: none; border: none; cursor: pointer; font-family: inherit; -webkit-tap-highlight-color: transparent; }
+  .task-add-cal-num { display: flex; align-items: center; justify-content: center; width: 2.25rem; height: 2.25rem; border-radius: 50%; border: 2px solid transparent; font-weight: 700; font-size: .95rem; color: var(--ta-text); transition: background-color .15s ease, color .15s ease, transform .15s ease; }
+  .task-add-cal-day:active .task-add-cal-num { transform: scale(.9); }
+  .task-add-cal-day.is-out .task-add-cal-num { opacity: .3; }
+  .task-add-cal-day.is-today .task-add-cal-num { border-color: var(--ta-accent); }
+  .task-add-cal-day.is-selected .task-add-cal-num { background: var(--ta-accent); border-color: transparent; color: var(--ta-on-accent); box-shadow: 0 8px 16px -8px rgba(0,0,0,.35); }
+  .task-add-date-row { cursor: pointer; -webkit-tap-highlight-color: transparent; }
+  .task-add-date-row:focus-visible { outline: 2px solid var(--ta-accent); outline-offset: 2px; }
+</style>
+<style id="gk-soft-premium-css">
+  /* ===== Telefon: "Yeni grup / Yeni liste" pop-up'ı + daha yumuşak, premium açılış-kapanış ===== */
+  .gk-pop-back {
+    position: fixed; inset: 0; z-index: 260; display: flex; align-items: flex-start; justify-content: center;
+    box-sizing: border-box; padding: calc(env(safe-area-inset-top, 0px) + 13dvh) 20px 20px;
+    background: rgba(0,0,0,0); -webkit-backdrop-filter: blur(0px); backdrop-filter: blur(0px);
+    transition: background-color .6s cubic-bezier(.22,1,.36,1), -webkit-backdrop-filter .6s cubic-bezier(.22,1,.36,1), backdrop-filter .6s cubic-bezier(.22,1,.36,1);
+  }
+  .gk-pop-back.is-in { background: rgba(0,0,0,.4); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
+  .gk-pop-back.is-out { transition-duration: .45s; transition-timing-function: cubic-bezier(.4,0,.2,1); }
+  .gk-pop {
+    --gk-mute: color-mix(in srgb, var(--theme-text, #121212) 55%, transparent);
+    --gk-surf: color-mix(in srgb, var(--theme-text, #121212) 7%, transparent);
+    --gk-surf2: color-mix(in srgb, var(--theme-text, #121212) 12%, transparent);
+    box-sizing: border-box; width: min(380px, 100%); padding: 1.35rem 1.2rem 1.2rem; border-radius: 1.8rem;
+    background: var(--theme-bg, #F6F4EF); color: var(--theme-text, #121212);
+    font-family: "Baloo 2", "Space Grotesk", sans-serif;
+    box-shadow: 0 30px 80px -20px rgba(0,0,0,.42), 0 2px 12px rgba(0,0,0,.12);
+    opacity: 0; transform: translateY(28px) scale(.94);
+    transition: opacity .5s cubic-bezier(.22,1,.36,1), transform .75s cubic-bezier(.16,1,.3,1);
+    will-change: transform, opacity;
+  }
+  .gk-pop-back.is-in .gk-pop { opacity: 1; transform: none; }
+  .gk-pop-back.is-out .gk-pop { opacity: 0; transform: translateY(14px) scale(.97); transition: opacity .34s ease, transform .45s cubic-bezier(.4,0,.2,1); }
+  .gk-pop h3 { margin: 0 0 .9rem .2rem; font-size: 1.3rem; font-weight: 800; letter-spacing: -.01em; line-height: 1.2; }
+  .gk-pop-pills { display: flex; flex-wrap: wrap; gap: .5rem; margin: 0 0 .8rem; }
+  .gk-pop-pill { font: inherit; font-weight: 700; font-size: .88rem; height: 2.5rem; padding: 0 1.1rem; border: none; border-radius: 999px; cursor: pointer; color: inherit; background: var(--gk-surf); -webkit-tap-highlight-color: transparent; transition: background-color .25s ease, transform .25s cubic-bezier(.22,1,.36,1); }
+  .gk-pop-pill:active { transform: scale(.95); background: var(--gk-surf2); }
+  .gk-pop-form { display: flex; gap: .5rem; align-items: center; margin: 0; }
+  .gk-pop-input { flex: 1 1 auto; min-width: 0; box-sizing: border-box; height: 2.9rem; font: inherit; font-weight: 600; font-size: 1rem; color: inherit; background: var(--gk-surf); border: none; outline: none; border-radius: 999px; padding: 0 1.1rem; transition: background-color .3s ease; }
+  .gk-pop-input::placeholder { color: var(--gk-mute); }
+  .gk-pop-input:focus { background: var(--gk-surf2); }
+  .gk-pop-ok { flex: 0 0 auto; height: 2.9rem; padding: 0 1.3rem; border: none; border-radius: 999px; cursor: pointer; font: inherit; font-weight: 800; font-size: .92rem; color: #fff; background: var(--accent-color, #ff90e8); text-shadow: 0 1px 2px rgba(0,0,0,.18); -webkit-tap-highlight-color: transparent; transition: transform .25s cubic-bezier(.22,1,.36,1); }
+  .gk-pop-ok:active { transform: scale(.95); }
+
+  /* Alt başlık / rutin / madde ekleme formu: yavaşça açılır (yükseklik + solma), vazgeçilince yavaşça kapanır. */
+  #p8mScroll .p8g-form, #page-hatirla .hl-form { overflow: hidden; animation: gkFormIn .7s cubic-bezier(.16,1,.3,1) backwards; }
+  #p8mScroll .p8g-form.is-closing, #page-hatirla .hl-form.is-closing { animation: gkFormOut .5s cubic-bezier(.4,0,.2,1) forwards; pointer-events: none; }
+  @keyframes gkFormIn {
+    from { opacity: 0; max-height: 0; padding-top: 0; padding-bottom: 0; transform: translateY(-8px); }
+    to   { opacity: 1; max-height: 12rem; padding-top: .3rem; padding-bottom: .4rem; transform: none; }
+  }
+  @keyframes gkFormOut {
+    from { opacity: 1; max-height: 12rem; padding-top: .3rem; padding-bottom: .4rem; transform: none; }
+    to   { opacity: 0; max-height: 0; padding-top: 0; padding-bottom: 0; transform: translateY(-6px); }
+  }
+
+  /* Basılı tutma menüsü (grup seçimi dahil): ani "pat" yerine yavaş, overshoot'suz süzülme. */
+  body .page11-context-menu.p8g-menu { transform: scale(.9) translateY(10px); transition: opacity .32s ease, transform .4s cubic-bezier(.4,0,.2,1); }
+  body .page11-context-menu.p8g-menu.is-open { transform: none; transition: opacity .4s ease, transform .65s cubic-bezier(.16,1,.3,1); }
+  body .page11-context-menu.p8g-menu.is-open .page11-context-menu-item { animation-duration: .55s; animation-timing-function: cubic-bezier(.16,1,.3,1); animation-delay: calc(var(--i, 0) * 60ms + 90ms); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .gk-pop-back, .gk-pop { transition-duration: .01ms !important; }
+    #p8mScroll .p8g-form, #page-hatirla .hl-form { animation: none !important; }
   }
 </style>
 <script>
