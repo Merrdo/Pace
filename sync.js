@@ -50,7 +50,7 @@
       var hs = hash(APP_STATE[k]);
       if (meta.hashes[k] !== hs) {
         var known = Object.prototype.hasOwnProperty.call(meta.hashes, k);
-        meta.times[k] = known ? now : (APP_STATE.updatedAt || now);
+        meta.times[k] = known ? now : (meta.linked ? now : '1970-01-01T00:00:01.000Z');
         meta.hashes[k] = hs; meta.dirty[k] = 1; changed = true;
       }
     });
@@ -58,6 +58,14 @@
     return changed;
   }
 
+  var stat = { down: 0, up: 0 };
+  function backup() {
+    try {
+      var cur = localStorage.getItem(APP_STORAGE_KEY) || '{}';
+      if (!localStorage.getItem(BACKUP_KEY)) localStorage.setItem(BACKUP_KEY, cur);
+      localStorage.setItem(BACKUP_KEY + '_son', cur);
+    } catch (e) {}
+  }
   // ---------- çekme ----------
   async function pull() {
     var q = sb.from('sync_records').select('*').eq('kind', 'state').order('server_at', { ascending: true });
@@ -68,16 +76,16 @@
       if (!max || ts(row.server_at) > ts(max)) max = row.server_at;
       var k = row.id; if (SKIP[k] || row.deleted) return;
       var val = row.data && row.data.v, rh = hash(val);
-      var localNewer = meta.dirty[k] && ts(meta.times[k]) > ts(row.updated_at);
+      var localNewer = meta.linked && meta.dirty[k] && ts(meta.times[k]) > ts(row.updated_at);
       if (rh === meta.hashes[k]) { meta.times[k] = row.updated_at; delete meta.dirty[k]; return; }
       if (UNION[k] && meta.dirty[k] && isObj(val) && isObj(APP_STATE[k])) {
-        if (!localStorage.getItem(BACKUP_KEY)) localStorage.setItem(BACKUP_KEY, localStorage.getItem(APP_STORAGE_KEY) || '{}');
+        backup(); stat.down++;
         APP_STATE[k] = localNewer ? Object.assign({}, val, APP_STATE[k]) : Object.assign({}, APP_STATE[k], val);
         meta.hashes[k] = hash(APP_STATE[k]); meta.times[k] = new Date().toISOString(); meta.dirty[k] = 1; changed = true;
         return;
       }
       if (localNewer) return;                                      // yerel daha yeni: gönderilecek
-      if (!localStorage.getItem(BACKUP_KEY)) localStorage.setItem(BACKUP_KEY, localStorage.getItem(APP_STORAGE_KEY) || '{}');
+      backup(); stat.down++;
       APP_STATE[k] = val; meta.hashes[k] = rh; meta.times[k] = row.updated_at; delete meta.dirty[k]; changed = true;
     });
     meta.lastPull = max; saveMeta();
@@ -88,7 +96,7 @@
   // ---------- gönderme ----------
   async function push() {
     var keys = Object.keys(meta.dirty); if (!keys.length) return;
-    var sent = {}, dev = getOrCreateDeviceId();
+    var sent = {}, dev = getOrCreateDeviceId(); stat.up = keys.length;
     var rows = keys.map(function (k) {
       sent[k] = meta.times[k];
       return { user_id: uid, kind: 'state', id: k, data: { v: APP_STATE[k] === undefined ? null : APP_STATE[k] }, updated_at: meta.times[k], deleted: false, device_id: dev };
@@ -152,18 +160,19 @@
   async function syncNow(startup) {
     if (!uid) return;
     if (busy) { again = true; return; }
-    busy = true; setStatus('Eşitleniyor…');
+    busy = true; stat = { down: 0, up: 0 }; setStatus('Eşitleniyor…');
     try {
       scan();
       var ch = await pull();
       await uploadImages();                  // dosyalar, kayıttan ÖNCE yüklenir
       await push();
+      meta.linked = true; saveMeta();
       var imgs = await downloadImages();
       if (ch || imgs) {
         if (startup && !sessionStorage.getItem('pace_sync_rl')) { sessionStorage.setItem('pace_sync_rl', '1'); location.reload(); return; }
         showBanner();
       } else if (startup) sessionStorage.removeItem('pace_sync_rl');
-      setStatus('Eşitlendi · ' + new Date().toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }));
+      setStatus('Eşitlendi · ' + new Date().toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }) + ' · ↓' + stat.down + ' ↑' + stat.up);
     } catch (e) { console.warn('Eşitleme hatası:', e); setStatus('Eşitlenemedi (çevrimdışı olabilir)', true); }
     busy = false;
     if (again) { again = false; schedule(300); }
