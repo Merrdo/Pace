@@ -2346,6 +2346,10 @@
     display: grid;
     grid-template-columns: repeat(7, 1fr);
     gap: 0.25rem;
+    /* Yatay kaydırma (önceki/sonraki hafta) JS'te yakalanır; dikey
+       kaydırma sayfaya bırakılır. */
+    touch-action: pan-y;
+    will-change: transform;
   }
 
   .relax-calendar-day-cell {
@@ -14196,7 +14200,7 @@
 
   /* Sayaç sayfasının (geri sayım) genel iskeleti; Kronometre kartıyla
      birebir aynı görünümü paylaşır ama kendi çalışma durumuna (bkz.
-     body.is-countdown-running) göre gizlenir. */
+     body.is-countdown-fs) göre gizlenir. */
   .countdown-page {
     position: relative;
     display: flex;
@@ -14208,7 +14212,7 @@
     transition: opacity 0.3s ease, transform 0.3s ease;
   }
 
-  body.is-countdown-running .countdown-page {
+  body.is-countdown-fs .countdown-page {
     opacity: 0;
     transform: scale(0.96);
     pointer-events: none;
@@ -14589,9 +14593,10 @@
   }
 
   /* Kronometre duraklatılınca tam ekranda kalınır; sol üstte küçük bir
-     geri butonu belirir, basınca tam ekrandan çıkılır. Sadece kronometre
-     DURAKLATILMIŞKEN (is-stopwatch-fs var, is-stopwatch-running yok)
-     görünür; çalışırken gizli ve tıklanamaz. */
+     geri butonu belirir, basınca tam ekrandan çıkılır. Duraklatılmışken
+     hep görünür; ÇALIŞIRKEN ise boş bir alana dokununca (is-stopwatch-fs-controls,
+     Tur butonuyla birlikte) belirir ve 3 sn sonra kaybolur. Çalışırken
+     çıkılsa da kronometre olduğu gibi saymaya devam eder. */
   .stopwatch-fs-back-btn {
     position: absolute;
     top: calc(env(safe-area-inset-top) + 0.9rem);
@@ -14623,7 +14628,8 @@
     height: 16px;
   }
 
-  body.is-stopwatch-fs:not(.is-stopwatch-running) .stopwatch-fs-back-btn {
+  body.is-stopwatch-fs:not(.is-stopwatch-running) .stopwatch-fs-back-btn,
+  body.is-stopwatch-fs.is-stopwatch-fs-controls .stopwatch-fs-back-btn {
     opacity: 0.75;
     visibility: visible;
     pointer-events: auto;
@@ -14631,14 +14637,90 @@
       background-color 0.15s ease, color 0.5s ease;
   }
 
-  body.is-stopwatch-fs:not(.is-stopwatch-running) .stopwatch-fs-back-btn:hover {
+  body.is-stopwatch-fs:not(.is-stopwatch-running) .stopwatch-fs-back-btn:hover,
+  body.is-stopwatch-fs.is-stopwatch-fs-controls .stopwatch-fs-back-btn:hover {
     opacity: 1;
     background-color: rgba(127, 127, 127, 0.14);
   }
 
-  body.is-stopwatch-fs:not(.is-stopwatch-running) .stopwatch-fs-back-btn:active {
+  body.is-stopwatch-fs:not(.is-stopwatch-running) .stopwatch-fs-back-btn:active,
+  body.is-stopwatch-fs.is-stopwatch-fs-controls .stopwatch-fs-back-btn:active {
     opacity: 1;
     transform: scale(0.92);
+  }
+
+  /* ---- Başlat / Duraklat animasyonları (tam ekran saat) ----
+     Başlatınca: saat hafifçe büyüyüp yerine oturur + dışa doğru yayılan halka.
+     Duraklatınca: kısa bir titreme (sarsıntı) ve ardından durum boyunca
+     yavaşça yanıp sönen rakamlar (duraklatıldığı belli olsun). */
+  .stopwatch-fullscreen-time-row::before {
+    content: '';
+    position: absolute;
+    inset: -0.9rem -1.4rem;
+    border: 2px solid currentColor;
+    border-radius: 999px;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  @keyframes swFsStartPop {
+    0% { transform: scale(0.9); }
+    45% { transform: scale(1.09); }
+    100% { transform: scale(1); }
+  }
+
+  @keyframes swFsStartRing {
+    0% { opacity: 0.55; transform: scale(0.8); }
+    100% { opacity: 0; transform: scale(1.35); }
+  }
+
+  @keyframes swFsPauseShake {
+    0%, 100% { transform: translateX(0); }
+    15% { transform: translateX(-7px) rotate(-0.6deg); }
+    30% { transform: translateX(6px) rotate(0.5deg); }
+    45% { transform: translateX(-4px); }
+    60% { transform: translateX(3px); }
+    75% { transform: translateX(-1.5px); }
+  }
+
+  @keyframes swFsPausedBlink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.38; }
+  }
+
+  @keyframes swFsPausedBlinkCentis {
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 0.16; }
+  }
+
+  .stopwatch-fullscreen-time-row.is-start-anim {
+    animation: swFsStartPop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .stopwatch-fullscreen-time-row.is-start-anim::before {
+    animation: swFsStartRing 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .stopwatch-fullscreen-time-row.is-pause-anim {
+    animation: swFsPauseShake 0.5s ease-in-out;
+  }
+
+  body.is-stopwatch-fs:not(.is-stopwatch-running) .stopwatch-fullscreen-time-row .stopwatch-time {
+    animation: swFsPausedBlink 1.6s ease-in-out 0.5s infinite;
+  }
+
+  body.is-stopwatch-fs:not(.is-stopwatch-running) .stopwatch-fullscreen-time-row .stopwatch-centis {
+    animation: swFsPausedBlinkCentis 1.6s ease-in-out 0.5s infinite;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .stopwatch-fullscreen-time-row.is-start-anim,
+    .stopwatch-fullscreen-time-row.is-start-anim::before,
+    .stopwatch-fullscreen-time-row.is-pause-anim,
+    body.is-stopwatch-fs:not(.is-stopwatch-running) .stopwatch-fullscreen-time-row .stopwatch-time,
+    body.is-stopwatch-fs:not(.is-stopwatch-running) .stopwatch-fullscreen-time-row .stopwatch-centis {
+      animation: none;
+    }
   }
 
   .stopwatch-fullscreen-time-row {
@@ -15469,13 +15551,13 @@
     transition: opacity 0.35s ease, transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
 
-  body.is-countdown-running .countdown-fullscreen {
+  body.is-countdown-fs .countdown-fullscreen {
     opacity: 1;
     pointer-events: auto;
     transform: scale(1);
   }
 
-  body.is-countdown-running .countdown-fullscreen:active {
+  body.is-countdown-fs .countdown-fullscreen:active {
     transform: scale(0.97);
   }
 
@@ -15541,7 +15623,7 @@
   }
 
   body.is-stopwatch-fs .navbar,
-  body.is-countdown-running .navbar,
+  body.is-countdown-fs .navbar,
   body.is-laps-open .navbar,
   body.is-patterns-open .navbar,
   body.is-exam-detail-open .navbar,
@@ -15558,7 +15640,7 @@
   }
 
   body.is-stopwatch-fs .navbar .wrapper,
-  body.is-countdown-running .navbar .wrapper,
+  body.is-countdown-fs .navbar .wrapper,
   body.is-laps-open .navbar .wrapper,
   body.is-patterns-open .navbar .wrapper,
   body.is-exam-detail-open .navbar .wrapper,
@@ -20716,7 +20798,8 @@
 
     /* Kronometre tam ekranı açıkken (çalışırken ve duraklatılmışken) panel
        tamamen odaktan çekilir. */
-    body.is-stopwatch-fs .sidebar-nav {
+    body.is-stopwatch-fs .sidebar-nav,
+    body.is-countdown-fs .sidebar-nav {
       opacity: 0;
       transform: translateX(-16px);
       pointer-events: none;
@@ -25516,9 +25599,9 @@
      düzenlenir. Mobil (bu eşiğin altı) etkilenmez. */
   @media (min-width: 768px) and (min-height: 600px) {
     #qhavuzInfoBackdrop {
-      background: rgba(0, 0, 0, 0.55);
-      -webkit-backdrop-filter: blur(10px);
-      backdrop-filter: blur(10px);
+      background: rgba(0, 0, 0, 0.5);
+      -webkit-backdrop-filter: blur(3px);
+      backdrop-filter: blur(3px);
     }
 
     #qhavuzInfoBackdrop .qhavuz-info-card {
@@ -26544,9 +26627,9 @@
 
   @media (min-width: 768px) and (min-height: 600px) {
     #qhavuzLightboxBackdrop {
-      background: rgba(0, 0, 0, 0.55);
-      -webkit-backdrop-filter: blur(10px);
-      backdrop-filter: blur(10px);
+      background: rgba(0, 0, 0, 0.5);
+      -webkit-backdrop-filter: blur(3px);
+      backdrop-filter: blur(3px);
     }
 
     #qhavuzLightboxBackdrop .qhavuz-lightbox-card {
@@ -32380,9 +32463,9 @@
     }
     /* -- Soru penceresi (lightbox) -- */
     #qhavuzLightboxBackdrop {
-      background: rgba(0, 0, 0, 0.55);
-      -webkit-backdrop-filter: blur(10px);
-      backdrop-filter: blur(10px);
+      background: rgba(0, 0, 0, 0.5);
+      -webkit-backdrop-filter: blur(3px);
+      backdrop-filter: blur(3px);
     }
     #qhavuzLightboxBackdrop .qhavuz-lightbox-card {
       flex-direction: row;
@@ -32644,9 +32727,9 @@
     }
     /* -- Soru Bilgisi -- */
     #qhavuzInfoBackdrop {
-      background: rgba(0, 0, 0, 0.55);
-      -webkit-backdrop-filter: blur(10px);
-      backdrop-filter: blur(10px);
+      background: rgba(0, 0, 0, 0.5);
+      -webkit-backdrop-filter: blur(3px);
+      backdrop-filter: blur(3px);
     }
     #qhavuzInfoBackdrop .qhavuz-info-card {
       max-width: 440px;
@@ -37402,6 +37485,719 @@
     /* Nokta ölçüleri artık tüm ekranlar için ana kuralda (.calendar-day-dots). */
   }
 </style>
+
+<style id="qt-phone-css">
+/* ==========================================================================
+   TELEFON: Soru Çözme (Test) Sayfası — sade, odaklı, mat tasarım
+   Büyük ekran (.qt-exam) düzenine dokunmaz; yalnızca küçük ekranda geçerli.
+   Brutalist çerçeve/sert gölge yok: yüzeyler tema zemini ile metin renginin
+   karışımından türeyen düz tonlar (açık/koyu modda otomatik uyar). Dikkat
+   dağıtan öğe yok: üstte çıkış + süre + sayaç, ince ilerleme çizgisi, soru
+   görseli, şıklar ve tek bir ana buton.
+   ========================================================================== */
+@media not all and (min-width: 768px) and (min-height: 600px) {
+  #page-camera-test {
+    --qt-bg: var(--theme-bg, #F6F4EF);
+    --qt-ink: var(--theme-text, #121212);
+    --qt-acc: var(--accent-color, #ff90e8);
+    --qt-card: color-mix(in srgb, var(--qt-ink) 6%, var(--qt-bg));
+    --qt-card-press: color-mix(in srgb, var(--qt-ink) 12%, var(--qt-bg));
+    --qt-hair: color-mix(in srgb, var(--qt-ink) 11%, transparent);
+    --qt-track: color-mix(in srgb, var(--qt-ink) 10%, var(--qt-bg));
+    --qt-good: #3fcf7b;
+    --qt-bad: #ff5c6a;
+    /* Görsel kutusu: ekran yüksekliğine göre sınırlanır ki şıklar ve ana
+       buton çoğu telefonda kaydırmadan görünsün. */
+    --qt-img: min(100%, calc(100dvh - 330px));
+    padding: calc(14px + env(safe-area-inset-top)) 18px calc(22px + env(safe-area-inset-bottom));
+    gap: 0;
+    font-family: "Baloo 2", "Space Grotesk", sans-serif;
+  }
+
+  #page-camera-test:has(.qhavuz-test-open-answer:not(.is-hidden)) {
+    --qt-img: min(100%, calc(100dvh - 440px));
+  }
+
+  #page-camera-test .qhavuz-test-wrap {
+    max-width: 440px;
+    gap: 0.85rem;
+  }
+
+  /* ---- Üst çubuk: çıkış · başlık · süre · sayaç ---- */
+  #page-camera-test .calendar-topbar {
+    max-width: none;
+    gap: 0.55rem;
+    justify-content: flex-start;
+  }
+
+  #page-camera-test .calendar-back-btn {
+    width: 2.4rem;
+    height: 2.4rem;
+    color: var(--qt-ink);
+    background-color: var(--qt-card);
+    border: none;
+    box-shadow: none;
+    transition: background-color 0.18s ease, transform 0.15s ease;
+  }
+
+  #page-camera-test .calendar-back-btn:hover { transform: none; box-shadow: none; }
+
+  #page-camera-test .calendar-back-btn:active,
+  #page-camera-test .calendar-back-btn.is-pressed {
+    transform: scale(0.92);
+    box-shadow: none;
+    background-color: var(--qt-card-press);
+  }
+
+  #page-camera-test .calendar-topbar-title {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    text-align: left;
+    font-family: "Baloo 2", "Space Grotesk", sans-serif;
+    font-weight: 700;
+    font-size: 1.15rem;
+    letter-spacing: -0.01em;
+    color: var(--qt-ink);
+    opacity: 0.9;
+  }
+
+  /* Süre: yalnızca ikon + rakam; kutu yok, sakin ve soluk. Süreli testte
+     kalan süre vurgu rengiyle, azalınca kırmızıyla öne çıkar. */
+  #page-camera-test .qhavuz-test-clock {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    flex-shrink: 0;
+  }
+
+  #page-camera-test .qhavuz-test-clock [hidden] { display: none !important; }
+
+  #page-camera-test .qhavuz-test-clock-part {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    color: var(--qt-ink);
+    opacity: 0.6;
+    font-family: "Baloo 2", "Space Grotesk", sans-serif;
+    font-size: 0.88rem;
+    transition: color 0.3s ease, opacity 0.3s ease;
+  }
+
+  #page-camera-test .qhavuz-test-clock-part svg { width: 13px; height: 13px; }
+
+  #page-camera-test .qhavuz-test-clock-part b {
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+
+  #page-camera-test .qhavuz-test-clock-part.is-left {
+    opacity: 1;
+    color: color-mix(in srgb, var(--qt-acc) 70%, var(--qt-ink));
+  }
+
+  #page-camera-test .qhavuz-test-clock-part.is-left.is-low {
+    color: #e5484d;
+  }
+
+  #page-camera-test .qhavuz-test-progress {
+    min-width: 0;
+    padding: 0.2rem 0.65rem;
+    border-radius: 999px;
+    background: var(--qt-card);
+    font-family: "Baloo 2", "Space Grotesk", sans-serif;
+    font-weight: 700;
+    font-size: 0.85rem;
+    font-variant-numeric: tabular-nums;
+    color: var(--qt-ink);
+    opacity: 1;
+  }
+
+  /* ---- İnce ilerleme çizgisi ---- */
+  #page-camera-test .qhavuz-test-progressbar {
+    display: block;
+    width: 100%;
+    height: 3px;
+    border-radius: 999px;
+    overflow: hidden;
+    background: var(--qt-track);
+    transition: opacity 0.3s ease;
+  }
+
+  #page-camera-test .qhavuz-test-wrap:has(.qhavuz-test-result:not(.is-hidden)) .qhavuz-test-progressbar {
+    opacity: 0;
+  }
+
+  #page-camera-test .qhavuz-test-progressbar-fill {
+    display: block;
+    width: 0;
+    height: 100%;
+    border-radius: inherit;
+    background: var(--qt-acc);
+    transition: width 0.5s cubic-bezier(0.34, 1.2, 0.64, 1);
+  }
+
+  /* ---- Soru sahnesi ---- */
+  #page-camera-test .qhavuz-test-question {
+    gap: 0.85rem;
+    align-items: stretch;
+  }
+
+  /* Branş: kenarlıksız, küçük, solda duran sakin etiket. */
+  #page-camera-test .qhavuz-test-subject-badge {
+    align-self: flex-start;
+    flex: 0 0 auto;
+    max-width: 100%;
+    padding: 0.22rem 0.8rem;
+    border: none;
+    border-radius: 999px;
+    box-shadow: none;
+    font-family: "Baloo 2", "Space Grotesk", sans-serif;
+    font-weight: 700;
+    font-size: 0.78rem;
+    letter-spacing: 0.01em;
+    color: #121212;
+  }
+
+  /* Görsel: ince halka + yumuşak gölge; kalın çerçeve yok. */
+  #page-camera-test .qhavuz-test-image {
+    width: var(--qt-img);
+    align-self: center;
+    border: none;
+    border-radius: 1.25rem;
+    background: #fff;
+    box-shadow: 0 0 0 1px var(--qt-hair), 0 14px 30px -16px rgba(0, 0, 0, 0.35);
+  }
+
+  /* ---- Şıklar: düz, yumuşak tuşlar ---- */
+  #page-camera-test .qhavuz-test-answer-grid {
+    gap: 0.5rem;
+  }
+
+  #page-camera-test .qhavuz-test-answer-grid .qhavuz-add-answer-btn {
+    aspect-ratio: 1 / 1.05;
+    border: none;
+    border-radius: 1rem;
+    background-color: var(--qt-card);
+    color: var(--qt-ink);
+    box-shadow: none;
+    font-family: "Baloo 2", "Space Grotesk", sans-serif;
+    font-weight: 700;
+    font-size: 1.2rem;
+    transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.2s ease, color 0.2s ease, opacity 0.2s ease;
+  }
+
+  #page-camera-test .qhavuz-test-answer-grid .qhavuz-add-answer-btn:not(:disabled):active {
+    transform: scale(0.92);
+    background-color: var(--qt-card-press);
+    box-shadow: none;
+  }
+
+  #page-camera-test .qhavuz-test-answer-grid .qhavuz-add-answer-btn.is-correct {
+    background-color: var(--qt-good);
+    color: #06361b;
+    box-shadow: none;
+    transform: scale(1.06);
+  }
+
+  #page-camera-test .qhavuz-test-answer-grid .qhavuz-add-answer-btn.is-wrong {
+    background-color: var(--qt-bad);
+    color: #4a0010;
+    box-shadow: none;
+    transform: scale(1.06);
+  }
+
+  /* Cevap verildikten sonra seçilmeyen şıklar geri çekilir. */
+  #page-camera-test .qhavuz-test-answer-grid .qhavuz-add-answer-btn:disabled:not(.is-correct):not(.is-wrong) {
+    opacity: 0.35;
+  }
+
+  /* ---- Açık uçlu cevap ---- */
+  #page-camera-test .qhavuz-test-open-answer { gap: 0.6rem; }
+
+  #page-camera-test #qhavuzTestOpenAnswerInput {
+    padding: 0.8rem 1rem;
+    font-family: "Baloo 2", "Space Grotesk", sans-serif;
+    font-weight: 600;
+    font-size: 1rem;
+    color: var(--qt-ink);
+    background-color: var(--qt-card);
+    border: none;
+    border-radius: 1rem;
+    box-shadow: inset 0 0 0 1.5px transparent;
+    transition: box-shadow 0.2s ease;
+  }
+
+  #page-camera-test #qhavuzTestOpenAnswerInput:focus {
+    box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--qt-acc) 85%, transparent);
+  }
+
+  #page-camera-test #qhavuzTestOpenAnswerInput::placeholder {
+    color: var(--qt-ink);
+    opacity: 0.4;
+  }
+
+  /* ---- Butonlar: düz, hap biçimli; tek ana eylem vurgu renginde ---- */
+  #page-camera-test .add-task-btn {
+    padding: 0.8rem 1.2rem;
+    font-family: "Baloo 2", "Space Grotesk", sans-serif;
+    font-weight: 700;
+    font-size: 1rem;
+    color: var(--qt-ink);
+    background-color: var(--qt-card);
+    border: none;
+    border-radius: 999px;
+    box-shadow: none;
+    transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.2s ease, opacity 0.25s ease;
+  }
+
+  #page-camera-test .add-task-btn:hover { transform: none; box-shadow: none; }
+
+  #page-camera-test .add-task-btn:active {
+    transform: scale(0.97);
+    box-shadow: none;
+    background-color: var(--qt-card-press);
+  }
+
+  #page-camera-test .qhavuz-test-open-answer-check-btn,
+  #page-camera-test #qhavuzTestNextBtn,
+  #page-camera-test .qhavuz-test-close-btn {
+    color: #16171b;
+    background-color: var(--qt-acc);
+  }
+
+  #page-camera-test .qhavuz-test-open-answer-check-btn:active,
+  #page-camera-test #qhavuzTestNextBtn:active,
+  #page-camera-test .qhavuz-test-close-btn:active {
+    background-color: var(--qt-acc);
+    filter: brightness(0.94);
+  }
+
+  #page-camera-test .qhavuz-test-open-answer-reveal-btn {
+    color: var(--qt-ink);
+    background-color: var(--qt-card);
+  }
+
+  #page-camera-test .qhavuz-test-selfgrade-btn.is-correct {
+    color: #06361b;
+    background-color: var(--qt-good);
+  }
+
+  #page-camera-test .qhavuz-test-selfgrade-btn.is-wrong {
+    color: #4a0010;
+    background-color: var(--qt-bad);
+  }
+
+  /* ---- Geri bildirim: tek satır, sakin ---- */
+  #page-camera-test .qhavuz-test-feedback {
+    min-height: 1.4rem;
+    font-family: "Baloo 2", "Space Grotesk", sans-serif;
+    font-weight: 700;
+    font-size: 0.98rem;
+  }
+
+  #page-camera-test .qhavuz-test-feedback:empty { min-height: 0; }
+
+  /* ---- Sonuç ---- */
+  #page-camera-test .qhavuz-test-result {
+    gap: 0.3rem;
+    margin-top: 0.6rem;
+    padding: 2rem 1.3rem 1.3rem;
+    background: var(--qt-card);
+    border: none;
+    border-radius: 1.5rem;
+    box-shadow: none;
+  }
+
+  #page-camera-test .qhavuz-test-result-title {
+    font-family: "Baloo 2", "Space Grotesk", sans-serif;
+    font-weight: 600;
+    font-size: 1rem;
+    color: var(--qt-ink);
+    opacity: 0.65;
+  }
+
+  #page-camera-test .qhavuz-test-result-score {
+    font-family: "Baloo 2", "Space Grotesk", sans-serif;
+    font-weight: 800;
+    font-size: 3.4rem;
+    letter-spacing: -0.02em;
+    color: var(--qt-ink);
+  }
+
+  #page-camera-test .qhavuz-test-result-sub {
+    font-family: "Baloo 2", "Space Grotesk", sans-serif;
+    font-weight: 600;
+    font-size: 0.8rem;
+    letter-spacing: 0.08em;
+    color: var(--qt-ink);
+    opacity: 0.5;
+    margin-bottom: 0.3rem;
+  }
+
+  #page-camera-test .qhavuz-test-result-time {
+    font-family: "Baloo 2", "Space Grotesk", sans-serif;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--qt-ink);
+    opacity: 0.55;
+    margin-bottom: 1.1rem;
+  }
+
+  #page-camera-test .qhavuz-test-close-btn { margin-top: 0.2rem; }
+
+  /* Sınav düzenine ait kontroller telefonda hiç görünmez (eski akış). */
+  #page-camera-test .qt-exam-nav,
+  #page-camera-test .qt-exam-dots,
+  #page-camera-test .qt-finish-btn,
+  #page-camera-test .qt-review-btn { display: none; }
+
+  @media (prefers-reduced-motion: reduce) {
+    #page-camera-test * { transition-duration: 0.01ms !important; }
+  }
+}
+</style>
+
+<style id="qhavuz-solved-green-css">
+/* Çözüldü işaretli sorulardaki tik yeşil: kart üzerindeki büyük tik. */
+#page-camera .qhavuz-wide-check {
+  stroke: #3ddc84;
+}
+#page-camera .qhavuz-wide-solved svg {
+  filter: drop-shadow(0 3px 10px rgba(0, 0, 0, 0.5));
+}
+/* Soru penceresinde tik/çözüldü düğmesi zaten yeşil; paketlerdeki
+   çözüldü küçük resimlerinde de yeşil bir halka ile belli olsun. */
+#qhavuzPackagesBackdrop .qhavuz-pk-thumb.is-solved {
+  box-shadow: inset 0 0 0 2px #3ddc84;
+}
+</style>
+
+<style id="cd-redesign-css">
+/* ==========================================================================
+   ZAMANLAYICI — Kronometre ile aynı sade dil: kart yok, çerçeve yok, gölge yok.
+   Rakamlar doğrudan sayfa zemininde (saf siyahta da) durur; şıklık hareketten
+   gelir: giriş dalgası, rakam değişim animasyonu, yanıp sönen ayraç, basış
+   dalgası, Başlat'ta kayan ışık. Renkler yalnızca tema metni + vurgu rengi.
+   ========================================================================== */
+#countdownPage, #countdownPresetsBackdrop {
+  --cd-ink: var(--theme-text, #f2f2f7);
+  --cd-acc: var(--accent-color, #ff90e8);
+  --cd-font: "Baloo 2", "Space Grotesk", sans-serif;
+  --cd-ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --cd-acc-deep: color-mix(in srgb, var(--cd-acc) 55%, #000);
+}
+
+/* ---------- Üst butonlar ---------- */
+#countdownPage .stopwatch-header-actions { gap: 0.55rem; align-items: center; }
+
+/* Branşlarım: Kronometre'dekiyle birebir aynı. */
+#countdownPage .stopwatch-header-actions .page5-icon-btn {
+  width: 2.6rem; height: 2.6rem; opacity: 1; border-radius: 50%;
+  color: color-mix(in srgb, var(--theme-text, #121212) 94%, transparent);
+  background: color-mix(in srgb, var(--theme-text, #121212) 6%, transparent);
+  box-shadow: inset 0 1px 3px 0 color-mix(in srgb, var(--theme-text, #121212) 10%, transparent);
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color 0.18s ease, transform 0.15s ease;
+}
+#countdownPage .stopwatch-header-actions .page5-icon-btn > svg:not(.sw-ico-m) { display: none; }
+#countdownPage .stopwatch-header-actions .page5-icon-btn > svg.sw-ico-m { display: block; width: 20px; height: 20px; }
+#countdownPage .stopwatch-header-actions .page5-icon-btn:active {
+  transform: scale(0.92);
+  background: color-mix(in srgb, var(--theme-text, #121212) 11%, transparent);
+}
+
+/* Ayarlar: ikon aynı; Branşlarım ile aynı camsı yuvarlak yüzey (hafif buzlu, içe gölgeli). */
+#countdownPage .countdown-sound-btn {
+  width: 2.6rem; height: 2.6rem; margin: 0; padding: 0;
+  display: flex; align-items: center; justify-content: center;
+  border: none; border-radius: 50%;
+  color: color-mix(in srgb, var(--theme-text, #121212) 94%, transparent);
+  background: color-mix(in srgb, var(--theme-text, #121212) 6%, transparent);
+  box-shadow: inset 0 1px 3px 0 color-mix(in srgb, var(--theme-text, #121212) 10%, transparent);
+  -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color 0.18s ease, transform 0.15s ease;
+}
+#countdownPage .countdown-sound-btn svg { width: 18px; height: 18px; transition: transform 0.6s var(--cd-ease); }
+#countdownPage .countdown-sound-btn:active {
+  transform: scale(0.92); box-shadow: inset 0 1px 3px 0 color-mix(in srgb, var(--theme-text, #121212) 10%, transparent);
+  background: color-mix(in srgb, var(--theme-text, #121212) 11%, transparent);
+}
+#countdownPage .countdown-sound-btn:active svg { transform: rotate(75deg); transition-duration: 0.2s; }
+
+/* ---------- Süre kurulumu: kartsız ---------- */
+#countdownPage .countdown-setup { gap: 2.2rem; }
+
+#countdownPage .countdown-setup-card {
+  padding: 0; gap: 0.2rem;
+  background: none; border: none; border-radius: 0; box-shadow: none;
+}
+
+#countdownPage .countdown-setup-field {
+  flex: 0 1 auto; min-width: 0;
+  gap: 0.15rem; padding: 0 0.4rem;
+  background: none; border: none; border-radius: 0; box-shadow: none;
+  animation: cdRise 0.7s var(--cd-ease) backwards;
+}
+#countdownPage .countdown-setup-card > .countdown-setup-field:nth-of-type(1) { animation-delay: 0.04s; }
+#countdownPage .countdown-setup-card > .countdown-setup-field:nth-of-type(2) { animation-delay: 0.16s; }
+
+#countdownPage .countdown-setup-value {
+  font-family: var(--cd-font); font-weight: 700;
+  font-size: clamp(4.2rem, 21vw, 5.8rem);
+  line-height: 1;
+  color: var(--cd-ink);
+  letter-spacing: 0.01em;
+  min-width: 2ch;
+  font-variant-numeric: tabular-nums;
+}
+/* Değer değişince (script .is-tick-up / .is-tick-down ekler) rakam kayarak gelir */
+#countdownPage .countdown-setup-value.is-tick-up { animation: cdTickUp 0.34s var(--cd-ease); }
+#countdownPage .countdown-setup-value.is-tick-down { animation: cdTickDown 0.34s var(--cd-ease); }
+
+/* Ayraç: nefes alır gibi yanıp söner */
+#countdownPage .countdown-setup-colon {
+  flex: 0 0 auto; font-family: var(--cd-font); font-weight: 700;
+  font-size: clamp(3rem, 14vw, 4rem);
+  color: var(--cd-ink);
+  padding-bottom: 1.5rem;
+  animation: cdColon 2s ease-in-out infinite;
+}
+
+#countdownPage .countdown-setup-label {
+  font-family: var(--cd-font); font-weight: 700; font-size: 0.85rem;
+  letter-spacing: 0.02em; text-transform: none;
+  color: var(--cd-ink); opacity: 0.45;
+  margin-top: 0.15rem;
+}
+
+/* Artı / eksi: yalnızca işaret; basınca vurgu renginde dalga */
+#countdownPage .countdown-step-btn {
+  position: relative;
+  width: 3rem; height: 3rem; margin: 0;
+  border: none; border-radius: 50%;
+  background: none; box-shadow: none;
+  color: var(--cd-ink); opacity: 0.55;
+  font-family: var(--cd-font); font-weight: 700; font-size: 1.6rem; line-height: 1;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.15s ease, opacity 0.2s ease, color 0.2s ease;
+}
+#countdownPage .countdown-step-btn::before {
+  content: ""; position: absolute; inset: 0.2rem; border-radius: 50%;
+  border: 2px solid var(--cd-acc-deep);
+  opacity: 0; transform: scale(0.5); pointer-events: none;
+}
+#countdownPage .countdown-step-btn:active,
+#countdownPage .countdown-step-btn.is-pressed {
+  transform: scale(0.88); background: none; box-shadow: none;
+  color: var(--cd-ink); opacity: 1;
+}
+#countdownPage .countdown-step-btn:active::before,
+#countdownPage .countdown-step-btn.is-pressed::before { animation: cdRing 0.5s ease-out; }
+
+/* Başlat: dolgulu vurgu hapı, koyu yazı (pastel vurgularda ve açık temalarda okunur);
+   üstünde zaman zaman kayan parlak ışık (animasyon korundu). */
+#countdownPage .countdown-start-btn {
+  position: relative; overflow: hidden;
+  min-width: 56%; padding: 0.95rem 2.6rem;
+  font-family: var(--cd-font); font-weight: 800; font-size: 1.1rem; letter-spacing: 0.02em;
+  color: #16171b;
+  background: var(--cd-acc);
+  border: none; border-radius: 999px;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.1), inset 0 -3px 0 rgba(0, 0, 0, 0.12), 0 10px 22px -12px rgba(0, 0, 0, 0.45);
+  animation: cdRise 0.7s var(--cd-ease) 0.3s backwards;
+  transition: transform 0.2s var(--cd-ease), filter 0.2s ease;
+}
+#countdownPage .countdown-start-btn::after {
+  content: ""; position: absolute; top: 0; bottom: 0; left: -60%; width: 36%;
+  background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.6), transparent);
+  transform: skewX(-18deg); pointer-events: none;
+  animation: cdSheen 4.2s ease-in-out 1.2s infinite;
+}
+#countdownPage .countdown-start-btn:hover { transform: none; filter: none; box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.1), inset 0 -3px 0 rgba(0, 0, 0, 0.12), 0 10px 22px -12px rgba(0, 0, 0, 0.45); }
+#countdownPage .countdown-start-btn:active {
+  transform: scale(0.96); background: var(--cd-acc); color: #16171b; filter: brightness(0.94);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.1), inset 0 -1px 0 rgba(0, 0, 0, 0.12), 0 4px 10px -8px rgba(0, 0, 0, 0.45);
+}
+
+/* ---------- Çalışan sayaç: Kronometre'deki gibi kartsız ---------- */
+#countdownDisplay.stopwatch-display {
+  background: none; border: none; border-radius: 0; box-shadow: none;
+}
+#countdownDisplay.stopwatch-display:hover { transform: none; box-shadow: none; }
+#countdownDisplay .stopwatch-time-row { font-weight: 700; }
+
+@keyframes cdRise {
+  from { opacity: 0; transform: translateY(18px); filter: blur(6px); }
+  to   { opacity: 1; transform: none; filter: blur(0); }
+}
+@keyframes cdTickUp {
+  from { opacity: 0; transform: translateY(0.35em); filter: blur(3px); }
+  to   { opacity: 1; transform: none; filter: blur(0); }
+}
+@keyframes cdTickDown {
+  from { opacity: 0; transform: translateY(-0.35em); filter: blur(3px); }
+  to   { opacity: 1; transform: none; filter: blur(0); }
+}
+@keyframes cdColon { 0%, 100% { opacity: 0.16; } 50% { opacity: 0.55; } }
+@keyframes cdRing {
+  0%   { opacity: 0.9; transform: scale(0.5); }
+  100% { opacity: 0;   transform: scale(1.35); }
+}
+@keyframes cdSheen { 0%, 62% { left: -60%; } 100% { left: 130%; } }
+
+/* ==========================================================================
+   HAZIR SÜRELER — Branşlarım penceresiyle aynı sade siyah dil
+   ========================================================================== */
+#countdownPresetsBackdrop {
+  background: rgba(0, 0, 0, 0.6);
+  -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px);
+}
+#countdownPresetsBackdrop .page9-add-card.countdown-presets-card {
+  max-width: 420px; padding: 1.3rem 1.3rem 1.25rem;
+  background: #000; color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 1.25rem;
+  box-shadow: none; font-family: var(--cd-font);
+  animation: cdRise 0.5s var(--cd-ease);
+}
+#countdownPresetsBackdrop .page9-add-header { margin-bottom: 1.1rem; align-items: center; }
+#countdownPresetsBackdrop .page9-add-title { font-family: var(--cd-font); font-weight: 700; font-size: 1.1rem; letter-spacing: -0.01em; color: #fff; }
+#countdownPresetsBackdrop .page9-add-subtitle { font-family: var(--cd-font); font-weight: 500; font-size: 0.8rem; color: #fff; opacity: 0.45; }
+#countdownPresetsBackdrop .countdown-presets-header-actions { gap: 0.4rem; }
+
+#countdownPresetsBackdrop .countdown-presets-edit-btn,
+#countdownPresetsBackdrop .countdown-presets-notif-btn,
+#countdownPresetsBackdrop .page9-add-close {
+  color: #fff; background: transparent; border: none; box-shadow: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color 0.18s ease, color 0.18s ease, transform 0.15s ease, opacity 0.22s ease;
+}
+#countdownPresetsBackdrop .countdown-presets-edit-btn {
+  padding: 0.4rem 0.85rem; border-radius: 999px; font-family: var(--cd-font); font-weight: 700; font-size: 0.85rem;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+#countdownPresetsBackdrop .countdown-presets-notif-btn,
+#countdownPresetsBackdrop .page9-add-close {
+  width: 2rem; height: 2rem; padding: 0; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+}
+#countdownPresetsBackdrop .page9-add-close { font-family: var(--cd-font); font-size: 1.2rem; line-height: 1; }
+#countdownPresetsBackdrop .countdown-presets-edit-btn:active,
+#countdownPresetsBackdrop .countdown-presets-notif-btn:active,
+#countdownPresetsBackdrop .page9-add-close:active { transform: scale(0.92); box-shadow: none; background: rgba(255, 255, 255, 0.14); }
+#countdownPresetsBackdrop .countdown-presets-edit-btn.is-active,
+#countdownPresetsBackdrop .countdown-presets-notif-btn.is-active { background: #fff; color: #000; box-shadow: none; }
+
+/* Hazır süreler: ince çerçeveli hap; basınca vurgu rengi dolar */
+#countdownPresetsBackdrop .countdown-presets-grid { gap: 0.6rem; }
+#countdownPresetsBackdrop .countdown-preset-chip {
+  padding: 0.85rem 0.4rem; background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.22); border-radius: 999px; box-shadow: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.15s ease, background-color 0.2s ease, border-color 0.2s ease, opacity 0.22s ease;
+}
+#countdownPresetsBackdrop .countdown-preset-chip-time {
+  font-family: var(--cd-font); font-weight: 700; font-size: 1.02rem; font-variant-numeric: tabular-nums; color: #fff;
+}
+#countdownPresetsBackdrop .countdown-preset-chip:active { transform: scale(0.95); background: var(--cd-acc); border-color: var(--cd-acc); box-shadow: none; }
+#countdownPresetsBackdrop .countdown-preset-chip:active .countdown-preset-chip-time { color: #16171b; }
+#countdownPresetsBackdrop .countdown-preset-chip-delete {
+  top: -0.4rem; right: -0.4rem; width: 1.5rem; height: 1.5rem;
+  border: none; color: #fff; background: #e5484d; box-shadow: none;
+}
+#countdownPresetsBackdrop .countdown-presets-empty { font-family: var(--cd-font); color: #fff; }
+
+/* Ekleme satırı: alt çizgili alanlar */
+#countdownPresetsBackdrop .countdown-presets-add-row {
+  gap: 0.5rem; margin-top: 1.2rem; padding: 0; background: none; border-radius: 0; box-shadow: none;
+}
+#countdownPresetsBackdrop .countdown-presets-add-input {
+  padding: 0.55rem 0.1rem; font-family: var(--cd-font); font-weight: 600; font-size: 1rem; color: #fff;
+  background: transparent; border: none; border-bottom: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 0; box-shadow: none; transition: border-color 0.2s ease;
+}
+#countdownPresetsBackdrop .countdown-presets-add-input:focus { outline: none; border-bottom-color: #fff; box-shadow: none; }
+#countdownPresetsBackdrop .countdown-presets-add-input::placeholder { color: #fff; opacity: 0.35; }
+#countdownPresetsBackdrop .countdown-presets-add-colon { font-family: var(--cd-font); font-weight: 700; color: #fff; opacity: 0.35; }
+#countdownPresetsBackdrop .page9-add-custom-btn {
+  flex-shrink: 0; width: 2.3rem; height: 2.3rem; padding: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--cd-font); font-size: 1.2rem; line-height: 1; color: #fff;
+  background: transparent; border: 1px solid rgba(255, 255, 255, 0.3); border-radius: 50%; box-shadow: none;
+  transition: background-color 0.18s ease, color 0.18s ease;
+}
+#countdownPresetsBackdrop .page9-add-custom-btn:active { transform: none; box-shadow: none; background: #fff; color: #000; }
+
+/* Bildirim sesi listesi: ince ayırıcı satırlar */
+#countdownPresetsBackdrop .countdown-sounds-list { gap: 0; }
+#countdownPresetsBackdrop .countdown-sound-row {
+  padding: 0.75rem 0.1rem; background: transparent; border: none; border-radius: 0; box-shadow: none;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  transition: opacity 0.2s ease;
+}
+#countdownPresetsBackdrop .countdown-sound-row:active { transform: none; opacity: 0.7; box-shadow: none; }
+#countdownPresetsBackdrop .countdown-sound-row.is-selected { background: transparent; box-shadow: none; }
+#countdownPresetsBackdrop .countdown-sound-name { font-family: var(--cd-font); font-weight: 600; font-size: 1rem; color: #fff; }
+#countdownPresetsBackdrop .countdown-sound-play-btn,
+#countdownPresetsBackdrop .countdown-sound-check {
+  border: 1px solid rgba(255, 255, 255, 0.3); color: #fff; background: transparent; box-shadow: none;
+}
+#countdownPresetsBackdrop .countdown-sound-play-btn { width: 2rem; height: 2rem; }
+#countdownPresetsBackdrop .countdown-sound-check { width: 1.35rem; height: 1.35rem; }
+#countdownPresetsBackdrop .countdown-sound-row.is-selected .countdown-sound-check {
+  background: var(--cd-acc); border-color: var(--cd-acc); color: #16171b;
+}
+#countdownPresetsBackdrop .countdown-presets-soon-text { color: #fff; }
+
+/* ---------- Sayaç tam ekranı: Kronometre ile aynı mantık ----------
+   is-countdown-fs      : tam ekran açık (çalışırken VE duraklatılmışken)
+   is-countdown-paused  : duraklatıldı (tam ekranda kalınır, geri tuşu hep görünür)
+   is-countdown-live    : fiilen sayıyor (Sıfırla gizli)
+   is-countdown-fs-controls : boş alana dokununca geçici beliren geri tuşu */
+body.is-countdown-fs.is-countdown-paused .countdown-fs-back-btn,
+body.is-countdown-fs.is-countdown-fs-controls .countdown-fs-back-btn {
+  opacity: 0.85; visibility: visible; pointer-events: auto;
+  animation: cdBackIn 0.4s var(--cd-ease, ease) backwards;
+  transition: opacity 0.3s ease, visibility 0s, transform 0.15s ease, background-color 0.15s ease, color 0.5s ease;
+}
+body.is-countdown-fs.is-countdown-paused .countdown-fs-back-btn:active,
+body.is-countdown-fs.is-countdown-fs-controls .countdown-fs-back-btn:active { opacity: 1; transform: scale(0.9); background-color: rgba(127,127,127,0.18); }
+@keyframes cdBackIn { from { opacity: 0; transform: translateX(-10px) scale(0.85); } to { opacity: 0.85; transform: none; } }
+
+/* Sayaç sürerken Sıfırla gizli; duraklatılınca (sayfada) görünür. */
+body.is-countdown-live #countdownResetBtn { opacity: 0; transform: scale(0.85); pointer-events: none; }
+
+/* Başlatma / duraklatma / bitirme animasyonları (tam ekran rakamları) */
+.countdown-fullscreen-time-row::before,
+.countdown-fullscreen-time-row::after {
+  content: ''; position: absolute; inset: -0.9rem -1.4rem;
+  border: 2px solid currentColor; border-radius: 999px;
+  opacity: 0; pointer-events: none;
+}
+.countdown-fullscreen-time-row.is-start-anim { animation: swFsStartPop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1); }
+.countdown-fullscreen-time-row.is-start-anim::before { animation: swFsStartRing 0.7s cubic-bezier(0.16, 1, 0.3, 1); }
+.countdown-fullscreen-time-row.is-pause-anim { animation: swFsPauseShake 0.5s ease-in-out; }
+body.is-countdown-fs.is-countdown-paused .countdown-fullscreen-time-row .stopwatch-time {
+  animation: swFsPausedBlink 1.6s ease-in-out 0.5s infinite;
+}
+/* Bitiş: kısa sarsıntı + art arda yayılan iki kırmızı halka */
+.countdown-fullscreen-time-row.is-finish-anim { animation: swFsPauseShake 0.6s ease-in-out; }
+.countdown-fullscreen-time-row.is-finish-anim::before,
+.countdown-fullscreen-time-row.is-finish-anim::after { border-color: #ff5c5c; animation: cdFinishRing 1.5s ease-out 3; }
+.countdown-fullscreen-time-row.is-finish-anim::after { animation-delay: 0.35s; }
+@keyframes cdFinishRing {
+  0%   { opacity: 0.7; transform: scale(0.85); }
+  100% { opacity: 0;   transform: scale(1.7); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #countdownPage *, #countdownPage *::before, #countdownPage *::after,
+  #countdownPresetsBackdrop *, .countdown-fullscreen *, .countdown-fullscreen *::before, .countdown-fullscreen *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+}
+</style>
 </head>
 <body oncopy="return false" oncut="return false" onselectstart="return false" ondragstart="return false">
 
@@ -39068,9 +39864,10 @@
         </div>
         </div>
 
-        <!-- ADIM 3.5 — Alt Görevler: isteğe bağlı checklist; boş bırakılırsa görev sade kalır.
-             Hem yeni görev eklenirken hem de düzenlerken erişilebilir. -->
-        <div class="task-add-step" data-step="subtasks">
+        <!-- ADIM 4 — Alt Görevler + Tekrar (aynı adımda): yeni görevde de, düzenlemede de gösterilir. Düzenlerken
+             seçilirse mevcut görev bir seriye dönüşmez; düzenlenen tarihten itibaren
+             ileriye dönük bağımsız kopyalar eklenir (bkz. saveBtn handler). -->
+        <div class="task-add-step" data-step="repeat">
           <div class="task-add-card">
             <h3 class="task-add-card-title">Alt Görevler</h3>
             <div class="task-add-subtask-list" id="taskAddSubtaskList"></div>
@@ -39082,12 +39879,6 @@
             </div>
             <p class="task-add-subtask-hint">İsteğe bağlı: görevi küçük adımlara böl.</p>
           </div>
-        </div>
-
-        <!-- ADIM 4 — Tekrar: yeni görevde de, düzenlemede de gösterilir. Düzenlerken
-             seçilirse mevcut görev bir seriye dönüşmez; düzenlenen tarihten itibaren
-             ileriye dönük bağımsız kopyalar eklenir (bkz. saveBtn handler). -->
-        <div class="task-add-step" data-step="repeat">
           <div class="task-add-card">
             <h3 class="task-add-card-title">Tekrar</h3>
             <div class="task-add-repeat-options" id="taskAddRepeatOptions" role="radiogroup" aria-label="Tekrar sıklığı">
@@ -39567,6 +40358,7 @@
                 <svg viewBox="0 0 24 24" width="19" height="19" fill="currentColor">
                   <path d="M17.63 5.84A2 2 0 0 0 16 5H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h11a2 2 0 0 0 1.63-.84L22 12z"/>
                 </svg>
+                <svg class="sw-ico-m" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.6 13.4l-7.2 7.2a2 2 0 0 1-2.8 0L3.5 13.5V4.5a1 1 0 0 1 1-1h9l7.1 7.1a2 2 0 0 1 0 2.8z"/><circle cx="8.3" cy="8.3" r="1.35" fill="currentColor" stroke="none"/></svg>
               </button>
               <!-- Ayar butonu: dokununca hazır süreler pop-up'ını açar
                    (bkz. #countdownPresetsBackdrop ve script'teki
@@ -39653,6 +40445,13 @@
 
     <!-- Sayaç (geri sayım) çalışırken beliren tam ekran görünüm. -->
     <div class="countdown-fullscreen" id="countdownFullscreen">
+      <!-- Boş alana dokununca beliren geri tuşu: sayacı DURAKLATMADAN tam ekrandan çıkar
+           (Kronometre'deki .stopwatch-fs-back-btn ile aynı görünüm). -->
+      <button type="button" class="stopwatch-fs-back-btn countdown-fs-back-btn" id="countdownFsBackBtn" aria-label="Tam ekrandan çık">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M15 4l-8 8 8 8" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
       <div class="countdown-fullscreen-time-row">
         <span class="stopwatch-time" id="countdownTimeFull">05:00</span>
         <div class="countdown-exit-zone" id="countdownExitZone" role="button" tabindex="0" aria-label="Zamanlayıcıyı duraklat ve tam ekrandan çık"></div>
@@ -45553,6 +46352,8 @@
   const renderLaps = () => {
     stopwatchLapsEl.innerHTML = buildFullscreenLapsHtml();
     stopwatchLapsEl.classList.toggle('is-visible', stopwatchLaps.length > 0 && stopwatchControlsVisible);
+    // Boş alana dokununca (kontroller açıkken) sol üstteki çıkış tuşu da görünür.
+    document.body.classList.toggle('is-stopwatch-fs-controls', stopwatchControlsVisible);
 
     const html = buildLapsHtml();
     lapsPageList.innerHTML = html.replace(/stopwatch-lap-row/g, 'laps-page-row')
@@ -45733,6 +46534,19 @@
     stopwatchLapsBtn.classList.toggle('is-hidden', !shouldShow);
   };
 
+  // Başlat/duraklat animasyonu: tam ekran saatine kısa bir sınıf eklenir
+  // (CSS: .is-start-anim / .is-pause-anim).
+  let swFsAnimTimer = null;
+  const playStopwatchFsAnim = (kind) => {
+    const row = stopwatchFullscreen && stopwatchFullscreen.querySelector('.stopwatch-fullscreen-time-row');
+    if (!row) return;
+    row.classList.remove('is-start-anim', 'is-pause-anim');
+    void row.offsetWidth; // animasyon baştan oynasın
+    row.classList.add(kind === 'start' ? 'is-start-anim' : 'is-pause-anim');
+    clearTimeout(swFsAnimTimer);
+    swFsAnimTimer = setTimeout(() => row.classList.remove('is-start-anim', 'is-pause-anim'), 800);
+  };
+
   const startStopwatch = () => {
     if (swRunning) return;
     rolloverStopwatchDay();
@@ -45743,6 +46557,7 @@
     swSubjectSegmentStartEpoch = Date.now();
     document.body.classList.add('is-stopwatch-running');
     document.body.classList.add('is-stopwatch-fs'); // tam ekran açık kalır (geri butonuyla çıkılır)
+    playStopwatchFsAnim('start');
     stopwatchFullscreenHint.textContent = 'Duraklatmak için dokun';
     stopwatchDisplay.setAttribute('aria-label', 'Kronometreyi duraklat');
     stopwatchHint.textContent = 'Duraklatmak için dokun';
@@ -45772,6 +46587,7 @@
     swRunning = false;
     if (swRafId) cancelAnimationFrame(swRafId);
     document.body.classList.remove('is-stopwatch-running');
+    playStopwatchFsAnim('pause');
     // Duraklatınca tam ekrandan ÇIKILMAZ (is-stopwatch-fs kalır); çıkış sol
     // üstteki geri butonuyla yapılır. Tam ekranda yeniden başlatmak için
     // ipucu kalıcı olarak "Devam etmek için dokun" olur.
@@ -45794,11 +46610,31 @@
     saveStopwatchState();
   };
 
-  // Duraklatılmış tam ekrandan geri butonuyla çıkış: sadece görünümü kapatır,
-  // kronometrenin durumuna (süre, turlar) dokunmaz.
+  // Tam ekrandan geri butonuyla çıkış (duraklatılmışken de, çalışırken de):
+  // sadece görünümü kapatır, kronometrenin durumuna (süre, turlar, çalışma)
+  // dokunmaz — çalışıyorsa olduğu gibi saymaya devam eder.
   const exitStopwatchFullscreen = () => {
-    if (swRunning) return;
+    clearTimeout(lapControlsTimer);
+    hideLapControlsNow();
     document.body.classList.remove('is-stopwatch-fs');
+    if (swRunning) {
+      stopwatchHint.textContent = 'Tam ekran için dokun';
+      stopwatchDisplay.setAttribute('aria-label', 'Tam ekrana dön');
+    }
+  };
+
+  // Çalışırken sayfaya çıkıldıysa karta dokunmak kronometreyi durdurmak yerine
+  // tam ekrana geri döndürür.
+  const enterStopwatchFullscreen = () => {
+    document.body.classList.add('is-stopwatch-fs');
+    stopwatchFullscreenHint.textContent = 'Duraklatmak için dokun';
+    stopwatchFullscreenHint.classList.remove('is-hidden');
+    clearTimeout(stopwatchHintTimer);
+    stopwatchHintTimer = setTimeout(() => {
+      stopwatchFullscreenHint.classList.add('is-hidden');
+    }, 3000);
+    stopwatchHint.textContent = 'Duraklatmak için dokun';
+    stopwatchDisplay.setAttribute('aria-label', 'Kronometreyi duraklat');
   };
 
   const toggleStopwatch = () => {
@@ -45897,11 +46733,18 @@
   // Kart, sayaç çalışırken tek dokunmayla duraklatma alanı görevi görür
   // (butonlar gizli olduğu için bu, çalışırken erişilebilir tek kontroldür).
   // Çalışmıyorken de kart üzerinden başlatılabilir.
-  stopwatchDisplay.addEventListener('click', toggleStopwatch);
+  const onStopwatchCardActivate = () => {
+    if (swRunning && !document.body.classList.contains('is-stopwatch-fs')) {
+      enterStopwatchFullscreen();
+      return;
+    }
+    toggleStopwatch();
+  };
+  stopwatchDisplay.addEventListener('click', onStopwatchCardActivate);
   stopwatchDisplay.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
-      toggleStopwatch();
+      onStopwatchCardActivate();
     }
   });
 
@@ -46411,6 +47254,10 @@
     // is-countdown-running KALDIRILMAZ; tam ekran görünümü açık kalır,
     // sadece "bitti" görünümü (kırmızı yanıp sönme) üzerine eklenir.
     document.body.classList.add('is-countdown-finished');
+    // Tam ekrandan çıkılmışsa süre dolunca uyarı için tam ekran geri gelir.
+    document.body.classList.remove('is-countdown-paused', 'is-countdown-live', 'is-countdown-fs-controls');
+    document.body.classList.add('is-countdown-fs');
+    playCountdownFsAnim('finish');
     countdownFullscreenHint.textContent = 'Süre doldu! Kapatmak için dokun';
     countdownFullscreenHint.classList.remove('is-hidden');
     countdownHint.textContent = 'Süre doldu';
@@ -46425,8 +47272,8 @@
   const dismissFinishedCountdown = () => {
     cdFinished = false;
     stopCountdownFinishSound();
-    document.body.classList.remove('is-countdown-running');
-    document.body.classList.remove('is-countdown-finished');
+    document.body.classList.remove('is-countdown-fs', 'is-countdown-finished', 'is-countdown-paused', 'is-countdown-live', 'is-countdown-fs-controls');
+    clearCountdownFsAnim();
     // finishCountdown zaten flush etti; burada sadece iz kalmasın diye
     // güvenlik amacıyla sıfırlanıyor.
     cdSegmentStartEpoch = null;
@@ -46445,6 +47292,25 @@
     if (cdRunning) cdRafId = requestAnimationFrame(countdownTick);
   };
 
+  // Başlat / duraklat / bitir animasyonları: tam ekran rakam satırına kısa sınıflar eklenir.
+  let cdFsAnimTimer = null;
+  const countdownFsRow = () => countdownFullscreen && countdownFullscreen.querySelector('.countdown-fullscreen-time-row');
+  const clearCountdownFsAnim = () => {
+    const row = countdownFsRow();
+    clearTimeout(cdFsAnimTimer);
+    if (row) row.classList.remove('is-start-anim', 'is-pause-anim', 'is-finish-anim');
+  };
+  const playCountdownFsAnim = (kind) => {
+    const row = countdownFsRow();
+    if (!row) return;
+    clearTimeout(cdFsAnimTimer);
+    row.classList.remove('is-start-anim', 'is-pause-anim', 'is-finish-anim');
+    void row.offsetWidth; // animasyon baştan oynasın
+    row.classList.add(kind === 'start' ? 'is-start-anim' : kind === 'pause' ? 'is-pause-anim' : 'is-finish-anim');
+    // Bitiş animasyonu uyarı kapatılana kadar kalır; diğerleri kısa sürer.
+    if (kind !== 'finish') cdFsAnimTimer = setTimeout(() => row.classList.remove('is-start-anim', 'is-pause-anim'), 800);
+  };
+
   const startCountdown = () => {
     if (cdRunning || cdRemainingMs <= 0) return;
     // Kullanıcının dokunuşu burada gerçekleştiği için bitiş sesinin
@@ -46459,7 +47325,9 @@
     cdSegmentStartEpoch = Date.now();
     cdSegmentDayKey = page10DateKey(new Date());
     document.body.classList.remove('is-countdown-finished');
-    document.body.classList.add('is-countdown-running');
+    document.body.classList.remove('is-countdown-paused', 'is-countdown-fs-controls');
+    document.body.classList.add('is-countdown-fs', 'is-countdown-live');
+    playCountdownFsAnim('start');
     countdownDisplay.setAttribute('aria-label', 'Zamanlayıcıyı duraklat');
     countdownHint.textContent = 'Duraklatmak için dokun';
     countdownFullscreenHint.textContent = 'Duraklatmak için dokun';
@@ -46480,9 +47348,16 @@
     if (cdRafId) cancelAnimationFrame(cdRafId);
     // Duraklatılana kadar fiilen geçen süreyi güne/derse yaz.
     flushCountdownSubjectSegment();
-    document.body.classList.remove('is-countdown-running');
+    // Kronometre gibi: duraklatınca tam ekranda KALINIR (geri tuşu hep görünür);
+    // çıkış geri tuşuyla yapılır.
+    document.body.classList.remove('is-countdown-live', 'is-countdown-fs-controls');
+    document.body.classList.add('is-countdown-paused');
+    playCountdownFsAnim('pause');
     countdownDisplay.setAttribute('aria-label', 'Zamanlayıcıyı devam ettir');
     countdownHint.textContent = 'Devam etmek için dokun';
+    countdownFullscreenHint.textContent = 'Devam etmek için dokun';
+    countdownFullscreenHint.classList.remove('is-hidden');
+    clearTimeout(countdownHintTimer);
     renderCountdownTime();
     hideCountdownFullscreenSubject();
   };
@@ -46502,6 +47377,8 @@
     cdTotalMs = (cdMinutes * 60 + cdSeconds) * 1000;
     cdRemainingMs = cdTotalMs;
     renderCountdownTime();
+    document.body.classList.remove('is-countdown-fs', 'is-countdown-paused', 'is-countdown-live', 'is-countdown-fs-controls');
+    clearCountdownFsAnim();
     showCountdownSetup();
   };
 
@@ -46585,13 +47462,74 @@
 
   if (countdownResetBtn) countdownResetBtn.addEventListener('click', resetCountdown);
 
+  // Kronometre ile aynı mantık:
+  //  - Tam ekranda boş alana dokununca geri tuşu belirir (3 sn); tuş duraklatmadan çıkarır.
+  //  - Duraklatılınca tam ekranda kalınır, geri tuşu hep görünür.
+  //  - Sayfaya çıkıldığında sayaç sürüyorsa kartına dokunmak tam ekrana döndürür.
+  let cdFsControlsTimer = null;
+  const hideCountdownFsControls = () => {
+    clearTimeout(cdFsControlsTimer);
+    document.body.classList.remove('is-countdown-fs-controls');
+  };
+  const exitCountdownFullscreen = () => {
+    if (cdFinished) return;
+    hideCountdownFsControls();
+    document.body.classList.remove('is-countdown-fs');
+    if (cdRunning) {
+      countdownHint.textContent = 'Tam ekran için dokun';
+      countdownDisplay.setAttribute('aria-label', 'Tam ekrana dön');
+    } else {
+      countdownHint.textContent = 'Devam etmek için dokun';
+      countdownDisplay.setAttribute('aria-label', 'Zamanlayıcıyı devam ettir');
+    }
+  };
+  const enterCountdownFullscreen = () => {
+    document.body.classList.add('is-countdown-fs');
+    countdownHint.textContent = 'Duraklatmak için dokun';
+    countdownDisplay.setAttribute('aria-label', 'Zamanlayıcıyı duraklat');
+    countdownFullscreenHint.textContent = 'Duraklatmak için dokun';
+    countdownFullscreenHint.classList.remove('is-hidden');
+    clearTimeout(countdownHintTimer);
+    countdownHintTimer = setTimeout(() => {
+      countdownFullscreenHint.classList.add('is-hidden');
+    }, 3000);
+  };
+  const onCountdownCardActivate = () => {
+    if (cdRunning && !document.body.classList.contains('is-countdown-fs')) {
+      enterCountdownFullscreen();
+      return;
+    }
+    toggleCountdown();
+  };
+
   if (countdownDisplay) {
-    countdownDisplay.addEventListener('click', toggleCountdown);
+    countdownDisplay.addEventListener('click', onCountdownCardActivate);
     countdownDisplay.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault();
-        toggleCountdown();
+        onCountdownCardActivate();
       }
+    });
+  }
+
+  if (countdownFullscreen) {
+    countdownFullscreen.addEventListener('click', (e) => {
+      if (e.target.closest('.countdown-exit-zone, .countdown-fs-back-btn')) return;
+      if (cdFinished) {
+        dismissFinishedCountdown();
+        return;
+      }
+      if (!cdRunning) return; // duraklatılmışken geri tuşu zaten hep görünür
+      const shown = document.body.classList.toggle('is-countdown-fs-controls');
+      clearTimeout(cdFsControlsTimer);
+      if (shown) cdFsControlsTimer = setTimeout(hideCountdownFsControls, 3000);
+    });
+  }
+  const countdownFsBackBtn = document.getElementById('countdownFsBackBtn');
+  if (countdownFsBackBtn) {
+    countdownFsBackBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      exitCountdownFullscreen();
     });
   }
 
@@ -48644,6 +49582,7 @@
   let openRelaxDayBubbleFor = () => {};
 
   let relaxWeekMonday = null;
+  let relaxWeekSlideDir = 0; // kaydırmayla hafta değişiminde -1/+1 (is-anim yerine yatay kayma)
   const renderRelaxCalendarWeek = (focusDateStr) => {
     if (!relaxCalendarWeekEl) return;
     let focus = new Date();
@@ -48689,7 +49628,7 @@
 
       const cell = document.createElement('button');
       cell.type = 'button';
-      cell.className = 'relax-calendar-day-cell' + (isWeekChange ? ' is-anim' : '') + (isSelected ? ' is-selected' : '');
+      cell.className = 'relax-calendar-day-cell' + (isWeekChange && !relaxWeekSlideDir ? ' is-anim' : '') + (isSelected ? ' is-selected' : '');
       cell.style.setProperty('--c', String(i));
       cell.setAttribute('aria-label', `${day.getDate()} ${HOME_MONTHS_TR[day.getMonth()]}`);
       // Yeni Aktivite sayfası, seçili günü buradan okur (yyyy-mm-dd).
@@ -48773,6 +49712,125 @@
   }
 
   renderRelaxCalendarWeek();
+
+  // ---------- Planlayıcı: hafta şeridini sağa/sola kaydırarak hafta değiştir ----------
+  // Sola kaydır → sonraki hafta, sağa kaydır → önceki hafta. Seçili gün aynı
+  // haftanın gününde (ör. Çarşamba) kalır; görev listesi o güne göre yenilenir.
+  (() => {
+    const strip = relaxCalendarWeekEl;
+    if (!strip) return;
+    const headerBtn = document.getElementById('relaxCalendarHeaderBtn');
+    const SWIPE_DIST = 48;       // px
+    const SWIPE_VELOCITY = 0.4;  // px/ms
+    let tracking = false;
+    let dragging = false;
+    let pid = null;
+    let sx = 0;
+    let sy = 0;
+    let st = 0;
+    let suppressClick = false;
+
+    const fmtDate = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+
+    const shiftWeek = (dir) => {
+      const cur = relaxWeekSelectedCell && relaxWeekSelectedCell.dataset.date;
+      let base = new Date();
+      base.setHours(0, 0, 0, 0);
+      if (cur) {
+        const p = cur.split('-').map(Number);
+        if (p.length === 3 && p.every((n) => Number.isFinite(n))) base = new Date(p[0], p[1] - 1, p[2]);
+      }
+      base.setDate(base.getDate() + dir * 7);
+      const dateStr = fmtDate(base);
+
+      strip.style.transition = '';
+      strip.style.transform = '';
+      strip.style.opacity = '';
+      relaxWeekSlideDir = dir;
+      renderRelaxCalendarWeek(dateStr);
+      relaxWeekSlideDir = 0;
+
+      if (typeof strip.animate === 'function') {
+        strip.animate(
+          [
+            { transform: `translateX(${dir * 42}px)`, opacity: 0 },
+            { transform: 'translateX(0)', opacity: 1 },
+          ],
+          { duration: 340, easing: 'cubic-bezier(0.16, 1, 0.3, 1)' }
+        );
+      }
+      if (headerBtn) {
+        headerBtn.classList.remove('is-swap');
+        void headerBtn.offsetWidth;
+        headerBtn.classList.add('is-swap');
+      }
+      document.dispatchEvent(new CustomEvent('relax:date-changed', { detail: { date: dateStr } }));
+    };
+
+    const springBack = () => {
+      strip.style.transition = 'transform 0.35s cubic-bezier(0.34, 1.4, 0.64, 1), opacity 0.25s ease';
+      strip.style.transform = '';
+      strip.style.opacity = '';
+    };
+
+    strip.addEventListener('pointerdown', (e) => {
+      if (e.pointerType === 'mouse' && e.button !== 0) return;
+      tracking = true;
+      dragging = false;
+      pid = e.pointerId;
+      sx = e.clientX;
+      sy = e.clientY;
+      st = performance.now();
+      strip.style.transition = 'none';
+    });
+
+    strip.addEventListener('pointermove', (e) => {
+      if (!tracking || e.pointerId !== pid) return;
+      const dx = e.clientX - sx;
+      const dy = e.clientY - sy;
+      if (!dragging) {
+        if (Math.abs(dx) > 10 && Math.abs(dx) > Math.abs(dy) * 1.2) {
+          dragging = true;
+          try { strip.setPointerCapture(pid); } catch (err) { /* yoksay */ }
+        } else if (Math.abs(dy) > 10) {
+          tracking = false;
+          strip.style.transition = '';
+          return;
+        } else {
+          return;
+        }
+      }
+      strip.style.transform = `translateX(${dx * 0.45}px)`;
+      strip.style.opacity = String(Math.max(0.4, 1 - Math.abs(dx) / 420));
+    });
+
+    const finish = (e) => {
+      if (!tracking || (e && e.pointerId !== pid)) return;
+      tracking = false;
+      if (!dragging) {
+        strip.style.transition = '';
+        return;
+      }
+      dragging = false;
+      suppressClick = true;
+      setTimeout(() => { suppressClick = false; }, 0);
+      try { strip.releasePointerCapture(pid); } catch (err) { /* yoksay */ }
+      const dx = (e ? e.clientX : sx) - sx;
+      const dt = Math.max(1, performance.now() - st);
+      if (e && e.type === 'pointerup' && (Math.abs(dx) > SWIPE_DIST || Math.abs(dx) / dt > SWIPE_VELOCITY)) {
+        shiftWeek(dx < 0 ? 1 : -1);
+      } else {
+        springBack();
+      }
+    };
+    strip.addEventListener('pointerup', finish);
+    strip.addEventListener('pointercancel', finish);
+
+    // Kaydırma sonunda tarayıcının ürettiği "click" bir güne dokunuş sayılmasın.
+    strip.addEventListener('click', (e) => {
+      if (suppressClick) { e.stopPropagation(); e.preventDefault(); }
+    }, true);
+  })();
 
   // ---------- "Planlayıcı": takvim şeridi sabitleme ----------
   // Takvim şeridinin kendisi CSS ile (position:sticky) üstte sabit kalır;
@@ -49641,8 +50699,7 @@
     continueBtn.addEventListener('click', () => {
       if (currentStep === 'icon') goToStep('color');
       else if (currentStep === 'color') goToStep('time');
-      else if (currentStep === 'time') goToStep('subtasks');
-      else if (currentStep === 'subtasks') goToStep('repeat');
+      else if (currentStep === 'time') goToStep('repeat'); // Alt görevler + Tekrar aynı adımda
     });
 
     // ---------------- Tarih ----------------
@@ -64265,22 +65322,30 @@
     qhavuzWideContextCard = card;
     card.classList.remove('is-pressing');
     card.classList.add('is-ctx-active');
-    // Menü basılan noktanın TAM ÜSTÜNDE, yatayda ortalı açılır; üstte yer
-    // yoksa noktanın altına döner (parmak menüyü örtmesin diye GAP geniş).
-    const GAP = 26, GUESS_WIDTH = 248, GUESS_HEIGHT = 396;
-    qhavuzWideContextMenu.style.left = `${x - GUESS_WIDTH / 2}px`;
-    qhavuzWideContextMenu.style.top = `${Math.max(8, y - GAP - GUESS_HEIGHT)}px`;
+    // Menü basılan noktadan SAĞA doğru açılır (sol kenarı parmağın hizasında);
+    // sağda yer yoksa SOLA doğru genişler (sağ kenarı parmağın hizasında).
+    // Dikeyde noktanın üstüne açılır, yer yoksa altına döner. Büyüme
+    // yönüne göre transform-origin de ayarlanır (animasyon parmaktan yayılır).
+    const GAP = 26, GUESS_WIDTH = 248, GUESS_HEIGHT = 396, EDGE = 8;
+    const place = () => {
+      const rect = qhavuzWideContextMenu.getBoundingClientRect();
+      const w = rect.width || GUESS_WIDTH;
+      const h = rect.height || GUESS_HEIGHT;
+      const goLeft = x + w > window.innerWidth - EDGE && x - w >= EDGE;
+      let left = goLeft ? x - w : x;
+      let top = y - GAP - h;
+      let below = false;
+      if (top < EDGE) { top = y + GAP; below = true; }
+      left = Math.min(Math.max(EDGE, left), window.innerWidth - w - EDGE);
+      top = Math.min(Math.max(EDGE, top), window.innerHeight - h - EDGE);
+      qhavuzWideContextMenu.style.left = `${left}px`;
+      qhavuzWideContextMenu.style.top = `${top}px`;
+      qhavuzWideContextMenu.style.transformOrigin = `${below ? 'top' : 'bottom'} ${goLeft ? 'right' : 'left'}`;
+    };
+    place();
     qhavuzWideContextMenu.classList.add('is-open');
     requestAnimationFrame(() => {
-      if (!qhavuzWideContextMenu.classList.contains('is-open')) return;
-      const rect = qhavuzWideContextMenu.getBoundingClientRect();
-      let adjLeft = x - rect.width / 2;
-      let adjTop = y - GAP - rect.height;
-      if (adjTop < 8) adjTop = y + GAP;
-      adjLeft = Math.min(Math.max(8, adjLeft), window.innerWidth - rect.width - 8);
-      adjTop = Math.min(Math.max(8, adjTop), window.innerHeight - rect.height - 8);
-      qhavuzWideContextMenu.style.left = `${adjLeft}px`;
-      qhavuzWideContextMenu.style.top = `${adjTop}px`;
+      if (qhavuzWideContextMenu.classList.contains('is-open')) place();
     });
   };
 
@@ -66109,17 +67174,26 @@
   const openQhavuzPackageContextMenu = (pkgId, x, y) => {
     if (!qhavuzPackageContextMenu) return;
     qhavuzPackageContextMenuId = pkgId;
-    const GUESS_WIDTH = 148, GUESS_HEIGHT = 92, GAP = 10;
-    qhavuzPackageContextMenu.style.left = `${x - GUESS_WIDTH / 2}px`;
-    qhavuzPackageContextMenu.style.top = `${Math.max(8, y - GAP - GUESS_HEIGHT)}px`;
+    const GUESS_WIDTH = 148, GUESS_HEIGHT = 92, GAP = 10, EDGE = 8;
+    const place = () => {
+      const rect = qhavuzPackageContextMenu.getBoundingClientRect();
+      const w = rect.width || GUESS_WIDTH;
+      const h = rect.height || GUESS_HEIGHT;
+      const goLeft = x + w > window.innerWidth - EDGE && x - w >= EDGE;
+      let left = goLeft ? x - w : x;
+      let top = y - GAP - h;
+      let below = false;
+      if (top < EDGE) { top = y + GAP; below = true; }
+      left = Math.min(Math.max(EDGE, left), window.innerWidth - w - EDGE);
+      top = Math.min(Math.max(EDGE, top), window.innerHeight - h - EDGE);
+      qhavuzPackageContextMenu.style.left = `${left}px`;
+      qhavuzPackageContextMenu.style.top = `${top}px`;
+      qhavuzPackageContextMenu.style.transformOrigin = `${below ? 'top' : 'bottom'} ${goLeft ? 'right' : 'left'}`;
+    };
+    place();
     qhavuzPackageContextMenu.classList.add('is-open');
     requestAnimationFrame(() => {
-      if (!qhavuzPackageContextMenu.classList.contains('is-open')) return;
-      const rect = qhavuzPackageContextMenu.getBoundingClientRect();
-      const adjLeft = Math.min(Math.max(8, rect.left), window.innerWidth - rect.width - 8);
-      const adjTop = Math.min(Math.max(8, rect.top), window.innerHeight - rect.height - 8);
-      qhavuzPackageContextMenu.style.left = `${adjLeft}px`;
-      qhavuzPackageContextMenu.style.top = `${adjTop}px`;
+      if (qhavuzPackageContextMenu.classList.contains('is-open')) place();
     });
   };
 
@@ -69391,13 +70465,12 @@
     const onMq = () => { if (!phone.matches && page.classList.contains('is-active')) goToPage('page-8'); };
     if (phone.addEventListener) phone.addEventListener('change', onMq); else phone.addListener(onMq);
 
-    // Sol alttaki Geri düğmesi (nav bar bu sayfalarda gizli): Hatırlanacaklar → Gündelik,
-    // Gündelik → Ana sayfa (Soru Havuzu'ndaki Geri ile aynı akış).
+    // Sol alttaki Geri düğmesi (nav bar bu sayfalarda gizli): hem Hatırlanacaklar'dan
+    // hem Gündelik'ten doğrudan Ana sayfa'ya çıkar (Gündelik'e uğramadan).
     const gSwitch = document.getElementById('gundelikFabSwitchBtn');
     if (gSwitch) gSwitch.addEventListener('click', () => goToPage(page.classList.contains('is-active') ? 'page-8' : 'page-hatirla'));
     const gBack = document.getElementById('gundelikFabBackBtn');
     if (gBack) gBack.addEventListener('click', () => {
-      if (page.classList.contains('is-active')) { goToPage('page-8'); return; }
       const homeInput = document.querySelector('.nav-input[value="page-1"]');
       if (homeInput) homeInput.checked = true;
       goToPage('page-1');
@@ -69658,5 +70731,28 @@
   }, 200));
 })();
 </script>
+<script>
+// Zamanlayıcı: dk/sn değeri değişince rakam kayarak yenilenir (artınca aşağıdan, azalınca yukarıdan).
+(function () {
+  var ids = ['countdownMinValue', 'countdownSecValue'];
+  ids.forEach(function (id) {
+    var el = document.getElementById(id);
+    if (!el || typeof MutationObserver === 'undefined') return;
+    var prev = parseInt(el.textContent, 10) || 0;
+    new MutationObserver(function () {
+      var cur = parseInt(el.textContent, 10);
+      if (isNaN(cur) || cur === prev) { return; }
+      var up = cur > prev;
+      // dk/sn sarma (59 -> 0 gibi) için kısa yolu seç
+      if (Math.abs(cur - prev) > 30) up = !up;
+      prev = cur;
+      el.classList.remove('is-tick-up', 'is-tick-down');
+      void el.offsetWidth;
+      el.classList.add(up ? 'is-tick-up' : 'is-tick-down');
+    }).observe(el, { childList: true, characterData: true, subtree: true });
+  });
+})();
+</script>
+
 </body>
 </html>
