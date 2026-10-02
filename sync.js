@@ -230,7 +230,7 @@
     }
     if (wasWiped()) { meta = newMeta(id); sessionStorage.removeItem('pace_sync_rl'); }   // sıfırlanmış cihaz: bulut kazanır
     uid = id; meta.uid = id; meta.signedOut = false; authState = 'in'; email = session.user.email || ''; stampEpoch(); saveMeta();
-    setStatus('Bağlandı'); closeModal();
+    setStatus('Bağlandı'); closeModal(); finishAuth();
     if (channel) sb.removeChannel(channel);
     channel = sb.channel('pace-sync-' + id).on('postgres_changes',
       { event: '*', schema: 'public', table: 'sync_records', filter: 'user_id=eq.' + id },
@@ -275,7 +275,7 @@
     if (modalOpen) render();
     ui();
   }
-  function openModal() { modalOpen = true; var ov = document.createElement('div'); ov.id = 'paceSyncOv'; ov.innerHTML = '<div id="paceSyncCard"></div>'; document.body.appendChild(ov);
+  function openModal() { if (!uid) return openAuth(); modalOpen = true; var ov = document.createElement('div'); ov.id = 'paceSyncOv'; ov.innerHTML = '<div id="paceSyncCard"></div>'; document.body.appendChild(ov);
     ov.addEventListener('click', function (e) { if (e.target === ov) closeModal(); }); render(); }
   function closeModal() { modalOpen = false; var ov = document.getElementById('paceSyncOv'); if (ov) ov.remove(); }
   function showBanner() {
@@ -304,7 +304,7 @@
       if (a === 'dx') {
         msg.textContent = 'Kontrol ediliyor…';
         var q = await sb.from('sync_records').select('id,updated_at,device_id').eq('kind', 'state').neq('id', nc());
-        msg.textContent = 'sürüm 13 · bulutta ' + (q.data ? q.data.length : '?') + ' alan' + (q.error ? ' · HATA: ' + q.error.message : '') +
+        msg.textContent = 'sürüm 14 · bulutta ' + (q.data ? q.data.length : '?') + ' alan' + (q.error ? ' · HATA: ' + q.error.message : '') +
           ' · bu cihazda ' + Object.keys(APP_STATE).length + ' alan · imleç ' + (meta.lastPull || 'yok') + ' · bağlı ' + !!meta.linked +
           ' · ' + (q.data || []).map(function (x) { return x.id + '@' + String(x.updated_at).slice(5, 16); }).join(', ');
         return;
@@ -325,7 +325,7 @@
   }
 
 
-  // ---------- Görünüm: yazı tipi, Ayarlar > Hesabım, Profil, yan panel logosu (sürüm 13) ----------
+  // ---------- Görünüm: yazı tipi, Ayarlar > Hesabım, Profil, yan panel logosu (sürüm 14) ----------
   var ST = document.createElement('style'); ST.id = 'paceAcctCss';
   var stag = '';
   for (var si = 1; si <= 9; si++) stag += '.pf-first>:nth-child(' + si + '),.ac-first>:nth-child(' + si + '){animation-delay:' + (si * 0.06).toFixed(2) + 's}';
@@ -351,25 +351,21 @@ ${stag}
 
 /* ---- Hesabım kartı ---- */
 .ac{color:var(--theme-text,#121212)}
-.ac-hero{position:relative;display:flex;align-items:center;gap:15px;padding:18px;border-radius:26px;overflow:hidden;background:linear-gradient(135deg,color-mix(in srgb,var(--pc) 24%,transparent),color-mix(in srgb,var(--pc) 5%,transparent) 75%),rgba(128,128,128,.07);border:1px solid color-mix(in srgb,var(--pc) 32%,rgba(128,128,128,.18))}
 .ac-hero::before{content:"";position:absolute;width:190px;height:190px;right:-60px;top:-80px;border-radius:50%;background:var(--pc);opacity:.2;filter:blur(44px);pointer-events:none}
 .ac-av{position:relative;flex:none;width:68px;height:68px;padding:0;border:0;border-radius:50%;background:none;cursor:zoom-in;transition:transform .4s cubic-bezier(.34,1.56,.64,1)}
 .ac-av.off{cursor:default}.ac-av:not(.off):hover{transform:scale(1.06)}.ac-av:not(.off):active{transform:scale(.94)}
 .ac-av .pf-av{box-shadow:0 0 0 3px var(--theme-bg,#fff),0 0 0 5px color-mix(in srgb,var(--pc) 65%,transparent),0 8px 20px rgba(0,0,0,.25)}
 .ac-st{position:absolute;right:-1px;bottom:-1px;width:18px;height:18px;border-radius:50%;border:3px solid var(--theme-bg,#fff);background:var(--sc,#8a8a8a)}
-.ac-st[data-s=busy]{animation:acPulse 1.1s ease-in-out infinite}
-.ac-who{position:relative;flex:1;min-width:0;display:flex;flex-direction:column;gap:1px;text-align:left;border:0;background:none;color:inherit;padding:4px 0;cursor:pointer}
-.ac-who.static{cursor:default}
 .ac-who b{font-size:20px;font-weight:700;line-height:1.15;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .ac-who span{font-size:13px;opacity:.65;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.ac-edit{position:relative;flex:none;display:inline-flex;align-items:center;gap:6px;padding:9px 14px;border-radius:999px;border:1px solid rgba(128,128,128,.32);background:rgba(128,128,128,.12);color:inherit;font-size:14px;font-weight:600;cursor:pointer;transition:transform .25s,background .25s}
-.ac-edit:active{transform:scale(.95)}
-.ac-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
-.ac-tile{--sc:#8a8a8a;display:flex;align-items:center;gap:11px;padding:12px;min-width:0;border-radius:20px;background:rgba(128,128,128,.08);border:1px solid rgba(128,128,128,.16)}
-.ac-tile[data-s=ok]{--sc:#2ecc71}.ac-tile[data-s=busy]{--sc:#f5b301}.ac-tile[data-s=err]{--sc:#e74c3c}
-.ac-ic{width:40px;height:40px;border-radius:13px;flex:none;display:grid;place-items:center;background:color-mix(in srgb,var(--sc) 18%,transparent);color:var(--sc)}
-.ac-tile[data-s=busy] .ac-ic{animation:acPulse 1.1s ease-in-out infinite}
-.ac-tile div{display:flex;flex-direction:column;min-width:0}.ac-tile b{font-size:14.5px;line-height:1.2}.ac-tile span{font-size:12.5px;opacity:.7;line-height:1.25}
+.ac-hero{position:relative;display:flex;align-items:center;gap:15px;padding:30px 60px 24px 18px;border-radius:26px;overflow:hidden;cursor:pointer;background:linear-gradient(135deg,color-mix(in srgb,var(--pc) 24%,transparent),color-mix(in srgb,var(--pc) 5%,transparent) 75%),rgba(128,128,128,.07);border:1px solid color-mix(in srgb,var(--pc) 32%,rgba(128,128,128,.18));transition:transform .4s cubic-bezier(.34,1.56,.64,1),border-color .3s;-webkit-tap-highlight-color:transparent}
+.ac-hero:hover{border-color:color-mix(in srgb,var(--pc) 55%,rgba(128,128,128,.2))}.ac-hero:active{transform:scale(.99)}.ac-hero:focus-visible{outline:2px solid var(--pc);outline-offset:2px}
+.ac-hero.static{cursor:default;padding:18px}.ac-hero.static:active{transform:none}
+.ac-who{position:relative;flex:1;min-width:0;display:flex;flex-direction:column;gap:1px;text-align:left}
+.ac-chip{position:absolute;top:12px;right:14px;z-index:1;max-width:calc(100% - 28px);display:inline-flex;align-items:center;gap:6px;padding:5px 11px 5px 8px;border-radius:999px;font-size:12.5px;font-weight:600;line-height:1.2;white-space:nowrap;background:color-mix(in srgb,var(--theme-bg,#000) 45%,transparent);border:1px solid rgba(128,128,128,.22);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+.ac-chip svg{flex:none;color:var(--sc)}.ac-chip span{overflow:hidden;text-overflow:ellipsis}.ac-chip[data-s=busy] svg{animation:acPulse 1.1s ease-in-out infinite}
+.ac-notch{position:absolute;right:14px;top:50%;margin-top:-17px;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:rgba(128,128,128,.16);transition:transform .45s cubic-bezier(.34,1.56,.64,1),background .25s}
+.ac-hero:hover .ac-notch{transform:translateX(3px);background:rgba(128,128,128,.26)}.ac-hero:active .ac-notch{transform:translateX(5px) scale(.92)}
 .ac-note{margin:12px 2px 0;font-size:13px;line-height:1.4;opacity:.8}.ac-note.err{color:#e5484d;opacity:1}
 .ac-perks{list-style:none;margin:12px 0 0;padding:0;display:flex;flex-direction:column;gap:9px}
 .ac-perks li{display:flex;align-items:center;gap:10px;font-size:14px;opacity:.85}
@@ -692,6 +688,7 @@ body.is-qhavuz-test-open .pf-side{opacity:.35;pointer-events:none}}
       else if (a === 'profile') { if (signedIn()) openProfile(); else openModal(); }
       else if (a === 'sync') syncNow(false); else if (a === 'out') doSignOut(); else openModal();
     });
+    sec.addEventListener('keydown', function (e) { if ((e.key === 'Enter' || e.key === ' ') && e.target.classList && e.target.classList.contains('ac-hero')) { e.preventDefault(); if (signedIn()) openProfile(); } });
     var fb = document.getElementById('paceSyncBtn'); if (fb) fb.style.display = 'none';   // artık ayarlardan yönetiliyor
     ui();
   }
@@ -726,11 +723,11 @@ body.is-qhavuz-test-open .pf-side{opacity:.35;pointer-events:none}}
     var html;
     if (signedIn()) {
       var pc = pickColor(prof()), syncing = yd === 'busy' && authState === 'in';
-      html = '<div class="ac-hero" style="--pc:' + pc + '"><button type="button" class="ac-av" data-acct="view" aria-label="Profil resmini büyüt" style="--sc:' + SC[sd] + '">' + avatarHTML(68) + '<span class="ac-st" data-s="' + sd + '"></span></button>' +
-        '<button type="button" class="ac-who" data-acct="profile"><b>' + esc(dispName()) + '</b><span>' + esc(email || '') + '</span></button>' +
-        '<button type="button" class="ac-edit" data-acct="profile">' + ic(IC.pen, 15) + 'Düzenle</button></div>' +
-        '<div class="ac-grid"><div class="ac-tile" data-s="' + sd + '"><span class="ac-ic">' + ic(IC.shield, 20) + '</span><div><b>Oturum</b><span>' + st + '</span></div></div>' +
-        '<div class="ac-tile" data-s="' + yd + '"><span class="ac-ic">' + ic(IC.cloud, 20) + '</span><div><b>Yedekleme</b><span>' + esc(yt) + '</span></div></div></div>' +
+      html = '<div class="ac-hero" data-acct="profile" role="button" tabindex="0" aria-label="Profili düzenle" style="--pc:' + pc + '">' +
+        '<span class="ac-chip" data-s="' + yd + '" style="--sc:' + SC[yd] + '">' + ic(IC.cloud, 15) + '<span>' + esc(yt) + '</span></span>' +
+        '<button type="button" class="ac-av" data-acct="view" aria-label="Profil resmini büyüt" style="--sc:' + SC[sd] + '">' + avatarHTML(68) + '<span class="ac-st" title="Oturum: ' + st + '"></span></button>' +
+        '<div class="ac-who"><b>' + esc(dispName()) + '</b><span>' + esc(email || '') + '</span></div>' +
+        '<span class="ac-notch" aria-hidden="true">' + ic('<path d="M9 5l7 7-7 7"/>', 17) + '</span></div>' +
         (note ? '<p class="ac-note' + (noteErr ? ' err' : '') + '">' + note + '</p>' : '') +
         (authState === 'in'
           ? '<div class="ac-actions col"><button type="button" class="ac-btn pri" data-acct="sync"' + (syncing ? ' disabled' : '') + '>' + ic(IC.sync, 18, syncing ? 'ac-spin' : '') + (syncing ? 'Yedekleniyor…' : 'Şimdi yedekle') + '</button>' +
@@ -738,7 +735,7 @@ body.is-qhavuz-test-open .pf-side{opacity:.35;pointer-events:none}}
           : '<div class="ac-actions"><button type="button" class="ac-btn pri" data-acct="in">Yeniden giriş yap</button></div>');
     } else {
       var unk = authState === 'unknown';
-      html = '<div class="ac-hero" style="--pc:#8a8a8a"><div class="ac-av off"><span class="pf-ph">' + ic(IC.user, 28) + '</span></div><div class="ac-who static"><b>' + (unk ? 'Hesap kontrol ediliyor…' : 'Giriş yapılmadı') + '</b><span>' + (unk ? 'Bir saniye' : 'Verilerini tüm cihazlarında güvende tut') + '</span></div></div>' +
+      html = '<div class="ac-hero static" style="--pc:#8a8a8a"><div class="ac-av off"><span class="pf-ph">' + ic(IC.user, 28) + '</span></div><div class="ac-who"><b>' + (unk ? 'Hesap kontrol ediliyor…' : 'Giriş yapılmadı') + '</b><span>' + (unk ? 'Bir saniye' : 'Verilerini tüm cihazlarında güvende tut') + '</span></div></div>' +
         (unk ? '' : '<ul class="ac-perks"><li>' + ic(IC.ok, 16) + 'Cihazlar arasında otomatik eşitleme</li><li>' + ic(IC.ok, 16) + 'Fotoğraflar ve ayarlar dahil yedekleme</li><li>' + ic(IC.ok, 16) + 'Cihaz değiştirsen bile her şey seninle</li></ul>' +
           '<div class="ac-actions"><button type="button" class="ac-btn pri" data-acct="in">Giriş yap</button></div>');
     }
@@ -746,6 +743,204 @@ body.is-qhavuz-test-open .pf-side{opacity:.35;pointer-events:none}}
     if (first) { card.setAttribute('data-d', '1'); card.classList.add('ac-first'); clearTimeout(card._t); card._t = setTimeout(function () { card.classList.remove('ac-first'); }, 1100); }
     card.innerHTML = html;
   }
+
+  // ---------- Giriş yap / Kayıt ol sayfası ----------
+  var AU = document.createElement('style'); AU.id = 'paceAuthCss';
+  AU.textContent = `
+@keyframes paShake{20%,60%{transform:translateX(-7px)}40%,80%{transform:translateX(7px)}}
+@keyframes paOrb1{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(70px,50px) scale(1.18)}}
+@keyframes paOrb2{0%,100%{transform:translate(0,0) scale(1.1)}50%{transform:translate(-80px,-40px) scale(.92)}}
+@keyframes paOrb3{0%,100%{transform:translate(0,0)}50%{transform:translate(50px,-70px) scale(1.15)}}
+@keyframes paSpin{to{transform:rotate(360deg)}}
+@keyframes paDraw{to{stroke-dashoffset:0}}
+@keyframes paRing{from{transform:scale(.6);opacity:0}to{transform:scale(1);opacity:1}}
+#paAuth{position:fixed;inset:0;z-index:2147483005;display:flex;padding:16px;overflow-y:auto;overscroll-behavior:contain;background:var(--theme-bg,#0b0b0b);color:var(--theme-text,#121212);animation:pfFade .5s ease both}
+#paAuth.out{animation:pfFadeOut .38s ease both;pointer-events:none}
+.pa-bg{position:fixed;inset:0;overflow:hidden;pointer-events:none}
+.pa-bg i{position:absolute;border-radius:50%;filter:blur(80px);opacity:.34;will-change:transform}
+.pa-bg i:nth-child(1){width:46vmax;height:46vmax;left:-14vmax;top:-18vmax;background:var(--accent-color,#6ec1ff);animation:paOrb1 22s ease-in-out infinite}
+.pa-bg i:nth-child(2){width:40vmax;height:40vmax;right:-14vmax;top:12vmax;background:#8e4ec6;opacity:.26;animation:paOrb2 26s ease-in-out infinite}
+.pa-bg i:nth-child(3){width:34vmax;height:34vmax;left:18vmax;bottom:-20vmax;background:#12a594;opacity:.24;animation:paOrb3 30s ease-in-out infinite}
+.pa-card{position:relative;width:100%;max-width:420px;margin:auto;box-sizing:border-box;padding:30px 26px 24px;border-radius:34px;background:color-mix(in srgb,var(--theme-bg,#0b0b0b) 70%,transparent);-webkit-backdrop-filter:blur(26px) saturate(1.3);backdrop-filter:blur(26px) saturate(1.3);border:1px solid rgba(128,128,128,.26);box-shadow:0 30px 80px rgba(0,0,0,.4);animation:pfCardIn .85s cubic-bezier(.22,1,.36,1) both;overflow:hidden}
+#paAuth.out .pa-card{animation:pfCardOut .34s cubic-bezier(.5,0,.75,0) both}
+.pa-card.shake{animation:paShake .5s ease}
+.pa-in>.pa-x,.pa-in>.pa-brand,.pa-in>.pa-head,.pa-in>.pa-seg,.pa-in>form,.pa-in>.pa-foot{animation:pfUp .7s cubic-bezier(.22,1,.36,1) both}
+.pa-in>.pa-brand{animation-delay:.08s}.pa-in>.pa-head{animation-delay:.14s}.pa-in>.pa-seg{animation-delay:.2s}.pa-in>form{animation-delay:.26s}.pa-in>.pa-foot{animation-delay:.32s}
+.pa-x{position:absolute;top:16px;right:16px;width:38px;height:38px;border-radius:50%;border:0;background:rgba(128,128,128,.16);color:inherit;font-size:15px;cursor:pointer;transition:transform .25s,background .25s}
+.pa-x:hover{background:rgba(128,128,128,.26)}.pa-x:active{transform:scale(.9)}
+.pa-brand{display:flex;align-items:center;gap:12px;margin-bottom:22px}
+.pa-mark{width:50px;height:50px;border-radius:17px;display:grid;place-items:center;color:#fff;background:linear-gradient(140deg,var(--accent-color,#6ec1ff),#3e63dd);box-shadow:0 10px 26px color-mix(in srgb,var(--accent-color,#6ec1ff) 45%,transparent)}
+.pa-brand b{font-size:25px;font-weight:800;letter-spacing:-.01em}
+.pa-head h2{margin:0;font-size:28px;line-height:1.1;font-weight:800;letter-spacing:-.01em}
+.pa-head p{margin:6px 0 0;font-size:14.5px;opacity:.68;line-height:1.35}
+.pa-head{transition:opacity .22s ease,transform .22s ease}.pa-head.sw{opacity:0;transform:translateY(6px)}
+.pa-seg{position:relative;display:grid;grid-template-columns:1fr 1fr;padding:4px;margin:20px 0 18px;border-radius:999px;background:rgba(128,128,128,.16)}
+.pa-seg i{position:absolute;top:4px;bottom:4px;left:4px;width:calc(50% - 4px);border-radius:999px;background:var(--theme-text,#121212);transform:translateX(calc(var(--pos,0) * 100%));transition:transform .55s cubic-bezier(.34,1.25,.64,1)}
+.pa-seg button{position:relative;z-index:1;padding:11px 0;border:0;background:transparent;color:inherit;font-size:15px;font-weight:700;cursor:pointer;transition:color .35s ease}
+.pa-seg button.on{color:var(--theme-bg,#fff)}
+.pa-f{position:relative;display:block;margin-bottom:12px}
+.pa-f input{width:100%;box-sizing:border-box;height:58px;padding:22px 48px 6px 48px;font-size:16px;border-radius:18px;border:1px solid rgba(128,128,128,.34);background:rgba(128,128,128,.1);color:inherit;transition:border-color .25s,box-shadow .25s,background .25s}
+.pa-f input:focus{outline:0;border-color:var(--accent-color,#6ec1ff);background:rgba(128,128,128,.14);box-shadow:0 0 0 4px color-mix(in srgb,var(--accent-color,#6ec1ff) 22%,transparent)}
+.pa-f.bad input{border-color:#e5484d;box-shadow:0 0 0 4px rgba(229,72,77,.18)}
+.pa-fi{position:absolute;left:16px;top:18px;opacity:.55;pointer-events:none;transition:opacity .25s,color .25s}
+.pa-f:focus-within .pa-fi{opacity:1;color:var(--accent-color,#6ec1ff)}
+.pa-fl{position:absolute;left:48px;top:18px;font-size:16px;opacity:.55;pointer-events:none;transform-origin:left top;transition:transform .3s cubic-bezier(.22,1,.36,1),opacity .25s}
+.pa-f input:focus+.pa-fl,.pa-f input:not(:placeholder-shown)+.pa-fl{transform:translateY(-12px) scale(.74);opacity:.7}
+.pa-eye{position:absolute;right:8px;top:9px;width:40px;height:40px;border:0;border-radius:50%;background:none;color:inherit;opacity:.55;display:grid;place-items:center;cursor:pointer;transition:opacity .25s,background .25s}
+.pa-eye:hover{opacity:1;background:rgba(128,128,128,.14)}
+.pa-xp{display:grid;grid-template-rows:0fr;opacity:0;transition:grid-template-rows .6s cubic-bezier(.22,1,.36,1),opacity .4s ease}
+.pa-xp>div{min-height:0;overflow:hidden}
+#paAuth[data-m=up] .pa-xp{grid-template-rows:1fr;opacity:1}
+.pa-meter{display:flex;align-items:center;gap:6px;margin:-2px 2px 12px}
+.pa-meter i{flex:1;height:5px;border-radius:5px;background:rgba(128,128,128,.25);transition:background .35s}
+.pa-meter span{flex:none;min-width:44px;text-align:right;font-size:12.5px;opacity:.7}
+.pa-msg{min-height:20px;margin:4px 2px 10px;font-size:13.5px;line-height:1.35;color:#e5484d;opacity:0;transform:translateY(-4px);transition:opacity .3s,transform .3s}
+.pa-msg.show{opacity:1;transform:none}
+.pa-go{position:relative;width:100%;height:56px;border:0;border-radius:999px;background:var(--theme-text,#121212);color:var(--theme-bg,#fff);font-size:17px;font-weight:700;cursor:pointer;overflow:hidden;transition:transform .3s cubic-bezier(.34,1.56,.64,1),opacity .25s,box-shadow .3s;box-shadow:0 12px 30px rgba(0,0,0,.28)}
+.pa-go:hover{transform:translateY(-1px)}.pa-go:active{transform:scale(.97)}
+.pa-go .l{display:inline-block;transition:opacity .25s,transform .3s}
+.pa-go .s{position:absolute;left:50%;top:50%;width:22px;height:22px;margin:-11px 0 0 -11px;border-radius:50%;border:3px solid currentColor;border-right-color:transparent;opacity:0;transition:opacity .25s}
+.pa-go.ld{pointer-events:none}.pa-go.ld .l{opacity:0;transform:translateY(8px)}.pa-go.ld .s{opacity:1;animation:paSpin .8s linear infinite}
+.pa-foot{margin:16px 0 0;text-align:center;font-size:14.5px;opacity:.8}
+.pa-foot button{border:0;background:none;color:var(--accent-color,#6ec1ff);font-size:14.5px;font-weight:700;cursor:pointer;padding:4px 2px}
+.pa-st{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:28px;text-align:center;background:color-mix(in srgb,var(--theme-bg,#0b0b0b) 88%,transparent);opacity:0;pointer-events:none;transition:opacity .45s ease}
+.pa-card.st .pa-st{opacity:1;pointer-events:auto}
+.pa-st>*{opacity:0;transform:translateY(12px);transition:opacity .5s ease,transform .6s cubic-bezier(.22,1,.36,1)}
+.pa-card.st .pa-st>*{opacity:1;transform:none}.pa-card.st .pa-st>*:nth-child(2){transition-delay:.12s}.pa-card.st .pa-st>*:nth-child(3){transition-delay:.2s}.pa-card.st .pa-st>*:nth-child(4){transition-delay:.28s}
+.pa-ring{width:84px;height:84px;border-radius:50%;display:grid;place-items:center;color:#fff;background:linear-gradient(140deg,#2ecc71,#12a594);box-shadow:0 14px 36px rgba(46,204,113,.4)}
+.pa-card.st .pa-ring{animation:paRing .7s cubic-bezier(.34,1.56,.64,1) both}
+.pa-ring path{stroke-dasharray:30;stroke-dashoffset:30}.pa-card.st .pa-ring path{animation:paDraw .6s .3s ease forwards}
+.pa-st h3{margin:4px 0 0;font-size:24px;font-weight:800}.pa-st p{margin:0;font-size:14.5px;opacity:.72;line-height:1.4;max-width:300px}
+.pa-st .pa-go{width:auto;padding:0 28px;height:50px;margin-top:6px}
+.pa-card.st .pa-x{opacity:0;pointer-events:none}
+@media(max-width:600px){#paAuth{padding:0}.pa-card{max-width:none;min-height:100%;margin:0;border-radius:0;border:0;box-shadow:none;background:transparent;-webkit-backdrop-filter:none;backdrop-filter:none;padding:calc(env(safe-area-inset-top,0px) + 56px) 22px calc(env(safe-area-inset-bottom,0px) + 22px);display:flex;flex-direction:column;justify-content:center}.pa-x{top:calc(env(safe-area-inset-top,0px) + 14px)}}
+@media (prefers-reduced-motion:reduce){#paAuth *,#paAuth{animation:none!important;transition:none!important}.pa-st>*{opacity:1;transform:none}}
+`;
+  document.head.appendChild(AU);
+
+  var A = null;   // açık giriş sayfasının durumu
+  var pwEye = '<path d="M2 12s3.6-6.5 10-6.5S22 12 22 12s-3.6 6.5-10 6.5S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>';
+  var pwEyeOff = '<path d="M3 3l18 18"/><path d="M10.6 6.2A9.6 9.6 0 0112 6c6.4 0 10 6 10 6a17 17 0 01-3.2 3.9M6.6 7.6A16.6 16.6 0 002 12s3.6 6 10 6c1.5 0 2.8-.3 4-.8"/><path d="M9.9 9.9a3 3 0 004.2 4.2"/>';
+  var IM = {
+    mail: '<rect x="3" y="5" width="18" height="14" rx="3"/><path d="M3.5 7.5l8.5 6 8.5-6"/>',
+    lock: '<rect x="5" y="11" width="14" height="9.5" rx="2.6"/><path d="M8 11V8a4 4 0 018 0v3"/>',
+    lock2: '<rect x="5" y="11" width="14" height="9.5" rx="2.6"/><path d="M8 11V8a4 4 0 018 0v3"/><path d="M12 15v2"/>'
+  };
+  function openAuth(mode) {
+    if (document.getElementById('paAuth')) return;
+    var ov = document.createElement('div'); ov.id = 'paAuth'; ov.setAttribute('data-m', 'in');
+    ov.innerHTML = '<div class="pa-bg"><i></i><i></i><i></i></div>' +
+      '<div class="pa-card pa-in" role="dialog" aria-modal="true" aria-labelledby="paT">' +
+      '<button type="button" class="pa-x" data-pa="close" aria-label="Kapat">✕</button>' +
+      '<div class="pa-brand"><span class="pa-mark">' + ic(IC.cloud, 26) + '</span><b>Pace</b></div>' +
+      '<div class="pa-head" id="paHead"><h2 id="paT"></h2><p id="paS"></p></div>' +
+      '<div class="pa-seg" id="paSeg"><i></i><button type="button" data-pa="tab" data-v="in">Giriş yap</button><button type="button" data-pa="tab" data-v="up">Kayıt ol</button></div>' +
+      '<form id="paForm" novalidate>' +
+        '<label class="pa-f"><span class="pa-fi">' + ic(IM.mail, 20) + '</span><input id="paEmail" type="email" inputmode="email" autocomplete="email" autocapitalize="none" spellcheck="false" placeholder=" "><span class="pa-fl">E-posta</span></label>' +
+        '<label class="pa-f"><span class="pa-fi">' + ic(IM.lock, 20) + '</span><input id="paPass" type="password" autocomplete="current-password" placeholder=" "><span class="pa-fl">Şifre</span>' +
+          '<button type="button" class="pa-eye" data-pa="eye" aria-label="Şifreyi göster">' + ic(pwEye, 20) + '</button></label>' +
+        '<div class="pa-xp"><div>' +
+          '<div class="pa-meter" id="paMeter"><i></i><i></i><i></i><i></i><span id="paMeterT"></span></div>' +
+          '<label class="pa-f"><span class="pa-fi">' + ic(IM.lock2, 20) + '</span><input id="paPass2" type="password" autocomplete="new-password" placeholder=" "><span class="pa-fl">Şifre tekrar</span></label>' +
+        '</div></div>' +
+        '<p class="pa-msg" id="paMsg" role="alert"></p>' +
+        '<button type="submit" class="pa-go" id="paGo"><span class="l" id="paGoT">Giriş yap</span><span class="s"></span></button>' +
+      '</form>' +
+      '<p class="pa-foot" id="paFoot"></p>' +
+      '<div class="pa-st" id="paSt"></div></div>';
+    document.body.appendChild(ov);
+    A = { ov: ov, card: ov.querySelector('.pa-card'), mode: null, busy: false, done: false };
+    setTimeout(function () { A && A.card.classList.remove('pa-in'); }, 1200);
+    var touch = window.matchMedia && matchMedia('(pointer:coarse)').matches;
+    authMode(mode || 'in', true);
+    ov.addEventListener('click', function (e) {
+      if (e.target === ov) return closeAuth();
+      var b = e.target.closest && e.target.closest('[data-pa]'); if (!b) return;
+      var a = b.getAttribute('data-pa');
+      if (a === 'close') closeAuth();
+      else if (a === 'tab') authMode(b.getAttribute('data-v'));
+      else if (a === 'eye') {
+        var p = document.getElementById('paPass'), p2 = document.getElementById('paPass2'), show = p.type === 'password';
+        p.type = p2.type = show ? 'text' : 'password'; b.innerHTML = ic(show ? pwEyeOff : pwEye, 20); b.setAttribute('aria-label', show ? 'Şifreyi gizle' : 'Şifreyi göster');
+      }
+    });
+    ov.addEventListener('input', function (e) {
+      var f = e.target.closest && e.target.closest('.pa-f'); if (f) f.classList.remove('bad');
+      if (e.target.id === 'paPass') meter(e.target.value);
+      var m = document.getElementById('paMsg'); if (m && m.classList.contains('show') && !A.busy) m.classList.remove('show');
+    });
+    document.getElementById('paForm').addEventListener('submit', authSubmit);
+    if (!touch) setTimeout(function () { var el = document.getElementById('paEmail'); if (el) el.focus(); }, 450);
+  }
+  function authMode(m, instant) {
+    if (!A || A.mode === m) return;
+    var up = m === 'up', ov = A.ov;
+    var set = function () {
+      document.getElementById('paT').textContent = up ? 'Hesap oluştur' : 'Tekrar hoş geldin';
+      document.getElementById('paS').textContent = up ? 'Birkaç saniyede hazır; verilerin tüm cihazlarında seninle olsun.' : 'Verilerine ulaşmak ve cihazların arasında eşitlemek için giriş yap.';
+      document.getElementById('paGoT').textContent = up ? 'Kayıt ol' : 'Giriş yap';
+      document.getElementById('paFoot').innerHTML = up ? 'Zaten hesabın var mı? <button type="button" data-pa="tab" data-v="in">Giriş yap</button>' : 'Hesabın yok mu? <button type="button" data-pa="tab" data-v="up">Kayıt ol</button>';
+      document.getElementById('paPass').setAttribute('autocomplete', up ? 'new-password' : 'current-password');
+    };
+    A.mode = m; ov.setAttribute('data-m', m);
+    var xp = ov.querySelector('.pa-xp'); if (xp) xp.inert = !up;
+    var seg = document.getElementById('paSeg'); seg.style.setProperty('--pos', up ? 1 : 0);
+    seg.querySelectorAll('button').forEach(function (b) { b.classList.toggle('on', b.getAttribute('data-v') === m); });
+    var msg = document.getElementById('paMsg'); msg.classList.remove('show');
+    ov.querySelectorAll('.pa-f.bad').forEach(function (f) { f.classList.remove('bad'); });
+    if (instant) return set();
+    var hd = document.getElementById('paHead'); hd.classList.add('sw');
+    setTimeout(function () { if (!A) return; set(); hd.classList.remove('sw'); }, 200);
+  }
+  function meter(v) {
+    var s = 0; if (v.length >= 6) s++; if (v.length >= 10) s++; if (/[A-ZÇĞİÖŞÜ]/.test(v) && /[a-zçğıöşü]/.test(v)) s++; if (/\d/.test(v) && /[^A-Za-z0-9ÇĞİÖŞÜçğıöşü]/.test(v)) s++;
+    if (!v) s = 0;
+    var cols = ['#e5484d', '#f76b15', '#f5b301', '#30a46c'], names = ['', 'Zayıf', 'Orta', 'İyi', 'Güçlü'];
+    var bars = document.querySelectorAll('#paMeter i');
+    bars.forEach(function (b, i) { b.style.background = i < s ? cols[Math.max(0, s - 1)] : ''; });
+    document.getElementById('paMeterT').textContent = names[s];
+  }
+  function authMsg(t, bad) {
+    var m = document.getElementById('paMsg'); if (!m) return;
+    m.textContent = t; m.classList.add('show');
+    if (bad) { A.card.classList.remove('shake'); void A.card.offsetWidth; A.card.classList.add('shake'); (bad.forEach ? bad : [bad]).forEach(function (el) { if (el) el.closest('.pa-f').classList.add('bad'); }); }
+  }
+  async function authSubmit(e) {
+    e.preventDefault(); if (!A || A.busy || A.done) return;
+    var em = document.getElementById('paEmail'), pw = document.getElementById('paPass'), pw2 = document.getElementById('paPass2'), go = document.getElementById('paGo');
+    var up = A.mode === 'up', ev = em.value.trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(ev)) { authMsg('Geçerli bir e-posta adresi gir.', em); em.focus(); return; }
+    if (pw.value.length < 6) { authMsg('Şifre en az 6 karakter olmalı.', pw); pw.focus(); return; }
+    if (up && pw.value !== pw2.value) { authMsg('Şifreler birbiriyle aynı değil.', [pw, pw2]); pw2.focus(); return; }
+    A.busy = true; go.classList.add('ld'); document.getElementById('paMsg').classList.remove('show');
+    try {
+      if (!up) { var r = await sb.auth.signInWithPassword({ email: ev, password: pw.value }); if (r.error) throw r.error; finishAuth(); }
+      else {
+        var r2 = await sb.auth.signUp({ email: ev, password: pw.value, options: { emailRedirectTo: new URL('./', location.href).href } });
+        if (r2.error) throw r2.error;
+        if (r2.data.session) finishAuth(); else authState_verify(ev);
+      }
+    } catch (err) { if (A) authMsg(trErr(err), [em, pw]); }
+    if (A) { A.busy = false; go.classList.remove('ld'); }
+  }
+  function authShow(html) { if (!A) return; var st = document.getElementById('paSt'); st.innerHTML = html; A.card.classList.add('st'); }
+  function finishAuth() {   // giriş başarılı: kısa bir onay animasyonu, sonra kapan
+    if (!A || A.done) return; A.done = true;
+    authShow('<div class="pa-ring"><svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div><h3>Hoş geldin</h3><p>Verilerin eşitleniyor…</p>');
+    setTimeout(closeAuth, 1250);
+  }
+  function authState_verify(addr) {
+    authShow('<div class="pa-ring" style="background:linear-gradient(140deg,var(--accent-color,#6ec1ff),#3e63dd);box-shadow:0 14px 36px rgba(62,99,221,.4)">' + ic(IM.mail, 38) + '</div><h3>E-postanı kontrol et</h3><p>' + esc(addr) + ' adresine bir doğrulama bağlantısı gönderdik. Bağlantıya dokunduktan sonra buradan giriş yap.</p><button type="button" class="pa-go" data-pa="back">Giriş yap’a dön</button>');
+    document.getElementById('paSt').onclick = function (e) {
+      if (e.target.closest && e.target.closest('[data-pa=back]')) { A.card.classList.remove('st'); authMode('in'); }
+    };
+  }
+  function closeAuth() {
+    if (!A) return; var ov = A.ov; A = null;
+    ov.classList.add('out'); setTimeout(function () { ov.remove(); }, 400);
+  }
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && A && !document.getElementById('profOv')) closeAuth(); });
+
   mountAccount();
   mountSide();
 
