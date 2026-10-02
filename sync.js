@@ -81,7 +81,7 @@
     return changed && Object.keys(meta.dirty).length > 0;
   }
 
-  var stat = { down: 0, up: 0 };
+  var stat = { down: 0, up: 0 }, chKeys = [];
   function backup() {
     try {
       var cur = localStorage.getItem(APP_STORAGE_KEY) || '{}';
@@ -91,6 +91,7 @@
   }
   // ---------- çekme ----------
   async function pull() {
+    chKeys = [];
     // İmleç yerine: önce hafif liste (id + updated_at), sonra yalnızca bu cihazdakinden yeni olanların verisi
     var m = await sb.from('sync_records').select('id,updated_at').eq('kind', 'state').neq('id', nc());
     if (m.error) throw m.error;
@@ -110,12 +111,12 @@
       if (UNION[k] && meta.dirty[k] && isObj(val) && isObj(APP_STATE[k])) {
         backup(); stat.down++;
         APP_STATE[k] = localNewer ? Object.assign({}, val, APP_STATE[k]) : Object.assign({}, APP_STATE[k], val);
-        meta.hashes[k] = hash(APP_STATE[k]); meta.times[k] = new Date().toISOString(); meta.dirty[k] = 1; changed = true;
+        meta.hashes[k] = hash(APP_STATE[k]); meta.times[k] = new Date().toISOString(); meta.dirty[k] = 1; changed = true; chKeys.push(k);
         return;
       }
       if (localNewer) return;                                      // yerel daha yeni: gönderilecek
       backup(); stat.down++;
-      APP_STATE[k] = val; meta.hashes[k] = rh; meta.times[k] = row.updated_at; delete meta.dirty[k]; changed = true;
+      APP_STATE[k] = val; meta.hashes[k] = rh; meta.times[k] = row.updated_at; delete meta.dirty[k]; changed = true; chKeys.push(k);
     });
     saveMeta();
     if (changed) persistState();
@@ -197,7 +198,7 @@
       await push();
       meta.linked = true; saveMeta();
       var imgs = await downloadImages();
-      if (ch || imgs) {
+      if ((ch && chKeys.some(function (k) { return k !== 'profile'; })) || imgs) {
         if (startup && !sessionStorage.getItem('pace_sync_rl')) { sessionStorage.setItem('pace_sync_rl', '1'); location.reload(); return; }
         showBanner();
       } else if (startup) sessionStorage.removeItem('pace_sync_rl');
@@ -303,7 +304,7 @@
       if (a === 'dx') {
         msg.textContent = 'Kontrol ediliyor…';
         var q = await sb.from('sync_records').select('id,updated_at,device_id').eq('kind', 'state').neq('id', nc());
-        msg.textContent = 'sürüm 11 · bulutta ' + (q.data ? q.data.length : '?') + ' alan' + (q.error ? ' · HATA: ' + q.error.message : '') +
+        msg.textContent = 'sürüm 12 · bulutta ' + (q.data ? q.data.length : '?') + ' alan' + (q.error ? ' · HATA: ' + q.error.message : '') +
           ' · bu cihazda ' + Object.keys(APP_STATE).length + ' alan · imleç ' + (meta.lastPull || 'yok') + ' · bağlı ' + !!meta.linked +
           ' · ' + (q.data || []).map(function (x) { return x.id + '@' + String(x.updated_at).slice(5, 16); }).join(', ');
         return;
@@ -345,6 +346,162 @@
   var ast = document.createElement('style'); ast.textContent = acss; document.head.appendChild(ast);
   function esc(t) { return String(t).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
 
+
+  var pcss = '.acct-click{cursor:pointer}.acct-chev{margin-left:auto;opacity:.5;flex:none}' +
+    '.pf-av{display:inline-flex;align-items:center;justify-content:center;border-radius:50%;background-size:cover;background-position:center;font-weight:700;flex:none;box-sizing:border-box}' +
+    '#profOv{position:fixed;inset:0;z-index:2147483003;background:rgba(0,0,0,.55);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:16px}' +
+    '.pf-card{width:100%;max-width:460px;max-height:92vh;max-height:92dvh;overflow-y:auto;box-sizing:border-box;padding:20px 22px 24px;border-radius:28px;background:var(--theme-bg,#0b0b0b);color:var(--theme-text,#121212);font-family:"Baloo 2","Space Grotesk",sans-serif;border:1px solid rgba(128,128,128,.28);box-shadow:0 24px 60px rgba(0,0,0,.5);touch-action:pan-y}' +
+    '@media(max-width:600px){#profOv{padding:0;align-items:stretch}.pf-card{max-width:none;max-height:none;height:100%;border-radius:0;border:0;padding:calc(env(safe-area-inset-top,0px) + 14px) 18px calc(env(safe-area-inset-bottom,0px) + 22px)}}' +
+    '.pf-top{display:grid;grid-template-columns:40px 1fr 40px;align-items:center;text-align:center;font-size:18px;margin-bottom:6px}' +
+    '.pf-x{width:36px;height:36px;border-radius:50%;border:0;background:rgba(128,128,128,.18);color:inherit;font-size:15px}' +
+    '.pf-hero{display:flex;justify-content:center;margin:14px 0 18px}.pf-hero .pf-av{box-shadow:0 0 0 4px rgba(128,128,128,.22)}' +
+    '.pf-seg{display:flex;padding:4px;border-radius:999px;background:rgba(128,128,128,.16);gap:4px;margin-bottom:16px}' +
+    '.pf-seg button{flex:1;padding:10px 0;border:0;border-radius:999px;background:transparent;color:inherit;font:inherit;font-size:15px}' +
+    '.pf-seg button.on{background:var(--theme-text,#121212);color:var(--theme-bg,#fff)}' +
+    '.pf-lbl{font-size:13px;opacity:.65;margin:14px 0 8px}' +
+    '.pf-sws{display:grid;grid-template-columns:repeat(7,1fr);gap:10px}.pf-sw{aspect-ratio:1;border-radius:50%;border:0;padding:0;position:relative}' +
+    '.pf-sw.on{box-shadow:0 0 0 3px var(--theme-bg,#000),0 0 0 5px var(--theme-text,#fff)}' +
+    '.pf-custom{background:conic-gradient(#f00,#ff0,#0f0,#0ff,#00f,#f0f,#f00);overflow:hidden}.pf-custom input{position:absolute;inset:0;opacity:0;width:100%;height:100%;cursor:pointer}' +
+    '.pf-in{width:100%;box-sizing:border-box;padding:13px 14px;font:inherit;font-size:16px;border-radius:14px;border:1px solid rgba(128,128,128,.35);background:rgba(128,128,128,.1);color:inherit}' +
+    '.pf-mail{margin:8px 2px 0;font-size:12.5px;opacity:.55}.pf-row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}.pf-end{justify-content:flex-end;margin-top:22px}' +
+    '.pf-save{background:var(--theme-text,#121212)!important;color:var(--theme-bg,#fff)!important}.pf-hint{margin:2px 0 12px;font-size:13px;opacity:.65;text-align:center}' +
+    '.pf-crop{position:relative;margin:0 auto;overflow:hidden;border-radius:18px;background:#000;touch-action:none;cursor:grab}' +
+    '.pf-crop img{position:absolute;max-width:none!important;max-height:none!important;transform-origin:center;user-select:none;-webkit-user-drag:none;pointer-events:none}' +
+    '.pf-mask{position:absolute;inset:0;border-radius:50%;box-shadow:0 0 0 999px rgba(0,0,0,.62);border:2px solid rgba(255,255,255,.9);pointer-events:none}.pf-zoom{width:100%;margin:16px 0 0}';
+  ast.textContent += pcss;
+
+  // ---------- Profil (fotoğraf / harf logosu / rumuz) ----------
+  var PALETTE = ['#E5484D', '#F76B15', '#F5B301', '#30A46C', '#12A594', '#0091FF', '#3E63DD', '#8E4EC6', '#D6409F', '#6E6E73', '#A18072', '#1F2937'];
+  var draft = null, cropSt = null;
+  function prof() { return (APP_STATE.profile && typeof APP_STATE.profile === 'object') ? APP_STATE.profile : {}; }
+  function dispName(p) { p = p || prof(); return (p.name && p.name.trim()) || (email || '').split('@')[0] || 'Hesap'; }
+  function pickColor(p) {
+    if (p.color) return p.color;
+    var h = 0, e = email || 'x'; for (var i = 0; i < e.length; i++) h = (h * 31 + e.charCodeAt(i)) >>> 0;
+    return PALETTE[h % PALETTE.length];
+  }
+  function textOn(hex) {
+    var m = /^#?([0-9a-f]{6})$/i.exec(hex || ''); if (!m) return '#fff';
+    var n = parseInt(m[1], 16); return (0.299 * (n >> 16) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255)) > 165 ? '#111' : '#fff';
+  }
+  function avatarHTML(size, p) {
+    p = p || prof();
+    var dim = 'width:' + size + 'px;height:' + size + 'px;';
+    if (p.mode === 'photo' && p.photo) return '<span class="pf-av" style="' + dim + 'background-image:url(\'' + p.photo + '\')"></span>';
+    var c = pickColor(p);
+    return '<span class="pf-av" style="' + dim + 'background:' + c + ';color:' + textOn(c) + ';font-size:' + Math.round(size * 0.44) + 'px">' + esc(dispName(p).charAt(0).toLocaleUpperCase('tr-TR')) + '</span>';
+  }
+  function toast(m) { if (typeof showAppToast === 'function') showAppToast(m, 'error'); else alert(m); }
+  function openProfile() {
+    if (document.getElementById('profOv')) return;
+    draft = Object.assign({ mode: 'letter' }, prof()); draft.name = dispName(draft); draft.color = pickColor(draft);
+    var ov = document.createElement('div'); ov.id = 'profOv'; ov.innerHTML = '<div class="pf-card" id="profCard"></div>';
+    document.body.appendChild(ov);
+    ov.addEventListener('click', onProfClick);
+    ov.addEventListener('change', function (e) {
+      if (e.target.id === 'pfFile' && e.target.files && e.target.files[0]) { openCrop(e.target.files[0]); e.target.value = ''; }
+      if (e.target.getAttribute('data-pf') === 'custom') { draft.color = e.target.value; draft.mode = 'letter'; renderProfile(); }
+    });
+    ov.addEventListener('input', function (e) {
+      if (e.target.getAttribute('data-pf') === 'custom') { draft.color = e.target.value; draft.mode = 'letter'; var hr = ov.querySelector('.pf-hero'); if (hr) hr.innerHTML = avatarHTML(120, draft); }
+    });
+    renderProfile();
+  }
+  function closeProfile() { var o = document.getElementById('profOv'); if (o) o.remove(); if (cropSt) { try { URL.revokeObjectURL(cropSt.url); } catch (e) {} } draft = null; cropSt = null; }
+  function keepName() { var ni = document.getElementById('pfName'); if (ni && draft) draft.name = ni.value; }
+  function renderProfile() {
+    var c = document.getElementById('profCard'); if (!c || !draft) return;
+    keepName(); cropSt = null;
+    var photo = draft.mode === 'photo', cur = String(draft.color).toLowerCase(), inPal = false;
+    var sw = PALETTE.map(function (col) {
+      var on = col.toLowerCase() === cur; if (on) inPal = true;
+      return '<button type="button" class="pf-sw' + (on ? ' on' : '') + '" data-pf="color" data-v="' + col + '" style="background:' + col + '" aria-label="Renk ' + col + '"></button>';
+    }).join('');
+    var custom = '<label class="pf-sw pf-custom' + (!inPal ? ' on' : '') + '" aria-label="Özel renk"><input type="color" data-pf="custom" value="' + (/^#[0-9a-f]{6}$/i.test(draft.color) ? draft.color : '#3e63dd') + '"></label>';
+    c.innerHTML = '<div class="pf-top"><button type="button" class="pf-x" data-pf="close" aria-label="Kapat">✕</button><b>Profil</b><span></span></div>' +
+      '<div class="pf-hero">' + avatarHTML(120, draft) + '</div>' +
+      '<div class="pf-seg"><button type="button" data-pf="mode" data-v="photo" class="' + (photo ? 'on' : '') + '">Fotoğraf</button><button type="button" data-pf="mode" data-v="letter" class="' + (!photo ? 'on' : '') + '">Harf logosu</button></div>' +
+      (photo
+        ? '<div class="pf-row"><button type="button" class="settings-outline-btn" data-pf="pick">' + (draft.photo ? 'Fotoğrafı değiştir' : 'Fotoğraf seç') + '</button>' + (draft.photo ? '<button type="button" class="settings-outline-btn" data-pf="rm">Kaldır</button>' : '') + '</div>'
+        : '<div class="pf-lbl">Logo rengi</div><div class="pf-sws">' + sw + custom + '</div>') +
+      '<div class="pf-lbl">Rumuz</div><input class="pf-in" id="pfName" maxlength="24" autocomplete="off" value="' + esc(draft.name) + '" placeholder="Rumuzun">' +
+      '<div class="pf-mail">' + esc(email || '') + '</div>' +
+      '<div class="pf-row pf-end"><button type="button" class="settings-outline-btn" data-pf="close">Vazgeç</button><button type="button" class="settings-outline-btn pf-save" data-pf="save">Kaydet</button></div>' +
+      '<input type="file" id="pfFile" accept="image/*" hidden>';
+  }
+  function onProfClick(e) {
+    var b = e.target.closest && e.target.closest('[data-pf]'); if (!b || !draft) return;
+    var a = b.getAttribute('data-pf'), v = b.getAttribute('data-v');
+    if (a === 'close') return closeProfile();
+    if (a === 'mode') { keepName(); draft.mode = v; return renderProfile(); }
+    if (a === 'color') { keepName(); draft.color = v; draft.mode = 'letter'; return renderProfile(); }
+    if (a === 'pick') { keepName(); return document.getElementById('pfFile').click(); }
+    if (a === 'rm') { keepName(); draft.photo = ''; return renderProfile(); }
+    if (a === 'cropx') { if (cropSt) { try { URL.revokeObjectURL(cropSt.url); } catch (x) {} } return renderProfile(); }
+    if (a === 'cropok') return cropDone();
+    if (a === 'save') {
+      keepName();
+      var out = { name: (draft.name || '').trim().slice(0, 24), mode: (draft.mode === 'photo' && draft.photo) ? 'photo' : 'letter', color: draft.color, photo: draft.photo || '' };
+      saveAppState({ profile: out }); closeProfile(); ui();
+    }
+  }
+  // Kırpıcı: uygulamadaki fotoğraf kırpıcıyla aynı mantık (kapla, 1x–3x yakınlaştır, sürükle, iki parmakla büyüt),
+  // fakat görünecek alan dairesel gösterilir.
+  function openCrop(file) {
+    keepName();
+    var url = URL.createObjectURL(file), img = new Image();
+    img.onerror = function () { URL.revokeObjectURL(url); toast('Bu görsel açılamadı. Başka bir fotoğraf dene.'); };
+    img.onload = function () { startCrop(img, url); };
+    img.src = url;
+  }
+  function startCrop(img, url) {
+    var c = document.getElementById('profCard'); if (!c) return;
+    var S = Math.max(200, Math.min(340, (c.clientWidth || 340) - 48));
+    c.innerHTML = '<div class="pf-top"><button type="button" class="pf-x" data-pf="cropx" aria-label="Vazgeç">✕</button><b>Fotoğrafı ayarla</b><span></span></div>' +
+      '<p class="pf-hint">Sürükle ve yakınlaştır. Dairenin içi profilinde görünecek alan.</p>' +
+      '<div class="pf-crop" id="pfCrop" style="width:' + S + 'px;height:' + S + 'px"><img id="pfImg" alt=""><div class="pf-mask"></div></div>' +
+      '<input type="range" id="pfZoom" class="pf-zoom" min="100" max="300" value="100" aria-label="Yakınlaştır">' +
+      '<div class="pf-row pf-end"><button type="button" class="settings-outline-btn" data-pf="cropx">Vazgeç</button><button type="button" class="settings-outline-btn pf-save" data-pf="cropok">Uygula</button></div>';
+    var el = document.getElementById('pfImg'), box = document.getElementById('pfCrop'), zoom = document.getElementById('pfZoom');
+    var nw = img.naturalWidth, nh = img.naturalHeight, cover = S / Math.min(nw, nh);
+    el.src = url; el.style.width = nw * cover + 'px'; el.style.height = nh * cover + 'px';
+    el.style.left = (S - nw * cover) / 2 + 'px'; el.style.top = (S - nh * cover) / 2 + 'px';
+    var st = cropSt = { img: img, url: url, S: S, nw: nw, nh: nh, cover: cover, z: 1, px: 0, py: 0 };
+    function apply() {
+      var mx = Math.max(0, (nw * cover * st.z - S) / 2), my = Math.max(0, (nh * cover * st.z - S) / 2);
+      st.px = Math.min(Math.max(st.px, -mx), mx); st.py = Math.min(Math.max(st.py, -my), my);
+      el.style.transform = 'translate(' + st.px + 'px,' + st.py + 'px) scale(' + st.z + ')'; zoom.value = Math.round(st.z * 100);
+    }
+    var ptrs = {}, pinch0 = 0, z0 = 1;
+    box.addEventListener('pointerdown', function (e) {
+      try { box.setPointerCapture(e.pointerId); } catch (x) {}
+      ptrs[e.pointerId] = { x: e.clientX, y: e.clientY };
+      var ids = Object.keys(ptrs); if (ids.length === 2) { pinch0 = Math.hypot(ptrs[ids[0]].x - ptrs[ids[1]].x, ptrs[ids[0]].y - ptrs[ids[1]].y); z0 = st.z; }
+    });
+    box.addEventListener('pointermove', function (e) {
+      var p = ptrs[e.pointerId]; if (!p) return;
+      var ids = Object.keys(ptrs);
+      if (ids.length >= 2) {
+        ptrs[e.pointerId] = { x: e.clientX, y: e.clientY };
+        var d = Math.hypot(ptrs[ids[0]].x - ptrs[ids[1]].x, ptrs[ids[0]].y - ptrs[ids[1]].y);
+        if (pinch0) { st.z = Math.min(3, Math.max(1, z0 * d / pinch0)); apply(); }
+      } else { st.px += e.clientX - p.x; st.py += e.clientY - p.y; ptrs[e.pointerId] = { x: e.clientX, y: e.clientY }; apply(); }
+    });
+    ['pointerup', 'pointercancel'].forEach(function (t) { box.addEventListener(t, function (e) { delete ptrs[e.pointerId]; pinch0 = 0; }); });
+    box.addEventListener('wheel', function (e) { e.preventDefault(); st.z = Math.min(3, Math.max(1, st.z * (e.deltaY < 0 ? 1.08 : 0.93))); apply(); }, { passive: false });
+    zoom.addEventListener('input', function () { st.z = Number(zoom.value) / 100; apply(); });
+    apply();
+  }
+  function cropDone() {
+    var st = cropSt; if (!st) return;
+    var OUT = 256, eff = st.cover * st.z, il = (st.S - st.nw * eff) / 2 + st.px, it = (st.S - st.nh * eff) / 2 + st.py;
+    var cv = document.createElement('canvas'); cv.width = cv.height = OUT;
+    cv.getContext('2d').drawImage(st.img, -il / eff, -it / eff, st.S / eff, st.S / eff, 0, 0, OUT, OUT);
+    draft.photo = cv.toDataURL('image/jpeg', 0.86); draft.mode = 'photo';
+    try { URL.revokeObjectURL(st.url); } catch (x) {}
+    renderProfile();
+  }
+
   function mountAccount() {
     if (document.getElementById('acctSection')) return;
     var host = document.querySelector('#page-settings .settings-col-left') || document.querySelector('#page-settings .settings-page');
@@ -355,7 +512,8 @@
     sec.addEventListener('click', function (e) {
       var b = e.target.closest && e.target.closest('[data-acct]'); if (!b || b.disabled) return;
       var a = b.getAttribute('data-acct');
-      if (a === 'sync') syncNow(false); else if (a === 'out') doSignOut(); else openModal();
+      if (a === 'profile') { if (authState === 'in' || authState === 'expired') openProfile(); else openModal(); }
+      else if (a === 'sync') syncNow(false); else if (a === 'out') doSignOut(); else openModal();
     });
     var fb = document.getElementById('paceSyncBtn'); if (fb) fb.style.display = 'none';   // artık ayarlardan yönetiliyor
     ui();
@@ -375,9 +533,8 @@
     else { yd = 'ok'; yt = 'Yedeklendi' + (lastOk ? ' · ' + new Date(lastOk).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }) : ''); }
     var head;
     if (authState === 'in' || authState === 'expired') {
-      var em = email || 'Hesap', nm = em.split('@')[0], h = 0;
-      for (var k = 0; k < em.length; k++) h = (h * 31 + em.charCodeAt(k)) % 360;
-      head = '<div class="acct-box"><div class="acct-av" style="background:hsl(' + h + ',52%,46%)">' + esc(nm.charAt(0).toUpperCase()) + '</div><div class="acct-who"><b>' + esc(nm) + '</b><span>' + esc(em) + '</span></div></div>';
+      head = '<div class="acct-box acct-click" data-acct="profile" role="button" tabindex="0">' + avatarHTML(46) + '<div class="acct-who"><b>' + esc(dispName()) + '</b><span>' + esc(email || '') + '</span></div>' +
+        '<svg class="acct-chev" width="16" height="16" viewBox="0 0 24 24"><path d="M9 4l8 8-8 8" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></div>';
     } else {
       head = '<div class="acct-box"><div class="acct-av acct-av-off"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg></div><div class="acct-who"><b>Giriş yapılmadı</b><span>Verilerini cihazlar arasında eşitlemek için giriş yap</span></div></div>';
     }
