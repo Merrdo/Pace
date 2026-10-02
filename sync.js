@@ -233,32 +233,68 @@
     if (document.visibilityState === 'visible' && pendingEmail && uid) sb.auth.refreshSession().catch(function () {});   // başka sekmede/cihazda onaylandıysa yeni adres gelsin
   });
   // ---------- Hatırlanan hesaplar (Beni hatırla / Hızlı giriş) ----------
-  // Şifre ASLA saklanmaz; yalnızca e-posta, görünüm bilgisi (ad/renk/fotoğraf) ve Supabase oturum anahtarı (refresh token).
+  // Hızlı giriş için e-posta, görünüm bilgisi (ad/renk/fotoğraf) ve ŞİFRE saklanır. Şifre düz metin değil: bu cihaza özel,
+  // dışarı çıkarılamayan (extractable:false) bir AES-GCM anahtarıyla şifrelenir; anahtar IndexedDB'de durur.
+  // (Çıkış yapınca sunucu oturumu bilerek kapatılır; bu yüzden oturum anahtarı değil giriş bilgisi tutuluyor.)
   var SAVED_KEY = 'pace_saved_accounts_v1';
+  var CRYPTO_OK = !!(window.crypto && window.crypto.subtle && window.indexedDB && window.TextEncoder);
   function savedList() { try { var a = JSON.parse(localStorage.getItem(SAVED_KEY) || '[]'); return Array.isArray(a) ? a.filter(function (x) { return x && x.id; }) : []; } catch (e) { return []; } }
   function putSaved(a) {
     try { localStorage.setItem(SAVED_KEY, JSON.stringify(a)); }
     catch (e) { try { a.forEach(function (x) { delete x.photo; }); localStorage.setItem(SAVED_KEY, JSON.stringify(a)); } catch (e2) {} }
   }
   function findSaved(a, id) { for (var i = 0; i < a.length; i++) if (a[i].id === id) return a[i]; return null; }
+  function b64(u) { var s2 = ''; for (var i = 0; i < u.length; i++) s2 += String.fromCharCode(u[i]); return btoa(s2); }
+  function unb64(t) { var s2 = atob(t), u = new Uint8Array(s2.length); for (var i = 0; i < s2.length; i++) u[i] = s2.charCodeAt(i); return u; }
+  function keyDB() { return new Promise(function (res, rej) { var q = indexedDB.open('pace_keys_v1', 1); q.onupgradeneeded = function () { q.result.createObjectStore('k'); }; q.onsuccess = function () { res(q.result); }; q.onerror = function () { rej(q.error); }; }); }
+  async function getCKey(create) {
+    var db = await keyDB();
+    var k = await new Promise(function (r) { var t = db.transaction('k').objectStore('k').get('main'); t.onsuccess = function () { r(t.result || null); }; t.onerror = function () { r(null); }; });
+    if (k || !create) { db.close(); return k; }
+    k = await crypto.subtle.generateKey({ name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']);
+    await new Promise(function (r, j) { var t = db.transaction('k', 'readwrite'); t.objectStore('k').put(k, 'main'); t.oncomplete = r; t.onerror = function () { j(t.error); }; });
+    db.close(); return k;
+  }
+  async function encPw(pw) {
+    if (!CRYPTO_OK || !pw) return null;
+    try {
+      var key = await getCKey(true), iv = crypto.getRandomValues(new Uint8Array(12));
+      var ct = await crypto.subtle.encrypt({ name: 'AES-GCM', iv: iv }, key, new TextEncoder().encode(pw));
+      return { iv: b64(iv), ct: b64(new Uint8Array(ct)) };
+    } catch (e) { return null; }
+  }
+  async function decPw(o) {
+    if (!CRYPTO_OK || !o || !o.iv || !o.ct) return null;
+    try {
+      var key = await getCKey(false); if (!key) return null;
+      var pt = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: unb64(o.iv) }, key, unb64(o.ct));
+      return new TextDecoder().decode(pt);
+    } catch (e) { return null; }
+  }
   function snapProfile(e) {   // yalnızca bu hesabın verisi cihazdayken (uid eşleşince) görünüm bilgisini güncelle
     var p = prof(); if (!p) return;
     e.name = (p.name && String(p.name).trim()) || e.name || ''; e.mode = p.mode || e.mode || ''; e.color = p.color || e.color || '';
     var ph = (p.mode === 'photo' && p.photo && String(p.photo).length < 90000) ? p.photo : '';
     if (p.mode === 'photo') e.photo = ph; else delete e.photo;
   }
-  function rememberAccount(session) {
+  async function rememberAccount(session, pw) {
     if (!session || !session.user) return;
+    var enc = await encPw(pw);
     var a = savedList(), e = findSaved(a, session.user.id);
     if (!e) { e = { id: session.user.id }; a.unshift(e); }
-    e.email = session.user.email || e.email || ''; e.rt = session.refresh_token || e.rt || ''; e.ts = Date.now();
+    e.email = session.user.email || e.email || ''; e.ts = Date.now(); delete e.rt; delete e.bad;
+    if (enc) e.pw = enc; else delete e.pw;
+    putSaved(a);
+  }
+  async function updateSavedPw(id, pw) {   // şifre değişince kayıtlı kart yeni şifreyle güncellenir
+    var a = savedList(), e = findSaved(a, id); if (!e) return;
+    var enc = await encPw(pw); if (enc) { e.pw = enc; delete e.bad; } else delete e.pw;
     putSaved(a);
   }
   function forgetAccount(id) { var a = savedList().filter(function (x) { return x.id !== id; }); putSaved(a); }
-  function syncSaved(session) {   // oturum yenilenince saklanan anahtar da yenilenir (aksi halde eski anahtar geçersiz kalır)
+  function syncSaved(session) {   // e-posta değişirse kart güncel kalsın; kendi verisi cihazdaysa görünüm bilgisi de
     if (!session || !session.user) return;
     var a = savedList(), e = findSaved(a, session.user.id); if (!e) return;
-    if (session.refresh_token) e.rt = session.refresh_token;
     if (session.user.email) e.email = session.user.email;
     if (uid === session.user.id) snapProfile(e);
     putSaved(a);
@@ -305,11 +341,8 @@
   });
   async function doSignOut() {
     meta.signedOut = true; saveMeta();
-    try {   // hatırlanan hesapta en güncel anahtarı ve görünümü kaydet
-      var cur = await sb.auth.getSession(), cs = cur && cur.data && cur.data.session;
-      if (cs && cs.user) { var a = savedList(), e = findSaved(a, cs.user.id); if (e) { if (cs.refresh_token) e.rt = cs.refresh_token; snapProfile(e); e.ts = Date.now(); putSaved(a); } }
-    } catch (e0) {}
-    await sb.auth.signOut({ scope: 'local' });   // yalnızca bu cihaz: diğer cihazların oturumu ve hızlı giriş anahtarları bozulmaz
+    try { if (uid) { var a = savedList(), e = findSaved(a, uid); if (e) { snapProfile(e); e.ts = Date.now(); putSaved(a); } } } catch (e0) {}   // hatırlanan hesapta kartın görünümü güncel kalsın
+    await sb.auth.signOut({ scope: 'local' });   // yalnızca bu cihaz: diğer cihazların oturumu bozulmaz
   }
 
   // ---------- arayüz ----------
@@ -1092,6 +1125,7 @@ body.is-qhavuz-test-open .pf-side{opacity:.35;pointer-events:none}}
       try {
         var r2 = await sb.auth.updateUser({ password: n1.value });
         if (r2.error) throw r2.error;
+        try { if (uid) await updateSavedPw(uid, n1.value); } catch (e4) {}
         P.old = ''; P.step = 3; P.busy = false;
         if (pwAlive()) renderPwStep();
       } catch (err2) { if (pwAlive()) pwErr(trErr(err2), n1); }
@@ -1390,13 +1424,15 @@ img.pa-mark{display:block;object-fit:cover;border-radius:23%;background:none;box
     var nm = (e.name || (e.email || '').split('@')[0] || 'H');
     return '<span class="pf-av" style="' + dim + 'background:' + c + ';color:' + textOn(c) + ';font-size:20px">' + esc(nm.charAt(0).toLocaleUpperCase('tr-TR')) + '</span>';
   }
+  var W_BAD = 'Şifre değişmiş ya da hesap silinmiş olabilir', W_NOPW = 'Şifreni bir kez gir, sonra şifresiz girersin';
+  function warnText(e) { return e.bad ? W_BAD : (e.pw ? '' : W_NOPW); }
   function quickHTML() {
     var list = savedList().slice(0, 6); if (!list.length) return '';
     var rows = list.map(function (e, i) {
       var nm = e.name || (e.email || '').split('@')[0] || 'Hesap';
-      return '<div class="pa-qrow" style="--i:' + i + '" data-id="' + esc(e.id) + '">' +
+      return '<div class="pa-qrow' + (warnText(e) ? ' warn' : '') + '" style="--i:' + i + '" data-id="' + esc(e.id) + '">' +
         '<button type="button" class="pa-qc" data-pa="qlogin" data-id="' + esc(e.id) + '" aria-label="' + esc(nm) + ' olarak giriş yap">' + qAvatar(e) +
-        '<span class="pa-qt"><b class="pa-qn">' + esc(nm) + '</b><span class="pa-qm">' + esc(e.email || '') + (e.rt ? '' : ' · şifre gerekli') + '</span></span><span class="pa-qs"></span></button>' +
+        '<span class="pa-qt"><b class="pa-qn">' + esc(nm) + '</b><span class="pa-qm">' + esc(e.email || '') + '</span><span class="pa-qw">' + esc(warnText(e)) + '</span></span><span class="pa-qs"></span></button>' +
         '<button type="button" class="pa-qx" data-pa="qforget" data-id="' + esc(e.id) + '" aria-label="Bu cihazdan unut" title="Bu cihazdan unut">' + ic(QX, 16) + '</button></div>';
     }).join('');
     return '<div class="pa-qk" id="paQk"><div><p class="pa-ql">Hızlı giriş yap</p><div class="pa-qlist" id="paQl">' + rows + '</div><p class="pa-ql pa-ql2">Ya da e-postayla giriş yap</p></div></div>';
@@ -1410,32 +1446,44 @@ img.pa-mark{display:block;object-fit:cover;border-radius:23%;background:none;box
       if (qk && ql && !ql.children.length) { qk.classList.add('none'); setTimeout(function () { qk.remove(); }, 600); }
     }, 480);
   }
-  function quickStale(id, row) {   // anahtar geçersiz: e-posta hazır, yalnızca şifre sorulur
+  function rowWarn(row, text) {
+    if (!row) return; var w = row.querySelector('.pa-qw'); if (w) w.textContent = text || '';
+    row.classList.toggle('warn', !!text); row.classList.remove('shk'); void row.offsetWidth; row.classList.add('shk');
+  }
+  function needPassword(id, row, bad) {   // kayıtlı şifre yok / geçersiz: e-posta hazır, yalnızca şifre sorulur
     var a = savedList(), e = findSaved(a, id); if (!e) return;
-    e.rt = ''; putSaved(a);
-    if (row) { var m = row.querySelector('.pa-qm'); if (m) m.textContent = (e.email || '') + ' · şifre gerekli'; }
+    if (bad) { e.bad = true; delete e.pw; putSaved(a); }
+    rowWarn(row, bad ? W_BAD : W_NOPW);
     var em = document.getElementById('paEmail'), rem = document.getElementById('paRem'), pw = document.getElementById('paPass');
     if (em) em.value = e.email || ''; if (rem) rem.checked = true;
-    authMsg('Bu cihazdaki kayıt geçersiz olmuş. Şifreni gir, hesabın Hızlı giriş\u2019te kalsın.');
+    authMsg(bad ? 'Kayıtlı şifre artık geçerli değil: şifre değişmiş ya da hesap silinmiş olabilir. Şifreni gir; hesap silindiyse kartı ✕ ile kaldır.' : 'Güvenlik için şifreni bir kez gir. Sonra bu karttan şifresiz girersin.');
     if (pw) setTimeout(function () { pw.focus(); }, 60);
   }
   async function quickLogin(id, row) {
     if (!A || A.busy || A.done || !row) return;
     var a = savedList(), e = findSaved(a, id); if (!e) return;
-    if (!e.rt) return quickStale(id, row);
-    A.busy = true; row.classList.add('ld'); document.getElementById('paMsg').classList.remove('show');
+    A.busy = true; row.classList.add('ld'); row.classList.remove('shk'); document.getElementById('paMsg').classList.remove('show');
     try {
-      var r = await sb.auth.refreshSession({ refresh_token: e.rt });
-      if (r.error) throw r.error;
-      var ss = r.data && r.data.session; if (!ss || !ss.user) throw new Error('refresh_token missing session');
-      var a2 = savedList(), x = findSaved(a2, id);
-      if (x) { x.rt = ss.refresh_token || x.rt; x.email = ss.user.email || x.email; x.ts = Date.now(); putSaved(a2); }
-      await start(ss);
-      if (uid === ss.user.id) finishAuth();   // hesap değiştirme penceresinde "İptal et" denirse uid eşleşmez: giriş ekranında kal
+      var pw = e.bad ? null : await decPw(e.pw);
+      if (!pw) { needPassword(id, row, !!e.bad); }
+      else {
+        var r = await sb.auth.signInWithPassword({ email: e.email, password: pw });
+        if (r.error) throw r.error;
+        var ss = r.data && r.data.session; if (!ss || !ss.user) throw new Error('oturum alınamadı');
+        await start(ss);
+        if (uid === ss.user.id) finishAuth();   // hesap değiştirme penceresinde "İptal et" denirse uid eşleşmez: giriş ekranında kal
+      }
     } catch (err) {
-      var low = (((err && err.message) || '') + ' ' + ((err && err.code) || '')).toLowerCase(), st = err && err.status;
-      var dead = st === 400 || st === 401 || st === 403 || /refresh[_ ]token|session[_ ]not[_ ]found|invalid jwt/.test(low);
-      if (A) { if (dead) quickStale(id, row); else authMsg('Bağlanılamadı. İnternetini kontrol edip tekrar dene.', null); }
+      var low = (((err && err.message) || '') + ' ' + ((err && err.code) || '')).toLowerCase();
+      if (/invalid login|invalid_credentials/.test(low)) { if (A) needPassword(id, row, true); }
+      else if (A) {
+        var m;
+        if (/banned/.test(low)) m = 'Bu hesap şu anda kullanıma kapalı.';
+        else if (!navigator.onLine || /failed to fetch|network|load failed|fetch/.test(low)) m = 'İnternet bağlantısı yok ya da sunucuya ulaşılamadı. Bağlanınca tekrar dene.';
+        else m = trErr(err);
+        rowWarn(row, ''); authMsg(m, null);
+        row.classList.add('shk');
+      }
     }
     if (A) { A.busy = false; row.classList.remove('ld'); }
   }
@@ -1480,6 +1528,12 @@ img.pa-mark{display:block;object-fit:cover;border-radius:23%;background:none;box
 .pa-qrow.ld .pa-qs{opacity:.85;animation:paSpin .8s linear infinite}
 .pa-qrow.ld .pa-qx{opacity:0;pointer-events:none}
 .pa-qrow.ld .pa-qc{pointer-events:none;border-color:var(--accent-color,#6ec1ff)}
+.pa-qw{display:block;max-height:0;overflow:hidden;opacity:0;font-size:12.5px;font-weight:700;line-height:1.25;color:#e5484d;transform:translateY(-3px);transition:max-height .45s cubic-bezier(.22,1,.36,1),opacity .35s ease,transform .45s cubic-bezier(.22,1,.36,1)}
+.pa-qrow.warn{max-height:110px}
+.pa-qrow.warn .pa-qw{max-height:40px;opacity:1;transform:none;margin-top:2px}
+.pa-qrow.warn .pa-qc{border-color:rgba(229,72,77,.6);background:rgba(229,72,77,.08)}
+.pa-qrow.shk .pa-qc{animation:paShake .5s ease}
+.pa-qrow.warn.gone{max-height:0}
 @media (prefers-reduced-motion:reduce){.pa-qk,.pa-qrow,.pa-sw,.pa-sw::before,.pa-sw svg,.pa-sw path{transition:none!important;animation:none!important}}
 `;
   document.head.appendChild(AU3);
@@ -1497,7 +1551,7 @@ img.pa-mark{display:block;object-fit:cover;border-radius:23%;background:none;box
       if (!up) {
         var r = await sb.auth.signInWithPassword({ email: ev, password: pw.value }); if (r.error) throw r.error;
         var remEl = document.getElementById('paRem');
-        if (r.data && r.data.session) { if (remEl && remEl.checked) rememberAccount(r.data.session); else forgetAccount(r.data.session.user.id); }
+        if (r.data && r.data.session) { if (remEl && remEl.checked) await rememberAccount(r.data.session, pw.value); else forgetAccount(r.data.session.user.id); }
         finishAuth();
       }
       else {
@@ -1609,6 +1663,7 @@ img.pa-mark{display:block;object-fit:cover;border-radius:23%;background:none;box
     try {
       var r = await sb.auth.updateUser({ password: p1.value });
       if (r.error) throw r.error;
+      try { var rid = r.data && r.data.user && r.data.user.id; if (rid) await updateSavedPw(rid, p1.value); } catch (e5) {}
       R.done = true;
       document.getElementById('rcSt').innerHTML = '<div class="pa-ring"><svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div><h3>Şifren güncellendi</h3><p>Bundan sonra yeni şifrenle giriş yapabilirsin.</p>';
       R.card.classList.add('st');
@@ -1772,4 +1827,79 @@ img.pa-mark{display:block;object-fit:cover;border-radius:23%;background:none;box
   mountUpdate();
 
   window.PaceSync = { syncNow: function () { return syncNow(false); } };
+})();
+
+/* Bağlantı bildirimi: internet kesilince kırmızı, gelince yeşil Wi-Fi simgeli animasyonlu bildirim (sürüm 28).
+   Ana eşitleme betiğinden bağımsızdır: kütüphane yüklenemese bile çalışır. */
+(function () {
+  'use strict';
+  var el = null, state = '', offT = null, hideT = null, wasOff = false;
+  var css = document.createElement('style'); css.id = 'paceNetCss';
+  css.textContent = `
+@keyframes pnIn{0%{transform:translate(-50%,-160%);opacity:0}60%{transform:translate(-50%,6px);opacity:1}100%{transform:translate(-50%,0);opacity:1}}
+@keyframes pnOut{from{transform:translate(-50%,0);opacity:1}to{transform:translate(-50%,-160%);opacity:0}}
+@keyframes pnFlick{0%,100%{opacity:1}50%{opacity:.18}}
+@keyframes pnDraw{from{stroke-dashoffset:26}to{stroke-dashoffset:0}}
+@keyframes pnPop{0%{opacity:0;transform:scale(.5)}70%{opacity:1;transform:scale(1.14)}100%{opacity:1;transform:scale(1)}}
+@keyframes pnRing{0%{transform:scale(.7);opacity:.55}100%{transform:scale(1.7);opacity:0}}
+@keyframes pnShk{20%,60%{transform:translateX(-2px)}40%,80%{transform:translateX(2px)}}
+#paceNet{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 14px);z-index:2147483040;display:flex;align-items:center;gap:13px;box-sizing:border-box;max-width:calc(100% - 28px);width:max-content;padding:11px 20px 11px 12px;border-radius:26px;background:var(--theme-bg,#fff);color:var(--theme-text,#121212);border:1.5px solid var(--pn,#e5484d);box-shadow:0 16px 40px rgba(0,0,0,.32),0 0 0 5px color-mix(in srgb,var(--pn,#e5484d) 16%,transparent);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);animation:pnIn .7s cubic-bezier(.22,1,.36,1) both;pointer-events:none;font-family:inherit}
+#paceNet.off{--pn:#e5484d}#paceNet.on{--pn:#30a46c}
+#paceNet.out{animation:pnOut .4s cubic-bezier(.5,0,.75,0) both}
+#paceNet .pn-ic{position:relative;flex:none;width:44px;height:44px;border-radius:50%;display:grid;place-items:center;color:var(--pn);background:color-mix(in srgb,var(--pn) 16%,transparent)}
+#paceNet .pn-ic::after{content:'';position:absolute;inset:0;border-radius:50%;border:2px solid var(--pn);opacity:0}
+#paceNet.on .pn-ic::after{animation:pnRing .9s .15s ease-out both}
+#paceNet svg{overflow:visible}
+#paceNet .a1,#paceNet .a2,#paceNet .a3,#paceNet .dt{transform-box:fill-box;transform-origin:50% 100%}
+#paceNet.off .a1{animation:pnFlick 1.5s 0s ease-in-out infinite}
+#paceNet.off .a2{animation:pnFlick 1.5s .2s ease-in-out infinite}
+#paceNet.off .a3{animation:pnFlick 1.5s .4s ease-in-out infinite}
+#paceNet.off .pn-ic{animation:pnShk .5s .55s ease both}
+#paceNet .sl{stroke-dasharray:26;stroke-dashoffset:26;opacity:0}
+#paceNet.off .sl{opacity:1;animation:pnDraw .5s .35s cubic-bezier(.65,0,.35,1) forwards}
+#paceNet.on .dt{animation:pnPop .45s .05s cubic-bezier(.34,1.56,.64,1) both}
+#paceNet.on .a1{animation:pnPop .45s .2s cubic-bezier(.34,1.56,.64,1) both}
+#paceNet.on .a2{animation:pnPop .45s .33s cubic-bezier(.34,1.56,.64,1) both}
+#paceNet.on .a3{animation:pnPop .45s .46s cubic-bezier(.34,1.56,.64,1) both}
+#paceNet .pn-t{min-width:0;display:flex;flex-direction:column;gap:2px}
+#paceNet .pn-t b{font-size:15.5px;font-weight:800;line-height:1.2;letter-spacing:-.005em}
+#paceNet .pn-t span{font-size:13px;line-height:1.3;opacity:.7}
+@media (prefers-reduced-motion:reduce){#paceNet,#paceNet *{animation-duration:.01s!important;animation-delay:0s!important}}
+`;
+  document.head.appendChild(css);
+
+  var WIFI = '<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+    '<path class="a3" d="M2.2 8.9a14 14 0 0 1 19.6 0"/><path class="a2" d="M5.6 12.4a9.2 9.2 0 0 1 12.8 0"/><path class="a1" d="M8.9 15.8a4.6 4.6 0 0 1 6.2 0"/>' +
+    '<circle class="dt" cx="12" cy="19.2" r="1.15" fill="currentColor" stroke="none"/><path class="sl" d="M4 3.8L20 20.2" stroke-width="2.6"/></svg>';
+
+  function show(kind) {
+    clearTimeout(hideT);
+    var title = kind === 'off' ? 'İnternet bağlantısı kesildi' : 'İnternete yeniden bağlandın',
+        sub = kind === 'off' ? 'Çevrimdışı da kullanmaya devam edebilirsin.' : 'Her şey yeniden çevrimiçi.';
+    var old = document.getElementById('paceNet'); if (old) old.remove();
+    el = document.createElement('div'); el.id = 'paceNet'; el.className = kind; el.setAttribute('role', 'status'); el.setAttribute('aria-live', 'polite');
+    el.innerHTML = '<span class="pn-ic">' + WIFI + '</span><span class="pn-t"><b>' + title + '</b><span>' + sub + '</span></span>';
+    document.body.appendChild(el); state = kind;
+    if (kind === 'on') hideT = setTimeout(hide, 3600);
+  }
+  function hide() {
+    clearTimeout(hideT); var e = el; if (!e) return; el = null; state = '';
+    e.classList.add('out'); setTimeout(function () { e.remove(); }, 420);
+  }
+  function goOffline() {
+    if (state === 'off' || offT) return;
+    offT = setTimeout(function () { offT = null; if (navigator.onLine === false) { wasOff = true; show('off'); } }, 700);   // kısa kopmalarda rahatsız etme
+  }
+  function goOnline() {
+    clearTimeout(offT); offT = null;
+    if (state === 'off' || wasOff) { wasOff = false; show('on'); }
+  }
+  window.addEventListener('offline', goOffline);
+  window.addEventListener('online', goOnline);
+  document.addEventListener('visibilitychange', function () {   // arka plandayken değişmiş olabilir
+    if (document.visibilityState !== 'visible') return;
+    if (navigator.onLine === false) goOffline(); else if (state === 'off') goOnline();
+  });
+  function init() { if (navigator.onLine === false) goOffline(); }
+  if (document.body) init(); else document.addEventListener('DOMContentLoaded', init);
 })();
