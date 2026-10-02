@@ -5,7 +5,7 @@
 // yapılan güncellemeler CACHE_VERSION hiç değişmese bile bir sonraki
 // açılışta görünür.
 
-const CACHE_VERSION = 'pace-v5';   // v5: eski (bayat) Supabase yanıtları bu sürümle birlikte silinir
+const CACHE_VERSION = 'pace-v6';   // v6: sayfa/betik istekleri tarayıcı HTTP önbelleğini aşar (no-cache); version.json hiç önbelleğe alınmaz
 const CORE_ASSETS = [
   './manifest.json',
   './icons/favicon.ico',
@@ -32,7 +32,9 @@ const OFFLINE_FALLBACK = './index.html';
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_VERSION).then((cache) => cache.addAll([...CORE_ASSETS, OFFLINE_FALLBACK]))
+    caches.open(CACHE_VERSION).then((cache) => Promise.all(
+      [...CORE_ASSETS, OFFLINE_FALLBACK].map((u) => cache.add(new Request(u, { cache: 'reload' })))
+    ))
   );
   self.skipWaiting();
 });
@@ -64,6 +66,9 @@ self.addEventListener('fetch', (event) => {
   const reqUrl = new URL(event.request.url);
   if (reqUrl.hostname.endsWith('.supabase.co') || reqUrl.hostname.endsWith('.supabase.in')) return;
 
+  // version.json (uygulama içi "yeni sürüm var mı" denetimi): asla önbelleğe alınmaz, doğrudan ağa gider.
+  if (reqUrl.pathname.endsWith('/version.json')) return;
+
   // sync.js ve kütüphane betikleri de network-first: yeni sürüm hemen gelsin,
   // ağ yoksa son başarılı kopya kullanılsın.
   const isNav = isNavigationRequest(event.request);
@@ -79,7 +84,9 @@ self.addEventListener('fetch', (event) => {
   // kopyaya) düşülüyor.
   if (isNav || event.request.destination === 'script') {
     event.respondWith(
-      fetch(event.request)
+      // no-cache: tarayıcının HTTP önbelleği (GitHub Pages ~10 dk) yerine her seferinde sunucuya sorar;
+      // değişmediyse sunucu 304 döner, yani veri harcamaz.
+      fetch(isNav ? new Request(event.request.url, { cache: 'no-cache', credentials: 'same-origin' }) : new Request(event.request, { cache: 'no-cache' }))
         .then((response) => {
           if (response && response.status === 200) {
             const clone = response.clone();

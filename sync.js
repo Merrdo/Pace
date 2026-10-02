@@ -323,7 +323,7 @@
       if (a === 'dx') {
         msg.textContent = 'Kontrol ediliyor…';
         var q = await sb.from('sync_records').select('id,updated_at,device_id').eq('kind', 'state').neq('id', nc());
-        msg.textContent = 'sürüm 18 · bulutta ' + (q.data ? q.data.length : '?') + ' alan' + (q.error ? ' · HATA: ' + q.error.message : '') +
+        msg.textContent = 'sürüm ' + APP_VER + ' · bulutta ' + (q.data ? q.data.length : '?') + ' alan' + (q.error ? ' · HATA: ' + q.error.message : '') +
           ' · bu cihazda ' + Object.keys(APP_STATE).length + ' alan · imleç ' + (meta.lastPull || 'yok') + ' · bağlı ' + !!meta.linked +
           ' · ' + (q.data || []).map(function (x) { return x.id + '@' + String(x.updated_at).slice(5, 16); }).join(', ');
         return;
@@ -1360,8 +1360,129 @@ img.pa-mark{display:block;object-fit:cover;border-radius:23%;background:none;box
     });
   }
 
+  // ---------- Sürüm denetimi: yeni sürüm bildirimi + Ayarlar'da güncelleme düğmesi ----------
+  // Bu dosyanın sürümü, index.html'deki "sync.js?v=N" numarasıdır; sunucudaki version.json ile karşılaştırılır.
+  var APP_VER = (function () {
+    try {
+      var el = document.currentScript || [].slice.call(document.scripts).filter(function (x) { return /sync\.js/.test(x.src); }).pop();
+      var m = /[?&]v=(\d+)/.exec((el && el.src) || ''); if (m) return parseInt(m[1], 10);
+    } catch (e) {}
+    return 0;
+  })();
+  var upd = { state: 'unknown', latest: 0, at: 0, ok: 0, busy: false, applying: false };
+  var UPI = { dl: '<path d="M12 4v11M7.5 10.5L12 15l4.5-4.5M5 19.5h14"/>' };
+
+  var UST = document.createElement('style'); UST.id = 'paceUpdCss';
+  UST.textContent = `
+@keyframes pcUIn{from{opacity:0;transform:translate(-50%,-26px) scale(.95)}to{opacity:1;transform:translate(-50%,0) scale(1)}}
+@keyframes pcUOut{to{opacity:0;transform:translate(-50%,-18px) scale(.97)}}
+@keyframes pcDot{0%{box-shadow:0 0 0 0 rgba(229,72,77,.55)}100%{box-shadow:0 0 0 11px rgba(229,72,77,0)}}
+@keyframes pcBob{50%{transform:translateY(2px)}}
+#pcUpd{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 12px);transform:translateX(-50%);z-index:2147483002;width:calc(100% - 24px);max-width:430px;box-sizing:border-box;display:flex;align-items:center;gap:11px;padding:11px 10px 11px 12px;border-radius:22px;background:color-mix(in srgb,var(--theme-bg,#111) 84%,transparent);-webkit-backdrop-filter:blur(18px) saturate(1.3);backdrop-filter:blur(18px) saturate(1.3);color:var(--theme-text,#fff);border:1px solid rgba(128,128,128,.32);box-shadow:0 16px 44px rgba(0,0,0,.38);animation:pcUIn .65s cubic-bezier(.22,1,.36,1) both}
+#pcUpd.out{animation:pcUOut .3s ease both;pointer-events:none}
+.pcu-i{flex:none;display:grid;place-items:center;width:38px;height:38px;border-radius:13px;color:#fff;background:linear-gradient(140deg,#f76b15,#e5484d);box-shadow:0 6px 16px rgba(229,72,77,.4)}
+.pcu-i svg{animation:pcBob 1.8s ease-in-out infinite}
+.pcu-t{flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.2;text-align:left}
+.pcu-t b{font-size:15px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pcu-t span{font-size:12.5px;opacity:.65;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pcu-go{flex:none;padding:10px 15px;border:0;border-radius:999px;background:var(--theme-text,#fff);color:var(--theme-bg,#000);font-size:14px;font-weight:700;cursor:pointer;white-space:nowrap;transition:transform .25s cubic-bezier(.34,1.56,.64,1),opacity .25s}
+.pcu-go:active{transform:scale(.95)}.pcu-go:disabled{opacity:.6}
+.pcu-x{flex:none;display:grid;place-items:center;width:30px;height:30px;padding:0;border:0;border-radius:50%;background:rgba(128,128,128,.18);color:inherit;font-size:13px;line-height:1;cursor:pointer}
+.upd-row{display:flex;align-items:center;gap:13px;animation:pfFade .45s ease both}
+.upd-dot{flex:none;width:13px;height:13px;border-radius:50%;background:var(--c,#8a8a8a);transition:background .4s}
+.upd-row[data-s=new] .upd-dot{animation:pcDot 1.5s ease-out infinite}
+.upd-row[data-s=checking] .upd-dot,.upd-row[data-s=busy] .upd-dot{animation:acPulse 1s ease-in-out infinite}
+.upd-tx{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px;text-align:left}
+.upd-tx b{font-size:17px;font-weight:700;line-height:1.2}.upd-tx span{font-size:13px;opacity:.65;line-height:1.3}
+.upd-b{flex:1}
+.upd-b[data-s=new]{background:#e5484d;color:#fff;border-color:transparent;box-shadow:0 8px 22px rgba(229,72,77,.35)}
+.upd-b[data-s=ok]{background:color-mix(in srgb,#2ecc71 16%,transparent);border-color:color-mix(in srgb,#2ecc71 55%,transparent)}
+@media (prefers-reduced-motion:reduce){#pcUpd,.upd-row,.upd-dot,.pcu-i svg{animation:none!important}}
+`;
+  document.head.appendChild(UST);
+
+  function updUi() {
+    var card = document.getElementById('updCard'); if (!card) return;
+    var s = upd.applying ? 'busy' : upd.state;
+    var C = { 'new': '#e5484d', ok: '#2ecc71', err: '#8a8a8a', unknown: '#8a8a8a', checking: '#f5b301', busy: '#f5b301' };
+    var v = APP_VER ? 'Sürüm ' + APP_VER : 'Sürüm bilinmiyor';
+    var t, sub, label, icon = IC.sync, act = 'check', spin = false;
+    if (s === 'new') { t = 'Yeni sürüm mevcut'; sub = v + ' → ' + upd.latest + ' · verilerin korunur'; label = 'Şimdi güncelle'; icon = UPI.dl; act = 'apply'; }
+    else if (s === 'ok') { t = 'Uygulama güncel'; sub = v + ' · son denetim ' + new Date(upd.ok).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }); label = 'Güncellemeleri denetle'; }
+    else if (s === 'checking') { t = 'Denetleniyor…'; sub = v; label = 'Denetleniyor…'; spin = true; }
+    else if (s === 'busy') { t = 'Güncelleniyor…'; sub = 'Verilerin korunuyor, sayfa yenilenecek.'; label = 'Güncelleniyor…'; spin = true; act = 'none'; }
+    else if (s === 'err') { t = 'Denetlenemedi'; sub = 'Bağlantını kontrol edip tekrar dene.'; label = 'Tekrar dene'; }
+    else { t = 'Güncelleme'; sub = v; label = 'Güncellemeleri denetle'; }
+    card.innerHTML = '<div class="upd-row" data-s="' + s + '" style="--c:' + C[s] + '"><span class="upd-dot"></span><div class="upd-tx"><b>' + t + '</b><span>' + esc(sub) + '</span></div></div>' +
+      '<div class="ac-actions"><button type="button" class="ac-btn upd-b" data-s="' + s + '" data-upd="' + act + '"' + (spin ? ' disabled' : '') + '>' + ic(icon, 18, spin ? 'ac-spin' : '') + label + '</button></div>';
+  }
+  function showUpdBanner() {
+    if (document.getElementById('pcUpd') || upd.applying) return;
+    try { if (sessionStorage.getItem('pace_upd_dis') === String(upd.latest)) return; } catch (e) {}
+    var b = document.createElement('div'); b.id = 'pcUpd'; b.setAttribute('role', 'status');
+    b.innerHTML = '<span class="pcu-i">' + ic(UPI.dl, 20) + '</span><span class="pcu-t"><b>Yeni sürüm mevcut</b><span>Sürüm ' + upd.latest + ' hazır · verilerin korunur</span></span>' +
+      '<button type="button" class="pcu-go" data-u="go">Güncelle</button><button type="button" class="pcu-x" data-u="x" aria-label="Sonra">✕</button>';
+    document.body.appendChild(b);
+    b.addEventListener('click', function (e) {
+      var t = e.target.closest && e.target.closest('[data-u]'); if (!t) return;
+      if (t.getAttribute('data-u') === 'go') applyUpdate(); else hideUpdBanner(true);
+    });
+  }
+  function hideUpdBanner(dismiss) {
+    var b = document.getElementById('pcUpd'); if (!b) return;
+    if (dismiss) { try { sessionStorage.setItem('pace_upd_dis', String(upd.latest)); } catch (e) {} }
+    b.classList.add('out'); setTimeout(function () { b.remove(); }, 320);
+  }
+  async function checkUpdate(manual) {
+    if (!APP_VER || upd.busy || upd.applying) { if (manual && !APP_VER) pcToast('Sürüm bilgisi okunamadı.'); return; }
+    if (!manual && Date.now() - upd.at < 20000) return;
+    upd.busy = true; upd.at = Date.now();
+    var prev = upd.state; if (manual) { upd.state = 'checking'; updUi(); }
+    try {
+      var r = await fetch('version.json?_=' + Date.now(), { cache: 'no-store' });
+      if (!r.ok) throw new Error('http ' + r.status);
+      var j = await r.json(), n = parseInt(j && j.v, 10); if (!n) throw new Error('bad');
+      upd.latest = n; upd.ok = Date.now(); upd.state = n > APP_VER ? 'new' : 'ok';
+    } catch (e) { upd.state = (prev === 'new') ? 'new' : 'err'; }
+    upd.busy = false; updUi();
+    if (upd.state === 'new') showUpdBanner();
+    else if (manual) pcToast(upd.state === 'ok' ? 'En güncel sürümü kullanıyorsun.' : 'Denetlenemedi. Bağlantını kontrol et.');
+  }
+  // Güncelle: bekleyen değişiklikleri buluta gönder, yalnızca uygulama önbelleğini temizle (veriye dokunmaz), sayfayı yenile.
+  async function applyUpdate() {
+    if (upd.applying) return; upd.applying = true; updUi();
+    var gb = document.querySelector('#pcUpd .pcu-go'); if (gb) { gb.disabled = true; gb.textContent = 'Güncelleniyor…'; }
+    try { if (uid) { try { scan(); } catch (e) {} await Promise.race([syncNow(false), new Promise(function (r) { setTimeout(r, 6000); })]); } } catch (e) {}
+    try { if (window.caches) { var ks = await caches.keys(); await Promise.all(ks.map(function (k) { return caches.delete(k); })); } } catch (e) {}
+    try { await Promise.all(['./', 'index.html', 'service-worker.js'].map(function (u) { return fetch(u, { cache: 'reload' }).catch(function () {}); })); } catch (e) {}   // tarayıcı HTTP önbelleğini de tazele
+    try { if (navigator.serviceWorker) { var rg = await navigator.serviceWorker.getRegistration(); if (rg) await rg.update(); } } catch (e) {}
+    location.reload();
+  }
+  function mountUpdate() {
+    if (document.getElementById('updSection')) return;
+    var acct = document.getElementById('acctSection');
+    var host = acct ? acct.parentNode : (document.querySelector('#page-settings .settings-col-left') || document.querySelector('#page-settings .settings-page'));
+    if (!host) return;
+    var sec = document.createElement('div'); sec.className = 'settings-section'; sec.id = 'updSection';
+    sec.innerHTML = '<span class="settings-section-label">Uygulama sürümü</span><div class="settings-card"><div id="updCard" class="ac"></div></div>';
+    host.insertBefore(sec, acct ? acct.nextSibling : host.firstChild);
+    sec.addEventListener('click', function (e) {
+      var b = e.target.closest && e.target.closest('[data-upd]'); if (!b || b.disabled) return;
+      var a = b.getAttribute('data-upd');
+      if (a === 'apply') applyUpdate(); else if (a === 'check') checkUpdate(true);
+    });
+    updUi();
+  }
+  if (APP_VER) {
+    setTimeout(function () { checkUpdate(false); }, 2500);
+    document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'visible') checkUpdate(false); });
+    window.addEventListener('online', function () { checkUpdate(false); });
+    setInterval(function () { if (document.visibilityState === 'visible') checkUpdate(false); }, 600000);
+  }
+
   mountAccount();
   mountSide();
+  mountUpdate();
 
   window.PaceSync = { syncNow: function () { return syncNow(false); } };
 })();
