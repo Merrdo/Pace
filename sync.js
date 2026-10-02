@@ -1829,48 +1829,81 @@ img.pa-mark{display:block;object-fit:cover;border-radius:23%;background:none;box
   window.PaceSync = { syncNow: function () { return syncNow(false); } };
 })();
 
-/* Bağlantı bildirimi: internet kesilince kırmızı, gelince yeşil Wi-Fi simgeli animasyonlu bildirim (sürüm 28).
+/* Bağlantı bildirimi (sürüm 29): internet kesilince kırmızı, gelince yeşil Wi-Fi simgeli animasyonlu bildirim.
+   Bildirim birkaç saniye görünüp kaybolur. Büyük ekranda, internet yokken yan panelin en altında küçük bir Wi-Fi simgesi kalır;
+   internet gelince yeşile döner ve "yeniden bağlandın" bildirimiyle birlikte kaybolur.
    Ana eşitleme betiğinden bağımsızdır: kütüphane yüklenemese bile çalışır. */
 (function () {
   'use strict';
-  var el = null, state = '', offT = null, hideT = null, wasOff = false;
+  var el = null, kindNow = '', offT = null, hideT = null, wasOff = false;
+  var OFF_MS = 4500, ON_MS = 3800;   // çevrimdışı bildirimi biraz daha uzun: okunup anlaşılsın
   var css = document.createElement('style'); css.id = 'paceNetCss';
+  var IS = ':is(#paceNet,#pnSide)';
   css.textContent = `
 @keyframes pnIn{0%{transform:translate(-50%,-160%);opacity:0}60%{transform:translate(-50%,6px);opacity:1}100%{transform:translate(-50%,0);opacity:1}}
 @keyframes pnOut{from{transform:translate(-50%,0);opacity:1}to{transform:translate(-50%,-160%);opacity:0}}
 @keyframes pnFlick{0%,100%{opacity:1}50%{opacity:.18}}
+@keyframes pnFlickS{0%,100%{opacity:1}50%{opacity:.35}}
 @keyframes pnDraw{from{stroke-dashoffset:26}to{stroke-dashoffset:0}}
 @keyframes pnPop{0%{opacity:0;transform:scale(.5)}70%{opacity:1;transform:scale(1.14)}100%{opacity:1;transform:scale(1)}}
 @keyframes pnRing{0%{transform:scale(.7);opacity:.55}100%{transform:scale(1.7);opacity:0}}
 @keyframes pnShk{20%,60%{transform:translateX(-2px)}40%,80%{transform:translateX(2px)}}
+@keyframes pnSideIn{0%{opacity:0;transform:scale(.4) translateY(10px)}100%{opacity:1;transform:none}}
+@keyframes pnSideOut{from{opacity:1;transform:none}to{opacity:0;transform:scale(.4) translateY(10px)}}
 #paceNet{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 14px);z-index:2147483040;display:flex;align-items:center;gap:13px;box-sizing:border-box;max-width:calc(100% - 28px);width:max-content;padding:11px 20px 11px 12px;border-radius:26px;background:var(--theme-bg,#fff);color:var(--theme-text,#121212);border:1.5px solid var(--pn,#e5484d);box-shadow:0 16px 40px rgba(0,0,0,.32),0 0 0 5px color-mix(in srgb,var(--pn,#e5484d) 16%,transparent);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);animation:pnIn .7s cubic-bezier(.22,1,.36,1) both;pointer-events:none;font-family:inherit}
-#paceNet.off{--pn:#e5484d}#paceNet.on{--pn:#30a46c}
 #paceNet.out{animation:pnOut .4s cubic-bezier(.5,0,.75,0) both}
-#paceNet .pn-ic{position:relative;flex:none;width:44px;height:44px;border-radius:50%;display:grid;place-items:center;color:var(--pn);background:color-mix(in srgb,var(--pn) 16%,transparent)}
-#paceNet .pn-ic::after{content:'';position:absolute;inset:0;border-radius:50%;border:2px solid var(--pn);opacity:0}
-#paceNet.on .pn-ic::after{animation:pnRing .9s .15s ease-out both}
-#paceNet svg{overflow:visible}
-#paceNet .a1,#paceNet .a2,#paceNet .a3,#paceNet .dt{transform-box:fill-box;transform-origin:50% 100%}
-#paceNet.off .a1{animation:pnFlick 1.5s 0s ease-in-out infinite}
-#paceNet.off .a2{animation:pnFlick 1.5s .2s ease-in-out infinite}
-#paceNet.off .a3{animation:pnFlick 1.5s .4s ease-in-out infinite}
-#paceNet.off .pn-ic{animation:pnShk .5s .55s ease both}
-#paceNet .sl{stroke-dasharray:26;stroke-dashoffset:26;opacity:0}
-#paceNet.off .sl{opacity:1;animation:pnDraw .5s .35s cubic-bezier(.65,0,.35,1) forwards}
-#paceNet.on .dt{animation:pnPop .45s .05s cubic-bezier(.34,1.56,.64,1) both}
-#paceNet.on .a1{animation:pnPop .45s .2s cubic-bezier(.34,1.56,.64,1) both}
-#paceNet.on .a2{animation:pnPop .45s .33s cubic-bezier(.34,1.56,.64,1) both}
-#paceNet.on .a3{animation:pnPop .45s .46s cubic-bezier(.34,1.56,.64,1) both}
+${IS}.off{--pn:#e5484d}${IS}.on{--pn:#30a46c}
+${IS} .pn-ic{position:relative;flex:none;width:44px;height:44px;border-radius:50%;display:grid;place-items:center;color:var(--pn);background:color-mix(in srgb,var(--pn) 16%,transparent);transition:color .35s ease,background .35s ease}
+${IS} .pn-ic::after{content:'';position:absolute;inset:0;border-radius:50%;border:2px solid var(--pn);opacity:0}
+${IS}.on .pn-ic::after{animation:pnRing .9s .15s ease-out both}
+${IS} svg{overflow:visible}
+${IS} .a1,${IS} .a2,${IS} .a3,${IS} .dt{transform-box:fill-box;transform-origin:50% 100%}
+${IS}.off .a1{animation:pnFlick 1.5s 0s ease-in-out infinite}
+${IS}.off .a2{animation:pnFlick 1.5s .2s ease-in-out infinite}
+${IS}.off .a3{animation:pnFlick 1.5s .4s ease-in-out infinite}
+${IS}.off .pn-ic{animation:pnShk .5s .55s ease both}
+${IS} .sl{stroke-dasharray:26;stroke-dashoffset:26;opacity:0}
+${IS}.off .sl{opacity:1;animation:pnDraw .5s .35s cubic-bezier(.65,0,.35,1) forwards}
+${IS}.on .dt{animation:pnPop .45s .05s cubic-bezier(.34,1.56,.64,1) both}
+${IS}.on .a1{animation:pnPop .45s .2s cubic-bezier(.34,1.56,.64,1) both}
+${IS}.on .a2{animation:pnPop .45s .33s cubic-bezier(.34,1.56,.64,1) both}
+${IS}.on .a3{animation:pnPop .45s .46s cubic-bezier(.34,1.56,.64,1) both}
 #paceNet .pn-t{min-width:0;display:flex;flex-direction:column;gap:2px}
 #paceNet .pn-t b{font-size:15.5px;font-weight:800;line-height:1.2;letter-spacing:-.005em}
 #paceNet .pn-t span{font-size:13px;line-height:1.3;opacity:.7}
-@media (prefers-reduced-motion:reduce){#paceNet,#paceNet *{animation-duration:.01s!important;animation-delay:0s!important}}
+#pnSide{display:none}
+@media (min-width:768px) and (min-height:600px){
+#pnSide{display:block;position:absolute;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));width:36px;height:36px;margin-left:-18px;z-index:2;pointer-events:none;animation:pnSideIn .55s cubic-bezier(.34,1.56,.64,1) both}
+#pnSide.out{animation:pnSideOut .35s ease both}
+#pnSide .pn-ic{width:36px;height:36px}
+#pnSide.off .a1{animation:pnFlickS 2.6s 0s ease-in-out infinite}
+#pnSide.off .a2{animation:pnFlickS 2.6s .25s ease-in-out infinite}
+#pnSide.off .a3{animation:pnFlickS 2.6s .5s ease-in-out infinite}
+}
+@media (prefers-reduced-motion:reduce){#paceNet,#paceNet *,#pnSide,#pnSide *{animation-duration:.01s!important;animation-delay:0s!important}}
 `;
   document.head.appendChild(css);
 
-  var WIFI = '<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
-    '<path class="a3" d="M2.2 8.9a14 14 0 0 1 19.6 0"/><path class="a2" d="M5.6 12.4a9.2 9.2 0 0 1 12.8 0"/><path class="a1" d="M8.9 15.8a4.6 4.6 0 0 1 6.2 0"/>' +
-    '<circle class="dt" cx="12" cy="19.2" r="1.15" fill="currentColor" stroke="none"/><path class="sl" d="M4 3.8L20 20.2" stroke-width="2.6"/></svg>';
+  function wifi(sz) {
+    return '<svg viewBox="0 0 24 24" width="' + sz + '" height="' + sz + '" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+      '<path class="a3" d="M2.2 8.9a14 14 0 0 1 19.6 0"/><path class="a2" d="M5.6 12.4a9.2 9.2 0 0 1 12.8 0"/><path class="a1" d="M8.9 15.8a4.6 4.6 0 0 1 6.2 0"/>' +
+      '<circle class="dt" cx="12" cy="19.2" r="1.15" fill="currentColor" stroke="none"/><path class="sl" d="M4 3.8L20 20.2" stroke-width="2.6"/></svg>';
+  }
+  // ---- Yan paneldeki küçük simge (yalnızca büyük ekranda görünür; CSS media ile) ----
+  function setSide(kind) {
+    var nav = document.getElementById('sidebarNav'); if (!nav) return;
+    var s = document.getElementById('pnSide');
+    if (s && s.classList.contains('out')) { s.remove(); s = null; }
+    if (!s) {
+      s = document.createElement('div'); s.id = 'pnSide'; s.setAttribute('role', 'img');
+      s.innerHTML = '<span class="pn-ic">' + wifi(20) + '</span>'; nav.appendChild(s);
+    }
+    s.className = kind; s.setAttribute('aria-label', kind === 'off' ? 'İnternet bağlantısı yok' : 'İnternete yeniden bağlandı');
+  }
+  function removeSide() {
+    var s = document.getElementById('pnSide'); if (!s || s.classList.contains('out')) return;
+    s.classList.add('out'); setTimeout(function () { if (s.classList.contains('out')) s.remove(); }, 380);
+  }
 
   function show(kind) {
     clearTimeout(hideT);
@@ -1878,27 +1911,29 @@ img.pa-mark{display:block;object-fit:cover;border-radius:23%;background:none;box
         sub = kind === 'off' ? 'Çevrimdışı da kullanmaya devam edebilirsin.' : 'Her şey yeniden çevrimiçi.';
     var old = document.getElementById('paceNet'); if (old) old.remove();
     el = document.createElement('div'); el.id = 'paceNet'; el.className = kind; el.setAttribute('role', 'status'); el.setAttribute('aria-live', 'polite');
-    el.innerHTML = '<span class="pn-ic">' + WIFI + '</span><span class="pn-t"><b>' + title + '</b><span>' + sub + '</span></span>';
-    document.body.appendChild(el); state = kind;
-    if (kind === 'on') hideT = setTimeout(hide, 3600);
+    el.innerHTML = '<span class="pn-ic">' + wifi(26) + '</span><span class="pn-t"><b>' + title + '</b><span>' + sub + '</span></span>';
+    document.body.appendChild(el); kindNow = kind;
+    setSide(kind);
+    hideT = setTimeout(hide, kind === 'off' ? OFF_MS : ON_MS);
   }
   function hide() {
-    clearTimeout(hideT); var e = el; if (!e) return; el = null; state = '';
+    clearTimeout(hideT); var e = el, k = kindNow; if (!e) return; el = null; kindNow = '';
     e.classList.add('out'); setTimeout(function () { e.remove(); }, 420);
+    if (k === 'on') removeSide();   // "yeniden bağlandın" bildirimiyle birlikte simge de kaybolur
   }
   function goOffline() {
-    if (state === 'off' || offT) return;
+    if (wasOff || offT) return;
     offT = setTimeout(function () { offT = null; if (navigator.onLine === false) { wasOff = true; show('off'); } }, 700);   // kısa kopmalarda rahatsız etme
   }
   function goOnline() {
     clearTimeout(offT); offT = null;
-    if (state === 'off' || wasOff) { wasOff = false; show('on'); }
+    if (wasOff) { wasOff = false; show('on'); }
   }
   window.addEventListener('offline', goOffline);
   window.addEventListener('online', goOnline);
   document.addEventListener('visibilitychange', function () {   // arka plandayken değişmiş olabilir
     if (document.visibilityState !== 'visible') return;
-    if (navigator.onLine === false) goOffline(); else if (state === 'off') goOnline();
+    if (navigator.onLine === false) goOffline(); else if (wasOff) goOnline();
   });
   function init() { if (navigator.onLine === false) goOffline(); }
   if (document.body) init(); else document.addEventListener('DOMContentLoaded', init);
