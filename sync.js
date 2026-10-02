@@ -232,12 +232,46 @@
   document.addEventListener('visibilitychange', function () {
     if (document.visibilityState === 'visible' && pendingEmail && uid) sb.auth.refreshSession().catch(function () {});   // başka sekmede/cihazda onaylandıysa yeni adres gelsin
   });
+  // ---------- Hatırlanan hesaplar (Beni hatırla / Hızlı giriş) ----------
+  // Şifre ASLA saklanmaz; yalnızca e-posta, görünüm bilgisi (ad/renk/fotoğraf) ve Supabase oturum anahtarı (refresh token).
+  var SAVED_KEY = 'pace_saved_accounts_v1';
+  function savedList() { try { var a = JSON.parse(localStorage.getItem(SAVED_KEY) || '[]'); return Array.isArray(a) ? a.filter(function (x) { return x && x.id; }) : []; } catch (e) { return []; } }
+  function putSaved(a) {
+    try { localStorage.setItem(SAVED_KEY, JSON.stringify(a)); }
+    catch (e) { try { a.forEach(function (x) { delete x.photo; }); localStorage.setItem(SAVED_KEY, JSON.stringify(a)); } catch (e2) {} }
+  }
+  function findSaved(a, id) { for (var i = 0; i < a.length; i++) if (a[i].id === id) return a[i]; return null; }
+  function snapProfile(e) {   // yalnızca bu hesabın verisi cihazdayken (uid eşleşince) görünüm bilgisini güncelle
+    var p = prof(); if (!p) return;
+    e.name = (p.name && String(p.name).trim()) || e.name || ''; e.mode = p.mode || e.mode || ''; e.color = p.color || e.color || '';
+    var ph = (p.mode === 'photo' && p.photo && String(p.photo).length < 90000) ? p.photo : '';
+    if (p.mode === 'photo') e.photo = ph; else delete e.photo;
+  }
+  function rememberAccount(session) {
+    if (!session || !session.user) return;
+    var a = savedList(), e = findSaved(a, session.user.id);
+    if (!e) { e = { id: session.user.id }; a.unshift(e); }
+    e.email = session.user.email || e.email || ''; e.rt = session.refresh_token || e.rt || ''; e.ts = Date.now();
+    putSaved(a);
+  }
+  function forgetAccount(id) { var a = savedList().filter(function (x) { return x.id !== id; }); putSaved(a); }
+  function syncSaved(session) {   // oturum yenilenince saklanan anahtar da yenilenir (aksi halde eski anahtar geçersiz kalır)
+    if (!session || !session.user) return;
+    var a = savedList(), e = findSaved(a, session.user.id); if (!e) return;
+    if (session.refresh_token) e.rt = session.refresh_token;
+    if (session.user.email) e.email = session.user.email;
+    if (uid === session.user.id) snapProfile(e);
+    putSaved(a);
+  }
+
   // ---------- oturum ----------
-  async function start(session) {
+  var startP = null;
+  function start(session) { if (startP) return startP; startP = startInner(session).then(function (r) { startP = null; return r; }, function (er) { startP = null; throw er; }); return startP; }
+  async function startInner(session) {
     var id = session.user.id;
     if (uid === id) return;
     if (meta.uid && meta.uid !== id) {
-      if (!(await pcConfirm({ key: 'switch', icon: 'swap', title: 'Cihazdaki veriler başka hesaba ait', msg: 'Bu hesabın verisiyle değiştirilsin mi? Cihazdaki veri önce yedeklenir.', ok: 'Değiştir', cancel: 'İptal et' }))) { meta.signedOut = true; saveMeta(); await sb.auth.signOut(); return; }
+      if (!(await pcConfirm({ key: 'switch', icon: 'swap', title: 'Cihazdaki veriler başka hesaba ait', msg: 'Bu hesabın verisiyle değiştirilsin mi? Cihazdaki veri önce yedeklenir.', ok: 'Değiştir', cancel: 'İptal et' }))) { meta.signedOut = true; saveMeta(); await sb.auth.signOut({ scope: 'local' }); return; }
       try { localStorage.setItem(BACKUP_KEY, localStorage.getItem(APP_STORAGE_KEY) || '{}'); } catch (e) {}
       localStorage.removeItem(APP_STORAGE_KEY); localStorage.removeItem(META_KEY);
       sessionStorage.setItem('pace_sync_rl', '1'); location.reload(); return;
@@ -253,6 +287,7 @@
   }
   sb.auth.onAuthStateChange(function (ev, session) {
     if (session) {
+      syncSaved(session);
       var prevMail = email; email = session.user.email || email; pendingEmail = session.user.new_email || '';
       isAdmin = !!(session.user.app_metadata && session.user.app_metadata.is_admin === true);   // yalnızca Supabase'den verilen yönetici işareti
       if (prevMail && prevMail !== email) pcToast('E-posta adresin güncellendi.');
@@ -268,7 +303,14 @@
       setStatus(authState === 'expired' ? 'Oturum düştü' : 'Giriş yapılmadı', authState === 'expired');
     }
   });
-  async function doSignOut() { meta.signedOut = true; saveMeta(); await sb.auth.signOut(); }
+  async function doSignOut() {
+    meta.signedOut = true; saveMeta();
+    try {   // hatırlanan hesapta en güncel anahtarı ve görünümü kaydet
+      var cur = await sb.auth.getSession(), cs = cur && cur.data && cur.data.session;
+      if (cs && cs.user) { var a = savedList(), e = findSaved(a, cs.user.id); if (e) { if (cs.refresh_token) e.rt = cs.refresh_token; snapProfile(e); e.ts = Date.now(); putSaved(a); } }
+    } catch (e0) {}
+    await sb.auth.signOut({ scope: 'local' });   // yalnızca bu cihaz: diğer cihazların oturumu ve hızlı giriş anahtarları bozulmaz
+  }
 
   // ---------- arayüz ----------
   var css = '#paceSyncBtn{position:fixed;left:12px;bottom:calc(env(safe-area-inset-bottom,0px) + 12px);z-index:2147483000;width:36px;height:36px;border-radius:50%;border:1px solid rgba(128,128,128,.4);background:rgba(250,250,250,.92);color:#333;display:flex;align-items:center;justify-content:center;padding:0;box-shadow:0 2px 8px rgba(0,0,0,.2)}' +
@@ -1084,6 +1126,7 @@ body.is-qhavuz-test-open .pf-side{opacity:.35;pointer-events:none}}
     clearTimeout(pushT); pushT = null;
     uid = null; isAdmin = false; if (channel) { sb.removeChannel(channel); channel = null; }
     try { localStorage.removeItem(META_KEY); } catch (e) {}
+    try { var dl = savedList().filter(function (x) { return x.email !== email; }); putSaved(dl); } catch (e3) {}
     meta = newMeta(null);   // bu cihaz hiçbir hesaba bağlı değil; cihazdaki uygulama verisi yerinde kalır
     try { await sb.auth.signOut({ scope: 'local' }); } catch (e2) {}
     authState = 'out'; setStatus('Giriş yapılmadı', false);
@@ -1104,7 +1147,7 @@ body.is-qhavuz-test-open .pf-side{opacity:.35;pointer-events:none}}
       if (a === 'adv' && !isAdmin) return;
       if (a === 'view') { if (signedIn()) openViewer(b); }
       else if (a === 'profile') { if (signedIn()) openProfile(); else openModal(); }
-      else if (a === 'sync') syncNow(false); else if (a === 'out') { pcConfirm({ icon: 'out', title: 'Çıkış yapılsın mı?', msg: 'Bu cihazdaki oturum kapanacak.', ok: 'Çıkış yap', cancel: 'İptal et' }).then(function (ok) { if (ok) doSignOut(); }); } else openModal();
+      else if (a === 'sync') syncNow(false); else if (a === 'out') { pcConfirm({ icon: 'out', title: 'Çıkış yapılsın mı?', msg: (uid && findSaved(savedList(), uid)) ? 'Bu cihazdaki oturum kapanacak. Hesabın Hızlı giriş\u2019te kalacak.' : 'Bu cihazdaki oturum kapanacak.', ok: 'Çıkış yap', cancel: 'İptal et' }).then(function (ok) { if (ok) doSignOut(); }); } else openModal();
     });
     sec.addEventListener('keydown', function (e) { if ((e.key === 'Enter' || e.key === ' ') && e.target.classList && e.target.classList.contains('ac-hero')) { e.preventDefault(); if (signedIn()) openProfile(); } });
     var fb = document.getElementById('paceSyncBtn'); if (fb) fb.style.display = 'none';   // artık ayarlardan yönetiliyor
@@ -1258,12 +1301,13 @@ img.pa-mark{display:block;object-fit:cover;border-radius:23%;background:none;box
       '<button type="button" class="pa-x" data-pa="close" aria-label="Kapat">✕</button>' +
       '<div class="pa-brand"><img class="pa-mark" src="icons/apple-touch-icon.png" alt="" width="50" height="50"><b>Pace</b></div>' +
       '<div class="pa-head" id="paHead"><h2 id="paT"></h2><p id="paS"></p></div>' +
+      quickHTML() +
       '<div class="pa-seg" id="paSeg"><i></i><button type="button" data-pa="tab" data-v="in">Giriş yap</button><button type="button" data-pa="tab" data-v="up">Kayıt ol</button></div>' +
       '<form id="paForm" novalidate>' +
         '<label class="pa-f"><span class="pa-fi">' + ic(IM.mail, 20) + '</span><input id="paEmail" type="email" inputmode="email" autocomplete="email" autocapitalize="none" spellcheck="false" placeholder=" "><span class="pa-fl">E-posta</span></label>' +
         '<div class="pa-gr pa-pwwrap"><div>' + '<label class="pa-f"><span class="pa-fi">' + ic(IM.lock, 20) + '</span><input id="paPass" type="password" autocomplete="current-password" placeholder=" "><span class="pa-fl">Şifre</span>' +
           '<button type="button" class="pa-eye" data-pa="eye" aria-label="Şifreyi göster">' + ic(pwEye, 20) + '</button></label>' +
-        '</div></div><div class="pa-gr pa-fgt"><div><button type="button" class="pa-link" data-pa="forgot">Şifreni mi unuttun?</button></div></div>' +
+        '</div></div><div class="pa-gr pa-fgt"><div><div class="pa-opts"><label class="pa-rem"><input type="checkbox" id="paRem"><span class="pa-sw"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span><span>Beni hatırla</span></label><button type="button" class="pa-link" data-pa="forgot">Şifreni mi unuttun?</button></div></div></div>' +
         '<div class="pa-xp"><div>' +
           '<div class="pa-meter" id="paMeter"><i></i><i></i><i></i><i></i><span id="paMeterT"></span></div>' +
           '<label class="pa-f"><span class="pa-fi">' + ic(IM.lock2, 20) + '</span><input id="paPass2" type="password" autocomplete="new-password" placeholder=" "><span class="pa-fl">Şifre tekrar</span></label>' +
@@ -1286,6 +1330,8 @@ img.pa-mark{display:block;object-fit:cover;border-radius:23%;background:none;box
       if (a === 'close') closeAuth();
       else if (a === 'tab') authMode(b.getAttribute('data-v'));
       else if (a === 'forgot') authMode('fg');
+      else if (a === 'qlogin') quickLogin(b.getAttribute('data-id'), b.closest('.pa-qrow'));
+      else if (a === 'qforget') quickForget(b.getAttribute('data-id'), b.closest('.pa-qrow'));
       else if (a === 'eye') {
         var p = document.getElementById('paPass'), p2 = document.getElementById('paPass2'), show = p.type === 'password';
         p.type = p2.type = show ? 'text' : 'password'; b.innerHTML = ic(show ? pwEyeOff : pwEye, 20); b.setAttribute('aria-label', show ? 'Şifreyi gizle' : 'Şifreyi göster');
@@ -1311,6 +1357,7 @@ img.pa-mark{display:block;object-fit:cover;border-radius:23%;background:none;box
     };
     A.mode = m; ov.setAttribute('data-m', m);
     var xp = ov.querySelector('.pa-xp'); if (xp) xp.inert = !up;
+    var qk = ov.querySelector('.pa-qk'); if (qk) qk.inert = m !== 'in';
     var pwr = ov.querySelector('.pa-pwwrap'), fgt = ov.querySelector('.pa-fgt'); if (pwr) pwr.inert = fg; if (fgt) fgt.inert = m !== 'in';
     var seg = document.getElementById('paSeg'); seg.style.setProperty('--pos', up ? 1 : 0);
     seg.inert = fg;
@@ -1334,6 +1381,109 @@ img.pa-mark{display:block;object-fit:cover;border-radius:23%;background:none;box
     m.textContent = t; m.classList.add('show');
     if (bad) { A.card.classList.remove('shake'); void A.card.offsetWidth; A.card.classList.add('shake'); (bad.forEach ? bad : [bad]).forEach(function (el) { if (el) el.closest('.pa-f').classList.add('bad'); }); }
   }
+  // ---------- Hızlı giriş kartları ----------
+  var QX = '<path d="M6 6l12 12M18 6L6 18"/>';
+  function qAvatar(e) {
+    var dim = 'width:46px;height:46px;';
+    if (e.mode === 'photo' && e.photo) return '<span class="pf-av" style="' + dim + 'background-image:url(\'' + e.photo + '\')"></span>';
+    var c = e.color || PALETTE[(function (m) { var h = 0; for (var i = 0; i < m.length; i++) h = (h * 31 + m.charCodeAt(i)) >>> 0; return h % PALETTE.length; })(e.email || 'x')];
+    var nm = (e.name || (e.email || '').split('@')[0] || 'H');
+    return '<span class="pf-av" style="' + dim + 'background:' + c + ';color:' + textOn(c) + ';font-size:20px">' + esc(nm.charAt(0).toLocaleUpperCase('tr-TR')) + '</span>';
+  }
+  function quickHTML() {
+    var list = savedList().slice(0, 6); if (!list.length) return '';
+    var rows = list.map(function (e, i) {
+      var nm = e.name || (e.email || '').split('@')[0] || 'Hesap';
+      return '<div class="pa-qrow" style="--i:' + i + '" data-id="' + esc(e.id) + '">' +
+        '<button type="button" class="pa-qc" data-pa="qlogin" data-id="' + esc(e.id) + '" aria-label="' + esc(nm) + ' olarak giriş yap">' + qAvatar(e) +
+        '<span class="pa-qt"><b class="pa-qn">' + esc(nm) + '</b><span class="pa-qm">' + esc(e.email || '') + (e.rt ? '' : ' · şifre gerekli') + '</span></span><span class="pa-qs"></span></button>' +
+        '<button type="button" class="pa-qx" data-pa="qforget" data-id="' + esc(e.id) + '" aria-label="Bu cihazdan unut" title="Bu cihazdan unut">' + ic(QX, 16) + '</button></div>';
+    }).join('');
+    return '<div class="pa-qk" id="paQk"><div><p class="pa-ql">Hızlı giriş yap</p><div class="pa-qlist" id="paQl">' + rows + '</div><p class="pa-ql pa-ql2">Ya da e-postayla giriş yap</p></div></div>';
+  }
+  function quickForget(id, row) {
+    if (!row) return; forgetAccount(id);
+    row.classList.add('gone');
+    setTimeout(function () {
+      row.remove();
+      var ql = document.getElementById('paQl'), qk = document.getElementById('paQk');
+      if (qk && ql && !ql.children.length) { qk.classList.add('none'); setTimeout(function () { qk.remove(); }, 600); }
+    }, 480);
+  }
+  function quickStale(id, row) {   // anahtar geçersiz: e-posta hazır, yalnızca şifre sorulur
+    var a = savedList(), e = findSaved(a, id); if (!e) return;
+    e.rt = ''; putSaved(a);
+    if (row) { var m = row.querySelector('.pa-qm'); if (m) m.textContent = (e.email || '') + ' · şifre gerekli'; }
+    var em = document.getElementById('paEmail'), rem = document.getElementById('paRem'), pw = document.getElementById('paPass');
+    if (em) em.value = e.email || ''; if (rem) rem.checked = true;
+    authMsg('Bu cihazdaki kayıt geçersiz olmuş. Şifreni gir, hesabın Hızlı giriş\u2019te kalsın.');
+    if (pw) setTimeout(function () { pw.focus(); }, 60);
+  }
+  async function quickLogin(id, row) {
+    if (!A || A.busy || A.done || !row) return;
+    var a = savedList(), e = findSaved(a, id); if (!e) return;
+    if (!e.rt) return quickStale(id, row);
+    A.busy = true; row.classList.add('ld'); document.getElementById('paMsg').classList.remove('show');
+    try {
+      var r = await sb.auth.refreshSession({ refresh_token: e.rt });
+      if (r.error) throw r.error;
+      var ss = r.data && r.data.session; if (!ss || !ss.user) throw new Error('refresh_token missing session');
+      var a2 = savedList(), x = findSaved(a2, id);
+      if (x) { x.rt = ss.refresh_token || x.rt; x.email = ss.user.email || x.email; x.ts = Date.now(); putSaved(a2); }
+      await start(ss);
+      if (uid === ss.user.id) finishAuth();   // hesap değiştirme penceresinde "İptal et" denirse uid eşleşmez: giriş ekranında kal
+    } catch (err) {
+      var low = (((err && err.message) || '') + ' ' + ((err && err.code) || '')).toLowerCase(), st = err && err.status;
+      var dead = st === 400 || st === 401 || st === 403 || /refresh[_ ]token|session[_ ]not[_ ]found|invalid jwt/.test(low);
+      if (A) { if (dead) quickStale(id, row); else authMsg('Bağlanılamadı. İnternetini kontrol edip tekrar dene.', null); }
+    }
+    if (A) { A.busy = false; row.classList.remove('ld'); }
+  }
+  var AU3 = document.createElement('style'); AU3.id = 'paceAuthCss3';
+  AU3.textContent = `
+@keyframes paQIn{from{opacity:0;transform:translateY(14px) scale(.97)}to{opacity:1;transform:none}}
+.pa-opts{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:2px 2px 8px}
+.pa-opts .pa-link{display:inline-block;margin:0;padding:4px 2px}
+.pa-rem{display:inline-flex;align-items:center;gap:10px;cursor:pointer;font-size:14.5px;font-weight:600;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent;position:relative}
+.pa-rem input{position:absolute;opacity:0;width:0;height:0;margin:0}
+.pa-sw{position:relative;flex:none;width:46px;height:28px;border-radius:999px;background:rgba(128,128,128,.34);transition:background .4s ease,box-shadow .3s ease}
+.pa-sw::before{content:'';position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#fff;box-shadow:0 2px 6px rgba(0,0,0,.32);transition:transform .5s cubic-bezier(.34,1.56,.64,1),width .22s ease}
+.pa-sw svg{position:absolute;left:8px;top:8px;color:var(--accent-color,#3e63dd);opacity:0;transition:transform .5s cubic-bezier(.34,1.56,.64,1),opacity .25s ease}
+.pa-sw path{stroke-dasharray:20;stroke-dashoffset:20;transition:stroke-dashoffset .4s ease}
+.pa-rem input:checked+.pa-sw{background:var(--accent-color,#6ec1ff);box-shadow:0 6px 18px color-mix(in srgb,var(--accent-color,#6ec1ff) 45%,transparent)}
+.pa-rem input:checked+.pa-sw::before{transform:translateX(18px)}
+.pa-rem input:checked+.pa-sw svg{opacity:1;transform:translateX(18px)}
+.pa-rem input:checked+.pa-sw path{stroke-dashoffset:0;transition-delay:.18s}
+.pa-rem:active .pa-sw::before{width:28px}
+.pa-rem:active input:checked+.pa-sw::before{transform:translateX(12px)}
+.pa-rem:active input:checked+.pa-sw svg{opacity:0}
+.pa-rem input:focus-visible+.pa-sw{box-shadow:0 0 0 4px color-mix(in srgb,var(--accent-color,#6ec1ff) 30%,transparent)}
+.pa-qk{display:grid;grid-template-rows:0fr;opacity:0;transition:grid-template-rows .55s cubic-bezier(.22,1,.36,1),opacity .35s ease}
+#paAuth[data-m=in] .pa-qk:not(.none){grid-template-rows:1fr;opacity:1}
+.pa-qk>div{min-height:0;overflow:hidden;margin:-5px;padding:5px}
+.pa-ql{margin:18px 2px 8px;font-size:12px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;opacity:.58}
+.pa-ql2{margin:14px 2px 0;opacity:.5}
+.pa-qlist{display:flex;flex-direction:column;gap:8px;max-height:226px;overflow-y:auto;overscroll-behavior:contain;margin:-5px;padding:5px}
+.pa-qrow{position:relative;flex:none;max-height:80px;overflow:hidden;border-radius:22px;animation:paQIn .65s cubic-bezier(.22,1,.36,1) both;animation-delay:calc(var(--i,0) * 70ms + .25s);transition:opacity .3s ease,transform .35s ease,max-height .4s .12s ease,margin .4s .12s ease}
+.pa-qrow.gone{opacity:0;transform:scale(.94);max-height:0;margin-bottom:-8px;pointer-events:none}
+.pa-qc{display:flex;align-items:center;gap:12px;width:100%;box-sizing:border-box;padding:9px 56px 9px 9px;border-radius:22px;border:1px solid rgba(128,128,128,.3);background:rgba(128,128,128,.1);color:inherit;text-align:left;font:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:transform .35s cubic-bezier(.34,1.56,.64,1),background .25s,border-color .25s}
+.pa-qc:hover{background:rgba(128,128,128,.17);border-color:color-mix(in srgb,var(--accent-color,#6ec1ff) 55%,transparent)}
+.pa-qc:active{transform:scale(.97)}
+.pa-qc:focus-visible{outline:0;border-color:var(--accent-color,#6ec1ff);box-shadow:0 0 0 4px color-mix(in srgb,var(--accent-color,#6ec1ff) 22%,transparent)}
+.pa-qc .pf-av{box-shadow:0 0 0 2px var(--theme-bg,#0b0b0b),0 0 0 3.5px color-mix(in srgb,var(--theme-text,#111) 22%,transparent)}
+.pa-qt{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1}
+.pa-qn{font-size:16px;font-weight:700;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pa-qm{font-size:13px;opacity:.62;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pa-qx{position:absolute;right:10px;top:50%;width:36px;height:36px;margin-top:-18px;border:0;border-radius:50%;background:none;color:inherit;opacity:.5;display:grid;place-items:center;cursor:pointer;transition:opacity .25s,background .25s,transform .3s}
+.pa-qx:hover{opacity:1;background:rgba(128,128,128,.2)}.pa-qx:active{transform:scale(.88)}
+.pa-qs{position:absolute;right:21px;top:50%;width:18px;height:18px;margin-top:-9px;border-radius:50%;border:2.5px solid currentColor;border-right-color:transparent;opacity:0;pointer-events:none;transition:opacity .25s}
+.pa-qrow.ld .pa-qs{opacity:.85;animation:paSpin .8s linear infinite}
+.pa-qrow.ld .pa-qx{opacity:0;pointer-events:none}
+.pa-qrow.ld .pa-qc{pointer-events:none;border-color:var(--accent-color,#6ec1ff)}
+@media (prefers-reduced-motion:reduce){.pa-qk,.pa-qrow,.pa-sw,.pa-sw::before,.pa-sw svg,.pa-sw path{transition:none!important;animation:none!important}}
+`;
+  document.head.appendChild(AU3);
+
   async function authSubmit(e) {
     e.preventDefault(); if (!A || A.busy || A.done) return;
     var em = document.getElementById('paEmail'), pw = document.getElementById('paPass'), pw2 = document.getElementById('paPass2'), go = document.getElementById('paGo');
@@ -1344,7 +1494,12 @@ img.pa-mark{display:block;object-fit:cover;border-radius:23%;background:none;box
     if (up && pw.value !== pw2.value) { authMsg('Şifreler birbiriyle aynı değil.', [pw, pw2]); pw2.focus(); return; }
     A.busy = true; go.classList.add('ld'); document.getElementById('paMsg').classList.remove('show');
     try {
-      if (!up) { var r = await sb.auth.signInWithPassword({ email: ev, password: pw.value }); if (r.error) throw r.error; finishAuth(); }
+      if (!up) {
+        var r = await sb.auth.signInWithPassword({ email: ev, password: pw.value }); if (r.error) throw r.error;
+        var remEl = document.getElementById('paRem');
+        if (r.data && r.data.session) { if (remEl && remEl.checked) rememberAccount(r.data.session); else forgetAccount(r.data.session.user.id); }
+        finishAuth();
+      }
       else {
         var r2 = await sb.auth.signUp({ email: ev, password: pw.value, options: { emailRedirectTo: DONE_URL } });
         if (r2.error) throw r2.error;
