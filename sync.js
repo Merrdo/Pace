@@ -18,6 +18,8 @@
   var authState = 'unknown', email = '', syncState = 'idle', lastOk = 0;
   var uid = null, busy = false, again = false, pushT = null, channel = null;
   var status = 'Giriş yapılmadı', statusErr = false, modalOpen = false;
+  // E-postadaki şifre sıfırlama bağlantısıyla mı açıldık? (Supabase adres çubuğundaki #...type=recovery'yi okur)
+  var recMode = /type=recovery/.test(location.hash), holdSync = false, linkErr = /error_code=|error=access_denied/.test(location.hash);
 
   // ---------- yardımcılar ----------
   function ts(x) { return Date.parse(x) || 0; }
@@ -52,6 +54,10 @@
     if (m.indexOf('invalid login') > -1) return 'E-posta veya şifre hatalı.';
     if (m.indexOf('not confirmed') > -1) return 'E-posta henüz doğrulanmadı. Gelen kutundaki bağlantıya dokun.';
     if (m.indexOf('already registered') > -1) return 'Bu e-posta zaten kayıtlı, giriş yap.';
+    if (m.indexOf('different from the old') > -1 || m.indexOf('same_password') > -1) return 'Yeni şifre eskisiyle aynı olamaz.';
+    if (m.indexOf('only request this after') > -1 || m.indexOf('security purposes') > -1) return 'Güvenlik için biraz bekleyip tekrar dene.';
+    if (m.indexOf('weak') > -1 || m.indexOf('pwned') > -1) return 'Bu şifre kolay tahmin edilebilir. Başka bir şifre dene.';
+    if (m.indexOf('session') > -1 && m.indexOf('missing') > -1) return 'Oturum bulunamadı. Yeniden giriş yap.';
     if (m.indexOf('password') > -1) return 'Şifre en az 6 karakter olmalı.';
     if (m.indexOf('rate limit') > -1) return 'Çok fazla deneme. Biraz sonra tekrar dene.';
     return 'Hata: ' + ((e && e.message) || 'bilinmiyor');
@@ -235,10 +241,11 @@
     channel = sb.channel('pace-sync-' + id).on('postgres_changes',
       { event: '*', schema: 'public', table: 'sync_records', filter: 'user_id=eq.' + id },
       function (p) { if (p.new && p.new.device_id === getOrCreateDeviceId()) return; schedule(600); }).subscribe();
-    syncNow(true);
+    if (recMode) holdSync = true; else syncNow(true);   // sıfırlama ekranı açıkken sayfa yenilenmesin
   }
   sb.auth.onAuthStateChange(function (ev, session) {
     if (session) email = session.user.email || email;
+    if (ev === 'PASSWORD_RECOVERY') setTimeout(openRecovery, 0);
     if (session && (ev === 'INITIAL_SESSION' || ev === 'SIGNED_IN')) setTimeout(function () { start(session); }, 0);
     if (!session && (ev === 'INITIAL_SESSION' || ev === 'SIGNED_OUT')) {
       uid = null; if (channel) { sb.removeChannel(channel); channel = null; }
@@ -304,7 +311,7 @@
       if (a === 'dx') {
         msg.textContent = 'Kontrol ediliyor…';
         var q = await sb.from('sync_records').select('id,updated_at,device_id').eq('kind', 'state').neq('id', nc());
-        msg.textContent = 'sürüm 15 · bulutta ' + (q.data ? q.data.length : '?') + ' alan' + (q.error ? ' · HATA: ' + q.error.message : '') +
+        msg.textContent = 'sürüm 16 · bulutta ' + (q.data ? q.data.length : '?') + ' alan' + (q.error ? ' · HATA: ' + q.error.message : '') +
           ' · bu cihazda ' + Object.keys(APP_STATE).length + ' alan · imleç ' + (meta.lastPull || 'yok') + ' · bağlı ' + !!meta.linked +
           ' · ' + (q.data || []).map(function (x) { return x.id + '@' + String(x.updated_at).slice(5, 16); }).join(', ');
         return;
@@ -553,6 +560,7 @@ body.is-qhavuz-test-open .pf-side{opacity:.35;pointer-events:none}}
     ov.addEventListener('pointerdown', function (e) { ov._dn = e.target === ov; });
     ov.addEventListener('click', function (e) { if (e.target === ov && ov._dn) closeProfile(); });
     ov.addEventListener('click', onProfClick);
+    ov.addEventListener('submit', function (e) { e.preventDefault(); pwSubmit(); });
     ov.addEventListener('change', function (e) {
       if (!draft) return;
       if ((e.target.id === 'pfFile' || e.target.id === 'pfCam') && e.target.files && e.target.files[0]) { openCrop(e.target.files[0]); e.target.value = ''; }
@@ -560,6 +568,7 @@ body.is-qhavuz-test-open .pf-side{opacity:.35;pointer-events:none}}
     });
     ov.addEventListener('input', function (e) {
       if (!draft) return;
+      pwInput(e);
       if (e.target.getAttribute('data-pf') === 'custom') setColor(e.target.value);
       if (e.target.id === 'pfName') { draft.name = e.target.value; if (draft.mode !== 'photo' || !draft.photo) { var hv = ov.querySelector('.pf-hav'); if (hv) hv.innerHTML = avatarHTML(hs(), draft); } }
     });
@@ -568,7 +577,7 @@ body.is-qhavuz-test-open .pf-side{opacity:.35;pointer-events:none}}
   function closeProfile() {
     var o = document.getElementById('profOv');
     if (cropSt) { try { URL.revokeObjectURL(cropSt.url); } catch (e) {} }
-    draft = null; cropSt = null;
+    draft = null; cropSt = null; pwSt = null;
     if (!o) return;
     o.id = 'profOutgoing'; o.classList.add('pf-out'); setTimeout(function () { o.remove(); }, 320);
   }
@@ -616,12 +625,14 @@ body.is-qhavuz-test-open .pf-side{opacity:.35;pointer-events:none}}
       '<div class="pf-seg" style="--pos:' + (photo ? 0 : 1) + '"><i></i><button type="button" data-pf="mode" data-v="photo" class="' + (photo ? 'on' : '') + '">Fotoğraf</button><button type="button" data-pf="mode" data-v="letter" class="' + (!photo ? 'on' : '') + '">Harf logosu</button></div>' +
       '<div id="pfDyn">' + dynHTML() + '</div>' +
       '<div><div class="pf-lbl">Rumuz</div><input class="pf-in" id="pfName" maxlength="24" autocomplete="off" value="' + esc(draft.name) + '" placeholder="Rumuzun"><div class="pf-mail">' + esc(email || '') + '</div></div>' +
+      (authState === 'in' ? '<button type="button" class="pf-pwrow" data-pf="pw"><span class="pf-pwi">' + ic(IM.lock, 19) + '</span><span class="pf-pwt">Şifreyi değiştir</span><span class="pf-pwc">' + ic(PWI.chev, 16) + '</span></button>' : '') +
       '<div class="pf-actions"><button type="button" class="pf-btn" data-pf="close">Vazgeç</button><button type="button" class="pf-btn pri" data-pf="save">Kaydet</button></div>' +
       '<input type="file" id="pfFile" accept="image/*" hidden><input type="file" id="pfCam" accept="image/*" capture="user" hidden>';
   }
   function onProfClick(e) {
     var b = e.target.closest && e.target.closest('[data-pf]'); if (!b || !draft) return;
     var a = b.getAttribute('data-pf'), v = b.getAttribute('data-v');
+    if (a.indexOf('pw') === 0) return pwClick(a, b);
     if (a === 'close') return closeProfile();
     if (a === 'view') { keepName(); return openViewer(b, draft); }
     if (a === 'mode') { if (draft.mode === v) return; draft.mode = v; return renderProfile(); }
@@ -693,6 +704,183 @@ body.is-qhavuz-test-open .pf-side{opacity:.35;pointer-events:none}}
     draft.photo = cv.toDataURL('image/jpeg', 0.88); draft.mode = 'photo';
     try { URL.revokeObjectURL(st.url); } catch (x) {}
     renderProfile();
+  }
+
+  // ---------- Şifre değiştir (Profil içinde, sürüm 16) ----------
+  var PWS = document.createElement('style'); PWS.id = 'pacePwCss';
+  PWS.textContent = `
+@keyframes pwIn{from{opacity:0;transform:translateX(26px)}to{opacity:1;transform:none}}
+.pf-pwrow{display:flex;align-items:center;gap:12px;width:100%;box-sizing:border-box;margin-top:12px;padding:11px 14px;border-radius:18px;border:1px solid rgba(128,128,128,.24);background:rgba(128,128,128,.08);color:inherit;font-size:15px;font-weight:600;text-align:left;cursor:pointer;transition:transform .3s cubic-bezier(.34,1.56,.64,1),background .25s,border-color .25s}
+.pf-pwrow:hover{background:rgba(128,128,128,.14);border-color:color-mix(in srgb,var(--pc) 45%,rgba(128,128,128,.24))}.pf-pwrow:active{transform:scale(.98)}
+.pf-pwi{display:grid;place-items:center;flex:none;width:34px;height:34px;border-radius:11px;color:var(--pc);background:color-mix(in srgb,var(--pc) 22%,transparent);transition:transform .45s cubic-bezier(.34,1.56,.64,1)}
+.pf-pwrow:hover .pf-pwi{transform:rotate(-8deg) scale(1.08)}
+.pf-pwt{flex:1}.pf-pwc{display:grid;opacity:.45;transition:transform .4s cubic-bezier(.34,1.56,.64,1)}.pf-pwrow:hover .pf-pwc{transform:translateX(3px)}
+.pw-hero{display:grid;place-items:center;margin:14px 0 14px}
+.pw-ico{position:relative;width:76px;height:76px;border-radius:26px;display:grid;place-items:center;color:var(--pc);background:color-mix(in srgb,var(--pc) 20%,transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--pc) 35%,transparent),0 12px 30px color-mix(in srgb,var(--pc) 25%,transparent);transition:background .5s,color .5s}
+.pw-ico.pop{animation:pfPop .6s cubic-bezier(.34,1.56,.64,1)}
+.pw-ico.ok{color:#fff;background:linear-gradient(140deg,#2ecc71,#12a594);box-shadow:0 14px 36px rgba(46,204,113,.4);animation:pfPop .6s cubic-bezier(.34,1.56,.64,1),acHalo 1.1s .35s ease-out both}
+.pw-ico.ok path{stroke-dasharray:30;stroke-dashoffset:30;animation:paDraw .6s .25s ease forwards}
+.pw-steps{display:flex;gap:6px;max-width:180px;margin:0 auto 18px}
+.pw-steps i{position:relative;flex:1;height:5px;border-radius:5px;background:rgba(128,128,128,.25);overflow:hidden}
+.pw-steps i::after{content:"";position:absolute;inset:0;border-radius:5px;background:var(--pc);transform:scaleX(0);transform-origin:left;transition:transform .7s cubic-bezier(.22,1,.36,1)}
+.pw-steps i.on::after{transform:none}
+#pwBody>*{animation:pwIn .55s cubic-bezier(.22,1,.36,1) both}
+#pwBody>*:nth-child(2){animation-delay:.06s}#pwBody>*:nth-child(3){animation-delay:.12s}
+#pwBody.shake{animation:paShake .5s ease}
+.pw-t{margin:0;font-size:21px;font-weight:800;text-align:center}
+.pw-s{margin:6px 0 18px;font-size:14px;line-height:1.35;opacity:.68;text-align:center}
+.pw-f{position:relative;display:block;margin-bottom:12px}
+.pw-f input{width:100%;box-sizing:border-box;height:56px;padding:22px 48px 6px 48px;font-size:16px;border-radius:18px;border:1px solid rgba(128,128,128,.35);background:rgba(128,128,128,.1);color:inherit;transition:border-color .25s,box-shadow .25s,background .25s}
+.pw-f input:focus{outline:0;border-color:var(--pc);background:rgba(128,128,128,.14);box-shadow:0 0 0 4px color-mix(in srgb,var(--pc) 22%,transparent)}
+.pw-f.bad input{border-color:#e5484d;box-shadow:0 0 0 4px rgba(229,72,77,.18)}
+.pw-fi{position:absolute;left:16px;top:18px;opacity:.55;pointer-events:none;transition:opacity .25s,color .25s}
+.pw-f:focus-within .pw-fi{opacity:1;color:var(--pc)}
+.pw-fl{position:absolute;left:48px;top:17px;font-size:16px;opacity:.55;pointer-events:none;transform-origin:left top;transition:transform .3s cubic-bezier(.22,1,.36,1),opacity .25s}
+.pw-f input:focus+.pw-fl,.pw-f input:not(:placeholder-shown)+.pw-fl{transform:translateY(-12px) scale(.74);opacity:.7}
+.pw-eye{position:absolute;right:8px;top:8px;width:40px;height:40px;border:0;border-radius:50%;background:none;color:inherit;opacity:.55;display:grid;place-items:center;cursor:pointer;transition:opacity .25s,background .25s}
+.pw-eye:hover{opacity:1;background:rgba(128,128,128,.14)}
+.pw-msg{min-height:20px;margin:2px 2px 10px;font-size:13.5px;line-height:1.35;color:#e5484d;opacity:0;transform:translateY(-4px);transition:opacity .3s,transform .3s}
+.pw-msg.show{opacity:1;transform:none}.pw-msg.ok{color:#30a46c}.pw-msg.info{color:inherit}.pw-msg.show.info{opacity:.7}
+.pw-go{position:relative;display:block;width:100%;height:54px;border:0;border-radius:999px;background:var(--theme-text,#121212);color:var(--theme-bg,#fff);font-size:16px;font-weight:700;cursor:pointer;overflow:hidden;transition:transform .3s cubic-bezier(.34,1.56,.64,1),opacity .25s}
+.pw-go:active{transform:scale(.97)}
+.pw-go .l{display:inline-block;transition:opacity .25s,transform .3s}
+.pw-go .s{position:absolute;left:50%;top:50%;width:22px;height:22px;margin:-11px 0 0 -11px;border-radius:50%;border:3px solid currentColor;border-right-color:transparent;opacity:0;transition:opacity .25s}
+.pw-go.ld{pointer-events:none}.pw-go.ld .l{opacity:0;transform:translateY(8px)}.pw-go.ld .s{opacity:1;animation:paSpin .8s linear infinite}
+.pw-link{display:block;margin:10px auto 0;padding:6px 10px;border:0;background:none;color:var(--pc);font-size:14px;font-weight:700;cursor:pointer;transition:opacity .25s}
+.pw-link:disabled{opacity:.5}
+@media (prefers-reduced-motion:reduce){#pwBody,#pwBody>*,.pw-ico,.pw-ico *,.pw-steps i::after{animation:none!important;transition:none!important}.pw-ico.ok path{stroke-dashoffset:0}}
+`;
+  document.head.appendChild(PWS);
+
+  var pwSt = null;
+  var PWI = {
+    unlock: '<rect x="5" y="11" width="14" height="9.5" rx="2.6"/><path d="M8 11V8a4 4 0 017.6-1.6"/><path d="M12 15v2"/>',
+    back: '<path d="M15 5l-7 7 7 7"/>',
+    chev: '<path d="M9 5l7 7-7 7"/>'
+  };
+  function pwEl(id) { return document.getElementById(id); }
+  function pwAlive() { return !!(pwSt && pwEl('pwBody') && pwEl('profCard')); }
+  function pwScore(v) {
+    var s = 0; if (v.length >= 6) s++; if (v.length >= 10) s++;
+    if (/[A-ZÇĞİÖŞÜ]/.test(v) && /[a-zçğıöşü]/.test(v)) s++;
+    if (/\d/.test(v) && /[^A-Za-z0-9ÇĞİÖŞÜçğıöşü]/.test(v)) s++;
+    return v ? s : 0;
+  }
+  function paintMeter(box, v) {
+    if (!box) return;
+    var s = pwScore(v), cols = ['#e5484d', '#f76b15', '#f5b301', '#30a46c'], names = ['', 'Zayıf', 'Orta', 'İyi', 'Güçlü'];
+    box.querySelectorAll('i').forEach(function (b, i) { b.style.background = i < s ? cols[Math.max(0, s - 1)] : ''; });
+    var t = box.querySelector('span'); if (t) t.textContent = names[s];
+  }
+  function pwField(id, label, ac, icon) {
+    return '<label class="pw-f"><span class="pw-fi">' + ic(icon, 20) + '</span><input id="' + id + '" type="password" autocomplete="' + ac + '" autocapitalize="none" spellcheck="false" placeholder=" "><span class="pw-fl">' + label + '</span>' +
+      '<button type="button" class="pw-eye" data-pf="pweye" aria-label="Şifreyi göster">' + ic(pwEye, 20) + '</button></label>';
+  }
+  function pwMsg(t, kind) {
+    var m = pwEl('pwMsg'); if (!m) return;
+    if (t) m.textContent = t;
+    m.className = 'pw-msg' + (t ? ' show ' + (kind || 'err') : '');
+  }
+  function pwErr(t, els) {
+    pwMsg(t, 'err');
+    var b = pwEl('pwBody'); if (b) { b.classList.remove('shake'); void b.offsetWidth; b.classList.add('shake'); }
+    [].concat(els || []).forEach(function (el) { var f = el && el.closest && el.closest('.pw-f'); if (f) f.classList.add('bad'); });
+  }
+  function pwBusy(on) { if (pwSt) pwSt.busy = on; var g = pwEl('pwGo'); if (g) g.classList.toggle('ld', !!on); }
+
+  function openPw() {
+    var c = pwEl('profCard'); if (!c || !draft) return;
+    keepName(); cropSt = null; pwSt = { step: 1, busy: false, old: '' };
+    enter(c); c.scrollTop = 0;
+    c.innerHTML = '<div class="pf-top"><button type="button" class="pf-x" data-pf="pwback" aria-label="Geri">' + ic(PWI.back, 18) + '</button><b>Şifreyi değiştir</b><span></span></div>' +
+      '<div class="pw-hero"><div class="pw-ico" id="pwIco"></div></div><div class="pw-steps" id="pwSteps"><i></i><i></i></div><div id="pwBody"></div>';
+    renderPwStep();
+  }
+  function renderPwStep() {
+    var P = pwSt, body = pwEl('pwBody'); if (!P || !body) return;
+    var s = P.step, html = '', un = '<input type="text" autocomplete="username" value="' + esc(email || '') + '" tabindex="-1" aria-hidden="true" style="display:none">';
+    var ico = pwEl('pwIco'); ico.className = 'pw-ico'; ico.innerHTML = ic(s === 1 ? IM.lock : (s === 2 ? PWI.unlock : IC.ok), 34);
+    void ico.offsetWidth; ico.classList.add(s === 3 ? 'ok' : 'pop');
+    var stp = pwEl('pwSteps'); void stp.offsetWidth;
+    stp.querySelectorAll('i').forEach(function (b, i) { b.classList.toggle('on', i < Math.min(s, 2)); });
+    if (s === 1) {
+      html = '<h4 class="pw-t">Önce mevcut şifreni gir</h4><p class="pw-s">Güvenliğin için işlemi senin yaptığını doğruluyoruz.</p>' +
+        '<form id="pwForm" novalidate>' + un + pwField('pwOld', 'Mevcut şifre', 'current-password', IM.lock) +
+        '<p class="pw-msg" id="pwMsg" role="alert"></p>' +
+        '<button type="submit" class="pw-go" id="pwGo"><span class="l">Devam</span><span class="s"></span></button>' +
+        '<button type="button" class="pw-link" data-pf="pwforgot">Şifreni mi unuttun?</button></form>';
+    } else if (s === 2) {
+      html = '<h4 class="pw-t">Yeni şifreni belirle</h4><p class="pw-s">En az 6 karakter olsun. Eski şifrenle aynı olamaz.</p>' +
+        '<form id="pwForm" novalidate>' + un + pwField('pwNew', 'Yeni şifre', 'new-password', IM.lock) +
+        '<div class="pa-meter" id="pwMeter"><i></i><i></i><i></i><i></i><span></span></div>' +
+        pwField('pwNew2', 'Yeni şifre (tekrar)', 'new-password', IM.lock2) +
+        '<p class="pw-msg" id="pwMsg" role="alert"></p>' +
+        '<button type="submit" class="pw-go" id="pwGo"><span class="l">Şifreyi güncelle</span><span class="s"></span></button></form>';
+    } else {
+      html = '<h4 class="pw-t">Şifren güncellendi</h4><p class="pw-s">Bir sonraki girişte yeni şifreni kullan.</p>' +
+        '<button type="button" class="pw-go" data-pf="pwback"><span class="l">Tamam</span></button>';
+    }
+    body.innerHTML = html;
+    if (s < 3 && !(window.matchMedia && matchMedia('(pointer:coarse)').matches)) setTimeout(function () { var f = pwEl(s === 1 ? 'pwOld' : 'pwNew'); if (f) f.focus(); }, 380);
+  }
+  function pwClick(a, b) {
+    if (a === 'pw') return openPw();
+    if (a === 'pwback') { if (pwSt) pwSt.old = ''; pwSt = null; var c = pwEl('profCard'); if (c) c.scrollTop = 0; return renderProfile(); }
+    if (a === 'pweye') {
+      var inp = b.parentNode.querySelector('input'), show = inp.type === 'password';
+      inp.type = show ? 'text' : 'password'; b.innerHTML = ic(show ? pwEyeOff : pwEye, 20); b.setAttribute('aria-label', show ? 'Şifreyi gizle' : 'Şifreyi göster');
+      return;
+    }
+    if (a === 'pwforgot') return pwForgot(b);
+  }
+  function pwInput(e) {
+    if (!pwSt) return; var t = e.target;
+    var f = t.closest && t.closest('.pw-f'); if (f) f.classList.remove('bad');
+    if (t.id === 'pwNew') paintMeter(pwEl('pwMeter'), t.value);
+    var m = pwEl('pwMsg'); if (m && m.classList.contains('show') && !pwSt.busy) m.classList.remove('show');
+  }
+  async function pwForgot(b) {
+    var P = pwSt; if (!P || P.busy) return;
+    if (!email) { pwErr('Hesap e-postası bulunamadı.'); return; }
+    P.busy = true; b.disabled = true; pwMsg('Gönderiliyor…', 'info');
+    try {
+      var r = await sb.auth.resetPasswordForEmail(email, { redirectTo: new URL('./', location.href).href });
+      if (r.error) throw r.error;
+      if (pwAlive()) pwMsg('Sıfırlama bağlantısı ' + email + ' adresine gönderildi.', 'ok');
+    } catch (err) { if (pwAlive()) pwErr(trErr(err)); }
+    P.busy = false; b.disabled = false;
+  }
+  async function pwSubmit() {
+    var P = pwSt; if (!P || P.busy) return;
+    if (P.step === 1) {
+      var old = pwEl('pwOld'); if (!old) return;
+      if (!old.value) { pwErr('Mevcut şifreni gir.', old); old.focus(); return; }
+      if (authState !== 'in' || !email) { pwErr('Oturum düşmüş görünüyor. Çıkış yapıp yeniden giriş yap.', old); return; }
+      pwBusy(true); pwMsg('');
+      try {
+        var r = await sb.auth.signInWithPassword({ email: email, password: old.value });   // eski şifre doğrulaması
+        if (r.error) throw r.error;
+        P.old = old.value; P.step = 2; P.busy = false;
+        if (pwAlive()) renderPwStep();
+      } catch (err) {
+        var low = ((err && err.message) || '').toLowerCase();
+        if (pwAlive()) pwErr(low.indexOf('invalid login') > -1 ? 'Mevcut şifre hatalı.' : trErr(err), old);
+      }
+      pwBusy(false);
+    } else if (P.step === 2) {
+      var n1 = pwEl('pwNew'), n2 = pwEl('pwNew2'); if (!n1 || !n2) return;
+      if (n1.value.length < 6) { pwErr('Şifre en az 6 karakter olmalı.', n1); n1.focus(); return; }
+      if (n1.value !== n2.value) { pwErr('Şifreler birbiriyle aynı değil.', [n1, n2]); n2.focus(); return; }
+      if (n1.value === P.old) { pwErr('Yeni şifre eskisiyle aynı olamaz.', n1); n1.focus(); return; }
+      pwBusy(true); pwMsg('');
+      try {
+        var r2 = await sb.auth.updateUser({ password: n1.value });
+        if (r2.error) throw r2.error;
+        P.old = ''; P.step = 3; P.busy = false;
+        if (pwAlive()) renderPwStep();
+      } catch (err2) { if (pwAlive()) pwErr(trErr(err2), n1); }
+      pwBusy(false);
+    }
   }
 
   // ---------- Ayarlar > Hesabım ----------
@@ -864,8 +1052,9 @@ img.pa-mark{display:block;object-fit:cover;border-radius:23%;background:none;box
       '<div class="pa-seg" id="paSeg"><i></i><button type="button" data-pa="tab" data-v="in">Giriş yap</button><button type="button" data-pa="tab" data-v="up">Kayıt ol</button></div>' +
       '<form id="paForm" novalidate>' +
         '<label class="pa-f"><span class="pa-fi">' + ic(IM.mail, 20) + '</span><input id="paEmail" type="email" inputmode="email" autocomplete="email" autocapitalize="none" spellcheck="false" placeholder=" "><span class="pa-fl">E-posta</span></label>' +
-        '<label class="pa-f"><span class="pa-fi">' + ic(IM.lock, 20) + '</span><input id="paPass" type="password" autocomplete="current-password" placeholder=" "><span class="pa-fl">Şifre</span>' +
+        '<div class="pa-gr pa-pwwrap"><div>' + '<label class="pa-f"><span class="pa-fi">' + ic(IM.lock, 20) + '</span><input id="paPass" type="password" autocomplete="current-password" placeholder=" "><span class="pa-fl">Şifre</span>' +
           '<button type="button" class="pa-eye" data-pa="eye" aria-label="Şifreyi göster">' + ic(pwEye, 20) + '</button></label>' +
+        '</div></div><div class="pa-gr pa-fgt"><div><button type="button" class="pa-link" data-pa="forgot">Şifreni mi unuttun?</button></div></div>' +
         '<div class="pa-xp"><div>' +
           '<div class="pa-meter" id="paMeter"><i></i><i></i><i></i><i></i><span id="paMeterT"></span></div>' +
           '<label class="pa-f"><span class="pa-fi">' + ic(IM.lock2, 20) + '</span><input id="paPass2" type="password" autocomplete="new-password" placeholder=" "><span class="pa-fl">Şifre tekrar</span></label>' +
@@ -887,6 +1076,7 @@ img.pa-mark{display:block;object-fit:cover;border-radius:23%;background:none;box
       var a = b.getAttribute('data-pa');
       if (a === 'close') closeAuth();
       else if (a === 'tab') authMode(b.getAttribute('data-v'));
+      else if (a === 'forgot') authMode('fg');
       else if (a === 'eye') {
         var p = document.getElementById('paPass'), p2 = document.getElementById('paPass2'), show = p.type === 'password';
         p.type = p2.type = show ? 'text' : 'password'; b.innerHTML = ic(show ? pwEyeOff : pwEye, 20); b.setAttribute('aria-label', show ? 'Şifreyi gizle' : 'Şifreyi göster');
@@ -902,18 +1092,20 @@ img.pa-mark{display:block;object-fit:cover;border-radius:23%;background:none;box
   }
   function authMode(m, instant) {
     if (!A || A.mode === m) return;
-    var up = m === 'up', ov = A.ov;
+    var up = m === 'up', fg = m === 'fg', ov = A.ov;
     var set = function () {
-      document.getElementById('paT').textContent = up ? 'Hesap oluştur' : 'Tekrar hoş geldin';
-      document.getElementById('paS').textContent = up ? 'Birkaç saniyede hazır; verilerin tüm cihazlarında seninle olsun.' : 'Verilerine ulaşmak ve cihazların arasında eşitlemek için giriş yap.';
-      document.getElementById('paGoT').textContent = up ? 'Kayıt ol' : 'Giriş yap';
-      document.getElementById('paFoot').innerHTML = up ? 'Zaten hesabın var mı? <button type="button" data-pa="tab" data-v="in">Giriş yap</button>' : 'Hesabın yok mu? <button type="button" data-pa="tab" data-v="up">Kayıt ol</button>';
+      document.getElementById('paT').textContent = fg ? 'Şifreni mi unuttun?' : (up ? 'Hesap oluştur' : 'Tekrar hoş geldin');
+      document.getElementById('paS').textContent = fg ? 'E-postanı gir, şifreni yenilemen için sana bir bağlantı gönderelim.' : up ? 'Birkaç saniyede hazır; verilerin tüm cihazlarında seninle olsun.' : 'Verilerine ulaşmak ve cihazların arasında eşitlemek için giriş yap.';
+      document.getElementById('paGoT').textContent = fg ? 'Bağlantı gönder' : up ? 'Kayıt ol' : 'Giriş yap';
+      document.getElementById('paFoot').innerHTML = fg ? 'Hatırladın mı? <button type="button" data-pa="tab" data-v="in">Giriş yap</button>' : up ? 'Zaten hesabın var mı? <button type="button" data-pa="tab" data-v="in">Giriş yap</button>' : 'Hesabın yok mu? <button type="button" data-pa="tab" data-v="up">Kayıt ol</button>';
       document.getElementById('paPass').setAttribute('autocomplete', up ? 'new-password' : 'current-password');
     };
     A.mode = m; ov.setAttribute('data-m', m);
     var xp = ov.querySelector('.pa-xp'); if (xp) xp.inert = !up;
+    var pwr = ov.querySelector('.pa-pwwrap'), fgt = ov.querySelector('.pa-fgt'); if (pwr) pwr.inert = fg; if (fgt) fgt.inert = m !== 'in';
     var seg = document.getElementById('paSeg'); seg.style.setProperty('--pos', up ? 1 : 0);
-    seg.querySelectorAll('button').forEach(function (b) { b.classList.toggle('on', b.getAttribute('data-v') === m); });
+    seg.inert = fg;
+    seg.querySelectorAll('button').forEach(function (b) { b.classList.toggle('on', b.getAttribute('data-v') === (fg ? 'in' : m)); });
     var msg = document.getElementById('paMsg'); msg.classList.remove('show');
     ov.querySelectorAll('.pa-f.bad').forEach(function (f) { f.classList.remove('bad'); });
     if (instant) return set();
@@ -938,6 +1130,7 @@ img.pa-mark{display:block;object-fit:cover;border-radius:23%;background:none;box
     var em = document.getElementById('paEmail'), pw = document.getElementById('paPass'), pw2 = document.getElementById('paPass2'), go = document.getElementById('paGo');
     var up = A.mode === 'up', ev = em.value.trim();
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(ev)) { authMsg('Geçerli bir e-posta adresi gir.', em); em.focus(); return; }
+    if (A.mode === 'fg') return authForgot(ev, em, go);
     if (pw.value.length < 6) { authMsg('Şifre en az 6 karakter olmalı.', pw); pw.focus(); return; }
     if (up && pw.value !== pw2.value) { authMsg('Şifreler birbiriyle aynı değil.', [pw, pw2]); pw2.focus(); return; }
     A.busy = true; go.classList.add('ld'); document.getElementById('paMsg').classList.remove('show');
@@ -957,8 +1150,8 @@ img.pa-mark{display:block;object-fit:cover;border-radius:23%;background:none;box
     authShow('<div class="pa-ring"><svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div><h3>Hoş geldin</h3><p>Verilerin eşitleniyor…</p>');
     setTimeout(closeAuth, 1250);
   }
-  function authState_verify(addr) {
-    authShow('<div class="pa-ring" style="background:linear-gradient(140deg,var(--accent-color,#6ec1ff),#3e63dd);box-shadow:0 14px 36px rgba(62,99,221,.4)">' + ic(IM.mail, 38) + '</div><h3>E-postanı kontrol et</h3><p>' + esc(addr) + ' adresine bir doğrulama bağlantısı gönderdik. Bağlantıya dokunduktan sonra buradan giriş yap.</p><button type="button" class="pa-go" data-pa="back">Giriş yap’a dön</button>');
+  function authState_verify(addr, reset) {
+    authShow('<div class="pa-ring" style="background:linear-gradient(140deg,var(--accent-color,#6ec1ff),#3e63dd);box-shadow:0 14px 36px rgba(62,99,221,.4)">' + ic(IM.mail, 38) + '</div><h3>' + (reset ? 'Bağlantı yolda' : 'E-postanı kontrol et') + '</h3><p>' + (reset ? 'Bu adres kayıtlıysa ' + esc(addr) + ' adresine şifreni sıfırlama bağlantısı gönderdik. Bağlantıya dokunup yeni şifreni belirle.' : esc(addr) + ' adresine bir doğrulama bağlantısı gönderdik. Bağlantıya dokunduktan sonra buradan giriş yap.') + '</p><button type="button" class="pa-go" data-pa="back">Giriş yap’a dön</button>');
     document.getElementById('paSt').onclick = function (e) {
       if (e.target.closest && e.target.closest('[data-pa=back]')) { A.card.classList.remove('st'); authMode('in'); }
     };
@@ -968,6 +1161,112 @@ img.pa-mark{display:block;object-fit:cover;border-radius:23%;background:none;box
     ov.classList.add('out'); setTimeout(function () { ov.remove(); }, 400);
   }
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && A && !document.getElementById('profOv')) closeAuth(); });
+
+  // ---------- Şifremi unuttum + yeni şifre belirleme (sürüm 16) ----------
+  var AUX = document.createElement('style'); AUX.id = 'paceAuthCss2';
+  AUX.textContent = `
+.pa-gr{display:grid;grid-template-rows:0fr;opacity:0;transition:grid-template-rows .55s cubic-bezier(.22,1,.36,1),opacity .35s ease}
+.pa-gr>div{min-height:0;overflow:hidden;margin:-5px;padding:5px}
+#paAuth:not([data-m=fg]) .pa-pwwrap,#paAuth[data-m=in] .pa-fgt{grid-template-rows:1fr;opacity:1}
+.pa-link{display:block;margin:-4px 2px 8px auto;padding:4px 2px;border:0;background:none;color:var(--accent-color,#6ec1ff);font-size:14px;font-weight:700;cursor:pointer}
+.pa-seg{max-height:60px;transition:max-height .5s cubic-bezier(.22,1,.36,1),margin .5s cubic-bezier(.22,1,.36,1),padding .5s,opacity .35s}
+#paAuth[data-m=fg] .pa-seg{max-height:0;margin:6px 0 8px;padding:0 4px;opacity:0;overflow:hidden;pointer-events:none}
+@media (prefers-reduced-motion:reduce){.pa-gr,.pa-seg{transition:none!important}}
+`;
+  document.head.appendChild(AUX);
+
+  async function authForgot(ev, em, go) {
+    A.busy = true; go.classList.add('ld'); document.getElementById('paMsg').classList.remove('show');
+    try {
+      var r = await sb.auth.resetPasswordForEmail(ev, { redirectTo: new URL('./', location.href).href });
+      if (r.error) throw r.error;
+      authState_verify(ev, true);
+    } catch (err) { if (A) authMsg(trErr(err), em); }
+    if (A) { A.busy = false; go.classList.remove('ld'); }
+  }
+
+  // E-postadaki sıfırlama bağlantısına dokununca açılır
+  var R = null;
+  function openRecovery() {
+    if (R) return;
+    var ex = document.getElementById('paAuth'); if (ex) { ex.remove(); A = null; }
+    try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {}
+    function fld(id, label, icon, eye) {
+      return '<label class="pa-f"><span class="pa-fi">' + ic(icon, 20) + '</span><input id="' + id + '" type="password" autocomplete="new-password" autocapitalize="none" spellcheck="false" placeholder=" "><span class="pa-fl">' + label + '</span>' +
+        (eye ? '<button type="button" class="pa-eye" data-rc="eye" aria-label="Şifreyi göster">' + ic(pwEye, 20) + '</button>' : '') + '</label>';
+    }
+    var ov = document.createElement('div'); ov.id = 'paAuth'; ov.setAttribute('data-m', 'rc');
+    ov.innerHTML = '<div class="pa-bg"><i></i><i></i><i></i></div>' +
+      '<div class="pa-card pa-in" role="dialog" aria-modal="true" aria-labelledby="rcT">' +
+      '<button type="button" class="pa-x" data-rc="close" aria-label="Kapat">✕</button>' +
+      '<div class="pa-brand"><img class="pa-mark" src="icons/apple-touch-icon.png" alt="" width="50" height="50"><b>Pace</b></div>' +
+      '<div class="pa-head"><h2 id="rcT">Yeni şifre belirle</h2><p>Hesabın için yeni bir şifre seç. Bundan sonra tüm cihazlarında bu şifreyle giriş yapacaksın.</p></div>' +
+      '<form id="rcForm" novalidate style="margin-top:22px"><input type="text" autocomplete="username" tabindex="-1" aria-hidden="true" style="display:none">' +
+        fld('rcP1', 'Yeni şifre', IM.lock, true) +
+        '<div class="pa-meter" id="rcMeter"><i></i><i></i><i></i><i></i><span></span></div>' +
+        fld('rcP2', 'Yeni şifre (tekrar)', IM.lock2, false) +
+        '<p class="pa-msg" id="rcMsg" role="alert"></p>' +
+        '<button type="submit" class="pa-go" id="rcGo"><span class="l">Şifreyi kaydet</span><span class="s"></span></button>' +
+      '</form><div class="pa-st" id="rcSt"></div></div>';
+    document.body.appendChild(ov);
+    var lg = ov.querySelector('img.pa-mark'); if (lg) lg.addEventListener('error', function () { var f = document.createElement('span'); f.className = 'pa-mark f'; f.textContent = 'P'; lg.replaceWith(f); });
+    R = { ov: ov, card: ov.querySelector('.pa-card'), busy: false, done: false };
+    setTimeout(function () { R && R.card.classList.remove('pa-in'); }, 1200);
+    ov.addEventListener('click', function (e) {
+      var b = e.target.closest && e.target.closest('[data-rc]'); if (!b) return;
+      var a = b.getAttribute('data-rc');
+      if (a === 'close') closeRecovery();
+      else if (a === 'eye') {
+        var p1 = document.getElementById('rcP1'), p2 = document.getElementById('rcP2'), show = p1.type === 'password';
+        p1.type = p2.type = show ? 'text' : 'password'; b.innerHTML = ic(show ? pwEyeOff : pwEye, 20); b.setAttribute('aria-label', show ? 'Şifreyi gizle' : 'Şifreyi göster');
+      }
+    });
+    ov.addEventListener('input', function (e) {
+      var f = e.target.closest && e.target.closest('.pa-f'); if (f) f.classList.remove('bad');
+      if (e.target.id === 'rcP1') paintMeter(document.getElementById('rcMeter'), e.target.value);
+      var m = document.getElementById('rcMsg'); if (m && m.classList.contains('show') && R && !R.busy) m.classList.remove('show');
+    });
+    document.getElementById('rcForm').addEventListener('submit', rcSubmit);
+    if (!(window.matchMedia && matchMedia('(pointer:coarse)').matches)) setTimeout(function () { var el = document.getElementById('rcP1'); if (el) el.focus(); }, 450);
+  }
+  function rcErr(t, els) {
+    var m = document.getElementById('rcMsg'); if (!m || !R) return;
+    m.textContent = t; m.classList.add('show');
+    R.card.classList.remove('shake'); void R.card.offsetWidth; R.card.classList.add('shake');
+    [].concat(els || []).forEach(function (el) { var f = el && el.closest && el.closest('.pa-f'); if (f) f.classList.add('bad'); });
+  }
+  async function rcSubmit(e) {
+    e.preventDefault(); if (!R || R.busy || R.done) return;
+    var p1 = document.getElementById('rcP1'), p2 = document.getElementById('rcP2'), go = document.getElementById('rcGo');
+    if (p1.value.length < 6) { rcErr('Şifre en az 6 karakter olmalı.', p1); p1.focus(); return; }
+    if (p1.value !== p2.value) { rcErr('Şifreler birbiriyle aynı değil.', [p1, p2]); p2.focus(); return; }
+    R.busy = true; go.classList.add('ld'); document.getElementById('rcMsg').classList.remove('show');
+    try {
+      var r = await sb.auth.updateUser({ password: p1.value });
+      if (r.error) throw r.error;
+      R.done = true;
+      document.getElementById('rcSt').innerHTML = '<div class="pa-ring"><svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div><h3>Şifren güncellendi</h3><p>Bundan sonra yeni şifrenle giriş yapabilirsin.</p>';
+      R.card.classList.add('st');
+      setTimeout(closeRecovery, 2200);
+    } catch (err) { if (R) rcErr(trErr(err), p1); }
+    if (R) { R.busy = false; go.classList.remove('ld'); }
+  }
+  function closeRecovery() {
+    if (!R) return; var ov = R.ov; R = null;
+    ov.classList.add('out'); setTimeout(function () { ov.remove(); }, 400);
+    recMode = false;
+    if (holdSync) { holdSync = false; syncNow(true); }
+  }
+
+  // Süresi dolmuş / kullanılmış e-posta bağlantısı: giriş sayfasını "şifremi unuttum" modunda aç
+  if (linkErr) {
+    try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {}
+    sb.auth.getSession().then(function (r) {
+      if (r.data && r.data.session) return;
+      openAuth('fg');
+      setTimeout(function () { if (A) authMsg('Bağlantının süresi dolmuş ya da daha önce kullanılmış. E-postanı gir, yeni bir bağlantı gönderelim.'); }, 500);
+    });
+  }
 
   mountAccount();
   mountSide();
