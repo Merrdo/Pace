@@ -366,8 +366,7 @@
     '#paceSyncCard button{width:100%;padding:11px;font-size:15px;border-radius:10px;border:1px solid #ccc;background:#f4f4f4;color:#222;margin-top:6px}' +
     '#paceSyncCard button.pri{background:#222;color:#fff;border-color:#222}' +
     '#paceSyncMsg{min-height:18px;font-size:13px;color:#c0392b;margin-top:6px}' +
-    '#paceSyncBanner{position:fixed;top:calc(env(safe-area-inset-top,0px) + 10px);left:50%;transform:translateX(-50%);z-index:2147483002;background:#222;color:#fff;border-radius:12px;padding:10px 14px;font:14px -apple-system,system-ui,sans-serif;display:flex;gap:12px;align-items:center;box-shadow:0 4px 14px rgba(0,0,0,.3)}' +
-    '#paceSyncBanner button{background:#fff;color:#222;border:0;border-radius:8px;padding:6px 10px;font-size:14px}';
+    '';
   var st = document.createElement('style'); st.textContent = css; document.head.appendChild(st);
 
   var btn = document.createElement('button');
@@ -386,11 +385,85 @@
   function openModal() { if (!uid) return openAuth(); modalOpen = true; var ov = document.createElement('div'); ov.id = 'paceSyncOv'; ov.innerHTML = '<div id="paceSyncCard"></div>'; document.body.appendChild(ov);
     ov.addEventListener('click', function (e) { if (e.target === ov) closeModal(); }); render(); }
   function closeModal() { modalOpen = false; var ov = document.getElementById('paceSyncOv'); if (ov) ov.remove(); }
+  // ---- "Başka cihazdan güncelleme geldi" bildirimi ----
+  // Yalnızca transform/opacity canlandırılır (tablette akıcı); bulanıklaştırma yok.
+  var SBS = document.createElement('style'); SBS.id = 'paceSyncBannerCss';
+  SBS.textContent = `
+@keyframes psbIn{0%{opacity:0;transform:translate(-50%,-34px) scale(.9)}60%{opacity:1;transform:translate(-50%,5px) scale(1.015)}100%{opacity:1;transform:translate(-50%,0) scale(1)}}
+@keyframes psbOut{to{opacity:0;transform:translate(-50%,-26px) scale(.94)}}
+@keyframes psbSheen{0%{transform:translateX(-120%) skewX(-18deg)}60%,100%{transform:translateX(320%) skewX(-18deg)}}
+@keyframes psbRing{0%{opacity:.7;transform:scale(1)}100%{opacity:0;transform:scale(1.75)}}
+@keyframes psbDrop{0%,100%{transform:translateY(-1.5px)}50%{transform:translateY(2.5px)}}
+@keyframes psbSpin{to{transform:rotate(360deg)}}
+@keyframes psbLife{from{transform:scaleX(1)}to{transform:scaleX(0)}}
+#paceSyncBanner{--ac:var(--accent-color,#ff90e8);position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 12px);z-index:2147483002;width:calc(100% - 24px);max-width:440px;box-sizing:border-box;display:flex;align-items:center;gap:12px;padding:11px 10px 11px 11px;border-radius:24px;overflow:hidden;background:color-mix(in srgb,var(--theme-bg,#16171b) 96%,var(--theme-text,#fff) 4%);color:var(--theme-text,#fff);border:1px solid color-mix(in srgb,var(--ac) 38%,rgba(128,128,128,.25));box-shadow:0 18px 46px rgba(0,0,0,.34),0 0 0 1px rgba(255,255,255,.03) inset,0 6px 26px color-mix(in srgb,var(--ac) 30%,transparent);font-family:"Baloo 2","Space Grotesk",-apple-system,system-ui,sans-serif;animation:psbIn .8s cubic-bezier(.22,1,.36,1) both;will-change:transform,opacity;touch-action:pan-x;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
+#paceSyncBanner.low{top:calc(env(safe-area-inset-top,0px) + 82px)}
+#paceSyncBanner.out{animation:psbOut .32s ease both;pointer-events:none}
+#paceSyncBanner.drag{animation:none;transition:none}
+#paceSyncBanner.back{animation:none;transition:transform .45s cubic-bezier(.34,1.5,.5,1)}
+#paceSyncBanner::before{content:"";position:absolute;top:0;bottom:0;left:0;width:34%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.2),transparent);pointer-events:none;animation:psbSheen 2.6s ease-in-out .7s 2 both;will-change:transform}
+#paceSyncBanner .psb-life{position:absolute;left:14px;right:14px;bottom:0;height:2.5px;border-radius:2px;background:linear-gradient(90deg,var(--ac),#ffd23f);transform-origin:left center;opacity:.9;animation:psbLife 12s linear .9s both}
+#paceSyncBanner:hover .psb-life,#paceSyncBanner:active .psb-life{animation-play-state:paused}
+#paceSyncBanner .psb-i{position:relative;flex:none;display:grid;place-items:center;width:42px;height:42px;border-radius:15px;color:#fff;background:linear-gradient(145deg,color-mix(in srgb,var(--ac) 100%,#fff 18%),color-mix(in srgb,var(--ac) 82%,#7a2cff));box-shadow:0 6px 16px color-mix(in srgb,var(--ac) 45%,transparent),inset 0 1px 0 rgba(255,255,255,.4)}
+#paceSyncBanner .psb-i::after{content:"";position:absolute;inset:0;border-radius:inherit;border:2px solid var(--ac);pointer-events:none;animation:psbRing 1.9s ease-out .6s infinite;will-change:transform,opacity}
+#paceSyncBanner .psb-i svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2.3;stroke-linecap:round;stroke-linejoin:round;overflow:visible}
+#paceSyncBanner .psb-i .psb-ar{animation:psbDrop 1.5s ease-in-out infinite}
+#paceSyncBanner .psb-t{flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.2;text-align:left}
+#paceSyncBanner .psb-t b{font-size:15.5px;font-weight:800;letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#paceSyncBanner .psb-t span{margin-top:2px;font-size:12.5px;font-weight:600;opacity:.62;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#paceSyncBanner .psb-go{flex:none;display:inline-flex;align-items:center;gap:6px;height:38px;padding:0 15px;border:0;border-radius:999px;cursor:pointer;font:inherit;font-size:14px;font-weight:800;color:#fff;background:linear-gradient(180deg,color-mix(in srgb,var(--ac) 100%,#fff 12%),var(--ac));box-shadow:0 4px 14px color-mix(in srgb,var(--ac) 45%,transparent),inset 0 1px 0 rgba(255,255,255,.35);text-shadow:0 1px 2px rgba(0,0,0,.2);transition:transform .25s cubic-bezier(.34,1.56,.64,1),opacity .25s}
+#paceSyncBanner .psb-go:active{transform:scale(.93)}
+#paceSyncBanner .psb-go svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+#paceSyncBanner.busy .psb-go{pointer-events:none;opacity:.85}
+#paceSyncBanner.busy .psb-go svg{animation:psbSpin .8s linear infinite}
+#paceSyncBanner.busy .psb-life{animation:none;opacity:0}
+#paceSyncBanner .psb-x{flex:none;display:grid;place-items:center;width:30px;height:30px;padding:0;border:0;border-radius:50%;cursor:pointer;color:inherit;background:rgba(128,128,128,.16);transition:transform .2s ease,background-color .2s ease}
+#paceSyncBanner .psb-x:active{transform:scale(.88);background:rgba(128,128,128,.28)}
+#paceSyncBanner .psb-x svg{width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:2.8;stroke-linecap:round}
+@media (prefers-reduced-motion:reduce){#paceSyncBanner,#paceSyncBanner *,#paceSyncBanner::before,#paceSyncBanner .psb-i::after{animation-duration:.01s!important;animation-iteration-count:1!important}}`;
+  document.head.appendChild(SBS);
+  function hideBanner(b, swipe) {
+    if (!b || b.classList.contains('out')) return;
+    b.classList.remove('drag', 'back'); b.style.transform = '';
+    if (swipe) b.style.setProperty('animation', 'none');
+    if (swipe) { b.style.transition = 'transform .28s ease, opacity .28s ease'; b.style.transform = 'translate(-50%,-90px) scale(.96)'; b.style.opacity = '0'; setTimeout(function () { b.remove(); }, 300); return; }
+    b.classList.add('out'); setTimeout(function () { b.remove(); }, 340);
+  }
   function showBanner() {
     if (document.getElementById('paceSyncBanner')) return;
-    var b = document.createElement('div'); b.id = 'paceSyncBanner';
-    b.innerHTML = '<span>Başka cihazdan güncelleme geldi</span><button>Yenile</button>';
-    b.querySelector('button').onclick = function () { location.reload(); };
+    var b = document.createElement('div'); b.id = 'paceSyncBanner'; b.setAttribute('role', 'status'); b.setAttribute('aria-live', 'polite');
+    if (document.getElementById('pcUpd')) b.className = 'low';
+    b.innerHTML = '<span class="psb-i"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17.5 17.5H8a4.5 4.5 0 1 1 .9-8.9A5.5 5.5 0 0 1 19 10.5a3.5 3.5 0 0 1-1.5 7z"/><g class="psb-ar"><path d="M12 10v6M9.5 13.8l2.5 2.5 2.5-2.5"/></g></svg></span>' +
+      '<span class="psb-t"><b>Başka cihazdan güncelleme geldi</b><span>Yenile, son değişiklikler görünsün</span></span>' +
+      '<button type="button" class="psb-go"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.6-5.9M20 4v4.5h-4.5"/></svg><em style="font-style:normal">Yenile</em></button>' +
+      '<button type="button" class="psb-x" aria-label="Sonra"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button><i class="psb-life"></i>';
+    var go = b.querySelector('.psb-go');
+    go.onclick = function () {
+      b.classList.add('busy'); go.querySelector('em').textContent = 'Yenileniyor';
+      if (navigator.vibrate) { try { navigator.vibrate(10); } catch (e) {} }
+      setTimeout(function () { location.reload(); }, 450);
+    };
+    b.querySelector('.psb-x').onclick = function () { hideBanner(b); };
+    b.querySelector('.psb-life').addEventListener('animationend', function () { hideBanner(b); });
+    // Yukarı kaydırarak kapat
+    var sy = 0, dy = 0, drag = false;
+    b.addEventListener('pointerdown', function (e) {
+      if (e.target.closest('button')) return;
+      drag = true; sy = e.clientY; dy = 0; b.classList.add('drag'); b.classList.remove('back');
+      b.style.transform = 'translate(-50%,0)';
+      try { b.setPointerCapture(e.pointerId); } catch (x) {}
+    });
+    b.addEventListener('pointermove', function (e) {
+      if (!drag) return; dy = Math.min(12, e.clientY - sy);
+      b.style.transform = 'translate(-50%,' + dy + 'px)';
+      b.style.opacity = String(Math.max(.35, 1 + dy / 140));
+    });
+    function end() {
+      if (!drag) return; drag = false;
+      if (dy < -34) { hideBanner(b, true); return; }
+      b.classList.remove('drag'); b.classList.add('back'); b.style.transform = 'translate(-50%,0)'; b.style.opacity = '';
+    }
+    b.addEventListener('pointerup', end); b.addEventListener('pointercancel', end);
     document.body.appendChild(b);
   }
   function render() {
