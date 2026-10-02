@@ -391,15 +391,19 @@
   var SBS = document.createElement('style'); SBS.id = 'paceSyncBannerCss';
   SBS.textContent = `
 @keyframes psbDrop{0%{opacity:0;transform:translate(-50%,-70px) scale(.7)}55%{opacity:1;transform:translate(-50%,7px) scale(1.04)}78%{transform:translate(-50%,-2px) scale(.99)}100%{opacity:1;transform:translate(-50%,0) scale(1)}}
-@keyframes psbGrow{from{max-width:var(--psb-w0,50px)}to{max-width:min(440px,calc(100vw - 24px))}}
+@keyframes psbGrow{from{max-width:var(--psb-w0,56px)}to{max-width:min(440px,calc(100vw - 24px))}}
 @keyframes psbShow{from{opacity:0;transform:translateX(-10px)}to{opacity:1;transform:none}}
-@keyframes psbOut{to{opacity:0;transform:translate(-50%,-34px) scale(.86)}}
+@keyframes psbShrink{from{max-width:var(--psb-w1,440px)}to{max-width:var(--psb-w0,56px)}}
+@keyframes psbHide{to{opacity:0;transform:translateX(-10px)}}
+@keyframes psbLeave{0%{opacity:1;transform:translate(-50%,0) scale(1)}22%{opacity:1;transform:translate(-50%,4px) scale(1.04)}100%{opacity:0;transform:translate(-50%,-66px) scale(.5)}}
 @keyframes psbRing{0%{opacity:.65;transform:scale(1)}100%{opacity:0;transform:scale(1.9)}}
 @keyframes psbArrow{0%,100%{transform:translateY(-1.5px)}50%{transform:translateY(2.5px)}}
 @keyframes psbSpin{to{transform:rotate(360deg)}}
 #paceSyncBanner{--ac:var(--accent-color,#ff90e8);position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 12px);z-index:2147483002;display:flex;align-items:center;gap:12px;width:max-content;max-width:min(440px,calc(100vw - 24px));box-sizing:border-box;padding:7px;border-radius:999px;overflow:hidden;background:#141416;color:#fff;border:1px solid rgba(255,255,255,.1);box-shadow:0 14px 38px rgba(0,0,0,.4),0 0 0 .5px rgba(0,0,0,.6);font-family:"Baloo 2","Space Grotesk",-apple-system,system-ui,sans-serif;animation:psbDrop .75s cubic-bezier(.22,1,.36,1) both,psbGrow .7s cubic-bezier(.22,1,.36,1) .3s both;will-change:transform,opacity;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none;touch-action:pan-x}
 #paceSyncBanner.low{top:calc(env(safe-area-inset-top,0px) + 78px)}
-#paceSyncBanner.out{animation:psbOut .3s ease both;pointer-events:none}
+#paceSyncBanner.out{animation:psbShrink .38s cubic-bezier(.65,0,.35,1) .08s both,psbLeave .42s cubic-bezier(.5,0,.9,.5) .42s both;pointer-events:none}
+#paceSyncBanner.out .psb-t,#paceSyncBanner.out .psb-go{animation:psbHide .22s ease both}
+#paceSyncBanner.out .psb-i::after{animation:none;opacity:0}
 #paceSyncBanner.drag{animation:none;transition:none}
 #paceSyncBanner.back{animation:none;transition:transform .45s cubic-bezier(.34,1.5,.5,1),opacity .2s}
 #paceSyncBanner .psb-i{position:relative;flex:none;display:grid;place-items:center;width:40px;height:40px;border-radius:50%;color:#fff;background:linear-gradient(145deg,color-mix(in srgb,var(--ac) 100%,#fff 18%),color-mix(in srgb,var(--ac) 80%,#6a3cff))}
@@ -430,7 +434,8 @@
       setTimeout(function () { b.remove(); }, 300); return;
     }
     b.classList.remove('drag', 'back'); b.style.transform = ''; b.style.opacity = '';
-    b.classList.add('out'); setTimeout(function () { b.remove(); }, 320);
+    b.style.setProperty('--psb-w1', b.offsetWidth + 'px');   // gerçek genişlikten başlayıp ikon boyutuna daralır
+    b.classList.add('out'); setTimeout(function () { b.remove(); }, 900);
   }
   function showBanner() {
     syncPending = true; rfUi();
@@ -461,7 +466,7 @@
     b.addEventListener('pointerup', end); b.addEventListener('pointercancel', end);
     document.body.appendChild(b);
     // Hap önce yalnızca ikon boyutundadır, sonra açılır; başlangıç genişliği
-    b.style.setProperty('--psb-w0', '54px');
+    b.style.setProperty('--psb-w0', '56px');
     arm();
   }
   function render() {
