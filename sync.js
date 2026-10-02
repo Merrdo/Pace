@@ -15,6 +15,7 @@
   }
   var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, { auth: { persistSession: true, autoRefreshToken: true }, global: { fetch: function (u, o) { o = o || {}; o.cache = 'no-store'; return fetch(u, o); } } });
   function nc() { return '_nc' + Date.now() + Math.random().toString(36).slice(2, 6); }   // her okuma isteği benzersiz: eski önbellek yanıtı dönmesin
+  var authState = 'unknown', email = '', syncState = 'idle', lastOk = 0;
   var uid = null, busy = false, again = false, pushT = null, channel = null;
   var status = 'Giriş yapılmadı', statusErr = false, modalOpen = false;
 
@@ -76,7 +77,7 @@
         meta.hashes[k] = hs; meta.dirty[k] = 1; changed = true;
       }
     });
-    if (changed) saveMeta();
+    if (changed) { saveMeta(); ui(); }
     return changed && Object.keys(meta.dirty).length > 0;
   }
 
@@ -188,7 +189,7 @@
   async function syncNow(startup) {
     if (!uid) return;
     if (busy) { again = true; return; }
-    busy = true; stat = { down: 0, up: 0 }; setStatus('Eşitleniyor…');
+    busy = true; syncState = 'busy'; stat = { down: 0, up: 0 }; setStatus('Eşitleniyor…');
     try {
       scan();
       var ch = await pull();
@@ -200,8 +201,13 @@
         if (startup && !sessionStorage.getItem('pace_sync_rl')) { sessionStorage.setItem('pace_sync_rl', '1'); location.reload(); return; }
         showBanner();
       } else if (startup) sessionStorage.removeItem('pace_sync_rl');
+      syncState = 'ok'; lastOk = Date.now();
       setStatus('Eşitlendi · ' + new Date().toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }) + ' · ↓' + stat.down + ' ↑' + stat.up);
-    } catch (e) { console.warn('Eşitleme hatası:', e); setStatus('Eşitlenemedi (çevrimdışı olabilir)', true); }
+    } catch (e) {
+      console.warn('Eşitleme hatası:', e); syncState = 'err';
+      if (/jwt|token|not authenticated|401/i.test((e && (e.message || e.code)) + '')) authState = 'expired';
+      setStatus('Eşitlenemedi (çevrimdışı olabilir)', true);
+    }
     busy = false;
     if (again) { again = false; schedule(300); }
   }
@@ -216,13 +222,13 @@
     var id = session.user.id;
     if (uid === id) return;
     if (meta.uid && meta.uid !== id) {
-      if (!confirm('Bu cihazdaki veriler başka bir hesaba ait. Bu hesabın verisiyle değiştirilsin mi? (Cihazdaki veri önce yedeklenir)')) { await sb.auth.signOut(); return; }
+      if (!confirm('Bu cihazdaki veriler başka bir hesaba ait. Bu hesabın verisiyle değiştirilsin mi? (Cihazdaki veri önce yedeklenir)')) { meta.signedOut = true; saveMeta(); await sb.auth.signOut(); return; }
       try { localStorage.setItem(BACKUP_KEY, localStorage.getItem(APP_STORAGE_KEY) || '{}'); } catch (e) {}
       localStorage.removeItem(APP_STORAGE_KEY); localStorage.removeItem(META_KEY);
       sessionStorage.setItem('pace_sync_rl', '1'); location.reload(); return;
     }
     if (wasWiped()) { meta = newMeta(id); sessionStorage.removeItem('pace_sync_rl'); }   // sıfırlanmış cihaz: bulut kazanır
-    uid = id; meta.uid = id; stampEpoch(); saveMeta();
+    uid = id; meta.uid = id; meta.signedOut = false; authState = 'in'; email = session.user.email || ''; stampEpoch(); saveMeta();
     setStatus('Bağlandı'); closeModal();
     if (channel) sb.removeChannel(channel);
     channel = sb.channel('pace-sync-' + id).on('postgres_changes',
@@ -231,9 +237,15 @@
     syncNow(true);
   }
   sb.auth.onAuthStateChange(function (ev, session) {
+    if (session) email = session.user.email || email;
     if (session && (ev === 'INITIAL_SESSION' || ev === 'SIGNED_IN')) setTimeout(function () { start(session); }, 0);
-    if (ev === 'SIGNED_OUT') { uid = null; if (channel) { sb.removeChannel(channel); channel = null; } setStatus('Giriş yapılmadı'); }
+    if (!session && (ev === 'INITIAL_SESSION' || ev === 'SIGNED_OUT')) {
+      uid = null; if (channel) { sb.removeChannel(channel); channel = null; }
+      authState = (meta.uid && !meta.signedOut) ? 'expired' : 'out';   // kullanıcı çıkmadıysa: oturum kendiliğinden düştü
+      setStatus(authState === 'expired' ? 'Oturum düştü' : 'Giriş yapılmadı', authState === 'expired');
+    }
   });
+  async function doSignOut() { meta.signedOut = true; saveMeta(); await sb.auth.signOut(); }
 
   // ---------- arayüz ----------
   var css = '#paceSyncBtn{position:fixed;left:12px;bottom:calc(env(safe-area-inset-bottom,0px) + 12px);z-index:2147483000;width:36px;height:36px;border-radius:50%;border:1px solid rgba(128,128,128,.4);background:rgba(250,250,250,.92);color:#333;display:flex;align-items:center;justify-content:center;padding:0;box-shadow:0 2px 8px rgba(0,0,0,.2)}' +
@@ -260,6 +272,7 @@
     var d = document.getElementById('paceSyncDot');
     if (d) d.style.background = !uid ? '#999' : (statusErr ? '#e74c3c' : '#2ecc71');
     if (modalOpen) render();
+    ui();
   }
   function openModal() { modalOpen = true; var ov = document.createElement('div'); ov.id = 'paceSyncOv'; ov.innerHTML = '<div id="paceSyncCard"></div>'; document.body.appendChild(ov);
     ov.addEventListener('click', function (e) { if (e.target === ov) closeModal(); }); render(); }
@@ -290,12 +303,12 @@
       if (a === 'dx') {
         msg.textContent = 'Kontrol ediliyor…';
         var q = await sb.from('sync_records').select('id,updated_at,device_id').eq('kind', 'state').neq('id', nc());
-        msg.textContent = 'sürüm 8 · bulutta ' + (q.data ? q.data.length : '?') + ' alan' + (q.error ? ' · HATA: ' + q.error.message : '') +
+        msg.textContent = 'sürüm 9 · bulutta ' + (q.data ? q.data.length : '?') + ' alan' + (q.error ? ' · HATA: ' + q.error.message : '') +
           ' · bu cihazda ' + Object.keys(APP_STATE).length + ' alan · imleç ' + (meta.lastPull || 'yok') + ' · bağlı ' + !!meta.linked +
           ' · ' + (q.data || []).map(function (x) { return x.id + '@' + String(x.updated_at).slice(5, 16); }).join(', ');
         return;
       }
-      if (a === 'out') { await sb.auth.signOut(); return; }
+      if (a === 'out') return doSignOut();
       var em = document.getElementById('psEmail').value.trim(), pw = document.getElementById('psPass').value;
       if (!em || pw.length < 6) { msg.textContent = 'E-posta ve en az 6 karakterli şifre gir.'; return; }
       msg.style.color = '#666'; msg.textContent = 'Bekleniyor…';
@@ -309,6 +322,55 @@
       } catch (err) { msg.style.color = '#c0392b'; msg.textContent = trErr(err); }
     };
   }
+
+
+  // ---------- Ayarlar > Hesabım ----------
+  var acss = '.acct-dot{width:12px;height:12px;border-radius:50%;flex:none;background:#8a8a8a;box-shadow:0 0 0 4px rgba(138,138,138,.2);transition:background .25s,box-shadow .25s}' +
+    '.acct-dot[data-s=ok]{background:#2ecc71;box-shadow:0 0 0 4px rgba(46,204,113,.22)}' +
+    '.acct-dot[data-s=busy]{background:#f5b301;box-shadow:0 0 0 4px rgba(245,179,1,.25);animation:acctPulse 1.1s ease-in-out infinite}' +
+    '.acct-dot[data-s=err]{background:#e74c3c;box-shadow:0 0 0 4px rgba(231,76,60,.25)}' +
+    '@keyframes acctPulse{50%{box-shadow:0 0 0 8px rgba(245,179,1,0)}}' +
+    '#acctSection .settings-row-link{width:100%;text-align:left}#acctSection button:disabled{opacity:.45}';
+  var ast = document.createElement('style'); ast.textContent = acss; document.head.appendChild(ast);
+
+  function mountAccount() {
+    if (document.getElementById('acctSection')) return;
+    var host = document.querySelector('#page-settings .settings-col-left') || document.querySelector('#page-settings .settings-page');
+    if (!host) return;
+    var sec = document.createElement('div'); sec.className = 'settings-section'; sec.id = 'acctSection';
+    var row = function (t, d, id) { return '<div class="settings-row"><div class="settings-row-text"><span class="settings-row-title">' + t + '</span><span class="settings-row-desc" id="' + id + 'Desc"></span></div><span class="acct-dot" id="' + id + 'Dot"></span></div>'; };
+    var btnRow = function (id, t) { return '<button type="button" class="settings-row settings-row-link" id="' + id + '"><div class="settings-row-text"><span class="settings-row-title">' + t + '</span></div></button>'; };
+    sec.innerHTML = '<span class="settings-section-label">Hesabım</span><div class="settings-card">' +
+      row('Oturum', '', 'acctSess') + '<div class="settings-divider"></div>' + row('Yedekleme', '', 'acctSync') +
+      '<div class="settings-divider"></div>' + btnRow('acctSyncBtn', 'Şimdi yedekle') +
+      '<div class="settings-divider"></div>' + btnRow('acctAuthBtn', 'Giriş yap') +
+      '<div class="settings-divider"></div>' + btnRow('acctAdvBtn', 'Gelişmiş (teşhis, buluttan yükle)') + '</div>';
+    host.insertBefore(sec, host.firstChild);
+    document.getElementById('paceSyncBtn').style.display = 'none';    // artık ayarlardan yönetiliyor
+    document.getElementById('acctSyncBtn').onclick = function () { syncNow(false); };
+    document.getElementById('acctAuthBtn').onclick = function () { if (authState === 'in') doSignOut(); else openModal(); };
+    document.getElementById('acctAdvBtn').onclick = function () { if (authState === 'in') openModal(); else openModal(); };
+    ui();
+  }
+  function ui() {
+    var g = function (i) { return document.getElementById(i); };
+    if (!g('acctSection')) return;
+    var n = Object.keys(meta.dirty).length, sess, sd, sy, sc;
+    if (authState === 'in') { sess = 'Giriş yapıldı' + (email ? ' · ' + email : ''); sd = 'ok'; }
+    else if (authState === 'expired') { sess = 'Oturum düştü · bu cihaz hâlâ bağlı görünüyor ama yedeklenmiyor'; sd = 'err'; }
+    else { sess = authState === 'unknown' ? 'Kontrol ediliyor…' : 'Giriş yapılmadı'; sd = 'off'; }
+    if (authState === 'expired') { sy = 'Yedeklenmiyor' + (n ? ' · ' + n + ' değişiklik bekliyor' : ''); sc = 'err'; }
+    else if (authState !== 'in') { sy = 'Kapalı'; sc = 'off'; }
+    else if (busy || syncState === 'busy') { sy = 'Yedekleniyor…'; sc = 'busy'; }
+    else if (syncState === 'err') { sy = 'Yedeklenemedi · bağlantı gelince tekrar denenecek'; sc = 'err'; }
+    else if (n) { sy = n + ' değişiklik yedeklenecek'; sc = 'busy'; }
+    else { sy = 'Yedeklendi' + (lastOk ? ' · ' + new Date(lastOk).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }) : ''); sc = 'ok'; }
+    g('acctSessDesc').textContent = sess; g('acctSessDot').setAttribute('data-s', sd);
+    g('acctSyncDesc').textContent = sy; g('acctSyncDot').setAttribute('data-s', sc);
+    g('acctSyncBtn').disabled = authState !== 'in';
+    g('acctAuthBtn').querySelector('.settings-row-title').textContent = authState === 'in' ? 'Çıkış yap' : (authState === 'expired' ? 'Yeniden giriş yap' : 'Giriş yap');
+  }
+  mountAccount();
 
   window.PaceSync = { syncNow: function () { return syncNow(false); } };
 })();
