@@ -13,7 +13,8 @@
     console.warn('Pace eşitleme devre dışı: kütüphane veya uygulama durumu bulunamadı.');
     return;
   }
-  var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, { auth: { persistSession: true, autoRefreshToken: true } });
+  var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, { auth: { persistSession: true, autoRefreshToken: true }, global: { fetch: function (u, o) { o = o || {}; o.cache = 'no-store'; return fetch(u, o); } } });
+  function nc() { return '_nc' + Date.now() + Math.random().toString(36).slice(2, 6); }   // her okuma isteği benzersiz: eski önbellek yanıtı dönmesin
   var uid = null, busy = false, again = false, pushT = null, channel = null;
   var status = 'Giriş yapılmadı', statusErr = false, modalOpen = false;
 
@@ -82,13 +83,13 @@
   // ---------- çekme ----------
   async function pull() {
     // İmleç yerine: önce hafif liste (id + updated_at), sonra yalnızca bu cihazdakinden yeni olanların verisi
-    var m = await sb.from('sync_records').select('id,updated_at').eq('kind', 'state');
+    var m = await sb.from('sync_records').select('id,updated_at').eq('kind', 'state').neq('id', nc());
     if (m.error) throw m.error;
     var need = (m.data || []).filter(function (x) { return !SKIP[x.id] && (!meta.linked || ts(x.updated_at) > ts(meta.times[x.id])); })
       .map(function (x) { return x.id; });
     var rows = [], changed = false;
     if (need.length) {
-      var d = await sb.from('sync_records').select('*').eq('kind', 'state').in('id', need);
+      var d = await sb.from('sync_records').select('*').eq('kind', 'state').in('id', need).neq('id', nc());
       if (d.error) throw d.error;
       rows = d.data || [];
     }
@@ -280,8 +281,8 @@
       }
       if (a === 'dx') {
         msg.textContent = 'Kontrol ediliyor…';
-        var q = await sb.from('sync_records').select('id,updated_at,device_id').eq('kind', 'state');
-        msg.textContent = 'sürüm 6 · bulutta ' + (q.data ? q.data.length : '?') + ' alan' + (q.error ? ' · HATA: ' + q.error.message : '') +
+        var q = await sb.from('sync_records').select('id,updated_at,device_id').eq('kind', 'state').neq('id', nc());
+        msg.textContent = 'sürüm 7 · bulutta ' + (q.data ? q.data.length : '?') + ' alan' + (q.error ? ' · HATA: ' + q.error.message : '') +
           ' · bu cihazda ' + Object.keys(APP_STATE).length + ' alan · imleç ' + (meta.lastPull || 'yok') + ' · bağlı ' + !!meta.linked +
           ' · ' + (q.data || []).map(function (x) { return x.id + '@' + String(x.updated_at).slice(5, 16); }).join(', ');
         return;

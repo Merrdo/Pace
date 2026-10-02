@@ -5,7 +5,7 @@
 // yapılan güncellemeler CACHE_VERSION hiç değişmese bile bir sonraki
 // açılışta görünür.
 
-const CACHE_VERSION = 'pace-v4';
+const CACHE_VERSION = 'pace-v5';   // v5: eski (bayat) Supabase yanıtları bu sürümle birlikte silinir
 const CORE_ASSETS = [
   './manifest.json',
   './icons/favicon.ico',
@@ -58,6 +58,16 @@ const isNavigationRequest = (request) => (
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
 
+  // ---- Supabase (veri/depo/giriş): service worker hiç karışmaz ----
+  // Aksi halde aşağıdaki cache-first kuralı, aynı adrese giden okuma isteklerine
+  // sonsuza dek eski cevabı verir ve bulut eşitlemesi cihazda "donmuş" görünür.
+  const reqUrl = new URL(event.request.url);
+  if (reqUrl.hostname.endsWith('.supabase.co') || reqUrl.hostname.endsWith('.supabase.in')) return;
+
+  // sync.js ve kütüphane betikleri de network-first: yeni sürüm hemen gelsin,
+  // ağ yoksa son başarılı kopya kullanılsın.
+  const isNav = isNavigationRequest(event.request);
+
   // ---- HTML sayfa istekleri: network-first ----
   // Eskiden bu istekler de cache-first idi; bu yüzden index.html'i
   // değiştirip CACHE_VERSION'ı bump'lamayı unuttuğunda (ya da service
@@ -67,7 +77,7 @@ self.addEventListener('fetch', (event) => {
   // taze bir kopya isteniyor; yalnızca ağ yoksa (çevrimdışıyken) en son
   // başarıyla alınmış kopyaya (veya install sırasında kaydedilen ilk
   // kopyaya) düşülüyor.
-  if (isNavigationRequest(event.request)) {
+  if (isNav || event.request.destination === 'script') {
     event.respondWith(
       fetch(event.request)
         .then((response) => {
@@ -78,7 +88,7 @@ self.addEventListener('fetch', (event) => {
           return response;
         })
         .catch(() => (
-          caches.match(event.request).then((cached) => cached || caches.match(OFFLINE_FALLBACK))
+          caches.match(event.request).then((cached) => cached || (isNav ? caches.match(OFFLINE_FALLBACK) : undefined))
         ))
     );
     return;
