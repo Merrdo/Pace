@@ -57,19 +57,27 @@
   }
 
   // ---------- yerel değişiklik tespiti ----------
+  // Kullanıcı ekrana dokunmadan önce uygulamanın kendiliğinden yaptığı düzenlemeler (açılışta
+  // varsayılan alan ekleme, yeniden hesaplama vb.) gerçek değişiklik sayılmaz: buluta gönderilmez,
+  // diğer cihazda gereksiz "Yenile" çıkarmaz. Yalnızca hesaba bağlı cihazda geçerli.
+  var userActed = false;
+  ['pointerdown', 'touchstart', 'keydown'].forEach(function (ev) {
+    window.addEventListener(ev, function () { userActed = true; }, { capture: true, passive: true });
+  });
   function scan() {
-    var now = new Date().toISOString(), changed = false;
+    var now = new Date().toISOString(), changed = false, absorb = !!meta.linked && !userActed;
     Object.keys(APP_STATE).forEach(function (k) {
       if (SKIP[k]) return;
       var hs = hash(APP_STATE[k]);
       if (meta.hashes[k] !== hs) {
         var known = Object.prototype.hasOwnProperty.call(meta.hashes, k);
+        if (absorb && known) { meta.hashes[k] = hs; changed = true; return; }   // sessizce kabul et, gönderme
         meta.times[k] = known ? now : (meta.linked ? now : '1970-01-01T00:00:01.000Z');
         meta.hashes[k] = hs; meta.dirty[k] = 1; changed = true;
       }
     });
     if (changed) saveMeta();
-    return changed;
+    return changed && Object.keys(meta.dirty).length > 0;
   }
 
   var stat = { down: 0, up: 0 };
@@ -282,7 +290,7 @@
       if (a === 'dx') {
         msg.textContent = 'Kontrol ediliyor…';
         var q = await sb.from('sync_records').select('id,updated_at,device_id').eq('kind', 'state').neq('id', nc());
-        msg.textContent = 'sürüm 7 · bulutta ' + (q.data ? q.data.length : '?') + ' alan' + (q.error ? ' · HATA: ' + q.error.message : '') +
+        msg.textContent = 'sürüm 8 · bulutta ' + (q.data ? q.data.length : '?') + ' alan' + (q.error ? ' · HATA: ' + q.error.message : '') +
           ' · bu cihazda ' + Object.keys(APP_STATE).length + ' alan · imleç ' + (meta.lastPull || 'yok') + ' · bağlı ' + !!meta.linked +
           ' · ' + (q.data || []).map(function (x) { return x.id + '@' + String(x.updated_at).slice(5, 16); }).join(', ');
         return;
