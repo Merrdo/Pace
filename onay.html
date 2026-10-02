@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="dark light">
+<title>Pace</title>
+<link rel="icon" href="icons/favicon-32.png">
+<style>
+:root{--bg:#0f1115;--card:#181b22;--text:#f2f3f5;--sub:#9aa1ae;--line:rgba(255,255,255,.08);--ok:#12a594;--bad:#e5484d;--acc:#3e63dd}
+@media (prefers-color-scheme:light){:root{--bg:#f6f4ef;--card:#fff;--text:#16181d;--sub:#5f6672;--line:rgba(0,0,0,.08)}}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--text);font:16px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,system-ui,sans-serif;display:flex;align-items:center;justify-content:center;padding:max(20px,env(safe-area-inset-top)) 20px max(20px,env(safe-area-inset-bottom))}
+.card{width:100%;max-width:400px;background:var(--card);border:1px solid var(--line);border-radius:24px;padding:30px 24px 26px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.25)}
+.brand{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:22px;font-weight:700;font-size:20px;letter-spacing:.2px}
+.brand img,.brand span.f{width:34px;height:34px;border-radius:9px;object-fit:cover}
+.brand span.f{display:inline-flex;align-items:center;justify-content:center;background:var(--acc);color:#fff}
+.ring{width:84px;height:84px;border-radius:50%;margin:0 auto 18px;display:flex;align-items:center;justify-content:center;color:#fff;background:var(--ok);box-shadow:0 12px 30px rgba(18,165,148,.35);animation:pop .5s cubic-bezier(.2,1.3,.4,1) both}
+.ring.bad{background:var(--bad);box-shadow:0 12px 30px rgba(229,72,77,.35)}
+.ring.wait{background:var(--acc);box-shadow:0 12px 30px rgba(62,99,221,.35)}
+@keyframes pop{from{transform:scale(.4);opacity:0}to{transform:scale(1);opacity:1}}
+h1{font-size:22px;margin:0 0 8px}
+p{margin:0;color:var(--sub);font-size:15px}
+.hint{margin-top:18px;font-size:13px}
+form{margin-top:20px;text-align:left}
+label{display:block;font-size:13px;color:var(--sub);margin:12px 0 6px}
+input{width:100%;font:inherit;color:var(--text);background:transparent;border:1px solid var(--line);border-radius:14px;padding:13px 14px;outline:none}
+input:focus{border-color:var(--acc)}
+button{width:100%;font:inherit;font-weight:600;border:0;border-radius:14px;padding:14px;margin-top:16px;cursor:pointer;color:#fff;background:var(--acc)}
+button[disabled]{opacity:.6;cursor:default}
+button.ghost{background:transparent;color:var(--sub);margin-top:6px;font-weight:500}
+.msg{min-height:20px;margin-top:12px;font-size:14px;color:var(--bad);text-align:center}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<main class="card" id="card">
+  <div class="brand"><img src="icons/apple-touch-icon.png" alt="" id="logo"><b>Pace</b></div>
+  <div id="view"></div>
+</main>
+
+<script>
+/* Bu sayfa e-postadaki bağlantılar içindir (kayıt onayı, e-posta değişikliği, şifre sıfırlama).
+   Pace uygulamasını AÇMAZ, uygulamanın oturumuna/verisine dokunmaz. */
+(function () {
+  'use strict';
+  var SUPABASE_URL = 'https://gkoqucyaxgphswlrzqsd.supabase.co';
+  var SUPABASE_KEY = 'sb_publishable_vooRR4tCBcpl1Cpn7arj1g_wAQB6ByB';
+
+  var logo = document.getElementById('logo');
+  logo.addEventListener('error', function () { var f = document.createElement('span'); f.className = 'f'; f.textContent = 'P'; logo.replaceWith(f); });
+
+  var view = document.getElementById('view');
+  var CHECK = '<svg viewBox="0 0 24 24" width="42" height="42" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+  var CROSS = '<svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6L6 18"/></svg>';
+  var LOCK = '<svg viewBox="0 0 24 24" width="38" height="38" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2.5"/><path d="M8 11V8a4 4 0 018 0v3"/></svg>';
+
+  function show(kind, title, text, hint) {
+    view.innerHTML = '<div class="ring ' + (kind === 'ok' ? '' : kind) + '">' + (kind === 'ok' ? CHECK : kind === 'bad' ? CROSS : LOCK) + '</div>' +
+      '<h1>' + title + '</h1><p>' + text + '</p>' + (hint === false ? '' : '<p class="hint">Bu sekmeyi kapatabilirsin.</p>');
+  }
+
+  // Adres çubuğundaki #... parçasını oku, sonra hemen temizle (jeton adreste kalmasın)
+  var raw = (location.hash || '').replace(/^#/, '') + '&' + (location.search || '').replace(/^\?/, '');
+  var q = {};
+  raw.split('&').forEach(function (kv) {
+    if (!kv) return; var i = kv.indexOf('=');
+    var k = decodeURIComponent((i < 0 ? kv : kv.slice(0, i)).replace(/\+/g, ' '));
+    var v = i < 0 ? '' : decodeURIComponent(kv.slice(i + 1).replace(/\+/g, ' '));
+    if (!(k in q)) q[k] = v;
+  });
+  var hadToken = !!q.access_token;
+  var type = q.type || '';
+  var hasErr = !!(q.error || q.error_code || q.error_description);
+
+  if (hasErr) {
+    try { history.replaceState(null, '', location.pathname); } catch (e) {}
+    show('bad', 'Bağlantı geçersiz', 'Bağlantının süresi dolmuş ya da daha önce kullanılmış. Uygulamadan yeni bir bağlantı isteyebilirsin.');
+    return;
+  }
+
+  if (type === 'recovery' && hadToken) {
+    recovery();
+    return;
+  }
+
+  try { history.replaceState(null, '', location.pathname); } catch (e) {}
+
+  if (type === 'signup' || type === 'invite') {
+    show('ok', 'E-postan doğrulandı', 'Hesabın hazır. Pace uygulamasına dönüp giriş yapabilirsin.');
+  } else if (type === 'email_change') {
+    show('ok', 'E-posta adresin güncellendi', 'Yeni adresinle Pace’e giriş yapabilirsin.');
+  } else if (hadToken || type) {
+    show('ok', 'İşlem tamamlandı', 'İşlemin başarıyla tamamlandı.');
+  } else if (q.message) {
+    show('ok', 'Onayın alındı', 'İşlemin bir sonraki adımı için e-postanı kontrol et.');
+  } else {
+    show('wait', 'Pace', 'Bu sayfa e-postadaki bağlantılarla açılır.', false);
+  }
+
+  // ---------- Şifre sıfırlama: yeni şifre burada belirlenir, uygulama açılmaz ----------
+  function recovery() {
+    show('wait', 'Yeni şifre belirle', 'Hesabın için yeni bir şifre seç.', false);
+    view.innerHTML += '<form id="f" novalidate><input type="text" autocomplete="username" tabindex="-1" aria-hidden="true" hidden>' +
+      '<label for="p1">Yeni şifre</label><input id="p1" type="password" autocomplete="new-password" autocapitalize="none" spellcheck="false">' +
+      '<label for="p2">Yeni şifre (tekrar)</label><input id="p2" type="password" autocomplete="new-password" autocapitalize="none" spellcheck="false">' +
+      '<div class="msg" id="m" role="alert"></div>' +
+      '<button type="submit" id="go">Şifreyi kaydet</button><button type="button" class="ghost" id="cancel">Vazgeç</button></form>';
+
+    var s = document.createElement('script');
+    s.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
+    s.crossOrigin = 'anonymous';
+    s.onerror = function () { setMsg('Bağlantı kurulamadı. İnternetini kontrol edip sayfayı yenile.'); };
+    s.onload = ready;
+    document.head.appendChild(s);
+
+    var sb = null, haveSession = false;
+    function setMsg(t) { var m = document.getElementById('m'); if (m) m.textContent = t || ''; }
+    function tr(e) {
+      var m = ((e && e.message) || '').toLowerCase();
+      if (m.indexOf('different from the old') > -1 || m.indexOf('same_password') > -1) return 'Yeni şifre eskisiyle aynı olamaz.';
+      if (m.indexOf('weak') > -1 || m.indexOf('pwned') > -1) return 'Bu şifre kolay tahmin edilebilir. Başka bir şifre dene.';
+      if (m.indexOf('session') > -1 || m.indexOf('jwt') > -1 || m.indexOf('expired') > -1) return 'Bağlantının süresi dolmuş. Uygulamadan yeni bir bağlantı iste.';
+      if (m.indexOf('rate limit') > -1) return 'Çok fazla deneme. Biraz sonra tekrar dene.';
+      if (m.indexOf('password') > -1) return 'Şifre en az 6 karakter olmalı.';
+      return 'Bir sorun oluştu. Biraz sonra tekrar dene.';
+    }
+
+    function ready() {
+      // persistSession:false → bu sayfa tarayıcıya oturum yazmaz; uygulamanın oturumuna karışmaz
+      sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+        auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: true, storageKey: 'pace-onay-tmp' }
+      });
+      sb.auth.onAuthStateChange(function (ev, session) {
+        if (session) haveSession = true;
+        if (ev === 'PASSWORD_RECOVERY' || ev === 'SIGNED_IN') { try { history.replaceState(null, '', location.pathname); } catch (e) {} }
+      });
+      sb.auth.getSession().then(function (r) { if (r.data && r.data.session) haveSession = true; });
+
+      document.getElementById('f').addEventListener('submit', async function (e) {
+        e.preventDefault();
+        var p1 = document.getElementById('p1').value, p2 = document.getElementById('p2').value, go = document.getElementById('go');
+        if (p1.length < 6) { setMsg('Şifre en az 6 karakter olmalı.'); return; }
+        if (p1 !== p2) { setMsg('Şifreler birbiriyle aynı değil.'); return; }
+        go.disabled = true; setMsg('');
+        try {
+          var r = await sb.auth.updateUser({ password: p1 });
+          if (r.error) throw r.error;
+          try { await sb.auth.signOut({ scope: 'local' }); } catch (x) {}
+          show('ok', 'Şifren güncellendi', 'Yeni şifrenle Pace’e giriş yapabilirsin.');
+        } catch (err) { setMsg(tr(err)); go.disabled = false; }
+      });
+
+      document.getElementById('cancel').addEventListener('click', async function () {
+        try { await sb.auth.signOut({ scope: 'local' }); } catch (x) {}
+        try { window.close(); } catch (x) {}
+        show('wait', 'İptal edildi', 'Şifren değişmedi.');
+      });
+    }
+  }
+})();
+</script>
+</body>
+</html>

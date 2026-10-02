@@ -13,6 +13,8 @@
     console.warn('Pace eşitleme devre dışı: kütüphane veya uygulama durumu bulunamadı.');
     return;
   }
+  // E-posta bağlantıları (kayıt onayı, e-posta değişikliği, şifre sıfırlama) uygulamayı değil, bağımsız onay sayfasını açar
+  var DONE_URL = new URL('onay.html', location.href).href;
   var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, { auth: { persistSession: true, autoRefreshToken: true }, global: { fetch: function (u, o) { o = o || {}; o.cache = 'no-store'; return fetch(u, o); } } });
   function nc() { return '_nc' + Date.now() + Math.random().toString(36).slice(2, 6); }   // her okuma isteği benzersiz: eski önbellek yanıtı dönmesin
   var authState = 'unknown', email = '', syncState = 'idle', lastOk = 0;
@@ -337,7 +339,7 @@
       try {
         if (a === 'in') { var r = await sb.auth.signInWithPassword({ email: em, password: pw }); if (r.error) throw r.error; }
         else {
-          var r2 = await sb.auth.signUp({ email: em, password: pw, options: { emailRedirectTo: new URL('./', location.href).href } });
+          var r2 = await sb.auth.signUp({ email: em, password: pw, options: { emailRedirectTo: DONE_URL } });
           if (r2.error) throw r2.error;
           if (!r2.data.session) { msg.textContent = 'Doğrulama e-postası gönderildi. Bağlantıya dokunduktan sonra buradan giriş yap.'; }
         }
@@ -990,7 +992,7 @@ body.is-qhavuz-test-open .pf-side{opacity:.35;pointer-events:none}}
     if (v.toLowerCase() === (email || '').toLowerCase()) { pwErr('Bu zaten şu anki e-posta adresin.', f); f.focus(); return; }
     pwBusy(true); pwMsg('');
     try {
-      var r = await sb.auth.updateUser({ email: v }, { emailRedirectTo: new URL('./', location.href).href });
+      var r = await sb.auth.updateUser({ email: v }, { emailRedirectTo: DONE_URL });
       if (r.error) throw r.error;
       var u = r.data && r.data.user;
       P.newMail = v; P.step = 3; P.busy = false;
@@ -1003,7 +1005,7 @@ body.is-qhavuz-test-open .pf-side{opacity:.35;pointer-events:none}}
   async function pwResend(b) {
     if (!pendingEmail || b.disabled) return; b.disabled = true;
     try {
-      var r = await sb.auth.resend({ type: 'email_change', email: pendingEmail, options: { emailRedirectTo: new URL('./', location.href).href } });
+      var r = await sb.auth.resend({ type: 'email_change', email: pendingEmail, options: { emailRedirectTo: DONE_URL } });
       if (r.error) throw r.error;
       pcToast('Doğrulama bağlantısı tekrar gönderildi.');
     } catch (err) { pcToast(trErr(err)); }
@@ -1014,7 +1016,7 @@ body.is-qhavuz-test-open .pf-side{opacity:.35;pointer-events:none}}
     if (!email) { pwErr('Hesap e-postası bulunamadı.'); return; }
     P.busy = true; b.disabled = true; pwMsg('Gönderiliyor…', 'info');
     try {
-      var r = await sb.auth.resetPasswordForEmail(email, { redirectTo: new URL('./', location.href).href });
+      var r = await sb.auth.resetPasswordForEmail(email, { redirectTo: DONE_URL });
       if (r.error) throw r.error;
       if (pwAlive()) pwMsg('Sıfırlama bağlantısı ' + email + ' adresine gönderildi.', 'ok');
     } catch (err) { if (pwAlive()) pwErr(trErr(err)); }
@@ -1344,7 +1346,7 @@ img.pa-mark{display:block;object-fit:cover;border-radius:23%;background:none;box
     try {
       if (!up) { var r = await sb.auth.signInWithPassword({ email: ev, password: pw.value }); if (r.error) throw r.error; finishAuth(); }
       else {
-        var r2 = await sb.auth.signUp({ email: ev, password: pw.value, options: { emailRedirectTo: new URL('./', location.href).href } });
+        var r2 = await sb.auth.signUp({ email: ev, password: pw.value, options: { emailRedirectTo: DONE_URL } });
         if (r2.error) throw r2.error;
         if (r2.data.session) finishAuth(); else authState_verify(ev);
       }
@@ -1386,7 +1388,7 @@ img.pa-mark{display:block;object-fit:cover;border-radius:23%;background:none;box
   async function authForgot(ev, em, go) {
     A.busy = true; go.classList.add('ld'); document.getElementById('paMsg').classList.remove('show');
     try {
-      var r = await sb.auth.resetPasswordForEmail(ev, { redirectTo: new URL('./', location.href).href });
+      var r = await sb.auth.resetPasswordForEmail(ev, { redirectTo: DONE_URL });
       if (r.error) throw r.error;
       authState_verify(ev, true);
     } catch (err) { if (A) authMsg(trErr(err), em); }
