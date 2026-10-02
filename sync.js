@@ -19,7 +19,7 @@
   var uid = null, busy = false, again = false, pushT = null, channel = null;
   var status = 'Giriş yapılmadı', statusErr = false, modalOpen = false;
   // E-postadaki şifre sıfırlama bağlantısıyla mı açıldık? (Supabase adres çubuğundaki #...type=recovery'yi okur)
-  var recMode = /type=recovery/.test(location.hash), holdSync = false, recKnown = false, linkErr = /error_code=|error=access_denied/.test(location.hash), emailLink = /type=email_change/.test(location.hash), pendingEmail = '';
+  var recMode = /type=recovery/.test(location.hash), holdSync = false, recKnown = false, linkErr = /error_code=|error=access_denied/.test(location.hash), emailLink = /type=email_change/.test(location.hash), pendingEmail = '', isAdmin = false;
 
   // ---------- yardımcılar ----------
   function ts(x) { return Date.parse(x) || 0; }
@@ -252,6 +252,7 @@
   sb.auth.onAuthStateChange(function (ev, session) {
     if (session) {
       var prevMail = email; email = session.user.email || email; pendingEmail = session.user.new_email || '';
+      isAdmin = !!(session.user.app_metadata && session.user.app_metadata.is_admin === true);   // yalnızca Supabase'den verilen yönetici işareti
       if (prevMail && prevMail !== email) pcToast('E-posta adresin güncellendi.');
       else if (emailLink && ev !== 'INITIAL_SESSION') { pcToast('E-posta adresin güncellendi.'); }
       if (emailLink && ev !== 'INITIAL_SESSION') { emailLink = false; try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {} }
@@ -260,7 +261,7 @@
     if (ev === 'PASSWORD_RECOVERY') setTimeout(openRecovery, 0);
     if (session && (ev === 'INITIAL_SESSION' || ev === 'SIGNED_IN')) setTimeout(function () { start(session); }, 0);
     if (!session && (ev === 'INITIAL_SESSION' || ev === 'SIGNED_OUT')) {
-      uid = null; if (channel) { sb.removeChannel(channel); channel = null; }
+      uid = null; isAdmin = false; if (channel) { sb.removeChannel(channel); channel = null; }
       authState = (meta.uid && !meta.signedOut) ? 'expired' : 'out';   // kullanıcı çıkmadıysa: oturum kendiliğinden düştü
       setStatus(authState === 'expired' ? 'Oturum düştü' : 'Giriş yapılmadı', authState === 'expired');
     }
@@ -307,7 +308,7 @@
   function render() {
     var c = document.getElementById('paceSyncCard'); if (!c) return;
     if (uid) {
-      c.innerHTML = '<h3>Bulut eşitleme</h3><p>' + status + '</p><button class="pri" data-a="sync">Şimdi eşitle</button><button data-a="re">Buluttan yeniden yükle</button><button data-a="dx">Teşhis</button><button data-a="out">Çıkış yap</button><button data-a="close">Kapat</button><div id="paceSyncMsg" style="color:#444;word-break:break-all"></div>';
+      c.innerHTML = '<h3>Bulut eşitleme</h3><p>' + status + '</p><button class="pri" data-a="sync">Şimdi eşitle</button>' + (isAdmin ? '<button data-a="re">Buluttan yeniden yükle</button><button data-a="dx">Teşhis</button>' : '') + '<button data-a="out">Çıkış yap</button><button data-a="close">Kapat</button><div id="paceSyncMsg" style="color:#444;word-break:break-all"></div>';
     } else {
       c.innerHTML = '<h3>Giriş yap</h3><p>Verilerin cihazların arasında eşitlensin.</p><input id="psEmail" type="email" placeholder="E-posta" autocomplete="email"><input id="psPass" type="password" placeholder="Şifre (en az 6 karakter)" autocomplete="current-password"><button class="pri" data-a="in">Giriş yap</button><button data-a="up">Kayıt ol</button><div id="paceSyncMsg"></div>';
     }
@@ -316,6 +317,7 @@
       var msg = document.getElementById('paceSyncMsg');
       if (a === 'close') return closeModal();
       if (a === 'sync') return syncNow(false);
+      if ((a === 're' || a === 'dx') && !isAdmin) return;
       if (a === 're') {
         if (!confirm('Bu cihazdaki veri, buluttaki veriyle değiştirilecek (önce yedeklenir). Devam edilsin mi?')) return;
         backup(); meta = newMeta(uid); stampEpoch(); saveMeta(); sessionStorage.removeItem('pace_sync_rl'); closeModal(); return syncNow(true);
@@ -401,6 +403,9 @@ ${stag}
 .ac-chip.fresh .ck{animation:acCk .45s ease both;animation-delay:calc(var(--ad,0s) + .12s)}
 .ac-chip.fresh .ac-ct{animation:pfFade .6s ease both;animation-delay:var(--ad,0s)}
 .ac-notch{position:absolute;right:15px;top:50%;margin-top:-8px;width:16px;height:16px;display:grid;place-items:center;opacity:.5;transition:transform .45s cubic-bezier(.34,1.56,.64,1),opacity .25s}
+.ac-hero.hasout{padding-right:92px}
+.ac-out{position:absolute;right:40px;top:50%;margin-top:-19px;width:38px;height:38px;border-radius:50%;display:grid;place-items:center;padding:0;cursor:pointer;color:#e5484d;background:rgba(229,72,77,.12);border:1px solid rgba(229,72,77,.28);-webkit-tap-highlight-color:transparent;transition:background .2s,transform .2s}
+.ac-out:hover{background:rgba(229,72,77,.22)}.ac-out:active{transform:scale(.92)}.ac-out:focus-visible{outline:2px solid #e5484d;outline-offset:2px}
 .ac-hero:hover .ac-notch{transform:translateX(3px);opacity:.9}.ac-hero:active .ac-notch{transform:translateX(5px)}
 .ac-note{margin:12px 2px 0;font-size:13px;line-height:1.4;opacity:.8}.ac-note.err{color:#e5484d;opacity:1}
 .ac-perks{list-style:none;margin:12px 0 0;padding:0;display:flex;flex-direction:column;gap:9px}
@@ -641,6 +646,7 @@ body.is-qhavuz-test-open .pf-side{opacity:.35;pointer-events:none}}
         '<button type="button" class="pf-pwrow" data-pf="pwem"><span class="pf-pwi">' + ic(IM.mail, 19) + '</span><span class="pf-pwt">E-postayı değiştir</span><span class="pf-pwc">' + ic(PWI.chev, 16) + '</span></button>' +
         (pendingEmail ? '<div class="pf-pend"><span>Onay bekleniyor: <b>' + esc(pendingEmail) + '</b></span><button type="button" data-pf="pwresend">Tekrar gönder</button></div>' : '') : '') +
       '<div class="pf-actions"><button type="button" class="pf-btn" data-pf="close">Vazgeç</button><button type="button" class="pf-btn pri" data-pf="save">Kaydet</button></div>' +
+      (authState === 'in' ? '<button type="button" class="pf-del" data-pf="pwdel">Hesabı sil</button>' : '') +
       '<input type="file" id="pfFile" accept="image/*" hidden><input type="file" id="pfCam" accept="image/*" capture="user" hidden>';
   }
   function onProfClick(e) {
@@ -725,6 +731,8 @@ body.is-qhavuz-test-open .pf-side{opacity:.35;pointer-events:none}}
   PWS.textContent = `
 .pf-x{display:grid;place-items:center;padding:0;line-height:1}.pf-x svg{display:block}
 @keyframes pwIn{from{opacity:0;transform:translateX(26px)}to{opacity:1;transform:none}}
+.pf-del{display:block;width:100%;margin:16px 0 2px;padding:10px;background:none;border:0;color:#e5484d;font-size:14px;font-weight:600;text-align:center;cursor:pointer;-webkit-tap-highlight-color:transparent}.pf-del:active{opacity:.6}
+.pw-go.del{background:#e5484d!important;color:#fff!important;box-shadow:none!important}
 .pf-pwrow{display:flex;align-items:center;gap:12px;width:100%;box-sizing:border-box;margin-top:12px;padding:11px 14px;border-radius:18px;border:1px solid rgba(128,128,128,.24);background:rgba(128,128,128,.08);color:inherit;font-size:15px;font-weight:600;text-align:left;cursor:pointer;transition:transform .3s cubic-bezier(.34,1.56,.64,1),background .25s,border-color .25s}
 .pf-pwrow:hover{background:rgba(128,128,128,.14);border-color:color-mix(in srgb,var(--pc) 45%,rgba(128,128,128,.24))}.pf-pwrow:active{transform:scale(.98)}
 .pf-pwi{display:grid;place-items:center;flex:none;width:34px;height:34px;border-radius:11px;color:var(--pc);background:color-mix(in srgb,var(--pc) 22%,transparent);transition:transform .45s cubic-bezier(.34,1.56,.64,1)}
@@ -815,7 +823,7 @@ body.is-qhavuz-test-open .pf-side{opacity:.35;pointer-events:none}}
     var c = pwEl('profCard'); if (!c || !draft) return;
     keepName(); cropSt = null; pwSt = { kind: kind || 'pw', step: 1, busy: false, old: '', newMail: '' };
     enter(c); c.scrollTop = 0;
-    c.innerHTML = '<div class="pf-top"><button type="button" class="pf-x" data-pf="pwback" aria-label="Geri">' + ic(PWI.back, 18) + '</button><b>' + (kind === 'em' ? 'E-postayı değiştir' : 'Şifreyi değiştir') + '</b><span></span></div>' +
+    c.innerHTML = '<div class="pf-top"><button type="button" class="pf-x" data-pf="pwback" aria-label="Geri">' + ic(PWI.back, 18) + '</button><b>' + (kind === 'em' ? 'E-postayı değiştir' : (kind === 'del' ? 'Hesabı sil' : 'Şifreyi değiştir')) + '</b><span></span></div>' +
       '<div class="pw-hero"><div class="pw-ico" id="pwIco"></div></div><div class="pw-steps" id="pwSteps"><i></i><i></i></div><div id="pwBody"></div>';
     renderPwStep();
   }
@@ -825,13 +833,15 @@ body.is-qhavuz-test-open .pf-side{opacity:.35;pointer-events:none}}
     var s = P.step, html = '', un = '<input type="text" autocomplete="username" value="' + esc(email || '') + '" tabindex="-1" aria-hidden="true" style="display:none">';
     var ico = pwEl('pwIco'); ico.className = 'pw-ico'; ico.innerHTML = ic(s === 1 ? IM.lock : (s === 2 ? PWI.unlock : IC.ok), 34);
     void ico.offsetWidth; ico.classList.add(s === 3 ? 'ok' : 'pop');
-    var stp = pwEl('pwSteps'); void stp.offsetWidth;
+    var stp = pwEl('pwSteps'); void stp.offsetWidth; stp.style.display = P.kind === 'del' ? 'none' : '';
     stp.querySelectorAll('i').forEach(function (b, i) { b.classList.toggle('on', i < Math.min(s, 2)); });
     if (s === 1) {
-      html = '<h4 class="pw-t">Önce mevcut şifreni gir</h4><p class="pw-s">Güvenliğin için işlemi senin yaptığını doğruluyoruz.</p>' +
+      html = (P.kind === 'del'
+        ? '<h4 class="pw-t">Hesabını kalıcı olarak sil</h4><p class="pw-s">E-posta kaydın, şifren ve buluttaki tüm verilerin (fotoğraflar dahil) silinir. Bu işlem geri alınamaz. Devam etmek için şifreni gir.</p>'
+        : '<h4 class="pw-t">Önce mevcut şifreni gir</h4><p class="pw-s">Güvenliğin için işlemi senin yaptığını doğruluyoruz.</p>') +
         '<form id="pwForm" novalidate>' + un + pwField('pwOld', 'Mevcut şifre', 'current-password', IM.lock) +
         '<p class="pw-msg" id="pwMsg" role="alert"></p>' +
-        '<button type="submit" class="pw-go" id="pwGo"><span class="l">Devam</span><span class="s"></span></button>' +
+        '<button type="submit" class="pw-go' + (P.kind === 'del' ? ' del' : '') + '" id="pwGo"><span class="l">' + (P.kind === 'del' ? 'Hesabı kalıcı olarak sil' : 'Devam') + '</span><span class="s"></span></button>' +
         '<button type="button" class="pw-link" data-pf="pwforgot">Şifreni mi unuttun?</button></form>';
     } else if (s === 2) {
       html = '<h4 class="pw-t">Yeni şifreni belirle</h4><p class="pw-s">En az 6 karakter olsun. Eski şifrenle aynı olamaz.</p>' +
@@ -850,6 +860,7 @@ body.is-qhavuz-test-open .pf-side{opacity:.35;pointer-events:none}}
   function pwClick(a, b) {
     if (a === 'pw') return openPw('pw');
     if (a === 'pwem') return openPw('em');
+    if (a === 'pwdel') return openPw('del');
     if (a === 'pwresend') return pwResend(b);
     if (a === 'pwback') { if (pwSt) pwSt.old = ''; pwSt = null; var c = pwEl('profCard'); if (c) c.scrollTop = 0; return renderProfile(); }
     if (a === 'pweye') {
@@ -936,6 +947,7 @@ body.is-qhavuz-test-open .pf-side{opacity:.35;pointer-events:none}}
       try {
         var r = await sb.auth.signInWithPassword({ email: email, password: old.value });   // eski şifre doğrulaması
         if (r.error) throw r.error;
+        if (P.kind === 'del') { pwBusy(false); return delFinish(); }
         P.old = old.value; P.step = 2; P.busy = false;
         if (pwAlive()) renderPwStep();
       } catch (err) {
@@ -960,6 +972,39 @@ body.is-qhavuz-test-open .pf-side{opacity:.35;pointer-events:none}}
     }
   }
 
+  // ---------- Hesabı sil ----------
+  // Sunucuda 'delete_my_account' işlevi gerekir (kurulum SQL'ine eklenir). Önce fotoğraflar depodan silinir,
+  // sonra hesap silinir; kayıtlar (sync_records) hesapla birlikte zincirleme gider.
+  async function delFinish() {
+    var P = pwSt, id = uid; if (!P || !id) return;
+    if (!confirm('Hesabın ve buluttaki tüm verilerin kalıcı olarak silinecek. Bu işlem geri alınamaz. Devam edilsin mi?')) return;
+    pwBusy(true); pwMsg('Hesap siliniyor…', 'info');
+    try {
+      for (var n = 0; n < 30; n++) {
+        var l = await sb.storage.from('images').list(id, { limit: 100 });
+        if (l.error) throw l.error;
+        var files = (l.data || []).filter(function (f) { return f && f.name && f.name.charAt(0) !== '.'; }).map(function (f) { return id + '/' + f.name; });
+        if (!files.length) break;
+        var d = await sb.storage.from('images').remove(files);
+        if (d.error) throw d.error;
+      }
+      var r = await sb.rpc('delete_my_account');
+      if (r.error) throw r.error;
+    } catch (err) {
+      pwBusy(false);
+      var low = ((err && (err.message || '')) + ' ' + ((err && err.code) || '')).toLowerCase();
+      if (pwAlive()) pwErr(low.indexOf('delete_my_account') > -1 || low.indexOf('pgrst202') > -1 ? 'Sunucu tarafı hazır değil (silme işlevi kurulmamış).' : trErr(err));
+      return;
+    }
+    clearTimeout(pushT); pushT = null;
+    uid = null; isAdmin = false; if (channel) { sb.removeChannel(channel); channel = null; }
+    try { localStorage.removeItem(META_KEY); } catch (e) {}
+    meta = newMeta(null);   // bu cihaz hiçbir hesaba bağlı değil; cihazdaki uygulama verisi yerinde kalır
+    try { await sb.auth.signOut({ scope: 'local' }); } catch (e2) {}
+    authState = 'out'; setStatus('Giriş yapılmadı', false);
+    closeProfile(); ui(); pcToast('Hesabın silindi.');
+  }
+
   // ---------- Ayarlar > Hesabım ----------
   function mountAccount() {
     if (document.getElementById('acctSection')) return;
@@ -971,9 +1016,10 @@ body.is-qhavuz-test-open .pf-side{opacity:.35;pointer-events:none}}
     sec.addEventListener('click', function (e) {
       var b = e.target.closest && e.target.closest('[data-acct]'); if (!b || b.disabled) return;
       var a = b.getAttribute('data-acct');
+      if (a === 'adv' && !isAdmin) return;
       if (a === 'view') { if (signedIn()) openViewer(b); }
       else if (a === 'profile') { if (signedIn()) openProfile(); else openModal(); }
-      else if (a === 'sync') syncNow(false); else if (a === 'out') doSignOut(); else openModal();
+      else if (a === 'sync') syncNow(false); else if (a === 'out') { if (confirm('Çıkış yapılsın mı?')) doSignOut(); } else openModal();
     });
     sec.addEventListener('keydown', function (e) { if ((e.key === 'Enter' || e.key === ' ') && e.target.classList && e.target.classList.contains('ac-hero')) { e.preventDefault(); if (signedIn()) openProfile(); } });
     var fb = document.getElementById('paceSyncBtn'); if (fb) fb.style.display = 'none';   // artık ayarlardan yönetiliyor
@@ -1015,14 +1061,15 @@ body.is-qhavuz-test-open .pf-side{opacity:.35;pointer-events:none}}
       var fresh = yd === 'ok' && authState === 'in' && Date.now() - okAt < 2200, cx = IC.cloud;
       cx += yd === 'busy' ? '<g class="up"><path d="M12 16.6v-5.2M9.8 13.5l2.2-2.2 2.2 2.2"/></g>' : (yd === 'err' ? '<path d="M12 10.6v3M12 16v.1"/>' : '<path class="ck" d="M9.2 13.2l2.1 2.1 3.7-4"/>');
       var chipHTML = '<div class="ac-top"><span class="ac-chip' + (fresh ? ' fresh' : '') + '" data-s="' + yd + '" style="--sc:' + SC[yd] + (fresh ? ';--ad:-' + ((Date.now() - okAt) / 1000).toFixed(2) + 's' : '') + '"><span class="ac-ci">' + ic(cx, 18) + '</span><span class="ac-ct">' + esc(yt) + '</span></span></div>';
-      html = chipHTML + '<div class="ac-hero" data-acct="profile" role="button" tabindex="0" aria-label="Profili düzenle" style="--pc:' + pc + '">' +
+      html = chipHTML + '<div class="ac-hero' + (authState === 'in' ? ' hasout' : '') + '" data-acct="profile" role="button" tabindex="0" aria-label="Profili düzenle" style="--pc:' + pc + '">' +
         '<button type="button" class="ac-av" data-acct="view" aria-label="Profil resmini büyüt" style="--sc:' + SC[sd] + '">' + avatarHTML(68) + '<span class="ac-st" title="Oturum: ' + st + '"></span></button>' +
         '<div class="ac-who"><b>' + esc(dispName()) + '</b><span>' + esc(email || '') + '</span></div>' +
+        (authState === 'in' ? '<button type="button" class="ac-out" data-acct="out" aria-label="Çıkış yap" title="Çıkış yap">' + ic(IC.out, 18) + '</button>' : '') +
         '<span class="ac-notch" aria-hidden="true">' + ic('<path d="M9 5l7 7-7 7"/>', 16) + '</span></div>' +
         (note ? '<p class="ac-note' + (noteErr ? ' err' : '') + '">' + note + '</p>' : '') +
         (authState === 'in'
           ? '<div class="ac-actions col"><button type="button" class="ac-btn pri" data-acct="sync"' + (syncing ? ' disabled' : '') + '>' + ic(IC.sync, 18, syncing ? 'ac-spin' : '') + (syncing ? 'Yedekleniyor…' : 'Şimdi yedekle') + '</button>' +
-            '<button type="button" class="ac-btn sec" data-acct="adv">' + ic(IC.adv, 18) + 'Gelişmiş</button><button type="button" class="ac-btn sec dng" data-acct="out">' + ic(IC.out, 18) + 'Çıkış yap</button></div>'
+            (isAdmin ? '<button type="button" class="ac-btn sec" data-acct="adv">' + ic(IC.adv, 18) + 'Gelişmiş</button>' : '') + '</div>'
           : '<div class="ac-actions"><button type="button" class="ac-btn pri" data-acct="in">Yeniden giriş yap</button></div>');
     } else {
       var unk = authState === 'unknown';
