@@ -19,7 +19,7 @@
   var uid = null, busy = false, again = false, pushT = null, channel = null;
   var status = 'Giriş yapılmadı', statusErr = false, modalOpen = false;
   // E-postadaki şifre sıfırlama bağlantısıyla mı açıldık? (Supabase adres çubuğundaki #...type=recovery'yi okur)
-  var recMode = /type=recovery/.test(location.hash), holdSync = false, linkErr = /error_code=|error=access_denied/.test(location.hash), emailLink = /type=email_change/.test(location.hash), pendingEmail = '';
+  var recMode = /type=recovery/.test(location.hash), holdSync = false, recKnown = !!meta.uid, linkErr = /error_code=|error=access_denied/.test(location.hash), emailLink = /type=email_change/.test(location.hash), pendingEmail = '';
 
   // ---------- yardımcılar ----------
   function ts(x) { return Date.parse(x) || 0; }
@@ -322,7 +322,7 @@
       if (a === 'dx') {
         msg.textContent = 'Kontrol ediliyor…';
         var q = await sb.from('sync_records').select('id,updated_at,device_id').eq('kind', 'state').neq('id', nc());
-        msg.textContent = 'sürüm 17 · bulutta ' + (q.data ? q.data.length : '?') + ' alan' + (q.error ? ' · HATA: ' + q.error.message : '') +
+        msg.textContent = 'sürüm 18 · bulutta ' + (q.data ? q.data.length : '?') + ' alan' + (q.error ? ' · HATA: ' + q.error.message : '') +
           ' · bu cihazda ' + Object.keys(APP_STATE).length + ' alan · imleç ' + (meta.lastPull || 'yok') + ' · bağlı ' + !!meta.linked +
           ' · ' + (q.data || []).map(function (x) { return x.id + '@' + String(x.updated_at).slice(5, 16); }).join(', ');
         return;
@@ -722,6 +722,7 @@ body.is-qhavuz-test-open .pf-side{opacity:.35;pointer-events:none}}
   // ---------- Şifre değiştir (Profil içinde, sürüm 16) ----------
   var PWS = document.createElement('style'); PWS.id = 'pacePwCss';
   PWS.textContent = `
+.pf-x{display:grid;place-items:center;padding:0;line-height:1}.pf-x svg{display:block}
 @keyframes pwIn{from{opacity:0;transform:translateX(26px)}to{opacity:1;transform:none}}
 .pf-pwrow{display:flex;align-items:center;gap:12px;width:100%;box-sizing:border-box;margin-top:12px;padding:11px 14px;border-radius:18px;border:1px solid rgba(128,128,128,.24);background:rgba(128,128,128,.08);color:inherit;font-size:15px;font-weight:600;text-align:left;cursor:pointer;transition:transform .3s cubic-bezier(.34,1.56,.64,1),background .25s,border-color .25s}
 .pf-pwrow:hover{background:rgba(128,128,128,.14);border-color:color-mix(in srgb,var(--pc) 45%,rgba(128,128,128,.24))}.pf-pwrow:active{transform:scale(.98)}
@@ -776,7 +777,7 @@ body.is-qhavuz-test-open .pf-side{opacity:.35;pointer-events:none}}
   var pwSt = null;
   var PWI = {
     unlock: '<rect x="5" y="11" width="14" height="9.5" rx="2.6"/><path d="M8 11V8a4 4 0 017.6-1.6"/><path d="M12 15v2"/>',
-    back: '<path d="M15 5l-7 7 7 7"/>',
+    back: '<path d="M15.5 5l-7 7 7 7"/>',
     chev: '<path d="M9 5l7 7-7 7"/>'
   };
   function pwEl(id) { return document.getElementById(id); }
@@ -1243,6 +1244,7 @@ img.pa-mark{display:block;object-fit:cover;border-radius:23%;background:none;box
 .pa-gr{display:grid;grid-template-rows:0fr;opacity:0;transition:grid-template-rows .55s cubic-bezier(.22,1,.36,1),opacity .35s ease}
 .pa-gr>div{min-height:0;overflow:hidden;margin:-5px;padding:5px}
 #paAuth:not([data-m=fg]) .pa-pwwrap,#paAuth[data-m=in] .pa-fgt{grid-template-rows:1fr;opacity:1}
+.pa-cancel{display:block;margin:12px auto 0;padding:8px 16px;border:0;background:none;color:inherit;opacity:.7;font-size:15px;font-weight:700;cursor:pointer;transition:opacity .25s}.pa-cancel:hover{opacity:1}
 .pa-link{display:block;margin:-4px 2px 8px auto;padding:4px 2px;border:0;background:none;color:var(--accent-color,#6ec1ff);font-size:14px;font-weight:700;cursor:pointer}
 .pa-seg{max-height:60px;transition:max-height .5s cubic-bezier(.22,1,.36,1),margin .5s cubic-bezier(.22,1,.36,1),padding .5s,opacity .35s}
 #paAuth[data-m=fg] .pa-seg{max-height:0;margin:6px 0 8px;padding:0 4px;opacity:0;overflow:hidden;pointer-events:none}
@@ -1273,7 +1275,6 @@ img.pa-mark{display:block;object-fit:cover;border-radius:23%;background:none;box
     var ov = document.createElement('div'); ov.id = 'paAuth'; ov.setAttribute('data-m', 'rc');
     ov.innerHTML = '<div class="pa-bg"><i></i><i></i><i></i></div>' +
       '<div class="pa-card pa-in" role="dialog" aria-modal="true" aria-labelledby="rcT">' +
-      '<button type="button" class="pa-x" data-rc="close" aria-label="Kapat">✕</button>' +
       '<div class="pa-brand"><img class="pa-mark" src="icons/apple-touch-icon.png" alt="" width="50" height="50"><b>Pace</b></div>' +
       '<div class="pa-head"><h2 id="rcT">Yeni şifre belirle</h2><p>Hesabın için yeni bir şifre seç. Bundan sonra tüm cihazlarında bu şifreyle giriş yapacaksın.</p></div>' +
       '<form id="rcForm" novalidate style="margin-top:22px"><input type="text" autocomplete="username" tabindex="-1" aria-hidden="true" style="display:none">' +
@@ -1282,6 +1283,7 @@ img.pa-mark{display:block;object-fit:cover;border-radius:23%;background:none;box
         fld('rcP2', 'Yeni şifre (tekrar)', IM.lock2, false) +
         '<p class="pa-msg" id="rcMsg" role="alert"></p>' +
         '<button type="submit" class="pa-go" id="rcGo"><span class="l">Şifreyi kaydet</span><span class="s"></span></button>' +
+        '<button type="button" class="pa-cancel" data-rc="cancel">Vazgeç</button>' +
       '</form><div class="pa-st" id="rcSt"></div></div>';
     document.body.appendChild(ov);
     var lg = ov.querySelector('img.pa-mark'); if (lg) lg.addEventListener('error', function () { var f = document.createElement('span'); f.className = 'pa-mark f'; f.textContent = 'P'; lg.replaceWith(f); });
@@ -1290,7 +1292,7 @@ img.pa-mark{display:block;object-fit:cover;border-radius:23%;background:none;box
     ov.addEventListener('click', function (e) {
       var b = e.target.closest && e.target.closest('[data-rc]'); if (!b) return;
       var a = b.getAttribute('data-rc');
-      if (a === 'close') closeRecovery();
+      if (a === 'cancel') rcCancel();
       else if (a === 'eye') {
         var p1 = document.getElementById('rcP1'), p2 = document.getElementById('rcP2'), show = p1.type === 'password';
         p1.type = p2.type = show ? 'text' : 'password'; b.innerHTML = ic(show ? pwEyeOff : pwEye, 20); b.setAttribute('aria-label', show ? 'Şifreyi gizle' : 'Şifreyi göster');
@@ -1325,6 +1327,20 @@ img.pa-mark{display:block;object-fit:cover;border-radius:23%;background:none;box
       setTimeout(closeRecovery, 2200);
     } catch (err) { if (R) rcErr(trErr(err), p1); }
     if (R) { R.busy = false; go.classList.remove('ld'); }
+  }
+  // Vazgeç: bu tarayıcı daha önce hesaba bağlı değilse (başka tarayıcı / misafir) açılan oturum da kapatılır.
+  async function rcCancel() {
+    if (!R || R.busy) return; R.busy = true;
+    if (!recKnown) {
+      meta.signedOut = true; try { saveMeta(); await sb.auth.signOut(); } catch (e) {}
+      try { localStorage.removeItem(META_KEY); } catch (e) {}
+    }
+    try { window.close(); } catch (e) {}   // bağlantıdan açılan sekmelerde çoğu tarayıcı kapatmaya izin vermez; o durumda bilgi ekranı kalır
+    setTimeout(function () {
+      if (!R) return;
+      document.getElementById('rcSt').innerHTML = '<div class="pa-ring" style="background:rgba(128,128,128,.25);box-shadow:none;color:var(--theme-text,#fff)">' + ic(IM.lock, 38) + '</div><h3>İptal edildi</h3><p>Şifren değişmedi. Bu sekmeyi kapatabilirsin.</p>';
+      R.card.classList.add('st');
+    }, 200);
   }
   function closeRecovery() {
     if (!R) return; var ov = R.ov; R = null;
