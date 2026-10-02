@@ -390,16 +390,16 @@
   var syncPending = false;   // başka cihazdan veri geldi, sayfa henüz yenilenmedi (Ayarlar > Hesabım'da da görünür)
   var SBS = document.createElement('style'); SBS.id = 'paceSyncBannerCss';
   SBS.textContent = `
-@keyframes psbDrop{0%{opacity:0;transform:translate(-50%,-70px) scale(.7)}55%{opacity:1;transform:translate(-50%,7px) scale(1.04)}78%{transform:translate(-50%,-2px) scale(.99)}100%{opacity:1;transform:translate(-50%,0) scale(1)}}
+@keyframes psbDrop{0%{opacity:0;transform:translate(0,-70px) scale(.7)}55%{opacity:1;transform:translate(0,7px) scale(1.04)}78%{transform:translate(0,-2px) scale(.99)}100%{opacity:1;transform:translate(0,0) scale(1)}}
 @keyframes psbGrow{from{max-width:var(--psb-w0,56px)}to{max-width:min(440px,calc(100vw - 24px))}}
 @keyframes psbShow{from{opacity:0;transform:translateX(-10px)}to{opacity:1;transform:none}}
 @keyframes psbShrink{from{max-width:var(--psb-w1,440px)}to{max-width:var(--psb-w0,56px)}}
 @keyframes psbHide{to{opacity:0;transform:translateX(-10px)}}
-@keyframes psbLeave{0%{opacity:1;transform:translate(-50%,0) scale(1)}22%{opacity:1;transform:translate(-50%,4px) scale(1.04)}100%{opacity:0;transform:translate(-50%,-66px) scale(.5)}}
+@keyframes psbLeave{0%{opacity:1;transform:translate(0,0) scale(1)}22%{opacity:1;transform:translate(0,4px) scale(1.04)}100%{opacity:0;transform:translate(0,-66px) scale(.5)}}
 @keyframes psbRing{0%{opacity:.65;transform:scale(1)}100%{opacity:0;transform:scale(1.9)}}
 @keyframes psbArrow{0%,100%{transform:translateY(-1.5px)}50%{transform:translateY(2.5px)}}
 @keyframes psbSpin{to{transform:rotate(360deg)}}
-#paceSyncBanner{--ac:var(--accent-color,#ff90e8);position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 12px);z-index:2147483002;display:flex;align-items:center;gap:12px;width:max-content;max-width:min(440px,calc(100vw - 24px));box-sizing:border-box;padding:7px;border-radius:999px;overflow:hidden;background:#141416;color:#fff;border:1px solid rgba(255,255,255,.1);box-shadow:0 14px 38px rgba(0,0,0,.4),0 0 0 .5px rgba(0,0,0,.6);font-family:"Baloo 2","Space Grotesk",-apple-system,system-ui,sans-serif;animation:psbDrop .75s cubic-bezier(.22,1,.36,1) both,psbGrow .7s cubic-bezier(.22,1,.36,1) .3s both;will-change:transform,opacity;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none;touch-action:pan-x}
+#paceSyncBanner{--ac:var(--accent-color,#ff90e8);position:fixed;left:0;right:0;margin:0 auto;top:calc(env(safe-area-inset-top,0px) + 12px);z-index:2147483002;display:flex;align-items:center;gap:12px;width:max-content;max-width:min(440px,calc(100vw - 24px));box-sizing:border-box;padding:7px;border-radius:999px;overflow:hidden;background:#141416;color:#fff;border:1px solid rgba(255,255,255,.1);box-shadow:0 14px 38px rgba(0,0,0,.4),0 0 0 .5px rgba(0,0,0,.6);font-family:"Baloo 2","Space Grotesk",-apple-system,system-ui,sans-serif;animation:psbDrop .75s cubic-bezier(.22,1,.36,1) both,psbGrow .7s cubic-bezier(.22,1,.36,1) .3s both;will-change:transform,opacity;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none;touch-action:pan-x}
 #paceSyncBanner.low{top:calc(env(safe-area-inset-top,0px) + 78px)}
 #paceSyncBanner.out{animation:psbShrink .38s cubic-bezier(.65,0,.35,1) .08s both,psbLeave .42s cubic-bezier(.5,0,.9,.5) .42s both;pointer-events:none}
 #paceSyncBanner.out .psb-t,#paceSyncBanner.out .psb-go{animation:psbHide .22s ease both}
@@ -418,6 +418,19 @@
 #paceSyncBanner .psb-go svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2.7;stroke-linecap:round;stroke-linejoin:round}
 #paceSyncBanner.busy .psb-go{pointer-events:none;opacity:.85}
 #paceSyncBanner.busy .psb-go svg{animation:psbSpin .8s linear infinite}
+@keyframes psbDropM{0%{opacity:0;transform:translate(0,-28px) scale(.96)}100%{opacity:1;transform:translate(0,0) scale(1)}}
+@keyframes psbLeaveM{to{opacity:0;transform:translate(0,-22px) scale(.97)}}
+@media (max-width:600px){
+#paceSyncBanner{width:calc(100% - 24px);max-width:420px;padding:9px 9px 9px 10px;gap:12px;border-radius:26px;animation:psbDropM .5s cubic-bezier(.22,1,.36,1) both}
+#paceSyncBanner.low{top:calc(env(safe-area-inset-top,0px) + 84px)}
+#paceSyncBanner.out{animation:psbLeaveM .32s cubic-bezier(.5,0,.9,.5) both}
+#paceSyncBanner .psb-i{width:42px;height:42px}
+#paceSyncBanner .psb-t{flex:1;min-width:0;animation:none}
+#paceSyncBanner .psb-t b,#paceSyncBanner .psb-t span{overflow:hidden;text-overflow:ellipsis}
+#paceSyncBanner .psb-go{height:42px;padding:0 18px;animation:none}
+#paceSyncBanner.out .psb-t,#paceSyncBanner.out .psb-go{animation:none}
+}
+@media (max-width:380px){#paceSyncBanner{gap:9px;padding:8px 8px 8px 9px}#paceSyncBanner .psb-i{width:38px;height:38px}#paceSyncBanner .psb-t b{font-size:14px}#paceSyncBanner .psb-t span{font-size:12px}#paceSyncBanner .psb-go{height:38px;padding:0 14px;font-size:14px}}
 @media (prefers-reduced-motion:reduce){#paceSyncBanner,#paceSyncBanner *,#paceSyncBanner .psb-i::after{animation-duration:.01s!important;animation-delay:0s!important;animation-iteration-count:1!important}}`;
   document.head.appendChild(SBS);
   function doRefresh(b) {
@@ -430,7 +443,7 @@
     clearTimeout(b._t);
     if (swipe) {
       b.classList.remove('drag', 'back'); b.style.animation = 'none';
-      b.style.transition = 'transform .28s ease, opacity .28s ease'; b.style.transform = 'translate(-50%,-90px) scale(.9)'; b.style.opacity = '0';
+      b.style.transition = 'transform .28s ease, opacity .28s ease'; b.style.transform = 'translate(0,-90px) scale(.9)'; b.style.opacity = '0';
       setTimeout(function () { b.remove(); }, 300); return;
     }
     b.classList.remove('drag', 'back'); b.style.transform = ''; b.style.opacity = '';
@@ -451,17 +464,17 @@
     b.addEventListener('pointerdown', function (e) {
       clearTimeout(b._t);
       if (e.target.closest('button')) return;
-      drag = true; sy = e.clientY; dy = 0; b.classList.add('drag'); b.classList.remove('back'); b.style.transform = 'translate(-50%,0)';
+      drag = true; sy = e.clientY; dy = 0; b.classList.add('drag'); b.classList.remove('back'); b.style.transform = 'translate(0,0)';
       try { b.setPointerCapture(e.pointerId); } catch (x) {}
     });
     b.addEventListener('pointermove', function (e) {
       if (!drag) return; dy = Math.min(10, e.clientY - sy);
-      b.style.transform = 'translate(-50%,' + dy + 'px)'; b.style.opacity = String(Math.max(.4, 1 + dy / 120));
+      b.style.transform = 'translate(0,' + dy + 'px)'; b.style.opacity = String(Math.max(.4, 1 + dy / 120));
     });
     function end() {
       if (!drag) { arm(); return; } drag = false;
       if (dy < -30) { hideBanner(b, true); return; }
-      b.classList.remove('drag'); b.classList.add('back'); b.style.transform = 'translate(-50%,0)'; b.style.opacity = ''; arm();
+      b.classList.remove('drag'); b.classList.add('back'); b.style.transform = 'translate(0,0)'; b.style.opacity = ''; arm();
     }
     b.addEventListener('pointerup', end); b.addEventListener('pointercancel', end);
     document.body.appendChild(b);
@@ -1803,11 +1816,11 @@ img.pa-mark{display:block;object-fit:cover;border-radius:23%;background:none;box
 
   var UST = document.createElement('style'); UST.id = 'paceUpdCss';
   UST.textContent = `
-@keyframes pcUIn{from{opacity:0;transform:translate(-50%,-26px) scale(.95)}to{opacity:1;transform:translate(-50%,0) scale(1)}}
-@keyframes pcUOut{to{opacity:0;transform:translate(-50%,-18px) scale(.97)}}
+@keyframes pcUIn{from{opacity:0;transform:translate(0,-26px) scale(.95)}to{opacity:1;transform:translate(0,0) scale(1)}}
+@keyframes pcUOut{to{opacity:0;transform:translate(0,-18px) scale(.97)}}
 @keyframes pcDot{0%{box-shadow:0 0 0 0 rgba(229,72,77,.55)}100%{box-shadow:0 0 0 11px rgba(229,72,77,0)}}
 @keyframes pcBob{50%{transform:translateY(2px)}}
-#pcUpd{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 12px);transform:translateX(-50%);z-index:2147483002;width:calc(100% - 24px);max-width:430px;box-sizing:border-box;display:flex;align-items:center;gap:11px;padding:11px 10px 11px 12px;border-radius:22px;background:color-mix(in srgb,var(--theme-bg,#111) 84%,transparent);-webkit-backdrop-filter:blur(18px) saturate(1.3);backdrop-filter:blur(18px) saturate(1.3);color:var(--theme-text,#fff);border:1px solid rgba(128,128,128,.32);box-shadow:0 16px 44px rgba(0,0,0,.38);animation:pcUIn .65s cubic-bezier(.22,1,.36,1) both}
+#pcUpd{position:fixed;left:0;right:0;margin:0 auto;top:calc(env(safe-area-inset-top,0px) + 12px);z-index:2147483002;width:calc(100% - 24px);max-width:430px;box-sizing:border-box;display:flex;align-items:center;gap:11px;padding:11px 10px 11px 12px;border-radius:22px;background:color-mix(in srgb,var(--theme-bg,#111) 84%,transparent);-webkit-backdrop-filter:blur(18px) saturate(1.3);backdrop-filter:blur(18px) saturate(1.3);color:var(--theme-text,#fff);border:1px solid rgba(128,128,128,.32);box-shadow:0 16px 44px rgba(0,0,0,.38);animation:pcUIn .65s cubic-bezier(.22,1,.36,1) both}
 #pcUpd.out{animation:pcUOut .3s ease both;pointer-events:none}
 .pcu-i{flex:none;display:grid;place-items:center;width:38px;height:38px;border-radius:13px;color:#fff;background:linear-gradient(140deg,#f76b15,#e5484d);box-shadow:0 6px 16px rgba(229,72,77,.4)}
 .pcu-i svg{animation:pcBob 1.8s ease-in-out infinite}
@@ -1826,6 +1839,8 @@ img.pa-mark{display:block;object-fit:cover;border-radius:23%;background:none;box
 .upd-b{flex:1}
 .upd-b[data-s=new]{background:#e5484d;color:#fff;border-color:transparent;box-shadow:0 8px 22px rgba(229,72,77,.35)}
 .upd-b[data-s=ok]{background:color-mix(in srgb,#2ecc71 16%,transparent);border-color:color-mix(in srgb,#2ecc71 55%,transparent)}
+@media (max-width:600px){#pcUpd{padding:10px 10px 10px 10px;gap:10px;border-radius:26px}#pcUpd.out{animation:pcUOut .3s ease both}.pcu-i{width:42px;height:42px;border-radius:15px}.pcu-v{display:none}.pcu-go{padding:11px 16px}.pcu-x{width:32px;height:32px}}
+@media (max-width:380px){#pcUpd{gap:8px;padding:9px 8px 9px 9px}.pcu-i{width:36px;height:36px;border-radius:13px}.pcu-t b{font-size:14px}.pcu-t span{font-size:12px}.pcu-go{padding:10px 13px;font-size:13.5px}.pcu-x{width:28px;height:28px}}
 @media (prefers-reduced-motion:reduce){#pcUpd,.upd-row,.upd-dot,.pcu-i svg{animation:none!important}}
 `;
   document.head.appendChild(UST);
@@ -1864,7 +1879,7 @@ img.pa-mark{display:block;object-fit:cover;border-radius:23%;background:none;box
     if (document.getElementById('pcUpd') || upd.applying) return;
     try { if (sessionStorage.getItem('pace_upd_dis') === String(upd.latest)) return; } catch (e) {}
     var b = document.createElement('div'); b.id = 'pcUpd'; b.setAttribute('role', 'status');
-    b.innerHTML = '<span class="pcu-i">' + ic(UPI.dl, 20) + '</span><span class="pcu-t"><b>Yeni sürüm mevcut</b><span>Sürüm ' + upd.latest + ' hazır · verilerin korunur</span></span>' +
+    b.innerHTML = '<span class="pcu-i">' + ic(UPI.dl, 20) + '</span><span class="pcu-t"><b>Yeni sürüm mevcut</b><span><i class="pcu-v" style="font-style:normal">Sürüm ' + upd.latest + ' hazır · </i>Verilerin korunur</span></span>' +
       '<button type="button" class="pcu-go" data-u="go">Güncelle</button><button type="button" class="pcu-x" data-u="x" aria-label="Sonra">✕</button>';
     document.body.appendChild(b);
     b.addEventListener('click', function (e) {
