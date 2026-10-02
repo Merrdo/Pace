@@ -225,7 +225,18 @@
   }
   function schedule(ms) { clearTimeout(pushT); pushT = setTimeout(function () { syncNow(false); }, ms || 1500); }
 
-  window.addEventListener('app-state-saved', function () { if (uid && scan()) schedule(1500); });
+  // Her kayıtta 3 MB'lık durumu eşzamanlı özetlemek tabletlerde dokunuşu kasıyordu:
+  // tarama kayıtlar susunca, tarayıcı boştayken yapılır (gizlenirken zaten hemen taranır).
+  var scanT = 0;
+  function runScan() { scanT = 0; if (uid && scan()) schedule(1500); }
+  window.addEventListener('app-state-saved', function () {
+    if (!uid) return;
+    clearTimeout(scanT);
+    scanT = setTimeout(function () {
+      if (window.requestIdleCallback) window.requestIdleCallback(runScan, { timeout: 2000 }); else runScan();
+    }, 900);
+  });
+  window.addEventListener('pagehide', function () { if (scanT) { clearTimeout(scanT); runScan(); } });
   window.addEventListener('online', function () { schedule(500); });
   document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'visible') schedule(300); else if (uid && scan()) syncNow(false); });
 
