@@ -303,7 +303,7 @@
       if (a === 'dx') {
         msg.textContent = 'Kontrol ediliyor…';
         var q = await sb.from('sync_records').select('id,updated_at,device_id').eq('kind', 'state').neq('id', nc());
-        msg.textContent = 'sürüm 10 · bulutta ' + (q.data ? q.data.length : '?') + ' alan' + (q.error ? ' · HATA: ' + q.error.message : '') +
+        msg.textContent = 'sürüm 11 · bulutta ' + (q.data ? q.data.length : '?') + ' alan' + (q.error ? ' · HATA: ' + q.error.message : '') +
           ' · bu cihazda ' + Object.keys(APP_STATE).length + ' alan · imleç ' + (meta.lastPull || 'yok') + ' · bağlı ' + !!meta.linked +
           ' · ' + (q.data || []).map(function (x) { return x.id + '@' + String(x.updated_at).slice(5, 16); }).join(', ');
         return;
@@ -331,6 +331,7 @@
     '.acct-dot[data-s=err]{background:#e74c3c;box-shadow:0 0 0 4px rgba(231,76,60,.25)}' +
     '@keyframes acctPulse{50%{box-shadow:0 0 0 8px rgba(245,179,1,0)}}' +
     '#acctCard{padding:4px 0 2px}' +
+    '.acct-box,.acct-tile,.acct-note{color:var(--theme-text,#121212);font-family:"Baloo 2","Space Grotesk",sans-serif}' +
     '.acct-box{display:flex;align-items:center;gap:14px;padding:14px 16px;border-radius:20px;background:rgba(128,128,128,.13);border:1px solid rgba(128,128,128,.2)}' +
     '.acct-av{width:46px;height:46px;border-radius:50%;flex:none;display:flex;align-items:center;justify-content:center;color:#fff;font-size:20px;font-weight:700}' +
     '.acct-av-off{background:rgba(128,128,128,.35)}' +
