@@ -208,7 +208,7 @@
       if (/jwt|token|not authenticated|401/i.test((e && (e.message || e.code)) + '')) authState = 'expired';
       setStatus('Eşitlenemedi (çevrimdışı olabilir)', true);
     }
-    busy = false;
+    busy = false; ui();
     if (again) { again = false; schedule(300); }
   }
   function schedule(ms) { clearTimeout(pushT); pushT = setTimeout(function () { syncNow(false); }, ms || 1500); }
@@ -303,7 +303,7 @@
       if (a === 'dx') {
         msg.textContent = 'Kontrol ediliyor…';
         var q = await sb.from('sync_records').select('id,updated_at,device_id').eq('kind', 'state').neq('id', nc());
-        msg.textContent = 'sürüm 9 · bulutta ' + (q.data ? q.data.length : '?') + ' alan' + (q.error ? ' · HATA: ' + q.error.message : '') +
+        msg.textContent = 'sürüm 10 · bulutta ' + (q.data ? q.data.length : '?') + ' alan' + (q.error ? ' · HATA: ' + q.error.message : '') +
           ' · bu cihazda ' + Object.keys(APP_STATE).length + ' alan · imleç ' + (meta.lastPull || 'yok') + ' · bağlı ' + !!meta.linked +
           ' · ' + (q.data || []).map(function (x) { return x.id + '@' + String(x.updated_at).slice(5, 16); }).join(', ');
         return;
@@ -325,50 +325,69 @@
 
 
   // ---------- Ayarlar > Hesabım ----------
-  var acss = '.acct-dot{width:12px;height:12px;border-radius:50%;flex:none;background:#8a8a8a;box-shadow:0 0 0 4px rgba(138,138,138,.2);transition:background .25s,box-shadow .25s}' +
+  var acss = '.acct-dot{width:11px;height:11px;border-radius:50%;flex:none;background:#8a8a8a;box-shadow:0 0 0 4px rgba(138,138,138,.2);transition:background .25s,box-shadow .25s}' +
     '.acct-dot[data-s=ok]{background:#2ecc71;box-shadow:0 0 0 4px rgba(46,204,113,.22)}' +
     '.acct-dot[data-s=busy]{background:#f5b301;box-shadow:0 0 0 4px rgba(245,179,1,.25);animation:acctPulse 1.1s ease-in-out infinite}' +
     '.acct-dot[data-s=err]{background:#e74c3c;box-shadow:0 0 0 4px rgba(231,76,60,.25)}' +
     '@keyframes acctPulse{50%{box-shadow:0 0 0 8px rgba(245,179,1,0)}}' +
-    '#acctSection .settings-row-link{width:100%;text-align:left}#acctSection button:disabled{opacity:.45}';
+    '#acctCard{padding:4px 0 2px}' +
+    '.acct-box{display:flex;align-items:center;gap:14px;padding:14px 16px;border-radius:20px;background:rgba(128,128,128,.13);border:1px solid rgba(128,128,128,.2)}' +
+    '.acct-av{width:46px;height:46px;border-radius:50%;flex:none;display:flex;align-items:center;justify-content:center;color:#fff;font-size:20px;font-weight:700}' +
+    '.acct-av-off{background:rgba(128,128,128,.35)}' +
+    '.acct-who{min-width:0;display:flex;flex-direction:column;gap:2px}.acct-who b{font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}' +
+    '.acct-who span{font-size:13px;opacity:.65;overflow:hidden;text-overflow:ellipsis}' +
+    '.acct-tiles{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}' +
+    '.acct-tile{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:16px;background:rgba(128,128,128,.1);border:1px solid rgba(128,128,128,.16)}' +
+    '.acct-tile div{display:flex;flex-direction:column;gap:1px;min-width:0}.acct-tile b{font-size:14px}.acct-tile span:not(.acct-dot){font-size:12.5px;opacity:.7}' +
+    '.acct-note{margin:10px 2px 0;font-size:13px;line-height:1.4;opacity:.8}.acct-note.err{color:#e74c3c;opacity:1}' +
+    '.acct-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}.acct-actions button:disabled{opacity:.45}';
   var ast = document.createElement('style'); ast.textContent = acss; document.head.appendChild(ast);
+  function esc(t) { return String(t).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
 
   function mountAccount() {
     if (document.getElementById('acctSection')) return;
     var host = document.querySelector('#page-settings .settings-col-left') || document.querySelector('#page-settings .settings-page');
     if (!host) return;
     var sec = document.createElement('div'); sec.className = 'settings-section'; sec.id = 'acctSection';
-    var row = function (t, d, id) { return '<div class="settings-row"><div class="settings-row-text"><span class="settings-row-title">' + t + '</span><span class="settings-row-desc" id="' + id + 'Desc"></span></div><span class="acct-dot" id="' + id + 'Dot"></span></div>'; };
-    var btnRow = function (id, t) { return '<button type="button" class="settings-row settings-row-link" id="' + id + '"><div class="settings-row-text"><span class="settings-row-title">' + t + '</span></div></button>'; };
-    sec.innerHTML = '<span class="settings-section-label">Hesabım</span><div class="settings-card">' +
-      row('Oturum', '', 'acctSess') + '<div class="settings-divider"></div>' + row('Yedekleme', '', 'acctSync') +
-      '<div class="settings-divider"></div>' + btnRow('acctSyncBtn', 'Şimdi yedekle') +
-      '<div class="settings-divider"></div>' + btnRow('acctAuthBtn', 'Giriş yap') +
-      '<div class="settings-divider"></div>' + btnRow('acctAdvBtn', 'Gelişmiş (teşhis, buluttan yükle)') + '</div>';
+    sec.innerHTML = '<span class="settings-section-label">Hesabım</span><div class="settings-card"><div id="acctCard"></div></div>';
     host.insertBefore(sec, host.firstChild);
-    document.getElementById('paceSyncBtn').style.display = 'none';    // artık ayarlardan yönetiliyor
-    document.getElementById('acctSyncBtn').onclick = function () { syncNow(false); };
-    document.getElementById('acctAuthBtn').onclick = function () { if (authState === 'in') doSignOut(); else openModal(); };
-    document.getElementById('acctAdvBtn').onclick = function () { if (authState === 'in') openModal(); else openModal(); };
+    sec.addEventListener('click', function (e) {
+      var b = e.target.closest && e.target.closest('[data-acct]'); if (!b || b.disabled) return;
+      var a = b.getAttribute('data-acct');
+      if (a === 'sync') syncNow(false); else if (a === 'out') doSignOut(); else openModal();
+    });
+    var fb = document.getElementById('paceSyncBtn'); if (fb) fb.style.display = 'none';   // artık ayarlardan yönetiliyor
     ui();
   }
   function ui() {
-    var g = function (i) { return document.getElementById(i); };
-    if (!g('acctSection')) return;
-    var n = Object.keys(meta.dirty).length, sess, sd, sy, sc;
-    if (authState === 'in') { sess = 'Giriş yapıldı' + (email ? ' · ' + email : ''); sd = 'ok'; }
-    else if (authState === 'expired') { sess = 'Oturum düştü · bu cihaz hâlâ bağlı görünüyor ama yedeklenmiyor'; sd = 'err'; }
-    else { sess = authState === 'unknown' ? 'Kontrol ediliyor…' : 'Giriş yapılmadı'; sd = 'off'; }
-    if (authState === 'expired') { sy = 'Yedeklenmiyor' + (n ? ' · ' + n + ' değişiklik bekliyor' : ''); sc = 'err'; }
-    else if (authState !== 'in') { sy = 'Kapalı'; sc = 'off'; }
-    else if (busy || syncState === 'busy') { sy = 'Yedekleniyor…'; sc = 'busy'; }
-    else if (syncState === 'err') { sy = 'Yedeklenemedi · bağlantı gelince tekrar denenecek'; sc = 'err'; }
-    else if (n) { sy = n + ' değişiklik yedeklenecek'; sc = 'busy'; }
-    else { sy = 'Yedeklendi' + (lastOk ? ' · ' + new Date(lastOk).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }) : ''); sc = 'ok'; }
-    g('acctSessDesc').textContent = sess; g('acctSessDot').setAttribute('data-s', sd);
-    g('acctSyncDesc').textContent = sy; g('acctSyncDot').setAttribute('data-s', sc);
-    g('acctSyncBtn').disabled = authState !== 'in';
-    g('acctAuthBtn').querySelector('.settings-row-title').textContent = authState === 'in' ? 'Çıkış yap' : (authState === 'expired' ? 'Yeniden giriş yap' : 'Giriş yap');
+    var card = document.getElementById('acctCard'); if (!card) return;
+    var n = Object.keys(meta.dirty).length, sd, st, yd, yt, note = '', noteErr = false, btns = '';
+    var B = function (a, t, pri) { return '<button type="button" class="settings-outline-btn" data-acct="' + a + '">' + t + '</button>'; };
+    if (authState === 'in') { sd = 'ok'; st = 'Açık'; }
+    else if (authState === 'expired') { sd = 'err'; st = 'Düştü'; }
+    else { sd = 'off'; st = authState === 'unknown' ? 'Kontrol…' : 'Kapalı'; }
+    if (authState === 'expired') { yd = 'err'; yt = 'Yedeklenmiyor' + (n ? ' · ' + n + ' bekliyor' : ''); note = 'Oturum düştü ama bu cihaz hâlâ bağlı görünüyor; değişiklikler yedeklenmiyor. Yeniden giriş yap.'; noteErr = true; }
+    else if (authState !== 'in') { yd = 'off'; yt = 'Kapalı'; }
+    else if (busy || syncState === 'busy') { yd = 'busy'; yt = 'Yedekleniyor…'; }
+    else if (syncState === 'err') { yd = 'err'; yt = 'Yedeklenemedi'; note = 'Bağlantı gelince otomatik tekrar denenecek.'; noteErr = true; }
+    else if (n) { yd = 'busy'; yt = n + ' değişiklik bekliyor'; }
+    else { yd = 'ok'; yt = 'Yedeklendi' + (lastOk ? ' · ' + new Date(lastOk).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }) : ''); }
+    var head;
+    if (authState === 'in' || authState === 'expired') {
+      var em = email || 'Hesap', nm = em.split('@')[0], h = 0;
+      for (var k = 0; k < em.length; k++) h = (h * 31 + em.charCodeAt(k)) % 360;
+      head = '<div class="acct-box"><div class="acct-av" style="background:hsl(' + h + ',52%,46%)">' + esc(nm.charAt(0).toUpperCase()) + '</div><div class="acct-who"><b>' + esc(nm) + '</b><span>' + esc(em) + '</span></div></div>';
+    } else {
+      head = '<div class="acct-box"><div class="acct-av acct-av-off"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg></div><div class="acct-who"><b>Giriş yapılmadı</b><span>Verilerini cihazlar arasında eşitlemek için giriş yap</span></div></div>';
+    }
+    if (authState === 'in') btns = B('sync', 'Şimdi yedekle') + B('out', 'Çıkış yap') + B('adv', 'Gelişmiş');
+    else if (authState === 'expired') btns = B('in', 'Yeniden giriş yap');
+    else btns = B('in', 'Giriş yap');
+    card.innerHTML = head +
+      '<div class="acct-tiles"><div class="acct-tile"><span class="acct-dot" data-s="' + sd + '"></span><div><b>Oturum</b><span>' + st + '</span></div></div>' +
+      '<div class="acct-tile"><span class="acct-dot" data-s="' + yd + '"></span><div><b>Yedekleme</b><span>' + esc(yt) + '</span></div></div></div>' +
+      (note ? '<p class="acct-note' + (noteErr ? ' err' : '') + '">' + note + '</p>' : '') +
+      '<div class="acct-actions">' + btns + '</div>';
   }
   mountAccount();
 
