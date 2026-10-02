@@ -386,55 +386,78 @@
     ov.addEventListener('click', function (e) { if (e.target === ov) closeModal(); }); render(); }
   function closeModal() { modalOpen = false; var ov = document.getElementById('paceSyncOv'); if (ov) ov.remove(); }
   // ---- "Başka cihazdan güncelleme geldi" bildirimi ----
-  // Wi-Fi/AirPods açılır penceresi gibi: üstten küçük bir hap iner, yanlara açılıp yazıyı ve düğmeyi gösterir.
+  // Wi-Fi/AirPods açılır penceresi gibi: üstten ikon boyutunda bir hap iner, yanlara açılıp yazıyı ve düğmeyi gösterir.
+  // Düzen en baştan SABİT (genişlik animasyonu yok): açılma/kapanma yalnızca clip-path + transform ile yapılır,
+  // bu yüzden telefonda yazı kaymaz, titremez; tek tek yeniden yerleşim hesabı gerekmez.
   var syncPending = false;   // başka cihazdan veri geldi, sayfa henüz yenilenmedi (Ayarlar > Hesabım'da da görünür)
   var SBS = document.createElement('style'); SBS.id = 'paceSyncBannerCss';
   SBS.textContent = `
-@keyframes psbDrop{0%{opacity:0;transform:translate(-50%,-70px) scale(.7)}55%{opacity:1;transform:translate(-50%,7px) scale(1.04)}78%{transform:translate(-50%,-2px) scale(.99)}100%{opacity:1;transform:translate(-50%,0) scale(1)}}
-@keyframes psbGrow{from{max-width:var(--psb-w0,56px)}to{max-width:min(440px,calc(100vw - 24px))}}
+@keyframes psbDrop{0%{opacity:0;transform:translateY(-70px) scale(.7)}55%{opacity:1;transform:translateY(7px) scale(1.04)}78%{transform:translateY(-2px) scale(.99)}100%{opacity:1;transform:none}}
+@keyframes psbSlide{from{translate:var(--psb-dx,0px) 0}to{translate:0 0}}
+@keyframes psbSlideOut{from{translate:0 0}to{translate:var(--psb-dx,0px) 0}}
+@keyframes psbReveal{from{clip-path:inset(0 calc(100% - 56px) 0 0 round 999px)}to{clip-path:inset(0 0 0 0 round 999px)}}
+@keyframes psbCollapse{from{clip-path:inset(0 0 0 0 round 999px)}to{clip-path:inset(0 calc(100% - 56px) 0 0 round 999px)}}
+@keyframes psbShGrow{from{transform:scaleX(var(--psb-k,.2))}to{transform:none}}
+@keyframes psbShShrink{from{transform:none}to{transform:scaleX(var(--psb-k,.2))}}
 @keyframes psbShow{from{opacity:0;transform:translateX(-10px)}to{opacity:1;transform:none}}
-@keyframes psbShrink{from{max-width:var(--psb-w1,440px)}to{max-width:var(--psb-w0,56px)}}
 @keyframes psbHide{to{opacity:0;transform:translateX(-10px)}}
-@keyframes psbLeave{0%{opacity:1;transform:translate(-50%,0) scale(1)}22%{opacity:1;transform:translate(-50%,4px) scale(1.04)}100%{opacity:0;transform:translate(-50%,-66px) scale(.5)}}
-@keyframes psbRing{0%{opacity:.65;transform:scale(1)}100%{opacity:0;transform:scale(1.9)}}
-@keyframes psbArrow{0%,100%{transform:translateY(-1.5px)}50%{transform:translateY(2.5px)}}
+@keyframes psbLeave{0%{opacity:1;transform:none}22%{opacity:1;transform:translateY(4px) scale(1.04)}100%{opacity:0;transform:translateY(-66px) scale(.5)}}
+@keyframes psbPop{0%{opacity:0;transform:scale(0) rotate(-50deg)}100%{opacity:1;transform:none}}
+@keyframes psbOrbit{to{transform:rotate(360deg)}}
+@keyframes psbGlow{0%,100%{opacity:.35;transform:scale(1)}50%{opacity:.75;transform:scale(1.22)}}
+@keyframes psbArrow{0%{opacity:0;transform:translateY(-5px)}28%{opacity:1;transform:translateY(-1px)}68%{opacity:1;transform:translateY(2px)}100%{opacity:0;transform:translateY(5px)}}
+@keyframes psbCloud{0%,100%{transform:translateY(0)}50%{transform:translateY(-1px)}}
 @keyframes psbSpin{to{transform:rotate(360deg)}}
-#paceSyncBanner{--ac:var(--accent-color,#ff90e8);position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 12px);z-index:2147483002;display:flex;align-items:center;gap:12px;width:max-content;max-width:min(440px,calc(100vw - 24px));box-sizing:border-box;padding:7px;border-radius:999px;overflow:hidden;background:#141416;color:#fff;border:1px solid rgba(255,255,255,.1);box-shadow:0 14px 38px rgba(0,0,0,.4),0 0 0 .5px rgba(0,0,0,.6);font-family:"Baloo 2","Space Grotesk",-apple-system,system-ui,sans-serif;animation:psbDrop .75s cubic-bezier(.22,1,.36,1) both,psbGrow .7s cubic-bezier(.22,1,.36,1) .3s both;will-change:transform,opacity;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none;touch-action:pan-x}
+#paceSyncBanner{--ac:var(--accent-color,#ff90e8);position:fixed;left:0;right:0;margin:0 auto;top:calc(env(safe-area-inset-top,0px) + 12px);z-index:2147483002;width:max-content;max-width:calc(100vw - 24px);box-sizing:border-box;font-family:"Baloo 2","Space Grotesk",-apple-system,system-ui,sans-serif;animation:psbDrop .75s cubic-bezier(.22,1,.36,1) both,psbSlide .7s cubic-bezier(.22,1,.36,1) .3s both;will-change:transform,opacity;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none;touch-action:pan-x}
 #paceSyncBanner.low{top:calc(env(safe-area-inset-top,0px) + 78px)}
-#paceSyncBanner.out{animation:psbShrink .38s cubic-bezier(.65,0,.35,1) .08s both,psbLeave .42s cubic-bezier(.5,0,.9,.5) .42s both;pointer-events:none}
+#paceSyncBanner .psb-sh{position:absolute;inset:0;border-radius:999px;pointer-events:none;transform-origin:left center;box-shadow:0 14px 34px rgba(0,0,0,.38),0 4px 12px color-mix(in srgb,var(--ac) 22%,transparent);animation:psbShGrow .7s cubic-bezier(.22,1,.36,1) .3s both;will-change:transform}
+#paceSyncBanner .psb-in{position:relative;display:flex;align-items:center;gap:12px;box-sizing:border-box;padding:7px;border-radius:999px;background:#141416;color:#fff;border:1px solid rgba(255,255,255,.1);white-space:nowrap;animation:psbReveal .7s cubic-bezier(.22,1,.36,1) .3s both}
+#paceSyncBanner.out{animation:psbSlideOut .38s cubic-bezier(.65,0,.35,1) .08s both,psbLeave .42s cubic-bezier(.5,0,.9,.5) .42s both;pointer-events:none}
+#paceSyncBanner.out .psb-in{animation:psbCollapse .38s cubic-bezier(.65,0,.35,1) .08s both}
+#paceSyncBanner.out .psb-sh{animation:psbShShrink .38s cubic-bezier(.65,0,.35,1) .08s both}
 #paceSyncBanner.out .psb-t,#paceSyncBanner.out .psb-go{animation:psbHide .22s ease both}
-#paceSyncBanner.out .psb-i::after{animation:none;opacity:0}
-#paceSyncBanner.drag{animation:none;transition:none}
+#paceSyncBanner.drag,#paceSyncBanner.drag .psb-in,#paceSyncBanner.drag .psb-sh{animation:none;transition:none}
 #paceSyncBanner.back{animation:none;transition:transform .45s cubic-bezier(.34,1.5,.5,1),opacity .2s}
-#paceSyncBanner .psb-i{position:relative;flex:none;display:grid;place-items:center;width:40px;height:40px;border-radius:50%;color:#fff;background:linear-gradient(145deg,color-mix(in srgb,var(--ac) 100%,#fff 18%),color-mix(in srgb,var(--ac) 80%,#6a3cff))}
-#paceSyncBanner .psb-i::after{content:"";position:absolute;inset:0;border-radius:50%;border:2px solid var(--ac);pointer-events:none;animation:psbRing 1.8s ease-out .5s 3 both;will-change:transform,opacity}
-#paceSyncBanner .psb-i svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:2.3;stroke-linecap:round;stroke-linejoin:round;overflow:visible}
-#paceSyncBanner .psb-ar{animation:psbArrow 1.4s ease-in-out infinite}
-#paceSyncBanner .psb-t{flex:none;display:flex;flex-direction:column;line-height:1.15;text-align:left;white-space:nowrap;animation:psbShow .45s cubic-bezier(.22,1,.36,1) .55s both}
+#paceSyncBanner .psb-i{position:relative;flex:none;display:grid;place-items:center;width:40px;height:40px;border-radius:50%;color:#fff;background:radial-gradient(circle at 30% 24%,color-mix(in srgb,var(--ac) 100%,#fff 38%),color-mix(in srgb,var(--ac) 100%,#fff 4%) 46%,color-mix(in srgb,var(--ac) 78%,#5b2bff));box-shadow:inset 0 1.5px 0 rgba(255,255,255,.5),inset 0 -3px 6px rgba(60,20,120,.22),0 4px 14px color-mix(in srgb,var(--ac) 50%,transparent);animation:psbPop .65s cubic-bezier(.34,1.56,.64,1) .12s both}
+#paceSyncBanner .psb-i::before{content:"";position:absolute;inset:-5px;border-radius:50%;background:radial-gradient(circle,color-mix(in srgb,var(--ac) 70%,transparent),transparent 68%);pointer-events:none;z-index:-1;animation:psbGlow 2.2s ease-in-out infinite;will-change:transform,opacity}
+#paceSyncBanner .psb-orb{position:absolute;inset:0;width:100%;height:100%;fill:none;stroke-linecap:round;animation:psbOrbit 2.4s linear infinite;will-change:transform}
+#paceSyncBanner .psb-orb circle{stroke:#fff;stroke-width:2}
+#paceSyncBanner .psb-orb .tr{stroke-opacity:.2}
+#paceSyncBanner .psb-orb .ar{stroke-opacity:.95;stroke-dasharray:24 96}
+#paceSyncBanner .psb-cl{position:relative;width:22px;height:22px;overflow:visible;animation:psbCloud 2.2s ease-in-out infinite}
+#paceSyncBanner .psb-cl .cl{fill:#fff;filter:none}
+#paceSyncBanner .psb-cl .ar{fill:none;stroke:color-mix(in srgb,var(--ac) 72%,#4a1d8f);stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round;animation:psbArrow 1.5s ease-in-out infinite}
+#paceSyncBanner .psb-t{flex:none;display:flex;flex-direction:column;line-height:1.15;text-align:left;animation:psbShow .45s cubic-bezier(.22,1,.36,1) .6s both}
 #paceSyncBanner .psb-t b{font-size:15px;font-weight:800;letter-spacing:-.005em}
 #paceSyncBanner .psb-t span{margin-top:1px;font-size:12.5px;font-weight:600;color:rgba(255,255,255,.6)}
-#paceSyncBanner .psb-go{flex:none;display:inline-flex;align-items:center;justify-content:center;gap:6px;height:40px;padding:0 17px;margin-left:2px;border:0;border-radius:999px;cursor:pointer;font:inherit;font-size:14.5px;font-weight:800;color:#141416;background:#fff;transition:transform .25s cubic-bezier(.34,1.56,.64,1),opacity .25s;animation:psbShow .45s cubic-bezier(.22,1,.36,1) .65s both}
+#paceSyncBanner .psb-go{flex:none;display:inline-flex;align-items:center;justify-content:center;gap:6px;height:40px;padding:0 17px;margin-left:2px;border:0;border-radius:999px;cursor:pointer;font:inherit;font-size:14.5px;font-weight:800;color:#141416;background:#fff;transition:transform .25s cubic-bezier(.34,1.56,.64,1),opacity .25s;animation:psbShow .45s cubic-bezier(.22,1,.36,1) .7s both}
 #paceSyncBanner .psb-go:active{transform:scale(.92)}
 #paceSyncBanner .psb-go svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2.7;stroke-linecap:round;stroke-linejoin:round}
 #paceSyncBanner.busy .psb-go{pointer-events:none;opacity:.85}
 #paceSyncBanner.busy .psb-go svg{animation:psbSpin .8s linear infinite}
-@media (prefers-reduced-motion:reduce){#paceSyncBanner,#paceSyncBanner *,#paceSyncBanner .psb-i::after{animation-duration:.01s!important;animation-delay:0s!important;animation-iteration-count:1!important}}`;
+#paceSyncBanner.busy .psb-orb{animation-duration:.7s}
+@media (prefers-reduced-motion:reduce){#paceSyncBanner,#paceSyncBanner *{animation-duration:.01s!important;animation-delay:0s!important;animation-iteration-count:1!important}}`;
   document.head.appendChild(SBS);
   function doRefresh(b) {
     if (b) { b.classList.add('busy'); var em = b.querySelector('em'); if (em) em.textContent = 'Yenileniyor'; }
     if (navigator.vibrate) { try { navigator.vibrate(10); } catch (e) {} }
     setTimeout(function () { location.reload(); }, 450);
   }
+  function bannerMeasure(b) {   // hap açılış/kapanış hesabı: ikon boyutu (56px) ile gerçek genişlik arası
+    var w = b.offsetWidth || 300;
+    b.style.setProperty('--psb-dx', ((w - 56) / 2) + 'px');
+    b.style.setProperty('--psb-k', String(Math.max(.1, 56 / w)));
+  }
   function hideBanner(b, swipe) {
     if (!b || b.classList.contains('out')) return;
     clearTimeout(b._t);
     if (swipe) {
       b.classList.remove('drag', 'back'); b.style.animation = 'none';
-      b.style.transition = 'transform .28s ease, opacity .28s ease'; b.style.transform = 'translate(-50%,-90px) scale(.9)'; b.style.opacity = '0';
+      b.style.transition = 'transform .28s ease, opacity .28s ease'; b.style.transform = 'translateY(-90px) scale(.9)'; b.style.opacity = '0';
       setTimeout(function () { b.remove(); }, 300); return;
     }
     b.classList.remove('drag', 'back'); b.style.transform = ''; b.style.opacity = '';
-    b.style.setProperty('--psb-w1', b.offsetWidth + 'px');   // gerçek genişlikten başlayıp ikon boyutuna daralır
+    bannerMeasure(b);
     b.classList.add('out'); setTimeout(function () { b.remove(); }, 900);
   }
   function showBanner() {
@@ -442,31 +465,32 @@
     if (document.getElementById('paceSyncBanner')) return;
     var b = document.createElement('div'); b.id = 'paceSyncBanner'; b.setAttribute('role', 'status'); b.setAttribute('aria-live', 'polite');
     if (document.getElementById('pcUpd')) b.className = 'low';
-    b.innerHTML = '<span class="psb-i"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17.5 17.5H8a4.5 4.5 0 1 1 .9-8.9A5.5 5.5 0 0 1 19 10.5a3.5 3.5 0 0 1-1.5 7z"/><g class="psb-ar"><path d="M12 10v6M9.5 13.8l2.5 2.5 2.5-2.5"/></g></svg></span>' +
+    b.innerHTML = '<i class="psb-sh"></i><div class="psb-in">' +
+      '<span class="psb-i"><svg class="psb-orb" viewBox="0 0 40 40" aria-hidden="true"><circle class="tr" cx="20" cy="20" r="18.2"/><circle class="ar" cx="20" cy="20" r="18.2"/></svg>' +
+      '<svg class="psb-cl" viewBox="0 0 24 24" aria-hidden="true"><path class="cl" d="M17.5 18H8a4.7 4.7 0 1 1 .9-9.3A5.7 5.7 0 0 1 19.4 10.6 3.7 3.7 0 0 1 17.5 18z"/><path class="ar" d="M12 9.8v5.6M9.7 13.3l2.3 2.3 2.3-2.3"/></svg></span>' +
       '<span class="psb-t"><b>Güncelleme geldi</b><span>Başka cihazdan</span></span>' +
-      '<button type="button" class="psb-go"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.6-5.9M20 4v4.5h-4.5"/></svg><em style="font-style:normal">Yenile</em></button>';
+      '<button type="button" class="psb-go"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.6-5.9M20 4v4.5h-4.5"/></svg><em style="font-style:normal">Yenile</em></button></div>';
     b.querySelector('.psb-go').onclick = function () { doRefresh(b); };
     var sy = 0, dy = 0, drag = false;
     var arm = function () { clearTimeout(b._t); b._t = setTimeout(function () { hideBanner(b); }, 9000); };
     b.addEventListener('pointerdown', function (e) {
       clearTimeout(b._t);
       if (e.target.closest('button')) return;
-      drag = true; sy = e.clientY; dy = 0; b.classList.add('drag'); b.classList.remove('back'); b.style.transform = 'translate(-50%,0)';
+      drag = true; sy = e.clientY; dy = 0; b.classList.add('drag'); b.classList.remove('back'); b.style.transform = 'none';
       try { b.setPointerCapture(e.pointerId); } catch (x) {}
     });
     b.addEventListener('pointermove', function (e) {
       if (!drag) return; dy = Math.min(10, e.clientY - sy);
-      b.style.transform = 'translate(-50%,' + dy + 'px)'; b.style.opacity = String(Math.max(.4, 1 + dy / 120));
+      b.style.transform = 'translateY(' + dy + 'px)'; b.style.opacity = String(Math.max(.4, 1 + dy / 120));
     });
     function end() {
       if (!drag) { arm(); return; } drag = false;
       if (dy < -30) { hideBanner(b, true); return; }
-      b.classList.remove('drag'); b.classList.add('back'); b.style.transform = 'translate(-50%,0)'; b.style.opacity = ''; arm();
+      b.classList.remove('drag'); b.classList.add('back'); b.style.transform = 'none'; b.style.opacity = ''; arm();
     }
     b.addEventListener('pointerup', end); b.addEventListener('pointercancel', end);
     document.body.appendChild(b);
-    // Hap önce yalnızca ikon boyutundadır, sonra açılır; başlangıç genişliği
-    b.style.setProperty('--psb-w0', '56px');
+    bannerMeasure(b);   // ilk kareden önce ölçülür; açılış ikon boyutundan başlar
     arm();
   }
   function render() {
