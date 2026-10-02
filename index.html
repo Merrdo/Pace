@@ -41356,6 +41356,14 @@ body.is-countdown-fs.is-countdown-paused .countdown-fullscreen-time-row .stopwat
   .sfsp.s1 { --sx: -5px; } .sfsp.s2 { --sx: 6px; } .sfsp.s3 { --sx: 1px; }
   @media (prefers-reduced-motion: reduce) { .sflame *, .sflame { animation: none !important; } }
   .p8n-head .sflame { font-size: 2.3rem; }
+  /* Büyük ekran başlık hizası (yazı tipinden bağımsız):
+     - Seri sayısı "Gündelik" yazısıyla AYNI taban çizgisine oturur (eskiden kutu ortasında, yazıdan yukarıdaydı).
+     - Alev simgesi taban çizgisinin çok az altına kayar (yalnızca görsel; yerleşimi etkilemez). */
+  @media (min-width: 768px) and (min-height: 600px) {
+    .p8n-head .sflame { align-items: baseline; }
+    .p8n-head .sflame-num { line-height: 0; margin-top: 0; }
+    .p8n-head .sflame-wrap { transform: translateY(.12em); }
+  }
   #page-8 .p8m-titlewrap { grid-column: 1; grid-row: 1; display: flex; align-items: baseline; gap: .55rem; min-width: 0; }
   #page-8 .p8m-titlewrap .sflame { font-size: 1.5rem; }
   /* Telefon başlık satırı hizası (yazı tipinden BAĞIMSIZ, sabit düzen):
@@ -41417,6 +41425,10 @@ body.is-countdown-fs.is-countdown-paused .countdown-fullscreen-time-row .stopwat
           <div class="sflame is-off" id="p8nFlame" title="Günlük seri"></div>
           <span class="p8n-date" id="p8nDate"></span>
           <div class="p8n-stat" id="p8nStat" aria-live="polite"></div>
+          <button type="button" class="p8n-notesbtn p8n-switchbtn" id="p8nSwitchBtn" aria-label="Hatırlanacaklar sayfasına geç">
+            <span>Hatırlanacaklar</span>
+            <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.5 6.5 15 12l-5.5 5.5"/></svg>
+          </button>
           <button type="button" class="p8n-notesbtn p8n-newgrpbtn" id="p8nNewBtn" aria-expanded="false">
             <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
             <span>Yeni grup</span>
@@ -41718,8 +41730,7 @@ body.is-countdown-fs.is-countdown-paused .countdown-fullscreen-time-row .stopwat
   /* ===== Hatırlanacaklar (YALNIZCA telefon) =====
      Gündelik başlığına dokununca açılır. Kart yok: yazılar doğrudan arka planda,
      sade todo listesi. Seri / takvim / gece yarısı sıfırlaması YOK. */
-  @media (min-width: 768px) and (min-height: 600px) { #page-hatirla { display: none !important; } }
-  @media not all and (min-width: 768px) and (min-height: 600px) {
+  @media all {
     #page-8 .p8m-title { cursor: pointer; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; }
     #page-hatirla { flex-direction: column; align-items: center; justify-content: flex-start; padding: 0; overflow: hidden;
       --hl-mute: color-mix(in srgb, var(--theme-text, #121212) 55%, transparent);
@@ -41780,9 +41791,98 @@ body.is-countdown-fs.is-countdown-paused .countdown-fullscreen-time-row .stopwat
   @media (max-width: 340px) { #page-hatirla .hl-title { font-size: 1.25rem; } #page-hatirla .hl-top { padding-left: 16px; padding-right: 16px; } }
   @media (prefers-reduced-motion: reduce) { #page-hatirla * { animation: none !important; transition-duration: .01ms !important; } }
 </style>
+<style id="gundelik-large-css">
+  /* ===== Gündelik + Hatırlanacaklar — BÜYÜK EKRAN (tablet / masaüstü) =====
+     Telefona dokunmaz: tüm kurallar yalnızca geniş ekran koşulunda geçerlidir. */
+  .p8n-switchbtn, .hl-switch, .hl-sum, .hl-auto-lbl, .hl-bar, .hl-ghost { display: none; }
+  @media (min-width: 768px) and (min-height: 600px) {
+    /* --- Gündelik başlığı: dokunulabilir; "Yeni grup" yerine sayfa değiştirme düğmesi --- */
+    #p8nTitle { cursor: pointer; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; transition: opacity .2s ease, transform .3s cubic-bezier(.22,1,.36,1); }
+    #p8nTitle:hover { opacity: .72; }
+    #p8nTitle:active { transform: scale(.97); }
+    #p8nTitle:focus-visible, .hl-title:focus-visible { outline: 2px solid var(--accent-color, #ff90e8); outline-offset: 4px; border-radius: 8px; }
+    #p8nNewBtn { display: none !important; }
+    /* place() halkayı/düğmeleri başlığın sonuna ekler; sıra CSS ile sabitlenir: halka, sonra sayfa düğmesi. */
+    .p8n-head > .p8n-stat { order: 2; }
+    .p8n-head > .p8n-switchbtn { order: 3; margin-left: .9rem; }
+    .p8n-switchbtn, .hl-switch { display: inline-flex; margin-left: .5rem; transition: background-color .2s ease, transform .15s ease; }
+    .p8n-switchbtn:hover, .hl-switch:hover { background: var(--p8-surf2); }
+    .p8n-switchbtn svg, .hl-switch svg { transition: transform .35s cubic-bezier(.22,1,.36,1); }
+    .p8n-switchbtn:hover svg { transform: translateX(3px); }
+    .hl-switch:hover svg { transform: translateX(-3px); }
+
+    /* --- Sayfa geçişi: iki sayfa yatay kayarak yer değiştirir --- */
+    #page-8, #page-hatirla { transition: opacity .3s ease, transform .5s cubic-bezier(.22,1,.36,1); }
+    body[data-gk-dir] #page-8:not(.is-active) { transform: translateX(-64px) scale(.985); }
+    body[data-gk-dir] #page-hatirla:not(.is-active) { transform: translateX(64px) scale(.985); }
+
+    /* --- Sağ alttaki Hızlı Aksiyon düğmesi (her iki sayfada, kaydırsan da yerinde) --- */
+    .gundelik-fab-bar { display: block; position: fixed; right: 32px; bottom: calc(32px + env(safe-area-inset-bottom)); z-index: 40; opacity: 0; transform: translateY(18px) scale(.8); pointer-events: none; visibility: hidden; transition: opacity .25s ease, transform .45s cubic-bezier(.34,1.56,.64,1), visibility 0s linear .45s; }
+    body.is-gundelik-page .gundelik-fab-bar { opacity: 1; transform: none; pointer-events: auto; visibility: visible; transition-delay: .15s, .15s, 0s; }
+    body.has-modal-open .gundelik-fab-bar { opacity: 0; transform: scale(.85); pointer-events: none; }
+    .gundelik-fab-bar .qhavuz-fab-inner { display: block; }
+    .gundelik-fab-bar #gundelikFabBackBtn, .gundelik-fab-bar #gundelikFabSwitchBtn { display: none; }
+    .gundelik-fab-bar #gundelikFabAddBtn {
+      -webkit-appearance: none; appearance: none; display: grid; place-items: center; width: 62px; height: 62px; padding: 0; margin: 0;
+      border: none; border-radius: 50%; cursor: pointer; color: #fff; -webkit-tap-highlight-color: transparent;
+      background: var(--accent-color, #ff90e8);
+      box-shadow: 0 10px 28px -6px color-mix(in srgb, var(--accent-color, #ff90e8) 70%, transparent), 0 2px 6px rgba(0,0,0,.18), inset 0 1px 0 rgba(255,255,255,.28);
+      transition: transform .3s cubic-bezier(.34,1.56,.64,1), box-shadow .3s ease, filter .2s ease;
+    }
+    .gundelik-fab-bar #gundelikFabAddBtn:hover { transform: scale(1.07); filter: brightness(1.04); }
+    .gundelik-fab-bar #gundelikFabAddBtn:active { transform: scale(.92); }
+    .gundelik-fab-bar #gundelikFabAddBtn:focus-visible { outline: 3px solid color-mix(in srgb, var(--theme-text, #121212) 55%, transparent); outline-offset: 3px; }
+    .gundelik-fab-bar #gundelikFabAddBtn .qhavuz-fab-icon { width: 26px; height: 26px; stroke: currentColor; fill: none; stroke-width: 2.7; stroke-linecap: round; stroke-linejoin: round; filter: drop-shadow(0 1px 1px rgba(0,0,0,.18)); transition: transform .4s cubic-bezier(.34,1.56,.64,1); pointer-events: none; }
+    .gundelik-fab-bar #gundelikFabAddBtn:hover .qhavuz-fab-icon { transform: rotate(90deg); }
+
+    /* --- Hatırlanacaklar: büyük ekran tasarımı --- */
+    #page-hatirla {
+      --p8-surf: color-mix(in srgb, var(--theme-text, #121212) 6%, transparent);
+      --p8-surf2: color-mix(in srgb, var(--theme-text, #121212) 11%, transparent);
+      --p8-mute: color-mix(in srgb, var(--theme-text, #121212) 55%, transparent);
+      --hl-pad: max(40px, calc((100% - 1240px) / 2));
+      align-items: stretch; justify-content: flex-start; padding: 0; overflow: hidden;
+    }
+    #page-hatirla .hl-top { max-width: none; width: 100%; padding: calc(44px + env(safe-area-inset-top)) var(--hl-pad) 1rem; gap: 1rem; align-items: baseline; justify-content: flex-start; min-height: 0; position: relative; z-index: 6; }
+    #page-hatirla .hl-title { flex: 0 0 auto; overflow: visible; font-weight: 700; font-size: clamp(29.1px, 1.36vw + 22.44px, 40.8px); letter-spacing: -0.01em; line-height: normal; transition: opacity .2s ease, transform .3s cubic-bezier(.22,1,.36,1); }
+    #page-hatirla .hl-title:hover { opacity: .72; }
+    #page-hatirla .hl-title:active { transform: scale(.97); }
+    /* Gündelik başlığındaki alevin kapladığı yüksekliği taklit eder; iki sayfanın başlığı aynı dikey konumda durur. */
+    #page-hatirla .hl-ghost { display: inline-block; width: 0; height: calc(2.3rem * 1.08); margin-left: -1rem; }
+    #page-hatirla .hl-sum { display: inline; font-weight: 600; font-size: 1rem; color: var(--p8-mute); white-space: nowrap; }
+    #page-hatirla .hl-auto { display: inline-flex; align-items: center; gap: .5rem; align-self: center; width: auto; height: 2.7rem; margin-left: auto; padding: 0 1.1rem 0 .85rem; font: inherit; font-weight: 700; font-size: .85rem; background: var(--p8-surf); box-shadow: inset 0 1px 3px 0 color-mix(in srgb, var(--theme-text, #121212) 10%, transparent); }
+    #page-hatirla .hl-auto:hover { background: var(--p8-surf2); }
+    #page-hatirla .hl-auto.is-on { background: var(--p8-surf2); }
+    #page-hatirla .hl-auto-lbl { display: inline; }
+    #page-hatirla .hl-switch { align-self: center; margin-left: 0; }
+    #page-hatirla .hl-new { display: none; }
+    #page-hatirla .hl-scroll { max-width: none; width: 100%; padding: .6rem var(--hl-pad) calc(130px + env(safe-area-inset-bottom)); }
+    #page-hatirla .hl-newform { margin: 0 0 1.2rem; }
+    #hlList { column-width: 300px; column-gap: 1.1rem; }
+    #page-hatirla .hl-g { break-inside: avoid; -webkit-column-break-inside: avoid; margin: 0 0 1.1rem; padding: 1.4rem 1.5rem 1rem; border-radius: 2rem; background: var(--p8-surf); transition: background-color .3s ease, box-shadow .3s ease; }
+    #page-hatirla .hl-g:hover { background: color-mix(in srgb, var(--theme-text, #121212) 7.5%, transparent); }
+    #page-hatirla .hl-head { padding: .1rem .3rem 0; }
+    #page-hatirla .hl-name { font-size: 1.5rem; }
+    #page-hatirla .hl-count { font-size: .95rem; }
+    #page-hatirla .hl-bar { display: block; height: 4px; margin: .7rem .3rem .55rem; border-radius: 99px; overflow: hidden; background: var(--hl-soft); }
+    #page-hatirla .hl-bar i { display: block; height: 100%; width: 0; border-radius: inherit; background: var(--gc); transition: width .55s cubic-bezier(.22,1,.36,1); }
+    #page-hatirla .hl-r { padding: .65rem .5rem; transition: background-color .2s ease; }
+    #page-hatirla .hl-r:hover { background: color-mix(in srgb, var(--gc) 10%, transparent); }
+    #page-hatirla .hl-c { width: 1.85rem; height: 1.85rem; }
+    #page-hatirla .hl-c svg { width: 1rem; height: 1rem; }
+    #page-hatirla .hl-t { font-size: 1.12rem; }
+    #page-hatirla .hl-add { padding: .7rem .5rem; border-radius: .9rem; transition: background-color .2s ease, color .2s ease; }
+    #page-hatirla .hl-add:hover { background: var(--hl-soft); color: var(--theme-text, #121212); }
+    #page-hatirla .hl-empty { margin: 5rem 0; font-size: 1.15rem; column-span: all; }
+    #page-hatirla .hl-tip { margin: 1.2rem 0 0; font-size: .9rem; }
+  }
+  @media (prefers-reduced-motion: reduce) { #page-8, #page-hatirla, .gundelik-fab-bar { transition-duration: .01ms !important; } }
+</style>
   <section class="page" id="page-hatirla" aria-label="Hatırlanacaklar">
     <div class="hl-top">
       <h1 class="hl-title" id="hlTitle" role="button" tabindex="0" title="Gündelik'e dön">Hatırlanacaklar</h1>
+      <span class="hl-ghost" aria-hidden="true"></span>
+      <span class="hl-sum" id="hlSum"></span>
       <button type="button" class="hl-auto" id="hlAuto" role="switch" aria-checked="false" aria-label="Yapılanları otomatik sil" title="Yapılanları otomatik sil">
         <svg viewBox="0 0 24 24" aria-hidden="true">
           <defs><mask id="hlAutoMask" maskUnits="userSpaceOnUse" x="-4" y="-4" width="32" height="32"><rect x="-4" y="-4" width="32" height="32" fill="#fff"/><path class="ad-slash-gap" d="M4 4l16 16" stroke="#000" stroke-width="6"/></mask></defs>
@@ -41793,6 +41893,11 @@ body.is-countdown-fs.is-countdown-paused .countdown-fullscreen-time-row .stopwat
           </g>
           <path class="ad-slash" d="M4 4l16 16"/>
         </svg>
+        <span class="hl-auto-lbl">Otomatik sil</span>
+      </button>
+      <button type="button" class="p8n-notesbtn hl-switch" id="hlSwitchBtn" aria-label="Gündelik sayfasına dön">
+        <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.5 6.5 9 12l5.5 5.5"/></svg>
+        <span>Gündelik</span>
       </button>
       <button type="button" class="hl-new" id="hlNew" aria-label="Yeni liste"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
     </div>
@@ -71597,26 +71702,36 @@ body.is-countdown-fs.is-countdown-paused .countdown-fullscreen-time-row .stopwat
     // ---- Sayfa geçişi ----
     const phone = window.matchMedia('not all and (min-width: 768px) and (min-height: 600px)');
     if (typeof SIDEBAR_PARENT_PAGE !== 'undefined') SIDEBAR_PARENT_PAGE['page-hatirla'] = 'page-8';
-    const go = (id) => { if (phone.matches) goToPage(id); };
-    const gTitle = document.querySelector('#page-8 .p8m-title');
-    if (gTitle) {
-      gTitle.setAttribute('role', 'button'); gTitle.tabIndex = 0;
-      gTitle.addEventListener('click', () => go('page-hatirla'));
-      gTitle.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go('page-hatirla'); } });
-    }
+    // Büyük ekranda iki sayfa yatay kayarak yer değiştirir (yön: body[data-gk-dir]); telefonda eski geçiş.
+    let dirT = null;
+    const go = (id) => {
+      document.body.dataset.gkDir = id === 'page-hatirla' ? 'fwd' : 'back';
+      clearTimeout(dirT); dirT = setTimeout(() => { delete document.body.dataset.gkDir; }, 1100);
+      goToPage(id);
+    };
+    // Gündelik başlığı: telefondaki (.p8m-title) ve büyük ekrandaki (#p8nTitle) → Hatırlanacaklar
+    ['#page-8 .p8m-title', '#p8nTitle'].forEach((sel) => {
+      const n = document.querySelector(sel); if (!n) return;
+      n.setAttribute('role', 'button'); n.tabIndex = 0; n.title = 'Hatırlanacaklar';
+      n.addEventListener('click', () => go('page-hatirla'));
+      n.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go('page-hatirla'); } });
+    });
+    const sw1 = $('p8nSwitchBtn'), sw2 = $('hlSwitchBtn');
+    if (sw1) sw1.addEventListener('click', () => go('page-hatirla'));
+    if (sw2) sw2.addEventListener('click', () => go('page-8'));
+    // Sayfa yenilenince / doğrudan açılınca sağ alttaki hızlı eylem düğmesi de görünsün.
+    if (typeof activePage !== 'undefined' && activePage && GUNDELIK_NAV_PAGES.has(activePage.id)) setGundelikPageMode(true);
     const back = () => go('page-8');
     $('hlTitle').addEventListener('click', back);
     $('hlTitle').addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); back(); } });
     // Alt barda Gündelik sekmesi zaten seçili olduğundan, ona dokunmak da Gündelik'e döndürür.
     const navIn = document.querySelector('.nav-input[value="page-8"]');
     if (navIn && navIn.nextElementSibling) navIn.nextElementSibling.addEventListener('click', () => { if (page.classList.contains('is-active')) back(); });
-    const onMq = () => { if (!phone.matches && page.classList.contains('is-active')) goToPage('page-8'); };
-    if (phone.addEventListener) phone.addEventListener('change', onMq); else phone.addListener(onMq);
 
     // Sol alttaki Geri düğmesi (nav bar bu sayfalarda gizli): hem Hatırlanacaklar'dan
     // hem Gündelik'ten doğrudan Ana sayfa'ya çıkar (Gündelik'e uğramadan).
     const gSwitch = document.getElementById('gundelikFabSwitchBtn');
-    if (gSwitch) gSwitch.addEventListener('click', () => goToPage(page.classList.contains('is-active') ? 'page-8' : 'page-hatirla'));
+    if (gSwitch) gSwitch.addEventListener('click', () => go(page.classList.contains('is-active') ? 'page-8' : 'page-hatirla'));
     const gBack = document.getElementById('gundelikFabBackBtn');
     if (gBack) gBack.addEventListener('click', () => {
       const homeInput = document.querySelector('.nav-input[value="page-1"]');
@@ -71752,20 +71867,29 @@ body.is-countdown-fs.is-countdown-paused .countdown-fullscreen-time-row .stopwat
     });
 
     // ---- Çizim ----
+    const sumEl = $('hlSum');
+    function paintSum() {
+      if (!sumEl) return;
+      const n = st.groups.length, all = st.groups.reduce((a, g) => a + g.items.length, 0), dn = st.groups.reduce((a, g) => a + g.items.filter((i) => i.done).length, 0);
+      sumEl.textContent = n ? `${n} liste · ${dn}/${all} yapıldı` : '';
+    }
     function render() { window.gkAnim.flip(list, renderNow); }
     function renderNow() {
       closeMenu(); list.innerHTML = '';
       const nf = $('hlNewForm'); nf.innerHTML = '';
       if (newOpen) { const f = mkForm('Yeni liste adı (örn. Market)', (v) => { newOpen = false; st.groups.push({ id: gid(), name: v, color: pal[st.groups.length % pal.length], items: [] }); addOpen = st.groups[st.groups.length - 1].id; save(); render(); focusIn(); }, () => softCloseNew()); f.classList.add('hl-newform'); const sw = el('div', 'soft-wrap'); sw.appendChild(f); nf.appendChild(sw); if (newAnim) { newAnim = false; window.softOpen(sw); } }
       $('hlTip').textContent = st.groups.length ? 'İpucu: Bir listeye ya da maddeye basılı tut, seçenekler açılsın.' : '';
-      if (!st.groups.length) { list.appendChild(el('p', 'hl-empty', 'Henüz listen yok. Sağ üstteki + ile ekle.')); return; }
+      if (!st.groups.length) { list.appendChild(el('p', 'hl-empty', 'Henüz listen yok. + düğmesiyle ekle.')); return; }
       st.groups.forEach((g, gi) => {
         const box = el('section', 'hl-g'); box.dataset.fk = 'hg:' + g.id; box.style.setProperty('--gc', g.color); box.style.setProperty('--gt', tickColor(g.color));
         if (firstPaint) box.style.animationDelay = `${gi * 70}ms`;
         const head = el('div', 'hl-head'), cnt = el('span', 'hl-count');
         head.append(el('span', 'hl-name', g.name), cnt);
         const upd = () => { const d = g.items.filter((i) => i.done).length; cnt.textContent = g.items.length ? `${d}/${g.items.length}` : ''; };
-        upd(); box.appendChild(head);
+        const bar = el('span', 'hl-bar'), barI = el('i'); bar.appendChild(barI);
+        const upd0 = upd; 
+        const updAll = () => { upd0(); const d = g.items.filter((i) => i.done).length; barI.style.width = (g.items.length ? Math.round(d / g.items.length * 100) : 0) + '%'; paintSum(); };
+        updAll(); box.append(head, bar);
         hold(head, (x, y) => openMenu(head, [
           { ic: IC.edit, title: 'Adı Değiştir', sub: 'Listenin ismini düzenle', fn: () => editInline(head.querySelector('.hl-name'), g.name, (v) => { g.name = v; save(); }) },
           { ic: IC.color, title: 'Rengi Değiştir', sub: 'Listenin vurgu rengi', fn: () => { if (typeof openColorPicker === 'function') openColorPicker(g.name, g.color, (c) => { g.color = c; save(); render(); }); } },
@@ -71781,7 +71905,7 @@ body.is-countdown-fs.is-countdown-paused .countdown-fullscreen-time-row .stopwat
         g.items.forEach((it) => {
           const row = el('div', 'hl-r' + (it.done ? ' is-done' : '')), c = el('span', 'hl-c'), t = el('span', 'hl-t'); t.appendChild(el('span', 'hl-tt', it.text));
           c.innerHTML = TICK; row.append(c, t); row.dataset.fk = 'hr:' + it.id;
-          row.addEventListener('click', () => { it.done = !it.done; row.classList.toggle('is-done', it.done); save(); upd(); autoSweep(g, it); });
+          row.addEventListener('click', () => { it.done = !it.done; row.classList.toggle('is-done', it.done); save(); updAll(); autoSweep(g, it); });
           hold(row, (x, y) => openMenu(row, [
             { ic: IC.copy, title: 'Kopyala', sub: 'Metni panoya al', fn: async () => { const ok = await window.gundelikCopyText(it.text); toast(ok ? 'Kopyalandı' : 'Kopyalanamadı'); } },
             { ic: IC.edit, title: 'Metni Düzenle', sub: 'Maddenin adını değiştir', fn: () => editInline(t, it.text, (v) => { it.text = v; save(); }, true) },
@@ -72279,6 +72403,6 @@ body.is-countdown-fs.is-countdown-paused .countdown-fullscreen-time-row .stopwat
 </script>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" crossorigin="anonymous"></script>
-<script src="sync.js?v=29"></script>
+<script src="sync.js?v=30"></script>
 </body>
 </html>
