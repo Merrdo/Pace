@@ -418,17 +418,14 @@
 #paceSyncBanner .psb-go svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2.7;stroke-linecap:round;stroke-linejoin:round}
 #paceSyncBanner.busy .psb-go{pointer-events:none;opacity:.85}
 #paceSyncBanner.busy .psb-go svg{animation:psbSpin .8s linear infinite}
-@keyframes psbDropM{0%{opacity:0;transform:translate(0,-28px) scale(.96)}100%{opacity:1;transform:translate(0,0) scale(1)}}
-@keyframes psbLeaveM{to{opacity:0;transform:translate(0,-22px) scale(.97)}}
+@keyframes psbGrowM{from{max-width:var(--psb-w0,56px)}to{max-width:min(420px,calc(100vw - 24px))}}
 @media (max-width:600px){
-#paceSyncBanner{width:calc(100% - 24px);max-width:420px;padding:9px 9px 9px 10px;gap:12px;border-radius:26px;animation:psbDropM .5s cubic-bezier(.22,1,.36,1) both}
+#paceSyncBanner{width:calc(100% - 24px);max-width:420px;padding:9px 9px 9px 10px;gap:12px;border-radius:999px;animation:psbDrop .75s cubic-bezier(.22,1,.36,1) both,psbGrowM .7s cubic-bezier(.22,1,.36,1) .3s both}
 #paceSyncBanner.low{top:calc(env(safe-area-inset-top,0px) + 84px)}
-#paceSyncBanner.out{animation:psbLeaveM .32s cubic-bezier(.5,0,.9,.5) both}
 #paceSyncBanner .psb-i{width:42px;height:42px}
-#paceSyncBanner .psb-t{flex:1;min-width:0;animation:none}
+#paceSyncBanner .psb-t{flex:1;min-width:0}
 #paceSyncBanner .psb-t b,#paceSyncBanner .psb-t span{overflow:hidden;text-overflow:ellipsis}
-#paceSyncBanner .psb-go{height:42px;padding:0 18px;animation:none}
-#paceSyncBanner.out .psb-t,#paceSyncBanner.out .psb-go{animation:none}
+#paceSyncBanner .psb-go{height:42px;padding:0 18px}
 }
 @media (max-width:380px){#paceSyncBanner{gap:9px;padding:8px 8px 8px 9px}#paceSyncBanner .psb-i{width:38px;height:38px}#paceSyncBanner .psb-t b{font-size:14px}#paceSyncBanner .psb-t span{font-size:12px}#paceSyncBanner .psb-go{height:38px;padding:0 14px;font-size:14px}}
 @media (prefers-reduced-motion:reduce){#paceSyncBanner,#paceSyncBanner *,#paceSyncBanner .psb-i::after{animation-duration:.01s!important;animation-delay:0s!important;animation-iteration-count:1!important}}`;
