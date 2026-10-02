@@ -235,7 +235,7 @@
     var id = session.user.id;
     if (uid === id) return;
     if (meta.uid && meta.uid !== id) {
-      if (!confirm('Bu cihazdaki veriler başka bir hesaba ait. Bu hesabın verisiyle değiştirilsin mi? (Cihazdaki veri önce yedeklenir)')) { meta.signedOut = true; saveMeta(); await sb.auth.signOut(); return; }
+      if (!(await pcConfirm({ key: 'switch', icon: 'swap', title: 'Cihazdaki veriler başka hesaba ait', msg: 'Bu hesabın verisiyle değiştirilsin mi? Cihazdaki veri önce yedeklenir.', ok: 'Değiştir', cancel: 'İptal et' }))) { meta.signedOut = true; saveMeta(); await sb.auth.signOut(); return; }
       try { localStorage.setItem(BACKUP_KEY, localStorage.getItem(APP_STORAGE_KEY) || '{}'); } catch (e) {}
       localStorage.removeItem(APP_STORAGE_KEY); localStorage.removeItem(META_KEY);
       sessionStorage.setItem('pace_sync_rl', '1'); location.reload(); return;
@@ -319,7 +319,7 @@
       if (a === 'sync') return syncNow(false);
       if ((a === 're' || a === 'dx') && !isAdmin) return;
       if (a === 're') {
-        if (!confirm('Bu cihazdaki veri, buluttaki veriyle değiştirilecek (önce yedeklenir). Devam edilsin mi?')) return;
+        if (!(await pcConfirm({ icon: 'cloud', title: 'Buluttan yeniden yükle', msg: 'Bu cihazdaki veri, buluttaki veriyle değiştirilecek. Önce yedeklenir.', ok: 'Yeniden yükle', cancel: 'İptal et' }))) return;
         backup(); meta = newMeta(uid); stampEpoch(); saveMeta(); sessionStorage.removeItem('pace_sync_rl'); closeModal(); return syncNow(true);
       }
       if (a === 'dx') {
@@ -525,7 +525,7 @@ body.is-qhavuz-test-open .pf-side{opacity:.35;pointer-events:none}}
     var c = pickColor(p);
     return '<span class="pf-av" style="' + dim + 'background:' + c + ';color:' + textOn(c) + ';font-size:' + Math.round(size * 0.44) + 'px">' + esc(dispName(p).charAt(0).toLocaleUpperCase('tr-TR')) + '</span>';
   }
-  function toast(m) { if (typeof showAppToast === 'function') showAppToast(m, 'error'); else alert(m); }
+  function toast(m) { if (typeof showAppToast === 'function') showAppToast(m, 'error'); else pcToast(m); }
   function hs() { return (window.matchMedia && matchMedia('(min-width:601px)').matches) ? 104 : 128; }
   function signedIn() { return authState === 'in' || authState === 'expired'; }
 
@@ -881,6 +881,89 @@ body.is-qhavuz-test-open .pf-side{opacity:.35;pointer-events:none}}
     var d = document.createElement('div'); d.id = 'pcToast'; d.setAttribute('role', 'status'); d.textContent = t; document.body.appendChild(d);
     setTimeout(function () { if (d.isConnected) d.remove(); }, 3500);
   }
+
+  // ---------- Kendi onay panelimiz (sistem confirm() yerine) ----------
+  var pcdCur = null;
+  var PCD_ICONS = {
+    swap: '<path pathLength="1" d="M4 8h13l-3-3"/><path pathLength="1" d="M20 16H7l3 3"/>',
+    cloud: '<path pathLength="1" d="M7 18a4 4 0 0 1-.6-7.96A6 6 0 0 1 18 9.5a4.2 4.2 0 0 1-.5 8.5H7z"/>',
+    warn: '<path pathLength="1" d="M12 4 3 20h18L12 4z"/><path pathLength="1" d="M12 10v4"/><path pathLength="1" d="M12 17.4v.1"/>',
+    out: '<path pathLength="1" d="M10 4H5v16h5"/><path pathLength="1" d="M16 8l4 4-4 4"/><path pathLength="1" d="M20 12H9"/>',
+    ask: '<path pathLength="1" d="M9.5 9a2.5 2.5 0 1 1 3.6 2.2c-.7.4-1.1.9-1.1 1.8"/><path pathLength="1" d="M12 17.4v.1"/>'
+  };
+  function pcConfirm(o) {
+    o = o || {};
+    if (pcdCur) { if (o.key && pcdCur.key === o.key) return pcdCur.p; return pcdCur.p.then(function () { return pcConfirm(o); }); }
+    if (!document.getElementById('pacePcdCss')) {
+      var S = document.createElement('style'); S.id = 'pacePcdCss';
+      S.textContent = `
+.pcd-ov{position:fixed;inset:0;z-index:2147483030;display:flex;align-items:center;justify-content:center;padding:16px;box-sizing:border-box;background:rgba(0,0,0,.5);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);animation:pcdFade .3s ease both;overscroll-behavior:contain;touch-action:none}
+.pcd-ov.out{animation:pcdFadeOut .22s ease both}
+.pcd-card{--ac:var(--theme-text,#121212);position:relative;width:100%;max-width:380px;box-sizing:border-box;padding:28px 24px 22px;border-radius:32px;text-align:center;background:var(--theme-bg,#0b0b0b);color:var(--theme-text,#121212);border:1px solid rgba(128,128,128,.28);box-shadow:0 30px 80px rgba(0,0,0,.5);animation:pcdIn .6s cubic-bezier(.34,1.45,.64,1) both;font-family:inherit}
+.pcd-ov.out .pcd-card{animation:pcdOut .22s ease both}
+.pcd-card.danger{--ac:#e5484d}
+.pcd-ic{position:relative;width:68px;height:68px;margin:0 auto 16px;border-radius:50%;display:grid;place-items:center;color:var(--ac);background:color-mix(in srgb,var(--ac) 14%,transparent)}
+.pcd-ic::before{content:'';position:absolute;inset:0;border-radius:50%;border:2px solid var(--ac);opacity:0;animation:pcdRing 1.8s .35s ease-out infinite}
+.pcd-ic svg{width:32px;height:32px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;overflow:visible}
+.pcd-ic path{stroke-dasharray:1;stroke-dashoffset:1;animation:pcdDraw .7s .2s cubic-bezier(.65,0,.35,1) forwards}
+.pcd-card.danger .pcd-ic svg{animation:pcdShake .6s .85s ease both}
+.pcd-t{margin:0 0 8px;font-size:21px;line-height:1.25;font-weight:800;letter-spacing:-.01em;animation:pcdUp .5s .12s ease both}
+.pcd-m{margin:0 0 22px;font-size:15px;line-height:1.5;opacity:.7;animation:pcdUp .5s .2s ease both}
+.pcd-b{display:flex;gap:10px;animation:pcdUp .5s .28s ease both}
+.pcd-b button{flex:1;height:52px;padding:0 12px;border-radius:999px;font:inherit;font-size:16px;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:transform .25s cubic-bezier(.34,1.56,.64,1),opacity .2s}
+.pcd-b button:active{transform:scale(.95)}
+.pcd-b button:focus-visible{outline:2px solid var(--ac);outline-offset:3px}
+.pcd-no{background:transparent;color:inherit;border:1px solid rgba(128,128,128,.4)}
+.pcd-yes{background:var(--theme-text,#121212);color:var(--theme-bg,#fff);border:0;box-shadow:0 10px 26px rgba(0,0,0,.28)}
+.pcd-card.danger .pcd-yes{background:#e5484d;color:#fff}
+@keyframes pcdFade{from{opacity:0}to{opacity:1}}
+@keyframes pcdFadeOut{to{opacity:0}}
+@keyframes pcdIn{from{opacity:0;transform:translateY(30px) scale(.88)}to{opacity:1;transform:none}}
+@keyframes pcdOut{to{opacity:0;transform:translateY(14px) scale(.96)}}
+@keyframes pcdUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes pcdDraw{to{stroke-dashoffset:0}}
+@keyframes pcdRing{0%{opacity:.5;transform:scale(1)}100%{opacity:0;transform:scale(1.55)}}
+@keyframes pcdShake{0%,100%{transform:none}20%{transform:rotate(-9deg)}40%{transform:rotate(8deg)}60%{transform:rotate(-5deg)}80%{transform:rotate(3deg)}}
+@media (prefers-reduced-motion:reduce){.pcd-ov,.pcd-card,.pcd-card *,.pcd-ic::before{animation:none!important;transition:none!important}.pcd-ic path{stroke-dashoffset:0}.pcd-ic::before{display:none}}`;
+      document.head.appendChild(S);
+    }
+    var prev = document.activeElement, done, fin = false;
+    var p = new Promise(function (r) { done = r; });
+    pcdCur = { key: o.key || '', p: p };
+    var ov = document.createElement('div'); ov.className = 'pcd-ov';
+    var card = document.createElement('div'); card.className = 'pcd-card' + (o.tone === 'danger' ? ' danger' : '');
+    card.setAttribute('role', 'alertdialog'); card.setAttribute('aria-modal', 'true');
+    card.setAttribute('aria-labelledby', 'pcdT'); card.setAttribute('aria-describedby', 'pcdM');
+    card.innerHTML = '<div class="pcd-ic"><svg viewBox="0 0 24 24" aria-hidden="true">' + (PCD_ICONS[o.icon] || PCD_ICONS.ask) + '</svg></div>' +
+      '<h3 class="pcd-t" id="pcdT"></h3><p class="pcd-m" id="pcdM"></p>' +
+      '<div class="pcd-b"><button type="button" class="pcd-no"></button><button type="button" class="pcd-yes"></button></div>';
+    card.querySelector('.pcd-t').textContent = o.title || '';
+    var mm = card.querySelector('.pcd-m'); if (o.msg) mm.textContent = o.msg; else mm.remove();
+    var no = card.querySelector('.pcd-no'), yes = card.querySelector('.pcd-yes');
+    no.textContent = o.cancel || 'İptal et'; yes.textContent = o.ok || 'Tamam';
+    ov.appendChild(card); document.body.appendChild(ov);
+    function finish(v) {
+      if (fin) return; fin = true;
+      document.removeEventListener('keydown', onKey, true);
+      ov.classList.add('out');
+      setTimeout(function () {
+        ov.remove(); pcdCur = null; done(v);
+        try { if (prev && prev.focus && prev.isConnected) prev.focus(); } catch (e) {}
+      }, 220);
+    }
+    function onKey(e) {
+      if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); finish(false); }
+      else if (e.key === 'Tab') { e.preventDefault(); e.stopPropagation(); (document.activeElement === yes ? no : yes).focus(); }
+      else if (e.key === 'Enter' && document.activeElement !== no && document.activeElement !== yes) { e.preventDefault(); e.stopPropagation(); finish(false); }
+      else e.stopPropagation();
+    }
+    document.addEventListener('keydown', onKey, true);
+    no.addEventListener('click', function () { finish(false); });
+    yes.addEventListener('click', function () { finish(true); });
+    ov.addEventListener('pointerdown', function (e) { if (e.target === ov) finish(false); });
+    setTimeout(function () { try { no.focus({ preventScroll: true }); } catch (e) {} }, 60);   // guvenli varsayilan: iptal
+    return p;
+  }
   function renderEmStep() {
     var P = pwSt, body = pwEl('pwBody'); if (!P || !body) return;
     var s = P.step, html = '';
@@ -977,7 +1060,7 @@ body.is-qhavuz-test-open .pf-side{opacity:.35;pointer-events:none}}
   // sonra hesap silinir; kayıtlar (sync_records) hesapla birlikte zincirleme gider.
   async function delFinish() {
     var P = pwSt, id = uid; if (!P || !id) return;
-    if (!confirm('Hesabın ve buluttaki tüm verilerin kalıcı olarak silinecek. Bu işlem geri alınamaz. Devam edilsin mi?')) return;
+    if (!(await pcConfirm({ tone: 'danger', icon: 'warn', title: 'Hesap silinsin mi?', msg: 'Hesabın ve buluttaki tüm verilerin kalıcı olarak silinecek. Bu işlem geri alınamaz.', ok: 'Hesabı sil', cancel: 'Vazgeç' }))) return;
     pwBusy(true); pwMsg('Hesap siliniyor…', 'info');
     try {
       for (var n = 0; n < 30; n++) {
@@ -1019,7 +1102,7 @@ body.is-qhavuz-test-open .pf-side{opacity:.35;pointer-events:none}}
       if (a === 'adv' && !isAdmin) return;
       if (a === 'view') { if (signedIn()) openViewer(b); }
       else if (a === 'profile') { if (signedIn()) openProfile(); else openModal(); }
-      else if (a === 'sync') syncNow(false); else if (a === 'out') { if (confirm('Çıkış yapılsın mı?')) doSignOut(); } else openModal();
+      else if (a === 'sync') syncNow(false); else if (a === 'out') { pcConfirm({ icon: 'out', title: 'Çıkış yapılsın mı?', msg: 'Bu cihazdaki oturum kapanacak.', ok: 'Çıkış yap', cancel: 'İptal et' }).then(function (ok) { if (ok) doSignOut(); }); } else openModal();
     });
     sec.addEventListener('keydown', function (e) { if ((e.key === 'Enter' || e.key === ' ') && e.target.classList && e.target.classList.contains('ac-hero')) { e.preventDefault(); if (signedIn()) openProfile(); } });
     var fb = document.getElementById('paceSyncBtn'); if (fb) fb.style.display = 'none';   // artık ayarlardan yönetiliyor
