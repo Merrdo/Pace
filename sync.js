@@ -304,7 +304,7 @@
       if (a === 'dx') {
         msg.textContent = 'Kontrol ediliyor…';
         var q = await sb.from('sync_records').select('id,updated_at,device_id').eq('kind', 'state').neq('id', nc());
-        msg.textContent = 'sürüm 14 · bulutta ' + (q.data ? q.data.length : '?') + ' alan' + (q.error ? ' · HATA: ' + q.error.message : '') +
+        msg.textContent = 'sürüm 15 · bulutta ' + (q.data ? q.data.length : '?') + ' alan' + (q.error ? ' · HATA: ' + q.error.message : '') +
           ' · bu cihazda ' + Object.keys(APP_STATE).length + ' alan · imleç ' + (meta.lastPull || 'yok') + ' · bağlı ' + !!meta.linked +
           ' · ' + (q.data || []).map(function (x) { return x.id + '@' + String(x.updated_at).slice(5, 16); }).join(', ');
         return;
@@ -325,7 +325,7 @@
   }
 
 
-  // ---------- Görünüm: yazı tipi, Ayarlar > Hesabım, Profil, yan panel logosu (sürüm 14) ----------
+  // ---------- Görünüm: yazı tipi, Ayarlar > Hesabım, Profil, yan panel logosu (sürüm 15) ----------
   var ST = document.createElement('style'); ST.id = 'paceAcctCss';
   var stag = '';
   for (var si = 1; si <= 9; si++) stag += '.pf-first>:nth-child(' + si + '),.ac-first>:nth-child(' + si + '){animation-delay:' + (si * 0.06).toFixed(2) + 's}';
@@ -358,14 +358,31 @@ ${stag}
 .ac-st{position:absolute;right:-1px;bottom:-1px;width:18px;height:18px;border-radius:50%;border:3px solid var(--theme-bg,#fff);background:var(--sc,#8a8a8a)}
 .ac-who b{font-size:20px;font-weight:700;line-height:1.15;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .ac-who span{font-size:13px;opacity:.65;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.ac-hero{position:relative;display:flex;align-items:center;gap:15px;padding:30px 60px 24px 18px;border-radius:26px;overflow:hidden;cursor:pointer;background:linear-gradient(135deg,color-mix(in srgb,var(--pc) 24%,transparent),color-mix(in srgb,var(--pc) 5%,transparent) 75%),rgba(128,128,128,.07);border:1px solid color-mix(in srgb,var(--pc) 32%,rgba(128,128,128,.18));transition:transform .4s cubic-bezier(.34,1.56,.64,1),border-color .3s;-webkit-tap-highlight-color:transparent}
+.ac-hero{position:relative;display:flex;align-items:center;gap:15px;padding:18px 46px 18px 18px;border-radius:26px;overflow:hidden;cursor:pointer;background:linear-gradient(135deg,color-mix(in srgb,var(--pc) 24%,transparent),color-mix(in srgb,var(--pc) 5%,transparent) 75%),rgba(128,128,128,.07);border:1px solid color-mix(in srgb,var(--pc) 32%,rgba(128,128,128,.18));transition:transform .4s cubic-bezier(.34,1.56,.64,1),border-color .3s;-webkit-tap-highlight-color:transparent}
 .ac-hero:hover{border-color:color-mix(in srgb,var(--pc) 55%,rgba(128,128,128,.2))}.ac-hero:active{transform:scale(.99)}.ac-hero:focus-visible{outline:2px solid var(--pc);outline-offset:2px}
 .ac-hero.static{cursor:default;padding:18px}.ac-hero.static:active{transform:none}
 .ac-who{position:relative;flex:1;min-width:0;display:flex;flex-direction:column;gap:1px;text-align:left}
-.ac-chip{position:absolute;top:12px;right:14px;z-index:1;max-width:calc(100% - 28px);display:inline-flex;align-items:center;gap:6px;padding:5px 11px 5px 8px;border-radius:999px;font-size:12.5px;font-weight:600;line-height:1.2;white-space:nowrap;background:color-mix(in srgb,var(--theme-bg,#000) 45%,transparent);border:1px solid rgba(128,128,128,.22);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
-.ac-chip svg{flex:none;color:var(--sc)}.ac-chip span{overflow:hidden;text-overflow:ellipsis}.ac-chip[data-s=busy] svg{animation:acPulse 1.1s ease-in-out infinite}
-.ac-notch{position:absolute;right:14px;top:50%;margin-top:-17px;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:rgba(128,128,128,.16);transition:transform .45s cubic-bezier(.34,1.56,.64,1),background .25s}
-.ac-hero:hover .ac-notch{transform:translateX(3px);background:rgba(128,128,128,.26)}.ac-hero:active .ac-notch{transform:translateX(5px) scale(.92)}
+.ac-top{display:flex;justify-content:flex-end;margin:0 6px 9px;min-height:22px}
+.ac-chip{--sc:#8a8a8a;display:inline-flex;align-items:center;gap:7px;font-size:13.5px;font-weight:600;white-space:nowrap}
+.ac-chip[data-s=err]{color:#e5484d}
+.ac-ci{display:grid;place-items:center;width:20px;height:20px;border-radius:50%}
+.ac-ci svg{color:var(--sc);overflow:visible}
+@keyframes acUp{0%{transform:translateY(5px);opacity:0}30%,70%{opacity:1}100%{transform:translateY(-4px);opacity:0}}
+@keyframes acBob{50%{transform:translateY(-1.5px)}}
+@keyframes acShim{from{background-position:200% 0}to{background-position:-100% 0}}
+@keyframes acCk{from{stroke-dashoffset:12}to{stroke-dashoffset:0}}
+@keyframes acPopI{0%{transform:scale(.6)}55%{transform:scale(1.28)}100%{transform:scale(1)}}
+@keyframes acHalo{from{box-shadow:0 0 0 0 rgba(46,204,113,.5)}to{box-shadow:0 0 0 12px rgba(46,204,113,0)}}
+.ac-chip .up{opacity:0}.ac-chip .ck{stroke-dasharray:12;stroke-dashoffset:0}
+.ac-chip[data-s=busy] .ac-ci svg{animation:acBob 1.4s ease-in-out infinite}
+.ac-chip[data-s=busy] .up{animation:acUp 1.1s ease-in-out infinite}
+.ac-chip[data-s=busy] .ac-ct{color:transparent;-webkit-background-clip:text;background-clip:text;background-size:250% 100%;background-image:linear-gradient(90deg,var(--theme-text,#fff) 38%,rgba(128,128,128,.4) 50%,var(--theme-text,#fff) 62%);animation:acShim 1.7s linear infinite}
+.ac-chip.fresh .ac-ci{animation:acHalo .9s ease-out both;animation-delay:var(--ad,0s)}
+.ac-chip.fresh .ac-ci svg{animation:acPopI .6s cubic-bezier(.34,1.56,.64,1) both;animation-delay:var(--ad,0s)}
+.ac-chip.fresh .ck{animation:acCk .45s ease both;animation-delay:calc(var(--ad,0s) + .12s)}
+.ac-chip.fresh .ac-ct{animation:pfFade .6s ease both;animation-delay:var(--ad,0s)}
+.ac-notch{position:absolute;right:15px;top:50%;margin-top:-8px;width:16px;height:16px;display:grid;place-items:center;opacity:.5;transition:transform .45s cubic-bezier(.34,1.56,.64,1),opacity .25s}
+.ac-hero:hover .ac-notch{transform:translateX(3px);opacity:.9}.ac-hero:active .ac-notch{transform:translateX(5px)}
 .ac-note{margin:12px 2px 0;font-size:13px;line-height:1.4;opacity:.8}.ac-note.err{color:#e5484d;opacity:1}
 .ac-perks{list-style:none;margin:12px 0 0;padding:0;display:flex;flex-direction:column;gap:9px}
 .ac-perks li{display:flex;align-items:center;gap:10px;font-size:14px;opacity:.85}
@@ -409,9 +426,9 @@ body.is-qhavuz-test-open .pf-side{opacity:.35;pointer-events:none}}
 @media(max-width:600px){.pf-ov{padding:0;align-items:flex-end}.pf-card{max-width:none;max-height:94vh;max-height:94dvh;border-radius:32px 32px 0 0;border-bottom:0;padding:18px 20px calc(env(safe-area-inset-bottom,0px) + 22px);animation:pfSheetIn .6s cubic-bezier(.22,1,.36,1) both}.pf-ov.pf-out .pf-card{animation:pfSheetOut .32s cubic-bezier(.5,0,.75,0) both}}
 .pf-top{display:grid;grid-template-columns:40px 1fr 40px;align-items:center;text-align:center;font-size:19px;font-weight:700}
 .pf-x{width:38px;height:38px;border-radius:50%;border:0;background:rgba(128,128,128,.18);color:inherit;font-size:15px;cursor:pointer;transition:transform .25s,background .25s}.pf-x:active{transform:scale(.9)}
-.pf-hero{position:relative;width:128px;height:128px;margin:18px auto 26px}
+.pf-hero{position:relative;width:var(--hs,128px);height:var(--hs,128px);margin:16px auto 24px}
 .pf-ring{position:absolute;inset:-10px;border-radius:50%;background:conic-gradient(from 0deg,var(--pc),transparent 38%,color-mix(in srgb,var(--pc) 50%,#fff) 68%,var(--pc));filter:blur(13px);animation:pfBreathe 5s ease-in-out infinite}
-.pf-hav{position:relative;display:block;width:128px;height:128px;padding:0;border:0;border-radius:50%;background:none;cursor:zoom-in;transition:transform .45s cubic-bezier(.34,1.56,.64,1)}
+.pf-hav{position:relative;display:block;width:var(--hs,128px);height:var(--hs,128px);padding:0;border:0;border-radius:50%;background:none;cursor:zoom-in;transition:transform .45s cubic-bezier(.34,1.56,.64,1)}
 .pf-hav:active{transform:scale(.96)}
 .pf-hav .pf-av{box-shadow:0 0 0 4px var(--theme-bg,#000),0 0 0 6px color-mix(in srgb,var(--pc) 70%,transparent),0 14px 34px rgba(0,0,0,.3)}
 .pf-pop .pf-hav{animation:pfPop .6s cubic-bezier(.34,1.56,.64,1)}
@@ -442,6 +459,8 @@ body.is-qhavuz-test-open .pf-side{opacity:.35;pointer-events:none}}
 .pf-mask{position:absolute;inset:0;border-radius:50%;box-shadow:0 0 0 999px rgba(0,0,0,.62);border:2px solid rgba(255,255,255,.9);pointer-events:none}
 .pf-zoom{width:100%;margin:18px 0 0;accent-color:var(--theme-text,#121212)}
 .pf-end{justify-content:flex-end}
+@media(min-width:601px){.pf-card{--hs:104px;padding:16px 22px 20px}.pf-hero{margin:12px auto 20px}.pf-seg{margin-bottom:14px}.pf-lbl{margin:12px 0 6px}.pf-actions{margin-top:18px}.pf-sws{gap:8px}.pf-tile{padding:14px 8px}}
+@media(min-width:601px) and (min-height:680px){.pf-card{overflow:hidden;max-height:none}}
 @media (prefers-reduced-motion:reduce){.pf-ov *,.pf-ov,.pv-bg,.pv-meta,.pv-x,.ac *,.pf-side{animation:none!important;transition:none!important}}
 `;
   document.head.appendChild(ST);
@@ -483,6 +502,7 @@ body.is-qhavuz-test-open .pf-side{opacity:.35;pointer-events:none}}
     return '<span class="pf-av" style="' + dim + 'background:' + c + ';color:' + textOn(c) + ';font-size:' + Math.round(size * 0.44) + 'px">' + esc(dispName(p).charAt(0).toLocaleUpperCase('tr-TR')) + '</span>';
   }
   function toast(m) { if (typeof showAppToast === 'function') showAppToast(m, 'error'); else alert(m); }
+  function hs() { return (window.matchMedia && matchMedia('(min-width:601px)').matches) ? 104 : 128; }
   function signedIn() { return authState === 'in' || authState === 'expired'; }
 
   // ---------- Büyük profil resmi (tıklanan yerden büyüyerek açılır) ----------
@@ -530,6 +550,8 @@ body.is-qhavuz-test-open .pf-side{opacity:.35;pointer-events:none}}
     draft = Object.assign({ mode: 'letter' }, prof()); draft.name = dispName(draft); draft.color = pickColor(draft);
     var ov = document.createElement('div'); ov.id = 'profOv'; ov.className = 'pf-ov'; ov.innerHTML = '<div class="pf-card" id="profCard"></div>';
     document.body.appendChild(ov);
+    ov.addEventListener('pointerdown', function (e) { ov._dn = e.target === ov; });
+    ov.addEventListener('click', function (e) { if (e.target === ov && ov._dn) closeProfile(); });
     ov.addEventListener('click', onProfClick);
     ov.addEventListener('change', function (e) {
       if (!draft) return;
@@ -539,7 +561,7 @@ body.is-qhavuz-test-open .pf-side{opacity:.35;pointer-events:none}}
     ov.addEventListener('input', function (e) {
       if (!draft) return;
       if (e.target.getAttribute('data-pf') === 'custom') setColor(e.target.value);
-      if (e.target.id === 'pfName') { draft.name = e.target.value; if (draft.mode !== 'photo' || !draft.photo) { var hv = ov.querySelector('.pf-hav'); if (hv) hv.innerHTML = avatarHTML(128, draft); } }
+      if (e.target.id === 'pfName') { draft.name = e.target.value; if (draft.mode !== 'photo' || !draft.photo) { var hv = ov.querySelector('.pf-hav'); if (hv) hv.innerHTML = avatarHTML(hs(), draft); } }
     });
     renderProfile();
   }
@@ -554,13 +576,13 @@ body.is-qhavuz-test-open .pf-side{opacity:.35;pointer-events:none}}
   function setColor(col) {
     var c = document.getElementById('profCard'); if (!c || !draft) return;
     draft.color = col; draft.mode = 'letter'; c.style.setProperty('--pc', col);
-    var hv = c.querySelector('.pf-hav'); if (hv) hv.innerHTML = avatarHTML(128, draft);
+    var hv = c.querySelector('.pf-hav'); if (hv) hv.innerHTML = avatarHTML(hs(), draft);
     var hit = false;
     c.querySelectorAll('.pf-sw[data-v]').forEach(function (s) { var on = s.getAttribute('data-v').toLowerCase() === String(col).toLowerCase(); if (on) hit = true; s.classList.toggle('on', on); });
     var cu = c.querySelector('.pf-custom'); if (cu) cu.classList.toggle('on', !hit);
   }
   function heroHTML() {
-    return '<div class="pf-ring"></div><button type="button" class="pf-hav" data-pf="view" aria-label="Profil resmini büyüt">' + avatarHTML(128, draft) + '</button>' +
+    return '<div class="pf-ring"></div><button type="button" class="pf-hav" data-pf="view" aria-label="Profil resmini büyüt">' + avatarHTML(hs(), draft) + '</button>' +
       '<button type="button" class="pf-badge" data-pf="pick" aria-label="Galeriden fotoğraf seç">' + ic(IC.img, 20) + '</button>';
   }
   function dynHTML() {
@@ -706,6 +728,7 @@ body.is-qhavuz-test-open .pf-side{opacity:.35;pointer-events:none}}
     b.setAttribute('aria-label', signedIn() ? 'Profil resmini büyüt' : 'Giriş yap');
     if (b._h !== h) { b.innerHTML = h; b._h = h; }
   }
+  var prevYd = '', okAt = 0;
   function ui() {
     refreshSide();
     var card = document.getElementById('acctCard'); if (!card) return;
@@ -723,11 +746,14 @@ body.is-qhavuz-test-open .pf-side{opacity:.35;pointer-events:none}}
     var html;
     if (signedIn()) {
       var pc = pickColor(prof()), syncing = yd === 'busy' && authState === 'in';
-      html = '<div class="ac-hero" data-acct="profile" role="button" tabindex="0" aria-label="Profili düzenle" style="--pc:' + pc + '">' +
-        '<span class="ac-chip" data-s="' + yd + '" style="--sc:' + SC[yd] + '">' + ic(IC.cloud, 15) + '<span>' + esc(yt) + '</span></span>' +
+      if (authState === 'in') { if (prevYd === 'busy' && yd === 'ok') okAt = Date.now(); prevYd = yd; }
+      var fresh = yd === 'ok' && authState === 'in' && Date.now() - okAt < 2200, cx = IC.cloud;
+      cx += yd === 'busy' ? '<g class="up"><path d="M12 16.6v-5.2M9.8 13.5l2.2-2.2 2.2 2.2"/></g>' : (yd === 'err' ? '<path d="M12 10.6v3M12 16v.1"/>' : '<path class="ck" d="M9.2 13.2l2.1 2.1 3.7-4"/>');
+      var chipHTML = '<div class="ac-top"><span class="ac-chip' + (fresh ? ' fresh' : '') + '" data-s="' + yd + '" style="--sc:' + SC[yd] + (fresh ? ';--ad:-' + ((Date.now() - okAt) / 1000).toFixed(2) + 's' : '') + '"><span class="ac-ci">' + ic(cx, 18) + '</span><span class="ac-ct">' + esc(yt) + '</span></span></div>';
+      html = chipHTML + '<div class="ac-hero" data-acct="profile" role="button" tabindex="0" aria-label="Profili düzenle" style="--pc:' + pc + '">' +
         '<button type="button" class="ac-av" data-acct="view" aria-label="Profil resmini büyüt" style="--sc:' + SC[sd] + '">' + avatarHTML(68) + '<span class="ac-st" title="Oturum: ' + st + '"></span></button>' +
         '<div class="ac-who"><b>' + esc(dispName()) + '</b><span>' + esc(email || '') + '</span></div>' +
-        '<span class="ac-notch" aria-hidden="true">' + ic('<path d="M9 5l7 7-7 7"/>', 17) + '</span></div>' +
+        '<span class="ac-notch" aria-hidden="true">' + ic('<path d="M9 5l7 7-7 7"/>', 16) + '</span></div>' +
         (note ? '<p class="ac-note' + (noteErr ? ' err' : '') + '">' + note + '</p>' : '') +
         (authState === 'in'
           ? '<div class="ac-actions col"><button type="button" class="ac-btn pri" data-acct="sync"' + (syncing ? ' disabled' : '') + '>' + ic(IC.sync, 18, syncing ? 'ac-spin' : '') + (syncing ? 'Yedekleniyor…' : 'Şimdi yedekle') + '</button>' +
@@ -770,7 +796,8 @@ body.is-qhavuz-test-open .pf-side{opacity:.35;pointer-events:none}}
 .pa-x:hover{background:rgba(128,128,128,.26)}.pa-x:active{transform:scale(.9)}
 .pa-brand{display:flex;align-items:center;gap:12px;margin-bottom:22px}
 .pa-mark{width:50px;height:50px;border-radius:17px;display:grid;place-items:center;color:#fff;background:linear-gradient(140deg,var(--accent-color,#6ec1ff),#3e63dd);box-shadow:0 10px 26px color-mix(in srgb,var(--accent-color,#6ec1ff) 45%,transparent)}
-.pa-brand b{font-size:25px;font-weight:800;letter-spacing:-.01em}
+.pa-brand b{font-size:32px;font-weight:700;letter-spacing:-.01em;line-height:1;-webkit-text-stroke:.4px currentColor}
+img.pa-mark{display:block;object-fit:cover;border-radius:23%;background:none;box-shadow:0 10px 26px rgba(0,0,0,.3)}.pa-mark.f{font-size:26px;font-weight:800}
 .pa-head h2{margin:0;font-size:28px;line-height:1.1;font-weight:800;letter-spacing:-.01em}
 .pa-head p{margin:6px 0 0;font-size:14.5px;opacity:.68;line-height:1.35}
 .pa-head{transition:opacity .22s ease,transform .22s ease}.pa-head.sw{opacity:0;transform:translateY(6px)}
@@ -832,7 +859,7 @@ body.is-qhavuz-test-open .pf-side{opacity:.35;pointer-events:none}}
     ov.innerHTML = '<div class="pa-bg"><i></i><i></i><i></i></div>' +
       '<div class="pa-card pa-in" role="dialog" aria-modal="true" aria-labelledby="paT">' +
       '<button type="button" class="pa-x" data-pa="close" aria-label="Kapat">✕</button>' +
-      '<div class="pa-brand"><span class="pa-mark">' + ic(IC.cloud, 26) + '</span><b>Pace</b></div>' +
+      '<div class="pa-brand"><img class="pa-mark" src="icons/apple-touch-icon.png" alt="" width="50" height="50"><b>Pace</b></div>' +
       '<div class="pa-head" id="paHead"><h2 id="paT"></h2><p id="paS"></p></div>' +
       '<div class="pa-seg" id="paSeg"><i></i><button type="button" data-pa="tab" data-v="in">Giriş yap</button><button type="button" data-pa="tab" data-v="up">Kayıt ol</button></div>' +
       '<form id="paForm" novalidate>' +
@@ -849,6 +876,7 @@ body.is-qhavuz-test-open .pf-side{opacity:.35;pointer-events:none}}
       '<p class="pa-foot" id="paFoot"></p>' +
       '<div class="pa-st" id="paSt"></div></div>';
     document.body.appendChild(ov);
+    var lg = ov.querySelector('img.pa-mark'); if (lg) lg.addEventListener('error', function () { var f = document.createElement('span'); f.className = 'pa-mark f'; f.textContent = 'P'; lg.replaceWith(f); });
     A = { ov: ov, card: ov.querySelector('.pa-card'), mode: null, busy: false, done: false };
     setTimeout(function () { A && A.card.classList.remove('pa-in'); }, 1200);
     var touch = window.matchMedia && matchMedia('(pointer:coarse)').matches;
