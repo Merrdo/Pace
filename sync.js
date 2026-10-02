@@ -19,7 +19,7 @@
   var uid = null, busy = false, again = false, pushT = null, channel = null;
   var status = 'Giriş yapılmadı', statusErr = false, modalOpen = false;
   // E-postadaki şifre sıfırlama bağlantısıyla mı açıldık? (Supabase adres çubuğundaki #...type=recovery'yi okur)
-  var recMode = /type=recovery/.test(location.hash), holdSync = false, linkErr = /error_code=|error=access_denied/.test(location.hash);
+  var recMode = /type=recovery/.test(location.hash), holdSync = false, linkErr = /error_code=|error=access_denied/.test(location.hash), emailLink = /type=email_change/.test(location.hash), pendingEmail = '';
 
   // ---------- yardımcılar ----------
   function ts(x) { return Date.parse(x) || 0; }
@@ -58,6 +58,8 @@
     if (m.indexOf('only request this after') > -1 || m.indexOf('security purposes') > -1) return 'Güvenlik için biraz bekleyip tekrar dene.';
     if (m.indexOf('weak') > -1 || m.indexOf('pwned') > -1) return 'Bu şifre kolay tahmin edilebilir. Başka bir şifre dene.';
     if (m.indexOf('session') > -1 && m.indexOf('missing') > -1) return 'Oturum bulunamadı. Yeniden giriş yap.';
+    if (m.indexOf('already been registered') > -1 || m.indexOf('email_exists') > -1) return 'Bu e-posta başka bir hesapta kayıtlı.';
+    if ((m.indexOf('email address') > -1 && m.indexOf('invalid') > -1) || m.indexOf('email_address_invalid') > -1) return 'Geçerli bir e-posta adresi gir.';
     if (m.indexOf('password') > -1) return 'Şifre en az 6 karakter olmalı.';
     if (m.indexOf('rate limit') > -1) return 'Çok fazla deneme. Biraz sonra tekrar dene.';
     return 'Hata: ' + ((e && e.message) || 'bilinmiyor');
@@ -224,6 +226,9 @@
   window.addEventListener('online', function () { schedule(500); });
   document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'visible') schedule(300); else if (uid && scan()) syncNow(false); });
 
+  document.addEventListener('visibilitychange', function () {
+    if (document.visibilityState === 'visible' && pendingEmail && uid) sb.auth.refreshSession().catch(function () {});   // başka sekmede/cihazda onaylandıysa yeni adres gelsin
+  });
   // ---------- oturum ----------
   async function start(session) {
     var id = session.user.id;
@@ -244,7 +249,13 @@
     if (recMode) holdSync = true; else syncNow(true);   // sıfırlama ekranı açıkken sayfa yenilenmesin
   }
   sb.auth.onAuthStateChange(function (ev, session) {
-    if (session) email = session.user.email || email;
+    if (session) {
+      var prevMail = email; email = session.user.email || email; pendingEmail = session.user.new_email || '';
+      if (prevMail && prevMail !== email) pcToast('E-posta adresin güncellendi.');
+      else if (emailLink && ev !== 'INITIAL_SESSION') { pcToast('E-posta adresin güncellendi.'); }
+      if (emailLink && ev !== 'INITIAL_SESSION') { emailLink = false; try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {} }
+      ui();
+    }
     if (ev === 'PASSWORD_RECOVERY') setTimeout(openRecovery, 0);
     if (session && (ev === 'INITIAL_SESSION' || ev === 'SIGNED_IN')) setTimeout(function () { start(session); }, 0);
     if (!session && (ev === 'INITIAL_SESSION' || ev === 'SIGNED_OUT')) {
@@ -311,7 +322,7 @@
       if (a === 'dx') {
         msg.textContent = 'Kontrol ediliyor…';
         var q = await sb.from('sync_records').select('id,updated_at,device_id').eq('kind', 'state').neq('id', nc());
-        msg.textContent = 'sürüm 16 · bulutta ' + (q.data ? q.data.length : '?') + ' alan' + (q.error ? ' · HATA: ' + q.error.message : '') +
+        msg.textContent = 'sürüm 17 · bulutta ' + (q.data ? q.data.length : '?') + ' alan' + (q.error ? ' · HATA: ' + q.error.message : '') +
           ' · bu cihazda ' + Object.keys(APP_STATE).length + ' alan · imleç ' + (meta.lastPull || 'yok') + ' · bağlı ' + !!meta.linked +
           ' · ' + (q.data || []).map(function (x) { return x.id + '@' + String(x.updated_at).slice(5, 16); }).join(', ');
         return;
@@ -625,7 +636,9 @@ body.is-qhavuz-test-open .pf-side{opacity:.35;pointer-events:none}}
       '<div class="pf-seg" style="--pos:' + (photo ? 0 : 1) + '"><i></i><button type="button" data-pf="mode" data-v="photo" class="' + (photo ? 'on' : '') + '">Fotoğraf</button><button type="button" data-pf="mode" data-v="letter" class="' + (!photo ? 'on' : '') + '">Harf logosu</button></div>' +
       '<div id="pfDyn">' + dynHTML() + '</div>' +
       '<div><div class="pf-lbl">Rumuz</div><input class="pf-in" id="pfName" maxlength="24" autocomplete="off" value="' + esc(draft.name) + '" placeholder="Rumuzun"><div class="pf-mail">' + esc(email || '') + '</div></div>' +
-      (authState === 'in' ? '<button type="button" class="pf-pwrow" data-pf="pw"><span class="pf-pwi">' + ic(IM.lock, 19) + '</span><span class="pf-pwt">Şifreyi değiştir</span><span class="pf-pwc">' + ic(PWI.chev, 16) + '</span></button>' : '') +
+      (authState === 'in' ? '<button type="button" class="pf-pwrow" data-pf="pw"><span class="pf-pwi">' + ic(IM.lock, 19) + '</span><span class="pf-pwt">Şifreyi değiştir</span><span class="pf-pwc">' + ic(PWI.chev, 16) + '</span></button>' +
+        '<button type="button" class="pf-pwrow" data-pf="pwem"><span class="pf-pwi">' + ic(IM.mail, 19) + '</span><span class="pf-pwt">E-postayı değiştir</span><span class="pf-pwc">' + ic(PWI.chev, 16) + '</span></button>' +
+        (pendingEmail ? '<div class="pf-pend"><span>Onay bekleniyor: <b>' + esc(pendingEmail) + '</b></span><button type="button" data-pf="pwresend">Tekrar gönder</button></div>' : '') : '') +
       '<div class="pf-actions"><button type="button" class="pf-btn" data-pf="close">Vazgeç</button><button type="button" class="pf-btn pri" data-pf="save">Kaydet</button></div>' +
       '<input type="file" id="pfFile" accept="image/*" hidden><input type="file" id="pfCam" accept="image/*" capture="user" hidden>';
   }
@@ -748,6 +761,14 @@ body.is-qhavuz-test-open .pf-side{opacity:.35;pointer-events:none}}
 .pw-go.ld{pointer-events:none}.pw-go.ld .l{opacity:0;transform:translateY(8px)}.pw-go.ld .s{opacity:1;animation:paSpin .8s linear infinite}
 .pw-link{display:block;margin:10px auto 0;padding:6px 10px;border:0;background:none;color:var(--pc);font-size:14px;font-weight:700;cursor:pointer;transition:opacity .25s}
 .pw-link:disabled{opacity:.5}
+@media(min-width:601px) and (min-height:680px) and (max-height:780px){.pf-card{overflow-y:auto;max-height:94dvh}}
+.pf-pend{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:6px 4px 0;font-size:12.5px;opacity:.9}
+.pf-pend b{font-weight:700;word-break:break-all}
+.pf-pend button{flex:none;border:0;background:none;color:var(--pc);font-size:12.5px;font-weight:700;cursor:pointer;padding:4px;white-space:nowrap}
+.pf-pend button:disabled{opacity:.5}
+@keyframes pcT{0%{opacity:0;transform:translate(-50%,-16px)}10%,86%{opacity:1;transform:translate(-50%,0)}100%{opacity:0;transform:translate(-50%,-10px)}}
+#pcToast{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 14px);z-index:2147483020;max-width:calc(100% - 32px);box-sizing:border-box;padding:11px 18px;border-radius:999px;background:var(--theme-text,#121212);color:var(--theme-bg,#fff);font-size:14.5px;font-weight:600;text-align:center;box-shadow:0 12px 30px rgba(0,0,0,.3);animation:pcT 3.4s ease both;pointer-events:none}
+@media (prefers-reduced-motion:reduce){#pcToast{animation-duration:3.4s}}
 @media (prefers-reduced-motion:reduce){#pwBody,#pwBody>*,.pw-ico,.pw-ico *,.pw-steps i::after{animation:none!important;transition:none!important}.pw-ico.ok path{stroke-dashoffset:0}}
 `;
   document.head.appendChild(PWS);
@@ -788,16 +809,17 @@ body.is-qhavuz-test-open .pf-side{opacity:.35;pointer-events:none}}
   }
   function pwBusy(on) { if (pwSt) pwSt.busy = on; var g = pwEl('pwGo'); if (g) g.classList.toggle('ld', !!on); }
 
-  function openPw() {
+  function openPw(kind) {
     var c = pwEl('profCard'); if (!c || !draft) return;
-    keepName(); cropSt = null; pwSt = { step: 1, busy: false, old: '' };
+    keepName(); cropSt = null; pwSt = { kind: kind || 'pw', step: 1, busy: false, old: '', newMail: '' };
     enter(c); c.scrollTop = 0;
-    c.innerHTML = '<div class="pf-top"><button type="button" class="pf-x" data-pf="pwback" aria-label="Geri">' + ic(PWI.back, 18) + '</button><b>Şifreyi değiştir</b><span></span></div>' +
+    c.innerHTML = '<div class="pf-top"><button type="button" class="pf-x" data-pf="pwback" aria-label="Geri">' + ic(PWI.back, 18) + '</button><b>' + (kind === 'em' ? 'E-postayı değiştir' : 'Şifreyi değiştir') + '</b><span></span></div>' +
       '<div class="pw-hero"><div class="pw-ico" id="pwIco"></div></div><div class="pw-steps" id="pwSteps"><i></i><i></i></div><div id="pwBody"></div>';
     renderPwStep();
   }
   function renderPwStep() {
     var P = pwSt, body = pwEl('pwBody'); if (!P || !body) return;
+    if (P.kind === 'em' && P.step > 1) return renderEmStep();
     var s = P.step, html = '', un = '<input type="text" autocomplete="username" value="' + esc(email || '') + '" tabindex="-1" aria-hidden="true" style="display:none">';
     var ico = pwEl('pwIco'); ico.className = 'pw-ico'; ico.innerHTML = ic(s === 1 ? IM.lock : (s === 2 ? PWI.unlock : IC.ok), 34);
     void ico.offsetWidth; ico.classList.add(s === 3 ? 'ok' : 'pop');
@@ -824,7 +846,9 @@ body.is-qhavuz-test-open .pf-side{opacity:.35;pointer-events:none}}
     if (s < 3 && !(window.matchMedia && matchMedia('(pointer:coarse)').matches)) setTimeout(function () { var f = pwEl(s === 1 ? 'pwOld' : 'pwNew'); if (f) f.focus(); }, 380);
   }
   function pwClick(a, b) {
-    if (a === 'pw') return openPw();
+    if (a === 'pw') return openPw('pw');
+    if (a === 'pwem') return openPw('em');
+    if (a === 'pwresend') return pwResend(b);
     if (a === 'pwback') { if (pwSt) pwSt.old = ''; pwSt = null; var c = pwEl('profCard'); if (c) c.scrollTop = 0; return renderProfile(); }
     if (a === 'pweye') {
       var inp = b.parentNode.querySelector('input'), show = inp.type === 'password';
@@ -838,6 +862,56 @@ body.is-qhavuz-test-open .pf-side{opacity:.35;pointer-events:none}}
     var f = t.closest && t.closest('.pw-f'); if (f) f.classList.remove('bad');
     if (t.id === 'pwNew') paintMeter(pwEl('pwMeter'), t.value);
     var m = pwEl('pwMsg'); if (m && m.classList.contains('show') && !pwSt.busy) m.classList.remove('show');
+  }
+  function pcToast(t) {
+    var o = document.getElementById('pcToast'); if (o) o.remove();
+    var d = document.createElement('div'); d.id = 'pcToast'; d.setAttribute('role', 'status'); d.textContent = t; document.body.appendChild(d);
+    setTimeout(function () { if (d.isConnected) d.remove(); }, 3500);
+  }
+  function renderEmStep() {
+    var P = pwSt, body = pwEl('pwBody'); if (!P || !body) return;
+    var s = P.step, html = '';
+    var ico = pwEl('pwIco'); ico.className = 'pw-ico'; ico.innerHTML = ic(IM.mail, 34); void ico.offsetWidth; ico.classList.add('pop');
+    var stp = pwEl('pwSteps'); void stp.offsetWidth;
+    stp.querySelectorAll('i').forEach(function (b, i) { b.classList.toggle('on', i < Math.min(s, 2)); });
+    if (s === 2) {
+      html = '<h4 class="pw-t">Yeni e-posta adresin</h4><p class="pw-s">Doğrulama bağlantısını bu adrese göndereceğiz. Şu anki adresin: <b>' + esc(email || '') + '</b></p>' +
+        '<form id="pwForm" novalidate><label class="pw-f"><span class="pw-fi">' + ic(IM.mail, 20) + '</span><input id="pwMail" type="email" inputmode="email" autocomplete="email" autocapitalize="none" spellcheck="false" placeholder=" "><span class="pw-fl">Yeni e-posta</span></label>' +
+        '<p class="pw-msg" id="pwMsg" role="alert"></p>' +
+        '<button type="submit" class="pw-go" id="pwGo"><span class="l">Bağlantı gönder</span><span class="s"></span></button></form>';
+    } else if (P.immediate) {
+      html = '<h4 class="pw-t">E-postan güncellendi</h4><p class="pw-s">Artık <b>' + esc(P.newMail) + '</b> adresiyle giriş yapabilirsin.</p><button type="button" class="pw-go" data-pf="pwback"><span class="l">Tamam</span></button>';
+    } else {
+      html = '<h4 class="pw-t">Bağlantıyı gönderdik</h4><p class="pw-s"><b>' + esc(P.newMail) + '</b> adresine bir doğrulama bağlantısı gönderdik. Bağlantıya dokunana kadar eski e-postanla giriş yapmaya devam edersin.</p><button type="button" class="pw-go" data-pf="pwback"><span class="l">Tamam</span></button>';
+    }
+    body.innerHTML = html;
+    if (s === 2 && !(window.matchMedia && matchMedia('(pointer:coarse)').matches)) setTimeout(function () { var f = pwEl('pwMail'); if (f) f.focus(); }, 380);
+  }
+  async function emSubmit() {
+    var P = pwSt, f = pwEl('pwMail'); if (!P || !f) return;
+    var v = f.value.trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) { pwErr('Geçerli bir e-posta adresi gir.', f); f.focus(); return; }
+    if (v.toLowerCase() === (email || '').toLowerCase()) { pwErr('Bu zaten şu anki e-posta adresin.', f); f.focus(); return; }
+    pwBusy(true); pwMsg('');
+    try {
+      var r = await sb.auth.updateUser({ email: v }, { emailRedirectTo: new URL('./', location.href).href });
+      if (r.error) throw r.error;
+      var u = r.data && r.data.user;
+      P.newMail = v; P.step = 3; P.busy = false;
+      if (u && u.email && u.email.toLowerCase() === v.toLowerCase()) { P.immediate = true; email = u.email; pendingEmail = ''; ui(); }   // projede e-posta doğrulaması kapalıysa anında değişir
+      else pendingEmail = (u && u.new_email) || v;
+      if (pwAlive()) renderEmStep();
+    } catch (err) { if (pwAlive()) pwErr(trErr(err), f); }
+    pwBusy(false);
+  }
+  async function pwResend(b) {
+    if (!pendingEmail || b.disabled) return; b.disabled = true;
+    try {
+      var r = await sb.auth.resend({ type: 'email_change', email: pendingEmail, options: { emailRedirectTo: new URL('./', location.href).href } });
+      if (r.error) throw r.error;
+      pcToast('Doğrulama bağlantısı tekrar gönderildi.');
+    } catch (err) { pcToast(trErr(err)); }
+    b.disabled = false;
   }
   async function pwForgot(b) {
     var P = pwSt; if (!P || P.busy) return;
@@ -868,6 +942,7 @@ body.is-qhavuz-test-open .pf-side{opacity:.35;pointer-events:none}}
       }
       pwBusy(false);
     } else if (P.step === 2) {
+      if (P.kind === 'em') return emSubmit();
       var n1 = pwEl('pwNew'), n2 = pwEl('pwNew2'); if (!n1 || !n2) return;
       if (n1.value.length < 6) { pwErr('Şifre en az 6 karakter olmalı.', n1); n1.focus(); return; }
       if (n1.value !== n2.value) { pwErr('Şifreler birbiriyle aynı değil.', [n1, n2]); n2.focus(); return; }
@@ -1262,7 +1337,7 @@ img.pa-mark{display:block;object-fit:cover;border-radius:23%;background:none;box
   if (linkErr) {
     try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {}
     sb.auth.getSession().then(function (r) {
-      if (r.data && r.data.session) return;
+      if (r.data && r.data.session) { pcToast('Bağlantının süresi dolmuş ya da daha önce kullanılmış.'); return; }
       openAuth('fg');
       setTimeout(function () { if (A) authMsg('Bağlantının süresi dolmuş ya da daha önce kullanılmış. E-postanı gir, yeni bir bağlantı gönderelim.'); }, 500);
     });
