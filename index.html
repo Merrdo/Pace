@@ -39024,212 +39024,9 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
 
   @media (prefers-reduced-motion: reduce) { .nt, .nt * { animation-duration: .01ms !important; animation-delay: 0ms !important; transition-duration: .01ms !important; } }
 
-  /* ==========================================================================
-     TELEFON (yalnızca mobil): Gündelik — sıfırdan yeniden tasarım
-     ==========================================================================
-     Eski Gündelik içeriği telefonda gizli (HTML/JS/veri silinmedi; Denemelerim'deki
-     "boşaltma" ile aynı yöntem). Yeni düzen Soru Havuzu ile aynı iskelet:
-     - .p8m-topbar: sayfanın üstünde SABİT çubuk (sayfa kaymaz; yalnızca altındaki
-       .p8m-scroll kayar). Sol: "Gündelik" (Soru Havuzu başlığıyla aynı ölçü:
-       Baloo 2 / 800 / 1.25rem, sola yaslı, aynı dolgu ve satır yüksekliği).
-       Sağ uç: rutin tamamlama halkası (#p8nStat; JS ile buraya taşınır, veriyi
-       büyük ekrandaki renderHero aynen güncellemeye devam eder).
-     Büyük ekran kuralları DEĞİŞTİRİLMEDİ. */
-  .p8m-topbar, .p8m-scroll { display: none; }
+  /* Onay penceresi ve "Geri al" bildirimi (Gündelik + Hatırlanacaklar ortak) */
   @media all {
-    
-    #page-8 { flex-direction: column; align-items: center; justify-content: flex-start; padding: 0; overflow: hidden; }
-    #page-8 > .p8m-topbar {
-      --p8-surf2: color-mix(in srgb, var(--theme-text, #121212) 11%, transparent);
-      --p8-mute: color-mix(in srgb, var(--theme-text, #121212) 55%, transparent);
-      flex: 0 0 auto;
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) auto;
-      grid-auto-rows: minmax(2.6rem, auto);
-      align-items: center;
-      gap: 0.5rem;
-      width: 100%;
-      max-width: 428px;
-      margin: 0 auto;
-      box-sizing: border-box;
-      padding: calc(20px + env(safe-area-inset-top)) 24px 0.5rem;
-      font-family: "Baloo 2", "Space Grotesk", sans-serif;
-      color: var(--theme-text, #f2f2f7);
-    }
-    #page-8 .p8m-title {
-      grid-column: 1;
-      grid-row: 1;
-      margin: 0;
-      font-family: "Baloo 2", "Space Grotesk", sans-serif;
-      font-weight: 800;
-      font-size: 1.6rem;
-      line-height: 1.3;
-      text-align: left;
-      white-space: nowrap;
-      color: var(--theme-text, #f2f2f7);
-      transition: color 0.5s ease;
-    }
-    /* Sağ küme: ilerleme halkası solda, "Yeni grup" ve "Notlarım" düğmeleri onun
-       sağında (ikon düğme; büyük ekrandaki hapların telefona sığan hâli). */
-    #page-8 .p8m-actions {
-      grid-column: 2;
-      grid-row: 1;
-      justify-self: end;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-    #page-8 .p8m-topbar .p8n-stat { margin: 0 0.15rem 0 0; }
-    #page-8 .p8m-topbar .p8n-notesbtn {
-      flex: 0 0 auto;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 2.6rem;
-      height: 2.6rem;
-      padding: 0;
-      margin: 0;
-      border: none;
-      border-radius: 50%;
-      cursor: pointer;
-      font: inherit;
-      color: color-mix(in srgb, var(--theme-text, #121212) 94%, transparent);
-      background: color-mix(in srgb, var(--theme-text, #121212) 6%, transparent);
-      box-shadow: inset 0 1px 3px 0 color-mix(in srgb, var(--theme-text, #121212) 10%, transparent);
-      -webkit-tap-highlight-color: transparent;
-      transition: background-color 0.18s ease, transform 0.15s ease;
-    }
-    #page-8 .p8m-topbar .p8n-notesbtn > span { display: none; }
-    #page-8 .p8m-topbar .p8n-notesbtn svg { width: 18px; height: 18px; }
-    #page-8 .p8m-topbar .p8n-notesbtn:active { transform: scale(0.92); }
-    #page-8 .p8m-topbar .p8n-notesbtn[aria-expanded="true"] {
-      background: color-mix(in srgb, var(--theme-text, #121212) 11%, transparent);
-    }
-    #page-8 .p8m-topbar .p8n-stat-ring { width: 44px; height: 44px; }
-    #page-8 .p8m-topbar .p8n-stat-ring b { font-size: 0.74rem; }
-    /* Kayan alan: yeni içerik buraya eklenecek; çubuk sabit kalır. */
-    #page-8 > .p8m-scroll {
-      display: block;
-      flex: 1 1 auto;
-      min-height: 0;
-      width: 100%;
-      max-width: 428px;
-      box-sizing: border-box;
-      overflow-y: auto;
-      overscroll-behavior: contain;
-      scrollbar-width: none;
-      padding: 1rem 24px calc(96px + env(safe-area-inset-bottom));
-      /* Ayarlar sayfasındaki (.settings-scroll) gibi: liste yukarı kayarken
-         başlığın altında sert bir kenarda değil, son 16px'lik bantta
-         yumuşakça saydamlaşarak (hafif bulanık) kaybolur. */
-      -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 16px, #000 100%);
-      mask-image: linear-gradient(to bottom, transparent 0, #000 16px, #000 100%);
-    }
-    #page-8 > .p8m-scroll::-webkit-scrollbar { display: none; }
-
-    /* Başlıkta ilerleme halkası: kart yok, doğrudan arka planın üzerinde */
-    .p8n-stat { display: inline-flex; align-items: center; margin-left: auto; align-self: center; flex: 0 0 auto; }
-    .p8n-stat[hidden] { display: none; }
-    .p8n-stat.is-bump { animation: p8nBump .6s cubic-bezier(.34,1.56,.64,1); }
-    @keyframes p8nBump { 0% { transform: scale(1); } 35% { transform: scale(1.1); } 100% { transform: scale(1); } }
-    .p8n-stat-ring { position: relative; width: 58px; height: 58px; flex: 0 0 auto; }
-    .p8n-stat-ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
-    .p8n-stat-ring circle { fill: none; stroke-width: 4.5; stroke-linecap: round; }
-    .p8n-stat-ring .bg { stroke: var(--p8-surf2); }
-    .p8n-stat-ring .fg { stroke: var(--accent-color, #ff90e8); transition: stroke-dashoffset .9s cubic-bezier(.22,1,.36,1), filter .5s ease; }
-    .p8n-stat.is-complete .fg { filter: drop-shadow(0 0 4px color-mix(in srgb, var(--accent-color, #ff90e8) 70%, transparent)); }
-    .p8n-stat-ring b { position: absolute; inset: 0; display: grid; place-items: center; font-size: .86rem; font-weight: 800; font-variant-numeric: tabular-nums; }
-  }
-
-  /* ==========================================================================
-     GÜNDELİK (telefon) — büyük ekrandaki kart tasarımının mobil uyarlaması
-     ==========================================================================
-     Büyük ekrandaki (.p8g) kart tasarımının BAŞLIK (grup adı · Şimdi · sayaç)
-     ve İÇERİK (alt başlıklar, rutin satırları, ekleme düğmeleri/formları)
-     kısımları telefona uygulanır. Kartın sağındaki MİNİ TAKVİM (.p8g-cal)
-     telefonda bilinçli olarak GÖSTERİLMEZ. Kartlar tek sütun, tam genişlik.
-     Büyük ekran kuralları DEĞİŞTİRİLMEDİ; bu blok yalnızca telefonda geçerli. */
-  @media all {
-    #p8mScroll {
-      --p8-surf: color-mix(in srgb, var(--theme-text, #121212) 6%, transparent);
-      --p8-surf2: color-mix(in srgb, var(--theme-text, #121212) 11%, transparent);
-      --p8-mute: color-mix(in srgb, var(--theme-text, #121212) 55%, transparent);
-      color: var(--theme-text, #121212);
-      font-family: "Baloo 2", "Space Grotesk", sans-serif;
-    }
-    @keyframes p8gIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
-    #p8mScroll #p8nMain { display: block; }
-    #p8mScroll .p8n-groups { display: flex; flex-direction: column; gap: .85rem; }
-    #p8mScroll .p8g { --gc: #ff90e8; --gt: #121212; display: block; padding: 1.15rem 1.1rem 1rem; border-radius: 1.7rem; background: var(--p8-surf); transition: background-color .3s ease, box-shadow .4s ease, opacity .35s ease, transform .35s ease; }
-    #p8mScroll .p8g.is-now { box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--gc) 60%, transparent); }
-    #p8mScroll .p8g.is-pressing, #p8mScroll .p8g.is-ctx-active { background: var(--p8-surf2); }
-    #p8mScroll .p8g.is-leave { opacity: 0; transform: scale(.985); }
-    #p8mScroll .p8g.is-enter { animation: p8gIn .6s cubic-bezier(.22,1,.36,1) backwards; animation-delay: calc(var(--i, 0) * 80ms); }
-    /* Takvim telefona uygulanmaz */
-    #p8mScroll .p8g-cal { display: none !important; }
-    /* --- Başlık --- */
-    #p8mScroll .p8g-head { display: flex; align-items: baseline; gap: .6rem; margin-bottom: .5rem; }
-    #p8mScroll .p8g-titlebox { flex: 0 1 auto; min-width: 0; display: flex; flex-direction: column; gap: .2rem; }
-    #p8mScroll .p8g-name { flex: 0 1 auto; min-width: 0; font-size: 1.6rem; font-weight: 800; letter-spacing: -.02em; line-height: 1.05; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    #p8mScroll .p8g-name-in { flex: 1 1 auto; min-width: 0; box-sizing: border-box; font: inherit; font-size: 1.3rem; font-weight: 800; color: inherit; background: var(--p8-surf2); border: none; outline: none; border-radius: 999px; padding: .1rem .8rem; }
-    #p8mScroll .p8g-dot { display: none; }
-    #p8mScroll .p8g-count { font-size: .9rem; font-weight: 700; color: var(--p8-mute); font-variant-numeric: tabular-nums; }
-    #p8mScroll .p8g.is-complete .p8g-count { color: var(--gc); }
-    #p8mScroll .p8g-now { align-self: baseline; font-size: .66rem; font-weight: 800; letter-spacing: .04em; padding: .16rem .6rem; border-radius: 999px; background: var(--gc); color: var(--gt); }
-    /* --- Alt başlıklar --- */
-    #p8mScroll .p8g-sec { display: flex; align-items: center; gap: .5rem; margin: 1rem 0 .1rem; padding: 0 .3rem; user-select: none; -webkit-user-select: none; }
-    #p8mScroll .p8g-head + .p8g-sec { margin-top: .4rem; }
-    #p8mScroll .p8g-sec-name { font-size: .98rem; font-weight: 800; letter-spacing: .01em; display: inline-flex; align-items: center; gap: .5rem; }
-    #p8mScroll .p8g-sec-name::before { content: ''; width: .45rem; height: .45rem; border-radius: 50%; background: var(--gc); flex: 0 0 auto; }
-    #p8mScroll .p8g-sec-in { flex: 0 1 200px; min-width: 0; box-sizing: border-box; font: inherit; font-size: 1rem; font-weight: 800; color: inherit; background: var(--p8-surf2); border: none; outline: none; border-radius: 999px; padding: .2rem .7rem; }
-    #p8mScroll .p8g-sec-count { font-size: .8rem; font-weight: 700; color: var(--p8-mute); font-variant-numeric: tabular-nums; }
-    #p8mScroll .p8g-sec-line { flex: 1 1 auto; height: 1px; background: color-mix(in srgb, var(--theme-text, #121212) 10%, transparent); }
-    #p8mScroll .p8g-sec-add { flex: 0 0 auto; width: 2.1rem; height: 2.1rem; border: none; border-radius: 50%; display: grid; place-items: center; cursor: pointer; color: var(--p8-mute); background: none; transition: background-color .2s ease, color .2s ease, transform .2s ease; -webkit-tap-highlight-color: transparent; }
-    #p8mScroll .p8g-sec-add:active { transform: scale(.88); background: var(--p8-surf2); }
-    #p8mScroll .p8g-sec-add svg { width: 1rem; height: 1rem; fill: none; stroke: currentColor; stroke-width: 2.8; stroke-linecap: round; }
-    /* --- Rutin satırları --- */
-    #p8mScroll .p8g-list { display: flex; flex-direction: column; }
-    #p8mScroll .p8g-r { display: flex; align-items: center; gap: .85rem; padding: .7rem .3rem; border-radius: 1rem; cursor: pointer; overflow: hidden; max-height: 7rem; transition: background-color .25s ease, opacity .3s ease, max-height .3s ease, padding .3s ease; -webkit-tap-highlight-color: transparent; user-select: none; -webkit-user-select: none; }
-    #p8mScroll .p8g-r.is-pressing, #p8mScroll .p8g-r.is-ctx-active { background: color-mix(in srgb, var(--gc) 14%, transparent); }
-    #p8mScroll .p8g-r.is-leave { opacity: 0; max-height: 0 !important; padding-top: 0; padding-bottom: 0; }
-    #p8mScroll .p8g-c { flex: 0 0 auto; width: 1.7rem; height: 1.7rem; box-sizing: border-box; border-radius: 50%; border: 2px solid color-mix(in srgb, var(--theme-text, #121212) 26%, transparent); display: grid; place-items: center; transition: background-color .35s ease, border-color .35s ease, transform .35s cubic-bezier(.34,1.56,.64,1); }
-    #p8mScroll .p8g-r:active .p8g-c { transform: scale(.88); }
-    #p8mScroll .p8g-c svg { width: .95rem; height: .95rem; fill: none; stroke: var(--gt); stroke-width: 3.4; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 26; stroke-dashoffset: 26; transition: stroke-dashoffset .4s ease .05s; }
-    #p8mScroll .p8g-r.is-done .p8g-c { background: var(--gc); border-color: var(--gc); }
-    #p8mScroll .p8g-r.is-done .p8g-c svg { stroke-dashoffset: 0; }
-    #p8mScroll .p8g-t { flex: 1 1 auto; min-width: 0; font-size: 1.1rem; font-weight: 700; line-height: 1.25; overflow-wrap: anywhere; transition: opacity .35s ease; }
-    #p8mScroll .p8g-tt { background: linear-gradient(currentColor, currentColor) no-repeat 0 var(--strike-y, 50%) / 0 2px; transition: background-size .4s ease; }
-    #p8mScroll .p8g-r.is-done .p8g-t { opacity: .4; }
-    #p8mScroll .p8g-r.is-done .p8g-tt { background-size: 100% 2px; }
-    /* --- Ekleme düğmeleri / formlar --- */
-    #p8mScroll .p8g-actions { display: flex; flex-wrap: wrap; gap: .2rem; margin-top: .2rem; }
-    #p8mScroll .p8g-add { display: block; width: 100%; box-sizing: border-box; padding: .7rem .3rem; border: none; background: none; text-align: left; font: inherit; font-weight: 700; font-size: .95rem; color: var(--p8-mute); cursor: pointer; border-radius: 1rem; -webkit-tap-highlight-color: transparent; transition: color .2s ease; }
-    #p8mScroll .p8g-add:active { color: var(--theme-text, #121212); }
-    #p8mScroll .p8g-actions .p8g-add { width: auto; padding: .65rem 1rem .65rem .3rem; }
-    #p8mScroll .p8g-form { display: flex; align-items: center; gap: .5rem; padding: .3rem 0 .4rem; animation: p8gIn .35s ease backwards; }
-    #p8mScroll .p8g-in { flex: 1 1 auto; min-width: 0; box-sizing: border-box; font: inherit; font-weight: 600; font-size: 1rem; color: inherit; background: var(--p8-surf2); border: none; outline: none; border-radius: 999px; padding: .65rem 1rem; }
-    #p8mScroll .p8g-in::placeholder { color: var(--p8-mute); }
-    #p8mScroll .p8g-go { flex: 0 0 auto; width: 2.6rem; height: 2.6rem; border: none; border-radius: 50%; display: grid; place-items: center; cursor: pointer; background: var(--gc); }
-    #p8mScroll .p8g-go svg { width: 1.05rem; height: 1.05rem; fill: none; stroke: var(--gt); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
-    /* --- Yeni grup paneli / boş durum / ipucu --- */
-    #p8mScroll .p8n-newgroup { display: flex; flex-direction: column; align-items: stretch; gap: .7rem; margin: 0 0 .85rem; }
-    #p8mScroll .p8n-pills { display: flex; gap: .5rem; flex-wrap: wrap; }
-    #p8mScroll .p8n-pill { font: inherit; font-weight: 700; font-size: .85rem; border: none; border-radius: 999px; padding: 0 1.1rem; height: 2.5rem; cursor: pointer; color: color-mix(in srgb, var(--theme-text, #121212) 94%, transparent); background: var(--p8-surf); transition: background-color .15s, transform .15s; -webkit-tap-highlight-color: transparent; }
-    #p8mScroll .p8n-pill:active { transform: scale(.95); background: var(--p8-surf2); }
-    #p8mScroll .p8n-add { display: flex; gap: .5rem; margin: 0; }
-    #p8mScroll .p8n-add .p8n-input { flex: 1 1 auto; min-width: 0; width: auto; }
-    #p8mScroll .p8n-input { width: 100%; box-sizing: border-box; font: inherit; font-weight: 600; font-size: 1rem; color: inherit; background: var(--p8-surf); border: none; outline: none; border-radius: 999px; padding: .65rem 1rem; }
-    #p8mScroll .p8n-input::placeholder { color: var(--p8-mute); }
-    #p8mScroll .p8n-input:focus { background: var(--p8-surf2); }
-    #p8mScroll .p8n-addbtn { flex: 0 0 auto; height: 2.7rem; padding: 0 1.2rem; border: none; border-radius: 999px; cursor: pointer; font: inherit; font-weight: 700; font-size: .9rem; color: #fff; background: var(--accent-color, #ff90e8); text-shadow: 0 1px 2px rgba(0,0,0,.18); -webkit-tap-highlight-color: transparent; }
-    #p8mScroll .p8n-addbtn:active { transform: scale(.96); }
-    #p8mScroll .p8n-empty { padding: 1.6rem 1.2rem; border-radius: 1.7rem; background: var(--p8-surf); text-align: center; }
-    #p8mScroll .p8n-empty b { font-size: 1.2rem; display: block; margin-bottom: .3rem; }
-    #p8mScroll .p8n-empty p { margin: 0 0 1rem; color: var(--p8-mute); font-weight: 600; font-size: .95rem; }
-    #p8mScroll .p8n-empty .p8n-newgroup { margin: 0; align-items: stretch; }
-    #p8mScroll .p8n-empty .p8n-pills { justify-content: center; }
-    #p8mScroll .p8g-tip { margin: 1rem 0 0; text-align: center; font-size: .8rem; font-weight: 600; color: var(--p8-mute); }
-    /* --- Onay penceresi ve "Geri al" bildirimi --- */
+  /* --- Onay penceresi ve "Geri al" bildirimi --- */
     .p8n-dlg-back { position: fixed; inset: 0; z-index: 90; display: grid; place-items: center; background: rgba(0,0,0,0); transition: background-color .3s ease, backdrop-filter .3s ease; }
     .p8n-dlg-back.is-in { background: rgba(0,0,0,.42); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
     .p8n-dlg { --p8-mute: color-mix(in srgb, var(--theme-text, #121212) 55%, transparent); --p8-surf2: color-mix(in srgb, var(--theme-text, #121212) 11%, transparent); box-sizing: border-box; width: min(380px, calc(100vw - 40px)); padding: 1.5rem 1.3rem 1.2rem; border-radius: 1.7rem; background: var(--theme-bg, #F6F4EF); color: var(--theme-text, #121212); font-family: "Baloo 2", "Space Grotesk", sans-serif; box-shadow: 0 24px 70px rgba(0,0,0,.35); opacity: 0; transform: translateY(16px) scale(.95); transition: opacity .3s ease, transform .4s cubic-bezier(.22,1,.36,1); }
@@ -39243,7 +39040,6 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
     .n-toast { position: fixed; left: 50%; bottom: calc(84px + env(safe-area-inset-bottom)); transform: translateX(-50%); z-index: 70; display: flex; align-items: center; gap: .8rem; max-width: calc(100vw - 32px); box-sizing: border-box; padding: .6rem .7rem .6rem 1.1rem; border-radius: 999px; background: #121212; color: #fff; font-family: "Baloo 2", "Space Grotesk", sans-serif; font-weight: 700; font-size: .88rem; box-shadow: 0 12px 30px -10px rgba(0,0,0,.5); }
     .n-toast[hidden] { display: none; }
     .n-toast button { border: none; cursor: pointer; font: inherit; font-weight: 800; font-size: .85rem; padding: .35rem .9rem; border-radius: 999px; background: var(--accent-color, #ff90e8); color: #fff; }
-    @media (prefers-reduced-motion: reduce) { #p8mScroll .p8g, #p8mScroll .p8g * { animation: none !important; transition-duration: .01ms !important; } }
   }
 
   /* ==========================================================================
@@ -41546,219 +41342,27 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
 
 
 
-<style id="p8-stat-css">
-  /* Gündelik (telefon): kart sağ üst istatistik düğmesi, "tamamlandı" rozeti ve takvim sayfası.
-     Büyük ekranda düğme/rozet gizli; büyük ekran kuralları değiştirilmedi. */
-  .p8g-stat, .p8g-badge { display: none; }
-  @media all {
-    #p8mScroll .p8g { position: relative; }
-    #p8mScroll .p8g-head { padding-right: 2.9rem; }
-    #p8mScroll .p8g-stat { display: grid; place-items: center; position: absolute; top: .7rem; right: .75rem; width: 2.4rem; height: 2.4rem; padding: 0; border: none; border-radius: 50%; cursor: pointer; color: var(--theme-text, #121212); background: color-mix(in srgb, var(--theme-text, #121212) 8%, transparent); -webkit-tap-highlight-color: transparent; transition: opacity .35s ease, transform .45s cubic-bezier(.34,1.56,.64,1), background-color .2s ease; }
-    #p8mScroll .p8g-stat:active { transform: scale(.86); background: color-mix(in srgb, var(--theme-text, #121212) 14%, transparent); }
-    #p8mScroll .p8g-stat svg { width: 1.15rem; height: 1.15rem; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
-    #p8mScroll .p8g-badge { display: grid; place-items: center; position: absolute; top: .7rem; right: .75rem; width: 2.4rem; height: 2.4rem; box-sizing: border-box; border-radius: 50%; border: 2px solid var(--gc); background: color-mix(in srgb, var(--gc) 16%, transparent); opacity: 0; transform: scale(0); pointer-events: none; }
-    #p8mScroll .p8g-badge b { position: absolute; font-size: .95rem; font-weight: 800; color: var(--theme-text, #121212); font-variant-numeric: tabular-nums; }
-    #p8mScroll .p8g-badge svg { width: 62%; height: 62%; fill: none; stroke: var(--gc); stroke-width: 3; stroke-linecap: round; opacity: 0; }
-    #p8mScroll .p8g.is-game .p8g-stat { opacity: 0; transform: scale(.4); pointer-events: none; }
-    #p8mScroll .p8g.is-game .p8g-badge { animation: p8bdg 3.2s cubic-bezier(.22,1,.36,1) forwards; }
-    #p8mScroll .p8g.is-game .p8g-badge b { animation: p8bdgNum 3.2s ease forwards; }
-    #p8mScroll .p8g.is-game .p8g-badge svg { animation: p8bdgX 3.2s linear forwards; }
-    #p8mScroll .p8g.is-game .p8g-badge path { stroke-dasharray: 20; animation: p8cDraw .5s ease-out .6s backwards; }
-    #p8mScroll .p8g.is-game .p8g-badge path + path { animation-delay: .78s; }
-  }
-  @keyframes p8bdg { 0% { opacity: 0; transform: scale(0); } 10% { opacity: 1; transform: scale(1.2); } 16% { transform: scale(1); } 18% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--gc) 55%, transparent); } 45% { box-shadow: 0 0 0 14px transparent; } 78% { opacity: 1; transform: scale(1); } 88% { opacity: 1; transform: scale(1.12); } 100% { opacity: 0; transform: scale(.3); } }
-  @keyframes p8bdgNum { 0%, 14% { opacity: 1; transform: scale(1); } 22%, 100% { opacity: 0; transform: scale(.3); } }
-  @keyframes p8bdgX { 0%, 17% { opacity: 0; } 18%, 100% { opacity: 1; } }
-  @keyframes p8cDraw { from { stroke-dashoffset: 20; } to { stroke-dashoffset: 0; } }
-
-  /* Takvim sayfası (tam ekran) */
-  .p8cal { --p8-surf: color-mix(in srgb, var(--theme-text, #121212) 6%, transparent); --p8-surf2: color-mix(in srgb, var(--theme-text, #121212) 11%, transparent); --p8-mute: color-mix(in srgb, var(--theme-text, #121212) 55%, transparent); position: fixed; inset: 0; z-index: 100000; display: flex; flex-direction: column; background: var(--theme-bg, #F6F4EF); color: var(--theme-text, #121212); font-family: "Baloo 2", "Space Grotesk", sans-serif; transform: translateY(100%); transition: transform .38s cubic-bezier(.22,1,.36,1); }
-  .p8cal.is-open { transform: none; }
-  .p8cal-bar { flex: 0 0 auto; display: flex; align-items: center; gap: .6rem; width: 100%; max-width: 428px; margin: 0 auto; box-sizing: border-box; padding: calc(16px + env(safe-area-inset-top)) 20px .5rem; }
-  .p8cal-back { flex: 0 0 auto; width: 2.6rem; height: 2.6rem; padding: 0; border: none; border-radius: 50%; display: grid; place-items: center; cursor: pointer; color: inherit; background: var(--p8-surf); -webkit-tap-highlight-color: transparent; transition: transform .15s ease; }
-  .p8cal-back:active { transform: scale(.88); }
-  .p8cal-back svg { width: 1.1rem; height: 1.1rem; fill: none; stroke: currentColor; stroke-width: 2.8; stroke-linecap: round; stroke-linejoin: round; }
-  .p8cal-name { min-width: 0; font-size: 1.35rem; font-weight: 800; letter-spacing: -.01em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .p8cal-body { flex: 1 1 auto; overflow-y: auto; -webkit-overflow-scrolling: touch; width: 100%; max-width: 428px; margin: 0 auto; box-sizing: border-box; padding: .5rem 20px calc(28px + env(safe-area-inset-bottom)); display: flex; flex-direction: column; gap: .85rem; }
-  .p8cal-hero { display: flex; align-items: center; gap: 1rem; padding: 1.1rem 1.2rem; border-radius: 1.7rem; background: color-mix(in srgb, var(--gc) 22%, transparent); animation: p8calIn .5s cubic-bezier(.22,1,.36,1) backwards; }
-  .p8cal-hero b { font-size: 3rem; font-weight: 800; line-height: 1; color: var(--gc); font-variant-numeric: tabular-nums; }
-  .p8cal-hero span { font-size: 1.05rem; font-weight: 700; line-height: 1.25; }
-  .p8cal-chips { display: grid; grid-template-columns: repeat(3, 1fr); gap: .6rem; animation: p8calIn .5s cubic-bezier(.22,1,.36,1) .08s backwards; }
-  .p8cal-chip { padding: .7rem .5rem; border-radius: 1.2rem; background: var(--p8-surf); text-align: center; }
-  .p8cal-chip b { display: block; font-size: 1.5rem; font-weight: 800; line-height: 1.1; font-variant-numeric: tabular-nums; }
-  .p8cal-chip span { font-size: .72rem; font-weight: 700; color: var(--p8-mute); }
-  .p8cal-card { padding: 1rem 1rem 1.1rem; border-radius: 1.7rem; background: var(--p8-surf); animation: p8calIn .5s cubic-bezier(.22,1,.36,1) .16s backwards; }
-  .p8cal-legend { display: flex; flex-wrap: wrap; gap: .4rem 1rem; padding: 0 .4rem; font-size: .8rem; font-weight: 700; color: var(--p8-mute); }
-  @keyframes p8calIn { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
-  .p8cal .p8g-cal { touch-action: pan-y; user-select: none; -webkit-user-select: none; }
-  .p8cal .p8g-cal-h { display: flex; align-items: center; gap: .3rem; margin-bottom: .8rem; font-size: 1rem; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; }
-  .p8cal .p8g-cal-title { flex: 1 1 auto; min-width: 0; border: none; background: none; padding: .25rem 0; font: inherit; color: var(--theme-text, #121212); text-align: center; cursor: default; }
-  .p8cal .p8g-cal-title.is-away { cursor: pointer; color: var(--gc); }
-  .p8cal .p8g-cal-nav { flex: 0 0 auto; width: 2.4rem; height: 2.4rem; border: none; border-radius: 50%; display: grid; place-items: center; cursor: pointer; color: inherit; background: none; transition: background-color .2s ease, opacity .2s ease, transform .2s ease; }
-  .p8cal .p8g-cal-nav:active { transform: scale(.88); background: var(--p8-surf2); }
-  .p8cal .p8g-cal-nav:disabled { opacity: .25; pointer-events: none; }
-  .p8cal .p8g-cal-nav svg { width: 1.1rem; height: 1.1rem; fill: none; stroke: currentColor; stroke-width: 2.8; stroke-linecap: round; stroke-linejoin: round; }
-  .p8cal .p8g-cal-g { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
-  .p8cal .p8g-cal-g.sw-r { animation: p8cSwR .45s cubic-bezier(.22,1,.36,1); }
-  .p8cal .p8g-cal-g.sw-l { animation: p8cSwL .45s cubic-bezier(.22,1,.36,1); }
-  @keyframes p8cSwR { from { opacity: 0; transform: translateX(14px); } to { opacity: 1; transform: none; } }
-  @keyframes p8cSwL { from { opacity: 0; transform: translateX(-14px); } to { opacity: 1; transform: none; } }
-  .p8cal .p8g-cal-g .wd { text-align: center; font-size: .75rem; font-weight: 800; color: var(--p8-mute); padding-bottom: 4px; }
-  .p8cal .p8g-cal-g .day { position: relative; aspect-ratio: 1; display: grid; place-items: center; border-radius: 50%; font-size: 1rem; font-weight: 700; color: color-mix(in srgb, var(--theme-text, #121212) 70%, transparent); }
-  .p8cal .p8g-cal-g .day.is-future { opacity: .3; }
-  .p8cal .p8g-cal-g .day.is-part { background: color-mix(in srgb, var(--gc) 32%, transparent); color: var(--theme-text, #121212); }
-  .p8cal .p8g-cal-g .day.is-today { box-shadow: 0 0 0 2px var(--gc); color: var(--theme-text, #121212); }
-  .p8cal .p8g-cal-g .day svg { width: 66%; height: 66%; fill: none; stroke: var(--gc); stroke-width: 3; stroke-linecap: round; }
-  .p8cal .p8g-cal-g .day.is-full.is-draw path { stroke-dasharray: 20; animation: p8cDraw .5s ease-out backwards; }
-  @media (prefers-reduced-motion: reduce) { .p8cal, .p8cal * , #p8mScroll .p8g-badge, #p8mScroll .p8g-badge * { animation-duration: .01ms !important; transition-duration: .01ms !important; } }
-</style>
-<style id="p8-flame-css">
-  /* ===== Seri alevi (Gündelik başlığının yanında; masaüstü + telefon) =====
-     Bugünün rutinleri tamamsa canlı ve hareketli; değilse soluk, cansız ve eski seriyle durur. */
-  .sflame { --fl: #ff8a1f; display: inline-flex; align-items: center; gap: .16em; flex: 0 0 auto; font-size: 1.9rem; line-height: 1; cursor: default; -webkit-tap-highlight-color: transparent; }
-  .sflame-wrap { position: relative; display: block; width: .86em; height: 1.08em; flex: 0 0 auto; }
-  .sflame-ico { position: relative; z-index: 1; display: block; width: 100%; height: 100%; transform-origin: 50% 100%; animation: sfBob 2.6s ease-in-out infinite; transition: filter .8s ease, opacity .8s ease, transform .8s cubic-bezier(.22,1,.36,1); }
-  .sfl { position: absolute; left: 0; top: 0; display: block; width: 100%; height: 100%; overflow: visible; transform-origin: 50% 100%; backface-visibility: hidden; }
-  .sfl-st { position: absolute; left: 0; top: 0; display: block; width: 100%; height: 100%; overflow: visible; }
-  /* Hareketli katmanlar kendi GPU katmanında döner: ana iş parçacığını yormaz (Android tablet) */
-  .sflame:not(.is-off) .sflame-ico, .sflame:not(.is-off) .sfl, .sflame:not(.is-off) .sfsp, .sflame:not(.is-off) .sflame-glow { will-change: transform, opacity; }
-  .sflame.is-pop .sfbu { will-change: transform, opacity; }
-  .sfl-a { animation: sfSwayA 1.8s ease-in-out infinite; }
-  .sfl-b { animation: sfSwayB 1.25s ease-in-out infinite; }
-  .sfl-c { animation: sfSwayC .9s ease-in-out infinite; }
-  .sfsp, .sfbu { position: absolute; z-index: 2; display: block; border-radius: 50%; opacity: 0; pointer-events: none; }
-  .sfsp { margin: -.03em 0 0 -.03em; width: .06em; height: .06em; }
-  .sfsp.s1 { left: 25%; top: 23%; background: #ffb347; }
-  .sfsp.s2 { left: 77%; top: 20%; background: #ffd23f; width: .05em; height: .05em; margin: -.025em 0 0 -.025em; }
-  .sfsp.s3 { left: 50%; top: 13%; background: #ff8a1f; width: .044em; height: .044em; margin: -.022em 0 0 -.022em; }
-  .sfbu { left: 50%; top: 57%; width: var(--d, .06em); height: var(--d, .06em); margin: calc(var(--d, .06em) / -2) 0 0 calc(var(--d, .06em) / -2); background: var(--c, #ffd23f); }
-  .sfsp { animation: sfSpark 2.4s ease-out infinite; }
-  .sfsp.s2 { animation-delay: .8s; animation-duration: 2.9s; }
-  .sfsp.s3 { animation-delay: 1.6s; animation-duration: 2.2s; }
-  .sflame-glow { position: absolute; z-index: 0; left: 50%; bottom: 4%; width: 200%; height: 135%; transform: translateX(-50%); border-radius: 50%; pointer-events: none; background: radial-gradient(closest-side, rgba(255, 150, 40, .5), rgba(255, 150, 40, 0)); animation: sfGlow 2s ease-in-out infinite; transition: opacity .8s ease; }
-  .sflame-num { display: block; min-width: .6em; font-family: "Baloo 2", "Space Grotesk", sans-serif; font-size: .95em; font-weight: 800; line-height: 1; margin-top: .12em; color: var(--fl); font-variant-numeric: tabular-nums; letter-spacing: -.02em; transition: color .6s ease; }
-  /* Cansız hâl */
-  .sflame.is-off .sflame-ico { filter: grayscale(1) brightness(1.08); opacity: .42; animation: none; transform: scale(.92) rotate(-3deg); }
-  .sflame.is-off .sfl, .sflame.is-off .sfsp { animation: none; }
-  .sflame.is-off .sfsp, .sflame.is-off .sfbu { opacity: 0; }
-  .sflame.is-off .sflame-glow { opacity: 0; animation: none; }
-  .sflame.is-off .sflame-num { color: var(--p8-mute, rgba(128, 128, 128, .75)); }
-  /* Tutuşma: alev yerden yükselir, zıplar, kıvılcımlar saçılır; sayı bir artarak "pop" yapar */
-  .sflame.is-pop .sflame-ico { animation: sfIgnite 1.1s cubic-bezier(.3,1.4,.5,1), sfBob 2.6s ease-in-out 1.1s infinite; }
-  .sflame.is-pop .sfl-a { animation: sfKindle 1s cubic-bezier(.3,.6,.3,1), sfSwayA 1.8s ease-in-out 1s infinite; }
-  .sflame.is-pop .sfl-b { animation: sfKindle .95s cubic-bezier(.3,.6,.3,1) .1s backwards, sfSwayB 1.25s ease-in-out 1.05s infinite; }
-  .sflame.is-pop .sfl-c { animation: sfKindle .9s cubic-bezier(.3,.6,.3,1) .2s backwards, sfSwayC .9s ease-in-out 1.1s infinite; }
-  .sflame.is-pop .sflame-glow { animation: sfGlowIn 1.2s ease-out, sfGlow 2s ease-in-out 1.2s infinite; }
-  .sflame.is-pop .sflame-num { animation: sfNumPop .9s cubic-bezier(.34,1.56,.64,1); }
-  .sflame.is-pop .sfbu { animation: sfBurst .95s ease-out .15s backwards; }
-  @keyframes sfBob { 0%, 100% { transform: translateY(0) scale(1, 1); } 50% { transform: translateY(-.02em) scale(1.03, 1.06); } }
-  @keyframes sfSwayA { 0%, 100% { transform: skewX(0) scaleY(1); } 22% { transform: skewX(-3deg) scaleY(1.05); } 50% { transform: skewX(2.5deg) scaleY(.96); } 78% { transform: skewX(-1.5deg) scaleY(1.03); } }
-  @keyframes sfSwayB { 0%, 100% { transform: skewX(0) scaleY(1); } 30% { transform: skewX(4deg) scaleY(1.08); } 65% { transform: skewX(-3deg) scaleY(.94); } }
-  @keyframes sfSwayC { 0%, 100% { transform: skewX(0) scale(1, 1); } 35% { transform: skewX(-5deg) scale(.92, 1.12); } 70% { transform: skewX(4deg) scale(1.06, .92); } }
-  @keyframes sfGlow { 0%, 100% { opacity: .75; transform: translateX(-50%) scale(1); } 50% { opacity: 1; transform: translateX(-50%) scale(1.1); } }
-  @keyframes sfGlowIn { 0% { opacity: 0; transform: translateX(-50%) scale(.3); } 40% { opacity: 1; transform: translateX(-50%) scale(1.5); } 100% { opacity: .75; transform: translateX(-50%) scale(1); } }
-  @keyframes sfKindle { 0% { transform: scale(.25, 0); opacity: 0; } 14% { opacity: 1; } 32% { transform: scale(.6, .35) skewX(7deg); } 52% { transform: scale(.88, .8) skewX(-7deg); } 70% { transform: scale(1.06, 1.16) skewX(4deg); } 86% { transform: scale(.98, .97) skewX(-2deg); } 100% { transform: scale(1, 1); } }
-  @keyframes sfIgnite { 0% { transform: translateY(.1em) scale(.6) rotate(-8deg); } 40% { transform: translateY(-.1em) scale(1.2, 1.28) rotate(4deg); } 70% { transform: scale(.96, .94) rotate(-2deg); } 100% { transform: none; } }
-  @keyframes sfNumPop { 0% { transform: translateY(.6em) scale(.4); opacity: 0; } 55% { transform: translateY(-.12em) scale(1.4); opacity: 1; } 100% { transform: none; opacity: 1; } }
-  @keyframes sfSpark { 0% { opacity: 0; transform: translate(0, .05em) scale(1); } 18% { opacity: 1; } 100% { opacity: 0; transform: translate(var(--sx, .05em), -.36em) scale(.3); } }
-  @keyframes sfBurst { 0% { opacity: 0; transform: translate(0, 0) scale(.4); } 20% { opacity: 1; } 100% { opacity: 0; transform: translate(var(--bx), var(--by)) scale(.2); } }
-  .sfsp.s1 { --sx: -.09em; } .sfsp.s2 { --sx: .11em; } .sfsp.s3 { --sx: .02em; }
-  @media (prefers-reduced-motion: reduce) { .sflame *, .sflame { animation: none !important; } }
-  #page-8 .p8m-titlewrap { grid-column: 1; grid-row: 1; display: flex; align-items: baseline; gap: .55rem; min-width: 0; }
-  #page-8 .p8m-titlewrap .sflame { font-size: 1.5rem; }
-  /* Telefon başlık satırı hizası (yazı tipinden BAĞIMSIZ, sabit düzen):
-     - Yazının taban çizgisi alevin alt kenarına oturur (align-items: baseline).
-     - Başlığın satır kutusu 0 yüksekliğe çekilir; böylece yazının satır
-       aralığı (Baloo 2'nin yüksek metrikleri) kabın yüksekliğini ve konumunu
-       bozamaz: kap tam alev boyunda kalır.
-     - Kap, satırın ortasında (grid align-items: center) durur; alev, ilerleme
-       halkası ve düğmeler aynı yatay eksende, yazı ise alevle aynı alt çizgide
-       olur. Alev canlı/soluk ya da seri hanesi değişse bile kutu boyutu
-       değişmediği için hiza bozulmaz. */
-  @media all {
-    #page-8 .p8m-topbar { align-items: center; }
-    #page-8 .p8m-titlewrap { align-self: center; align-items: baseline; flex-wrap: nowrap; }
-    #page-8 .p8m-titlewrap .p8m-title { line-height: 0; }
-    #page-8 .p8m-titlewrap .sflame { align-self: baseline; align-items: baseline; }
-    /* Seri sayısı "Gündelik" yazısıyla AYNI taban çizgisinde yazılır; satır
-       kutusu 0'lanır ki kabın boyu/konumu değişmesin. */
-    #page-8 .p8m-titlewrap .sflame-num { line-height: 0; margin-top: 0; }
-    /* Alev simgesi yazının taban çizgisinin biraz altına kayar (yalnızca görsel
-       kaydırma; yerleşimi etkilemez, böylece halka/düğme hizası bozulmaz). */
-    #page-8 .p8m-titlewrap .sflame-wrap { transform: translateY(0.15em); }
-  }
-  /* Dar telefonlarda (≤380px) 2-3 haneli seri sayısı halkanın üstüne binmesin
-     diye başlık satırı orantılı küçülür; hizalama mantığı aynı kalır. */
-  @media (max-width: 380px) {
-    #page-8 .p8m-topbar { gap: 0.4rem; }
-    #page-8 .p8m-titlewrap { gap: 0.4rem; }
-    #page-8 .p8m-title { font-size: 1.4rem; }
-    #page-8 .p8m-titlewrap .sflame { font-size: 1.3rem; }
-    #page-8 .p8m-actions { gap: 0.4rem; }
-    #page-8 .p8m-topbar .p8n-notesbtn { width: 2.4rem; height: 2.4rem; }
-    #page-8 .p8m-topbar .p8n-stat-ring { width: 40px; height: 40px; }
-  }
-  @media (max-width: 340px) {
-    #page-8 > .p8m-topbar { padding-left: 16px; padding-right: 16px; gap: 0.3rem; }
-    #page-8 .p8m-titlewrap { gap: 0.3rem; }
-    #page-8 .p8m-title { font-size: 1.2rem; }
-    #page-8 .p8m-titlewrap .sflame { font-size: 1.15rem; }
-    #page-8 .p8m-actions { gap: 0.3rem; }
-    #page-8 .p8m-topbar .p8n-notesbtn { width: 2.2rem; height: 2.2rem; }
-    #page-8 .p8m-topbar .p8n-stat-ring { width: 36px; height: 36px; }
-  }
-</style>
-  <section class="page" id="page-8">
-    <div class="p8m-topbar" id="p8mTopbar">
-      <div class="p8m-titlewrap"><h1 class="p8m-title">Gündelik</h1><div class="sflame is-off" id="p8mFlame" title="Günlük seri"></div></div>
-      <div class="p8m-actions" id="p8mStatSlot">
-        <div class="p8n-stat" id="p8nStat" aria-live="polite"></div>
-          <button type="button" class="gk-switch" id="p8nSwitch" aria-label="Hatırlanacaklar sayfasına geç"><svg class="gk-switch-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7h11l-3-3M17 17H6l3 3"/></svg><span class="gk-switch-lbls"><span class="gk-switch-lbl gk-switch-lbl-a">Hatırlanacaklar</span><span class="gk-switch-lbl gk-switch-lbl-b" aria-hidden="true">Gündelik</span></span></button>
-        <button type="button" class="p8n-notesbtn p8n-newgrpbtn" id="p8nNewBtn" aria-label="Yeni grup" aria-expanded="false">
-          <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
-          <span>Yeni grup</span>
-        </button>
-        <button type="button" class="p8n-notesbtn" id="p8nNtBtn" aria-label="Notlarım">
-          <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13 7l4 4"/></svg>
-          <span>Notlarım</span>
-        </button>
-      </div>
+  <section class="page" id="page-8" aria-label="Gündelik">
+    <div class="hl-top">
+      <h1 class="hl-title" id="gdTitle" role="button" tabindex="0" title="Hatırlanacaklar'a geç">Gündelik</h1>
+      <button type="button" class="hl-auto" id="gdAuto" role="switch" aria-checked="false" aria-label="Yapılanları otomatik sil" title="Yapılanları otomatik sil">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <defs><mask id="gdAutoMask" maskUnits="userSpaceOnUse" x="-4" y="-4" width="32" height="32"><rect x="-4" y="-4" width="32" height="32" fill="#fff"/><path class="ad-slash-gap" d="M4 4l16 16" stroke="#000" stroke-width="6"/></mask></defs>
+          <g mask="url(#gdAutoMask)">
+            <circle class="ad-ring" cx="10.5" cy="13.5" r="7"/>
+            <path class="ad-check" d="M7.2 13.8l2.4 2.4 4.3-4.9"/>
+            <path class="ad-spark" d="M19 1.6Q19.4 4.6 22.4 5Q19.4 5.4 19 8.4Q18.6 5.4 15.6 5Q18.6 4.6 19 1.6Z"/>
+          </g>
+          <path class="ad-slash" d="M4 4l16 16"/>
+        </svg>
+      </button>
+      <button type="button" class="hl-new" id="gdNew" aria-label="Yeni liste"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
+      <button type="button" class="gk-switch" id="gdSwitch" aria-label="Hatırlanacaklar sayfasına geç"><svg class="gk-switch-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7h11l-3-3M17 17H6l3 3"/></svg><span class="gk-switch-lbls"><span class="gk-switch-lbl gk-switch-lbl-a">Hatırlanacaklar</span><span class="gk-switch-lbl gk-switch-lbl-b" aria-hidden="true">Gündelik</span></span></button>
     </div>
-    <div class="p8m-scroll" id="p8mScroll">
-      <div id="p8nMain">
-        <div id="p8nNewGroup"></div>
-        <div class="p8n-groups" id="p8nGroups"></div>
-        <div id="p8nTip"></div>
-      </div>
-      <div class="n-toast" id="p8nToast" hidden></div>
-    </div>
+    <div class="hl-scroll" id="gdScroll"><div id="gdNewForm"></div><div id="gdList"></div><p class="hl-tip" id="gdTip"></p></div>
   </section>
 
 
-<style id="p8-steps-css">
-  /* Aşamalı rutin: onay dairesi, işaretledikçe saat yönünde dolan pasta dilimi gibi dolar.
-     Masaüstü ve telefonda aynı kurallar (kutu boyutunu mevcut .p8g-c belirler). */
-  #p8nMain .p8g-c.has-pie { position: relative; overflow: hidden; }
-  #p8nMain .p8g-c svg.p8g-pie { position: absolute; inset: 0; width: 100%; height: 100%; }
-  #p8nMain .p8g-c.has-pie svg:not(.p8g-pie) { position: relative; z-index: 1; }
-  #p8nMain .p8g-r.is-part .p8g-c { border-color: var(--gc); }
-  #p8nMain .p8g-r.is-done .p8g-c.has-pie svg:not(.p8g-pie) { transition-delay: .4s; }
-  #p8nMain .p8g-c.is-step { animation: p8gStep .45s cubic-bezier(.34,1.56,.64,1); }
-  @keyframes p8gStep { 0% { transform: scale(1); } 40% { transform: scale(1.2); } 100% { transform: scale(1); } }
-  #p8nMain .p8g-stp { flex: 0 0 auto; font-size: .78rem; font-weight: 800; color: var(--p8-mute, rgba(128,128,128,.8)); font-variant-numeric: tabular-nums; padding: .12rem .55rem; border-radius: 999px; background: color-mix(in srgb, var(--theme-text, #121212) 7%, transparent); transition: opacity .3s ease; }
-  #p8nMain .p8g-r.is-done .p8g-stp { opacity: .5; }
-  #p8nMain .p8g-stpbtn { flex: 0 0 auto; border: none; cursor: pointer; font: inherit; font-weight: 700; font-size: .8rem; white-space: nowrap; height: 2.3rem; padding: 0 .85rem; border-radius: 999px; color: var(--p8-mute, rgba(128,128,128,.9)); background: var(--p8-surf2, rgba(128,128,128,.14)); -webkit-tap-highlight-color: transparent; transition: background-color .2s ease, color .2s ease, transform .15s ease; }
-  #p8nMain .p8g-stpbtn:active { transform: scale(.93); }
-  #p8nMain .p8g-stpbtn.is-on { color: var(--gt, #fff); background: var(--gc, var(--accent-color, #ff90e8)); }
-  .p8g-stprow { display: flex; align-items: center; justify-content: center; gap: 1.2rem; margin: 0 0 1.3rem; }
-  .p8g-stpd { width: 2.8rem; height: 2.8rem; border: none; border-radius: 50%; cursor: pointer; font: inherit; font-size: 1.5rem; font-weight: 800; line-height: 1; color: inherit; background: var(--p8-surf2, rgba(128,128,128,.14)); -webkit-tap-highlight-color: transparent; transition: transform .15s ease, opacity .2s ease; }
-  .p8g-stpd:active { transform: scale(.9); }
-  .p8g-stpd:disabled { opacity: .3; }
-  .p8g-stpv { min-width: 4.5rem; text-align: center; font-size: 2.2rem; font-weight: 800; line-height: 1; font-variant-numeric: tabular-nums; }
-  .p8g-stpv small { display: block; margin-top: .25rem; font-size: .75rem; font-weight: 700; color: var(--p8-mute, rgba(128,128,128,.8)); }
-  .p8n-dlg-btn.p8g-okbtn { color: #fff; background: var(--accent-color, #ff90e8); text-shadow: 0 1px 2px rgba(0,0,0,.18); }
-  @media (prefers-reduced-motion: reduce) { #p8nMain .p8g-c.is-step { animation: none; } }
-</style>
 <script id="notlarim-switch">
   /* ===== NOTLARIM ANAHTARI =====
      false: Notlarım özelliği tamamen kapalı (hiçbir yerde görünmez, açılamaz, hiçbir kod çalışmaz).
@@ -41975,11 +41579,9 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
     .gundelik-fab-lbl-b { opacity: 0; transform: translateY(60%); }
     .gundelik-fab-switch.is-alt .gundelik-fab-lbl-a { opacity: 0; transform: translateY(-60%); }
     .gundelik-fab-switch.is-alt .gundelik-fab-lbl-b { opacity: 1; transform: none; }
-    /* Notlarım artık altta; üst çubuktaki kopyası telefonda gizlenir. */
-    #page-8 #p8nNtBtn { display: none; }
     /* Başlıktaki ekle düğmeleri telefonda kaldırıldı: ekleme artık alttaki "+" düğmesinden (#gundelikFabAddBtn).
        Elemanlar DOM'da duruyor (kod onlara bağlı); büyük ekranda görünmeye devam ederler. */
-    #page-8 #p8nNewBtn, #page-hatirla #hlNew { display: none; }
+    #gdNew, #hlNew { display: none; }
     body.is-gundelik-page .gundelik-fab-bar .qhavuz-fab {
       opacity: 1; transform: none; pointer-events: auto;
       transition-delay: var(--d, 0s), var(--d, 0s), 0s;
@@ -41991,25 +41593,22 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
      Görev eklerken/düzenlerken harf sınırı yok; metin tek satırda kayıp gitmez,
      paragraf olarak görünür ve imleç istenen yere taşınabilir. Kutu yazdıkça uzar
      (en fazla ekranın ~%42'si, sonra kutunun içinde kayar). */
-  textarea.p8g-in, #p8mScroll textarea.p8g-in,
-  textarea.p8n-edit, #p8mScroll textarea.p8n-edit,
-  textarea.hl-in, #page-hatirla textarea.hl-in,
-  textarea.hl-edit, #page-hatirla textarea.hl-edit {
+  textarea.hl-in, :is(#page-hatirla, #page-8) textarea.hl-in,
+  textarea.hl-edit, :is(#page-hatirla, #page-8) textarea.hl-edit {
     display: block; box-sizing: border-box; width: 100%; min-height: 2.6rem; max-height: 42dvh;
     resize: none; overflow-y: auto; border-radius: 1.2rem; line-height: 1.4;
     white-space: pre-wrap; overflow-wrap: anywhere; scrollbar-width: thin;
     user-select: text; -webkit-user-select: text; -webkit-touch-callout: default;
   }
-  textarea.p8g-in, #p8mScroll textarea.p8g-in, textarea.hl-in, #page-hatirla textarea.hl-in { padding: .65rem 1rem; }
-  textarea.p8n-edit, #p8mScroll textarea.p8n-edit, textarea.hl-edit, #page-hatirla textarea.hl-edit { padding: .5rem .85rem; }
-  .p8g-form:has(textarea), #p8mScroll .p8g-form:has(textarea), #page-hatirla .hl-form:has(textarea) { align-items: flex-end; }
+  textarea.hl-in, :is(#page-hatirla, #page-8) textarea.hl-in { padding: .65rem 1rem; }
+  textarea.hl-edit, :is(#page-hatirla, #page-8) textarea.hl-edit { padding: .5rem .85rem; }
+  :is(#page-hatirla, #page-8) .hl-form:has(textarea) { align-items: flex-end; }
   .p8n-editwrap, .hl-editwrap { flex: 1 1 auto; min-width: 0; display: flex; align-items: flex-end; gap: .5rem; }
   .p8n-editwrap > textarea, .hl-editwrap > textarea { flex: 1 1 auto; min-width: 0; width: auto; }
   .p8n-editok, .hl-editok { flex: 0 0 auto; width: 2.3rem; height: 2.3rem; margin-bottom: .1rem; padding: 0; border: none; border-radius: 50%; display: grid; place-items: center; cursor: pointer; background: var(--gc, var(--accent-color, #ff90e8)); -webkit-tap-highlight-color: transparent; }
   .p8n-editok:active, .hl-editok:active { transform: scale(.92); }
   .p8n-editok svg, .hl-editok svg { width: 1rem; height: 1rem; fill: none; stroke: var(--gt, #fff); stroke-width: 3.4; stroke-linecap: round; stroke-linejoin: round; }
   /* Uzun görevler kesilmesin: satır yükseklik sınırı kalktı, paragraflar (Enter ile) korunur. */
-  .p8g-r, #p8mScroll .p8g-r { max-height: none; }
   .p8g-tt, .hl-tt { white-space: pre-wrap; -webkit-box-decoration-break: clone; box-decoration-break: clone; }
 </style>
 <style id="hatirla-css">
@@ -42017,65 +41616,64 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
      Gündelik başlığına dokununca açılır. Kart yok: yazılar doğrudan arka planda,
      sade todo listesi. Seri / takvim / gece yarısı sıfırlaması YOK. */
   @media all {
-    #page-8 .p8m-title { cursor: pointer; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; }
-    #page-hatirla { flex-direction: column; align-items: center; justify-content: flex-start; padding: 0; overflow: hidden;
+    :is(#page-hatirla, #page-8) { flex-direction: column; align-items: center; justify-content: flex-start; padding: 0; overflow: hidden;
       --hl-mute: color-mix(in srgb, var(--theme-text, #121212) 55%, transparent);
       --hl-soft: color-mix(in srgb, var(--theme-text, #121212) 9%, transparent);
       color: var(--theme-text, #121212); font-family: "Baloo 2", "Space Grotesk", sans-serif; }
-    #page-hatirla .hl-top { flex: 0 0 auto; display: flex; align-items: center; justify-content: space-between; gap: .5rem; width: 100%; max-width: 428px; box-sizing: border-box; min-height: 2.6rem; padding: calc(20px + env(safe-area-inset-top)) 24px .5rem; }
-    #page-hatirla .hl-title { margin: 0; min-width: 0; font-family: inherit; font-weight: 800; font-size: 1.6rem; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; color: var(--theme-text, #f2f2f7); }
-    #page-hatirla .hl-new { flex: 0 0 auto; width: 2.6rem; height: 2.6rem; padding: 0; border: none; border-radius: 50%; display: grid; place-items: center; cursor: pointer; color: inherit; background: color-mix(in srgb, var(--theme-text, #121212) 6%, transparent); box-shadow: inset 0 1px 3px 0 color-mix(in srgb, var(--theme-text, #121212) 10%, transparent); -webkit-tap-highlight-color: transparent; transition: transform .15s ease; }
-    #page-hatirla .hl-new:active { transform: scale(.92); }
-    #page-hatirla .hl-new svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; }
+    :is(#page-hatirla, #page-8) .hl-top { flex: 0 0 auto; display: flex; align-items: center; justify-content: space-between; gap: .5rem; width: 100%; max-width: 428px; box-sizing: border-box; min-height: 2.6rem; padding: calc(20px + env(safe-area-inset-top)) 24px .5rem; }
+    :is(#page-hatirla, #page-8) .hl-title { margin: 0; min-width: 0; font-family: inherit; font-weight: 800; font-size: 1.6rem; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; color: var(--theme-text, #f2f2f7); }
+    :is(#page-hatirla, #page-8) .hl-new { flex: 0 0 auto; width: 2.6rem; height: 2.6rem; padding: 0; border: none; border-radius: 50%; display: grid; place-items: center; cursor: pointer; color: inherit; background: color-mix(in srgb, var(--theme-text, #121212) 6%, transparent); box-shadow: inset 0 1px 3px 0 color-mix(in srgb, var(--theme-text, #121212) 10%, transparent); -webkit-tap-highlight-color: transparent; transition: transform .15s ease; }
+    :is(#page-hatirla, #page-8) .hl-new:active { transform: scale(.92); }
+    :is(#page-hatirla, #page-8) .hl-new svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; }
     /* Otomatik silme anahtarı (başlığın sağ üstü): yuvarlak tikli ikon (bir görevin tamamlanıp kaybolması).
        KAPALI: ikon soluk, üstünde çapraz çizgi (kamera-kapalı gibi). AÇIK: çizgi silinir,
        tik çizilir, köşede yıldız belirir, düğme hafifçe dolar. */
-    #page-hatirla .hl-auto { flex: 0 0 auto; width: 2.6rem; height: 2.6rem; padding: 0; border: none; border-radius: 50%; display: grid; place-items: center; cursor: pointer; color: inherit; background: transparent; -webkit-tap-highlight-color: transparent; transition: transform .15s ease, background-color .35s ease, box-shadow .35s ease; }
-    #page-hatirla .hl-auto:active { transform: scale(.9); }
-    #page-hatirla .hl-auto.is-on { background: color-mix(in srgb, var(--theme-text, #121212) 9%, transparent); box-shadow: inset 0 1px 3px 0 color-mix(in srgb, var(--theme-text, #121212) 10%, transparent); }
-    #page-hatirla .hl-auto svg { width: 22px; height: 22px; overflow: visible; fill: none; stroke: currentColor; stroke-width: 2.1; stroke-linecap: round; stroke-linejoin: round; opacity: .5; transition: opacity .35s ease; }
-    #page-hatirla .hl-auto.is-on svg { opacity: 1; }
-    #page-hatirla .hl-auto .ad-spark { fill: currentColor; stroke-width: 1; transform-box: fill-box; transform-origin: center; transform: scale(0) rotate(-90deg); transition: transform .25s ease; }
-    #page-hatirla .hl-auto.is-on .ad-spark { transform: none; transition: transform .5s cubic-bezier(.34,1.56,.64,1) .25s; }
-    #page-hatirla .hl-auto .ad-check { stroke-dasharray: 10; stroke-dashoffset: 10; transition: stroke-dashoffset .3s ease; }
-    #page-hatirla .hl-auto.is-on .ad-check { stroke-dashoffset: 0; transition: stroke-dashoffset .4s ease .15s; }
-    #page-hatirla .hl-auto .ad-slash, #page-hatirla .hl-auto .ad-slash-gap { stroke-dasharray: 25; stroke-dashoffset: 0; transition: stroke-dashoffset .4s cubic-bezier(.65,0,.35,1); }
-    #page-hatirla .hl-auto.is-on .ad-slash, #page-hatirla .hl-auto.is-on .ad-slash-gap { stroke-dashoffset: 25; }
-    #page-hatirla .hl-auto .ad-slash { stroke-width: 2.3; }
-    #page-hatirla .hl-scroll { flex: 1 1 auto; min-height: 0; width: 100%; max-width: 428px; box-sizing: border-box; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: none; padding: 1rem 24px calc(96px + env(safe-area-inset-bottom)); -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 16px, #000 100%); mask-image: linear-gradient(to bottom, transparent 0, #000 16px, #000 100%); }
-    #page-hatirla .hl-scroll::-webkit-scrollbar { display: none; }
-    #page-hatirla .hl-g { --gc: #ff90e8; --gt: #121212; margin: 0 0 1.6rem; animation: hlIn .45s cubic-bezier(.22,1,.36,1) backwards; }
+    :is(#page-hatirla, #page-8) .hl-auto { flex: 0 0 auto; width: 2.6rem; height: 2.6rem; padding: 0; border: none; border-radius: 50%; display: grid; place-items: center; cursor: pointer; color: inherit; background: transparent; -webkit-tap-highlight-color: transparent; transition: transform .15s ease, background-color .35s ease, box-shadow .35s ease; }
+    :is(#page-hatirla, #page-8) .hl-auto:active { transform: scale(.9); }
+    :is(#page-hatirla, #page-8) .hl-auto.is-on { background: color-mix(in srgb, var(--theme-text, #121212) 9%, transparent); box-shadow: inset 0 1px 3px 0 color-mix(in srgb, var(--theme-text, #121212) 10%, transparent); }
+    :is(#page-hatirla, #page-8) .hl-auto svg { width: 22px; height: 22px; overflow: visible; fill: none; stroke: currentColor; stroke-width: 2.1; stroke-linecap: round; stroke-linejoin: round; opacity: .5; transition: opacity .35s ease; }
+    :is(#page-hatirla, #page-8) .hl-auto.is-on svg { opacity: 1; }
+    :is(#page-hatirla, #page-8) .hl-auto .ad-spark { fill: currentColor; stroke-width: 1; transform-box: fill-box; transform-origin: center; transform: scale(0) rotate(-90deg); transition: transform .25s ease; }
+    :is(#page-hatirla, #page-8) .hl-auto.is-on .ad-spark { transform: none; transition: transform .5s cubic-bezier(.34,1.56,.64,1) .25s; }
+    :is(#page-hatirla, #page-8) .hl-auto .ad-check { stroke-dasharray: 10; stroke-dashoffset: 10; transition: stroke-dashoffset .3s ease; }
+    :is(#page-hatirla, #page-8) .hl-auto.is-on .ad-check { stroke-dashoffset: 0; transition: stroke-dashoffset .4s ease .15s; }
+    :is(#page-hatirla, #page-8) .hl-auto .ad-slash, :is(#page-hatirla, #page-8) .hl-auto .ad-slash-gap { stroke-dasharray: 25; stroke-dashoffset: 0; transition: stroke-dashoffset .4s cubic-bezier(.65,0,.35,1); }
+    :is(#page-hatirla, #page-8) .hl-auto.is-on .ad-slash, :is(#page-hatirla, #page-8) .hl-auto.is-on .ad-slash-gap { stroke-dashoffset: 25; }
+    :is(#page-hatirla, #page-8) .hl-auto .ad-slash { stroke-width: 2.3; }
+    :is(#page-hatirla, #page-8) .hl-scroll { flex: 1 1 auto; min-height: 0; width: 100%; max-width: 428px; box-sizing: border-box; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: none; padding: 1rem 24px calc(96px + env(safe-area-inset-bottom)); -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 16px, #000 100%); mask-image: linear-gradient(to bottom, transparent 0, #000 16px, #000 100%); }
+    :is(#page-hatirla, #page-8) .hl-scroll::-webkit-scrollbar { display: none; }
+    :is(#page-hatirla, #page-8) .hl-g { --gc: #ff90e8; --gt: #121212; margin: 0 0 1.6rem; animation: hlIn .45s cubic-bezier(.22,1,.36,1) backwards; }
     @keyframes hlIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
-    #page-hatirla .hl-head { display: flex; align-items: baseline; gap: .6rem; padding: .2rem .3rem .3rem; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; border-radius: .8rem; transition: background-color .25s ease; }
-    #page-hatirla .hl-head.is-pressing, #page-hatirla .hl-head.is-ctx-active { background: var(--hl-soft); }
-    #page-hatirla .hl-name { font-size: 1.35rem; font-weight: 800; letter-spacing: -.01em; line-height: 1.15; display: inline-flex; align-items: center; gap: .5rem; min-width: 0; overflow-wrap: anywhere; }
-    #page-hatirla .hl-name::before { content: ''; width: .55rem; height: .55rem; border-radius: 50%; background: var(--gc); flex: 0 0 auto; }
-    #page-hatirla .hl-count { font-size: .85rem; font-weight: 700; color: var(--hl-mute); font-variant-numeric: tabular-nums; }
-    #page-hatirla .hl-r { display: flex; align-items: center; gap: .85rem; padding: .65rem .3rem; border-radius: 1rem; cursor: pointer; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; transition: background-color .25s ease; }
-    #page-hatirla .hl-r.is-pressing, #page-hatirla .hl-r.is-ctx-active { background: color-mix(in srgb, var(--gc) 14%, transparent); }
-    #page-hatirla .hl-c { flex: 0 0 auto; width: 1.7rem; height: 1.7rem; box-sizing: border-box; border-radius: 50%; border: 2px solid color-mix(in srgb, var(--theme-text, #121212) 26%, transparent); display: grid; place-items: center; transition: background-color .3s ease, border-color .3s ease, transform .35s cubic-bezier(.34,1.56,.64,1); }
-    #page-hatirla .hl-r:active .hl-c { transform: scale(.88); }
-    #page-hatirla .hl-c svg { width: .95rem; height: .95rem; fill: none; stroke: var(--gt); stroke-width: 3.4; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 26; stroke-dashoffset: 26; transition: stroke-dashoffset .4s ease .05s; }
-    #page-hatirla .hl-r.is-done .hl-c { background: var(--gc); border-color: var(--gc); }
-    #page-hatirla .hl-r.is-done .hl-c svg { stroke-dashoffset: 0; }
-    #page-hatirla .hl-t { flex: 1 1 auto; min-width: 0; font-size: 1.1rem; font-weight: 700; line-height: 1.25; overflow-wrap: anywhere; transition: opacity .3s ease; }
-    #page-hatirla .hl-tt { background: linear-gradient(currentColor, currentColor) no-repeat 0 var(--strike-y, 50%) / 0 2px; -webkit-box-decoration-break: clone; box-decoration-break: clone; transition: background-size .45s ease; }
-    #page-hatirla .hl-r.is-done .hl-t { opacity: .4; }
-    #page-hatirla .hl-r.is-done .hl-tt { background-size: 100% 2px; }
-    #page-hatirla .hl-add { display: block; width: 100%; box-sizing: border-box; padding: .65rem .3rem; border: none; background: none; text-align: left; font: inherit; font-weight: 700; font-size: .95rem; color: var(--hl-mute); cursor: pointer; -webkit-tap-highlight-color: transparent; }
-    #page-hatirla .hl-add:active { color: var(--theme-text, #121212); }
-    #page-hatirla .hl-form { display: flex; align-items: center; gap: .5rem; padding: .3rem 0 .4rem; }
-    #page-hatirla .hl-in, #page-hatirla .hl-edit { flex: 1 1 auto; min-width: 0; box-sizing: border-box; font: inherit; font-weight: 600; font-size: 1rem; color: inherit; background: var(--hl-soft); border: none; outline: none; border-radius: 999px; padding: .65rem 1rem; }
-    #page-hatirla .hl-edit { font-size: 1.05rem; padding: .3rem .8rem; }
-    #page-hatirla .hl-in::placeholder { color: var(--hl-mute); }
-    #page-hatirla .hl-go { flex: 0 0 auto; width: 2.6rem; height: 2.6rem; border: none; border-radius: 50%; display: grid; place-items: center; cursor: pointer; background: var(--gc, var(--accent-color, #ff90e8)); }
-    #page-hatirla .hl-go svg { width: 1.05rem; height: 1.05rem; fill: none; stroke: var(--gt, #fff); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
-    #page-hatirla .hl-newform { margin: 0 0 1.4rem; }
-    #page-hatirla .hl-empty { margin: 2rem 0; text-align: center; font-weight: 600; color: var(--hl-mute); }
-    #page-hatirla .hl-tip { margin: 0; text-align: center; font-size: .8rem; font-weight: 600; color: var(--hl-mute); }
+    :is(#page-hatirla, #page-8) .hl-head { display: flex; align-items: baseline; gap: .6rem; padding: .2rem .3rem .3rem; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; border-radius: .8rem; transition: background-color .25s ease; }
+    :is(#page-hatirla, #page-8) .hl-head.is-pressing, :is(#page-hatirla, #page-8) .hl-head.is-ctx-active { background: var(--hl-soft); }
+    :is(#page-hatirla, #page-8) .hl-name { font-size: 1.35rem; font-weight: 800; letter-spacing: -.01em; line-height: 1.15; display: inline-flex; align-items: center; gap: .5rem; min-width: 0; overflow-wrap: anywhere; }
+    :is(#page-hatirla, #page-8) .hl-name::before { content: ''; width: .55rem; height: .55rem; border-radius: 50%; background: var(--gc); flex: 0 0 auto; }
+    :is(#page-hatirla, #page-8) .hl-count { font-size: .85rem; font-weight: 700; color: var(--hl-mute); font-variant-numeric: tabular-nums; }
+    :is(#page-hatirla, #page-8) .hl-r { display: flex; align-items: center; gap: .85rem; padding: .65rem .3rem; border-radius: 1rem; cursor: pointer; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; transition: background-color .25s ease; }
+    :is(#page-hatirla, #page-8) .hl-r.is-pressing, :is(#page-hatirla, #page-8) .hl-r.is-ctx-active { background: color-mix(in srgb, var(--gc) 14%, transparent); }
+    :is(#page-hatirla, #page-8) .hl-c { flex: 0 0 auto; width: 1.7rem; height: 1.7rem; box-sizing: border-box; border-radius: 50%; border: 2px solid color-mix(in srgb, var(--theme-text, #121212) 26%, transparent); display: grid; place-items: center; transition: background-color .3s ease, border-color .3s ease, transform .35s cubic-bezier(.34,1.56,.64,1); }
+    :is(#page-hatirla, #page-8) .hl-r:active .hl-c { transform: scale(.88); }
+    :is(#page-hatirla, #page-8) .hl-c svg { width: .95rem; height: .95rem; fill: none; stroke: var(--gt); stroke-width: 3.4; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 26; stroke-dashoffset: 26; transition: stroke-dashoffset .4s ease .05s; }
+    :is(#page-hatirla, #page-8) .hl-r.is-done .hl-c { background: var(--gc); border-color: var(--gc); }
+    :is(#page-hatirla, #page-8) .hl-r.is-done .hl-c svg { stroke-dashoffset: 0; }
+    :is(#page-hatirla, #page-8) .hl-t { flex: 1 1 auto; min-width: 0; font-size: 1.1rem; font-weight: 700; line-height: 1.25; overflow-wrap: anywhere; transition: opacity .3s ease; }
+    :is(#page-hatirla, #page-8) .hl-tt { background: linear-gradient(currentColor, currentColor) no-repeat 0 var(--strike-y, 50%) / 0 2px; -webkit-box-decoration-break: clone; box-decoration-break: clone; transition: background-size .45s ease; }
+    :is(#page-hatirla, #page-8) .hl-r.is-done .hl-t { opacity: .4; }
+    :is(#page-hatirla, #page-8) .hl-r.is-done .hl-tt { background-size: 100% 2px; }
+    :is(#page-hatirla, #page-8) .hl-add { display: block; width: 100%; box-sizing: border-box; padding: .65rem .3rem; border: none; background: none; text-align: left; font: inherit; font-weight: 700; font-size: .95rem; color: var(--hl-mute); cursor: pointer; -webkit-tap-highlight-color: transparent; }
+    :is(#page-hatirla, #page-8) .hl-add:active { color: var(--theme-text, #121212); }
+    :is(#page-hatirla, #page-8) .hl-form { display: flex; align-items: center; gap: .5rem; padding: .3rem 0 .4rem; }
+    :is(#page-hatirla, #page-8) .hl-in, :is(#page-hatirla, #page-8) .hl-edit { flex: 1 1 auto; min-width: 0; box-sizing: border-box; font: inherit; font-weight: 600; font-size: 1rem; color: inherit; background: var(--hl-soft); border: none; outline: none; border-radius: 999px; padding: .65rem 1rem; }
+    :is(#page-hatirla, #page-8) .hl-edit { font-size: 1.05rem; padding: .3rem .8rem; }
+    :is(#page-hatirla, #page-8) .hl-in::placeholder { color: var(--hl-mute); }
+    :is(#page-hatirla, #page-8) .hl-go { flex: 0 0 auto; width: 2.6rem; height: 2.6rem; border: none; border-radius: 50%; display: grid; place-items: center; cursor: pointer; background: var(--gc, var(--accent-color, #ff90e8)); }
+    :is(#page-hatirla, #page-8) .hl-go svg { width: 1.05rem; height: 1.05rem; fill: none; stroke: var(--gt, #fff); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+    :is(#page-hatirla, #page-8) .hl-newform { margin: 0 0 1.4rem; }
+    :is(#page-hatirla, #page-8) .hl-empty { margin: 2rem 0; text-align: center; font-weight: 600; color: var(--hl-mute); }
+    :is(#page-hatirla, #page-8) .hl-tip { margin: 0; text-align: center; font-size: .8rem; font-weight: 600; color: var(--hl-mute); }
   }
-  @media (max-width: 340px) { #page-hatirla .hl-title { font-size: 1.25rem; } #page-hatirla .hl-top { padding-left: 16px; padding-right: 16px; } }
-  @media (prefers-reduced-motion: reduce) { #page-hatirla * { animation: none !important; transition-duration: .01ms !important; } }
+  @media (max-width: 340px) { :is(#page-hatirla, #page-8) .hl-title { font-size: 1.25rem; } :is(#page-hatirla, #page-8) .hl-top { padding-left: 16px; padding-right: 16px; } }
+  @media (prefers-reduced-motion: reduce) { :is(#page-hatirla, #page-8) * { animation: none !important; transition-duration: .01ms !important; } }
 </style>
 <style id="gundelik-large-css">
   /* ===== Gündelik + Hatırlanacaklar: BÜYÜK EKRAN =====
@@ -42094,31 +41692,31 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
     .gk-switch-lbl-b { opacity: 0; transform: translateY(70%); }
     .gk-switch.is-go .gk-switch-lbl-a { opacity: 0; transform: translateY(-70%); }
     .gk-switch.is-go .gk-switch-lbl-b { opacity: 1; transform: none; }
-    #page-8.is-active .gk-switch, #page-hatirla.is-active .gk-switch { animation: gkSwIn .55s cubic-bezier(.34, 1.4, .5, 1) .1s backwards; }
+    #page-8.is-active .gk-switch, :is(#page-hatirla, #page-8).is-active .gk-switch { animation: gkSwIn .55s cubic-bezier(.34, 1.4, .5, 1) .1s backwards; }
     @keyframes gkSwIn { from { opacity: 0; transform: translateY(-8px) scale(.85); } to { opacity: 1; transform: none; } }
 
     /* Başlıktaki "Yeni grup" / "Yeni liste" düğmeleri: yerine sağ alttaki hızlı eylem düğmesi */
-    #p8nNewBtn, #page-hatirla #hlNew { display: none !important; }
+    #gdNew, #hlNew { display: none !important; }
 
     /* Hatırlanacaklar sayfası */
-    #page-hatirla { align-items: stretch; }
-    #page-hatirla .hl-top { max-width: 1320px; margin: 0 auto; padding: calc(44px + env(safe-area-inset-top)) 40px 1rem; justify-content: flex-start; gap: .9rem; }
-    #page-hatirla .hl-title { font-weight: 700; font-size: clamp(29.1px, 1.36vw + 22.44px, 40.8px); letter-spacing: -.01em; line-height: inherit; cursor: default; pointer-events: none; }
-    #page-hatirla .hl-auto { margin-left: auto; width: 2.7rem; height: 2.7rem; }
-    #page-hatirla .hl-scroll { max-width: 1320px; margin: 0 auto; padding: .6rem 40px calc(130px + env(safe-area-inset-bottom)); -webkit-mask-image: none; mask-image: none; }
-    #page-hatirla #hlList { column-width: 360px; column-gap: 1.1rem; }
-    #page-hatirla .hl-g { break-inside: avoid; -webkit-column-break-inside: avoid; margin: 0 0 1.1rem; padding: 1.3rem 1.5rem 1rem; border-radius: 2rem; background: color-mix(in srgb, var(--theme-text, #121212) 6%, transparent); }
-    #page-hatirla .hl-name { font-size: 1.7rem; }
-    #page-hatirla .hl-count { font-size: 1rem; }
-    #page-hatirla .hl-r { gap: 1rem; padding: .7rem .4rem; }
-    #page-hatirla .hl-c { width: 1.85rem; height: 1.85rem; }
-    #page-hatirla .hl-c svg { width: 1rem; height: 1rem; }
-    #page-hatirla .hl-t { font-size: 1.25rem; }
-    #page-hatirla .hl-add { font-size: 1rem; padding: .7rem .4rem; }
-    #page-hatirla .hl-in, #page-hatirla .hl-edit { font-size: 1.05rem; }
-    #page-hatirla #hlNewForm { max-width: 560px; }
-    #page-hatirla .hl-empty { text-align: left; font-size: 1.1rem; }
-    #page-hatirla .hl-tip { margin-top: .6rem; font-size: .82rem; }
+    :is(#page-hatirla, #page-8) { align-items: stretch; }
+    :is(#page-hatirla, #page-8) .hl-top { max-width: 1320px; margin: 0 auto; padding: calc(44px + env(safe-area-inset-top)) 40px 1rem; justify-content: flex-start; gap: .9rem; }
+    :is(#page-hatirla, #page-8) .hl-title { font-weight: 700; font-size: clamp(29.1px, 1.36vw + 22.44px, 40.8px); letter-spacing: -.01em; line-height: inherit; cursor: default; pointer-events: none; }
+    :is(#page-hatirla, #page-8) .hl-auto { margin-left: auto; width: 2.7rem; height: 2.7rem; }
+    :is(#page-hatirla, #page-8) .hl-scroll { max-width: 1320px; margin: 0 auto; padding: .6rem 40px calc(130px + env(safe-area-inset-bottom)); -webkit-mask-image: none; mask-image: none; }
+    :is(#page-hatirla, #page-8) #hlList, :is(#page-hatirla, #page-8) #gdList { column-width: 360px; column-gap: 1.1rem; }
+    :is(#page-hatirla, #page-8) .hl-g { break-inside: avoid; -webkit-column-break-inside: avoid; margin: 0 0 1.1rem; padding: 1.3rem 1.5rem 1rem; border-radius: 2rem; background: color-mix(in srgb, var(--theme-text, #121212) 6%, transparent); }
+    :is(#page-hatirla, #page-8) .hl-name { font-size: 1.7rem; }
+    :is(#page-hatirla, #page-8) .hl-count { font-size: 1rem; }
+    :is(#page-hatirla, #page-8) .hl-r { gap: 1rem; padding: .7rem .4rem; }
+    :is(#page-hatirla, #page-8) .hl-c { width: 1.85rem; height: 1.85rem; }
+    :is(#page-hatirla, #page-8) .hl-c svg { width: 1rem; height: 1rem; }
+    :is(#page-hatirla, #page-8) .hl-t { font-size: 1.25rem; }
+    :is(#page-hatirla, #page-8) .hl-add { font-size: 1rem; padding: .7rem .4rem; }
+    :is(#page-hatirla, #page-8) .hl-in, :is(#page-hatirla, #page-8) .hl-edit { font-size: 1.05rem; }
+    :is(#page-hatirla, #page-8) #hlNewForm, :is(#page-hatirla, #page-8) #gdNewForm { max-width: 560px; }
+    :is(#page-hatirla, #page-8) .hl-empty { text-align: left; font-size: 1.1rem; }
+    :is(#page-hatirla, #page-8) .hl-tip { margin-top: .6rem; font-size: .82rem; }
 
     /* Sağ alttaki hızlı eylem düğmesi (#gundelikFabAddBtn) */
     #gundelikFabBar { position: fixed; left: auto; right: 40px; bottom: calc(36px + env(safe-area-inset-bottom)); z-index: 60; display: block; pointer-events: none; visibility: hidden; transition: visibility 0s linear .3s; }
@@ -56050,799 +55648,60 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
   })();
   window.gundelikAutoGrow = (ta) => { ta.style.height = 'auto'; ta.style.height = ta.scrollHeight + 'px'; };
 
-  // ---------- Gündelik yeni arayüz (büyük ekran, #p8n) ----------
-  // Aynı page8State'i kullanır: rutin grupları ana ekran.
-  (() => {
-    if (!document.getElementById('p8nMain')) return;
-    const $ = (id) => document.getElementById(id);
-    const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
-    const TICK = '<svg viewBox="0 0 24 24"><path d="M4 12.5l5 5.5 11-13"/></svg>';
-    // Aşamalı rutin: dolan pasta dilimi (r=6 + kalınlık 12 => tüm daireyi kaplar; dashoffset ile dolar)
-    const PIE_C = 2 * Math.PI * 6;
-    const PIE = `<svg class="p8g-pie" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="6" transform="rotate(-90 12 12)" style="fill:none;stroke:var(--gc);stroke-width:12;stroke-linecap:butt;stroke-dasharray:${PIE_C};stroke-dashoffset:${PIE_C};transition:stroke-dashoffset .6s cubic-bezier(.22,1,.36,1)"></circle></svg>`;
-    const lum = (hex) => { const m = /^#?([0-9a-f]{6})$/i.exec(hex || ''); if (!m) return 0; const n = parseInt(m[1], 16); return (0.299 * (n >> 16) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255)) / 255; };
-    const tickColor = (c) => (lum(c) > 0.62 ? '#1a1a1a' : '#fff');
-    const dayKey = (d) => `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
-    if (!page8State.routineHistory || typeof page8State.routineHistory !== 'object') page8State.routineHistory = {};
-    // Grup başına gün kaydı: { [grupAnahtarı]: { 'Y-A-G': { d, t } } } — takvimler bunu okur.
-    if (!page8State.groupHistory || typeof page8State.groupHistory !== 'object') page8State.groupHistory = {};
-    const grpKey = (g) => g.id || g.name;
-    const recordGroups = (day) => page8State.routineGroups.forEach((g) => {
-      const h = page8State.groupHistory[grpKey(g)] || (page8State.groupHistory[grpKey(g)] = {});
-      h[day] = { d: g.routines.filter((r) => r.done).length, t: g.routines.length };
-    });
-
-    const totals = () => {
-      let d = 0, t = 0;
-      page8State.routineGroups.forEach((g) => g.routines.forEach((r) => { t++; if (r.done) d++; }));
-      return { d, t };
+  // ---------- Gündelik + Hatırlanacaklar: ortak açılır pencere yardımcıları ----------
+  // Ortak yardımcılar (Hatırlanacaklar da kullanır): yumuşak aç / kapat
+  window.softOpen = (w) => { w.style.setProperty('--h', w.scrollHeight + 'px'); w.classList.add('soft-open'); w.addEventListener('animationend', () => w.classList.remove('soft-open'), { once: true }); };
+  window.softClose = (w, done) => {
+    if (!w || w.classList.contains('soft-close')) return;
+    w.style.setProperty('--h', w.offsetHeight + 'px'); w.classList.remove('soft-open'); w.classList.add('soft-close');
+    let d = false; const fin = () => { if (d) return; d = true; if (done) done(); };
+    w.addEventListener('animationend', fin, { once: true }); setTimeout(fin, 480);
+  };
+  // Telefonda "yeni grup / yeni liste" artık sayfanın en üstünde değil, ekranda açılan yumuşak bir pop-up'ta eklenir.
+  // Sayfa kaydırması hiç değişmez (eskiden en üste atlıyordu). opts: { title, placeholder, pills:[{label,value}], onSubmit }
+  window.gkNewPopup = (opts) => {
+    if (document.querySelector('.gk-pop-back')) return;
+    const mk = (t, c, x) => { const n = document.createElement(t); if (c) n.className = c; if (x) n.textContent = x; return n; };
+    const back = mk('div', 'gk-pop-back'), card = mk('div', 'gk-pop');
+    const vv = window.visualViewport;
+    // Klavye açılırken iOS görsel görünümü kaydırabilir; pop-up ekrana sabit kalsın diye ofset telafi edilir.
+    const pin = () => { back.style.transform = vv && vv.offsetTop ? `translate3d(0, ${vv.offsetTop}px, 0)` : ''; };
+    if (vv) { vv.addEventListener('scroll', pin); vv.addEventListener('resize', pin); }
+    document.body.classList.add('has-modal-open');
+    card.setAttribute('role', 'dialog'); card.setAttribute('aria-modal', 'true'); card.setAttribute('aria-label', opts.title);
+    card.appendChild(mk('h3', '', opts.title));
+    let closed = false;
+    const close = () => {
+      if (closed) return; closed = true;
+      document.removeEventListener('keydown', onKey, true);
+      if (vv) { vv.removeEventListener('scroll', pin); vv.removeEventListener('resize', pin); }
+      const a = document.activeElement; if (a && card.contains(a) && a.blur) a.blur();
+      back.classList.remove('is-in'); back.classList.add('is-out');
+      setTimeout(() => { back.remove(); if (!document.querySelector('.gk-pop-back')) document.body.classList.remove('has-modal-open'); }, 480);
     };
-    const snapshot = () => { const { d, t } = totals(); page8State.routineHistory[page8TodayStr()] = { d, t }; recordGroups(page8TodayStr()); };
-    const save = () => { snapshot(); savePage8State(); render(); };
-
-    // Gece yarısı geçtiyse (sayfa açık kaldıysa) dünü kaydedip rutinleri sıfırla.
-    const rollover = () => {
-      if (page8State.routinesResetDate === page8TodayStr()) return;
-      if (page8State.routinesResetDate) { const { d, t } = totals(); page8State.routineHistory[page8State.routinesResetDate] = { d, t }; recordGroups(page8State.routinesResetDate); }
-      page8State.routineGroups.forEach((g) => g.routines.forEach((r) => { r.done = false; if (r.steps) r.prog = 0; }));
-      page8State.routinesResetDate = page8TodayStr();
-      save();
-    };
-    document.addEventListener('visibilitychange', () => { if (!document.hidden) rollover(); });
-    // Gece 00.00'da (uygulama açık kalsa bile) rutin işaretlerini yenile; arka planda
-    // geciken zamanlayıcıya karşı odaklanınca ve sayfa geri yüklenince de kontrol edilir.
-    const armMidnight = () => {
-      const n = new Date();
-      const ms = new Date(n.getFullYear(), n.getMonth(), n.getDate() + 1, 0, 0, 1).getTime() - n.getTime();
-      setTimeout(() => { rollover(); armMidnight(); }, Math.max(1000, ms));
-    };
-    armMidnight();
-    window.addEventListener('focus', rollover);
-    window.addEventListener('pageshow', rollover);
-
-    const nowGroupKey = () => {
-      const h = new Date().getHours();
-      return h >= 21 || h < 5 ? 'gece' : h < 12 ? 'sabah' : h < 17 ? 'öğle' : 'akşam';
-    };
-    const groupSlot = (name) => {
-      const n = (name || '').toLocaleLowerCase('tr-TR');
-      return n.includes('sabah') ? 'sabah' : (n.includes('öğle') || n.includes('ogle')) ? 'öğle' : (n.includes('akşam') || n.includes('aksam')) ? 'akşam' : n.includes('gece') ? 'gece' : null;
-    };
-
-    // Tablet dostu ekleme satırı: <form> (ekran klavyesinin "Git/Bitti" tuşu da
-    // çalışır) + görünür "Ekle" butonu. onSubmit(değer) true dönerse kutu temizlenir.
-    const addForm = (placeholder, onSubmit) => {
-      const f = el('form', 'p8n-add'); f.autocomplete = 'off'; f.noValidate = true;
-      const inp = el('input', 'p8n-input'); inp.type = 'text'; inp.placeholder = placeholder; inp.enterKeyHint = 'done';
-      const btn = el('button', 'p8n-addbtn', 'Ekle'); btn.type = 'submit';
-      f.append(inp, btn);
-      f.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const v = inp.value.trim(); if (!v) { inp.focus(); return; }
-        if (onSubmit(v)) inp.value = '';
-      });
-      return f;
-    };
-
-    // ---- Başlıktaki ilerleme halkası + seri alevi ----
-    const stat = $('p8nStat');
-    const SC = 2 * Math.PI * 18;
-    stat.innerHTML = `<div class="p8n-stat-ring"><svg viewBox="0 0 44 44"><circle class="bg" cx="22" cy="22" r="18"/><circle class="fg" cx="22" cy="22" r="18" stroke-dasharray="${SC}" stroke-dashoffset="${SC}"/></svg><b>0</b></div>`;
-    const sFg = stat.querySelector('.fg'), sPct = stat.querySelector('b');
-    // Seri alevi (#p8mFlame) bugünkü veriyle çizilir.
-    const flames = ['p8mFlame'].map((id) => document.getElementById(id)).filter(Boolean);
-    const FLAME_SVG = (uid) => `<span class="sflame-ico" aria-hidden="true"><svg class="sfl sfl-a" viewBox="0 0 48 60" aria-hidden="true"><defs><linearGradient id="${uid}o" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff4d1a"/><stop offset=".55" stop-color="#ff7a00"/><stop offset="1" stop-color="#ffa000"/></linearGradient><linearGradient id="${uid}m" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffa800"/><stop offset="1" stop-color="#ffd93a"/></linearGradient><linearGradient id="${uid}i" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff2a8"/><stop offset="1" stop-color="#fff9d6"/></linearGradient></defs><path fill="url(#${uid}o)" d="M24 58C11 58 4 48.5 4 37C4 28 8.5 22 12 17.5C12.5 22 14.5 24.5 17 25.5C15.5 17 19 8 27 2C27.5 11 33 16 38 23C42 28.5 44 33 44 38C44 49 36.5 58 24 58Z"/></svg><svg class="sfl sfl-b" viewBox="0 0 48 60" aria-hidden="true"><path fill="url(#${uid}m)" d="M24 56C14.5 56 9.5 49 9.5 40.5C9.5 34.5 12.5 30.5 15.5 26.5C16 30 17.5 31.5 19.5 32C19 26 22 20 27 15.5C28 21 33 25 36 30.5C38 34 38.5 37.5 38.5 40.5C38.5 49 33.5 56 24 56Z"/></svg><svg class="sfl sfl-c" viewBox="0 0 48 60" aria-hidden="true"><path fill="url(#${uid}i)" d="M24 56C18 56 14.5 51.5 14.5 46.5C14.5 42 17.5 39.5 20 36C20.5 38.5 21.5 39.8 23 40C22.8 36 24.5 33 27 30.5C28 34.5 33.5 38.5 33.5 46C33.5 52 29.5 56 24 56Z"/></svg><svg class="sfl-st" viewBox="0 0 48 60" aria-hidden="true"><ellipse cx="11.5" cy="38" rx="1.9" ry="4.2" fill="#fff" opacity=".45" transform="rotate(8 11.5 38)"/></svg><i class="sfsp s1"></i><i class="sfsp s2"></i><i class="sfsp s3"></i><i class="sfbu" style="--bx:-.43em;--by:-.32em;--d:.072em;--c:#ffd23f"></i><i class="sfbu" style="--bx:.43em;--by:-.36em;--d:.058em;--c:#ff9a1f"></i><i class="sfbu" style="--bx:-.29em;--by:-.57em;--d:.065em;--c:#ffe27a"></i><i class="sfbu" style="--bx:.30em;--by:-.59em;--d:.054em;--c:#ff7a1a"></i><i class="sfbu" style="--bx:0em;--by:-.68em;--d:.047em;--c:#ffd23f"></i><i class="sfbu" style="--bx:-.50em;--by:-.07em;--d:.05em;--c:#ffb347"></i><i class="sfbu" style="--bx:.50em;--by:-.11em;--d:.05em;--c:#ffb347"></i></span>`;
-    flames.forEach((f, i) => { f.innerHTML = '<span class="sflame-wrap"><span class="sflame-glow"></span>' + FLAME_SVG('sf' + i) + '</span><span class="sflame-num">0</span>'; });
-    const tween = (node, to, fmt) => {
-      const from = node._v || 0; node._v = to; cancelAnimationFrame(node._raf);
-      if (from === to) { node.textContent = fmt(to); return; }
-      const t0 = performance.now(), dur = 800;
-      const step = (now) => { const k = Math.min(1, (now - t0) / dur), e = 1 - Math.pow(1 - k, 3); node.textContent = fmt(Math.round(from + (to - from) * e)); if (k < 1) node._raf = requestAnimationFrame(step); };
-      node._raf = requestAnimationFrame(step);
-    };
-    let lastDone = null, lastStreak = null;
-    const renderHero = () => {
-      const { d, t } = totals();
-      const pct = t ? Math.round((d / t) * 100) : 0;
-      const hist = page8State.routineHistory;
-      const full = (key, isToday) => { const x = isToday ? { d, t } : hist[key]; return x && x.t > 0 && x.d >= x.t; };
-      let streak = 0; const c = new Date();
-      const todayFull = full(dayKey(c), true);
-      if (todayFull) streak++;
-      c.setDate(c.getDate() - 1);
-      while (full(dayKey(c), false)) { streak++; c.setDate(c.getDate() - 1); }
-      tween(sPct, pct, (v) => String(v));
-      stat.title = t ? `${d}/${t} rutin tamamlandı` : 'Henüz rutin yok';
-      requestAnimationFrame(() => requestAnimationFrame(() => { sFg.style.strokeDashoffset = String(SC * (1 - pct / 100)); }));
-      stat.classList.toggle('is-complete', !!t && d === t);
-      if (lastDone !== null && d > lastDone) { stat.classList.remove('is-bump'); void stat.offsetWidth; stat.classList.add('is-bump'); }
-      lastDone = d;
-      // Alev (Duolingo mantığı): bugün tamamlandıysa canlı; değilse eski seriyle soluk ve cansız.
-      // Seri bir arttığında tutuşma animasyonu ve sayı "pop" oynar.
-      flames.forEach((f) => {
-        const prev = f._streak;
-        f.classList.toggle('is-off', !todayFull);
-        f.title = todayFull ? `${streak} günlük seri` : `${streak} günlük seri — bugünü tamamla, devam etsin`;
-        f.querySelector('.sflame-num').textContent = String(streak);
-        if (prev !== undefined && streak > prev && todayFull) { f.classList.remove('is-pop'); void f.offsetWidth; f.classList.add('is-pop'); }
-        else if (prev !== undefined && streak < prev) f.classList.remove('is-pop');
-        f._streak = streak;
-      });
-      lastStreak = streak;
-    };
-
-    // ---- Uygulama içi onay penceresi ----
-    const askConfirm = (title, msg, okLabel) => new Promise((resolve) => {
-      const back = el('div', 'p8n-dlg-back'), dlg = el('div', 'p8n-dlg');
-      dlg.setAttribute('role', 'dialog'); dlg.setAttribute('aria-modal', 'true');
-      const cancel = el('button', 'p8n-dlg-btn', 'Vazgeç'), ok = el('button', 'p8n-dlg-btn danger', okLabel || 'Sil');
-      cancel.type = 'button'; ok.type = 'button';
-      const row = el('div', 'p8n-dlg-row'); row.append(cancel, ok);
-      dlg.append(el('h3', '', title), el('p', '', msg), row); back.appendChild(dlg);
-      let fin = false;
-      const done = (v) => { if (fin) return; fin = true; document.removeEventListener('keydown', onKey, true); back.classList.remove('is-in'); setTimeout(() => back.remove(), 320); resolve(v); };
-      const onKey = (e) => { if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); done(false); } };
-      document.addEventListener('keydown', onKey, true);
-      cancel.onclick = () => done(false); ok.onclick = () => done(true);
-      back.addEventListener('pointerdown', (e) => { if (e.target === back) done(false); });
-      // Telefonda #p8n (root) gizli (display:none) olduğu için pencere içinde
-      // görünmüyordu; bu yüzden onay penceresi doğrudan body'ye eklenir.
-      document.body.appendChild(back);
-      requestAnimationFrame(() => requestAnimationFrame(() => { back.classList.add('is-in'); cancel.focus({ preventScroll: true }); }));
-    });
-
-    // ---- Rutin kartları ----
-    // Çok satırlı düzenleme: harf sınırı yok, paragraf olarak görünür, imleç
-    // istenen yere taşınabilir. Enter = yeni satır; Ctrl/⌘+Enter, ✓ düğmesi
-    // ya da kutunun dışına dokunmak kaydeder; Esc vazgeçer.
-    const startEditText = (span, item, after) => {
-      const wrap = el('div', 'p8n-editwrap');
-      const inp = el('textarea', 'p8n-edit'); inp.rows = 1; inp.value = item.text; inp.enterKeyHint = 'enter';
-      const okb = el('button', 'p8n-editok'); okb.type = 'button'; okb.setAttribute('aria-label', 'Kaydet'); okb.innerHTML = TICK;
-      wrap.append(inp, okb);
-      span.replaceWith(wrap); inp.focus(); window.gundelikAutoGrow(inp);
-      inp.setSelectionRange(inp.value.length, inp.value.length);
-      let done = false;
-      const commit = (ok) => { if (done) return; done = true; const v = inp.value.trim(); if (ok && v) { item.text = v; savePage8State(); } after(); };
-      inp.addEventListener('input', () => window.gundelikAutoGrow(inp));
-      inp.addEventListener('keydown', (e) => { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); commit(true); } else if (e.key === 'Escape') commit(false); });
-      inp.addEventListener('blur', () => commit(true));
-      okb.addEventListener('pointerdown', (e) => e.preventDefault());
-      okb.addEventListener('click', (e) => { e.stopPropagation(); commit(true); });
-      wrap.addEventListener('click', (e) => e.stopPropagation());
-    };
-
-    // ==== Rutin kartları (p8g) — basılı tutma ile yönetim ====
-    // Düzenle düğmesi yok: bir kartın BOŞ alanına / başlığına ya da bir rutin
-    // satırına basılı tutunca (fareyle sağ tıklayınca) Denemelerim ve Soru
-    // Havuzu'ndaki bağlam menüsü (.page11-context-menu) açılır. Rutin
-    // işaretleme yerinde (DOM'u yeniden kurmadan) yapılır ki animasyonlar
-    // kesilmesin.
-    const addOpenGroups = new Map(); // grup -> rutinin ekleneceği alt başlık id'si ('' = doğrudan gruba)
-    const addSecOpen = new Set();   // "yeni alt başlık" kutusu açık olan gruplar
-    const seenKeys = new Set();
-    const fkf = (n, k) => { n.dataset.fk = k; return n; };
-    let firstPaint = true;
-    const gKey = (g) => g.id || g.name;
-    const rKey = (g, r) => (r.id || r.text) + '@' + gKey(g);
-    const IC = {
-      copy: '<svg viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2.5"/><path d="M5 15V6.5A2.5 2.5 0 0 1 7.5 4H15"/></svg>',
-      edit: '<svg viewBox="0 0 24 24"><path d="M4 20h4L19 9a2.1 2.1 0 0 0-3-3L5 17v3z"/><path d="M14.5 7.5l3 3"/></svg>',
-      color: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><circle cx="8.6" cy="11" r="1"/><circle cx="12" cy="7.9" r="1"/><circle cx="15.4" cy="11" r="1"/></svg>',
-      plus: '<svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>',
-      steps: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 12V3.5"/><path d="M12 12l6 6" /></svg>',
-      undo: '<svg viewBox="0 0 24 24"><path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/></svg>',
-      reset: '<svg viewBox="0 0 24 24"><path d="M4 12a8 8 0 1 0 2.6-5.9"/><path d="M4 4v4.5h4.5"/></svg>',
-      trash: '<svg viewBox="0 0 24 24"><path d="M3.5 6h17"/><path d="M8.5 6V4.3a1 1 0 0 1 1-1h5a1 1 0 0 1 1 1V6"/><path d="M6 6l.9 13.2a2 2 0 0 0 2 1.8h6.2a2 2 0 0 0 2-1.8L18 6"/><path d="M10 10.5v6M14 10.5v6"/></svg>'
-    };
-
-    // ---- Bağlam menüsü (tek örnek, içeriği değişir) ----
-    let ctxMenu = null, ctxTarget = null;
-    const closeCtx = () => {
-      if (ctxTarget) ctxTarget.classList.remove('is-ctx-active');
-      ctxTarget = null;
-      if (ctxMenu) ctxMenu.classList.remove('is-open');
-    };
-    const openCtx = (target, items, x, y) => {
-      if (!ctxMenu) {
-        ctxMenu = el('div', 'page11-context-menu p8g-menu'); ctxMenu.setAttribute('role', 'menu');
-        document.body.appendChild(ctxMenu);
-        document.addEventListener('pointerdown', (e) => { if (ctxMenu.classList.contains('is-open') && !ctxMenu.contains(e.target)) closeCtx(); });
-        window.addEventListener('scroll', closeCtx, true);
-        document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeCtx(); });
-      }
-      closeCtx();
-      ctxTarget = target; target.classList.remove('is-pressing'); target.classList.add('is-ctx-active');
-      ctxMenu.innerHTML = '';
-      items.forEach((it) => {
-        const b = el('button', 'page11-context-menu-item' + (it.danger ? ' is-danger' : '')); b.type = 'button'; b.setAttribute('role', 'menuitem');
-        const ic = el('span', 'page11-context-menu-item-ic'); ic.innerHTML = it.ic;
-        const tx = el('span', 'page11-context-menu-item-text');
-        tx.append(el('span', 'page11-context-menu-item-title', it.title), el('span', 'page11-context-menu-item-sub', it.sub));
-        b.append(ic, tx);
-        b.addEventListener('click', () => { closeCtx(); it.fn(); });
-        ctxMenu.appendChild(b);
-      });
-      window.gundelikPlaceMenu(ctxMenu, x, y);
-    };
-
-    // Basılı tutma / sağ tık bağlayıcısı
-    const bindHold = (node, onOpen) => {
-      let timer = null, sx = 0, sy = 0, fired = false;
-      const cancel = () => { if (timer) { clearTimeout(timer); timer = null; } node.classList.remove('is-pressing'); };
-      node.addEventListener('pointerdown', (e) => {
-        fired = false;
-        if (e.pointerType === 'mouse' || e.button > 0) return;
-        if (e.target.closest && e.target.closest('input, textarea, .p8g-form, .p8n-editwrap')) return;
-        sx = e.clientX; sy = e.clientY; cancel();
-        node.classList.add('is-pressing');
-        timer = setTimeout(() => {
-          timer = null; fired = true;
-          if (navigator.vibrate) navigator.vibrate(12);
-          onOpen(sx, sy, e.target);
-        }, 480);
-      });
-      node.addEventListener('pointermove', (e) => { if (timer && Math.hypot(e.clientX - sx, e.clientY - sy) > 10) cancel(); });
-      ['pointerup', 'pointercancel', 'pointerleave'].forEach((ev) => node.addEventListener(ev, cancel));
-      node.addEventListener('contextmenu', (e) => {
-        e.preventDefault(); cancel();
-        if (fired) return; // dokunmatikte basılı tutma zaten açtı
-        onOpen(e.clientX, e.clientY, e.target);
-      });
-      // Basılı tutma menüyü açtıysa parmak kalkınca oluşan "click" yutulur.
-      node.addEventListener('click', (e) => { if (fired) { fired = false; e.stopImmediatePropagation(); e.preventDefault(); } }, true);
-    };
-
-    // ---- Kart durumunu yerinde güncelle ----
-    // Mini takvim: bu ayın günleri. Tamamlanan gün ✕ ile işaretlenir, kısmi gün yumuşak dolgu alır.
-    const CROSS = '<svg viewBox="0 0 24 24"><path d="M6 6l12 12"/><path d="M18 6L6 18"/></svg>';
-    const calView = new Map(); // grup -> ay farkı (0 = bu ay, -1 = geçen ay ...)
-    const ARW = { l: '<svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>', r: '<svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>' };
-    const paintCal = (card, group, drawToday, dir) => {
-      const cal = card.querySelector('.p8g-cal'); if (!cal) return;
-      const gk = grpKey(group), off = calView.get(gk) || 0;
-      const now = new Date(), tg = new Date(now.getFullYear(), now.getMonth() + off, 1);
-      const y = tg.getFullYear(), m = tg.getMonth(), isCur = off === 0, today = now.getDate();
-      const hist = page8State.groupHistory[gk] || {};
-      let minOff = -12;
-      Object.keys(hist).forEach((k) => { const [hy, hm] = k.split('-').map(Number); minOff = Math.min(minOff, (hy - now.getFullYear()) * 12 + (hm - 1 - now.getMonth())); });
-      const tot = group.routines.length, dn = group.routines.filter((r) => r.done).length;
-      cal.innerHTML = '';
-      const head = el('div', 'p8g-cal-h');
-      const prev = el('button', 'p8g-cal-nav'); prev.type = 'button'; prev.setAttribute('aria-label', 'Önceki ay'); prev.innerHTML = ARW.l; prev.disabled = off <= minOff;
-      const next = el('button', 'p8g-cal-nav'); next.type = 'button'; next.setAttribute('aria-label', 'Sonraki ay'); next.innerHTML = ARW.r; next.disabled = off >= 0;
-      prev.onclick = (e) => { e.stopPropagation(); calView.set(gk, off - 1); paintCal(card, group, false, -1); };
-      next.onclick = (e) => { e.stopPropagation(); calView.set(gk, off + 1); paintCal(card, group, false, 1); };
-      const ttl = el('button', 'p8g-cal-title' + (isCur ? '' : ' is-away'), tg.toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' }));
-      ttl.type = 'button'; ttl.title = isCur ? '' : 'Bugüne dön'; ttl.setAttribute('aria-label', isCur ? 'Bu ay' : 'Bugüne dön');
-      ttl.onclick = (e) => { e.stopPropagation(); if (isCur) return; calView.set(gk, 0); paintCal(card, group, false, 1); };
-      head.append(prev, ttl, next);
-      cal.appendChild(head);
-      // Sağa / sola kaydırma: sola = sonraki ay, sağa = önceki ay (sınırlarda düğme kapalıysa işlem yok)
-      cal._swipe = (delta) => { const b = delta < 0 ? prev : next; if (!b.disabled) b.click(); };
-      if (!cal._wired) {
-        cal._wired = true;
-        let sx = 0, sy = 0, sid = null;
-        cal.addEventListener('pointerdown', (e) => { if (e.button > 0) return; sid = e.pointerId; sx = e.clientX; sy = e.clientY; });
-        cal.addEventListener('pointerup', (e) => {
-          if (e.pointerId !== sid) return; sid = null;
-          const dx = e.clientX - sx, dy = e.clientY - sy;
-          if (Math.abs(dx) > 42 && Math.abs(dx) > Math.abs(dy) * 1.4) cal._swipe(dx < 0 ? 1 : -1);
-        });
-        cal.addEventListener('pointercancel', () => { sid = null; });
-      }
-      const grid = el('div', 'p8g-cal-g' + (dir ? (dir > 0 ? ' sw-r' : ' sw-l') : ''));
-      ['P', 'S', 'Ç', 'P', 'C', 'C', 'P'].forEach((w) => grid.appendChild(el('span', 'wd', w)));
-      const lead = (tg.getDay() + 6) % 7;
-      for (let i = 0; i < lead; i++) grid.appendChild(el('span', 'gap'));
-      const days = new Date(y, m + 1, 0).getDate();
-      for (let d = 1; d <= days; d++) {
-        const isToday = isCur && d === today;
-        const x = isToday ? { d: dn, t: tot } : hist[`${y}-${m + 1}-${d}`];
-        const full = !!(x && x.t > 0 && x.d >= x.t), part = !!(x && x.d > 0 && !full);
-        const c = el('span', 'day' + (isToday ? ' is-today' : '') + (isCur && d > today ? ' is-future' : '') + (full ? ' is-full' : '') + (part ? ' is-part' : ''));
-        c.title = x && x.t ? `${d}: ${x.d}/${x.t}` : '';
-        if (full) { c.innerHTML = CROSS; if (isToday && drawToday) c.classList.add('is-draw'); } else c.textContent = String(d);
-        grid.appendChild(c);
-      }
-      cal.appendChild(grid);
-    };
-    // ---- Telefon: "tamamlandı" oyunu (düğme kaybolur → bugünün dairesi belirir, sayı silinir, çarpı çizilir → düğme geri gelir)
-    const playGame = (card) => {
-      const b = card.querySelector('.p8g-badge'); if (!b) return;
-      b.querySelector('b').textContent = String(new Date().getDate());
-      clearTimeout(card._gameT);
-      card.classList.remove('is-game'); void card.offsetWidth; card.classList.add('is-game');
-      card._gameT = setTimeout(() => card.classList.remove('is-game'), 3250);
-    };
-
-    // ---- Telefon: takvim + istatistik sayfası
-    const groupStats = (group) => {
-      const hist = page8State.groupHistory[grpKey(group)] || {};
-      const now = new Date(), todayK = dayKey(now);
-      const tot = group.routines.length, dn = group.routines.filter((r) => r.done).length;
-      const isFull = (d) => { const k = dayKey(d); const x = k === todayK ? { d: dn, t: tot } : hist[k]; return !!(x && x.t > 0 && x.d >= x.t); };
-      let streak = 0; const c = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-      if (!isFull(c)) c.setDate(c.getDate() - 1);
-      while (isFull(c) && streak < 3650) { streak++; c.setDate(c.getDate() - 1); }
-      let month = 0; for (let d = 1; d <= now.getDate(); d++) if (isFull(new Date(now.getFullYear(), now.getMonth(), d))) month++;
-      let total = isFull(now) ? 1 : 0;
-      Object.keys(hist).forEach((k) => { const x = hist[k]; if (k !== todayK && x && x.t > 0 && x.d >= x.t) total++; });
-      return { streak, month, total };
-    };
-    const openStats = (group) => {
-      if (document.querySelector('.p8cal')) return;
-      const st = groupStats(group);
-      const sheet = el('div', 'p8cal'); sheet.style.setProperty('--gc', group.color); sheet.style.setProperty('--gt', tickColor(group.color));
-      const bar = el('div', 'p8cal-bar');
-      const back = el('button', 'p8cal-back'); back.type = 'button'; back.setAttribute('aria-label', 'Geri'); back.innerHTML = '<svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>';
-      bar.append(back, el('div', 'p8cal-name', group.name));
-      const body = el('div', 'p8cal-body');
-      const hero = el('div', 'p8cal-hero');
-      hero.append(el('b', '', String(st.streak)), el('span', '', st.streak ? 'gün üst üste\ntamamlandı' : 'Bugün ilk çarpıyı atmaya ne dersin?'));
-      hero.lastChild.style.whiteSpace = 'pre-line';
-      const chips = el('div', 'p8cal-chips');
-      [[st.month, 'Bu ay'], [st.total, 'Toplam gün'], [group.routines.filter((r) => r.done).length + '/' + group.routines.length, 'Bugün']].forEach(([v, l]) => {
-        const c = el('div', 'p8cal-chip'); c.append(el('b', '', String(v)), el('span', '', l)); chips.appendChild(c);
-      });
-      const card = el('div', 'p8cal-card'); card.appendChild(el('div', 'p8g-cal'));
-      const legend = el('div', 'p8cal-legend'); ['✕ Hepsi tamamlandı', '● Kısmen', '◯ Bugün'].forEach((t) => legend.appendChild(el('span', '', t)));
-      body.append(hero, chips, card, legend);
-      sheet.append(bar, body);
-      document.body.appendChild(sheet);
-      // Tamamlanan günlerin çarpıları sırayla çizilir (ay değişince de)
-      const calEl = card.querySelector('.p8g-cal');
-      const stagger = () => calEl.querySelectorAll('.day.is-full').forEach((d, i) => {
-        d.classList.add('is-draw');
-        d.querySelectorAll('path').forEach((pth, j) => { pth.style.animationDelay = (250 + i * 45 + j * 120) + 'ms'; });
-      });
-      new MutationObserver(stagger).observe(calEl, { childList: true });
-      calView.set(grpKey(group), 0);
-      paintCal(card, group, false);
-      requestAnimationFrame(() => requestAnimationFrame(() => sheet.classList.add('is-open')));
-      const close = () => { sheet.classList.remove('is-open'); setTimeout(() => sheet.remove(), 400); };
-      back.addEventListener('click', close);
-    };
-
-    const paintCard = (card, group, drawToday) => {
-      const wasComplete = card.classList.contains('is-complete');
-      const total = group.routines.length;
-      const done = group.routines.filter((r) => r.done).length;
-      const complete = total > 0 && done === total;
-      card.classList.toggle('is-complete', complete);
-      if (complete && !wasComplete && drawToday) playGame(card);
-      else if (!complete && card.classList.contains('is-game')) { clearTimeout(card._gameT); card.classList.remove('is-game'); }
-      card.classList.toggle('is-now', groupSlot(group.name) === nowGroupKey() && !complete);
-      card.querySelector('.p8g-count').textContent = total ? (complete ? `${done}/${total} ✓` : `${done}/${total}`) : '';
-      const nw = card.querySelector('.p8g-now'); if (nw) nw.hidden = complete || groupSlot(group.name) !== nowGroupKey();
-      card.querySelectorAll('.p8g-sec-count').forEach((n) => {
-        const items = group.routines.filter((r) => r.sec === n.dataset.sec);
-        n.textContent = items.length ? `${items.filter((r) => r.done).length}/${items.length}` : '';
-      });
-      paintCal(card, group, drawToday);
-    };
-
-    // Satırın görünümünü (dolu/kısmi/pasta dilimi/sayaç) yerinde günceller; animasyonlar kesilmez.
-    const paintRow = (row, r, bump) => {
-      const n = r.steps || 1, k = r.done ? n : Math.min(r.prog || 0, n);
-      row.classList.toggle('is-done', !!r.done);
-      row.classList.toggle('is-part', n > 1 && !r.done && k > 0);
-      const pie = row.querySelector('.p8g-pie circle');
-      if (pie) pie.style.strokeDashoffset = String(PIE_C * (1 - k / n));
-      const b = row.querySelector('.p8g-stp'); if (b) b.textContent = `${k}/${n}`;
-      if (bump) { const c = row.querySelector('.p8g-c'); c.classList.remove('is-step'); void c.offsetWidth; c.classList.add('is-step'); }
-    };
-
-    const toggleRoutine = (group, r, row, card) => {
-      const n = r.steps || 1;
-      if (n > 1) {
-        // Aşamalı: her dokunuş bir aşama ilerletir; tamamlanmışa dokunmak baştan başlatır.
-        if (r.done) { r.done = false; r.prog = 0; }
-        else { r.prog = (r.prog || 0) + 1; if (r.prog >= n) { r.done = true; r.prog = n; } }
-      } else r.done = !r.done;
-      snapshot(); savePage8State();
-      paintRow(row, r, n > 1);
-      paintCard(card, group, r.done);
-      renderHero();
-    };
-
-    const stepBack = (group, r, row, card) => {
-      const n = r.steps || 1;
-      if (r.done) { r.done = false; r.prog = n - 1; } else r.prog = Math.max(0, (r.prog || 0) - 1);
-      snapshot(); savePage8State();
-      paintRow(row, r, false); paintCard(card, group, false); renderHero();
-    };
-
-    const askSteps = (cur) => new Promise((resolve) => {
-      const MAX = 12; let n = cur || 1;
-      const bk = el('div', 'p8n-dlg-back'), d = el('div', 'p8n-dlg'); d.setAttribute('role', 'dialog'); d.setAttribute('aria-modal', 'true');
-      const minus = el('button', 'p8g-stpd', '−'), plus = el('button', 'p8g-stpd', '+'), val = el('div', 'p8g-stpv');
-      minus.type = plus.type = 'button'; minus.setAttribute('aria-label', 'Azalt'); plus.setAttribute('aria-label', 'Artır');
-      const row = el('div', 'p8g-stprow'); row.append(minus, val, plus);
-      const lab = () => { val.textContent = String(n); val.appendChild(el('small', '', n === 1 ? 'normal rutin' : 'aşama')); minus.disabled = n <= 1; plus.disabled = n >= MAX; };
-      minus.onclick = () => { if (n > 1) { n--; lab(); } }; plus.onclick = () => { if (n < MAX) { n++; lab(); } }; lab();
-      const no = el('button', 'p8n-dlg-btn', 'Vazgeç'), ok = el('button', 'p8n-dlg-btn p8g-okbtn', 'Kaydet'); no.type = ok.type = 'button';
-      const btns = el('div', 'p8n-dlg-row'); btns.append(no, ok);
-      d.append(el('h3', '', 'Kaç aşamalı?'), el('p', '', 'Rutini tamamlamak için kaç kez işaretlemen gerekiyor? Her işarette kutu o kadar dolar.'), row, btns); bk.appendChild(d);
-      const fin = (v) => { bk.classList.remove('is-in'); setTimeout(() => bk.remove(), 320); resolve(v); };
-      no.onclick = () => fin(null); ok.onclick = () => fin(n);
-      bk.addEventListener('pointerdown', (e) => { if (e.target === bk) fin(null); });
-      document.body.appendChild(bk); requestAnimationFrame(() => requestAnimationFrame(() => bk.classList.add('is-in')));
-    });
-    const setSteps = async (group, r) => {
-      const n = await askSteps(r.steps || 1); if (n == null) return;
-      if (n > 1) { r.steps = n; r.prog = r.done ? n : Math.min(r.prog || 0, n - 1); } else { delete r.steps; delete r.prog; }
-      save();
-    };
-
-    const removeRoutine = (group, r, row) => {
-      const idx = group.routines.indexOf(r);
-      row.style.maxHeight = row.offsetHeight + 'px'; void row.offsetWidth;
-      row.classList.add('is-leave');
-      setTimeout(() => {
-        group.routines = group.routines.filter((x) => x !== r); save();
-        toast(`"${r.text.length > 28 ? r.text.slice(0, 28) + '…' : r.text}" silindi`, () => {
-          group.routines.splice(Math.min(idx, group.routines.length), 0, r); save();
-        });
-      }, 300);
-    };
-
-    const removeGroup = async (group, card) => {
-      const n = group.routines.length;
-      if (!(await askConfirm(`"${group.name}" grubu silinsin mi?`, n ? `Grubun içindeki ${n} rutin de silinecek. Hemen ardından geri alabilirsin.` : 'Bu grup silinecek. Hemen ardından geri alabilirsin.', 'Grubu sil'))) return;
-      const idx = page8State.routineGroups.indexOf(group);
-      window.gkAnim.leave(card, () => {
-        page8State.routineGroups = page8State.routineGroups.filter((g) => g !== group); addOpenGroups.delete(gKey(group)); save();
-        toast(`"${group.name}" grubu silindi`, () => {
-          page8State.routineGroups.splice(Math.min(idx, page8State.routineGroups.length), 0, group); save();
-        });
-      });
-    };
-
-    const renameGroup = (group, card) => {
-      const nameEl = card.querySelector('.p8g-name');
-      const inp = el('input', 'p8g-name-in'); inp.value = group.name; inp.enterKeyHint = 'done'; inp.maxLength = 40;
-      nameEl.replaceWith(inp); inp.focus(); inp.select();
-      let fin = false;
-      const commit = (ok) => { if (fin) return; fin = true; const v = inp.value.trim(); if (ok && v && v !== group.name) { group.name = v; savePage8State(); } render(); };
-      inp.addEventListener('keydown', (e) => { if (e.key === 'Enter') commit(true); else if (e.key === 'Escape') commit(false); });
-      inp.addEventListener('blur', () => commit(true));
-    };
-
-    const focusForm = (group) => {
-      const c = [...document.querySelectorAll('#p8nGroups .p8g')][page8State.routineGroups.indexOf(group)];
-      const i = c && c.querySelector('.p8g-in'); if (i) window.gkAnim.focus(i);
-    };
-    const openAddForm = (group, secId) => { addOpenGroups.set(gKey(group), secId || ''); addSecOpen.delete(gKey(group)); render(); focusForm(group); };
-    const openSecForm = (group) => { addSecOpen.add(gKey(group)); addOpenGroups.delete(gKey(group)); render(); focusForm(group); };
-
-    const editSecName = (group, sec, card) => {
-      const h = [...card.querySelectorAll('.p8g-sec')].find((x) => x.dataset.sec === sec.id); if (!h) return;
-      const nameEl = h.querySelector('.p8g-sec-name');
-      const inp = el('input', 'p8g-sec-in'); inp.value = sec.name; inp.enterKeyHint = 'done'; inp.maxLength = 60;
-      nameEl.replaceWith(inp); inp.focus(); inp.select();
-      let fin = false;
-      const commit = (ok) => { if (fin) return; fin = true; const v = inp.value.trim(); if (ok && v && v !== sec.name) { sec.name = v; savePage8State(); } render(); };
-      inp.addEventListener('keydown', (e) => { if (e.key === 'Enter') commit(true); else if (e.key === 'Escape') commit(false); });
-      inp.addEventListener('blur', () => commit(true));
-    };
-    const removeSection = async (group, sec) => {
-      const n = group.routines.filter((r) => r.sec === sec.id).length;
-      if (!(await askConfirm(`"${sec.name}" alt başlığı silinsin mi?`, n ? `İçindeki ${n} rutin de silinecek. Hemen ardından geri alabilirsin.` : 'Bu alt başlık silinecek. Hemen ardından geri alabilirsin.', 'Alt başlığı sil'))) return;
-      const oldS = (group.sections || []).slice(), oldR = group.routines.slice();
-      const cardEl = [...document.querySelectorAll('#p8nGroups .p8g')][page8State.routineGroups.indexOf(group)];
-      const hd = cardEl && [...cardEl.querySelectorAll('.p8g-sec')].find((x) => x.dataset.sec === sec.id);
-      const lst = hd && hd.nextElementSibling && hd.nextElementSibling.classList.contains('p8g-list') ? hd.nextElementSibling : null;
-      window.gkAnim.leave([hd, lst], () => {
-        group.sections = oldS.filter((s) => s !== sec); group.routines = oldR.filter((r) => r.sec !== sec.id);
-        addOpenGroups.delete(gKey(group)); save();
-        toast(`"${sec.name}" silindi`, () => { group.sections = oldS; group.routines = oldR; save(); });
-      });
-    };
-
-    // Yazı kutusu + gönder düğmesi (rutin ve alt başlık ekleme için ortak)
-    const mkForm = (placeholder, onSubmit, onCancel, isOpen, withSteps) => {
-      const f = el('form', 'p8g-form'); f.autocomplete = 'off'; f.noValidate = true;
-      // Rutin eklerken (withSteps): çok satırlı, harf sınırsız metin kutusu.
-      // Alt başlık adı gibi kısa adlar tek satırlık kutuda kalır.
-      const multi = !!withSteps;
-      const inp = el(multi ? 'textarea' : 'input', 'p8g-in'); inp.placeholder = placeholder;
-      if (multi) { inp.rows = 1; inp.enterKeyHint = 'enter'; inp.addEventListener('input', () => window.gundelikAutoGrow(inp)); }
-      else { inp.type = 'text'; inp.enterKeyHint = 'done'; inp.maxLength = 120; }
-      const go = el('button', 'p8g-go'); go.type = 'submit'; go.setAttribute('aria-label', 'Ekle');
-      go.innerHTML = '<svg viewBox="0 0 24 24"><path d="M12 19V6M6.5 11.5L12 6l5.5 5.5"/></svg>';
-      let steps = 1;
-      if (withSteps) {
-        // Aşama düğmesi: dokundukça 1 → 2 → … → 9 → 1 (odak yazı kutusunda kalır, klavye kapanmaz)
-        const sb = el('button', 'p8g-stpbtn'); sb.type = 'button';
-        const lab = () => { sb.textContent = steps + ' aşama'; sb.classList.toggle('is-on', steps > 1); sb.setAttribute('aria-label', `Aşama sayısı: ${steps}. Değiştirmek için dokun`); };
-        lab();
-        sb.addEventListener('pointerdown', (e) => e.preventDefault());
-        sb.addEventListener('mousedown', (e) => e.preventDefault());
-        sb.addEventListener('click', () => { steps = steps >= 9 ? 1 : steps + 1; lab(); inp.focus(); });
-        f.append(inp, sb, go);
-      } else f.append(inp, go);
-      f.addEventListener('submit', (e) => { e.preventDefault(); const v = inp.value.trim(); if (!v) { inp.focus(); return; } onSubmit(v, steps); });
-      // Vazgeçilince form bir anda yok olmaz; yumuşakça sönüp kapanır.
-      const softCancel = () => {
-        if (f.classList.contains('is-closing')) return; f.classList.add('is-closing');
-        let d = false; const fin = () => { if (d) return; d = true; if (f.isConnected && isOpen()) onCancel(); };
-        f.addEventListener('animationend', fin, { once: true }); setTimeout(fin, 620);
-      };
-      inp.addEventListener('keydown', (e) => { if (e.key === 'Escape') softCancel(); else if (multi && e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); f.dispatchEvent(new Event('submit', { cancelable: true })); } });
-      inp.addEventListener('blur', () => { setTimeout(() => { if (!inp.value.trim() && !f.contains(document.activeElement) && isOpen()) softCancel(); }, 120); });
-      return f;
-    };
-
-    const renderGroupsNow = () => {
-      const box = $('p8nGroups');
-      closeCtx();
-      box.innerHTML = '';
-      page8State.routineGroups.forEach((group, gi) => {
-        const key = gKey(group);
-        const enterCard = firstPaint || !seenKeys.has('g:' + key);
-        const card = el('div', 'p8g' + (enterCard ? ' is-enter' : ''));
-        card.dataset.fk = 'g:' + key;
-        card.style.setProperty('--i', String(firstPaint ? gi : 0));
-        card.style.setProperty('--gc', group.color);
-        card.style.setProperty('--gt', tickColor(group.color));
-
-        // Başlık: ad · (Şimdi) · sayaç
-        const head = el('div', 'p8g-head');
-        const nw = el('span', 'p8g-now', 'Şimdi'); nw.hidden = true;
-        const tb = el('div', 'p8g-titlebox'); tb.appendChild(el('div', 'p8g-name', group.name));
-        head.append(tb, nw, el('span', 'p8g-count'));
-        // Telefon: sağ üst istatistik düğmesi (takvim sayfasını açar) + tamamlanınca beliren gün rozeti
-        const statBtn = el('button', 'p8g-stat'); statBtn.type = 'button'; statBtn.setAttribute('aria-label', 'Takvim ve istatistik');
-        statBtn.innerHTML = '<svg viewBox="0 0 24 24"><path d="M5 20V11"/><path d="M12 20V4"/><path d="M19 20v-6"/></svg>';
-        statBtn.addEventListener('pointerdown', (e) => e.stopPropagation());
-        statBtn.addEventListener('click', (e) => { e.stopPropagation(); openStats(group); });
-        const dayBadge = el('span', 'p8g-badge'); dayBadge.innerHTML = '<b>' + new Date().getDate() + '</b>' + CROSS;
-        head.append(statBtn, dayBadge);
-        const main = el('div', 'p8g-main'); main.appendChild(head);
-
-        const buildRow = (r) => {
-          const row = el('div', 'p8g-r'); row.dataset.fk = 'r:' + rKey(group, r);
-          const c = el('span', 'p8g-c' + (r.steps > 1 ? ' has-pie' : '')); c.innerHTML = (r.steps > 1 ? PIE : '') + TICK;
-          const t = el('span', 'p8g-t'); t.appendChild(el('span', 'p8g-tt', r.text));
-          row.append(c, t);
-          if (r.steps > 1) row.appendChild(el('span', 'p8g-stp'));
-          paintRow(row, r);
-          row.addEventListener('click', () => toggleRoutine(group, r, row, card));
-          bindHold(row, (x, y) => {
-            openCtx(row, [
-              { ic: IC.copy, title: 'Kopyala', sub: 'Metni panoya al', fn: async () => { const ok = await window.gundelikCopyText(r.text); toast(ok ? 'Kopyalandı' : 'Kopyalanamadı'); } },
-              { ic: IC.edit, title: 'Metni Düzenle', sub: 'Rutinin adını değiştir', fn: () => startEditText(t, r, render) },
-              { ic: IC.steps, title: 'Aşama Sayısı', sub: r.steps > 1 ? `Şu an ${r.steps} aşamalı` : 'Birden çok işaretle tamamlanan rutin', fn: () => setSteps(group, r) },
-              ...((r.steps > 1 && (r.done || r.prog > 0)) ? [{ ic: IC.undo, title: 'Bir Aşama Geri Al', sub: 'Son işareti kaldır', fn: () => stepBack(group, r, row, card) }] : []),
-              { ic: IC.trash, title: 'Sil', sub: 'Bu rutini kaldır', danger: true, fn: () => removeRoutine(group, r, row) }
-            ], x, y);
-          });
-          seenKeys.add('r:' + rKey(group, r));
-          return row;
-        };
-        const secHead = (sec) => {
-          const h = el('div', 'p8g-sec'); h.dataset.sec = sec.id; h.dataset.fk = 's:' + sec.id + '@' + key;
-          const cnt = el('span', 'p8g-sec-count'); cnt.dataset.sec = sec.id;
-          const plus = el('button', 'p8g-sec-add'); plus.type = 'button'; plus.setAttribute('aria-label', `${sec.name} altına rutin ekle`); plus.innerHTML = IC.plus;
-          plus.addEventListener('click', (e) => { e.stopPropagation(); openAddForm(group, sec.id); });
-          h.append(el('span', 'p8g-sec-name', sec.name), cnt, el('span', 'p8g-sec-line'), plus);
-          bindHold(h, (x, y) => openCtx(h, [
-            { ic: IC.edit, title: 'Adı Değiştir', sub: 'Alt başlığın ismini düzenle', fn: () => editSecName(group, sec, card) },
-            { ic: IC.plus, title: 'Rutin Ekle', sub: 'Bu alt başlığa yeni rutin', fn: () => openAddForm(group, sec.id) },
-            { ic: IC.trash, title: 'Alt Başlığı Sil', sub: 'İçindeki rutinlerle birlikte', danger: true, fn: () => removeSection(group, sec) }
-          ], x, y));
-          return h;
-        };
-
-        // Bloklar: önce alt başlıksız rutinler, sonra her alt başlık ve rutinleri
-        const secs = group.sections || [], known = new Set(secs.map((s) => s.id));
-        const blocks = [{ sec: null, items: group.routines.filter((r) => !r.sec || !known.has(r.sec)) }, ...secs.map((s) => ({ sec: s, items: group.routines.filter((r) => r.sec === s.id) }))];
-        blocks.forEach(({ sec, items }) => {
-          const sid = sec ? sec.id : '';
-          const formOpen = addOpenGroups.get(key) === sid;
-          if (!sec && !items.length && !formOpen) return;
-          if (sec) main.appendChild(secHead(sec));
-          const list = el('div', 'p8g-list');
-          items.forEach((r) => list.appendChild(buildRow(r)));
-          main.appendChild(list);
-          if (formOpen) {
-            main.appendChild(fkf(mkForm(sec ? `${sec.name} altına rutin ekle` : 'Yeni rutin (örn. Su iç)',
-              (v, n) => { const r = { id: page8GenId(), text: v, done: false }; if (n > 1) { r.steps = n; r.prog = 0; } if (sec) r.sec = sec.id; group.routines.push(r); save(); focusForm(group); },
-              () => { addOpenGroups.delete(key); render(); },
-              () => addOpenGroups.has(key), true), 'f:' + key + ':' + sid));
-          }
-        });
-
-        // Alt: ekleme düğmeleri
-        if (addSecOpen.has(key)) {
-          main.appendChild(fkf(mkForm('Alt başlık adı (örn. Hap, Su)',
-            (v) => { const s = { id: page8GenId(), name: v }; group.sections = (group.sections || []).concat(s); addSecOpen.delete(key); addOpenGroups.set(key, s.id); save(); focusForm(group); },
-            () => { addSecOpen.delete(key); render(); },
-            () => addSecOpen.has(key)), 'fs:' + key));
-        } else {
-          const acts = el('div', 'p8g-actions'); acts.dataset.fk = 'a:' + key;
-          if (!secs.length && !addOpenGroups.has(key)) {
-            const ab = el('button', 'p8g-add', '+ Rutin ekle'); ab.type = 'button'; ab.addEventListener('click', () => openAddForm(group)); acts.appendChild(ab);
-          }
-          const sb = el('button', 'p8g-add', '+ Alt başlık'); sb.type = 'button'; sb.addEventListener('click', () => openSecForm(group)); acts.appendChild(sb);
-          main.appendChild(acts);
-        }
-        card.append(main);
-
-        // Kartın kendisine basılı tutma → grup menüsü (satır ve alt başlıklar kendi menüsünü açar)
-        bindHold(card, (x, y, target) => {
-          if (target && target.closest && target.closest('.p8g-r, .p8g-sec')) return;
-          const done = group.routines.filter((r) => r.done).length;
-          const items = [
-            { ic: IC.edit, title: 'Adı Değiştir', sub: 'Grubun ismini düzenle', fn: () => renameGroup(group, card) },
-            { ic: IC.plus, title: 'Alt Başlık Ekle', sub: 'Rutinleri bölümlere ayır', fn: () => openSecForm(group) },
-            { ic: IC.color, title: 'Rengi Değiştir', sub: 'Kartın vurgu rengi', fn: () => openColorPicker(group.name, group.color, (color) => { group.color = color; savePage8State(); render(); }) },
-            { ic: IC.plus, title: 'Rutin Ekle', sub: 'Bu gruba yeni rutin', fn: () => openAddForm(group) }
-          ];
-          if (done) items.push({ ic: IC.reset, title: 'İşaretleri Sıfırla', sub: 'Bugünkü tikleri kaldır', fn: () => { group.routines.forEach((r) => { r.done = false; if (r.steps) r.prog = 0; }); snapshot(); savePage8State(); render(); } });
-          items.push({ ic: IC.trash, title: 'Grubu Sil', sub: 'İçindeki rutinlerle birlikte', danger: true, fn: () => removeGroup(group, card) });
-          openCtx(card, items, x, y);
-        });
-
-        seenKeys.add('g:' + key);
-        box.appendChild(card);
-        paintCard(card, group);
-      });
-      firstPaint = false;
-    };
-    const renderGroups = () => window.gkAnim.flip($('p8nGroups'), renderGroupsNow);
-
-    // ---- Grup ekleme / boş durum ----
-    const addGroup = (name) => {
-      const v = (name || '').trim(); if (!v) return;
-      page8State.routineGroups.push({ id: page8GenId(), name: v, color: page8NextColor(page8State.routineGroups.length + 2), routines: [] });
-      save();
-    };
-    let newGroupOpen = false, newGroupAnimate = false;
-    // Ortak yardımcılar (Hatırlanacaklar da kullanır): yumuşak aç / kapat
-    window.softOpen = (w) => { w.style.setProperty('--h', w.scrollHeight + 'px'); w.classList.add('soft-open'); w.addEventListener('animationend', () => w.classList.remove('soft-open'), { once: true }); };
-    window.softClose = (w, done) => {
-      if (!w || w.classList.contains('soft-close')) return;
-      w.style.setProperty('--h', w.offsetHeight + 'px'); w.classList.remove('soft-open'); w.classList.add('soft-close');
-      let d = false; const fin = () => { if (d) return; d = true; if (done) done(); };
-      w.addEventListener('animationend', fin, { once: true }); setTimeout(fin, 480);
-    };
-    // Telefonda "yeni grup / yeni liste" artık sayfanın en üstünde değil, ekranda açılan yumuşak bir pop-up'ta eklenir.
-    // Sayfa kaydırması hiç değişmez (eskiden en üste atlıyordu). opts: { title, placeholder, pills:[{label,value}], onSubmit }
-    window.gkNewPopup = (opts) => {
-      if (document.querySelector('.gk-pop-back')) return;
-      const mk = (t, c, x) => { const n = document.createElement(t); if (c) n.className = c; if (x) n.textContent = x; return n; };
-      const back = mk('div', 'gk-pop-back'), card = mk('div', 'gk-pop');
-      const vv = window.visualViewport;
-      // Klavye açılırken iOS görsel görünümü kaydırabilir; pop-up ekrana sabit kalsın diye ofset telafi edilir.
-      const pin = () => { back.style.transform = vv && vv.offsetTop ? `translate3d(0, ${vv.offsetTop}px, 0)` : ''; };
-      if (vv) { vv.addEventListener('scroll', pin); vv.addEventListener('resize', pin); }
-      document.body.classList.add('has-modal-open');
-      card.setAttribute('role', 'dialog'); card.setAttribute('aria-modal', 'true'); card.setAttribute('aria-label', opts.title);
-      card.appendChild(mk('h3', '', opts.title));
-      let closed = false;
-      const close = () => {
-        if (closed) return; closed = true;
-        document.removeEventListener('keydown', onKey, true);
-        if (vv) { vv.removeEventListener('scroll', pin); vv.removeEventListener('resize', pin); }
-        const a = document.activeElement; if (a && card.contains(a) && a.blur) a.blur();
-        back.classList.remove('is-in'); back.classList.add('is-out');
-        setTimeout(() => { back.remove(); if (!document.querySelector('.gk-pop-back')) document.body.classList.remove('has-modal-open'); }, 480);
-      };
-      const submit = (v) => { v = (v || '').trim(); if (!v) return false; close(); opts.onSubmit(v); return true; };
-      const onKey = (e) => { if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); close(); } };
-      document.addEventListener('keydown', onKey, true);
-      if (opts.pills && opts.pills.length) {
-        const row = mk('div', 'gk-pop-pills');
-        opts.pills.forEach((p) => { const b = mk('button', 'gk-pop-pill', '+ ' + p.label); b.type = 'button'; b.addEventListener('click', () => submit(p.value)); row.appendChild(b); });
-        card.appendChild(row);
-      }
-      const f = mk('form', 'gk-pop-form'); f.autocomplete = 'off'; f.noValidate = true;
-      const inp = mk('input', 'gk-pop-input'); inp.type = 'text'; inp.placeholder = opts.placeholder || ''; inp.maxLength = 120; inp.enterKeyHint = 'done';
-      const ok = mk('button', 'gk-pop-ok', 'Ekle'); ok.type = 'submit';
-      f.append(inp, ok);
-      f.addEventListener('submit', (e) => { e.preventDefault(); if (!submit(inp.value)) inp.focus({ preventScroll: true }); });
-      card.appendChild(f); back.appendChild(card);
-      back.addEventListener('pointerdown', (e) => { if (e.target === back) close(); });
-      document.body.appendChild(back);
-      // Klavye, dokunuşun içinde açılsın diye odak hemen verilir (sayfayı kaydırmadan). Kart yerine
-      // süzülürken imleç rastgele bir noktada görünmesin diye imleç, kart oturana kadar gizlenir.
-      inp.style.caretColor = 'transparent';
-      try { inp.focus({ preventScroll: true }); } catch (e) { /* yoksay */ }
-      setTimeout(() => { inp.style.caretColor = ''; }, 420);
-      requestAnimationFrame(() => requestAnimationFrame(() => back.classList.add('is-in')));
-    };
-    const softCloseNewGroup = () => {
-      if (!newGroupOpen) return; newGroupOpen = false;
-      const w = $('p8nNewGroup').querySelector('.soft-wrap');
-      if (w) window.softClose(w, () => { if (!newGroupOpen) renderNewGroup(); }); else renderNewGroup();
-    };
-    const renderNewGroup = () => {
-      const wrap = $('p8nNewGroup');
-      wrap.innerHTML = ''; $('p8nTip').innerHTML = '';
-      const has = (k) => page8State.routineGroups.some((g) => groupSlot(g.name) === k);
-      const empty = !page8State.routineGroups.length;
-      const buildPanel = () => {
-        const bar = el('div', 'p8n-newgroup');
-        const missing = [['Sabah', 'sabah'], ['Öğle', 'öğle'], ['Akşam', 'akşam']].filter(([, k]) => !has(k));
-        if (missing.length) {
-          const pills = el('div', 'p8n-pills');
-          missing.forEach(([label]) => {
-            const b = el('button', 'p8n-pill', '+ ' + label); b.type = 'button';
-            b.addEventListener('click', () => { newGroupOpen = false; addGroup(label + ' Rutinim'); });
-            pills.appendChild(b);
-          });
-          bar.appendChild(pills);
-        }
-        bar.appendChild(addForm('Kendi grup adın', (v) => { newGroupOpen = false; addGroup(v); return true; }));
-        return bar;
-      };
-      if (empty) {
-        const box = el('div', 'p8n-empty');
-        box.append(el('b', '', 'Henüz rutin grubun yok'), el('p', '', 'Gününü Sabah, Öğle ve Akşam olarak bölüp rutinlerini buraya ekle.'));
-        box.appendChild(buildPanel()); wrap.appendChild(box);
-      } else if (newGroupOpen) {
-        const sw = el('div', 'soft-wrap'); sw.appendChild(buildPanel()); wrap.appendChild(sw);
-        if (newGroupAnimate) { newGroupAnimate = false; window.softOpen(sw); }
-      } else {
-        $('p8nTip').appendChild(el('div', 'p8g-tip', 'İpucu: Bir karta ya da rutine basılı tut, seçenekler açılsın.'));
-      }
-      $('p8nNewBtn').setAttribute('aria-expanded', String(empty || newGroupOpen));
-    };
-    // Başlıktaki "Yeni grup" düğmesi: ekleme panelini aç/kapat
-    $('p8nNewBtn').addEventListener('click', () => {
-      if (page8State.routineGroups.length) { if (newGroupOpen) { softCloseNewGroup(); return; } newGroupOpen = true; newGroupAnimate = true; }
-      renderNewGroup();
-      const inp = $('p8nNewGroup').querySelector('.p8n-add .p8n-input'); if (inp && (newGroupOpen || !page8State.routineGroups.length)) inp.focus();
-    });
-
-    // Alanın dışına (boş bir yere) dokunulunca yumuşakça kapanır.
-    document.addEventListener('pointerdown', (e) => {
-      if (!newGroupOpen || !page8State.routineGroups.length) return;
-      const w = $('p8nNewGroup').querySelector('.soft-wrap');
-      if (!w || w.classList.contains('soft-close') || w.contains(e.target)) return;
-      if (e.target.closest && e.target.closest('#gundelikFabAddBtn, #p8nNewBtn, .page11-context-menu, .p8n-dlg-back')) return;
-      softCloseNewGroup();
-    }, true);
-
-    // Alt çubuktaki "Görev ekle" düğmesi için köprü (bkz. #gundelikFabAddBtn).
-    window.p8nFab = {
-      newGroup: () => {
-        const has = (k) => page8State.routineGroups.some((g) => groupSlot(g.name) === k);
-        const pills = [['Sabah', 'sabah'], ['Öğle', 'öğle'], ['Akşam', 'akşam']].filter(([, k]) => !has(k)).map(([l]) => ({ label: l, value: l + ' Rutinim' }));
-        window.gkNewPopup({
-          title: 'Yeni grup', placeholder: 'Kendi grup adın', pills,
-          onSubmit: (v) => {
-            addGroup(v);
-            // Yeni grup en alta eklenir; pop-up kapanırken yumuşakça görünür alana getirilir.
-            setTimeout(() => { const cs = document.querySelectorAll('#p8nGroups .p8g'); const c = cs[cs.length - 1]; if (c && c.scrollIntoView) c.scrollIntoView({ block: 'center', behavior: 'smooth' }); }, 420);
-          }
-        });
-      },
-      groups: () => page8State.routineGroups.map((g) => ({ name: g.name, color: g.color })),
-      addSection: (i) => {
-        const g = page8State.routineGroups[i]; if (!g) return;
-        openSecForm(g);
-        const c = [...document.querySelectorAll('#p8nGroups .p8g')][i]; if (c && c.scrollIntoView) c.scrollIntoView({ block: 'center', behavior: 'smooth' });
-      }
-    };
-
-    // ---- Bildirim (Geri al) ----
-    let toastTimer = null;
-    const toast = (msg, undo) => {
-      const t = $('p8nToast'); t.innerHTML = ''; t.appendChild(el('span', '', msg));
-      if (undo) { const b = el('button', '', 'Geri al'); b.type = 'button'; b.addEventListener('click', () => { undo(); t.hidden = true; }); t.appendChild(b); }
-      t.hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => { t.hidden = true; }, 5000);
-    };
-
-    function render() {
-      renderHero(); renderGroups(); renderNewGroup();
+    const submit = (v) => { v = (v || '').trim(); if (!v) return false; close(); opts.onSubmit(v); return true; };
+    const onKey = (e) => { if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); close(); } };
+    document.addEventListener('keydown', onKey, true);
+    if (opts.pills && opts.pills.length) {
+      const row = mk('div', 'gk-pop-pills');
+      opts.pills.forEach((p) => { const b = mk('button', 'gk-pop-pill', '+ ' + p.label); b.type = 'button'; b.addEventListener('click', () => submit(p.value)); row.appendChild(b); });
+      card.appendChild(row);
     }
-
-    snapshot();
-    render();
-  })();
+    const f = mk('form', 'gk-pop-form'); f.autocomplete = 'off'; f.noValidate = true;
+    const inp = mk('input', 'gk-pop-input'); inp.type = 'text'; inp.placeholder = opts.placeholder || ''; inp.maxLength = 120; inp.enterKeyHint = 'done';
+    const ok = mk('button', 'gk-pop-ok', 'Ekle'); ok.type = 'submit';
+    f.append(inp, ok);
+    f.addEventListener('submit', (e) => { e.preventDefault(); if (!submit(inp.value)) inp.focus({ preventScroll: true }); });
+    card.appendChild(f); back.appendChild(card);
+    back.addEventListener('pointerdown', (e) => { if (e.target === back) close(); });
+    document.body.appendChild(back);
+    // Klavye, dokunuşun içinde açılsın diye odak hemen verilir (sayfayı kaydırmadan). Kart yerine
+    // süzülürken imleç rastgele bir noktada görünmesin diye imleç, kart oturana kadar gizlenir.
+    inp.style.caretColor = 'transparent';
+    try { inp.focus({ preventScroll: true }); } catch (e) { /* yoksay */ }
+    setTimeout(() => { inp.style.caretColor = ''; }, 420);
+    requestAnimationFrame(() => requestAnimationFrame(() => back.classList.add('is-in')));
+  };
 
   // ---------- Notlarım: Apple Notes tarzı not uygulaması ----------
   (() => {
@@ -72211,11 +71070,14 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
 </script>
 
 <script>
-  // ---------- Hatırlanacaklar (telefon) ----------
-  // Gündelik başlığına dokununca açılır; başlığa tekrar dokununca Gündelik'e döner.
-  // Veri: APP_STATE.hatirla (rutinlerden bağımsız). Seri/takvim/gece sıfırlaması yok.
-  (() => {
-    const page = document.getElementById('page-hatirla'); if (!page) return;
+  // ---------- Gündelik + Hatırlanacaklar: AYNI liste/kart yapısı ----------
+  // İki sayfa da aynı koddan (mountList) çalışır; yalnızca veri anahtarı farklıdır:
+  //   Hatırlanacaklar -> APP_STATE.hatirla, Gündelik -> APP_STATE.gundelik.
+  // Başlığa dokununca diğer sayfaya geçilir. Seri/takvim/gece sıfırlaması YOK.
+  // cfg: { p: kimlik öneki ('hl' | 'gd'), page, key, other, defName, navBack }
+  const mountList = (cfg) => {
+    const P = cfg.p;
+    const page = document.getElementById(cfg.page); if (!page) return null;
     const $ = (id) => document.getElementById(id);
     const el = (t, c, x) => { const e = document.createElement(t); if (c) e.className = c; if (x != null) e.textContent = x; return e; };
     const TICK = '<svg viewBox="0 0 24 24"><path d="M4 12.5l5 5.5 11-13"/></svg>';
@@ -72233,52 +71095,33 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
     const lum = (hex) => { const m = /^#?([0-9a-f]{6})$/i.exec(hex || ''); if (!m) return 0; const n = parseInt(m[1], 16); return (0.299 * (n >> 16) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255)) / 255; };
     const tickColor = (c) => (lum(c) > 0.62 ? '#1a1a1a' : '#fff');
 
-    let st = APP_STATE.hatirla;
-    if (!st || !Array.isArray(st.groups)) st = { groups: [{ id: gid(), name: 'Genel', color: pal[0], items: [] }] };
-    const save = () => saveAppState({ hatirla: st });
-    const list = $('hlList');
+    let st = APP_STATE[cfg.key];
+    if (!st || !Array.isArray(st.groups)) st = { groups: [{ id: gid(), name: cfg.defName, color: pal[0], items: [] }] };
+    const save = () => saveAppState({ [cfg.key]: st });
+    const list = $(P + 'List');
     let addOpen = null, newOpen = false, firstPaint = true, newAnim = false;
     const softCloseNew = () => {
       if (!newOpen) return; newOpen = false;
-      const w = $('hlNewForm').querySelector('.soft-wrap');
+      const w = $(P + 'NewForm').querySelector('.soft-wrap');
       if (w) window.softClose(w, () => { if (!newOpen) render(); }); else render();
     };
 
     // ---- Sayfa geçişi ----
-    const phone = window.matchMedia('not all and (min-width: 768px) and (min-height: 600px)');
-    if (typeof SIDEBAR_PARENT_PAGE !== 'undefined') SIDEBAR_PARENT_PAGE['page-hatirla'] = 'page-8';
+    // Başlık ve (büyük ekranda) sağ üstteki geçiş düğmesi diğer sayfaya götürür.
     const go = (id) => goToPage(id);
-    const gTitle = document.querySelector('#page-8 .p8m-title');
-    if (gTitle) {
-      gTitle.setAttribute('role', 'button'); gTitle.tabIndex = 0;
-      gTitle.addEventListener('click', () => go('page-hatirla'));
-      gTitle.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go('page-hatirla'); } });
+    const title = $(P + 'Title');
+    const toOther = () => go(cfg.other);
+    title.addEventListener('click', toOther);
+    title.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toOther(); } });
+    // Alt barda Gündelik sekmesi zaten seçili olduğundan, Hatırlanacaklar açıkken ona dokunmak da Gündelik'e döndürür.
+    if (cfg.navBack) {
+      const navIn = document.querySelector('.nav-input[value="page-8"]');
+      if (navIn && navIn.nextElementSibling) navIn.nextElementSibling.addEventListener('click', () => { if (page.classList.contains('is-active')) toOther(); });
     }
-    const back = () => go('page-8');
-    $('hlTitle').addEventListener('click', back);
-    $('hlTitle').addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); back(); } });
-    // Alt barda Gündelik sekmesi zaten seçili olduğundan, ona dokunmak da Gündelik'e döndürür.
-    const navIn = document.querySelector('.nav-input[value="page-8"]');
-    if (navIn && navIn.nextElementSibling) navIn.nextElementSibling.addEventListener('click', () => { if (page.classList.contains('is-active')) back(); });
-    // Büyük ekranda sağ üstteki geçiş düğmeleri (Gündelik <-> Hatırlanacaklar).
-    [['p8nSwitch', 'page-hatirla'], ['hlSwitch', 'page-8']].forEach(([id, to]) => {
-      const b = document.getElementById(id); if (!b) return;
-      b.addEventListener('click', () => {
-        b.classList.add('is-go'); goToPage(to);
-        setTimeout(() => b.classList.remove('is-go'), 600);
-      });
-    });
-
-    // Sol alttaki Geri düğmesi (nav bar bu sayfalarda gizli): hem Hatırlanacaklar'dan
-    // hem Gündelik'ten doğrudan Ana sayfa'ya çıkar (Gündelik'e uğramadan).
-    const gSwitch = document.getElementById('gundelikFabSwitchBtn');
-    if (gSwitch) gSwitch.addEventListener('click', () => goToPage(page.classList.contains('is-active') ? 'page-8' : 'page-hatirla'));
-    const gBack = document.getElementById('gundelikFabBackBtn');
-    if (gBack) gBack.addEventListener('click', () => {
-      const homeInput = document.querySelector('.nav-input[value="page-1"]');
-      if (homeInput) homeInput.checked = true;
-      goToPage('page-1');
-      if (typeof setActiveSidebarItem === 'function') setActiveSidebarItem('page-1');
+    const sw = $(P + 'Switch');
+    if (sw) sw.addEventListener('click', () => {
+      sw.classList.add('is-go'); goToPage(cfg.other);
+      setTimeout(() => sw.classList.remove('is-go'), 600);
     });
 
     // ---- Bağlam menüsü (basılı tut / sağ tık) ----
@@ -72382,7 +71225,7 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
     // sonra silinir (Geri al bildirimiyle). O sürede işaret geri alınırsa silinmez.
     // KAPALI iken her şey eskisi gibi: işaretli maddeler listede kalır.
     // Anahtarı açmak önceden işaretli olanlara dokunmaz; yalnızca bundan sonra işaretlenenleri etkiler.
-    const autoBtn = $('hlAuto'), autoTimers = new Map();
+    const autoBtn = $(P + 'Auto'), autoTimers = new Map();
     const paintAuto = () => { const on = !!st.autoDelete; autoBtn.classList.toggle('is-on', on); autoBtn.setAttribute('aria-checked', on ? 'true' : 'false'); };
     paintAuto();
     function autoSweep(g, it) {
@@ -72411,9 +71254,9 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
     function render() { window.gkAnim.flip(list, renderNow); }
     function renderNow() {
       closeMenu(); list.innerHTML = '';
-      const nf = $('hlNewForm'); nf.innerHTML = '';
+      const nf = $(P + 'NewForm'); nf.innerHTML = '';
       if (newOpen) { const f = mkForm('Yeni liste adı (örn. Market)', (v) => { newOpen = false; st.groups.push({ id: gid(), name: v, color: pal[st.groups.length % pal.length], items: [] }); addOpen = st.groups[st.groups.length - 1].id; save(); render(); focusIn(); }, () => softCloseNew()); f.classList.add('hl-newform'); const sw = el('div', 'soft-wrap'); sw.appendChild(f); nf.appendChild(sw); if (newAnim) { newAnim = false; window.softOpen(sw); } }
-      $('hlTip').textContent = st.groups.length ? 'İpucu: Bir listeye ya da maddeye basılı tut, seçenekler açılsın.' : '';
+      $(P + 'Tip').textContent = st.groups.length ? 'İpucu: Bir listeye ya da maddeye basılı tut, seçenekler açılsın.' : '';
       if (!st.groups.length) { list.appendChild(el('p', 'hl-empty', 'Henüz listen yok. Sağ alttaki + ile ekle.')); return; }
       st.groups.forEach((g, gi) => {
         const box = el('section', 'hl-g'); box.dataset.fk = 'hg:' + g.id; box.style.setProperty('--gc', g.color); box.style.setProperty('--gt', tickColor(g.color));
@@ -72451,50 +71294,65 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
       });
       firstPaint = false;
     }
-    $('hlNew').addEventListener('click', () => { if (newOpen) { softCloseNew(); return; } newOpen = true; newAnim = true; render(); focusIn(); });
+    $(P + 'New').addEventListener('click', () => { if (newOpen) { softCloseNew(); return; } newOpen = true; newAnim = true; render(); focusIn(); });
     document.addEventListener('pointerdown', (e) => {
-      if (!newOpen) return; const w = $('hlNewForm').querySelector('.soft-wrap');
+      if (!newOpen) return; const w = $(P + 'NewForm').querySelector('.soft-wrap');
       if (!w || w.classList.contains('soft-close') || w.contains(e.target)) return;
-      if (e.target.closest && e.target.closest('#gundelikFabAddBtn, #hlNew, .page11-context-menu')) return;
+      if (e.target.closest && e.target.closest('#gundelikFabAddBtn, #' + P + 'New, .page11-context-menu')) return;
       softCloseNew();
     }, true);
 
-    // Alt çubuktaki "Görev ekle" düğmesi: hangi sayfadaysak ona ekler.
-    //  Dokun  → Gündelik: yeni grup paneli · Hatırlanacaklar: yeni liste formu
-    //  Basılı tut → bir grup seç: Gündelik'te o gruba alt başlık, Hatırlanacaklar'da o gruba madde ekle
+    // Alt çubuk (#gundelikFabAddBtn) köprüsü için dışarıya açılan işlevler.
+    const newListPopup = () => window.gkNewPopup({
+      title: 'Yeni liste', placeholder: 'Liste adı (örn. Market)',
+      onSubmit: (v) => {
+        st.groups.push({ id: gid(), name: v, color: pal[st.groups.length % pal.length], items: [] });
+        save(); render();
+        setTimeout(() => { const b = list.lastElementChild; if (b && b.scrollIntoView) b.scrollIntoView({ block: 'center', behavior: 'smooth' }); }, 420);
+      }
+    });
+    render();
+    return {
+      page, hold, openMenu,
+      groups: () => st.groups,
+      newList: newListPopup,
+      addItem: (g) => { addOpen = g.id; render(); focusIn(); }
+    };
+  };
+
+  const hlInst = mountList({ p: 'hl', page: 'page-hatirla', key: 'hatirla', other: 'page-8', defName: 'Genel', navBack: true });
+  const gdInst = mountList({ p: 'gd', page: 'page-8', key: 'gundelik', other: 'page-hatirla', defName: 'Günlük', navBack: false });
+
+  // Sayfa bağımsız parçalar: sol alttaki Geri / geçiş düğmeleri ve sağ alttaki "+" (hangi sayfa açıksa ona ekler).
+  (() => {
+    const insts = [hlInst, gdInst].filter(Boolean);
+    if (!insts.length) return;
+    const active = () => insts.find((i) => i.page.classList.contains('is-active')) || insts[0];
+    if (typeof SIDEBAR_PARENT_PAGE !== 'undefined') SIDEBAR_PARENT_PAGE['page-hatirla'] = 'page-8';
+    // Sol alttaki Geri düğmesi (nav bar bu sayfalarda gizli): doğrudan Ana sayfa'ya çıkar.
+    const gSwitch = document.getElementById('gundelikFabSwitchBtn');
+    if (gSwitch) gSwitch.addEventListener('click', () => goToPage(hlInst && hlInst.page.classList.contains('is-active') ? 'page-8' : 'page-hatirla'));
+    const gBack = document.getElementById('gundelikFabBackBtn');
+    if (gBack) gBack.addEventListener('click', () => {
+      const homeInput = document.querySelector('.nav-input[value="page-1"]');
+      if (homeInput) homeInput.checked = true;
+      goToPage('page-1');
+      if (typeof setActiveSidebarItem === 'function') setActiveSidebarItem('page-1');
+    });
+    // Sağ alttaki "+" : dokun = yeni liste, basılı tut = bir listeyi seç, ona madde ekle.
     const gAdd = document.getElementById('gundelikFabAddBtn');
     if (gAdd) {
       const dot = (c) => `<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="6.5" style="fill:${c || 'var(--accent-color,#ff90e8)'};stroke:none"/></svg>`;
-      const onHl = () => page.classList.contains('is-active');
-      hold(gAdd, (x, y) => {
+      insts[0].hold(gAdd, (x, y) => {
+        const inst = active(); const gs = inst.groups(); if (!gs.length) return;
         const r = gAdd.getBoundingClientRect(); const cx = r.left + r.width / 2, cy = r.top;
-        if (onHl()) {
-          if (!st.groups.length) return;
-          openMenu(gAdd, st.groups.map((g, gi) => ({ ic: dot(g.color), title: g.name || 'Liste', sub: 'Maddesini ekle', fn: () => {
-            addOpen = g.id; render(); focusIn();
-          } })), cx, cy);
-        } else {
-          const gs = (window.p8nFab && window.p8nFab.groups()) || [];
-          if (!gs.length) return;
-          openMenu(gAdd, gs.map((g, i) => ({ ic: dot(g.color), title: g.name || 'Grup', sub: 'Alt başlık ekle', fn: () => window.p8nFab.addSection(i) })), cx, cy);
-        }
+        inst.openMenu(gAdd, gs.map((g) => ({ ic: dot(g.color), title: g.name || 'Liste', sub: 'Maddesini ekle', fn: () => inst.addItem(g) })), cx, cy);
       });
-      gAdd.addEventListener('click', () => {
-        if (onHl()) {
-          window.gkNewPopup({
-            title: 'Yeni liste', placeholder: 'Liste adı (örn. Market)',
-            onSubmit: (v) => {
-              st.groups.push({ id: gid(), name: v, color: pal[st.groups.length % pal.length], items: [] });
-              save(); render();
-              setTimeout(() => { const b = list.lastElementChild; if (b && b.scrollIntoView) b.scrollIntoView({ block: 'center', behavior: 'smooth' }); }, 420);
-            }
-          });
-        }
-        else if (window.p8nFab) window.p8nFab.newGroup();
-      });
+      gAdd.addEventListener('click', () => active().newList());
     }
-    render();
   })();
+
+
 
   // ---- Rutinler: gece 00.00'da işaretleri yenileme (sayfa/uygulama açık kalsa bile) ----
   // Gün değişimi yüklemede ve sekmeye dönüşte zaten kontrol ediliyordu; burada ayrıca gece yarısına
@@ -72519,7 +71377,7 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
   }
   @keyframes gkMenuItemIn { from { opacity: 0; transform: translateY(8px) scale(.97); } to { opacity: 1; transform: none; } }
   /* Klavye açıkken kaydırma alanının sonuna klavye kadar boşluk: son madde formu klavyenin üstüne çıkabilsin. */
-  #hlScroll::after, #p8mScroll::after { content: ''; display: block; height: var(--gk, 0px); flex: 0 0 auto; }
+  #hlScroll::after, #gdScroll::after { content: ''; display: block; height: var(--gk, 0px); flex: 0 0 auto; }
   @media (prefers-reduced-motion: reduce) {
     .page11-context-menu.p8g-menu, .page11-context-menu.p8g-menu.is-open { transition: opacity .01s; transform: none; }
     .page11-context-menu.p8g-menu.is-open .page11-context-menu-item { animation: none; }
@@ -72834,8 +71692,8 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
   .gk-pop-ok:active { transform: scale(.95); }
 
   /* Alt başlık / rutin / madde ekleme formu: yavaşça açılır (yükseklik + solma), vazgeçilince yavaşça kapanır. */
-  #p8mScroll .p8g-form, #page-hatirla .hl-form { overflow: hidden; animation: gkFormIn .7s cubic-bezier(.16,1,.3,1) backwards; }
-  #p8mScroll .p8g-form.is-closing, #page-hatirla .hl-form.is-closing { animation: gkFormOut .5s cubic-bezier(.4,0,.2,1) forwards; pointer-events: none; }
+  :is(#page-hatirla, #page-8) .hl-form { overflow: hidden; animation: gkFormIn .7s cubic-bezier(.16,1,.3,1) backwards; }
+  :is(#page-hatirla, #page-8) .hl-form.is-closing { animation: gkFormOut .5s cubic-bezier(.4,0,.2,1) forwards; pointer-events: none; }
   @keyframes gkFormIn {
     from { opacity: 0; max-height: 0; padding-top: 0; padding-bottom: 0; transform: translateY(-8px); }
     to   { opacity: 1; max-height: 12rem; padding-top: .3rem; padding-bottom: .4rem; transform: none; }
@@ -72852,7 +71710,7 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
 
   @media (prefers-reduced-motion: reduce) {
     .gk-pop-back, .gk-pop { transition-duration: .01ms !important; }
-    #p8mScroll .p8g-form, #page-hatirla .hl-form { animation: none !important; }
+    :is(#page-hatirla, #page-8) .hl-form { animation: none !important; }
   }
 </style>
 <script>
@@ -72878,7 +71736,7 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
   // iOS'ta klavye açılınca düzen alanı küçülmez, klavye alttaki içeriğin üstüne biner. Kaydırma alanının
   // sonuna klavye yüksekliği kadar boşluk (--gk) eklenir ve odaklı form klavyenin hemen üstüne kaydırılır.
   const vv = window.visualViewport; if (!vv) return;
-  const SC = '#hlScroll, #p8mScroll';
+  const SC = '#hlScroll, #gdScroll';
   const root = document.documentElement;
   const kb = () => Math.max(0, Math.round(window.innerHeight - vv.height - vv.offsetTop));
   const reveal = (smooth) => {
