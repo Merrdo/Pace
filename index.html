@@ -16817,11 +16817,32 @@
   .cal-ev-wi {
     height: var(--ih); display: flex; align-items: center; scroll-snap-align: center;
     font-weight: 700; font-size: 1.65rem; font-variant-numeric: tabular-nums; cursor: pointer;
-    opacity: 0; will-change: transform, opacity; -webkit-user-select: none; user-select: none;
+    -webkit-user-select: none; user-select: none;
   }
+  /* Dönüşüm/solma iç span'da: scroll-snap, dönüşmüş kutuyu hizalamaya çalışıp çarkı titretiyordu. */
+  .cal-ev-wi > span { display: block; opacity: 0; will-change: transform, opacity; pointer-events: none; }
   #calEvHours .cal-ev-wi { justify-content: flex-end; padding-right: 1.05rem; }
   #calEvMins .cal-ev-wi { justify-content: flex-start; padding-left: 1.05rem; }
   .cal-ev-clockact { display: flex; gap: .5rem; margin-top: 1rem; }
+
+  /* Off day düğmesi (yalnızca mobil; X'in yanında) */
+  .cal-ev-off {
+    display: none; flex: 0 0 auto; height: 2.4rem; padding: 0 1rem; border-radius: 999px; cursor: pointer;
+    font: 800 .84rem "Baloo 2", "Space Grotesk", sans-serif; color: var(--off-red, #ff3b3b);
+    background: transparent; border: 1.5px solid var(--off-red, #ff3b3b); -webkit-tap-highlight-color: transparent;
+    transition: transform .2s cubic-bezier(.34, 1.56, .64, 1), background-color .25s, color .25s;
+  }
+  .cal-ev-off:active { transform: scale(.92); }
+  .cal-ev-off.is-on { background: var(--off-red, #ff3b3b); color: #fff; }
+  @media not all and (min-width: 768px) and (min-height: 600px) {
+    .cal-ev-sheet[data-view="list"] .cal-ev-off, .cal-ev-sheet[data-view="edit"] .cal-ev-off { display: block; }
+    .cal-ev-sheet { display: flex; flex-direction: column; min-height: min(34rem, 78vh); min-height: min(34rem, 78dvh); }
+    .cal-ev-stage { flex: 1 1 auto; display: flex; flex-direction: column; }
+    .cal-ev-view:not([hidden]) { flex: 1 1 auto; display: flex; flex-direction: column; }
+    .cal-ev-actions, .cal-ev-clockact { margin-top: auto; padding-top: 1.25rem; }
+    .cal-ev-wheels { margin-top: auto; margin-bottom: auto; }
+    .cal-ev-confirm { flex: 1 1 auto; justify-content: center; }
+  }
 
   /* Silme onayı (aynı pop-up içinde, diğer görünümler gibi kayarak gelir) */
   .cal-ev-confirm { display: flex; flex-direction: column; align-items: center; text-align: center; padding: .4rem .2rem 0; }
@@ -38499,6 +38520,32 @@ body.is-countdown-fs.is-countdown-paused .countdown-fullscreen-time-row .stopwat
   #countdownPresetsBackdrop *, .countdown-fullscreen *, .countdown-fullscreen *::before, .countdown-fullscreen *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
 }
 </style>
+<style id="calNextCss">
+.cal-next{display:none;}
+@media (min-width:768px) and (min-height:600px){
+  #page-6 .calendar-info-top{justify-content:flex-start;gap:.9rem;}
+  .cal-next{display:flex;align-items:center;gap:1rem;margin-top:auto;flex-shrink:0;width:100%;box-sizing:border-box;padding:.95rem 1.25rem;
+    border:none;border-radius:1.5rem;cursor:pointer;text-align:left;font-family:"Baloo 2","Space Grotesk",sans-serif;color:var(--theme-text,#f2f2f7);
+    background:color-mix(in srgb,var(--theme-text,#f2f2f7) 8%,transparent);-webkit-tap-highlight-color:transparent;
+    transition:transform .25s cubic-bezier(.34,1.56,.64,1),background-color .25s;}
+  .cal-next:hover{background:color-mix(in srgb,var(--theme-text,#f2f2f7) 12%,transparent);}
+  .cal-next:active{transform:scale(.985);}
+  .cal-next-bar{flex:none;width:.32rem;align-self:stretch;min-height:2.6rem;border-radius:999px;background:var(--c,var(--accent-color,#ff90e8));}
+  .cal-next-txt{flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.2;}
+  .cal-next-lbl{font-weight:800;font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;opacity:.5;}
+  .cal-next-name{font-weight:800;font-size:1.2rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .cal-next-sub{font-weight:600;font-size:.86rem;opacity:.55;}
+  .cal-next-sub:empty{display:none;}
+  .cal-next-when{flex:none;font-weight:800;font-size:.92rem;padding:.35rem .95rem;border-radius:999px;background:var(--c,var(--accent-color,#ff90e8));color:#16171b;}
+  .cal-next.is-empty{cursor:default;}
+  .cal-next.is-empty .cal-next-when{display:none;}
+  .cal-next.is-empty .cal-next-bar{opacity:.22;}
+  .cal-next.is-empty .cal-next-name{opacity:.55;font-weight:700;font-size:1.05rem;}
+  .cal-next.is-in{animation:calNextIn .6s cubic-bezier(.16,1,.3,1) both;}
+}
+@keyframes calNextIn{from{opacity:0;transform:translateY(10px);}}
+@media (prefers-reduced-motion:reduce){.cal-next.is-in{animation:none;}}
+</style>
 <style id="ztCss">
 /* ===== Zaman Takvimi (kronometre günlük çalışma takvimi) =====
    Kronometre sayfasındaki giriş alanı (.zt-link) ve tam sayfa takvim (#page-ztakvim).
@@ -41179,12 +41226,20 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
     <!-- Seçili günün etkinlikleri (JS: renderCalendarEvents). Güne çift
          dokunmak ya da "Etkinlik ekle" düğmesi pencereyi açar. -->
     <div class="calendar-events" id="calendarEvents"></div>
+
+    <!-- Yaklaşan en yakın etkinlik (yalnızca büyük ekran; JS: ce_renderNext) -->
+    <button type="button" class="cal-next is-empty" id="calNext" aria-label="Yaklaşan etkinlik">
+      <span class="cal-next-bar"></span>
+      <span class="cal-next-txt"><span class="cal-next-lbl">Yaklaşan etkinlik</span><span class="cal-next-name" id="calNextName">Yaklaşan etkinlik yok</span><span class="cal-next-sub" id="calNextSub"></span></span>
+      <span class="cal-next-when" id="calNextWhen"></span>
+    </button>
   </section>
 
   <div class="cal-ev-backdrop" id="calEvBackdrop" aria-hidden="true">
     <div class="cal-ev-sheet" role="dialog" aria-modal="true" aria-labelledby="calEvTitle">
       <div class="cal-ev-head">
         <div class="cal-ev-headtxt"><h3 class="cal-ev-title" id="calEvTitle">Etkinlik ekle</h3><p class="cal-ev-date" id="calEvDate"></p></div>
+        <button type="button" class="cal-ev-off" id="calEvOffBtn">Off day</button>
         <button type="button" class="cal-ev-ic" id="calEvX" aria-label="Kapat"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
       </div>
       <div class="cal-ev-stage" id="calEvStage">
@@ -49001,10 +49056,7 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
 .cal-off{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:.84;color:var(--off-red);
   font-weight:800;font-size:.54rem;letter-spacing:.03em;animation:offStampIn .6s cubic-bezier(.34,1.56,.64,1) both;}
 .cal-off b{display:block;font-weight:800;}
-.cal-off::after{content:"";position:absolute;left:50%;top:50%;width:2.15rem;height:2.15rem;margin:-1.075rem 0 0 -1.075rem;border-radius:50%;
-  border:2px solid var(--off-red);opacity:0;animation:offRipple 3.8s ease-out 1s infinite;pointer-events:none;}
 .calendar-day.is-offday.is-selected .cal-off{color:#fff;}
-.calendar-day.is-offday.is-selected .cal-off::after{border-color:#fff;}
 .cal-off-btn,.zt-off-btn{flex:none;font:800 .78rem "Baloo 2","Space Grotesk",sans-serif;padding:.45rem .9rem;border-radius:999px;cursor:pointer;
   border:1.5px solid var(--off-red);color:var(--off-red);background:transparent;-webkit-tap-highlight-color:transparent;
   transition:transform .2s cubic-bezier(.34,1.56,.64,1),background-color .25s,color .25s;}
@@ -51105,6 +51157,7 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
 
   // Altta artık liste yok: tek bir düğme, etkinlikleri pop-up'ta açar.
   const renderCalendarEvents = () => {
+    try { ce_renderNext(); } catch (err) { /* yok say */ }
     if (!calendarEventsEl) return;
     const list = getDayEvents(calendarSelectedDate);
     calendarEventsEl.innerHTML = '';
@@ -51129,12 +51182,19 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
     t.textContent = title; d.textContent = sub;
     if (animate) { box.classList.remove('is-swap'); void box.offsetWidth; box.classList.add('is-swap'); }
   };
+  const ce_sheetEl = calEvBackdrop.querySelector('.cal-ev-sheet');
+  const ce_syncOff = () => {
+    const b = $ce('calEvOffBtn'); if (!b || !window.OffDay) return;
+    const r = calEvDay ? window.OffDay.find(calEvDay) : null;
+    b.classList.toggle('is-on', !!r); b.textContent = r ? 'Off day ✓' : 'Off day';
+  };
   const ce_go = (name, dir, head) => {
     const next = ce_views[name], prev = ce_view ? ce_views[ce_view] : null;
     const tok = ++ce_switchTok;
     const animate = ce_isOpen() && prev && prev !== next && !prev.hidden;
     if (head) ce_setHead(head[0], head[1], animate);
     ce_view = name;
+    ce_sheetEl.dataset.view = name; ce_syncOff();
     Object.keys(ce_views).forEach((k) => {
       const v = ce_views[k];
       if (v !== next && !(animate && v === prev)) v.hidden = true;
@@ -51188,7 +51248,7 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
       const d = k - c;
       const th = Math.max(-1.35, Math.min(1.35, d * step));
       const dy = R * Math.sin(th) - d * ce_ih;
-      const st = kids[k].style;
+      const st = kids[k].firstChild.style;
       st.transform = `translateY(${dy.toFixed(1)}px) perspective(${(ce_ih * 9).toFixed(0)}px) rotateX(${(-th * 180 / Math.PI).toFixed(1)}deg)`;
       st.opacity = Math.max(0, 1 - Math.abs(d) / 2.7).toFixed(2);
     }
@@ -51212,7 +51272,7 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
     const frag = document.createDocumentFragment();
     for (let c = 0; c < 3; c++) for (let i = 0; i < w.n; i++) {
       const it = document.createElement('div');
-      it.className = 'cal-ev-wi'; it.textContent = ce_pad2(i);
+      it.className = 'cal-ev-wi'; const sp = document.createElement('span'); sp.textContent = ce_pad2(i); it.appendChild(sp);
       frag.appendChild(it);
     }
     w.el.appendChild(frag);
@@ -51348,6 +51408,13 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
   $ce('calEvSave').addEventListener('click', saveCalEvent);
   $ce('calEvCancel').addEventListener('click', () => { const d = calEvDay; if (d && getDayEvents(d).length) openCalEventList(d); else closeCalEventSheet(); });
   $ce('calEvX').addEventListener('click', closeCalEventSheet);
+  // Off day: düzenleme penceresi etkinlik panelinin üstünde açılır (z-index daha yüksek); kapanınca panel yerinde kalır.
+  $ce('calEvOffBtn').addEventListener('click', () => {
+    if (!calEvDay || !window.OffDay) return;
+    if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
+    window.OffDay.openSheet(new Date(calEvDay.getFullYear(), calEvDay.getMonth(), calEvDay.getDate()));
+  });
+  window.addEventListener('offdays-changed', ce_syncOff);
   $ce('calEvTimeRow').addEventListener('click', ce_openClock);
   $ce('calEvClockOk').addEventListener('click', ce_closeClock);
   $ce('calEvTimeClear').addEventListener('click', () => { calEvTimeVal = ''; ce_syncTimeUi(); ce_closeClock(); });
@@ -51358,6 +51425,54 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
   calEvBackdrop.addEventListener('click', (e) => { if (e.target === calEvBackdrop) closeCalEventSheet(); });
   calEvName.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); saveCalEvent(); } });
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && calEvBackdrop.classList.contains('is-open')) closeCalEventSheet(); });
+
+  // ---- Yaklaşan en yakın etkinlik (büyük ekranda takvim sayfasının altında) ----
+  let ce_nextKey = '', ce_nextDay = null;
+  function ce_renderNext() {
+    const el = document.getElementById('calNext'); if (!el) return;
+    const all = getAllDayEvents() || {};
+    const now = new Date(), nowMs = now.getTime();
+    const todayMs = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+    let best = null;
+    Object.keys(all).forEach((key) => {
+      const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(key); if (!m || !Array.isArray(all[key])) return;
+      const dayMs = new Date(+m[1], +m[2] - 1, +m[3]).getTime();
+      if (dayMs < todayMs) return;
+      all[key].forEach((ev) => {
+        if (!ev || typeof ev !== 'object') return;
+        const tm = /^(\d{2}):(\d{2})$/.exec(ev.time || '');
+        const startMs = tm ? new Date(+m[1], +m[2] - 1, +m[3], +tm[1], +tm[2]).getTime() : dayMs;
+        if (tm && startMs < nowMs) return;
+        const c = ev.createdAt || 0;
+        if (!best || startMs < best.startMs || (startMs === best.startMs && c < best.c)) {
+          best = { startMs, c, dayMs, time: tm ? ev.time : '', name: String(ev.name || '').trim() || 'Etkinlik', color: ce_evColor(ev) };
+        }
+      });
+    });
+    const key = best ? [best.startMs, best.name, best.color].join('|') : '';
+    if (key === ce_nextKey && el.dataset.ready) return;
+    const first = !el.dataset.ready; el.dataset.ready = '1'; ce_nextKey = key;
+    if (!best) {
+      ce_nextDay = null; el.classList.add('is-empty'); el.style.removeProperty('--c');
+      $ce('calNextName').textContent = 'Yaklaşan etkinlik yok'; $ce('calNextSub').textContent = ''; $ce('calNextWhen').textContent = '';
+      el.setAttribute('aria-label', 'Yaklaşan etkinlik yok');
+    } else {
+      const d = new Date(best.dayMs), diff = Math.round((best.dayMs - todayMs) / 86400000);
+      const rel = diff === 0 ? 'Bugün' : diff === 1 ? 'Yarın' : `${diff} gün sonra`;
+      const dateTxt = `${d.getDate()} ${CALENDAR_MONTHS[d.getMonth()]}`;
+      ce_nextDay = d; el.classList.remove('is-empty'); el.style.setProperty('--c', best.color);
+      $ce('calNextName').textContent = best.name;
+      $ce('calNextSub').textContent = best.time ? `${dateTxt} · ${best.time}` : dateTxt;
+      $ce('calNextWhen').textContent = rel;
+      el.setAttribute('aria-label', `Yaklaşan etkinlik: ${best.name}, ${rel}`);
+    }
+    if (!first) { el.classList.remove('is-in'); void el.offsetWidth; el.classList.add('is-in'); }
+  }
+  $ce('calNext').addEventListener('click', () => { if (ce_nextDay) openCalEventList(ce_nextDay); });
+  window.addEventListener('app-state-saved', () => { try { ce_renderNext(); } catch (err) { /* yok say */ } });
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) { try { ce_renderNext(); } catch (err) { /* yok say */ } } });
+  setInterval(() => { try { ce_renderNext(); } catch (err) { /* yok say */ } }, 30000);
+  ce_renderNext();
 
   renderCalendarGrid();
   updateCalendarSelectedInfo();
@@ -73565,12 +73680,30 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
       ctx.globalAlpha = future ? (dark ? 0.06 : 0.03) : (dark ? 0.12 : 0.07);
       rr(ctx, x, yy, cellW, cellH, 26); ctx.fill(); ctx.globalAlpha = 1;
       if (window.OffDay.isOff(date)) {
-        ctx.fillStyle = '#ff3b3b'; ctx.globalAlpha = dark ? 0.2 : 0.14; rr(ctx, x, yy, cellW, cellH, 26); ctx.fill();
-        ctx.globalAlpha = 0.95; ctx.strokeStyle = '#ff3b3b'; ctx.lineWidth = 4; rr(ctx, x + 2, yy + 2, cellW - 4, cellH - 4, 24); ctx.stroke();
-        ctx.globalAlpha = 1; ctx.textAlign = 'center'; ctx.fillStyle = '#ff3b3b';
-        ctx.font = F(800, 46); ctx.fillText('OFF', x + cellW / 2, yy + 80);
-        ctx.font = F(800, 22); if ('letterSpacing' in ctx) ctx.letterSpacing = '5px';
-        ctx.fillText('DAY', x + cellW / 2 + 2, yy + 112); if ('letterSpacing' in ctx) ctx.letterSpacing = '0px';
+        // Uygulamadaki .zt-day.is-offday ile aynı: çizgili kırmızı zemin, kırmızı çerçeve, eğik OFF/DAY damgası.
+        const RED = '#ff3b3b';
+        ctx.save();
+        rr(ctx, x, yy, cellW, cellH, 26); ctx.clip();
+        ctx.globalAlpha = 1; ctx.fillStyle = C.bg; ctx.fillRect(x, yy, cellW, cellH);
+        ctx.fillStyle = RED; ctx.globalAlpha = dark ? 0.1 : 0.07; ctx.fillRect(x, yy, cellW, cellH);
+        const B = 17, Wd = B * Math.SQRT2, Pd = 2 * Wd;
+        ctx.globalAlpha = dark ? 0.2 : 0.16; ctx.beginPath();
+        for (let o = -cellH; o < cellW + cellH; o += Pd) {
+          ctx.moveTo(x + o, yy + cellH); ctx.lineTo(x + o + Wd, yy + cellH);
+          ctx.lineTo(x + o + Wd + cellH, yy); ctx.lineTo(x + o + cellH, yy); ctx.closePath();
+        }
+        ctx.fill(); ctx.restore();
+        ctx.globalAlpha = 0.75; ctx.strokeStyle = RED; ctx.lineWidth = 3; rr(ctx, x + 1.5, yy + 1.5, cellW - 3, cellH - 3, 24.5); ctx.stroke();
+        ctx.save(); ctx.globalAlpha = 1; ctx.translate(x + cellW / 2, yy + cellH / 2); ctx.rotate(-6 * Math.PI / 180);
+        ctx.textAlign = 'center'; ctx.fillStyle = RED; ctx.strokeStyle = RED;
+        ctx.font = F(800, Math.round(cellW * 0.42)); ctx.fillText('OFF', 0, 2);
+        const ds = Math.round(cellW * 0.17), ls = ds * 0.24;
+        ctx.font = F(800, ds); if ('letterSpacing' in ctx) ctx.letterSpacing = ls + 'px';
+        const dw = ctx.measureText('DAY').width;
+        ctx.fillText('DAY', ls / 2, 14 + 6 + ds * 0.78);
+        ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(-dw / 2, 14); ctx.lineTo(dw / 2, 14); ctx.stroke();
+        if ('letterSpacing' in ctx) ctx.letterSpacing = '0px';
+        ctx.restore(); ctx.globalAlpha = 1;
         continue;
       }
       // Tarih: sol üstte küçük
@@ -73623,30 +73756,46 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
 .ztp-ov.is-out{opacity:0;}
 .ztp-stage{display:grid;place-items:center;max-width:100%;}
 .ztp-stage>*{grid-area:1/1;}
-.ztp-skel{position:relative;overflow:hidden;display:flex;flex-direction:column;gap:18px;box-sizing:border-box;padding:7%;
-  width:min(100%,calc((100vh - 140px) * .771));width:min(100%,calc((100dvh - 140px) * .771));aspect-ratio:1080/1400;
-  border-radius:26px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);
-  box-shadow:0 30px 80px -30px rgba(0,0,0,.7);
-  animation:ztpRise .7s cubic-bezier(.16,1,.3,1) both;
-  transition:opacity .5s ease,transform .6s cubic-bezier(.16,1,.3,1),filter .5s ease;}
+.ztp-ov{overflow:hidden;}
+.ztp-ov::before{content:"";position:absolute;inset:-25%;pointer-events:none;opacity:0;z-index:0;filter:blur(36px);
+  background:radial-gradient(36% 30% at 30% 32%,color-mix(in srgb,var(--accent-color,#ff90e8) 46%,transparent),transparent 72%),
+             radial-gradient(34% 30% at 72% 70%,rgba(110,140,255,.30),transparent 72%);
+  transition:opacity 1.2s ease;animation:ztpAurora 9s ease-in-out infinite alternate;}
+.ztp-ov.is-in::before{opacity:1;}
+.ztp-stage,.ztp-row{position:relative;z-index:1;}
+.ztp-row{position:relative;width:100%;}
+.ztp-skel{--ar:.771;position:relative;overflow:hidden;display:flex;flex-direction:column;gap:3.4cqw;box-sizing:border-box;padding:6.5cqw;container-type:inline-size;
+  width:min(100%,calc((100vh - 170px) * var(--ar)));width:min(100%,calc((100dvh - 170px) * var(--ar)));aspect-ratio:var(--ar);
+  border-radius:26px;background:linear-gradient(160deg,rgba(255,255,255,.13),rgba(255,255,255,.05));
+  border:1px solid rgba(255,255,255,.16);
+  box-shadow:0 40px 90px -30px rgba(0,0,0,.75),inset 0 1px 0 rgba(255,255,255,.18);
+  animation:ztpRise .8s cubic-bezier(.16,1,.3,1) both;
+  transition:opacity .55s ease,transform .7s cubic-bezier(.16,1,.3,1),filter .55s ease;}
 .ztp-skel::after{content:"";position:absolute;inset:0;pointer-events:none;
-  background:linear-gradient(105deg,transparent 32%,rgba(255,255,255,.16) 50%,transparent 68%);
-  transform:translateX(-100%);animation:ztpShimmer 1.8s ease-in-out infinite;}
-.ztp-skel.is-done{opacity:0;transform:scale(1.04);filter:blur(8px);pointer-events:none;}
-.ztp-skel-head,.ztp-skel-stats{display:flex;gap:14px;}
-.ztp-skel-head b{display:block;height:34px;border-radius:12px;background:rgba(255,255,255,.14);}
-.ztp-skel-head b:first-child{width:46%;}
-.ztp-skel-head b:last-child{width:22%;background:color-mix(in srgb,var(--accent-color,#ff90e8) 55%,transparent);}
-.ztp-skel-stats b{display:block;flex:1;height:26px;border-radius:10px;background:rgba(255,255,255,.09);}
-.ztp-skel-grid{flex:1;min-height:0;display:grid;grid-template-columns:repeat(7,1fr);grid-template-rows:repeat(5,1fr);gap:9px;}
-.ztp-skel-grid i{border-radius:16%;background:rgba(255,255,255,.09);animation:ztpPulse 1.7s ease-in-out infinite;animation-delay:calc(var(--i) * 45ms);}
-.ztp-skel-label{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);white-space:nowrap;z-index:1;
-  display:flex;align-items:center;padding:12px 22px;border-radius:999px;font-weight:700;font-size:17px;color:#fff;
-  background:rgba(20,20,24,.55);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);
-  border:1px solid rgba(255,255,255,.14);animation:ztpBreath 2.2s ease-in-out infinite;}
-.ztp-dots{display:inline-flex;margin-left:3px;}
-.ztp-dots i{display:inline-block;width:4px;height:4px;margin-left:3px;border-radius:50%;background:currentColor;animation:ztpDot 1.2s ease-in-out infinite;}
-.ztp-dots i:nth-child(2){animation-delay:.15s;}.ztp-dots i:nth-child(3){animation-delay:.3s;}
+  background:linear-gradient(108deg,transparent 30%,rgba(255,255,255,.16) 50%,transparent 70%);
+  transform:translateX(-120%);animation:ztpShimmer 2.8s cubic-bezier(.4,0,.2,1) .5s infinite;}
+.ztp-skel.is-done{opacity:0;transform:scale(1.035);filter:blur(10px);pointer-events:none;}
+.ztp-sk-head{display:flex;align-items:baseline;gap:2.6cqw;font:800 11.5cqw/1 "Baloo 2","Space Grotesk",sans-serif;color:#fff;
+  animation:ztpTxt .7s cubic-bezier(.16,1,.3,1) .15s both;}
+.ztp-sk-head em{font-style:normal;color:var(--accent-color,#ff90e8);}
+.ztp-sk-stats{display:flex;gap:3cqw;animation:ztpTxt .7s cubic-bezier(.16,1,.3,1) .28s both;}
+.ztp-sk-stats b{flex:1;height:4.4cqw;border-radius:99px;background:linear-gradient(90deg,rgba(255,255,255,.18),rgba(255,255,255,.07));}
+.ztp-sk-wd{display:grid;grid-template-columns:repeat(7,1fr);gap:2.2cqw;padding:0 .5cqw;animation:ztpTxt .7s cubic-bezier(.16,1,.3,1) .38s both;}
+.ztp-sk-wd s{height:1.5cqw;border-radius:99px;background:rgba(255,255,255,.16);}
+.ztp-sk-grid{flex:1;min-height:0;display:grid;grid-template-columns:repeat(7,1fr);grid-template-rows:repeat(var(--rows,5),1fr);gap:2.2cqw;}
+.ztp-sk-grid i{border-radius:22%;background:rgba(255,255,255,.1);
+  animation:ztpCell .75s cubic-bezier(.16,1,.3,1) var(--d,0ms) both,ztpPulse 2.4s ease-in-out calc(var(--d,0ms) + 1s) infinite;}
+.ztp-sk-grid i.is-void{visibility:hidden;animation:none;}
+.ztp-sk-grid i.is-off{background:repeating-linear-gradient(135deg,rgba(255,59,59,.30) 0 5px,rgba(255,59,59,.12) 5px 10px);box-shadow:inset 0 0 0 1.5px rgba(255,59,59,.7);}
+.ztp-status{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;
+  transition:opacity .35s ease,transform .5s cubic-bezier(.16,1,.3,1);animation:ztpTxt .7s cubic-bezier(.16,1,.3,1) .5s both;}
+.ztp-row.is-ready .ztp-status{opacity:0;transform:translateY(-10px);pointer-events:none;}
+.ztp-bar{width:min(240px,58vw);height:3px;border-radius:9px;background:rgba(255,255,255,.16);overflow:hidden;}
+.ztp-bar i{display:block;height:100%;border-radius:inherit;transform-origin:left center;transform:scaleX(0);transition:transform .3s linear;
+  background:linear-gradient(90deg,var(--accent-color,#ff90e8),#fff);box-shadow:0 0 14px var(--accent-color,#ff90e8);}
+.ztp-txt{font:700 15px "Baloo 2","Space Grotesk",sans-serif;letter-spacing:.03em;color:transparent;-webkit-text-fill-color:transparent;
+  background:linear-gradient(100deg,rgba(255,255,255,.42) 35%,#fff 50%,rgba(255,255,255,.42) 65%) 100% 0/250% 100%;
+  -webkit-background-clip:text;background-clip:text;animation:ztpText 2.2s linear infinite;}
 .ztp-imgwrap{position:relative;display:grid;max-width:100%;overflow:hidden;border-radius:26px;
   box-shadow:0 40px 90px -30px rgba(0,0,0,.8),0 0 0 1px rgba(255,255,255,.1);
   opacity:0;transform:translateY(22px) scale(.93);filter:blur(14px);pointer-events:none;
@@ -73667,13 +73816,17 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
 .ztp-row.is-ready .ztp-btn:active{transform:scale(.94);transition-delay:0s;transition-duration:.12s;}
 @keyframes ztpRise{from{opacity:0;transform:translateY(18px) scale(.96);}}
 @keyframes ztpShimmer{to{transform:translateX(100%);}}
-@keyframes ztpPulse{0%,100%{opacity:.45;}50%{opacity:1;}}
+@keyframes ztpPulse{0%,100%{opacity:.5;}50%{opacity:1;}}
 @keyframes ztpBreath{0%,100%{opacity:.85;}50%{opacity:1;}}
 @keyframes ztpDot{0%,80%,100%{transform:translateY(0);opacity:.4;}40%{transform:translateY(-4px);opacity:1;}}
 @keyframes ztpSheen{0%{opacity:0;transform:translateX(-120%);}20%{opacity:1;}100%{opacity:0;transform:translateX(120%);}}
+@keyframes ztpAurora{to{transform:translate3d(5%,-4%,0) scale(1.14) rotate(7deg);}}
+@keyframes ztpCell{from{opacity:0;transform:scale(.55) translateY(8%);}}
+@keyframes ztpTxt{from{opacity:0;transform:translateY(8px);}}
+@keyframes ztpText{to{background-position:0 0;}}
 @media (prefers-reduced-motion: reduce){
   .ztp-ov,.ztp-ov *{animation:none !important;transition-duration:.01s !important;transition-delay:0s !important;}
-  .ztp-skel::after{display:none;}
+  .ztp-skel::after,.ztp-ov::before{display:none;}
 }`;
     document.head.appendChild(st);
   }
@@ -73683,17 +73836,33 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
     const ov = document.createElement('div');
     ov.className = 'ztp-ov';
     ov.setAttribute('role', 'dialog'); ov.setAttribute('aria-modal', 'true'); ov.setAttribute('aria-label', 'Takvim görseli');
+    // İskelet gerçek ayın düzenini gösterir (satır sayısı, off günleri); görsel boyutuyla aynı orana sahiptir.
+    const sy = view.y, sm = view.m, dim = new Date(sy, sm + 1, 0).getDate();
+    const lead = weekStartsSun() ? new Date(sy, sm, 1).getDay() : (new Date(sy, sm, 1).getDay() + 6) % 7;
+    const nrows = Math.ceil((lead + dim) / 7);
+    const arH = Math.max(1350, 370 + 56 + nrows * 162 + 110);
     let cells = '';
-    for (let i = 0; i < 35; i += 1) cells += `<i style="--i:${i}"></i>`;
-    ov.innerHTML = '<div class="ztp-stage"><div class="ztp-skel"><div class="ztp-skel-head"><b></b><b></b></div>'
-      + '<div class="ztp-skel-stats"><b></b><b></b><b></b></div><div class="ztp-skel-grid">' + cells + '</div>'
-      + '<div class="ztp-skel-label" aria-live="polite">Görsel oluşturuluyor<span class="ztp-dots"><i></i><i></i><i></i></span></div></div>'
-      + '<div class="ztp-imgwrap"></div></div><div class="ztp-row"></div>';
+    for (let i = 0; i < nrows * 7; i += 1) {
+      const d = i - lead + 1, r = Math.floor(i / 7), c = i % 7;
+      if (d < 1 || d > dim) { cells += '<i class="is-void"></i>'; continue; }
+      let off = false; try { off = window.OffDay.isOff(new Date(sy, sm, d)); } catch (e) { /* yok say */ }
+      cells += `<i class="${off ? 'is-off' : ''}" style="--d:${260 + r * 70 + c * 32}ms"></i>`;
+    }
+    ov.innerHTML = `<div class="ztp-stage"><div class="ztp-skel" style="--ar:${(1080 / arH).toFixed(4)};--rows:${nrows}">`
+      + `<div class="ztp-sk-head"><span>${MONTHS[sm]}</span><em>${sy}</em></div>`
+      + '<div class="ztp-sk-stats"><b></b><b></b><b></b></div>'
+      + '<div class="ztp-sk-wd"><s></s><s></s><s></s><s></s><s></s><s></s><s></s></div>'
+      + `<div class="ztp-sk-grid">${cells}</div></div><div class="ztp-imgwrap"></div></div>`
+      + '<div class="ztp-row"><div class="ztp-status" aria-live="polite"><div class="ztp-bar"><i></i></div><div class="ztp-txt">Görsel hazırlanıyor</div></div></div>';
     const stage = ov.querySelector('.ztp-stage'), skel = ov.querySelector('.ztp-skel');
     const wrap = ov.querySelector('.ztp-imgwrap'), row = ov.querySelector('.ztp-row');
+    const bar = ov.querySelector('.ztp-bar i');
+    let pv = 0, praf = 0;
+    const tick = () => { pv += (0.93 - pv) * 0.028; bar.style.transform = `scaleX(${pv.toFixed(3)})`; praf = requestAnimationFrame(tick); };
+    tick();
     let url = null, closed = false;
     const close = () => {
-      if (closed) return; closed = true;
+      if (closed) return; closed = true; cancelAnimationFrame(praf);
       ov.classList.remove('is-in'); ov.classList.add('is-out');
       setTimeout(() => { ov.remove(); if (url) URL.revokeObjectURL(url); }, 360);
     };
@@ -73702,6 +73871,9 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
     requestAnimationFrame(() => requestAnimationFrame(() => ov.classList.add('is-in')));
 
     async function ready(blob, name) {
+      if (closed) return;
+      cancelAnimationFrame(praf); bar.style.transform = 'scaleX(1)';
+      await new Promise((r) => setTimeout(r, 320)); // çubuk dolsun
       if (closed) return;
       url = URL.createObjectURL(blob);
       const img = new Image();
@@ -73746,7 +73918,7 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
       if (!blob) { blob = await renderShareBlob(view.y, view.m); shareCache = { key, blob }; }
       if (!blob) throw new Error('boş görsel');
       // Görsel hazır olsa bile iskelet kısa süre görünsün: geçiş ani değil, akıcı hissettirir.
-      const left = 1300 - (performance.now() - t0);
+      const left = 1600 - (performance.now() - t0);
       if (left > 0) await new Promise((r) => setTimeout(r, left));
       await ui.ready(blob, `pace-zaman-takvimi-${view.y}-${pad(view.m + 1)}.png`);
     } catch (e) {
