@@ -38744,6 +38744,52 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
 .zt-d-time small { font-size: 2.3cqw; margin-top: 1cqw; opacity: 0.6; letter-spacing: 0; }
 .zt-d-zero { font-size: 4cqw; opacity: 0.3; }
 .zt-weekday { font-size: 3.1cqw; }
+
+/* ---- BÜYÜK EKRAN (tablet / masaüstü): takvim odak noktası, kaydırma yok ----
+   Sayfa görünür alana sığar: solda başlık/özet/gün adları + ay ızgarası (ızgara
+   kalan TÜM yüksekliği satır sayısına bölerek doldurur), sağda seçili gün paneli.
+   Hücre yazıları hücrenin kendi boyutuna (cqmin) göre ölçeklenir. */
+@media (min-width: 768px) and (min-height: 600px) {
+  #page-ztakvim {
+    overflow: hidden;
+    padding: calc(14px + env(safe-area-inset-top)) clamp(24px, 4vw, 64px) calc(18px + env(safe-area-inset-bottom));
+  }
+  .zt-wrap {
+    max-width: 1500px; flex: 1 1 0; min-height: 0; height: 100%;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) clamp(260px, 26vw, 380px);
+    grid-template-rows: auto auto auto auto minmax(0, 1fr);
+    grid-template-areas: "top top" "nav detail" "stats detail" "wd detail" "grid detail";
+    column-gap: clamp(1.5rem, 3.5vw, 3.5rem); row-gap: 0.9rem;
+  }
+  .zt-wrap > .calendar-topbar { grid-area: top; }
+  .zt-wrap > .zt-nav { grid-area: nav; }
+  .zt-wrap > .zt-stats { grid-area: stats; }
+  .zt-wrap > .zt-weekdays { grid-area: wd; margin-bottom: 0; }
+  .zt-wrap > .zt-grid {
+    grid-area: grid; min-height: 0;
+    grid-template-rows: repeat(var(--rows, 6), minmax(0, 1fr));
+  }
+  .zt-wrap > .zt-detail {
+    grid-area: detail; align-self: start; max-height: 100%; overflow-y: auto; scrollbar-width: none;
+    padding-left: clamp(1.2rem, 2.4vw, 2.4rem);
+    border-left: 1.5px solid color-mix(in srgb, var(--theme-text, #1a1a1a) 14%, transparent);
+  }
+  .zt-wrap > .zt-detail::-webkit-scrollbar { display: none; }
+  .zt-grid, .zt-weekdays { gap: clamp(6px, 0.8vw, 12px); }
+  .zt-day {
+    aspect-ratio: auto; height: 100%; container-type: size; padding-top: 0;
+    border-radius: clamp(12px, 1.5vw, 22px);
+  }
+  .zt-bubble { border-radius: clamp(12px, 1.5vw, 22px); }
+  .zt-d-num { top: 9cqmin; left: 11cqmin; font-size: clamp(0.7rem, 15cqmin, 1.5rem); }
+  .zt-d-time b { font-size: clamp(1.1rem, 36cqmin, 3.2rem); }
+  .zt-d-time b.is-long { font-size: clamp(1rem, 30cqmin, 2.7rem); }
+  .zt-d-time small { font-size: clamp(0.6rem, 14cqmin, 1.2rem); margin-top: 3cqmin; }
+  .zt-d-zero { font-size: clamp(0.9rem, 27cqmin, 2.2rem); }
+  .zt-weekday { font-size: clamp(0.72rem, 1.1vw, 1rem); }
+}
+
 </style>
 </head>
 <body oncopy="return false" oncut="return false" onselectstart="return false" ondragstart="return false">
@@ -72988,6 +73034,7 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
 
     grid.innerHTML = '';
     grid.appendChild(bubble);
+    grid.style.setProperty('--rows', String(Math.ceil((lead + dim) / 7)));
     for (let i = 0; i < lead; i += 1) {
       const e = document.createElement('span'); e.className = 'zt-day is-empty'; e.setAttribute('aria-hidden', 'true'); grid.appendChild(e);
     }
