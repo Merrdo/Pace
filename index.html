@@ -56388,6 +56388,8 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
     const PIE = `<svg class="p8g-pie" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="6" transform="rotate(-90 12 12)" style="fill:none;stroke:var(--gc);stroke-width:12;stroke-linecap:butt;stroke-dasharray:${PIE_C};stroke-dashoffset:${PIE_C};transition:stroke-dashoffset .6s cubic-bezier(.22,1,.36,1)"></circle></svg>`;
     const lum = (hex) => { const m = /^#?([0-9a-f]{6})$/i.exec(hex || ''); if (!m) return 0; const n = parseInt(m[1], 16); return (0.299 * (n >> 16) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255)) / 255; };
     const tickColor = (c) => (lum(c) > 0.62 ? '#1a1a1a' : '#fff');
+    // Animasyonu baştan oynat: zorunlu yeniden düzen (offsetWidth) yerine iki kare sonra sınıfı geri ekler.
+    const restartClass = (node, cls) => { node.classList.remove(cls); requestAnimationFrame(() => requestAnimationFrame(() => node.classList.add(cls))); };
     const dayKey = (d) => `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
     if (!page8State.routineHistory || typeof page8State.routineHistory !== 'object') page8State.routineHistory = {};
     // Grup başına gün kaydı: { [grupAnahtarı]: { 'Y-A-G': { d, t } } } — takvimler bunu okur.
@@ -56481,7 +56483,7 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
       stat.title = t ? `${d}/${t} rutin tamamlandı` : 'Henüz rutin yok';
       requestAnimationFrame(() => requestAnimationFrame(() => { sFg.style.strokeDashoffset = String(SC * (1 - pct / 100)); }));
       stat.classList.toggle('is-complete', !!t && d === t);
-      if (lastDone !== null && d > lastDone) { stat.classList.remove('is-bump'); void stat.offsetWidth; stat.classList.add('is-bump'); }
+      if (lastDone !== null && d > lastDone) restartClass(stat, 'is-bump');
       lastDone = d;
       // Alev (Duolingo mantığı): bugün tamamlandıysa canlı; değilse eski seriyle soluk ve cansız.
       // Seri bir arttığında tutuşma animasyonu ve sayı "pop" oynar.
@@ -56490,7 +56492,7 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
         f.classList.toggle('is-off', !todayFull);
         f.title = todayFull ? `${streak} günlük seri` : `${streak} günlük seri — bugünü tamamla, devam etsin`;
         f.querySelector('.sflame-num').textContent = String(streak);
-        if (prev !== undefined && streak > prev && todayFull) { f.classList.remove('is-pop'); void f.offsetWidth; f.classList.add('is-pop'); }
+        if (prev !== undefined && streak > prev && todayFull) restartClass(f, 'is-pop');
         else if (prev !== undefined && streak < prev) f.classList.remove('is-pop');
         f._streak = streak;
       });
@@ -56634,6 +56636,7 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
       Object.keys(hist).forEach((k) => { const [hy, hm] = k.split('-').map(Number); minOff = Math.min(minOff, (hy - now.getFullYear()) * 12 + (hm - 1 - now.getMonth())); });
       const tot = group.routines.length, dn = group.routines.filter((r) => r.done).length;
       cal.innerHTML = '';
+      cal._ym = isCur ? `${now.getFullYear()}-${now.getMonth()}-${today}` : '';
       const head = el('div', 'p8g-cal-h');
       const prev = el('button', 'p8g-cal-nav'); prev.type = 'button'; prev.setAttribute('aria-label', 'Önceki ay'); prev.innerHTML = ARW.l; prev.disabled = off <= minOff;
       const next = el('button', 'p8g-cal-nav'); next.type = 'button'; next.setAttribute('aria-label', 'Sonraki ay'); next.innerHTML = ARW.r; next.disabled = off >= 0;
@@ -56673,6 +56676,26 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
       }
       cal.appendChild(grid);
     };
+    // Hızlı yol: takvim zaten çizilmişse yalnızca BUGÜNÜN hücresi güncellenir (35 hücreyi baştan kurmak yok).
+    // Başarısız olursa (false) çağıran tam çizime düşer.
+    const paintToday = (card, group, drawToday) => {
+      const cal = card.querySelector('.p8g-cal'); if (!cal) return false;
+      if ((calView.get(grpKey(group)) || 0) !== 0) return true; // başka ay açık: bugün görünmüyor
+      const now = new Date();
+      if (cal._ym !== `${now.getFullYear()}-${now.getMonth()}-${now.getDate()}`) return false;
+      const c = cal.querySelector('.p8g-cal-g .day.is-today'); if (!c) return false;
+      const tot = group.routines.length, dn = group.routines.filter((r) => r.done).length;
+      const full = tot > 0 && dn >= tot, part = dn > 0 && !full;
+      c.classList.toggle('is-full', full); c.classList.toggle('is-part', part);
+      c.title = tot ? `${now.getDate()}: ${dn}/${tot}` : '';
+      if (full) {
+        if (!c.querySelector('svg')) c.innerHTML = CROSS;
+        c.classList.remove('is-draw');
+        if (drawToday) requestAnimationFrame(() => requestAnimationFrame(() => c.classList.add('is-draw')));
+        else c.classList.add('is-draw');
+      } else { c.classList.remove('is-draw'); c.textContent = String(now.getDate()); }
+      return true;
+    };
     // ---- Telefon: "tamamlandı" oyunu (düğme kaybolur → bugünün dairesi belirir, sayı silinir, çarpı çizilir → düğme geri gelir)
     const phoneMQ = window.matchMedia('not all and (min-width: 768px) and (min-height: 600px)');
     const playGame = (card) => {
@@ -56699,6 +56722,7 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
     };
     const openStats = (group) => {
       if (document.querySelector('.p8cal')) return;
+      commitNow();
       const st = groupStats(group);
       const sheet = el('div', 'p8cal'); sheet.style.setProperty('--gc', group.color); sheet.style.setProperty('--gt', tickColor(group.color));
       const bar = el('div', 'p8cal-bar');
@@ -56746,7 +56770,7 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
         const items = group.routines.filter((r) => r.sec === n.dataset.sec);
         n.textContent = items.length ? `${items.filter((r) => r.done).length}/${items.length}` : '';
       });
-      paintCal(card, group, drawToday);
+      if (!paintToday(card, group, drawToday)) paintCal(card, group, drawToday);
     };
 
     // Satırın görünümünü (dolu/kısmi/pasta dilimi/sayaç) yerinde günceller; animasyonlar kesilmez.
@@ -56757,8 +56781,27 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
       const pie = row.querySelector('.p8g-pie circle');
       if (pie) pie.style.strokeDashoffset = String(PIE_C * (1 - k / n));
       const b = row.querySelector('.p8g-stp'); if (b) b.textContent = `${k}/${n}`;
-      if (bump) { const c = row.querySelector('.p8g-c'); c.classList.remove('is-step'); void c.offsetWidth; c.classList.add('is-step'); }
+      if (bump) { const c = row.querySelector('.p8g-c'); restartClass(c, 'is-step'); }
     };
+
+    // Hatırlanacaklar'daki gibi: dokunuşta yalnızca satır sınıfı anında değişir; kayıt (tüm APP_STATE'i
+    // yazar), kart sayaçları, takvim ve üst halka/alev ilk kare çizildikten SONRA tek seferde yapılır.
+    // Art arda hızlı dokunuşlar tek kayıtta birleşir. Sayfa gizlenirken/kapanırken bekleyen iş hemen yazılır.
+    let commitQ = null;
+    const commitNow = () => {
+      if (!commitQ) return;
+      const q = commitQ; commitQ = null; cancelAnimationFrame(q.raf); clearTimeout(q.t);
+      snapshot(); savePage8State();
+      q.cards.forEach((v, c) => paintCard(c, v.group, v.draw));
+      renderHero();
+    };
+    const queueCommit = (card, group, draw) => {
+      if (!commitQ) commitQ = { cards: new Map(), raf: 0, t: 0 };
+      commitQ.cards.set(card, { group, draw });
+      if (!commitQ.raf) commitQ.raf = requestAnimationFrame(() => { if (commitQ) commitQ.t = setTimeout(commitNow, 0); });
+    };
+    document.addEventListener('visibilitychange', () => { if (document.hidden) commitNow(); });
+    window.addEventListener('pagehide', commitNow);
 
     const toggleRoutine = (group, r, row, card) => {
       const n = r.steps || 1;
@@ -56767,17 +56810,15 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
         if (r.done) { r.done = false; r.prog = 0; }
         else { r.prog = (r.prog || 0) + 1; if (r.prog >= n) { r.done = true; r.prog = n; } }
       } else r.done = !r.done;
-      snapshot(); savePage8State();
       paintRow(row, r, n > 1);
-      paintCard(card, group, r.done);
-      renderHero();
+      queueCommit(card, group, r.done);
     };
 
     const stepBack = (group, r, row, card) => {
       const n = r.steps || 1;
       if (r.done) { r.done = false; r.prog = n - 1; } else r.prog = Math.max(0, (r.prog || 0) - 1);
-      snapshot(); savePage8State();
-      paintRow(row, r, false); paintCard(card, group, false); renderHero();
+      paintRow(row, r, false);
+      queueCommit(card, group, false);
     };
 
     const askSteps = (cur) => new Promise((resolve) => {
