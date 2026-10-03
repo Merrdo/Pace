@@ -73230,15 +73230,12 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
       const x = P + col * (cellW + GAP), yy = gy + row * (cellH + GAP), ms = vals[d];
       const future = date.getTime() > nowD.getTime(), has = ms >= MIN_MS, we = date.getDay() === 0 || date.getDay() === 6;
       // Zemin
-      // Bugün özel işaretlenmez: çalışılan günler vurgu rengi yerine tema yazı renginin
-      // tonlarıyla (süreye göre koyulaşan) doldurulur; tüm kartlar ince bir çerçeve alır,
-      // böylece saf siyah/beyaz temalarda da kart alanları net seçilir.
-      const k = has ? Math.min(1, ms / scale) : 0;
+      // Bugün ve çalışılan günler ayrıca vurgulanmaz (çerçeve/renk yok): çalışılan günlerin
+      // sayıları zaten tam opak, çalışılmayanlar soluk. Kartlar tema yazı renginin hafif
+      // bir tonuyla dolar; koyu zeminde (saf siyah) kartların seçilmesi için dolgu biraz artar.
       ctx.fillStyle = C.text;
-      ctx.globalAlpha = has ? (dark ? 0.15 + 0.2 * k : 0.1 + 0.18 * k) : future ? (dark ? 0.05 : 0.03) : (dark ? 0.09 : 0.06);
-      rr(ctx, x, yy, cellW, cellH, 26); ctx.fill();
-      ctx.strokeStyle = C.text; ctx.lineWidth = 2; ctx.globalAlpha = (dark ? 0.14 : 0.07) + (has ? 0.06 : 0) - (future ? 0.04 : 0);
-      rr(ctx, x + 1, yy + 1, cellW - 2, cellH - 2, 25); ctx.stroke(); ctx.globalAlpha = 1;
+      ctx.globalAlpha = future ? (dark ? 0.06 : 0.03) : (dark ? 0.12 : 0.07);
+      rr(ctx, x, yy, cellW, cellH, 26); ctx.fill(); ctx.globalAlpha = 1;
       // Tarih: sol üstte küçük
       ctx.textAlign = 'left'; ctx.font = F(700, 24); ctx.fillStyle = we ? C.weekend : C.text; ctx.globalAlpha = future ? 0.3 : 0.65;
       ctx.fillText(String(d), x + 15, yy + 33);
@@ -73256,7 +73253,7 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
     }
 
     // Pace imzası: sağ alt köşe, soluk
-    ctx.textAlign = 'right'; ctx.fillStyle = C.text; ctx.globalAlpha = 0.42; ctx.font = F(700, 54);
+    ctx.textAlign = 'right'; ctx.fillStyle = C.text; ctx.globalAlpha = 0.85; ctx.font = F(800, 54);
     ctx.fillText('Pace', W - P, H - P + 6); ctx.globalAlpha = 1;
     return new Promise((res) => cv.toBlob(res, 'image/png'));
   }
