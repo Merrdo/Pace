@@ -73332,6 +73332,42 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
     }, 600);
   }
   const shareBtn = $('ztShareBtn');
+  // Görsel önce ekranda önizlenir; oradan "Paylaş" (sistem menüsü) ya da "Kaydet" (indir) seçilir.
+  // Böylece sistem paylaşım menüsü takılırsa bile görsel kaydedilebilir.
+  function showSharePreview(blob, name) {
+    const url = URL.createObjectURL(blob);
+    const ov = document.createElement('div');
+    ov.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.75);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:20px;box-sizing:border-box;';
+    const img = document.createElement('img');
+    img.src = url; img.alt = name;
+    img.style.cssText = 'max-width:100%;max-height:calc(100% - 84px);object-fit:contain;border-radius:14px;';
+    const row = document.createElement('div');
+    row.style.cssText = 'display:flex;gap:10px;flex-wrap:wrap;justify-content:center;';
+    const close = () => { ov.remove(); setTimeout(() => URL.revokeObjectURL(url), 5000); };
+    const mk = (label, primary, fn) => {
+      const b = document.createElement('button');
+      b.type = 'button'; b.textContent = label;
+      b.style.cssText = 'font:700 16px "Baloo 2","Space Grotesk",sans-serif;padding:12px 22px;border-radius:999px;border:0;cursor:pointer;'
+        + (primary ? 'background:var(--accent-color,#ff90e8);color:#16171b;' : 'background:rgba(255,255,255,.16);color:#fff;');
+      b.addEventListener('click', fn); row.appendChild(b);
+    };
+    mk('Kaydet', true, () => {
+      const a = document.createElement('a');
+      a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove();
+    });
+    const file = new File([blob], name, { type: 'image/png' });
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      mk('Paylaş', false, async () => {
+        try { await navigator.share({ files: [file] }); }
+        catch (e) { /* iptal / açılamadı: Kaydet kullanılabilir */ }
+      });
+    }
+    mk('Kapat', false, close);
+    ov.addEventListener('click', (e) => { if (e.target === ov) close(); });
+    ov.append(img, row);
+    document.body.appendChild(ov);
+  }
+
   async function doShare() {
     if (shareBtn.classList.contains('is-busy')) return;
     shareBtn.classList.add('is-busy');
@@ -73339,16 +73375,10 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
       const key = shareKey();
       let blob = shareCache && shareCache.key === key ? shareCache.blob : null;
       if (!blob) { blob = await renderShareBlob(view.y, view.m); shareCache = { key, blob }; }
-      if (!blob) return;
-      const name = `pace-zaman-takvimi-${view.y}-${pad(view.m + 1)}.png`;
-      const file = new File([blob], name, { type: 'image/png' });
-      if (navigator.canShare && navigator.canShare({ files: [file] })) {
-        try { await navigator.share({ files: [file], title: `Zaman Takvimi · ${MONTHS[view.m]} ${view.y}` }); return; }
-        catch (e) { if (e && e.name === 'AbortError') return; /* paylaşım açılamadı: indirmeye düş */ }
-      }
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); a.remove();
-      setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+      if (!blob) { alert('Görsel oluşturulamadı.'); return; }
+      showSharePreview(blob, `pace-zaman-takvimi-${view.y}-${pad(view.m + 1)}.png`);
+    } catch (e) {
+      alert('Görsel oluşturulamadı: ' + (e && e.message ? e.message : e));
     } finally { shareBtn.classList.remove('is-busy'); }
   }
   shareBtn.addEventListener('click', doShare);
