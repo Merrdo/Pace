@@ -71061,192 +71061,211 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
 </script>
 
 <style id="gd-flame-css">
-  /* ===== Gündelik alevi =====
-     Başlığın yanındaki alev: bugünün tüm görevleri bitince yanar, aksi halde sönük (gri) durur.
-     Son görev işaretlenince alev ekranda kocaman belirir, sonra başlıktaki yerine uçar ve orada yanar. */
-  #gdFlame { --gf-h: 32px; flex: 0 0 auto; position: relative; display: block; width: calc(var(--gf-h) * .75); height: var(--gf-h); margin: 0 auto 0 .05rem; padding: 0; border: 0; background: none; color: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent; }
-  #gdFlame::before { content: ""; position: absolute; inset: -8px; }
-  #gdFlame:focus-visible { outline: 2px solid var(--accent-color, #ff90e8); outline-offset: 5px; border-radius: 12px; }
-  #gdFlame::after { content: ""; position: absolute; left: 50%; top: 60%; width: 230%; aspect-ratio: 1; border-radius: 50%; pointer-events: none; opacity: 0; transform: translate(-50%, -50%) scale(.7); transition: opacity .6s ease; background: radial-gradient(circle, rgba(255, 150, 40, .5) 0, rgba(255, 110, 20, .14) 40%, rgba(255, 100, 0, 0) 68%); }
-  #gdFlame.is-lit::after { opacity: .5; }
-  #gdFlame.is-ignite::after { animation: gfHalo .95s cubic-bezier(.2, .7, .2, 1); }
-  #gdFlame .gf { transition: opacity .18s ease; }
-  #gdFlame.is-away .gf { opacity: 0; }
-  #gdFlame.is-ignite .gf { animation: gfPop .85s cubic-bezier(.34, 1.56, .64, 1); }
-  #gdFlame.is-nudge .gf { animation: gfNudge .5s ease; }
-  @media (min-width: 768px) and (min-height: 600px) { #gdFlame { --gf-h: clamp(34px, 1.4vw + 24px, 46px); margin-left: 0; } }
+  /* ===== Gündelik alevi + seri sayacı ===== */
+  #gdFlame { --gf-h: 34px; flex: 0 0 auto; position: relative; display: inline-flex; align-items: center; gap: .3rem; margin: 0 auto 0 .15rem; padding: 0; border: 0; background: none; color: inherit; font: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+  #gdFlame::before { content: ""; position: absolute; inset: -8px -10px; }
+  #gdFlame:focus-visible { outline: 2px solid var(--accent-color, #ff90e8); outline-offset: 4px; border-radius: 14px; }
+  .gf-ic { position: relative; display: block; width: calc(var(--gf-h) * .76); height: var(--gf-h); }
+  .gf-ic::after { content: ""; position: absolute; left: 50%; top: 62%; width: 260%; aspect-ratio: 1; border-radius: 50%; pointer-events: none; opacity: 0; transform: translate(-50%, -50%); transition: opacity .7s ease; background: radial-gradient(circle, rgba(255, 140, 30, .55) 0, rgba(255, 110, 20, .16) 38%, rgba(255, 100, 0, 0) 66%); }
+  #gdFlame.is-lit .gf-ic::after { opacity: .5; }
+  #gdFlame.is-away .gf-ic { opacity: 0; }
+  #gdFlame.is-ignite .gf-ic { animation: gfPop .8s cubic-bezier(.34, 1.56, .64, 1); }
+  #gdFlame.is-nudge .gf-ic { animation: gfNudge .5s ease; }
+  @keyframes gfPop { 0% { transform: scale(.55) rotate(-8deg); } 50% { transform: scale(1.28) rotate(3deg); } 100% { transform: none; } }
+  @keyframes gfNudge { 25% { transform: rotate(-9deg); } 60% { transform: rotate(7deg); } }
+  .gf-num { font-weight: 800; font-size: 1.45rem; line-height: 1; letter-spacing: -.01em; color: color-mix(in srgb, var(--theme-text, #121212) 38%, transparent); transition: color .5s ease; }
+  #gdFlame.is-lit .gf-num { color: #ff8a00; }
+  @media (min-width: 768px) and (min-height: 600px) { #gdFlame { --gf-h: clamp(38px, 1.4vw + 28px, 52px); margin: 0 0 0 .1rem; } .gf-num { font-size: clamp(1.6rem, .9vw + 1.2rem, 2.2rem); } }
 
-  .gf { display: block; width: 100%; height: 100%; overflow: visible; transform-origin: 50% 85%; }
+  .gf { display: block; width: 100%; height: 100%; overflow: visible; }
   .gf * { transform-box: fill-box; transform-origin: 50% 100%; }
-  .gf-base { fill: color-mix(in srgb, var(--theme-text, #121212) 15%, transparent); transition: opacity .35s ease; }
-  .gf-base2 { fill: color-mix(in srgb, var(--theme-text, #121212) 11%, transparent); transition: opacity .35s ease; }
-  .gf-lit { opacity: 0; transform: scale(.72, .5); transition: opacity .35s ease, transform .55s cubic-bezier(.34, 1.56, .64, 1); }
-  .is-lit > .gf .gf-lit, .is-lit .gf-lit { opacity: 1; transform: none; }
-  .is-lit .gf-base, .is-lit .gf-base2 { opacity: 0; }
-  .is-lit .gf { filter: drop-shadow(0 2px 7px rgba(255, 120, 10, .5)); }
-  .is-lit .gf-o { animation: gfO 2.2s ease-in-out infinite; }
-  .is-lit .gf-m { animation: gfM 1.6s ease-in-out infinite; }
-  .is-lit .gf-i { animation: gfI 1.15s ease-in-out infinite; }
-  @keyframes gfO { 0%, 100% { transform: scale(1, 1) skewX(0); } 30% { transform: scale(1.015, 1.05) skewX(-1.8deg); } 62% { transform: scale(.99, .965) skewX(1.6deg); } }
-  @keyframes gfM { 0%, 100% { transform: scale(1); } 40% { transform: scale(1.03, 1.09) skewX(2deg); } 75% { transform: scale(.98, .95) skewX(-1.5deg); } }
-  @keyframes gfI { 0%, 100% { transform: scale(1); opacity: .94; } 50% { transform: scale(1.07, 1.13); opacity: 1; } }
-  @keyframes gfPop { 0% { transform: scale(.4) rotate(-10deg); } 45% { transform: scale(1.32) rotate(4deg); } 75% { transform: scale(.95) rotate(-1deg); } 100% { transform: none; } }
-  @keyframes gfHalo { 0% { opacity: 0; transform: translate(-50%, -50%) scale(.3); } 35% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); } 100% { opacity: .5; transform: translate(-50%, -50%) scale(.7); } }
-  @keyframes gfNudge { 0%, 100% { transform: none; } 25% { transform: rotate(-9deg) scale(.96); } 60% { transform: rotate(7deg) scale(.98); } }
+  .gf-g1 { fill: color-mix(in srgb, var(--theme-text, #121212) 17%, transparent); }
+  .gf-g2 { fill: color-mix(in srgb, var(--theme-text, #121212) 11%, transparent); }
+  .gf-grey, .gf-on { transition: opacity .45s ease, transform .7s cubic-bezier(.34, 1.56, .64, 1); }
+  .gf-on { opacity: 0; transform: scale(.7); }
+  .is-lit .gf-on { opacity: 1; transform: none; }
+  .is-lit .gf-grey { opacity: 0; }
+  .is-lit .gf { filter: drop-shadow(0 2px 6px rgba(255, 110, 10, .45)); }
 
-  /* Tam ekran kutlama */
-  .gf-ov { position: fixed; inset: 0; z-index: 100000; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: clamp(18px, 4vh, 34px); overflow: hidden; opacity: 0; cursor: pointer; -webkit-tap-highlight-color: transparent; background: radial-gradient(120% 90% at 50% 45%, rgba(58, 24, 6, .88), rgba(12, 7, 4, .95) 72%); -webkit-backdrop-filter: blur(14px) saturate(1.2); backdrop-filter: blur(14px) saturate(1.2); }
-  .gf-stage { position: relative; width: min(54vw, 240px); aspect-ratio: 48 / 64; }
-  .gf-glow { position: absolute; left: 50%; top: 55%; width: 340%; aspect-ratio: 1; border-radius: 50%; pointer-events: none; opacity: 0; transform: translate(-50%, -50%); background: radial-gradient(circle, rgba(255, 150, 40, .5) 0, rgba(255, 100, 10, .18) 34%, rgba(255, 80, 0, 0) 68%); }
-  .gf-ring { position: absolute; left: 50%; top: 55%; width: 100%; aspect-ratio: 1; border-radius: 50%; pointer-events: none; opacity: 0; transform: translate(-50%, -50%) scale(.25); border: 2px solid rgba(255, 176, 70, .7); box-shadow: 0 0 24px rgba(255, 140, 30, .45), inset 0 0 24px rgba(255, 140, 30, .25); }
+  /* sayı çarkı */
+  .gn { display: inline-flex; }
+  .gn-c { display: inline-block; height: 1.1em; line-height: 1.1; min-width: .6em; text-align: center; overflow: hidden; font-variant-numeric: tabular-nums; }
+  .gn-s { display: flex; flex-direction: column; will-change: transform; }
+  .gn-s i { display: block; height: 1.1em; font-style: normal; }
+
+  /* tam ekran kutlama */
+  .gf-ov { position: fixed; inset: 0; z-index: 100000; display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 0; overflow: hidden; cursor: pointer; -webkit-tap-highlight-color: transparent; font-family: "Baloo 2", "Space Grotesk", sans-serif; background: radial-gradient(110% 80% at 50% 38%, rgba(70, 28, 6, .9), rgba(14, 8, 5, .96) 70%); -webkit-backdrop-filter: blur(16px) saturate(1.2); backdrop-filter: blur(16px) saturate(1.2); }
+  .gf-stage { position: relative; width: min(52vw, 210px, 27vh); aspect-ratio: 100 / 132; }
+  .gf-glow { position: absolute; left: 50%; top: 58%; width: 360%; aspect-ratio: 1; border-radius: 50%; pointer-events: none; opacity: 0; transform: translate(-50%, -50%); background: radial-gradient(circle, rgba(255, 150, 40, .5) 0, rgba(255, 100, 10, .16) 34%, rgba(255, 80, 0, 0) 66%); }
   .gf-fly { position: absolute; inset: 0; will-change: transform; }
-  .gf-fly .gf { filter: drop-shadow(0 0 26px rgba(255, 130, 20, .7)); }
-  .gf-ember { position: absolute; left: 50%; top: 80%; border-radius: 50%; pointer-events: none; opacity: 0; background: radial-gradient(circle, #fff6c8 0, #ffb938 45%, rgba(255, 120, 20, 0) 72%); }
-  .gf-spark { position: fixed; z-index: 100000; border-radius: 50%; pointer-events: none; opacity: 0; background: radial-gradient(circle, #fff3b8 0, #ffa62b 50%, rgba(255, 120, 20, 0) 75%); }
-  .gf-txt { text-align: center; padding: 0 24px; opacity: 0; font-family: "Baloo 2", "Space Grotesk", sans-serif; }
-  .gf-txt b { display: block; font-size: clamp(30px, 8vw, 44px); font-weight: 800; line-height: 1.1; letter-spacing: -.01em; background: linear-gradient(180deg, #fff, #ffd9a0); -webkit-background-clip: text; background-clip: text; color: transparent; filter: drop-shadow(0 2px 18px rgba(255, 140, 30, .45)); }
-  .gf-txt span { display: block; margin-top: .45rem; font-size: clamp(16px, 4.2vw, 20px); font-weight: 600; color: rgba(255, 236, 210, .78); }
-  @media (prefers-reduced-motion: reduce) {
-    .is-lit .gf-o, .is-lit .gf-m, .is-lit .gf-i, #gdFlame.is-ignite .gf, #gdFlame.is-ignite::after, #gdFlame.is-nudge .gf { animation: none !important; }
-    .gf-lit { transition: opacity .2s ease; transform: none; }
-  }
+  .gf-fly .gf { filter: drop-shadow(0 0 24px rgba(255, 120, 20, .55)); }
+  .gf-fly:not(.is-lit) .gf { filter: none; }
+  .gf-big { margin-top: clamp(6px, 2vh, 18px); font-size: clamp(76px, 12vh, 112px); font-weight: 800; line-height: 1; color: #ffc43d; opacity: 0; }
+  .gf-lab { margin-top: .1rem; font-size: clamp(20px, 5vw, 26px); font-weight: 800; color: #ffd9a0; opacity: 0; }
+  .gf-sub { margin-top: .35rem; padding: 0 28px; text-align: center; font-size: clamp(15px, 4vw, 18px); font-weight: 600; color: rgba(255, 236, 210, .7); opacity: 0; }
+  @media (prefers-reduced-motion: reduce) { #gdFlame.is-lit .gf-ic::after, #gdFlame.is-ignite .gf-ic, #gdFlame.is-nudge .gf-ic { animation: none !important; } .gf-grey, .gf-on { transition: opacity .2s ease; transform: none; } }
 </style>
 <script id="gd-flame-js">
-  // ---------- Gündelik alevi ----------
-  // mountList (Gündelik) her çizimde 'gundelik-progress' olayı yayar: {total, done, user}.
-  // user=true yalnızca kullanıcı bir maddeye dokunduğunda; büyük kutlama yalnızca o zaman çalışır.
-  // Sayfa açılışı, başka cihazdan veri gelmesi ya da gece sıfırlaması alevi sessizce günceller.
+  // ---------- Gündelik alevi + seri ----------
+  // mountList (Gündelik) 'gundelik-progress' yayar: {total, done, user, streak, base}
+  //   base = bugün hariç ardışık gün sayısı, streak = bugün dahil (tümü bitmişse base+1, değilse base).
   (() => {
     const btn = document.getElementById('gdFlame'); if (!btn) return;
     const reduce = () => !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
-    const OUT = 'M24 2C27 11 41 19 41 39C41 53 33.5 62 24 62C14.5 62 7 53 7 39C7 30 10 25 12.5 20.5C13.5 27 16.5 31 21 31.5C22.5 21 22 10 24 2Z';
-    const MID = 'M24 20C25 27 33 31 33 44C33 53 29 59 24 59C19 59 15 53 15 44C15 39 17 36 19 33C19 37 21 39 23 39C22 32 22 25 24 20Z';
-    const INN = 'M24 38C25 42 29 45 29 51C29 56 27 58.5 24 58.5C21 58.5 19 56 19 51C19 45 23 43 24 38Z';
-    const svg = () => '<svg class="gf" viewBox="0 0 48 64" aria-hidden="true">'
-      + '<path class="gf-base" d="' + OUT + '"/><path class="gf-base2" d="' + MID + '"/>'
-      + '<g class="gf-lit"><path class="gf-o" d="' + OUT + '" fill="url(#gfGO)"/><path class="gf-m" d="' + MID + '" fill="url(#gfGM)"/><path class="gf-i" d="' + INN + '" fill="url(#gfGI)"/></g></svg>';
-    document.body.insertAdjacentHTML('beforeend', '<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs>'
-      + '<linearGradient id="gfGO" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffb61f"/><stop offset=".55" stop-color="#ff7a12"/><stop offset="1" stop-color="#ef3a1b"/></linearGradient>'
-      + '<linearGradient id="gfGM" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe55f"/><stop offset="1" stop-color="#ffa520"/></linearGradient>'
-      + '<linearGradient id="gfGI" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fffbe2"/><stop offset="1" stop-color="#ffe27a"/></linearGradient>'
-      + '</defs></svg>');
-    btn.innerHTML = svg();
-
-    const A = (n, kf, o) => n.animate(kf, Object.assign({ fill: 'both' }, o));
     const rnd = (a, b) => a + Math.random() * (b - a);
-    let lit = false, inited = false, busy = false, want = false, counts = { total: 0, done: 0 };
+    const A = (n, kf, o) => n.animate(kf, Object.assign({ fill: 'both' }, o));
 
-    // ---- Başlıktaki küçük alev ----
-    const label = () => btn.setAttribute('aria-label', lit ? 'Alev yanıyor: bugünün tüm görevleri tamam' : 'Alev sönük: bugün tamamlanmamış görev var');
-    function sparks(n) {
-      if (reduce()) return;
-      const r = btn.getBoundingClientRect(), cx = r.left + r.width / 2, cy = r.top + r.height * .55;
-      for (let i = 0; i < n; i++) {
-        const s = document.createElement('i'), sz = rnd(3, 6); s.className = 'gf-spark';
-        s.style.cssText = 'width:' + sz + 'px;height:' + sz + 'px;left:' + (cx - sz / 2) + 'px;top:' + (cy - sz / 2) + 'px';
-        document.body.appendChild(s);
-        const a = rnd(0, Math.PI * 2), d = rnd(22, 46);
-        A(s, [{ opacity: 0, transform: 'translate(0,0) scale(1)' }, { opacity: 1, offset: .2 }, { opacity: 0, transform: 'translate(' + Math.cos(a) * d + 'px,' + (Math.sin(a) * d - 10) + 'px) scale(.2)' }],
-          { duration: rnd(600, 900), easing: 'cubic-bezier(.2,.6,.3,1)' }).onfinish = () => s.remove();
+    // ---- Prosedürel alev: her karede kontrol noktaları dalgalanır, eğri yumuşatılır ----
+    // Elle tasarlanmış kübik Bézier alevler: [başX, başY, (c1x c1y c2x c2y x y)...]. Hareket, TÜM noktalara
+    // (kontrol noktaları dahil) uygulanan tek ve yumuşak bir dalga alanıdır; eğri hiçbir karede bozulmaz.
+    const SH = {
+      o: [58, 4, 63, 24, 90, 44, 93, 80, 95, 104, 78, 128, 50, 128, 22, 128, 5, 106, 7, 80, 8, 62, 12, 44, 19, 26, 22, 40, 27, 55, 36, 55, 45, 55, 46, 32, 58, 4],
+      m: [55, 42, 60, 62, 78, 78, 78, 98, 78, 114, 66, 122, 50, 122, 34, 122, 22, 114, 22, 98, 22, 82, 40, 70, 55, 42],
+      i: [52, 76, 56, 88, 64, 94, 64, 106, 64, 114, 58, 118, 51, 118, 44, 118, 38, 114, 38, 106, 38, 94, 48, 88, 52, 76]
+    };
+    const f1 = (n) => n.toFixed(2);
+    const wave = (a, t, k, ph) => {
+      let d = '';
+      for (let i = 0; i < a.length; i += 2) {
+        let x = a[i], y = a[i + 1];
+        if (k) {
+          const h = Math.max(0, Math.min(1, (126 - y) / 122)), w = Math.pow(h, 1.7);
+          x += w * k * (Math.sin(t * 1.7 + y * .045 + ph) * 1.5 + Math.sin(t * 2.9 + y * .08 + x * .03 + ph * 1.7) * .7);
+          y -= w * w * k * (.55 + Math.sin(t * 2.3 + x * .06 + ph) * .45);
+        }
+        d += (i === 0 ? 'M' : (i === 2 || (i - 2) % 6 === 0) ? 'C' : ' ') + f1(x) + ' ' + f1(y) + (i === 0 ? '' : ' ');
       }
-    }
-    function apply(on, anim) {
-      lit = on; btn.classList.toggle('is-lit', on); label();
-      if (on && anim) {
-        btn.classList.remove('is-ignite'); void btn.offsetWidth; btn.classList.add('is-ignite');
-        setTimeout(() => btn.classList.remove('is-ignite'), 1000);
-        sparks(9);
+      return d.replace(/\s+/g, ' ').trim() + 'Z';
+    };
+    const GL = 'M16 100C10 82 15 66 26 56C23 66 22 78 23 92C23 97 21 101 16 100Z';
+    const svg = () => '<svg class="gf" viewBox="0 0 100 132" aria-hidden="true">'
+      + '<g class="gf-grey"><path class="gf-g1" d="' + wave(SH.o, 0, 0, 0) + '"/><path class="gf-g2" d="' + wave(SH.m, 0, 0, 0) + '"/></g>'
+      + '<g class="gf-on"><path class="o" fill="url(#gfGO)"/><ellipse cx="50" cy="108" rx="38" ry="22" fill="url(#gfGR)"/><path class="m" fill="url(#gfGM)"/><path class="i" fill="url(#gfGI)"/><path d="' + GL + '" fill="url(#gfGL)"/></g></svg>';
+    document.body.insertAdjacentHTML('beforeend', '<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs>'
+      + '<linearGradient id="gfGO" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffb02e"/><stop offset=".5" stop-color="#ff7a0d"/><stop offset="1" stop-color="#ea3318"/></linearGradient>'
+      + '<linearGradient id="gfGM" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe45c"/><stop offset="1" stop-color="#ffa21f"/></linearGradient>'
+      + '<linearGradient id="gfGI" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fffbe6"/><stop offset="1" stop-color="#ffe680"/></linearGradient>'
+      + '<radialGradient id="gfGR"><stop offset="0" stop-color="#ffd447" stop-opacity=".75"/><stop offset="1" stop-color="#ffb02e" stop-opacity="0"/></radialGradient><linearGradient id="gfGL" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe9a8" stop-opacity=".55"/><stop offset="1" stop-color="#ffe9a8" stop-opacity="0"/></linearGradient>'
+      + '</defs></svg>');
+    const insts = new Set(); let raf = 0;
+    const draw = (it, t) => {
+      it.o.setAttribute('d', wave(SH.o, t, 4.2, it.ph));
+      it.m.setAttribute('d', wave(SH.m, t, 3.4, it.ph + 1.3));
+      it.i.setAttribute('d', wave(SH.i, t, 2.6, it.ph + 2.6));
+    };
+    const loop = (ms) => {
+      raf = 0; const t = ms / 1000;
+      insts.forEach((it) => { if (!it.root.isConnected) { insts.delete(it); return; } if (it.root.getClientRects().length && (it.always || it.root.closest('.is-lit'))) draw(it, t + it.ph); });
+      if (insts.size && !document.hidden && !reduce()) raf = requestAnimationFrame(loop);
+    };
+    const kick = () => { if (!raf && insts.size && !document.hidden && !reduce()) raf = requestAnimationFrame(loop); };
+    document.addEventListener('visibilitychange', kick);
+    const mkFlame = (host, always) => {
+      host.innerHTML = svg();
+      const it = { root: host, always: !!always, ph: rnd(0, 6), o: host.querySelector('.o'), m: host.querySelector('.m'), i: host.querySelector('.i') };
+      draw(it, 0); insts.add(it); kick(); return it;
+    };
+
+    // ---- Sayı çarkı: değişen basamaklar dikey kayar ----
+    const roll = (el, from, to, o) => {
+      o = o || {}; const a = String(from), b = String(to), L = Math.max(a.length, b.length);
+      const pa = a.padStart(L, '\u00a0'), pb = b.padStart(L, '\u00a0'), up = to >= from;
+      el.innerHTML = ''; el.dataset.v = to; el.setAttribute('aria-label', String(to));
+      for (let i = 0; i < L; i++) {
+        const col = document.createElement('span'), s = document.createElement('span'); col.className = 'gn-c'; s.className = 'gn-s';
+        const same = pa[i] === pb[i] || !o.anim || reduce();
+        const mk = (ch) => { const x = document.createElement('i'); x.textContent = ch; return x; };
+        if (same) s.appendChild(mk(pb[i]));
+        else { if (up) s.append(mk(pa[i]), mk(pb[i])); else s.append(mk(pb[i]), mk(pa[i]));
+          const k = up ? [{ transform: 'translateY(0)' }, { transform: 'translateY(-1.1em)' }] : [{ transform: 'translateY(-1.1em)' }, { transform: 'translateY(0)' }];
+          const an = A(s, k, { duration: o.dur || 800, delay: (o.delay || 0) + (L - 1 - i) * 70, easing: 'cubic-bezier(.2,1,.3,1)' });
+          an.onfinish = () => { s.innerHTML = ''; s.appendChild(mk(pb[i])); an.cancel(); }; }
+        col.appendChild(s); el.appendChild(col);
       }
-    }
+    };
+
+    // ---- Başlıktaki alev + sayı ----
+    btn.innerHTML = '<span class="gf-ic"></span><span class="gf-num gn" aria-live="polite"></span>';
+    const ic = btn.querySelector('.gf-ic'), numEl = btn.querySelector('.gf-num');
+    mkFlame(ic, false);
+    let lit = false, shown = 0, inited = false, busy = false, cur = { total: 0, done: 0, streak: 0, base: 0 };
+    const label = () => btn.setAttribute('aria-label', (lit ? 'Alev yanıyor' : 'Alev sönük') + ', seri ' + shown + ' gün');
+    function setLit(on) { lit = on; btn.classList.toggle('is-lit', on); label(); }
+    function ignite() { btn.classList.remove('is-ignite'); void btn.offsetWidth; btn.classList.add('is-ignite'); setTimeout(() => btn.classList.remove('is-ignite'), 900); }
+    function setShown(n, anim) { if (n === shown && inited) return; roll(numEl, shown, n, { anim: anim && inited }); shown = n; label(); }
     let te = null, tt = null;
     const toast = (msg) => {
-      if (te) te.remove(); clearTimeout(tt);
-      te = document.createElement('div'); te.className = 'n-toast';
-      const sp = document.createElement('span'); sp.textContent = msg; te.appendChild(sp);
-      document.body.appendChild(te); tt = setTimeout(() => te && te.remove(), 2600);
+      if (te) te.remove(); clearTimeout(tt); te = document.createElement('div'); te.className = 'n-toast';
+      const sp = document.createElement('span'); sp.textContent = msg; te.appendChild(sp); document.body.appendChild(te); tt = setTimeout(() => te && te.remove(), 2600);
     };
 
     // ---- Tam ekran kutlama ----
-    function celebrate() {
-      busy = true;
-      const rm = reduce(), t0 = performance.now();
-      const total = counts.total;
-      const ov = document.createElement('div'); ov.className = 'gf-ov'; ov.setAttribute('role', 'dialog'); ov.setAttribute('aria-label', 'Tüm görevler tamamlandı');
-      ov.innerHTML = '<div class="gf-stage"><div class="gf-glow"></div><div class="gf-ring"></div><div class="gf-ring"></div><div class="gf-ring"></div><div class="gf-fly is-lit">' + svg() + '</div></div>'
-        + '<div class="gf-txt"><b>Alevin yandı</b><span></span></div>';
-      ov.querySelector('.gf-txt span').textContent = total === 1 ? 'Bugünkü görevi tamamladın' : 'Bugünkü ' + total + ' görevin hepsi tamam';
+    function celebrate(from, to, relight) {
+      busy = true; const rm = reduce(), t0 = performance.now();
+      const ov = document.createElement('div'); ov.className = 'gf-ov'; ov.setAttribute('role', 'dialog'); ov.setAttribute('aria-label', 'Seri: ' + to + ' gün');
+      ov.innerHTML = '<div class="gf-stage"><div class="gf-glow"></div><div class="gf-fly"></div></div>'
+        + '<div class="gf-big gn"></div><div class="gf-lab">günlük seri</div><div class="gf-sub"></div>';
+      ov.querySelector('.gf-sub').textContent = cur.total === 1 ? 'Bugünkü görevi tamamladın' : 'Bugünkü ' + cur.total + ' görevin hepsi tamam';
       document.body.appendChild(ov);
-      const stage = ov.querySelector('.gf-stage'), fly = ov.querySelector('.gf-fly'), glow = ov.querySelector('.gf-glow'), txt = ov.querySelector('.gf-txt'), rings = ov.querySelectorAll('.gf-ring');
-      const r = btn.getBoundingClientRect(), sr = fly.getBoundingClientRect();
+      const q = (s) => ov.querySelector(s), stage = q('.gf-stage'), fly = q('.gf-fly'), glow = q('.gf-glow'), big = q('.gf-big'), lab = q('.gf-lab'), sub = q('.gf-sub');
+      mkFlame(fly, true); roll(big, from, from);
+      const r = ic.getBoundingClientRect(), sr = fly.getBoundingClientRect();
       const dx = (r.left + r.width / 2) - (sr.left + sr.width / 2), dy = (r.top + r.height / 2) - (sr.top + sr.height / 2), sc = r.width / sr.width;
       btn.classList.add('is-away');
-      if (navigator.vibrate) navigator.vibrate([14, 70, 24]);
-
+      const burst = () => {
+        fly.classList.add('is-lit'); if (navigator.vibrate) navigator.vibrate([16, 60, 28]);
+        if (rm) return;
+        A(fly, [{ transform: 'scale(1)' }, { transform: 'scale(1.2)', offset: .35 }, { transform: 'scale(1)' }], { duration: 800, easing: 'cubic-bezier(.3,1.4,.5,1)' });
+      };
       A(ov, [{ opacity: 0 }, { opacity: 1 }], { duration: rm ? 200 : 380, easing: 'ease-out' });
+      if (relight) fly.classList.add('is-lit');
       if (rm) {
-        A(txt, [{ opacity: 0 }, { opacity: 1 }], { duration: 250, delay: 100 });
+        fly.classList.add('is-lit'); roll(big, to, to); [big, lab, sub].forEach((n) => A(n, [{ opacity: 0 }, { opacity: 1 }], { duration: 250, delay: 120 }));
       } else {
-        A(fly, [
-          { transform: 'translate(' + dx + 'px,' + dy + 'px) scale(' + sc + ')', opacity: .15, easing: 'cubic-bezier(.2,.9,.25,1)' },
-          { transform: 'translate(0,0) scale(1.17)', opacity: 1, offset: .62, easing: 'cubic-bezier(.4,0,.2,1)' },
-          { transform: 'translate(0,0) scale(1)', opacity: 1 }
-        ], { duration: 1050, easing: 'linear' });
-        A(glow, [{ opacity: 0, transform: 'translate(-50%,-50%) scale(.3)' }, { opacity: 1, transform: 'translate(-50%,-50%) scale(1)' }], { duration: 1100, delay: 200, easing: 'cubic-bezier(.2,.8,.2,1)' });
-        A(glow, [{ transform: 'translate(-50%,-50%) scale(1)' }, { transform: 'translate(-50%,-50%) scale(1.09)' }], { duration: 1700, delay: 1300, iterations: Infinity, direction: 'alternate', easing: 'ease-in-out', fill: 'forwards' });
-        rings.forEach((g, i) => A(g, [
-          { opacity: 0, transform: 'translate(-50%,-50%) scale(.25)' },
-          { opacity: .85, offset: .2 },
-          { opacity: 0, transform: 'translate(-50%,-50%) scale(2.7)' }
-        ], { duration: 1350, delay: 420 + i * 330, easing: 'cubic-bezier(.2,.6,.3,1)' }));
-        const w = stage.offsetWidth, h = stage.offsetHeight;
-        for (let i = 0; i < 30; i++) {
-          const e = document.createElement('i'), sz = rnd(3, 8); e.className = 'gf-ember';
-          e.style.cssText = 'width:' + sz + 'px;height:' + sz + 'px;margin:' + (-sz / 2) + 'px 0 0 ' + (-sz / 2) + 'px';
-          stage.appendChild(e);
-          const x0 = rnd(-.28, .28) * w, x1 = x0 + rnd(-.45, .45) * w, y1 = -h * rnd(.55, 1.5);
-          A(e, [{ opacity: 0, transform: 'translate(' + x0 + 'px,0) scale(1)' }, { opacity: 1, offset: .15 }, { opacity: 0, transform: 'translate(' + x1 + 'px,' + y1 + 'px) scale(.2)' }],
-            { duration: rnd(1500, 3000), delay: rnd(300, 2000), easing: 'cubic-bezier(.2,.5,.4,1)' });
-        }
-        A(txt, [{ opacity: 0, transform: 'translateY(18px)', filter: 'blur(8px)' }, { opacity: 1, transform: 'none', filter: 'blur(0)' }], { duration: 750, delay: 620, easing: 'cubic-bezier(.22,1,.36,1)' });
+        A(fly, [{ transform: 'translate(' + dx + 'px,' + dy + 'px) scale(' + sc + ')', opacity: .2, easing: 'cubic-bezier(.2,.9,.25,1)' }, { transform: 'translate(0,0) scale(1.1)', opacity: 1, offset: .6, easing: 'ease-out' }, { transform: 'none', opacity: 1 }], { duration: 950 });
+        A(glow, [{ opacity: 0, transform: 'translate(-50%,-50%) scale(.3)' }, { opacity: 1, transform: 'translate(-50%,-50%) scale(1)' }], { duration: 1200, delay: relight ? 200 : 950, easing: 'cubic-bezier(.2,.8,.2,1)' });
+        A(glow, [{ transform: 'translate(-50%,-50%) scale(1)' }, { transform: 'translate(-50%,-50%) scale(1.08)' }], { duration: 1800, delay: 2300, iterations: Infinity, direction: 'alternate', easing: 'ease-in-out' });
+        A(big, [{ opacity: 0, transform: 'translateY(16px) scale(.8)' }, { opacity: 1, transform: 'none' }], { duration: 600, delay: 650, easing: 'cubic-bezier(.22,1,.36,1)' });
+        A(big, [{ transform: 'scale(1)' }, { transform: 'scale(1.18)', offset: .4 }, { transform: 'scale(1)' }], { duration: 750, delay: 1650, easing: 'cubic-bezier(.3,1.4,.5,1)' });
+        A(lab, [{ opacity: 0, transform: 'translateY(10px)' }, { opacity: 1, transform: 'none' }], { duration: 600, delay: 1500, easing: 'cubic-bezier(.22,1,.36,1)' });
+        A(sub, [{ opacity: 0, transform: 'translateY(10px)' }, { opacity: 1, transform: 'none' }], { duration: 600, delay: 1750, easing: 'cubic-bezier(.22,1,.36,1)' });
+        if (!relight) setTimeout(burst, 950); else setTimeout(burst, 600);
+        setTimeout(() => roll(big, from, to, { anim: from !== to, dur: 950 }), 1500);
       }
-
       let closed = false, timer = null;
       const onKey = (e) => { if (e.key === 'Escape' || e.key === 'Enter' || e.key === ' ') close(); };
       function finish() {
-        ov.remove(); document.removeEventListener('keydown', onKey);
-        busy = false; btn.classList.remove('is-away');
-        apply(want, true);
+        ov.remove(); document.removeEventListener('keydown', onKey); busy = false; btn.classList.remove('is-away');
+        setLit(cur.total > 0 && cur.done === cur.total); ignite(); setShown(cur.done === cur.total && cur.total > 0 ? cur.streak : cur.base, true);
       }
       function close() {
         if (closed) return; closed = true; clearTimeout(timer);
         if (rm) { A(ov, [{ opacity: 1 }, { opacity: 0 }], { duration: 220 }); setTimeout(finish, 230); return; }
-        A(txt, [{ opacity: 1, transform: 'none' }, { opacity: 0, transform: 'translateY(-10px)' }], { duration: 260, easing: 'ease-in' });
-        A(glow, [{ opacity: 1 }, { opacity: 0 }], { duration: 400, fill: 'forwards' });
-        A(fly, [{ transform: 'translate(0,0) scale(1)', opacity: 1 }, { transform: 'translate(' + dx + 'px,' + dy + 'px) scale(' + sc + ')', opacity: 1 }], { duration: 640, easing: 'cubic-bezier(.6,0,.3,1)' });
+        [big, lab, sub].forEach((n) => A(n, [{ opacity: 1 }, { opacity: 0 }], { duration: 260, easing: 'ease-in' }));
+        A(glow, [{ opacity: 1 }, { opacity: 0 }], { duration: 400 });
+        A(fly, [{ transform: 'none' }, { transform: 'translate(' + dx + 'px,' + dy + 'px) scale(' + sc + ')' }], { duration: 650, easing: 'cubic-bezier(.6,0,.3,1)' });
         A(ov, [{ opacity: 1 }, { opacity: 0 }], { duration: 380, delay: 300, easing: 'ease-in' });
         setTimeout(finish, 700);
       }
-      ov.addEventListener('click', () => { if (performance.now() - t0 > 900) close(); });
+      ov.addEventListener('click', () => { if (performance.now() - t0 > 1100) close(); });
       document.addEventListener('keydown', onKey);
-      timer = setTimeout(close, rm ? 1800 : 3300);
+      timer = setTimeout(close, rm ? 1800 : 4600);
     }
 
-    // ---- Olaylar ----
     window.addEventListener('gundelik-progress', (e) => {
-      const d = e.detail || {}; counts = { total: d.total | 0, done: d.done | 0 };
-      const all = counts.total > 0 && counts.done === counts.total;
-      want = all;
-      if (!inited) { inited = true; apply(all, false); return; }
-      if (busy || all === lit) return;
-      if (all && d.user) celebrate(); else apply(all, all);
+      const d = e.detail || {}; cur = { total: d.total | 0, done: d.done | 0, streak: d.streak | 0, base: d.base | 0 };
+      const all = cur.total > 0 && cur.done === cur.total, num = all ? cur.streak : cur.base;
+      if (!inited) { setLit(all); setShown(num, false); inited = true; return; }
+      if (busy) return;
+      if (all && !lit && d.user) { celebrate(cur.base, cur.streak, false); return; }
+      if (all !== lit) { setLit(all); if (all) ignite(); }
+      setShown(num, true);
     });
     btn.addEventListener('click', () => {
       if (busy) return;
-      if (lit) { celebrate(); return; }
-      btn.classList.remove('is-nudge'); void btn.offsetWidth; btn.classList.add('is-nudge');
-      setTimeout(() => btn.classList.remove('is-nudge'), 600);
-      const rest = counts.total - counts.done;
-      toast(counts.total === 0 ? 'Alevi yakmak için önce görev ekle' : 'Alevi yakmak için ' + rest + ' görev kaldı');
+      if (lit) { celebrate(cur.streak, cur.streak, true); return; }
+      btn.classList.remove('is-nudge'); void btn.offsetWidth; btn.classList.add('is-nudge'); setTimeout(() => btn.classList.remove('is-nudge'), 600);
+      toast(cur.total === 0 ? 'Alevi yakmak için önce görev ekle' : 'Alevi yakmak için ' + (cur.total - cur.done) + ' görev kaldı');
     });
     label();
   })();
@@ -71281,11 +71300,19 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
     let st = APP_STATE[cfg.key];
     if (!st || !Array.isArray(st.groups)) st = { groups: [{ id: gid(), name: cfg.defName, color: pal[0], items: [] }] };
     const save = () => saveAppState({ [cfg.key]: st });
-    // Gündelik alevi için ilerleme bildirimi (cfg.progress): user=true yalnızca madde işaretlenince.
+    // Gündelik alevi + seri (cfg.progress). st.flameDays = tüm görevlerin bittiği günler (yyyy-aa-gg).
+    // Bugün yalnızca şu an hepsi yapılmışsa listede durur; seri = bugünden (ya da dünden) geriye ardışık gün sayısı.
+    const isoD = (d) => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
     const emitProg = (user) => {
       if (!cfg.progress) return;
       let t = 0, d = 0; st.groups.forEach((g) => g.items.forEach((i) => { t++; if (i.done) d++; }));
-      window.dispatchEvent(new CustomEvent('gundelik-progress', { detail: { total: t, done: d, user: !!user } }));
+      const all = t > 0 && d === t, now = new Date(), today = isoD(now);
+      let days = Array.isArray(st.flameDays) ? st.flameDays : [], has = days.indexOf(today) >= 0;
+      if (all && !has) { days = days.concat(today); st.flameDays = days.slice(-800); save(); }
+      else if (!all && has) { st.flameDays = days.filter((x) => x !== today); save(); }
+      const set = new Set(st.flameDays || []), c = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
+      let base = 0; while (set.has(isoD(c))) { base++; c.setDate(c.getDate() - 1); }
+      window.dispatchEvent(new CustomEvent('gundelik-progress', { detail: { total: t, done: d, user: !!user, base, streak: all ? base + 1 : base } }));
     };
     const list = $(P + 'List');
     let addOpen = null, newOpen = false, firstPaint = true, newAnim = false;
