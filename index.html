@@ -41345,17 +41345,7 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
   <section class="page" id="page-8" aria-label="Gündelik">
     <div class="hl-top">
       <h1 class="hl-title" id="gdTitle" role="button" tabindex="0" title="Hatırlanacaklar'a geç">Gündelik</h1>
-      <button type="button" class="hl-auto" id="gdAuto" role="switch" aria-checked="false" aria-label="Yapılanları otomatik sil" title="Yapılanları otomatik sil">
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <defs><mask id="gdAutoMask" maskUnits="userSpaceOnUse" x="-4" y="-4" width="32" height="32"><rect x="-4" y="-4" width="32" height="32" fill="#fff"/><path class="ad-slash-gap" d="M4 4l16 16" stroke="#000" stroke-width="6"/></mask></defs>
-          <g mask="url(#gdAutoMask)">
-            <circle class="ad-ring" cx="10.5" cy="13.5" r="7"/>
-            <path class="ad-check" d="M7.2 13.8l2.4 2.4 4.3-4.9"/>
-            <path class="ad-spark" d="M19 1.6Q19.4 4.6 22.4 5Q19.4 5.4 19 8.4Q18.6 5.4 15.6 5Q18.6 4.6 19 1.6Z"/>
-          </g>
-          <path class="ad-slash" d="M4 4l16 16"/>
-        </svg>
-      </button>
+      <button type="button" class="gd-flame" id="gdFlame" aria-label="Alev sönük: bugün tamamlanmamış görev var"></button>
       <button type="button" class="hl-new" id="gdNew" aria-label="Yeni liste"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
       <button type="button" class="gk-switch" id="gdSwitch" aria-label="Hatırlanacaklar sayfasına geç"><svg class="gk-switch-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7h11l-3-3M17 17H6l3 3"/></svg><span class="gk-switch-lbls"><span class="gk-switch-lbl gk-switch-lbl-a">Hatırlanacaklar</span><span class="gk-switch-lbl gk-switch-lbl-b" aria-hidden="true">Gündelik</span></span></button>
     </div>
@@ -41703,6 +41693,7 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
     :is(#page-hatirla, #page-8) .hl-top { max-width: 1320px; margin: 0 auto; padding: calc(44px + env(safe-area-inset-top)) 40px 1rem; justify-content: flex-start; gap: .9rem; }
     :is(#page-hatirla, #page-8) .hl-title { font-weight: 700; font-size: clamp(29.1px, 1.36vw + 22.44px, 40.8px); letter-spacing: -.01em; line-height: inherit; cursor: default; pointer-events: none; }
     :is(#page-hatirla, #page-8) .hl-auto { margin-left: auto; width: 2.7rem; height: 2.7rem; }
+    #page-8 .gk-switch { margin-left: auto; }
     :is(#page-hatirla, #page-8) .hl-scroll { max-width: 1320px; margin: 0 auto; padding: .6rem 40px calc(130px + env(safe-area-inset-bottom)); -webkit-mask-image: none; mask-image: none; }
     :is(#page-hatirla, #page-8) #hlList, :is(#page-hatirla, #page-8) #gdList { column-width: 360px; column-gap: 1.1rem; }
     :is(#page-hatirla, #page-8) .hl-g { break-inside: avoid; -webkit-column-break-inside: avoid; margin: 0 0 1.1rem; padding: 1.3rem 1.5rem 1rem; border-radius: 2rem; background: color-mix(in srgb, var(--theme-text, #121212) 6%, transparent); }
@@ -71069,6 +71060,198 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
   })();
 </script>
 
+<style id="gd-flame-css">
+  /* ===== Gündelik alevi =====
+     Başlığın yanındaki alev: bugünün tüm görevleri bitince yanar, aksi halde sönük (gri) durur.
+     Son görev işaretlenince alev ekranda kocaman belirir, sonra başlıktaki yerine uçar ve orada yanar. */
+  #gdFlame { --gf-h: 32px; flex: 0 0 auto; position: relative; display: block; width: calc(var(--gf-h) * .75); height: var(--gf-h); margin: 0 auto 0 .05rem; padding: 0; border: 0; background: none; color: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+  #gdFlame::before { content: ""; position: absolute; inset: -8px; }
+  #gdFlame:focus-visible { outline: 2px solid var(--accent-color, #ff90e8); outline-offset: 5px; border-radius: 12px; }
+  #gdFlame::after { content: ""; position: absolute; left: 50%; top: 60%; width: 230%; aspect-ratio: 1; border-radius: 50%; pointer-events: none; opacity: 0; transform: translate(-50%, -50%) scale(.7); transition: opacity .6s ease; background: radial-gradient(circle, rgba(255, 150, 40, .5) 0, rgba(255, 110, 20, .14) 40%, rgba(255, 100, 0, 0) 68%); }
+  #gdFlame.is-lit::after { opacity: .5; }
+  #gdFlame.is-ignite::after { animation: gfHalo .95s cubic-bezier(.2, .7, .2, 1); }
+  #gdFlame .gf { transition: opacity .18s ease; }
+  #gdFlame.is-away .gf { opacity: 0; }
+  #gdFlame.is-ignite .gf { animation: gfPop .85s cubic-bezier(.34, 1.56, .64, 1); }
+  #gdFlame.is-nudge .gf { animation: gfNudge .5s ease; }
+  @media (min-width: 768px) and (min-height: 600px) { #gdFlame { --gf-h: clamp(34px, 1.4vw + 24px, 46px); margin-left: 0; } }
+
+  .gf { display: block; width: 100%; height: 100%; overflow: visible; transform-origin: 50% 85%; }
+  .gf * { transform-box: fill-box; transform-origin: 50% 100%; }
+  .gf-base { fill: color-mix(in srgb, var(--theme-text, #121212) 15%, transparent); transition: opacity .35s ease; }
+  .gf-base2 { fill: color-mix(in srgb, var(--theme-text, #121212) 11%, transparent); transition: opacity .35s ease; }
+  .gf-lit { opacity: 0; transform: scale(.72, .5); transition: opacity .35s ease, transform .55s cubic-bezier(.34, 1.56, .64, 1); }
+  .is-lit > .gf .gf-lit, .is-lit .gf-lit { opacity: 1; transform: none; }
+  .is-lit .gf-base, .is-lit .gf-base2 { opacity: 0; }
+  .is-lit .gf { filter: drop-shadow(0 2px 7px rgba(255, 120, 10, .5)); }
+  .is-lit .gf-o { animation: gfO 2.2s ease-in-out infinite; }
+  .is-lit .gf-m { animation: gfM 1.6s ease-in-out infinite; }
+  .is-lit .gf-i { animation: gfI 1.15s ease-in-out infinite; }
+  @keyframes gfO { 0%, 100% { transform: scale(1, 1) skewX(0); } 30% { transform: scale(1.015, 1.05) skewX(-1.8deg); } 62% { transform: scale(.99, .965) skewX(1.6deg); } }
+  @keyframes gfM { 0%, 100% { transform: scale(1); } 40% { transform: scale(1.03, 1.09) skewX(2deg); } 75% { transform: scale(.98, .95) skewX(-1.5deg); } }
+  @keyframes gfI { 0%, 100% { transform: scale(1); opacity: .94; } 50% { transform: scale(1.07, 1.13); opacity: 1; } }
+  @keyframes gfPop { 0% { transform: scale(.4) rotate(-10deg); } 45% { transform: scale(1.32) rotate(4deg); } 75% { transform: scale(.95) rotate(-1deg); } 100% { transform: none; } }
+  @keyframes gfHalo { 0% { opacity: 0; transform: translate(-50%, -50%) scale(.3); } 35% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); } 100% { opacity: .5; transform: translate(-50%, -50%) scale(.7); } }
+  @keyframes gfNudge { 0%, 100% { transform: none; } 25% { transform: rotate(-9deg) scale(.96); } 60% { transform: rotate(7deg) scale(.98); } }
+
+  /* Tam ekran kutlama */
+  .gf-ov { position: fixed; inset: 0; z-index: 100000; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: clamp(18px, 4vh, 34px); overflow: hidden; opacity: 0; cursor: pointer; -webkit-tap-highlight-color: transparent; background: radial-gradient(120% 90% at 50% 45%, rgba(58, 24, 6, .88), rgba(12, 7, 4, .95) 72%); -webkit-backdrop-filter: blur(14px) saturate(1.2); backdrop-filter: blur(14px) saturate(1.2); }
+  .gf-stage { position: relative; width: min(54vw, 240px); aspect-ratio: 48 / 64; }
+  .gf-glow { position: absolute; left: 50%; top: 55%; width: 340%; aspect-ratio: 1; border-radius: 50%; pointer-events: none; opacity: 0; transform: translate(-50%, -50%); background: radial-gradient(circle, rgba(255, 150, 40, .5) 0, rgba(255, 100, 10, .18) 34%, rgba(255, 80, 0, 0) 68%); }
+  .gf-ring { position: absolute; left: 50%; top: 55%; width: 100%; aspect-ratio: 1; border-radius: 50%; pointer-events: none; opacity: 0; transform: translate(-50%, -50%) scale(.25); border: 2px solid rgba(255, 176, 70, .7); box-shadow: 0 0 24px rgba(255, 140, 30, .45), inset 0 0 24px rgba(255, 140, 30, .25); }
+  .gf-fly { position: absolute; inset: 0; will-change: transform; }
+  .gf-fly .gf { filter: drop-shadow(0 0 26px rgba(255, 130, 20, .7)); }
+  .gf-ember { position: absolute; left: 50%; top: 80%; border-radius: 50%; pointer-events: none; opacity: 0; background: radial-gradient(circle, #fff6c8 0, #ffb938 45%, rgba(255, 120, 20, 0) 72%); }
+  .gf-spark { position: fixed; z-index: 100000; border-radius: 50%; pointer-events: none; opacity: 0; background: radial-gradient(circle, #fff3b8 0, #ffa62b 50%, rgba(255, 120, 20, 0) 75%); }
+  .gf-txt { text-align: center; padding: 0 24px; opacity: 0; font-family: "Baloo 2", "Space Grotesk", sans-serif; }
+  .gf-txt b { display: block; font-size: clamp(30px, 8vw, 44px); font-weight: 800; line-height: 1.1; letter-spacing: -.01em; background: linear-gradient(180deg, #fff, #ffd9a0); -webkit-background-clip: text; background-clip: text; color: transparent; filter: drop-shadow(0 2px 18px rgba(255, 140, 30, .45)); }
+  .gf-txt span { display: block; margin-top: .45rem; font-size: clamp(16px, 4.2vw, 20px); font-weight: 600; color: rgba(255, 236, 210, .78); }
+  @media (prefers-reduced-motion: reduce) {
+    .is-lit .gf-o, .is-lit .gf-m, .is-lit .gf-i, #gdFlame.is-ignite .gf, #gdFlame.is-ignite::after, #gdFlame.is-nudge .gf { animation: none !important; }
+    .gf-lit { transition: opacity .2s ease; transform: none; }
+  }
+</style>
+<script id="gd-flame-js">
+  // ---------- Gündelik alevi ----------
+  // mountList (Gündelik) her çizimde 'gundelik-progress' olayı yayar: {total, done, user}.
+  // user=true yalnızca kullanıcı bir maddeye dokunduğunda; büyük kutlama yalnızca o zaman çalışır.
+  // Sayfa açılışı, başka cihazdan veri gelmesi ya da gece sıfırlaması alevi sessizce günceller.
+  (() => {
+    const btn = document.getElementById('gdFlame'); if (!btn) return;
+    const reduce = () => !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+    const OUT = 'M24 2C27 11 41 19 41 39C41 53 33.5 62 24 62C14.5 62 7 53 7 39C7 30 10 25 12.5 20.5C13.5 27 16.5 31 21 31.5C22.5 21 22 10 24 2Z';
+    const MID = 'M24 20C25 27 33 31 33 44C33 53 29 59 24 59C19 59 15 53 15 44C15 39 17 36 19 33C19 37 21 39 23 39C22 32 22 25 24 20Z';
+    const INN = 'M24 38C25 42 29 45 29 51C29 56 27 58.5 24 58.5C21 58.5 19 56 19 51C19 45 23 43 24 38Z';
+    const svg = () => '<svg class="gf" viewBox="0 0 48 64" aria-hidden="true">'
+      + '<path class="gf-base" d="' + OUT + '"/><path class="gf-base2" d="' + MID + '"/>'
+      + '<g class="gf-lit"><path class="gf-o" d="' + OUT + '" fill="url(#gfGO)"/><path class="gf-m" d="' + MID + '" fill="url(#gfGM)"/><path class="gf-i" d="' + INN + '" fill="url(#gfGI)"/></g></svg>';
+    document.body.insertAdjacentHTML('beforeend', '<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs>'
+      + '<linearGradient id="gfGO" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffb61f"/><stop offset=".55" stop-color="#ff7a12"/><stop offset="1" stop-color="#ef3a1b"/></linearGradient>'
+      + '<linearGradient id="gfGM" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe55f"/><stop offset="1" stop-color="#ffa520"/></linearGradient>'
+      + '<linearGradient id="gfGI" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fffbe2"/><stop offset="1" stop-color="#ffe27a"/></linearGradient>'
+      + '</defs></svg>');
+    btn.innerHTML = svg();
+
+    const A = (n, kf, o) => n.animate(kf, Object.assign({ fill: 'both' }, o));
+    const rnd = (a, b) => a + Math.random() * (b - a);
+    let lit = false, inited = false, busy = false, want = false, counts = { total: 0, done: 0 };
+
+    // ---- Başlıktaki küçük alev ----
+    const label = () => btn.setAttribute('aria-label', lit ? 'Alev yanıyor: bugünün tüm görevleri tamam' : 'Alev sönük: bugün tamamlanmamış görev var');
+    function sparks(n) {
+      if (reduce()) return;
+      const r = btn.getBoundingClientRect(), cx = r.left + r.width / 2, cy = r.top + r.height * .55;
+      for (let i = 0; i < n; i++) {
+        const s = document.createElement('i'), sz = rnd(3, 6); s.className = 'gf-spark';
+        s.style.cssText = 'width:' + sz + 'px;height:' + sz + 'px;left:' + (cx - sz / 2) + 'px;top:' + (cy - sz / 2) + 'px';
+        document.body.appendChild(s);
+        const a = rnd(0, Math.PI * 2), d = rnd(22, 46);
+        A(s, [{ opacity: 0, transform: 'translate(0,0) scale(1)' }, { opacity: 1, offset: .2 }, { opacity: 0, transform: 'translate(' + Math.cos(a) * d + 'px,' + (Math.sin(a) * d - 10) + 'px) scale(.2)' }],
+          { duration: rnd(600, 900), easing: 'cubic-bezier(.2,.6,.3,1)' }).onfinish = () => s.remove();
+      }
+    }
+    function apply(on, anim) {
+      lit = on; btn.classList.toggle('is-lit', on); label();
+      if (on && anim) {
+        btn.classList.remove('is-ignite'); void btn.offsetWidth; btn.classList.add('is-ignite');
+        setTimeout(() => btn.classList.remove('is-ignite'), 1000);
+        sparks(9);
+      }
+    }
+    let te = null, tt = null;
+    const toast = (msg) => {
+      if (te) te.remove(); clearTimeout(tt);
+      te = document.createElement('div'); te.className = 'n-toast';
+      const sp = document.createElement('span'); sp.textContent = msg; te.appendChild(sp);
+      document.body.appendChild(te); tt = setTimeout(() => te && te.remove(), 2600);
+    };
+
+    // ---- Tam ekran kutlama ----
+    function celebrate() {
+      busy = true;
+      const rm = reduce(), t0 = performance.now();
+      const total = counts.total;
+      const ov = document.createElement('div'); ov.className = 'gf-ov'; ov.setAttribute('role', 'dialog'); ov.setAttribute('aria-label', 'Tüm görevler tamamlandı');
+      ov.innerHTML = '<div class="gf-stage"><div class="gf-glow"></div><div class="gf-ring"></div><div class="gf-ring"></div><div class="gf-ring"></div><div class="gf-fly is-lit">' + svg() + '</div></div>'
+        + '<div class="gf-txt"><b>Alevin yandı</b><span></span></div>';
+      ov.querySelector('.gf-txt span').textContent = total === 1 ? 'Bugünkü görevi tamamladın' : 'Bugünkü ' + total + ' görevin hepsi tamam';
+      document.body.appendChild(ov);
+      const stage = ov.querySelector('.gf-stage'), fly = ov.querySelector('.gf-fly'), glow = ov.querySelector('.gf-glow'), txt = ov.querySelector('.gf-txt'), rings = ov.querySelectorAll('.gf-ring');
+      const r = btn.getBoundingClientRect(), sr = fly.getBoundingClientRect();
+      const dx = (r.left + r.width / 2) - (sr.left + sr.width / 2), dy = (r.top + r.height / 2) - (sr.top + sr.height / 2), sc = r.width / sr.width;
+      btn.classList.add('is-away');
+      if (navigator.vibrate) navigator.vibrate([14, 70, 24]);
+
+      A(ov, [{ opacity: 0 }, { opacity: 1 }], { duration: rm ? 200 : 380, easing: 'ease-out' });
+      if (rm) {
+        A(txt, [{ opacity: 0 }, { opacity: 1 }], { duration: 250, delay: 100 });
+      } else {
+        A(fly, [
+          { transform: 'translate(' + dx + 'px,' + dy + 'px) scale(' + sc + ')', opacity: .15, easing: 'cubic-bezier(.2,.9,.25,1)' },
+          { transform: 'translate(0,0) scale(1.17)', opacity: 1, offset: .62, easing: 'cubic-bezier(.4,0,.2,1)' },
+          { transform: 'translate(0,0) scale(1)', opacity: 1 }
+        ], { duration: 1050, easing: 'linear' });
+        A(glow, [{ opacity: 0, transform: 'translate(-50%,-50%) scale(.3)' }, { opacity: 1, transform: 'translate(-50%,-50%) scale(1)' }], { duration: 1100, delay: 200, easing: 'cubic-bezier(.2,.8,.2,1)' });
+        A(glow, [{ transform: 'translate(-50%,-50%) scale(1)' }, { transform: 'translate(-50%,-50%) scale(1.09)' }], { duration: 1700, delay: 1300, iterations: Infinity, direction: 'alternate', easing: 'ease-in-out', fill: 'forwards' });
+        rings.forEach((g, i) => A(g, [
+          { opacity: 0, transform: 'translate(-50%,-50%) scale(.25)' },
+          { opacity: .85, offset: .2 },
+          { opacity: 0, transform: 'translate(-50%,-50%) scale(2.7)' }
+        ], { duration: 1350, delay: 420 + i * 330, easing: 'cubic-bezier(.2,.6,.3,1)' }));
+        const w = stage.offsetWidth, h = stage.offsetHeight;
+        for (let i = 0; i < 30; i++) {
+          const e = document.createElement('i'), sz = rnd(3, 8); e.className = 'gf-ember';
+          e.style.cssText = 'width:' + sz + 'px;height:' + sz + 'px;margin:' + (-sz / 2) + 'px 0 0 ' + (-sz / 2) + 'px';
+          stage.appendChild(e);
+          const x0 = rnd(-.28, .28) * w, x1 = x0 + rnd(-.45, .45) * w, y1 = -h * rnd(.55, 1.5);
+          A(e, [{ opacity: 0, transform: 'translate(' + x0 + 'px,0) scale(1)' }, { opacity: 1, offset: .15 }, { opacity: 0, transform: 'translate(' + x1 + 'px,' + y1 + 'px) scale(.2)' }],
+            { duration: rnd(1500, 3000), delay: rnd(300, 2000), easing: 'cubic-bezier(.2,.5,.4,1)' });
+        }
+        A(txt, [{ opacity: 0, transform: 'translateY(18px)', filter: 'blur(8px)' }, { opacity: 1, transform: 'none', filter: 'blur(0)' }], { duration: 750, delay: 620, easing: 'cubic-bezier(.22,1,.36,1)' });
+      }
+
+      let closed = false, timer = null;
+      const onKey = (e) => { if (e.key === 'Escape' || e.key === 'Enter' || e.key === ' ') close(); };
+      function finish() {
+        ov.remove(); document.removeEventListener('keydown', onKey);
+        busy = false; btn.classList.remove('is-away');
+        apply(want, true);
+      }
+      function close() {
+        if (closed) return; closed = true; clearTimeout(timer);
+        if (rm) { A(ov, [{ opacity: 1 }, { opacity: 0 }], { duration: 220 }); setTimeout(finish, 230); return; }
+        A(txt, [{ opacity: 1, transform: 'none' }, { opacity: 0, transform: 'translateY(-10px)' }], { duration: 260, easing: 'ease-in' });
+        A(glow, [{ opacity: 1 }, { opacity: 0 }], { duration: 400, fill: 'forwards' });
+        A(fly, [{ transform: 'translate(0,0) scale(1)', opacity: 1 }, { transform: 'translate(' + dx + 'px,' + dy + 'px) scale(' + sc + ')', opacity: 1 }], { duration: 640, easing: 'cubic-bezier(.6,0,.3,1)' });
+        A(ov, [{ opacity: 1 }, { opacity: 0 }], { duration: 380, delay: 300, easing: 'ease-in' });
+        setTimeout(finish, 700);
+      }
+      ov.addEventListener('click', () => { if (performance.now() - t0 > 900) close(); });
+      document.addEventListener('keydown', onKey);
+      timer = setTimeout(close, rm ? 1800 : 3300);
+    }
+
+    // ---- Olaylar ----
+    window.addEventListener('gundelik-progress', (e) => {
+      const d = e.detail || {}; counts = { total: d.total | 0, done: d.done | 0 };
+      const all = counts.total > 0 && counts.done === counts.total;
+      want = all;
+      if (!inited) { inited = true; apply(all, false); return; }
+      if (busy || all === lit) return;
+      if (all && d.user) celebrate(); else apply(all, all);
+    });
+    btn.addEventListener('click', () => {
+      if (busy) return;
+      if (lit) { celebrate(); return; }
+      btn.classList.remove('is-nudge'); void btn.offsetWidth; btn.classList.add('is-nudge');
+      setTimeout(() => btn.classList.remove('is-nudge'), 600);
+      const rest = counts.total - counts.done;
+      toast(counts.total === 0 ? 'Alevi yakmak için önce görev ekle' : 'Alevi yakmak için ' + rest + ' görev kaldı');
+    });
+    label();
+  })();
+</script>
+
 <script>
   // ---------- Gündelik + Hatırlanacaklar: AYNI liste/kart yapısı ----------
   // İki sayfa da aynı koddan (mountList) çalışır; yalnızca veri anahtarı farklıdır:
@@ -71098,6 +71281,12 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
     let st = APP_STATE[cfg.key];
     if (!st || !Array.isArray(st.groups)) st = { groups: [{ id: gid(), name: cfg.defName, color: pal[0], items: [] }] };
     const save = () => saveAppState({ [cfg.key]: st });
+    // Gündelik alevi için ilerleme bildirimi (cfg.progress): user=true yalnızca madde işaretlenince.
+    const emitProg = (user) => {
+      if (!cfg.progress) return;
+      let t = 0, d = 0; st.groups.forEach((g) => g.items.forEach((i) => { t++; if (i.done) d++; }));
+      window.dispatchEvent(new CustomEvent('gundelik-progress', { detail: { total: t, done: d, user: !!user } }));
+    };
     const list = $(P + 'List');
     let addOpen = null, newOpen = false, firstPaint = true, newAnim = false;
     const softCloseNew = () => {
@@ -71226,11 +71415,11 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
     // KAPALI iken her şey eskisi gibi: işaretli maddeler listede kalır.
     // Anahtarı açmak önceden işaretli olanlara dokunmaz; yalnızca bundan sonra işaretlenenleri etkiler.
     const autoBtn = $(P + 'Auto'), autoTimers = new Map();
-    const paintAuto = () => { const on = !!st.autoDelete; autoBtn.classList.toggle('is-on', on); autoBtn.setAttribute('aria-checked', on ? 'true' : 'false'); };
+    const paintAuto = () => { if (!autoBtn) return; const on = !!st.autoDelete; autoBtn.classList.toggle('is-on', on); autoBtn.setAttribute('aria-checked', on ? 'true' : 'false'); };
     paintAuto();
     function autoSweep(g, it) {
       clearTimeout(autoTimers.get(it.id)); autoTimers.delete(it.id);
-      if (!st.autoDelete || !it.done) return;
+      if (!autoBtn || !st.autoDelete || !it.done) return;
       autoTimers.set(it.id, setTimeout(() => {
         autoTimers.delete(it.id);
         if (!st.autoDelete || !it.done || g.items.indexOf(it) < 0) return;
@@ -71243,7 +71432,7 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
         if (row) window.gkAnim.leave(row, rm); else rm();
       }, 750));
     }
-    autoBtn.addEventListener('click', () => {
+    if (autoBtn) autoBtn.addEventListener('click', () => {
       st.autoDelete = !st.autoDelete;
       if (!st.autoDelete) { autoTimers.forEach((t) => clearTimeout(t)); autoTimers.clear(); }
       paintAuto(); save();
@@ -71253,6 +71442,7 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
     // ---- Çizim ----
     function render() { window.gkAnim.flip(list, renderNow); }
     function renderNow() {
+      emitProg(false);
       closeMenu(); list.innerHTML = '';
       const nf = $(P + 'NewForm'); nf.innerHTML = '';
       if (newOpen) { const f = mkForm('Yeni liste adı (örn. Market)', (v) => { newOpen = false; st.groups.push({ id: gid(), name: v, color: pal[st.groups.length % pal.length], items: [] }); addOpen = st.groups[st.groups.length - 1].id; save(); render(); focusIn(); }, () => softCloseNew()); f.classList.add('hl-newform'); const sw = el('div', 'soft-wrap'); sw.appendChild(f); nf.appendChild(sw); if (newAnim) { newAnim = false; window.softOpen(sw); } }
@@ -71280,7 +71470,7 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
         g.items.forEach((it) => {
           const row = el('div', 'hl-r' + (it.done ? ' is-done' : '')), c = el('span', 'hl-c'), t = el('span', 'hl-t'); t.appendChild(el('span', 'hl-tt', it.text));
           c.innerHTML = TICK; row.append(c, t); row.dataset.fk = 'hr:' + it.id;
-          row.addEventListener('click', () => { it.done = !it.done; row.classList.toggle('is-done', it.done); save(); upd(); autoSweep(g, it); });
+          row.addEventListener('click', () => { it.done = !it.done; row.classList.toggle('is-done', it.done); save(); upd(); autoSweep(g, it); emitProg(true); });
           hold(row, (x, y) => openMenu(row, [
             { ic: IC.copy, title: 'Kopyala', sub: 'Metni panoya al', fn: async () => { const ok = await window.gundelikCopyText(it.text); toast(ok ? 'Kopyalandı' : 'Kopyalanamadı'); } },
             { ic: IC.edit, title: 'Metni Düzenle', sub: 'Maddenin adını değiştir', fn: () => editInline(t, it.text, (v) => { it.text = v; save(); }, true) },
@@ -71302,6 +71492,34 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
       softCloseNew();
     }, true);
 
+    // ---- Gece 00.00'da sıfırlama (yalnızca cfg.dailyReset: Gündelik) ----
+    // Tüm maddelerin işareti kalkar; liste ve maddeler kalır. Sayfa/uygulama açık kalsa da,
+    // arka planda kapalı kalıp sonra açılsa da (odaklanma, görünür olma, sayfa geri yükleme) kontrol edilir.
+    if (cfg.dailyReset) {
+      const today = () => { const d = new Date(); return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`; };
+      const rollover = () => {
+        const t = today();
+        if (st.resetDate === t) return;
+        const first = !st.resetDate;
+        st.resetDate = t;
+        let changed = false;
+        st.groups.forEach((g) => g.items.forEach((it) => { if (it.done) { it.done = false; changed = true; } }));
+        autoTimers.forEach((x) => clearTimeout(x)); autoTimers.clear();
+        if (first && !changed) { save(); return; }
+        save(); render();
+      };
+      const armMidnight = () => {
+        const n = new Date();
+        const ms = new Date(n.getFullYear(), n.getMonth(), n.getDate() + 1, 0, 0, 1).getTime() - n.getTime();
+        setTimeout(() => { rollover(); armMidnight(); }, Math.max(1000, ms));
+      };
+      document.addEventListener('visibilitychange', () => { if (!document.hidden) rollover(); });
+      window.addEventListener('focus', rollover);
+      window.addEventListener('pageshow', rollover);
+      armMidnight();
+      rollover();
+    }
+
     // Alt çubuk (#gundelikFabAddBtn) köprüsü için dışarıya açılan işlevler.
     const newListPopup = () => window.gkNewPopup({
       title: 'Yeni liste', placeholder: 'Liste adı (örn. Market)',
@@ -71321,7 +71539,7 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
   };
 
   const hlInst = mountList({ p: 'hl', page: 'page-hatirla', key: 'hatirla', other: 'page-8', defName: 'Genel', navBack: true });
-  const gdInst = mountList({ p: 'gd', page: 'page-8', key: 'gundelik', other: 'page-hatirla', defName: 'Günlük', navBack: false });
+  const gdInst = mountList({ p: 'gd', page: 'page-8', key: 'gundelik', other: 'page-hatirla', defName: 'Günlük', navBack: false, dailyReset: true, progress: true });
 
   // Sayfa bağımsız parçalar: sol alttaki Geri / geçiş düğmeleri ve sağ alttaki "+" (hangi sayfa açıksa ona ekler).
   (() => {
