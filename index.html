@@ -38604,12 +38604,14 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
 .zt-day:not(:disabled):active { transform: scale(0.92); }
 .zt-day:disabled { cursor: default; opacity: 0.3; }
 .zt-d-num { position: absolute; top: 4px; left: 6px; font-weight: 700; font-size: 0.6rem; line-height: 1; opacity: 0.6; }
-.zt-d-time { display: flex; flex-direction: column; align-items: center; justify-content: center; max-width: 100%; margin-top: 0.55rem; line-height: 1; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.zt-d-time { display: flex; flex-direction: column; align-items: center; justify-content: center; max-width: 100%; line-height: 1; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .zt-d-time b { font-weight: 800; font-size: 1.02rem; letter-spacing: -0.04em; line-height: 1; }
 .zt-d-time b.is-long { font-size: 0.86rem; letter-spacing: -0.06em; }
 .zt-d-time small { font-weight: 700; font-size: 0.52rem; line-height: 1; margin-top: 2px; opacity: 0.6; letter-spacing: 0.02em; }
 .zt-day.is-weekend .zt-d-num { color: var(--weekend-color, #ff6b81); opacity: 0.85; }
-.zt-day.is-empty-day .zt-d-num { top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 0.85rem; opacity: 0.4; }
+.zt-day.is-empty-day { background: color-mix(in srgb, var(--theme-text, #1a1a1a) 7%, transparent); }
+.zt-day:disabled { background: color-mix(in srgb, var(--theme-text, #1a1a1a) 10%, transparent); }
+.zt-d-zero { font-weight: 700; font-size: 0.85rem; line-height: 1; opacity: 0.3; }
 .zt-day.is-today { border-color: var(--accent-color, #ff90e8); }
 .zt-day.is-selected { background: transparent; border-color: transparent; color: #16171b; }
 .zt-day.is-selected .zt-d-num { color: #16171b; }
@@ -38685,8 +38687,7 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
   .zt-day { aspect-ratio: 1 / 0.82; border-radius: 16px; }
   .zt-bubble { border-radius: 16px; }
   .zt-d-num { top: 7px; left: 10px; font-size: 0.74rem; }
-  .zt-day.is-empty-day .zt-d-num { font-size: 1.05rem; }
-  .zt-d-time { margin-top: 0.7rem; }
+  .zt-d-zero { font-size: 1.15rem; }
   .zt-d-time b { font-size: 1.45rem; }
   .zt-d-time b.is-long { font-size: 1.3rem; }
   .zt-d-time small { font-size: 0.68rem; margin-top: 3px; }
@@ -72955,7 +72956,7 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
       b.style.setProperty('--p', (ms >= MIN_MS ? Math.round(14 + 46 * Math.min(1, ms / scale)) : 0) + '%');
       if (date.getTime() > today.getTime()) b.disabled = true;
       b.setAttribute('aria-label', `${d} ${MONTHS[m]}, ${ms >= MIN_MS ? fmtLong(ms) : 'çalışma yok'}`);
-      b.innerHTML = `<span class="zt-d-num">${d}</span>${cellHtml(ms)}`;
+      b.innerHTML = `<span class="zt-d-num">${d}</span>${cellHtml(ms) || (date.getTime() <= today.getTime() ? '<span class="zt-d-zero">0dk</span>' : '')}`;
       grid.appendChild(b);
     }
     grid.style.setProperty('--dir', dir || 0);
@@ -73144,7 +73145,7 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
     let total = 0, studied = 0, best = 0;
     for (let d = 1; d <= dim; d += 1) { if (vals[d] >= MIN_MS) { total += vals[d]; studied += 1; if (vals[d] > best) best = vals[d]; } }
     const scale = Math.max(best, 3 * 3600000);
-    const topH = 410, footH = 110;
+    const topH = 370, footH = 110;
     const H = Math.max(1350, topH + 56 + rows * (cellH + GAP) + footH);
 
     const cv = document.createElement('canvas'); cv.width = W; cv.height = H;
@@ -73152,19 +73153,23 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
     const F = (w, sz) => `${w} ${sz}px "Baloo 2", "Space Grotesk", sans-serif`;
     ctx.fillStyle = C.bg; ctx.fillRect(0, 0, W, H);
 
-    // Başlık
-    ctx.fillStyle = C.text; ctx.globalAlpha = 0.5; ctx.font = F(700, 26);
-    if ('letterSpacing' in ctx) ctx.letterSpacing = '4px';
-    ctx.fillText('ZAMAN TAKVİMİ', P, P + 34);
-    if ('letterSpacing' in ctx) ctx.letterSpacing = '0px';
+    // Başlık: ay + yıl (üstteki "ZAMAN TAKVİMİ" yazısı kaldırıldı)
     ctx.globalAlpha = 1; ctx.font = F(800, 104);
-    ctx.fillStyle = C.text; ctx.fillText(MONTHS[m], P, P + 150);
+    ctx.fillStyle = C.text; ctx.fillText(MONTHS[m], P, P + 110);
     const mw = ctx.measureText(MONTHS[m] + ' ').width;
-    ctx.fillStyle = C.accent; ctx.fillText(String(y), P + mw, P + 150);
+    ctx.fillStyle = C.accent; ctx.fillText(String(y), P + mw, P + 110);
+
+    // Bugünün tarihi: ızgarada işaretlenmez; sağ üstte küçük, eğik yazı.
+    { const nt = new Date();
+      ctx.save(); ctx.textAlign = 'right'; ctx.fillStyle = C.text; ctx.globalAlpha = 0.55;
+      ctx.font = `italic 600 30px "Baloo 2", "Space Grotesk", sans-serif`;
+      if ('letterSpacing' in ctx) ctx.letterSpacing = '1px';
+      ctx.fillText(`${nt.getDate()} ${MONTHS[nt.getMonth()]} ${nt.getFullYear()}`, W - P, P + 38);
+      ctx.restore(); }
 
     // Özet (3 sütun)
     const stats = [['Aylık toplam', fmtLong(total)], ['Günlük ortalama', fmtLong(studied ? total / studied : 0)], ['En uzun gün', fmtLong(best)]];
-    const sy = P + 230, colW = (W - 2 * P) / 3;
+    const sy = P + 190, colW = (W - 2 * P) / 3;
     stats.forEach((st, i) => {
       const x = P + i * colW + (i ? 28 : 0);
       ctx.fillStyle = C.text; ctx.globalAlpha = 0.55; ctx.font = F(600, 26); ctx.fillText(st[0], x, sy);
@@ -73192,7 +73197,6 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
       if (has) { ctx.globalAlpha = (14 + 46 * Math.min(1, ms / scale)) / 100; ctx.fillStyle = C.accent; }
       else { ctx.globalAlpha = future ? 0.03 : 0.07; ctx.fillStyle = C.text; }
       rr(ctx, x, yy, cellW, cellH, 26); ctx.fill(); ctx.globalAlpha = 1;
-      if (date.getTime() === nowD.getTime()) { ctx.strokeStyle = C.accent; ctx.lineWidth = 5; rr(ctx, x + 2.5, yy + 2.5, cellW - 5, cellH - 5, 24); ctx.stroke(); }
       // Tarih: sol üstte küçük
       ctx.textAlign = 'left'; ctx.font = F(700, 24); ctx.fillStyle = we ? C.weekend : C.text; ctx.globalAlpha = future ? 0.3 : 0.65;
       ctx.fillText(String(d), x + 15, yy + 33);
@@ -73201,10 +73205,10 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
       if (has) {
         const mins = Math.floor(ms / 60000), h = Math.floor(mins / 60), mm = mins % 60;
         const txt = h ? `${h}:${pad(mm)}` : String(mm);
-        ctx.globalAlpha = 1; fit(ctx, txt, 800, 52, cellW - 22); ctx.fillText(txt, cx, yy + 100);
-        ctx.globalAlpha = 0.6; ctx.font = F(700, 22); ctx.fillText(h ? 'sa' : 'dk', cx, yy + 132);
+        ctx.globalAlpha = 1; fit(ctx, txt, 800, 52, cellW - 22); ctx.fillText(txt, cx, yy + 80);
+        ctx.globalAlpha = 0.6; ctx.font = F(700, 22); ctx.fillText(h ? 'sa' : 'dk', cx, yy + 112);
       } else if (!future) {
-        ctx.globalAlpha = 0.3; fit(ctx, '0dk', 700, 38, cellW - 22); ctx.fillText('0dk', cx, yy + 98);
+        ctx.globalAlpha = 0.3; fit(ctx, '0dk', 700, 38, cellW - 22); ctx.fillText('0dk', cx, yy + 88);
       }
       ctx.globalAlpha = 1;
     }
@@ -73218,7 +73222,7 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
   // Önceden hazırlanan görsel (paylaş dokunuşu anında hazır olsun; bazı tarayıcılar
   // paylaşımı yalnızca dokunuşun hemen ardından açar).
   let shareCache = null, shareTimer = null;
-  const shareKey = () => { const C = colors(); return `${view.y}-${view.m}|${monthValues(view.y, view.m).join(',')}|${C.bg}|${C.text}|${C.accent}|${weekStartsSun()}`; };
+  const shareKey = () => { const C = colors(); return `${view.y}-${view.m}|${monthValues(view.y, view.m).join(',')}|${C.bg}|${C.text}|${C.accent}|${weekStartsSun()}|${new Date().toDateString()}`; };
   function prepareShare() {
     clearTimeout(shareTimer);
     shareTimer = setTimeout(async () => {
