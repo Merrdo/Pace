@@ -73375,23 +73375,150 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
     }, 600);
   }
   const shareBtn = $('ztShareBtn');
+  // Paylaş: önce "Görsel oluşturuluyor…" iskeleti belirir, görsel hazır olunca yumuşakça açılır.
+  // Sonra "Kaydet" (indir) ve "Paylaş" (sistem menüsü) seçenekleri gelir; sistem menüsü takılırsa Kaydet kullanılabilir.
+  function ensureShareCss() {
+    if (document.getElementById('ztShareCss')) return;
+    const st = document.createElement('style'); st.id = 'ztShareCss';
+    st.textContent = `
+.ztp-ov{position:fixed;inset:0;z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;
+  padding:calc(20px + env(safe-area-inset-top,0px)) 20px calc(20px + env(safe-area-inset-bottom,0px));box-sizing:border-box;
+  background:rgba(0,0,0,0);-webkit-backdrop-filter:blur(0px);backdrop-filter:blur(0px);
+  transition:background .5s ease,backdrop-filter .5s ease,-webkit-backdrop-filter .5s ease,opacity .32s ease;
+  font-family:"Baloo 2","Space Grotesk",sans-serif;}
+.ztp-ov.is-in{background:rgba(0,0,0,.74);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);}
+.ztp-ov.is-out{opacity:0;}
+.ztp-stage{display:grid;place-items:center;max-width:100%;}
+.ztp-stage>*{grid-area:1/1;}
+.ztp-skel{position:relative;overflow:hidden;display:flex;flex-direction:column;gap:18px;box-sizing:border-box;padding:7%;
+  width:min(100%,calc((100vh - 140px) * .771));width:min(100%,calc((100dvh - 140px) * .771));aspect-ratio:1080/1400;
+  border-radius:26px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);
+  box-shadow:0 30px 80px -30px rgba(0,0,0,.7);
+  animation:ztpRise .7s cubic-bezier(.16,1,.3,1) both;
+  transition:opacity .5s ease,transform .6s cubic-bezier(.16,1,.3,1),filter .5s ease;}
+.ztp-skel::after{content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(105deg,transparent 32%,rgba(255,255,255,.16) 50%,transparent 68%);
+  transform:translateX(-100%);animation:ztpShimmer 1.8s ease-in-out infinite;}
+.ztp-skel.is-done{opacity:0;transform:scale(1.04);filter:blur(8px);pointer-events:none;}
+.ztp-skel-head,.ztp-skel-stats{display:flex;gap:14px;}
+.ztp-skel-head b{display:block;height:34px;border-radius:12px;background:rgba(255,255,255,.14);}
+.ztp-skel-head b:first-child{width:46%;}
+.ztp-skel-head b:last-child{width:22%;background:color-mix(in srgb,var(--accent-color,#ff90e8) 55%,transparent);}
+.ztp-skel-stats b{display:block;flex:1;height:26px;border-radius:10px;background:rgba(255,255,255,.09);}
+.ztp-skel-grid{flex:1;min-height:0;display:grid;grid-template-columns:repeat(7,1fr);grid-template-rows:repeat(5,1fr);gap:9px;}
+.ztp-skel-grid i{border-radius:16%;background:rgba(255,255,255,.09);animation:ztpPulse 1.7s ease-in-out infinite;animation-delay:calc(var(--i) * 45ms);}
+.ztp-skel-label{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);white-space:nowrap;z-index:1;
+  display:flex;align-items:center;padding:12px 22px;border-radius:999px;font-weight:700;font-size:17px;color:#fff;
+  background:rgba(20,20,24,.55);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);
+  border:1px solid rgba(255,255,255,.14);animation:ztpBreath 2.2s ease-in-out infinite;}
+.ztp-dots{display:inline-flex;margin-left:3px;}
+.ztp-dots i{display:inline-block;width:4px;height:4px;margin-left:3px;border-radius:50%;background:currentColor;animation:ztpDot 1.2s ease-in-out infinite;}
+.ztp-dots i:nth-child(2){animation-delay:.15s;}.ztp-dots i:nth-child(3){animation-delay:.3s;}
+.ztp-imgwrap{position:relative;display:grid;max-width:100%;overflow:hidden;border-radius:26px;
+  box-shadow:0 40px 90px -30px rgba(0,0,0,.8),0 0 0 1px rgba(255,255,255,.1);
+  opacity:0;transform:translateY(22px) scale(.93);filter:blur(14px);pointer-events:none;
+  transition:opacity .75s cubic-bezier(.16,1,.3,1),transform .9s cubic-bezier(.16,1,.3,1),filter .7s ease;}
+.ztp-imgwrap.is-ready{opacity:1;transform:none;filter:none;pointer-events:auto;}
+.ztp-imgwrap::after{content:"";position:absolute;inset:0;pointer-events:none;opacity:0;
+  background:linear-gradient(105deg,transparent 35%,rgba(255,255,255,.28) 50%,transparent 65%);transform:translateX(-120%);}
+.ztp-imgwrap.is-ready::after{animation:ztpSheen 1.2s cubic-bezier(.4,0,.2,1) .3s both;}
+.ztp-img{display:block;max-width:100%;max-height:calc(100vh - 140px);max-height:calc(100dvh - 140px);width:auto;height:auto;
+  -webkit-user-select:none;user-select:none;}
+.ztp-row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;min-height:48px;}
+.ztp-btn{font:700 16px "Baloo 2","Space Grotesk",sans-serif;padding:12px 24px;border-radius:999px;border:0;cursor:pointer;
+  -webkit-tap-highlight-color:transparent;background:rgba(255,255,255,.16);color:#fff;
+  opacity:0;transform:translateY(16px);pointer-events:none;}
+.ztp-btn.is-primary{background:var(--accent-color,#ff90e8);color:#16171b;}
+.ztp-row.is-ready .ztp-btn{opacity:1;transform:none;pointer-events:auto;
+  transition:opacity .5s ease,transform .6s cubic-bezier(.34,1.56,.64,1);transition-delay:calc(.45s + var(--i) * 80ms);}
+.ztp-row.is-ready .ztp-btn:active{transform:scale(.94);transition-delay:0s;transition-duration:.12s;}
+@keyframes ztpRise{from{opacity:0;transform:translateY(18px) scale(.96);}}
+@keyframes ztpShimmer{to{transform:translateX(100%);}}
+@keyframes ztpPulse{0%,100%{opacity:.45;}50%{opacity:1;}}
+@keyframes ztpBreath{0%,100%{opacity:.85;}50%{opacity:1;}}
+@keyframes ztpDot{0%,80%,100%{transform:translateY(0);opacity:.4;}40%{transform:translateY(-4px);opacity:1;}}
+@keyframes ztpSheen{0%{opacity:0;transform:translateX(-120%);}20%{opacity:1;}100%{opacity:0;transform:translateX(120%);}}
+@media (prefers-reduced-motion: reduce){
+  .ztp-ov,.ztp-ov *{animation:none !important;transition-duration:.01s !important;transition-delay:0s !important;}
+  .ztp-skel::after{display:none;}
+}`;
+    document.head.appendChild(st);
+  }
+
+  function openSharePreview() {
+    ensureShareCss();
+    const ov = document.createElement('div');
+    ov.className = 'ztp-ov';
+    ov.setAttribute('role', 'dialog'); ov.setAttribute('aria-modal', 'true'); ov.setAttribute('aria-label', 'Takvim görseli');
+    let cells = '';
+    for (let i = 0; i < 35; i += 1) cells += `<i style="--i:${i}"></i>`;
+    ov.innerHTML = '<div class="ztp-stage"><div class="ztp-skel"><div class="ztp-skel-head"><b></b><b></b></div>'
+      + '<div class="ztp-skel-stats"><b></b><b></b><b></b></div><div class="ztp-skel-grid">' + cells + '</div>'
+      + '<div class="ztp-skel-label" aria-live="polite">Görsel oluşturuluyor<span class="ztp-dots"><i></i><i></i><i></i></span></div></div>'
+      + '<div class="ztp-imgwrap"></div></div><div class="ztp-row"></div>';
+    const stage = ov.querySelector('.ztp-stage'), skel = ov.querySelector('.ztp-skel');
+    const wrap = ov.querySelector('.ztp-imgwrap'), row = ov.querySelector('.ztp-row');
+    let url = null, closed = false;
+    const close = () => {
+      if (closed) return; closed = true;
+      ov.classList.remove('is-in'); ov.classList.add('is-out');
+      setTimeout(() => { ov.remove(); if (url) URL.revokeObjectURL(url); }, 360);
+    };
+    ov.addEventListener('click', (e) => { if (e.target === ov || e.target === stage) close(); });
+    document.body.appendChild(ov);
+    requestAnimationFrame(() => requestAnimationFrame(() => ov.classList.add('is-in')));
+
+    async function ready(blob, name) {
+      if (closed) return;
+      url = URL.createObjectURL(blob);
+      const img = new Image();
+      img.className = 'ztp-img'; img.alt = name; img.draggable = false; img.src = url;
+      try { await img.decode(); } catch (e) { /* yine de göster */ }
+      if (closed) return;
+      wrap.appendChild(img);
+      let idx = 0;
+      const mk = (label, primary, fn) => {
+        const b = document.createElement('button');
+        b.type = 'button'; b.textContent = label; b.className = 'ztp-btn' + (primary ? ' is-primary' : '');
+        b.style.setProperty('--i', idx); idx += 1;
+        b.addEventListener('click', fn); row.appendChild(b);
+      };
+      mk('Kaydet', true, () => {
+        const a = document.createElement('a');
+        a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove();
+      });
+      const file = new File([blob], name, { type: 'image/png' });
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        mk('Paylaş', false, async () => {
+          try { await navigator.share({ files: [file] }); }
+          catch (e) { /* iptal / açılamadı: Kaydet kullanılabilir */ }
+        });
+      }
+      mk('Kapat', false, close);
+      void wrap.offsetWidth;
+      skel.classList.add('is-done');
+      wrap.classList.add('is-ready');
+      row.classList.add('is-ready');
+    }
+    return { ready, close };
+  }
+
   async function doShare() {
     if (shareBtn.classList.contains('is-busy')) return;
     shareBtn.classList.add('is-busy');
+    const ui = openSharePreview(), t0 = performance.now();
     try {
       const key = shareKey();
       let blob = shareCache && shareCache.key === key ? shareCache.blob : null;
       if (!blob) { blob = await renderShareBlob(view.y, view.m); shareCache = { key, blob }; }
-      if (!blob) return;
-      const name = `pace-zaman-takvimi-${view.y}-${pad(view.m + 1)}.png`;
-      const file = new File([blob], name, { type: 'image/png' });
-      if (navigator.canShare && navigator.canShare({ files: [file] })) {
-        try { await navigator.share({ files: [file], title: `Zaman Takvimi · ${MONTHS[view.m]} ${view.y}` }); return; }
-        catch (e) { if (e && e.name === 'AbortError') return; /* paylaşım açılamadı: indirmeye düş */ }
-      }
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); a.remove();
-      setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+      if (!blob) throw new Error('boş görsel');
+      // Görsel hazır olsa bile iskelet kısa süre görünsün: geçiş ani değil, akıcı hissettirir.
+      const left = 1300 - (performance.now() - t0);
+      if (left > 0) await new Promise((r) => setTimeout(r, left));
+      await ui.ready(blob, `pace-zaman-takvimi-${view.y}-${pad(view.m + 1)}.png`);
+    } catch (e) {
+      ui.close();
+      alert('Görsel oluşturulamadı: ' + (e && e.message ? e.message : e));
     } finally { shareBtn.classList.remove('is-busy'); }
   }
   shareBtn.addEventListener('click', doShare);
