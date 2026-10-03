@@ -21872,6 +21872,33 @@
       #page-1 .home-relax-widget { --hw-z: 1.75; }
     }
 
+    /* ---------- Rahatla: boş durum, MOBİLDEKİ gibi ----------
+       Görev yokken: halkasız, sıcak turuncu ay ikonu (görev işaretçisiyle aynı
+       3.6rem kutuda, böylece görev gelince hiçbir şey kaymaz), yanında ince
+       dikey ayraç; "Rahatla" başlığı üstte, "Yaklaşan görev yok" altında. */
+    #page-1 .home-relax-widget.is-empty .home-relax-widget-moon {
+      width: 3.6rem;
+      height: 3.6rem;
+      box-shadow: none;
+      color: #f1a356;
+    }
+
+    #page-1 .home-relax-widget.is-empty .home-relax-widget-moon svg {
+      width: 26px;
+      height: 26px;
+    }
+
+    #page-1 .home-relax-widget.is-empty .home-relax-widget-bottom {
+      flex: 0 1 auto;
+      flex-direction: column-reverse;
+      align-self: center;
+      min-height: calc(3.6rem * var(--hw-z, 1));
+      justify-content: center;
+      gap: 0.05rem;
+      padding-left: 1.1rem;
+      border-left: 1.5px solid color-mix(in srgb, var(--theme-text, #1a1a1a) 22%, transparent);
+    }
+
     /* ---------- Takvim ve Mini Oyunlar: yatay (dar ekran) düzen ---------- */
     #page-1 .home-date-widget,
     #page-1 .home-mini-widget-compact {
@@ -73158,6 +73185,9 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
     const ctx = cv.getContext('2d'); ctx.textBaseline = 'alphabetic';
     const F = (w, sz) => `${w} ${sz}px "Baloo 2", "Space Grotesk", sans-serif`;
     ctx.fillStyle = C.bg; ctx.fillRect(0, 0, W, H);
+    // Zemin koyu mu? (saf siyah gibi temalarda kartlar daha belirgin çizilir.)
+    const bgHex = String(ctx.fillStyle), bgN = parseInt(bgHex.slice(1), 16);
+    const dark = (0.299 * ((bgN >> 16) & 255) + 0.587 * ((bgN >> 8) & 255) + 0.114 * (bgN & 255)) / 255 < 0.45;
 
     // Başlık: ay + yıl (üstteki "ZAMAN TAKVİMİ" yazısı kaldırıldı)
     ctx.globalAlpha = 1; ctx.font = F(800, 104);
@@ -73200,9 +73230,15 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
       const x = P + col * (cellW + GAP), yy = gy + row * (cellH + GAP), ms = vals[d];
       const future = date.getTime() > nowD.getTime(), has = ms >= MIN_MS, we = date.getDay() === 0 || date.getDay() === 6;
       // Zemin
-      if (has) { ctx.globalAlpha = (14 + 46 * Math.min(1, ms / scale)) / 100; ctx.fillStyle = C.accent; }
-      else { ctx.globalAlpha = future ? 0.03 : 0.07; ctx.fillStyle = C.text; }
-      rr(ctx, x, yy, cellW, cellH, 26); ctx.fill(); ctx.globalAlpha = 1;
+      // Bugün özel işaretlenmez: çalışılan günler vurgu rengi yerine tema yazı renginin
+      // tonlarıyla (süreye göre koyulaşan) doldurulur; tüm kartlar ince bir çerçeve alır,
+      // böylece saf siyah/beyaz temalarda da kart alanları net seçilir.
+      const k = has ? Math.min(1, ms / scale) : 0;
+      ctx.fillStyle = C.text;
+      ctx.globalAlpha = has ? (dark ? 0.15 + 0.2 * k : 0.1 + 0.18 * k) : future ? (dark ? 0.05 : 0.03) : (dark ? 0.09 : 0.06);
+      rr(ctx, x, yy, cellW, cellH, 26); ctx.fill();
+      ctx.strokeStyle = C.text; ctx.lineWidth = 2; ctx.globalAlpha = (dark ? 0.14 : 0.07) + (has ? 0.06 : 0) - (future ? 0.04 : 0);
+      rr(ctx, x + 1, yy + 1, cellW - 2, cellH - 2, 25); ctx.stroke(); ctx.globalAlpha = 1;
       // Tarih: sol üstte küçük
       ctx.textAlign = 'left'; ctx.font = F(700, 24); ctx.fillStyle = we ? C.weekend : C.text; ctx.globalAlpha = future ? 0.3 : 0.65;
       ctx.fillText(String(d), x + 15, yy + 33);
