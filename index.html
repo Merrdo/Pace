@@ -38369,6 +38369,20 @@ body.is-countdown-fs.is-countdown-paused .countdown-fullscreen-time-row .stopwat
 }
 .zt-link-go svg { flex: none; transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
 @media (hover: hover) { .zt-link:hover .zt-link-go svg { transform: translateX(4px); } }
+/* Mobil giriş: ana sayfadaki .home-cal-link ile birebir aynı konum/boşluklar. */
+.zt-link-m { display: none; }
+@media not all and (min-width: 768px) and (min-height: 600px) {
+  .zt-link:not(.zt-link-m) { display: none; }
+  .zt-link-m {
+    position: absolute; display: flex; z-index: 2;
+    left: calc(24px + 0.3rem); right: calc(24px + 0.3rem); width: auto; max-width: none; margin: 0;
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 96px + 0.9rem + clamp(1rem, 3dvh, 2rem));
+    padding: 0.4rem 0;
+    transition: opacity 0.25s ease, transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  /* Tam ekran kronometre/sayaç ya da Sayaç modu açıkken görünmesin */
+  body.is-stopwatch-fs .zt-link-m, body.is-countdown-fs .zt-link-m, .zt-link-m.is-off { opacity: 0; pointer-events: none; }
+}
 
 body.is-ztakvim-open .navbar { opacity: 0; transform: translateY(28px); pointer-events: none; }
 body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
@@ -38393,6 +38407,10 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
 @media (hover: hover) { #page-ztakvim .calendar-back-btn:hover { background-color: rgba(127,127,127,0.14); } }
 #page-ztakvim .calendar-back-btn:active { transform: scale(0.92); box-shadow: none; background-color: rgba(127,127,127,0.22); }
 #page-ztakvim .calendar-topbar-spacer { margin-right: -10px; }
+#ztShareBtn { margin-left: 0; margin-right: -10px; }
+#ztShareBtn svg { transition: transform 0.3s var(--zt-spring); }
+#ztShareBtn:active svg { transform: translateY(-2px); }
+#ztShareBtn.is-busy { opacity: 0.45; pointer-events: none; }
 #page-ztakvim .calendar-topbar-title { font-family: "Baloo 2", "Space Grotesk", sans-serif; }
 
 .zt-nav { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; }
@@ -40777,6 +40795,21 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
       </div>
     </div>
 
+    <!-- Zaman Takvimi girişi (yalnızca MOBİL): ana sayfadaki Takvim bağlantısıyla (.home-cal-link)
+         AYNI yükseklikte, sayfanın altına sabitlenir. Büyük ekranda gizli; orada Kronometre kartının
+         altındaki #ztLink kullanılır. -->
+    <button type="button" class="zt-link zt-link-m" id="ztLinkM" aria-label="Zaman Takvimi'ni aç">
+      <span class="zt-link-left">
+        <span class="zt-link-label">Çalışılan en uzun süre</span>
+        <span class="zt-link-value">—</span>
+      </span>
+      <span class="zt-link-sep" aria-hidden="true"></span>
+      <span class="zt-link-go">
+        <span>Zaman Takvimi</span>
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </span>
+    </button>
+
     <!-- Kronometre çalışırken beliren, ekranı tam kaplayan büyük görünüm.
          Sayının üzerindeki görünmez alana dokunmak duraklatıp tam
          ekrandan çıkar; boş bir alana dokununca Tur butonu belirir. -->
@@ -42301,7 +42334,9 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
           <svg viewBox="0 0 24 24" width="18" height="18"><path d="M15 4l-8 8 8 8" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </button>
         <span class="calendar-topbar-title">Zaman Takvimi</span>
-        <span class="calendar-topbar-spacer" aria-hidden="true"></span>
+        <button type="button" class="calendar-back-btn zt-share-btn" id="ztShareBtn" aria-label="Takvimi görsel olarak paylaş" title="Paylaş">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15V3M8 7l4-4 4 4M5 12v6a3 3 0 0 0 3 3h8a3 3 0 0 0 3-3v-6"/></svg>
+        </button>
       </div>
 
       <div class="zt-nav">
@@ -72633,8 +72668,7 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
   'use strict';
   const page = document.getElementById('page-ztakvim');
   const grid = document.getElementById('ztGrid');
-  const linkBtn = document.getElementById('ztLink');
-  const linkVal = document.getElementById('ztLinkValue');
+  const linkBtns = Array.from(document.querySelectorAll('.zt-link'));
   if (!page || !grid) return;
 
   const MONTHS = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
@@ -72684,7 +72718,10 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
     const live = (Number(l[todayKey()]) || 0) + liveToday();
     return Math.max(best, live);
   };
-  const updateLink = () => { if (linkVal) { const b = allTimeBestMs(); linkVal.textContent = b >= MIN_MS ? fmtLong(b) : '—'; } };
+  const updateLink = () => {
+    const b = allTimeBestMs(), txt = b >= MIN_MS ? fmtLong(b) : '—';
+    linkBtns.forEach((btn) => { const v = btn.querySelector('.zt-link-value'); if (v) v.textContent = txt; });
+  };
 
   // ---- Takvim durumu ----
   const now0 = new Date();
@@ -72778,6 +72815,7 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
     todayBtn.classList.toggle('is-on', !isCurrent);
     nextBtn.disabled = isCurrent;
     requestAnimationFrame(() => moveBubble(true, !!anim));
+    if (typeof prepareShare === 'function') prepareShare();
   }
 
   let countToken = 0;
@@ -72909,7 +72947,153 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
     if (typeof goToPage === 'function') goToPage('page-5');
   }
   $('ztBackBtn').addEventListener('click', closeZt);
-  if (linkBtn) linkBtn.addEventListener('click', openZt);
+  linkBtns.forEach((btn) => btn.addEventListener('click', openZt));
+  // Mobil giriş alanı Sayaç (geri sayım) modunda gizlenir
+  const cdPage = document.getElementById('countdownPage'), linkM = document.getElementById('ztLinkM');
+  if (cdPage && linkM) {
+    const sync = () => linkM.classList.toggle('is-off', cdPage.style.display !== 'none');
+    new MutationObserver(sync).observe(cdPage, { attributes: true, attributeFilter: ['style'] });
+    sync();
+  }
+
+  // ---------- Paylaş: bulunan ayı tek bir PNG görsele çizer ----------
+  // Görselde: ay + yıl, aylık özet, tüm gün ızgarası. Hücrede SÜRE ana yazıdır (tarih sol üstte küçük);
+  // çalışılmayan geçmiş günlerde soluk "0dk" yazar. Sağ altta soluk "Pace" imzası vardır.
+  const cssVar = (n) => (getComputedStyle(document.documentElement).getPropertyValue(n) || '').trim();
+  function rr(ctx, x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath();
+  }
+  function fit(ctx, text, weight, size, maxW) {
+    let sz = size;
+    ctx.font = `${weight} ${sz}px "Baloo 2", "Space Grotesk", sans-serif`;
+    while (sz > 10 && ctx.measureText(text).width > maxW) { sz -= 1; ctx.font = `${weight} ${sz}px "Baloo 2", "Space Grotesk", sans-serif`; }
+    return sz;
+  }
+  function monthValues(y, m) {
+    const dim = new Date(y, m + 1, 0).getDate(), out = [];
+    for (let d = 1; d <= dim; d += 1) out[d] = dayMs(`${y}-${pad(m + 1)}-${pad(d)}`);
+    return out;
+  }
+  function colors() {
+    const bg = cssVar('--theme-bg') || getComputedStyle(document.body).backgroundColor || '#F6F4EF';
+    return { bg, text: cssVar('--theme-text') || '#1a1a1a', accent: cssVar('--accent-color') || '#ff90e8', weekend: cssVar('--weekend-color') || '#ff6b81' };
+  }
+
+  async function renderShareBlob(y, m) {
+    try { await Promise.all(['600', '700', '800'].map((w) => document.fonts.load(`${w} 40px "Baloo 2"`))); } catch (e) { /* yedek yazı tipine düş */ }
+    const C = colors(), vals = monthValues(y, m), dim = vals.length - 1;
+    const lead = weekStartsSun() ? new Date(y, m, 1).getDay() : (new Date(y, m, 1).getDay() + 6) % 7;
+    const rows = Math.ceil((lead + dim) / 7);
+    const W = 1080, P = 64, GAP = 12, cellW = (W - 2 * P - 6 * GAP) / 7, cellH = 150;
+    let total = 0, studied = 0, best = 0;
+    for (let d = 1; d <= dim; d += 1) { if (vals[d] >= MIN_MS) { total += vals[d]; studied += 1; if (vals[d] > best) best = vals[d]; } }
+    const scale = Math.max(best, 3 * 3600000);
+    const topH = 410, footH = 110;
+    const H = Math.max(1350, topH + 56 + rows * (cellH + GAP) + footH);
+
+    const cv = document.createElement('canvas'); cv.width = W; cv.height = H;
+    const ctx = cv.getContext('2d'); ctx.textBaseline = 'alphabetic';
+    const F = (w, sz) => `${w} ${sz}px "Baloo 2", "Space Grotesk", sans-serif`;
+    ctx.fillStyle = C.bg; ctx.fillRect(0, 0, W, H);
+
+    // Başlık
+    ctx.fillStyle = C.text; ctx.globalAlpha = 0.5; ctx.font = F(700, 26);
+    if ('letterSpacing' in ctx) ctx.letterSpacing = '4px';
+    ctx.fillText('ZAMAN TAKVİMİ', P, P + 34);
+    if ('letterSpacing' in ctx) ctx.letterSpacing = '0px';
+    ctx.globalAlpha = 1; ctx.font = F(800, 104);
+    ctx.fillStyle = C.text; ctx.fillText(MONTHS[m], P, P + 150);
+    const mw = ctx.measureText(MONTHS[m] + ' ').width;
+    ctx.fillStyle = C.accent; ctx.fillText(String(y), P + mw, P + 150);
+
+    // Özet (3 sütun)
+    const stats = [['Aylık toplam', fmtLong(total)], ['Günlük ortalama', fmtLong(studied ? total / studied : 0)], ['En uzun gün', fmtLong(best)]];
+    const sy = P + 230, colW = (W - 2 * P) / 3;
+    stats.forEach((st, i) => {
+      const x = P + i * colW + (i ? 28 : 0);
+      ctx.fillStyle = C.text; ctx.globalAlpha = 0.55; ctx.font = F(600, 26); ctx.fillText(st[0], x, sy);
+      ctx.globalAlpha = 1; fit(ctx, st[1], 800, 46, colW - 44); ctx.fillText(st[1], x, sy + 52);
+      if (i) { ctx.globalAlpha = 0.22; ctx.fillRect(P + i * colW, sy - 24, 2, 80); ctx.globalAlpha = 1; }
+    });
+
+    // Gün adları
+    const wy = topH + 20, sun = weekStartsSun();
+    for (let i = 0; i < 7; i += 1) {
+      const idx = sun ? i : (i + 1) % 7, we = idx === 0 || idx === 6;
+      ctx.font = F(600, 27); ctx.textAlign = 'center';
+      ctx.fillStyle = we ? C.weekend : C.text; ctx.globalAlpha = we ? 0.8 : 0.5;
+      ctx.fillText(WD_SHORT[idx], P + i * (cellW + GAP) + cellW / 2, wy);
+    }
+    ctx.globalAlpha = 1;
+
+    // Izgara
+    const gy = topH + 56, nowD = startOfDay(new Date());
+    for (let d = 1; d <= dim; d += 1) {
+      const date = new Date(y, m, d), col = (lead + d - 1) % 7, row = Math.floor((lead + d - 1) / 7);
+      const x = P + col * (cellW + GAP), yy = gy + row * (cellH + GAP), ms = vals[d];
+      const future = date.getTime() > nowD.getTime(), has = ms >= MIN_MS, we = date.getDay() === 0 || date.getDay() === 6;
+      // Zemin
+      if (has) { ctx.globalAlpha = (14 + 46 * Math.min(1, ms / scale)) / 100; ctx.fillStyle = C.accent; }
+      else { ctx.globalAlpha = future ? 0.03 : 0.07; ctx.fillStyle = C.text; }
+      rr(ctx, x, yy, cellW, cellH, 26); ctx.fill(); ctx.globalAlpha = 1;
+      if (date.getTime() === nowD.getTime()) { ctx.strokeStyle = C.accent; ctx.lineWidth = 5; rr(ctx, x + 2.5, yy + 2.5, cellW - 5, cellH - 5, 24); ctx.stroke(); }
+      // Tarih: sol üstte küçük
+      ctx.textAlign = 'left'; ctx.font = F(700, 24); ctx.fillStyle = we ? C.weekend : C.text; ctx.globalAlpha = future ? 0.3 : 0.65;
+      ctx.fillText(String(d), x + 15, yy + 33);
+      // Süre: ana yazı
+      ctx.textAlign = 'center'; ctx.fillStyle = C.text; const cx = x + cellW / 2;
+      if (has) {
+        const mins = Math.floor(ms / 60000), h = Math.floor(mins / 60), mm = mins % 60;
+        const txt = h ? `${h}:${pad(mm)}` : String(mm);
+        ctx.globalAlpha = 1; fit(ctx, txt, 800, 52, cellW - 22); ctx.fillText(txt, cx, yy + 100);
+        ctx.globalAlpha = 0.6; ctx.font = F(700, 22); ctx.fillText(h ? 'sa' : 'dk', cx, yy + 132);
+      } else if (!future) {
+        ctx.globalAlpha = 0.3; fit(ctx, '0dk', 700, 38, cellW - 22); ctx.fillText('0dk', cx, yy + 98);
+      }
+      ctx.globalAlpha = 1;
+    }
+
+    // Pace imzası: sağ alt köşe, soluk
+    ctx.textAlign = 'right'; ctx.fillStyle = C.text; ctx.globalAlpha = 0.42; ctx.font = F(700, 54);
+    ctx.fillText('Pace', W - P, H - P + 6); ctx.globalAlpha = 1;
+    return new Promise((res) => cv.toBlob(res, 'image/png'));
+  }
+
+  // Önceden hazırlanan görsel (paylaş dokunuşu anında hazır olsun; bazı tarayıcılar
+  // paylaşımı yalnızca dokunuşun hemen ardından açar).
+  let shareCache = null, shareTimer = null;
+  const shareKey = () => { const C = colors(); return `${view.y}-${view.m}|${monthValues(view.y, view.m).join(',')}|${C.bg}|${C.text}|${C.accent}|${weekStartsSun()}`; };
+  function prepareShare() {
+    clearTimeout(shareTimer);
+    shareTimer = setTimeout(async () => {
+      const key = shareKey();
+      if (shareCache && shareCache.key === key) return;
+      try { const blob = await renderShareBlob(view.y, view.m); shareCache = { key, blob }; } catch (e) { shareCache = null; }
+    }, 600);
+  }
+  const shareBtn = $('ztShareBtn');
+  async function doShare() {
+    if (shareBtn.classList.contains('is-busy')) return;
+    shareBtn.classList.add('is-busy');
+    try {
+      const key = shareKey();
+      let blob = shareCache && shareCache.key === key ? shareCache.blob : null;
+      if (!blob) { blob = await renderShareBlob(view.y, view.m); shareCache = { key, blob }; }
+      if (!blob) return;
+      const name = `pace-zaman-takvimi-${view.y}-${pad(view.m + 1)}.png`;
+      const file = new File([blob], name, { type: 'image/png' });
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        try { await navigator.share({ files: [file], title: `Zaman Takvimi · ${MONTHS[view.m]} ${view.y}` }); return; }
+        catch (e) { if (e && e.name === 'AbortError') return; /* paylaşım açılamadı: indirmeye düş */ }
+      }
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+    } finally { shareBtn.classList.remove('is-busy'); }
+  }
+  shareBtn.addEventListener('click', doShare);
 
   // Sayfa başka yolla (yan panel vb.) terk edilirse alt navbar geri gelsin
   new MutationObserver(() => {
