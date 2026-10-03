@@ -73846,9 +73846,11 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
     document.head.appendChild(st);
   }
 
-  const ZTP_LETTERS = true; // true: harf harf düşer (P-a-c-e) · false: 5 satır "Pace" yazısı düşer
+  // Her açılışta rastgele: harf harf düşen (P-a-c-e) ya da 5 satır "Pace" yazısı. Sabitlemek için ZTP_FORCE = true / false yap.
+  const ZTP_FORCE = null;
   const ZTP_ANIM_MS = 2500; // son yazı ~2.35 sn'de yerine oturur; çubuk aynı sürede dolar
   function openSharePreview() {
+    const ZTP_LETTERS = ZTP_FORCE === null ? Math.random() < 0.5 : !!ZTP_FORCE;
     ensureShareCss();
     const ov = document.createElement('div');
     ov.className = 'ztp-ov';
