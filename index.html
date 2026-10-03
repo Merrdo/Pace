@@ -73785,6 +73785,16 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
 .ztp-fall b:nth-child(1){opacity:.0;color:var(--accent-color,#ff90e8);--o:1;}
 .ztp-fall b:nth-child(2){--o:.92;}.ztp-fall b:nth-child(3){--o:.72;}.ztp-fall b:nth-child(4){--o:.5;}.ztp-fall b:nth-child(5){--o:.3;}
 .ztp-fall.is-done{opacity:0;transform:translateY(14px) scale(.97);filter:blur(10px);pointer-events:none;}
+/* Harfli sürüm: P-a-c-e harfleri sırayla düşüp altta yan yana dizilir */
+.ztp-fall.is-letters{flex-direction:row;align-items:flex-end;justify-content:center;--fs:clamp(84px,28vw,150px);}
+.ztp-fall.is-letters b{--o:1;color:#fff;animation-name:ztpDropL;animation-delay:calc(var(--k) * 330ms);}
+.ztp-fall.is-letters b:nth-child(4){color:var(--accent-color,#ff90e8);}
+@keyframes ztpDropL{
+  0%{opacity:0;transform:translateY(-90dvh) rotate(var(--rot,0deg));animation-timing-function:cubic-bezier(.55,0,.9,.55);}
+  10%{opacity:1;}
+  64%{opacity:1;transform:translateY(0) rotate(0deg);animation-timing-function:cubic-bezier(.2,.7,.3,1);}
+  80%{opacity:1;transform:translateY(-9px) rotate(0deg);animation-timing-function:cubic-bezier(.5,0,.5,1);}
+  100%{opacity:1;transform:translateY(0) rotate(0deg);}}
 @keyframes ztpDrop{
   0%{opacity:0;transform:translateY(-95dvh);animation-timing-function:cubic-bezier(.55,0,.9,.55);}
   10%{opacity:var(--o,1);}
@@ -73836,6 +73846,7 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
     document.head.appendChild(st);
   }
 
+  const ZTP_LETTERS = true; // true: harf harf düşer (P-a-c-e) · false: 5 satır "Pace" yazısı düşer
   const ZTP_ANIM_MS = 2500; // son yazı ~2.35 sn'de yerine oturur; çubuk aynı sürede dolar
   function openSharePreview() {
     ensureShareCss();
@@ -73844,9 +73855,10 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
     ov.setAttribute('role', 'dialog'); ov.setAttribute('aria-modal', 'true'); ov.setAttribute('aria-label', 'Takvim görseli');
     // Pace yazıları sırayla yukarıdan düşüp alt alta dizilir; ilk düşen en altta kalır, en üstteki vurgu renginde.
     let words = '';
-    for (let i = 0; i < 5; i += 1) words += `<b style="--k:${4 - i}">Pace</b>`;
+    if (ZTP_LETTERS) ['P', 'a', 'c', 'e'].forEach((ch, i) => { words += `<b style="--k:${i};--rot:${[-14, 11, -9, 13][i]}deg">${ch}</b>`; });
+    else for (let i = 0; i < 5; i += 1) words += `<b style="--k:${4 - i}">Pace</b>`;
     ov.style.setProperty('--ztp-ms', ZTP_ANIM_MS + 'ms');
-    ov.innerHTML = `<div class="ztp-stage"><div class="ztp-fall" aria-hidden="true">${words}</div><div class="ztp-imgwrap"></div></div>`
+    ov.innerHTML = `<div class="ztp-stage"><div class="ztp-fall${ZTP_LETTERS ? ' is-letters' : ''}" aria-hidden="true">${words}</div><div class="ztp-imgwrap"></div></div>`
       + '<div class="ztp-row"><div class="ztp-status" aria-live="polite"><div class="ztp-bar"><i></i></div><div class="ztp-txt">Görsel hazırlanıyor</div></div></div>';
     const stage = ov.querySelector('.ztp-stage'), skel = ov.querySelector('.ztp-fall');
     const wrap = ov.querySelector('.ztp-imgwrap'), row = ov.querySelector('.ztp-row');
