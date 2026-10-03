@@ -21282,12 +21282,12 @@
       font: inherit;
       text-align: left;
       cursor: pointer;
-      opacity: 0.55;
+      opacity: 1;
       transition: opacity 0.2s ease, transform 0.2s ease;
     }
 
     #page-1 .home-cd-flat-add:hover {
-      opacity: 0.85;
+      opacity: 0.8;
     }
 
     #page-1 .home-cd-flat-add:active {
@@ -21298,12 +21298,18 @@
       flex: none;
       display: grid;
       place-items: center;
-      width: clamp(2rem, 7cqi, 2.75rem);
-      height: clamp(2rem, 7cqi, 2.75rem);
+      width: clamp(2.4rem, 7cqi, 3.2rem);
+      height: clamp(2.4rem, 7cqi, 3.2rem);
       border-radius: 50%;
-      background: color-mix(in srgb, var(--theme-text, #1a1a1a) 10%, transparent);
-      color: var(--theme-text, #1a1a1a);
-      transition: background-color 0.5s ease, color 0.5s ease;
+      /* Mobildeki .home-flip-add-ic ile aynı dil: vurgu renginde dolu daire + yumuşak parıltı. */
+      background: var(--accent-color, #ff90e8);
+      color: #16171b;
+      box-shadow: 0 10px 18px -10px var(--accent-color, #ff90e8);
+      transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    #page-1 .home-cd-flat-add:active .home-cd-flat-add-ic {
+      transform: scale(0.9) rotate(90deg);
     }
 
     #page-1 .home-cd-flat-add-ic svg {
@@ -21338,15 +21344,22 @@
       display: none;
     }
 
+    /* ---- Seçili sayaç: MOBİLDEKİ tasarım dili (bkz. .home-flip-cd, "ANA SAYFA —
+       MOBİL TASARIM DİLİ") ----
+       Üstte sayaç adı + tarih (renk noktası yok), altında satırı kaplayan DEV
+       gün rakamı ve küçük büyük-harf etiket, onun altında ince dikey ayraçlı
+       Saat | Dakika | Saniye. Boyutlar kutunun gerçek genişlik/yüksekliğine
+       (cqi/cqh) göre ölçeklenir; --d = dev gün rakamının boyutu, diğer her
+       şey ondan türer. */
     #page-1 .home-cd-flat {
       display: flex;
       flex-direction: column;
       align-items: flex-start;
       justify-content: center;
-      gap: clamp(0.35rem, 1.6cqh, 0.6rem);
+      gap: clamp(0.6rem, 3.2cqh, 1.2rem);
       width: 100%;
       height: 100%;
-      padding: clamp(0.4rem, 2cqmin, 1.1rem);
+      padding: clamp(0.4rem, 2cqmin, 1.1rem) clamp(0.3rem, 1.5cqi, 1rem);
       border: none;
       background: none;
       color: inherit;
@@ -21357,9 +21370,12 @@
     }
 
     #page-1 .home-cd-flat-head {
+      order: 0;
       display: flex;
       flex-direction: column;
-      gap: 0.05rem;
+      align-items: flex-start;
+      gap: 0.1rem;
+      width: 100%;
       max-width: 100%;
       min-width: 0;
     }
@@ -21367,17 +21383,14 @@
     #page-1 .home-cd-flat-nameRow {
       display: flex;
       align-items: center;
-      gap: 0.45rem;
+      justify-content: flex-start;
       max-width: 100%;
       min-width: 0;
     }
 
+    /* Mobilde olduğu gibi renk noktası gösterilmez. */
     #page-1 .home-cd-flat-dot {
-      flex: none;
-      width: 0.5rem;
-      height: 0.5rem;
-      border-radius: 50%;
-      background: var(--cd-dot, var(--accent-color, #ff90e8));
+      display: none;
     }
 
     #page-1 .home-cd-flat-name {
@@ -21386,8 +21399,9 @@
       white-space: nowrap;
       text-overflow: ellipsis;
       font-family: "Baloo 2", "Sabon", sans-serif;
-      font-weight: 700;
-      font-size: clamp(0.85rem, 2.4cqi, 1.15rem);
+      font-weight: 800;
+      font-size: clamp(1.15rem, min(3cqi, 7cqh), 1.9rem);
+      letter-spacing: 0.01em;
       color: var(--theme-text, #1a1a1a);
       transition: color 0.5s ease;
     }
@@ -21398,38 +21412,63 @@
       white-space: nowrap;
       text-overflow: ellipsis;
       font-weight: 600;
-      font-size: clamp(0.68rem, 1.7cqi, 0.85rem);
-      color: color-mix(in srgb, var(--theme-text, #1a1a1a) 50%, transparent);
+      font-size: clamp(0.9rem, min(2cqi, 5cqh), 1.25rem);
+      color: color-mix(in srgb, var(--theme-text, #1a1a1a) 62%, transparent);
       transition: color 0.5s ease;
     }
 
     #page-1 .home-cd-flat-units {
-      --u-max: 4.4rem;
-      display: flex;
-      align-items: flex-start;
-      gap: 0.1em;
+      --k: 1; /* gün hanesi sayısına göre küçültme katsayısı */
+      --d: calc(clamp(2.6rem, min((100cqh - 9rem) / 1.3, (100cqi - 4rem) / 2.4), 8.5rem) * var(--k));
+      order: 1;
+      display: grid;
+      grid-template-columns: auto auto auto auto auto;
+      justify-content: start;
+      align-items: center;
+      justify-items: start;
+      column-gap: calc(var(--d) * 0.2);
+      row-gap: clamp(0.5rem, calc(var(--d) * 0.12), 1rem);
+      width: 100%;
       font-family: "Baloo 2", "Sabon", sans-serif;
       font-weight: 800;
       font-variant-numeric: tabular-nums lining-nums;
-      line-height: 1.2;
-      font-size: clamp(1.6rem, min(9cqi, 28cqh), var(--u-max));
+      line-height: 1.25;
+      font-size: calc(var(--d) * 0.36);
       color: var(--theme-text, #1a1a1a);
       transition: color 0.5s ease;
     }
 
-    #page-1 .home-cd-flat-units[data-len="3"] { --u-max: 3.8rem; }
+    #page-1 .home-cd-flat-units[data-len="3"] { --k: 0.84; }
     #page-1 .home-cd-flat-units[data-len="4"],
-    #page-1 .home-cd-flat-units[data-len="5"] { --u-max: 3.3rem; }
-
-    #page-1 .home-cd-flat-units .cd-colon {
-      opacity: 0.28;
-    }
+    #page-1 .home-cd-flat-units[data-len="5"] { --k: 0.68; }
 
     #page-1 .home-cd-flat-unit {
       display: flex;
       flex-direction: column;
-      align-items: center;
+      align-items: flex-start;
       gap: 0;
+    }
+
+    /* Gün: dev rakam, tüm satırı kaplar; ilk ":" ayracı kalkar. */
+    #page-1 .home-cd-flat-unit:first-child {
+      grid-column: 1 / -1;
+      font-size: var(--d);
+    }
+
+    #page-1 .home-cd-flat-unit:first-child + .cd-colon {
+      display: none;
+    }
+
+    /* Kalan ":" noktaları ince dikey ayraca dönüşür. */
+    #page-1 .home-cd-flat-units .cd-colon {
+      width: 1.5px;
+      height: calc(var(--d) * 0.42);
+      opacity: 1;
+      background: color-mix(in srgb, var(--theme-text, #1a1a1a) 22%, transparent);
+    }
+
+    #page-1 .home-cd-flat-units .cd-colon i {
+      display: none;
     }
 
     #page-1 .home-cd-flat-num {
@@ -21439,25 +21478,34 @@
     }
 
     #page-1 .home-cd-flat-num .cd-reel {
-      margin-inline: -0.02em;
+      margin-inline: -0.03em;
     }
 
     #page-1 .home-cd-flat-label {
-      margin-top: 0.15em;
+      margin-top: 0.4rem;
       font-weight: 700;
-      font-size: 0.34em;
-      letter-spacing: 0.01em;
-      color: color-mix(in srgb, var(--theme-text, #1a1a1a) 50%, transparent);
+      font-size: clamp(0.68rem, calc(var(--d) * 0.115), 1rem);
+      line-height: 1;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: color-mix(in srgb, var(--theme-text, #1a1a1a) 62%, transparent);
+    }
+
+    #page-1 .home-cd-flat-unit:first-child .home-cd-flat-label {
+      margin-top: 0.5rem;
+      font-size: clamp(0.8rem, calc(var(--d) * 0.16), 1.3rem);
     }
 
     #page-1 .home-cd-flat-done {
+      order: 1;
       display: none;
       align-items: baseline;
+      justify-content: flex-start;
       flex-wrap: wrap;
       gap: 0.3em;
       font-family: "Baloo 2", "Sabon", sans-serif;
       font-weight: 800;
-      font-size: clamp(1.15rem, 5cqi, 1.9rem);
+      font-size: clamp(1.4rem, min(5cqi, 14cqh), 2.6rem);
       color: #ff5c5c;
     }
 
@@ -21474,6 +21522,90 @@
 
     #page-1 .home-cd-flat-tile {
       animation: homeCdFlatIn 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+
+    /* ---------- Planlayıcı (Rahatla) widget'ı: ayırıcı çubuk ----------
+       Bugüne ait görev yoksa ya da yalnızca 1 görev varsa widget alanı boş
+       ve havada kalır; bu yüzden sayfanın geri kalanından ince, vurgu
+       renginde bir çubukla ayrılır. Çubuk "çizilerek" belirir (soldan sağa /
+       yukarıdan aşağı). Görev sayısı 2'ye çıkınca (satırlar arası bağlantı
+       çizgileri alanı zaten belirginleştirdiği için) çubuk geri toplanır.
+       JS (updateHomeDivider) .has-divider / .divider-out sınıflarını yönetir.
+       Düzen: Rahatla üst satırdayken (< 900px) çubuk widget'ın ALTINDA yatay;
+       sağ sütundayken (≥ 900px, bento) widget'ın SOLUNDA dikey durur. */
+    #page-1 .home-tile-relax::after {
+      content: "";
+      position: absolute;
+      left: 5%;
+      right: 5%;
+      bottom: -0.55rem;
+      height: 3px;
+      border-radius: 999px;
+      background: linear-gradient(to right, transparent, var(--accent-color, #ff90e8) 16%, var(--accent-color, #ff90e8) 84%, transparent);
+      pointer-events: none;
+      transform: scaleX(0);
+      transform-origin: left center;
+    }
+
+    #page-1 .home-tile-relax.has-divider::after {
+      animation: homeDividerDrawX 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+
+    #page-1 .home-tile-relax.divider-out::after {
+      animation: homeDividerEraseX 0.55s cubic-bezier(0.55, 0, 0.7, 0.3) both;
+    }
+
+    @keyframes homeDividerDrawX {
+      from { transform: scaleX(0); }
+      to { transform: scaleX(1); }
+    }
+
+    @keyframes homeDividerEraseX {
+      from { transform: scaleX(1); }
+      to { transform: scaleX(0); }
+    }
+
+    @keyframes homeDividerDrawY {
+      from { transform: scaleY(0); }
+      to { transform: scaleY(1); }
+    }
+
+    @keyframes homeDividerEraseY {
+      from { transform: scaleY(1); }
+      to { transform: scaleY(0); }
+    }
+
+    @container home (min-width: 900px) {
+      #page-1 .home-tile-relax::after {
+        left: -0.55rem;
+        right: auto;
+        top: 5%;
+        bottom: 5%;
+        width: 3px;
+        height: auto;
+        background: linear-gradient(to bottom, transparent, var(--accent-color, #ff90e8) 16%, var(--accent-color, #ff90e8) 84%, transparent);
+        transform: scaleY(0);
+        transform-origin: center top;
+      }
+
+      #page-1 .home-tile-relax.has-divider::after {
+        animation-name: homeDividerDrawY;
+      }
+
+      #page-1 .home-tile-relax.divider-out::after {
+        animation-name: homeDividerEraseY;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      #page-1 .home-tile-relax.has-divider::after,
+      #page-1 .home-tile-relax.divider-out::after {
+        animation: none;
+      }
+
+      #page-1 .home-tile-relax.has-divider::after {
+        transform: none;
+      }
     }
 
     /* ---------- "Bugün Çözülen": büyük ekran, kart yok ----------
@@ -54131,7 +54263,7 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
     // kronolojik olarak sıradaki görevler. SADECE BUGÜNE ait görevler
     // taranır — yarının, dünün ya da iki hafta sonrasının görevi widget'ta
     // görünmemeli.
-    const pickHomeTasks = (limit) => {
+    const pickHomeTasks = (limit, ignorePhone = false) => {
       const now = Date.now();
       const todayStr = ymd(startOfDay(new Date()));
       const byDate = getRelaxTasksByDate();
@@ -54170,7 +54302,7 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
       // süren yoksa sıradaki ilk görev gösterilir.
       let ordered = entries;
       let max = limit;
-      if (homeIsPhone()) {
+      if (homeIsPhone() && !ignorePhone) {
         const nowEntries = entries.filter((e) => e.startMs <= now && now < e.endMs);
         ordered = nowEntries.length ? nowEntries : entries;
         max = Math.min(limit, 1);
@@ -54393,6 +54525,27 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
       if (typeof syncHomeRelaxWidget === 'function') syncHomeRelaxWidget(true);
     });
 
+    // Ayırıcı çubuk (yalnızca büyük ekranda görünür, bkz. CSS:
+    // ".home-tile-relax::after"): bugüne ait (bitmemiş) görev sayısı 0 ya da 1
+    // ise çubuk çizilir, 2 ve üzerinde geri toplanır. Sayı, ekrana sığan satır
+    // sayısına değil gerçek görev sayısına bakar; telefon modunun tek-görev
+    // sınırı da sayıyı etkilemez (ignorePhone). Sınıf yalnızca DEĞİŞİNCE
+    // dokunulur, böylece animasyon gereksiz yere yeniden oynamaz.
+    const homeDividerEl = homeWidgetEl ? homeWidgetEl.closest('.home-tile-relax') : null;
+    const updateHomeDivider = () => {
+      if (!homeDividerEl) return;
+      const total = pickHomeTasks(HOME_TASK_ROWS_MAX, true).length;
+      const want = total < 2;
+      const has = homeDividerEl.classList.contains('has-divider');
+      if (want && !has) {
+        homeDividerEl.classList.remove('divider-out');
+        homeDividerEl.classList.add('has-divider');
+      } else if (!want && has) {
+        homeDividerEl.classList.remove('has-divider');
+        homeDividerEl.classList.add('divider-out');
+      }
+    };
+
     // Gösterilecek görev listesi değiştiyse widget'ı yeniden kurar; birebir
     // aynıysa dokunmaz (satır satır karşılaştırılır).
     const syncHomeRelaxWidget = (force = false) => {
@@ -54401,6 +54554,7 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
       // dışarıdan yeniden kurmak animasyonu yarıda keser; geçişin sonunda zaten
       // güncel duruma eşitlenir. Geçişin kendi çağrısı force=true ile gelir.
       if (homeSwapPlaying && !force) return;
+      updateHomeDivider();
       const limit = homeIsPhone() ? 1 : (homeVisibleCount || 1);
       const picks = pickHomeTasks(limit);
       const keys = homeRows.map((_, i) => (picks[i]
