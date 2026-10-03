@@ -19255,7 +19255,7 @@
     /* Üst boşluk azaltıldı: env(safe-area-inset-top) sayesinde Dynamic
        Island/çentikli cihazlarda güvenli alanın altında kalmaya devam
        eder, çentiksiz cihazlarda ise başlık daha yukarıda oturur. */
-    padding: calc(28px + env(safe-area-inset-top)) 24px 0.6rem;
+    padding: calc(14px + env(safe-area-inset-top)) 24px 0.2rem;
   }
 
   /* Başlığın altındaki her şey kendi kutusunda kayar; böylece liste
@@ -19273,7 +19273,7 @@
     scrollbar-width: none;
     -ms-overflow-style: none;
     box-sizing: border-box;
-    padding: 1.4rem 24px calc(96px + env(safe-area-inset-bottom));
+    padding: 0.9rem 24px calc(96px + env(safe-area-inset-bottom));
     /* Üst kenar artık kesikli çizgiyle değil, ince bir maske geçişiyle
        "kesiliyor": kaydırılan kartlar başlığın altına sert bir çizgide
        çarpmak yerine son ~16px'lik bantta yumuşakça saydamlaşarak
@@ -19322,7 +19322,7 @@
     transition: color 0.5s ease;
     font-family: "Baloo 2", "Space Grotesk", sans-serif;
     font-weight: 600;
-    font-size: clamp(31px, 8.66vw, 40px);
+    font-size: clamp(24px, 6.6vw, 30px);
     letter-spacing: -0.01em;
     -webkit-text-stroke: 0.006em currentColor;
   }
@@ -20003,7 +20003,7 @@
     }
 
     .settings-hero {
-      padding: calc(32px + env(safe-area-inset-top)) 40px 0.6rem;
+      padding: calc(18px + env(safe-area-inset-top)) 40px 0.3rem;
     }
 
     h1.settings-title {
@@ -20011,7 +20011,7 @@
       max-width: 1040px;
       margin: 0 auto;
       justify-content: flex-start;
-      font-size: clamp(40.18px, 1.854vw + 30.91px, 56.67px);
+      font-size: clamp(28px, 0.9vw + 21px, 38px);
     }
 
     /* Ayar sayfasına yeni bölümler eklendikçe (ör. "Gündelik") içerik geniş
@@ -20029,7 +20029,7 @@
        hizalanır — liste kaymadığı sürece. */
     .settings-scroll {
       align-items: stretch;
-      padding: clamp(0.8rem, 2.4dvh, 1.8rem) 40px calc(16px + env(safe-area-inset-bottom));
+      padding: clamp(0.5rem, 1.6dvh, 1.2rem) 40px calc(16px + env(safe-area-inset-bottom));
       touch-action: pan-y;
     }
 
@@ -38334,6 +38334,211 @@ body.is-countdown-fs.is-countdown-paused .countdown-fullscreen-time-row .stopwat
   #countdownPresetsBackdrop *, .countdown-fullscreen *, .countdown-fullscreen *::before, .countdown-fullscreen *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
 }
 </style>
+<style id="ztCss">
+/* ===== Zaman Takvimi (kronometre günlük çalışma takvimi) =====
+   Kronometre sayfasındaki giriş alanı (.zt-link) ve tam sayfa takvim (#page-ztakvim).
+   Takvim (#page-6) ile aynı tasarım dili: Baloo 2, vurgu rengi, kayan seçim dairesi,
+   sahnelenmiş giriş animasyonları. Mantık YPT'deki gibi: her gün, o günün toplam süresini gösterir. */
+.zt-link {
+  display: flex; align-items: center; gap: 1rem;
+  width: 100%; max-width: 640px; box-sizing: border-box;
+  margin: clamp(0.6rem, 4dvh, 2rem) auto 0; padding: 0.5rem 0.1rem;
+  background: none; border: none; text-align: left; cursor: pointer;
+  font-family: "Baloo 2", "Space Grotesk", sans-serif;
+  color: var(--theme-text, #1a1a1a);
+  -webkit-tap-highlight-color: transparent;
+  transition: opacity 0.2s ease, transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.zt-link:active { opacity: 0.55; transform: scale(0.985); }
+.zt-link-left { display: flex; flex-direction: column; gap: 0.1rem; min-width: 0; }
+.zt-link-label {
+  font-weight: 600; font-size: 0.8rem; line-height: 1.1; white-space: nowrap;
+  color: color-mix(in srgb, var(--theme-text, #1a1a1a) 62%, transparent);
+}
+.zt-link-value {
+  font-weight: 800; font-size: 1.75rem; line-height: 1.05; letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums; white-space: nowrap;
+}
+.zt-link-sep {
+  align-self: stretch; width: 1.5px;
+  background: color-mix(in srgb, var(--theme-text, #1a1a1a) 22%, transparent);
+}
+.zt-link-go {
+  margin-left: auto; display: inline-flex; align-items: center; gap: 0.5rem;
+  font-weight: 700; font-size: 1rem; min-width: 0; white-space: nowrap;
+}
+.zt-link-go svg { flex: none; transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
+@media (hover: hover) { .zt-link:hover .zt-link-go svg { transform: translateX(4px); } }
+
+body.is-ztakvim-open .navbar { opacity: 0; transform: translateY(28px); pointer-events: none; }
+body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
+
+#page-ztakvim {
+  --zt-ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --zt-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  flex-direction: column; align-items: stretch; justify-content: flex-start;
+  padding: calc(20px + env(safe-area-inset-top)) 22px calc(28px + env(safe-area-inset-bottom));
+  overflow-y: auto; overscroll-behavior: contain; scrollbar-width: none;
+}
+#page-ztakvim::-webkit-scrollbar { display: none; }
+.zt-wrap { width: 100%; max-width: 560px; margin: 0 auto; display: flex; flex-direction: column; gap: 1.35rem; }
+
+#page-ztakvim .calendar-topbar { max-width: none; justify-content: space-between; }
+#page-ztakvim .calendar-back-btn {
+  margin-left: -10px; background-color: transparent; border: none; box-shadow: none;
+  color: var(--theme-text, #f2f2f7);
+  transition: color 0.5s ease, background-color 0.15s ease, transform 0.15s ease;
+}
+#page-ztakvim .calendar-back-btn:hover { transform: none; box-shadow: none; }
+@media (hover: hover) { #page-ztakvim .calendar-back-btn:hover { background-color: rgba(127,127,127,0.14); } }
+#page-ztakvim .calendar-back-btn:active { transform: scale(0.92); box-shadow: none; background-color: rgba(127,127,127,0.22); }
+#page-ztakvim .calendar-topbar-spacer { margin-right: -10px; }
+#page-ztakvim .calendar-topbar-title { font-family: "Baloo 2", "Space Grotesk", sans-serif; }
+
+.zt-nav { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; }
+.zt-month {
+  display: flex; align-items: baseline; gap: 0.4rem; min-width: 0;
+  font-family: "Baloo 2", "Space Grotesk", sans-serif; font-weight: 700; font-size: 1.4rem;
+  letter-spacing: -0.01em; color: var(--theme-text, #f2f2f7); text-transform: capitalize;
+  transition: color 0.5s ease;
+}
+.zt-month-year { color: var(--accent-color, #ff90e8); }
+.zt-nav-btns { display: flex; align-items: center; gap: 0.35rem; flex-shrink: 0; margin-right: -0.6rem; }
+.zt-nav-btn {
+  width: 2.15rem; height: 2.15rem; display: flex; align-items: center; justify-content: center;
+  padding: 0; background: transparent; border: none; border-radius: 50%;
+  color: var(--accent-color, #ff90e8); cursor: pointer; -webkit-tap-highlight-color: transparent;
+  transition: background-color 0.15s ease, transform 0.15s ease, opacity 0.25s ease;
+}
+@media (hover: hover) { .zt-nav-btn:hover { background-color: rgba(127,127,127,0.14); } }
+.zt-nav-btn:active { transform: scale(0.9); background-color: rgba(127,127,127,0.22); }
+.zt-nav-btn:disabled { opacity: 0.25; pointer-events: none; }
+.zt-nav-btn svg { transition: transform 0.3s var(--zt-spring); }
+#ztPrev:active svg { transform: translateX(-3px); }
+#ztNext:active svg { transform: translateX(3px); }
+.zt-today {
+  display: inline-flex; align-items: center; gap: 0.35rem; height: 1.9rem; padding: 0 0.75rem;
+  border: none; border-radius: 999px; cursor: pointer; -webkit-tap-highlight-color: transparent;
+  background: color-mix(in srgb, var(--accent-color, #ff90e8) 20%, transparent);
+  color: var(--theme-text, #f2f2f7);
+  font-family: "Baloo 2", "Space Grotesk", sans-serif; font-weight: 700; font-size: 0.8rem;
+  opacity: 0; transform: scale(0.8); pointer-events: none;
+  transition: opacity 0.25s ease, transform 0.4s var(--zt-spring);
+}
+.zt-today.is-on { opacity: 1; transform: none; pointer-events: auto; }
+.zt-today i { width: 0.45rem; height: 0.45rem; border-radius: 50%; background: var(--accent-color, #ff90e8); }
+
+.zt-stats { display: grid; grid-template-columns: 1fr auto 1fr auto 1fr; align-items: stretch; gap: 0.85rem; }
+.zt-stat { display: flex; flex-direction: column; gap: 0.12rem; min-width: 0; font-family: "Baloo 2", "Space Grotesk", sans-serif; color: var(--theme-text, #f2f2f7); }
+.zt-stat-label { font-weight: 600; font-size: 0.72rem; line-height: 1.1; white-space: nowrap; opacity: 0.55; }
+.zt-stat-value { font-weight: 800; font-size: 1.12rem; line-height: 1.1; letter-spacing: -0.02em; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.zt-stat-sep { width: 1.5px; background: color-mix(in srgb, var(--theme-text, #f2f2f7) 22%, transparent); }
+
+.zt-weekdays { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; margin-bottom: -0.75rem; }
+.zt-weekday {
+  text-align: center; font-family: "Baloo 2", "Space Grotesk", sans-serif; font-weight: 600; font-size: 0.72rem;
+  color: var(--theme-text, #f2f2f7); opacity: 0.5;
+}
+.zt-weekday.is-weekend { color: var(--weekend-color, #ff6b81); opacity: 0.75; }
+.zt-grid { position: relative; display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; touch-action: pan-y; }
+.zt-day {
+  position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 2px; aspect-ratio: 1 / 1.12; min-width: 0; padding: 0;
+  border: 2px solid transparent; border-radius: 14px;
+  background: color-mix(in srgb, var(--accent-color, #ff90e8) var(--p, 0%), transparent);
+  font-family: "Baloo 2", "Space Grotesk", sans-serif; color: var(--theme-text, #f2f2f7);
+  cursor: pointer; -webkit-tap-highlight-color: transparent;
+  transition: transform 0.15s ease, color 0.25s ease, border-color 0.25s ease, background-color 0.3s ease;
+}
+.zt-day.is-empty { visibility: hidden; pointer-events: none; }
+.zt-day:not(:disabled):active { transform: scale(0.92); }
+.zt-day:disabled { cursor: default; opacity: 0.3; }
+.zt-d-num { font-weight: 700; font-size: 0.98rem; line-height: 1; }
+.zt-d-time { font-weight: 600; font-size: 0.6rem; line-height: 1; min-height: 0.6rem; opacity: 0.75; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.zt-day.is-weekend .zt-d-num { color: var(--weekend-color, #ff6b81); }
+.zt-day.is-today { border-color: var(--accent-color, #ff90e8); }
+.zt-day.is-selected { background: transparent; border-color: transparent; color: #16171b; }
+.zt-day.is-selected .zt-d-num { color: #16171b; }
+.zt-day.is-selected .zt-d-time { opacity: 0.8; }
+.zt-bubble {
+  position: absolute; left: 0; top: 0; z-index: 0; pointer-events: none; border-radius: 14px;
+  background: var(--accent-color, #ff90e8); box-shadow: 0 8px 16px -8px rgba(0,0,0,0.35);
+  will-change: transform; transition: transform 0.55s cubic-bezier(0.34, 1.4, 0.64, 1), opacity 0.25s ease, background-color 0.5s ease;
+}
+.zt-bubble.is-hidden { opacity: 0; }
+
+.zt-detail { font-family: "Baloo 2", "Space Grotesk", sans-serif; color: var(--theme-text, #f2f2f7); }
+.zt-detail-in { display: flex; flex-direction: column; gap: 1rem; }
+.zt-d-head { display: flex; align-items: center; gap: 0.85rem; }
+.zt-d-marker {
+  position: relative; flex: none; width: 2.8rem; height: 2.8rem; border-radius: 50%; overflow: hidden;
+  border: 2.5px solid var(--accent-color, #ff90e8); display: flex; align-items: center; justify-content: center;
+  font-weight: 800; font-size: 1.05rem;
+}
+.zt-d-marker::before {
+  content: ""; position: absolute; inset: 0; background: var(--accent-color, #ff90e8);
+  opacity: 0.42; transform-origin: bottom; transform: scaleY(var(--f, 0));
+}
+.zt-d-marker span { position: relative; }
+.zt-d-titles { display: flex; flex-direction: column; min-width: 0; gap: 0.05rem; }
+.zt-d-name { font-weight: 700; font-size: 1.18rem; line-height: 1.15; }
+.zt-d-rel { font-weight: 600; font-size: 0.88rem; opacity: 0.55; }
+.zt-d-total { display: flex; align-items: baseline; gap: 0.6rem; flex-wrap: wrap; }
+.zt-d-total-v { font-weight: 800; font-size: 2.4rem; line-height: 1; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+.zt-d-total-l { font-weight: 600; font-size: 0.9rem; opacity: 0.55; }
+.zt-d-best {
+  align-self: flex-start; padding: 0.15rem 0.65rem; border-radius: 999px; font-weight: 700; font-size: 0.78rem;
+  background: color-mix(in srgb, var(--accent-color, #ff90e8) 22%, transparent);
+}
+.zt-sub-list { display: flex; flex-direction: column; gap: 0.85rem; padding-top: 0.2rem; }
+.zt-sub-title { font-weight: 700; font-size: 0.8rem; letter-spacing: 0.06em; text-transform: uppercase; opacity: 0.5; }
+.zt-sub { display: flex; flex-direction: column; gap: 0.35rem; }
+.zt-sub-top { display: flex; align-items: center; gap: 0.55rem; min-width: 0; }
+.zt-sub-dot { flex: none; width: 0.65rem; height: 0.65rem; border-radius: 50%; background: var(--c, var(--accent-color, #ff90e8)); }
+.zt-sub-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 700; font-size: 0.98rem; }
+.zt-sub-time { flex: none; font-weight: 600; font-size: 0.9rem; opacity: 0.7; font-variant-numeric: tabular-nums; }
+.zt-bar { height: 6px; border-radius: 99px; overflow: hidden; background: rgba(127,127,127,0.18); }
+.zt-bar i { display: block; width: var(--w, 0%); height: 100%; border-radius: inherit; background: var(--c, var(--accent-color, #ff90e8)); transform-origin: left; }
+.zt-empty { font-weight: 600; font-size: 0.98rem; opacity: 0.5; padding: 0.2rem 0; }
+
+@keyframes ztSettle { from { opacity: 0; transform: translateY(10px); } }
+@keyframes ztDayIn { from { opacity: 0; transform: translate(calc(var(--dir, 0) * 18px), 10px) scale(0.6); } }
+@keyframes ztLabelIn { from { opacity: 0; transform: translateX(calc(var(--dir, 0) * 22px)); } }
+@keyframes ztBubblePop { from { opacity: 0; transform: scale(0.2); } }
+@keyframes ztTextIn { from { opacity: 0; transform: translateY(8px); } }
+@keyframes ztFill { from { transform: scaleY(0); } }
+@keyframes ztBar { from { transform: scaleX(0); } }
+#page-ztakvim.is-active .calendar-topbar-title { animation: ztSettle 0.5s var(--zt-ease) 40ms backwards; }
+#page-ztakvim.is-active .zt-nav { animation: ztSettle 0.55s var(--zt-ease) 90ms backwards; }
+#page-ztakvim.is-active .zt-stats { animation: ztSettle 0.55s var(--zt-ease) 130ms backwards; }
+#page-ztakvim.is-active .zt-weekday { animation: ztSettle 0.5s var(--zt-ease) calc(170ms + var(--c, 0) * 28ms) backwards; }
+#page-ztakvim.is-active .zt-day.is-anim { animation: ztDayIn 0.55s var(--zt-ease) calc(var(--base, 200ms) + var(--r, 0) * 42ms + var(--c, 0) * 20ms) backwards; }
+#page-ztakvim.is-active .zt-bubble.is-pop { animation: ztBubblePop 0.6s var(--zt-spring) var(--pop-delay, 0ms) backwards; }
+#page-ztakvim.is-active .zt-month.is-swap > span { animation: ztLabelIn 0.45s var(--zt-ease) backwards; }
+#page-ztakvim.is-active .zt-month.is-swap > .zt-month-year { animation-delay: 60ms; }
+#page-ztakvim.is-active .zt-detail-in > * { animation: ztTextIn 0.5s var(--zt-ease) calc(var(--base, 0ms) + var(--i, 0) * 60ms) backwards; }
+#page-ztakvim.is-active .zt-d-marker::before { animation: ztFill 0.7s var(--zt-ease) calc(var(--base, 0ms) + 100ms) backwards; }
+#page-ztakvim.is-active .zt-bar i { animation: ztBar 0.8s var(--zt-ease) calc(var(--base, 0ms) + 220ms + var(--i, 0) * 60ms) backwards; }
+@media (max-width: 380px) {
+  .zt-stat-value { font-size: 0.98rem; }
+  .zt-link-value { font-size: 1.5rem; }
+  .zt-d-total-v { font-size: 2.1rem; }
+}
+@media (min-width: 768px) and (min-height: 600px) {
+  #page-ztakvim { padding: calc(24px + env(safe-area-inset-top)) 40px calc(28px + env(safe-area-inset-bottom)); }
+  .zt-wrap { max-width: 760px; gap: 1.6rem; }
+  .zt-grid, .zt-weekdays { gap: 8px; }
+  .zt-day { aspect-ratio: 1 / 0.82; border-radius: 16px; }
+  .zt-bubble { border-radius: 16px; }
+  .zt-d-num { font-size: 1.15rem; }
+  .zt-d-time { font-size: 0.74rem; min-height: 0.74rem; }
+  .zt-stat-value { font-size: 1.5rem; }
+  .zt-stat-label { font-size: 0.8rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  #page-ztakvim *, #page-ztakvim *::before, .zt-link, .zt-link * { animation-duration: 0.01s !important; animation-delay: 0s !important; transition-duration: 0.01s !important; }
+}
+</style>
 </head>
 <body oncopy="return false" oncut="return false" onselectstart="return false" ondragstart="return false">
 
@@ -40476,6 +40681,20 @@ body.is-countdown-fs.is-countdown-paused .countdown-fullscreen-time-row .stopwat
               <button type="button" class="add-task-btn stopwatch-reset-btn is-hidden" id="stopwatchResetBtn">Sıfırla</button>
             </div>
           </div>
+
+          <!-- Zaman Takvimi girişi: Ana sayfadaki Takvim bağlantısı gibi kartsız düz satır.
+               Solda en uzun çalışılan gün süresi, sağda takvime giden bağlantı. -->
+          <button type="button" class="zt-link" id="ztLink" aria-label="Zaman Takvimi'ni aç">
+            <span class="zt-link-left">
+              <span class="zt-link-label">Çalışılan en uzun süre</span>
+              <span class="zt-link-value" id="ztLinkValue">—</span>
+            </span>
+            <span class="zt-link-sep" aria-hidden="true"></span>
+            <span class="zt-link-go">
+              <span>Zaman Takvimi</span>
+              <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </span>
+          </button>
         </div>
 
         <!-- Sayaç (geri sayım): gizli buton ile açılan alternatif mod.
@@ -42061,6 +42280,46 @@ body.is-countdown-fs.is-countdown-paused .countdown-fullscreen-time-row .stopwat
         <div class="page10-donut-empty" id="page10DonutEmpty" style="display:none;">Bu aralıkta henüz derse göre kayıt yok.</div>
       </div>
       </div>
+    </div>
+  </section>
+
+  <!-- Zaman Takvimi: kronometreyle çalışılan süreyi gün gün gösteren aylık takvim (YPT mantığı:
+       her günün hücresinde o günün toplam süresi, yoğunluğa göre vurgu rengi; güne dokununca
+       toplam ve ders dağılımı). Veri: APP_STATE.stopwatchLogs / stopwatchSubjectLogs. -->
+  <section class="page" id="page-ztakvim" aria-label="Zaman Takvimi">
+    <div class="zt-wrap">
+      <div class="calendar-topbar">
+        <button type="button" class="calendar-back-btn" id="ztBackBtn" aria-label="Geri dön">
+          <svg viewBox="0 0 24 24" width="18" height="18"><path d="M15 4l-8 8 8 8" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <span class="calendar-topbar-title">Zaman Takvimi</span>
+        <span class="calendar-topbar-spacer" aria-hidden="true"></span>
+      </div>
+
+      <div class="zt-nav">
+        <span class="zt-month" id="ztMonth" aria-live="polite"><span class="zt-month-name">Eylül</span><span class="zt-month-year">2026</span></span>
+        <div class="zt-nav-btns">
+          <button type="button" class="zt-today" id="ztToday" aria-label="Bugüne dön"><i></i><span>Bugün</span></button>
+          <button type="button" class="zt-nav-btn" id="ztPrev" aria-label="Önceki ay">
+            <svg viewBox="0 0 24 24" width="16" height="16"><path d="M15 4l-8 8 8 8" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <button type="button" class="zt-nav-btn" id="ztNext" aria-label="Sonraki ay">
+            <svg viewBox="0 0 24 24" width="16" height="16"><path d="M9 4l8 8-8 8" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="zt-stats">
+        <div class="zt-stat"><span class="zt-stat-label">Aylık toplam</span><span class="zt-stat-value" id="ztStatTotal">0 dk</span></div>
+        <span class="zt-stat-sep" aria-hidden="true"></span>
+        <div class="zt-stat"><span class="zt-stat-label">Günlük ort.</span><span class="zt-stat-value" id="ztStatAvg">0 dk</span></div>
+        <span class="zt-stat-sep" aria-hidden="true"></span>
+        <div class="zt-stat"><span class="zt-stat-label">En uzun gün</span><span class="zt-stat-value" id="ztStatBest">0 dk</span></div>
+      </div>
+
+      <div class="zt-weekdays" id="ztWeekdays"></div>
+      <div class="zt-grid" id="ztGrid"></div>
+      <div class="zt-detail" id="ztDetail"></div>
     </div>
   </section>
 
@@ -72357,6 +72616,300 @@ body.is-countdown-fs.is-countdown-paused .countdown-fullscreen-time-row .stopwat
       el.classList.add(up ? 'is-tick-up' : 'is-tick-down');
     }).observe(el, { childList: true, characterData: true, subtree: true });
   });
+})();
+</script>
+
+<script>
+// ---------- Zaman Takvimi: günlük çalışma süresi takvimi + Kronometre'deki giriş alanı ----------
+(function () {
+  'use strict';
+  const page = document.getElementById('page-ztakvim');
+  const grid = document.getElementById('ztGrid');
+  const linkBtn = document.getElementById('ztLink');
+  const linkVal = document.getElementById('ztLinkValue');
+  if (!page || !grid) return;
+
+  const MONTHS = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
+  const WD_FULL = ['Pazar', 'Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi'];
+  const WD_SHORT = ['Paz', 'Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt'];
+  const $ = (id) => document.getElementById(id);
+  const monthEl = $('ztMonth'), todayBtn = $('ztToday'), prevBtn = $('ztPrev'), nextBtn = $('ztNext');
+  const weekdaysEl = $('ztWeekdays'), detailEl = $('ztDetail');
+  const pad = (n) => String(n).padStart(2, '0');
+  const keyOf = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+  const startOfDay = (d) => { const x = new Date(d); x.setHours(0, 0, 0, 0); return x; };
+  const todayKey = () => keyOf(new Date());
+  const MIN_MS = 60000; // 1 dakikadan kısa süreler "çalışma" sayılmaz
+  const esc = (t) => String(t).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+  const logs = () => (typeof APP_STATE !== 'undefined' && APP_STATE.stopwatchLogs && typeof APP_STATE.stopwatchLogs === 'object') ? APP_STATE.stopwatchLogs : {};
+  const liveToday = () => { try { return typeof page10LiveTodayMs === 'function' ? (page10LiveTodayMs() || 0) : 0; } catch (e) { return 0; } };
+  const dayMs = (key) => {
+    let ms = Number(logs()[key]) || 0;
+    if (key === todayKey()) ms += liveToday();
+    return ms;
+  };
+  const fmtLong = (ms) => {
+    const mins = Math.floor(ms / 60000), h = Math.floor(mins / 60), m = mins % 60;
+    if (h && m) return `${h} sa ${m} dk`;
+    return h ? `${h} sa` : `${m} dk`;
+  };
+  const fmtStat = (ms) => {
+    const mins = Math.floor(ms / 60000), h = Math.floor(mins / 60), m = mins % 60;
+    if (h >= 100) return `${h} sa`;
+    return h ? `${h}sa ${pad(m)}dk` : `${m}dk`;
+  };
+  const fmtCell = (ms) => {
+    const mins = Math.floor(ms / 60000);
+    if (mins < 1) return '';
+    const h = Math.floor(mins / 60), m = mins % 60;
+    return h ? `${h}:${pad(m)}` : `${m}dk`;
+  };
+
+  // ---- Kronometre sayfasındaki alan: tüm zamanların en uzun gün süresi ----
+  const allTimeBestMs = () => {
+    const l = logs(); let best = 0;
+    Object.keys(l).forEach((k) => { const v = Number(l[k]) || 0; if (v > best) best = v; });
+    const live = (Number(l[todayKey()]) || 0) + liveToday();
+    return Math.max(best, live);
+  };
+  const updateLink = () => { if (linkVal) { const b = allTimeBestMs(); linkVal.textContent = b >= MIN_MS ? fmtLong(b) : '—'; } };
+
+  // ---- Takvim durumu ----
+  const now0 = new Date();
+  let view = { y: now0.getFullYear(), m: now0.getMonth() };
+  let sel = todayKey();
+  let bestDayKey = '';
+  const bubble = document.createElement('span');
+  bubble.className = 'zt-bubble is-hidden';
+  bubble.setAttribute('aria-hidden', 'true');
+
+  const weekStartsSun = () => typeof APP_STATE !== 'undefined' && APP_STATE.weekStart === 'sun';
+
+  function renderWeekdays() {
+    const sun = weekStartsSun();
+    weekdaysEl.innerHTML = '';
+    for (let i = 0; i < 7; i += 1) {
+      const idx = sun ? i : (i + 1) % 7;
+      const s = document.createElement('span');
+      s.className = 'zt-weekday' + (idx === 0 || idx === 6 ? ' is-weekend' : '');
+      s.style.setProperty('--c', i);
+      s.textContent = WD_SHORT[idx];
+      weekdaysEl.appendChild(s);
+    }
+  }
+
+  function setMonthLabel(swapDir) {
+    monthEl.querySelector('.zt-month-name').textContent = MONTHS[view.m];
+    monthEl.querySelector('.zt-month-year').textContent = String(view.y);
+    if (swapDir) {
+      monthEl.style.setProperty('--dir', swapDir);
+      monthEl.classList.remove('is-swap'); void monthEl.offsetWidth; monthEl.classList.add('is-swap');
+    }
+  }
+
+  function moveBubble(instant, pop) {
+    const btn = grid.querySelector('.zt-day.is-selected');
+    if (!btn) { bubble.classList.add('is-hidden'); return; }
+    bubble.classList.remove('is-hidden');
+    if (instant) bubble.style.transition = 'none';
+    bubble.style.width = btn.offsetWidth + 'px';
+    bubble.style.height = btn.offsetHeight + 'px';
+    bubble.style.transform = `translate(${btn.offsetLeft}px, ${btn.offsetTop}px)`;
+    if (instant) { void bubble.offsetWidth; bubble.style.transition = ''; }
+    if (pop) { bubble.classList.remove('is-pop'); void bubble.offsetWidth; bubble.classList.add('is-pop'); }
+  }
+
+  function renderMonth(dir, anim) {
+    const { y, m } = view;
+    const first = new Date(y, m, 1), dim = new Date(y, m + 1, 0).getDate();
+    const lead = weekStartsSun() ? first.getDay() : (first.getDay() + 6) % 7;
+    const today = startOfDay(new Date());
+    const arr = [];
+    let total = 0, studied = 0, best = 0, bestKey = '';
+    for (let d = 1; d <= dim; d += 1) {
+      const key = `${y}-${pad(m + 1)}-${pad(d)}`;
+      const ms = dayMs(key);
+      arr[d] = ms;
+      if (ms >= MIN_MS) { total += ms; studied += 1; if (ms > best) { best = ms; bestKey = key; } }
+    }
+    bestDayKey = bestKey;
+    const scale = Math.max(best, 3 * 3600000);
+
+    grid.innerHTML = '';
+    grid.appendChild(bubble);
+    for (let i = 0; i < lead; i += 1) {
+      const e = document.createElement('span'); e.className = 'zt-day is-empty'; e.setAttribute('aria-hidden', 'true'); grid.appendChild(e);
+    }
+    for (let d = 1; d <= dim; d += 1) {
+      const date = new Date(y, m, d), key = keyOf(date), ms = arr[d];
+      const col = (lead + d - 1) % 7, row = Math.floor((lead + d - 1) / 7);
+      const dow = date.getDay();
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.dataset.key = key;
+      b.className = 'zt-day' + (dow === 0 || dow === 6 ? ' is-weekend' : '') + (key === todayKey() ? ' is-today' : '') + (key === sel ? ' is-selected' : '') + (anim ? ' is-anim' : '');
+      b.style.setProperty('--r', row); b.style.setProperty('--c', col);
+      b.style.setProperty('--p', (ms >= MIN_MS ? Math.round(14 + 46 * Math.min(1, ms / scale)) : 0) + '%');
+      if (date.getTime() > today.getTime()) b.disabled = true;
+      b.setAttribute('aria-label', `${d} ${MONTHS[m]}, ${ms >= MIN_MS ? fmtLong(ms) : 'çalışma yok'}`);
+      b.innerHTML = `<span class="zt-d-num">${d}</span><span class="zt-d-time">${fmtCell(ms)}</span>`;
+      grid.appendChild(b);
+    }
+    grid.style.setProperty('--dir', dir || 0);
+    grid.style.setProperty('--base', anim === 'first' ? '200ms' : '40ms');
+
+    $('ztStatTotal').textContent = fmtStat(total);
+    $('ztStatAvg').textContent = studied ? fmtStat(total / studied) : '0dk';
+    $('ztStatBest').textContent = fmtStat(best);
+
+    const isCurrent = y === today.getFullYear() && m === today.getMonth();
+    todayBtn.classList.toggle('is-on', !isCurrent);
+    nextBtn.disabled = isCurrent;
+    requestAnimationFrame(() => moveBubble(true, !!anim));
+  }
+
+  let countToken = 0;
+  function countTo(el, to) {
+    const token = ++countToken;
+    if (to <= 0) { el.textContent = '0 dk'; return; }
+    const t0 = performance.now(), dur = 750;
+    const step = (t) => {
+      if (token !== countToken) return;
+      const p = Math.min(1, (t - t0) / dur), e = 1 - Math.pow(1 - p, 3);
+      el.textContent = fmtLong(to * e);
+      if (p < 1) requestAnimationFrame(step); else el.textContent = fmtLong(to);
+    };
+    requestAnimationFrame(step);
+  }
+
+  function renderDetail(first) {
+    const [Y, M, D] = sel.split('-').map(Number);
+    const date = new Date(Y, M - 1, D);
+    const ms = dayMs(sel);
+    const diff = Math.round((startOfDay(new Date()) - date) / 86400000);
+    const rel = diff === 0 ? 'Bugün' : diff === 1 ? 'Dün' : diff > 1 ? `${diff} gün önce` : '';
+    const isBest = sel === bestDayKey && ms >= MIN_MS;
+    const bd = (typeof page10SubjectBreakdownForDay === 'function')
+      ? page10SubjectBreakdownForDay(sel, ms) : { list: [], unlabeledMs: ms, effectiveDayTotalMs: ms };
+    const denom = Math.max(1, bd.effectiveDayTotalMs || ms);
+    const rows = bd.list.map((it) => ({
+      name: it.name, ms: it.ms,
+      color: (typeof page10ColorForSubject === 'function') ? page10ColorForSubject(it.track, it.name) : '#ff5da2'
+    }));
+    if (bd.unlabeledMs >= MIN_MS && rows.length) rows.push({ name: 'Branşsız', ms: bd.unlabeledMs, color: 'rgba(127,127,127,.7)' });
+    const scale = Math.max(monthScale(), 1);
+    let idx = 0;
+    let html = `<div class="zt-d-head" style="--i:${idx++}"><div class="zt-d-marker" style="--f:${Math.min(1, ms / scale).toFixed(3)}"><span>${D}</span></div>` +
+      `<div class="zt-d-titles"><span class="zt-d-name">${WD_FULL[date.getDay()]}, ${D} ${MONTHS[M - 1]}</span><span class="zt-d-rel">${esc(rel)}</span></div></div>`;
+    html += `<div class="zt-d-total" style="--i:${idx++}"><span class="zt-d-total-v" id="ztTotalV">0 dk</span><span class="zt-d-total-l">toplam çalışma</span></div>`;
+    if (isBest) html += `<span class="zt-d-best" style="--i:${idx++}">Ayın en uzun günü</span>`;
+    if (ms < MIN_MS) {
+      html += `<div class="zt-empty" style="--i:${idx++}">Bu gün için çalışma kaydı yok.</div>`;
+    } else if (rows.length) {
+      html += `<div class="zt-sub-list"><span class="zt-sub-title" style="--i:${idx++}">Branşlar</span>` +
+        rows.map((r) => `<div class="zt-sub" style="--i:${idx++};--c:${esc(r.color)};--w:${Math.max(3, Math.round(r.ms / denom * 100))}%"><div class="zt-sub-top"><span class="zt-sub-dot"></span><span class="zt-sub-name">${esc(r.name)}</span><span class="zt-sub-time">${fmtLong(r.ms)}</span></div><div class="zt-bar"><i></i></div></div>`).join('') +
+        '</div>';
+    } else {
+      html += `<div class="zt-empty" style="--i:${idx++}">Branş seçilmeden çalışıldı.</div>`;
+    }
+    detailEl.innerHTML = `<div class="zt-detail-in" style="--base:${first ? 420 : 0}ms">${html}</div>`;
+    countTo($('ztTotalV'), ms >= MIN_MS ? ms : 0);
+  }
+  // Verilen ayın en uzun günü (anahtar); kayıt yoksa ''
+  function monthBestKey(y, m) {
+    const dim = new Date(y, m + 1, 0).getDate();
+    let best = MIN_MS - 1, key = '';
+    for (let d = 1; d <= dim; d += 1) { const k = `${y}-${pad(m + 1)}-${pad(d)}`, v = dayMs(k); if (v > best) { best = v; key = k; } }
+    return key;
+  }
+  // Ayın (görünen aydaki) en uzun gününe göre işaretçi doluluğu
+  function monthScale() {
+    const dim = new Date(view.y, view.m + 1, 0).getDate();
+    let b = 3 * 3600000;
+    for (let d = 1; d <= dim; d += 1) { const v = dayMs(`${view.y}-${pad(view.m + 1)}-${pad(d)}`); if (v > b) b = v; }
+    return b;
+  }
+
+  function selectDay(key) {
+    if (key === sel) return;
+    sel = key;
+    grid.querySelectorAll('.zt-day.is-selected').forEach((n) => n.classList.remove('is-selected'));
+    const btn = grid.querySelector(`.zt-day[data-key="${key}"]`);
+    if (btn) btn.classList.add('is-selected');
+    moveBubble(false, false);
+    renderDetail(false);
+  }
+
+  function changeMonth(delta) {
+    const cur = new Date();
+    const target = new Date(view.y, view.m + delta, 1);
+    if (target.getFullYear() > cur.getFullYear() || (target.getFullYear() === cur.getFullYear() && target.getMonth() > cur.getMonth())) return;
+    view = { y: target.getFullYear(), m: target.getMonth() };
+    const isCur = view.y === cur.getFullYear() && view.m === cur.getMonth();
+    // Geçmiş aylarda ayın en uzun günü (yoksa 1'i) seçilir; bu ay ise bugün
+    sel = isCur ? todayKey() : (monthBestKey(view.y, view.m) || `${view.y}-${pad(view.m + 1)}-01`);
+    setMonthLabel(delta);
+    renderMonth(delta, true);
+    renderDetail(false);
+  }
+
+  function renderAll(first) {
+    renderWeekdays();
+    setMonthLabel(0);
+    renderMonth(0, first ? 'first' : true);
+    renderDetail(!!first);
+  }
+
+  // ---- Olaylar ----
+  grid.addEventListener('click', (e) => {
+    const b = e.target.closest('.zt-day'); if (!b || b.disabled || b.classList.contains('is-empty')) return;
+    selectDay(b.dataset.key);
+  });
+  prevBtn.addEventListener('click', () => changeMonth(-1));
+  nextBtn.addEventListener('click', () => changeMonth(1));
+  todayBtn.addEventListener('click', () => {
+    const cur = new Date(); const dir = (cur.getFullYear() * 12 + cur.getMonth()) > (view.y * 12 + view.m) ? 1 : -1;
+    view = { y: cur.getFullYear(), m: cur.getMonth() }; sel = todayKey();
+    setMonthLabel(dir); renderMonth(dir, true); renderDetail(false);
+  });
+  // Izgarada yatay kaydırma: ay değiştir
+  let sx = 0, sy = 0, tracking = false;
+  grid.addEventListener('pointerdown', (e) => { tracking = true; sx = e.clientX; sy = e.clientY; });
+  grid.addEventListener('pointerup', (e) => {
+    if (!tracking) return; tracking = false;
+    const dx = e.clientX - sx, dy = e.clientY - sy;
+    if (Math.abs(dx) > 55 && Math.abs(dx) > Math.abs(dy) * 1.6) changeMonth(dx < 0 ? 1 : -1);
+  });
+  grid.addEventListener('pointercancel', () => { tracking = false; });
+  if (window.ResizeObserver) new ResizeObserver(() => moveBubble(true, false)).observe(grid);
+  else window.addEventListener('resize', () => moveBubble(true, false));
+
+  function openZt() {
+    const cur = new Date();
+    view = { y: cur.getFullYear(), m: cur.getMonth() }; sel = todayKey();
+    document.body.classList.add('is-ztakvim-open'); // alt navbar'ı gizler
+    if (typeof goToPage === 'function') goToPage('page-ztakvim');
+    page.scrollTop = 0;
+    renderAll(true);
+  }
+  function closeZt() {
+    document.body.classList.remove('is-ztakvim-open');
+    if (typeof goToPage === 'function') goToPage('page-5');
+  }
+  $('ztBackBtn').addEventListener('click', closeZt);
+  if (linkBtn) linkBtn.addEventListener('click', openZt);
+
+  // Sayfa başka yolla (yan panel vb.) terk edilirse alt navbar geri gelsin
+  new MutationObserver(() => {
+    if (!page.classList.contains('is-active') && !page.classList.contains('is-leaving')) document.body.classList.remove('is-ztakvim-open');
+  }).observe(page, { attributes: true, attributeFilter: ['class'] });
+
+  // Kronometre alanı güncel kalsın
+  window.addEventListener('app-state-saved', updateLink);
+  const p5 = document.getElementById('page-5');
+  if (p5) new MutationObserver(() => { if (p5.classList.contains('is-active')) updateLink(); }).observe(p5, { attributes: true, attributeFilter: ['class'] });
+  updateLink();
 })();
 </script>
 
