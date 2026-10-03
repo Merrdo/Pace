@@ -20524,118 +20524,8 @@
     }
   }
 
-  /* ==========================================================================
-     TABLET / GENİŞ EKRAN: Gündelik (Görevler / Rutinler) — baştan tasarım
-     ==========================================================================
-     Telefonda "Gündelik" tek bir 340px'lik dar sütunda akar: başlık üstte
-     ortalanmış, kategoriler/rutin grupları alt alta TEK sütun halinde
-     dizilir. Bu, az sayıda kategorisi olan kullanıcıda bile ekranın büyük
-     bölümünü boş bırakır; çok kategorisi olan kullanıcıda ise sonu
-     gelmeyen bir dikey kaydırmaya dönüşür — geniş ekranda ikisi de israf.
-
-     Çözüm: sayfa artık Soru Havuzu/Ayarlar'daki gibi geniş, sola yaslı bir
-     başlığa kavuşuyor (başlık + kalem + kategori ikonları solda, Görevler/
-     Rutinler sekmesi sağda, tek satırda). Kategori/rutin grubu kartları ise
-     dikey TEK sütun yerine, Pinterest/Trello tarzı bir "pano"da yan yana
-     akan çoklu-sütun (CSS multi-column) düzenine geçiyor: her kart kendi
-     doğal (içeriğine göre değişen) yüksekliğiyle bir sütuna yerleşir, bir
-     sonraki kart aynı sütunda devam eder ya da sığmıyorsa yeni sütuna
-     kayar. Böylece kısa bir kategoriyle uzun bir kategori yan yana
-     dururken aralarında boşuna boşluk kalmaz — ekranın genişliği kaç
-     kategori sığdırıyorsa o kadar sütun kendiliğinden oluşur. Bu, DOM
-     sırasını ya da JS render mantığını hiç değiştirmeden (kartlar hâlâ
-     #page8CategoryList / #page8RoutineGroupList içine aynı sırayla
-     ekleniyor), salt CSS ile elde ediliyor.
-
-     "+ Kategori" / "+ Rutin Grubu" butonu artık listenin en altında,
-     kaydırmak gerektiren pasif bir buton değil; sağ altta sabit duran,
-     yuvarlak uçlu bir "yüzen eylem butonu" (FAB) — pano ne kadar
-     kaydırılırsa kaydırılsın her zaman elinin altında. İki görünümden
-     (Görevler/Rutinler) sadece aktif olanın FAB'ı DOM'da görünür
-     olduğundan (kapalı görünüm zaten `display:none` ile tamamen gizlenir),
-     ikisi aynı sabit köşede çakışmadan devralınıyor. */
-  /* min-height: 600px koşulu eklendi: yatay çevrilmiş bir telefonun genişliği
-     768px'i geçebiliyor ama yüksekliği (kısa kenarı) her zaman ~430-460px'te
-     kalıyor; gerçek tabletlerin yatay yüksekliği ise en az ~744px. Bu sayede
-     telefon yatay modda hep telefon tasarımında kalır, tablet ise hem yatay
-     hem dikeyde (koşullar sağlandığında) kendi tasarımını kullanmaya devam eder. */
+  /* Kategoriler/Rutin Grupları pop-up'ı (Soru Havuzu filtresi de kullanır): geniş ekranda daha ferah. */
   @media (min-width: 768px) and (min-height: 600px) {
-    #page-8 {
-      align-items: stretch;
-    }
-
-    
-    
-
-    
-    
-
-    
-
-    
-
-    
-
-    
-    
-
-    
-    
-
-    
-
-    
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-
-    /* Kategoriler/Rutin Grupları pop-up'ı: çok sayıda etiket olduğunda dar
-       340px kutuya sıkışmak yerine, geniş ekranda daha ferah bir ızgarada
-       nefes alır. */
     .page8-groups-modal-card {
       max-width: 620px;
     }
@@ -38907,177 +38797,6 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
   }
 
   /* ==========================================================================
-     GÜNDELİK — TAMAMEN YENİ TASARIM (#p8n) — sadece BÜYÜK EKRAN
-     ==========================================================================
-     Rutinler ana sayfa: günlük ilerleme halkası + haftalık çubuklar + seri,
-     Sabah/Öğle/Akşam gibi zaman dilimi kartları ("Şimdi" rozetli).
-     Veri, eski Gündelik ile AYNI (page8State); eski arayüz sadece gizlendi.
-     GERİ ALMAK İÇİN bu bloğu, #p8n HTML'ini ve "Gündelik yeni arayüz" JS'ini
-     silmek yeterli. Mobil etkilenmez. */
-  .p8n { display: none; }
-  @media (min-width: 768px) and (min-height: 600px) {
-    
-    #page-8 { align-items: stretch; padding: 0; }
-    .p8n {
-      --p8-surf: color-mix(in srgb, var(--theme-text, #121212) 6%, transparent);
-      --p8-surf2: color-mix(in srgb, var(--theme-text, #121212) 11%, transparent);
-      --p8-mute: color-mix(in srgb, var(--theme-text, #121212) 55%, transparent);
-      display: block; flex: 1 1 auto; min-height: 0; width: 100%;
-      overflow-y: auto; scrollbar-width: none; box-sizing: border-box;
-      padding: 0 40px calc(130px + env(safe-area-inset-bottom));
-      color: var(--theme-text, #121212);
-      font-family: "Baloo 2", "Space Grotesk", sans-serif;
-    }
-    .p8n::-webkit-scrollbar { display: none; }
-    .p8n-inner { max-width: 1240px; margin: 0 auto; }
-    /* Başlık kaydırırken üstte sabit kalır; arkası tema rengiyle örtülür ve
-       alt kenarda yumuşakça solar (Soru Havuzu başlık satırıyla aynı mantık). */
-    .p8n-head { position: sticky; top: 0; z-index: 6; display: flex; align-items: baseline; gap: 1rem; padding: calc(44px + env(safe-area-inset-top)) 0 1rem; margin-bottom: .4rem; }
-    .p8n-head::before { content: ''; position: absolute; left: -40px; right: -40px; top: 0; bottom: 0; z-index: -1; pointer-events: none; background: linear-gradient(to bottom, var(--theme-bg, #F6F4EF) calc(100% - 14px), transparent); }
-    .p8n-head h1 { margin: 0; font-weight: 700; font-size: clamp(29.1px, 1.36vw + 22.44px, 40.8px); letter-spacing: -0.01em; }
-    .p8n-notesbtn { margin-left: auto; align-self: center; flex: 0 0 auto; display: inline-flex; align-items: center; gap: .45rem; height: 2.7rem; padding: 0 1.15rem; border: none; border-radius: 999px; cursor: pointer; font: inherit; font-weight: 700; font-size: .85rem; color: color-mix(in srgb, var(--theme-text, #121212) 94%, transparent); background: var(--p8-surf); box-shadow: inset 0 1px 3px 0 color-mix(in srgb, var(--theme-text, #121212) 10%, transparent); transition: background-color .15s, transform .15s; -webkit-tap-highlight-color: transparent; }
-    .p8n-notesbtn:active { transform: translate(1px, 1px); }
-    .p8n-edit { flex: 1 1 auto; min-width: 0; font: inherit; font-weight: 600; font-size: 1.05rem; color: inherit; background: var(--p8-surf2); border: none; outline: none; border-radius: 999px; padding: .3rem .8rem; }
-    .p8n-add { display: flex; gap: .5rem; margin-top: .4rem; margin-bottom: 0; }
-    .p8n-add .p8n-input { flex: 1 1 auto; min-width: 0; width: auto; }
-    .p8n-addbtn { flex: 0 0 auto; height: 2.6rem; padding: 0 1.2rem; border: none; border-radius: 999px; cursor: pointer; font: inherit; font-weight: 700; font-size: .9rem; color: #fff; background: var(--accent-color, #ff90e8); text-shadow: 0 1px 2px rgba(0,0,0,.18); -webkit-tap-highlight-color: transparent; }
-    .p8n-addbtn:active { transform: translate(1px, 1px); }
-    .p8n-newgroup .p8n-add { margin-top: 0; }
-    .p8n-input { width: 100%; box-sizing: border-box; font: inherit; font-weight: 600; font-size: .95rem; color: inherit; background: var(--p8-surf); border: none; outline: none; border-radius: 999px; padding: .6rem 1rem; }
-    .p8n-input::placeholder { color: var(--p8-mute); }
-    .p8n-input:focus { background: var(--p8-surf2); }
-    /* --- Grup ekleme / boş durum --- */
-    .p8n-newgroup { display: flex; flex-wrap: wrap; gap: .6rem; align-items: center; margin-top: 1.3rem; }
-    .p8n-pill { font: inherit; font-weight: 700; font-size: .85rem; border: none; border-radius: 999px; padding: 0 1.1rem; height: 2.5rem; cursor: pointer; color: color-mix(in srgb, var(--theme-text, #121212) 94%, transparent); background: var(--p8-surf); transition: background-color .15s, transform .15s; }
-    .p8n-pill:hover { background: var(--p8-surf2); }
-    .p8n-pill:active { transform: translate(1px, 1px); }
-    .p8n-newgroup .p8n-input { width: 220px; }
-    /* --- Sadeleştirilmiş rutin kartları (Düzenle modu, açılır ekleme) --- */
-    .p8n-newbtn { display: block; width: 100%; margin-top: 1.2rem; height: 3rem; border: 2px dashed color-mix(in srgb, var(--theme-text, #121212) 18%, transparent); border-radius: 1.4rem; font: inherit; font-weight: 700; font-size: .95rem; cursor: pointer; color: var(--p8-mute); background: none; transition: background-color .15s, color .15s; }
-    .p8n-newbtn:hover { background: var(--p8-surf); color: var(--theme-text, #121212); }
-    .p8n-pills { display: flex; gap: .5rem; flex-wrap: wrap; }
-    .p8n-newgroup { gap: .8rem; }
-    .p8n-newgroup .p8n-add { flex: 1 1 260px; }
-    .p8n-newgroup .p8n-input { width: auto; }
-    /* --- Gündelik içeriği: sade tasarım --- */
-    .p8n-groups { padding-top: .6rem; }
-    /* Başlıkta ilerleme halkası: kart yok, doğrudan arka planın üzerinde */
-    .p8n-stat { display: inline-flex; align-items: center; margin-left: auto; align-self: center; flex: 0 0 auto; }
-    .p8n-stat[hidden] { display: none; }
-    .p8n-stat.is-bump { animation: p8nBump .6s cubic-bezier(.34,1.56,.64,1); }
-    @keyframes p8nBump { 0% { transform: scale(1); } 35% { transform: scale(1.1); } 100% { transform: scale(1); } }
-    .p8n-stat-ring { position: relative; width: 58px; height: 58px; flex: 0 0 auto; }
-    .p8n-stat-ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
-    .p8n-stat-ring circle { fill: none; stroke-width: 4.5; stroke-linecap: round; }
-    .p8n-stat-ring .bg { stroke: var(--p8-surf2); }
-    .p8n-stat-ring .fg { stroke: var(--accent-color, #ff90e8); transition: stroke-dashoffset .9s cubic-bezier(.22,1,.36,1), filter .5s ease; }
-    .p8n-stat.is-complete .fg { filter: drop-shadow(0 0 4px color-mix(in srgb, var(--accent-color, #ff90e8) 70%, transparent)); }
-    .p8n-stat-ring b { position: absolute; inset: 0; display: grid; place-items: center; font-size: .86rem; font-weight: 800; font-variant-numeric: tabular-nums; }
-    /* Başlıktaki "Yeni grup" düğmesi; açılan ekleme paneli grupların üstünde durur */
-    .p8n-notesbtn { margin-left: 0; }
-    .p8n-newgrpbtn { margin-left: .5rem; }
-    .p8n-newgrpbtn[aria-expanded="true"] { background: var(--p8-surf2); }
-    #p8nNewGroup .p8n-newgroup { margin: .2rem 0 .6rem; }
-    #p8nTip .p8g-tip { margin-top: 1.4rem; }
-    /* Uygulama içi onay penceresi */
-    .p8n-dlg-back { position: fixed; inset: 0; z-index: 90; display: grid; place-items: center; background: rgba(0,0,0,0); transition: background-color .3s ease; }
-    .p8n-dlg-back.is-in { background: rgba(0,0,0,.5); }
-    .p8n-dlg { --p8-surf: color-mix(in srgb, var(--theme-text, #121212) 6%, transparent); --p8-surf2: color-mix(in srgb, var(--theme-text, #121212) 11%, transparent); --p8-mute: color-mix(in srgb, var(--theme-text, #121212) 55%, transparent); font-family: "Baloo 2", "Space Grotesk", sans-serif; box-sizing: border-box; width: min(410px, calc(100vw - 48px)); padding: 1.7rem 1.6rem 1.4rem; border-radius: 1.9rem; background: var(--theme-bg, #F6F4EF); color: var(--theme-text, #121212); box-shadow: 0 24px 70px rgba(0,0,0,.35); opacity: 0; transform: translateY(16px) scale(.95); transition: opacity .3s ease, transform .4s cubic-bezier(.22,1,.36,1); }
-    .p8n-dlg-back.is-in .p8n-dlg { opacity: 1; transform: none; }
-    .p8n-dlg h3 { margin: 0 0 .4rem; font-size: 1.35rem; font-weight: 800; line-height: 1.2; }
-    .p8n-dlg p { margin: 0 0 1.3rem; font-size: 1rem; font-weight: 600; line-height: 1.4; color: var(--p8-mute); }
-    .p8n-dlg-row { display: flex; gap: .6rem; justify-content: flex-end; }
-    .p8n-dlg-btn { height: 2.8rem; padding: 0 1.4rem; border: none; border-radius: 999px; cursor: pointer; font: inherit; font-weight: 800; font-size: .95rem; color: inherit; background: var(--p8-surf2); transition: transform .2s ease, filter .2s ease; }
-    .p8n-dlg-btn:active { transform: scale(.95); }
-    .p8n-dlg-btn.danger { color: #fff; background: #e5484d; }
-    /* Mini takvim gezinme */
-    .p8g-cal-h { display: flex; align-items: center; gap: .3rem; }
-    .p8g-cal { touch-action: pan-y; user-select: none; -webkit-user-select: none; }
-    .p8g-cal-title { flex: 1 1 auto; min-width: 0; border: none; background: none; padding: .25rem 0; font: inherit; font-size: inherit; font-weight: inherit; letter-spacing: inherit; text-transform: inherit; color: var(--theme-text, #121212); text-align: center; cursor: default; transition: color .25s ease; }
-    .p8g-cal-title.is-away { cursor: pointer; color: var(--gc); }
-    .p8g-cal-nav { flex: 0 0 auto; width: 1.9rem; height: 1.9rem; border: none; border-radius: 50%; display: grid; place-items: center; cursor: pointer; color: inherit; background: none; transition: background-color .2s ease, opacity .2s ease, transform .2s ease; }
-    .p8g-cal-nav:hover { background: var(--p8-surf2); }
-    .p8g-cal-nav:active { transform: scale(.88); }
-    .p8g-cal-nav:disabled { opacity: .25; pointer-events: none; }
-    .p8g-cal-nav svg { width: 1rem; height: 1rem; fill: none; stroke: currentColor; stroke-width: 2.8; stroke-linecap: round; stroke-linejoin: round; }
-    .p8g-cal-g.sw-r { animation: p8gSwR .45s cubic-bezier(.22,1,.36,1); }
-    .p8g-cal-g.sw-l { animation: p8gSwL .45s cubic-bezier(.22,1,.36,1); }
-    @keyframes p8gSwR { from { opacity: 0; transform: translateX(14px); } to { opacity: 1; transform: none; } }
-    @keyframes p8gSwL { from { opacity: 0; transform: translateX(-14px); } to { opacity: 1; transform: none; } }
-    .p8n-groups { display: flex; flex-direction: column; gap: 1.1rem; }
-    .p8g { --gc: #ff90e8; --gt: #121212; display: grid; grid-template-columns: minmax(0, 1fr) 292px; gap: 2.4rem; align-items: start; padding: 1.7rem 2rem 1.5rem; border-radius: 2rem; background: var(--p8-surf); transition: background-color .3s ease, box-shadow .4s ease, opacity .35s ease, transform .35s ease; }
-    .p8g.is-now { box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--gc) 60%, transparent); }
-    .p8g.is-pressing, .p8g.is-ctx-active { background: var(--p8-surf2); }
-    .p8g.is-leave { opacity: 0; transform: scale(.985); }
-    .p8g.is-enter { animation: p8gIn .7s cubic-bezier(.22,1,.36,1) backwards; animation-delay: calc(var(--i, 0) * 90ms); }
-    @keyframes p8gIn { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
-    .p8g-head { display: flex; align-items: baseline; gap: .8rem; margin-bottom: .7rem; }
-    .p8g-name { flex: 0 1 auto; min-width: 0; font-size: clamp(1.9rem, 1.2vw + 1.5rem, 2.5rem); font-weight: 800; letter-spacing: -.02em; line-height: 1.05; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .p8g-name-in { flex: 1 1 auto; min-width: 0; box-sizing: border-box; font: inherit; font-size: 1.8rem; font-weight: 800; color: inherit; background: var(--p8-surf2); border: none; outline: none; border-radius: 999px; padding: .1rem .9rem; }
-    .p8g-dot { display: none; }
-    .p8g-sec { display: flex; align-items: center; gap: .6rem; margin: 1.3rem 0 .1rem; padding: 0 .4rem; user-select: none; -webkit-user-select: none; }
-    .p8g-head + .p8g-sec { margin-top: .5rem; }
-    .p8g-sec-name { font-size: 1.05rem; font-weight: 800; letter-spacing: .01em; display: inline-flex; align-items: center; gap: .55rem; }
-    .p8g-sec-name::before { content: ''; width: .5rem; height: .5rem; border-radius: 50%; background: var(--gc); flex: 0 0 auto; }
-    .p8g-sec-in { flex: 0 1 260px; min-width: 0; box-sizing: border-box; font: inherit; font-size: 1.02rem; font-weight: 800; color: inherit; background: var(--p8-surf2); border: none; outline: none; border-radius: 999px; padding: .2rem .8rem; }
-    .p8g-sec-count { font-size: .85rem; font-weight: 700; color: var(--p8-mute); font-variant-numeric: tabular-nums; }
-    .p8g-sec-line { flex: 1 1 auto; height: 1px; background: color-mix(in srgb, var(--theme-text, #121212) 10%, transparent); }
-    .p8g-sec-add { flex: 0 0 auto; width: 1.9rem; height: 1.9rem; border: none; border-radius: 50%; display: grid; place-items: center; cursor: pointer; color: var(--p8-mute); background: none; transition: background-color .2s ease, color .2s ease, transform .2s ease; }
-    .p8g-sec-add:hover { background: var(--p8-surf2); color: var(--theme-text, #121212); }
-    .p8g-sec-add:active { transform: scale(.88); }
-    .p8g-sec-add svg { width: 1.05rem; height: 1.05rem; fill: none; stroke: currentColor; stroke-width: 2.8; stroke-linecap: round; }
-    .p8g-actions { display: flex; flex-wrap: wrap; gap: .3rem; margin-top: .2rem; }
-    .p8g-actions .p8g-add { width: auto; padding: .7rem 1rem .7rem .4rem; }
-    .p8g-titlebox { flex: 0 1 auto; min-width: 0; display: flex; flex-direction: column; gap: .3rem; }
-    .p8g-count { font-size: 1rem; font-weight: 700; color: var(--p8-mute); font-variant-numeric: tabular-nums; }
-    .p8g.is-complete .p8g-count { color: var(--gc); }
-    .p8g-now { align-self: baseline; font-size: .7rem; font-weight: 800; letter-spacing: .04em; padding: .18rem .7rem; border-radius: 999px; background: var(--gc); color: var(--gt); }
-    .p8g-list { display: flex; flex-direction: column; }
-    .p8g-r { display: flex; align-items: center; gap: 1rem; padding: .78rem .4rem; border-radius: 1.1rem; cursor: pointer; overflow: hidden; max-height: 7rem; transition: background-color .25s ease, opacity .3s ease, max-height .3s ease, padding .3s ease; -webkit-tap-highlight-color: transparent; user-select: none; -webkit-user-select: none; }
-    .p8g-r.is-pressing, .p8g-r.is-ctx-active { background: color-mix(in srgb, var(--gc) 14%, transparent); }
-    .p8g-r.is-leave { opacity: 0; max-height: 0 !important; padding-top: 0; padding-bottom: 0; }
-    .p8g-c { flex: 0 0 auto; width: 1.85rem; height: 1.85rem; box-sizing: border-box; border-radius: 50%; border: 2px solid color-mix(in srgb, var(--theme-text, #121212) 26%, transparent); display: grid; place-items: center; transition: background-color .35s ease, border-color .35s ease, transform .35s cubic-bezier(.34,1.56,.64,1); }
-    .p8g-r:active .p8g-c { transform: scale(.88); }
-    .p8g-c svg { width: 1rem; height: 1rem; fill: none; stroke: var(--gt); stroke-width: 3.4; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 26; stroke-dashoffset: 26; transition: stroke-dashoffset .4s ease .05s; }
-    .p8g-r.is-done .p8g-c { background: var(--gc); border-color: var(--gc); }
-    .p8g-r.is-done .p8g-c svg { stroke-dashoffset: 0; }
-    .p8g-t { flex: 1 1 auto; min-width: 0; font-size: 1.3rem; font-weight: 700; line-height: 1.25; overflow-wrap: anywhere; transition: opacity .35s ease; }
-    .p8g-tt { background: linear-gradient(currentColor, currentColor) no-repeat 0 var(--strike-y, 50%) / 0 2px; transition: background-size .4s ease; }
-    .p8g-r.is-done .p8g-t { opacity: .4; }
-    .p8g-r.is-done .p8g-tt { background-size: 100% 2px; }
-    .p8g-add { display: block; width: 100%; box-sizing: border-box; padding: .7rem .4rem; border: none; background: none; text-align: left; font: inherit; font-weight: 700; font-size: 1rem; color: var(--p8-mute); cursor: pointer; border-radius: 1rem; transition: color .2s ease; }
-    .p8g-add:hover { color: var(--theme-text, #121212); }
-    .p8g-form { display: flex; align-items: center; gap: .5rem; padding: .3rem 0 .4rem; animation: p8gIn .35s ease backwards; }
-    .p8g-in { flex: 1 1 auto; min-width: 0; box-sizing: border-box; font: inherit; font-weight: 600; font-size: 1.05rem; color: inherit; background: var(--p8-surf2); border: none; outline: none; border-radius: 999px; padding: .7rem 1.1rem; }
-    .p8g-in::placeholder { color: var(--p8-mute); }
-    .p8g-go { flex: 0 0 auto; width: 2.7rem; height: 2.7rem; border: none; border-radius: 50%; display: grid; place-items: center; cursor: pointer; background: var(--gc); }
-    .p8g-go svg { width: 1.1rem; height: 1.1rem; fill: none; stroke: var(--gt); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
-    /* Mini takvim */
-    .p8g-cal { padding-top: .5rem; }
-    .p8g-cal-h { margin-bottom: .6rem; font-size: .8rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--p8-mute); }
-    .p8g-cal-g { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
-    .p8g-cal-g .wd { text-align: center; font-size: .66rem; font-weight: 800; color: var(--p8-mute); padding-bottom: 2px; }
-    .p8g-cal-g .day { position: relative; aspect-ratio: 1; display: grid; place-items: center; border-radius: 50%; font-size: .78rem; font-weight: 700; color: color-mix(in srgb, var(--theme-text, #121212) 70%, transparent); }
-    .p8g-cal-g .day.is-future { opacity: .3; }
-    .p8g-cal-g .day.is-part { background: color-mix(in srgb, var(--gc) 32%, transparent); color: var(--theme-text, #121212); }
-    .p8g-cal-g .day.is-today { box-shadow: 0 0 0 2px var(--gc); color: var(--theme-text, #121212); }
-    .p8g-cal-g .day svg { width: 62%; height: 62%; fill: none; stroke: var(--gc); stroke-width: 3; stroke-linecap: round; }
-    .p8g-cal-g .day.is-full.is-draw path { stroke-dasharray: 20; animation: p8gDraw .5s ease-out backwards; }
-    .p8g-cal-g .day.is-full.is-draw path + path { animation-delay: .18s; }
-    @keyframes p8gDraw { from { stroke-dashoffset: 20; } to { stroke-dashoffset: 0; } }
-    .p8g-tip { margin: 1.1rem 0 0; text-align: center; font-size: .82rem; font-weight: 600; color: var(--p8-mute); }
-    @media (prefers-reduced-motion: reduce) { .p8g, .p8g * { animation: none !important; transition-duration: .01ms !important; } }
-    .p8n-empty { padding: 2rem; border-radius: 1.8rem; background: var(--p8-surf); text-align: center; }
-    .p8n-empty b { font-size: 1.3rem; display: block; margin-bottom: .3rem; }
-    .p8n-empty p { margin: 0 0 1rem; color: var(--p8-mute); font-weight: 600; }
-    .p8n-empty .p8n-newgroup { justify-content: center; margin-top: 0; }
-
-    .n-toast { position: fixed; left: 50%; bottom: calc(40px + env(safe-area-inset-bottom)); transform: translateX(-50%); z-index: 70; display: flex; align-items: center; gap: .9rem; padding: .7rem .8rem .7rem 1.2rem; border-radius: 999px; background: #121212; color: #fff; font-weight: 700; font-size: .9rem; box-shadow: 0 12px 30px -10px rgba(0,0,0,.5); }
-    .n-toast[hidden] { display: none; }
-    .n-toast button { border: none; cursor: pointer; font: inherit; font-weight: 800; font-size: .85rem; padding: .35rem .9rem; border-radius: 999px; background: var(--accent-color, #ff90e8); color: #fff; }
-  }
-
-  /* ==========================================================================
      NOTLARIM — Apple Notes tarzı not uygulaması (tam ekran, #ntRoot)
      Üç sütun: klasörler | not listesi | editör. Veri IndexedDB'de
      ("gundelik-notes"); ekler (görsel/ses/dosya) orada blob olarak durur.
@@ -39317,9 +39036,8 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
        büyük ekrandaki renderHero aynen güncellemeye devam eder).
      Büyük ekran kuralları DEĞİŞTİRİLMEDİ. */
   .p8m-topbar, .p8m-scroll { display: none; }
-  @media not all and (min-width: 768px) and (min-height: 600px) {
+  @media all {
     
-    #page-8 > .p8n { display: none !important; }
     #page-8 { flex-direction: column; align-items: center; justify-content: flex-start; padding: 0; overflow: hidden; }
     #page-8 > .p8m-topbar {
       --p8-surf2: color-mix(in srgb, var(--theme-text, #121212) 11%, transparent);
@@ -39431,7 +39149,7 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
      kısımları telefona uygulanır. Kartın sağındaki MİNİ TAKVİM (.p8g-cal)
      telefonda bilinçli olarak GÖSTERİLMEZ. Kartlar tek sütun, tam genişlik.
      Büyük ekran kuralları DEĞİŞTİRİLMEDİ; bu blok yalnızca telefonda geçerli. */
-  @media not all and (min-width: 768px) and (min-height: 600px) {
+  @media all {
     #p8mScroll {
       --p8-surf: color-mix(in srgb, var(--theme-text, #121212) 6%, transparent);
       --p8-surf2: color-mix(in srgb, var(--theme-text, #121212) 11%, transparent);
@@ -41832,7 +41550,7 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
   /* Gündelik (telefon): kart sağ üst istatistik düğmesi, "tamamlandı" rozeti ve takvim sayfası.
      Büyük ekranda düğme/rozet gizli; büyük ekran kuralları değiştirilmedi. */
   .p8g-stat, .p8g-badge { display: none; }
-  @media not all and (min-width: 768px) and (min-height: 600px) {
+  @media all {
     #p8mScroll .p8g { position: relative; }
     #p8mScroll .p8g-head { padding-right: 2.9rem; }
     #p8mScroll .p8g-stat { display: grid; place-items: center; position: absolute; top: .7rem; right: .75rem; width: 2.4rem; height: 2.4rem; padding: 0; border: none; border-radius: 50%; cursor: pointer; color: var(--theme-text, #121212); background: color-mix(in srgb, var(--theme-text, #121212) 8%, transparent); -webkit-tap-highlight-color: transparent; transition: opacity .35s ease, transform .45s cubic-bezier(.34,1.56,.64,1), background-color .2s ease; }
@@ -41946,12 +41664,6 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
   @keyframes sfBurst { 0% { opacity: 0; transform: translate(0, 0) scale(.4); } 20% { opacity: 1; } 100% { opacity: 0; transform: translate(var(--bx), var(--by)) scale(.2); } }
   .sfsp.s1 { --sx: -.09em; } .sfsp.s2 { --sx: .11em; } .sfsp.s3 { --sx: .02em; }
   @media (prefers-reduced-motion: reduce) { .sflame *, .sflame { animation: none !important; } }
-  .p8n-head .sflame { font-size: 2.3rem; }
-  @media (min-width: 768px) and (min-height: 600px) {
-    .p8n-head .sflame { align-self: baseline; align-items: baseline; }
-    .p8n-head .sflame-num { line-height: 0; margin-top: 0; }
-    .p8n-head .sflame-wrap { transform: translateY(.14em); }
-  }
   #page-8 .p8m-titlewrap { grid-column: 1; grid-row: 1; display: flex; align-items: baseline; gap: .55rem; min-width: 0; }
   #page-8 .p8m-titlewrap .sflame { font-size: 1.5rem; }
   /* Telefon başlık satırı hizası (yazı tipinden BAĞIMSIZ, sabit düzen):
@@ -41963,7 +41675,7 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
        halkası ve düğmeler aynı yatay eksende, yazı ise alevle aynı alt çizgide
        olur. Alev canlı/soluk ya da seri hanesi değişse bile kutu boyutu
        değişmediği için hiza bozulmaz. */
-  @media not all and (min-width: 768px) and (min-height: 600px) {
+  @media all {
     #page-8 .p8m-topbar { align-items: center; }
     #page-8 .p8m-titlewrap { align-self: center; align-items: baseline; flex-wrap: nowrap; }
     #page-8 .p8m-titlewrap .p8m-title { line-height: 0; }
@@ -41999,36 +41711,26 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
   <section class="page" id="page-8">
     <div class="p8m-topbar" id="p8mTopbar">
       <div class="p8m-titlewrap"><h1 class="p8m-title">Gündelik</h1><div class="sflame is-off" id="p8mFlame" title="Günlük seri"></div></div>
-      <div class="p8m-actions" id="p8mStatSlot"></div>
-    </div>
-    <div class="p8m-scroll" id="p8mScroll"></div>
-
-
-
-    <!-- Gündelik yeni arayüz (büyük ekran). Veri: page8State. -->
-    <div class="p8n" id="p8n">
-      <div class="p8n-inner">
-        <div class="p8n-head">
-          <h1 id="p8nTitle">Gündelik</h1>
-          <div class="sflame is-off" id="p8nFlame" title="Günlük seri"></div>
-          <div class="p8n-stat" id="p8nStat" aria-live="polite"></div>
+      <div class="p8m-actions" id="p8mStatSlot">
+        <div class="p8n-stat" id="p8nStat" aria-live="polite"></div>
           <button type="button" class="gk-switch" id="p8nSwitch" aria-label="Hatırlanacaklar sayfasına geç"><svg class="gk-switch-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7h11l-3-3M17 17H6l3 3"/></svg><span class="gk-switch-lbls"><span class="gk-switch-lbl gk-switch-lbl-a">Hatırlanacaklar</span><span class="gk-switch-lbl gk-switch-lbl-b" aria-hidden="true">Gündelik</span></span></button>
-          <button type="button" class="p8n-notesbtn p8n-newgrpbtn" id="p8nNewBtn" aria-expanded="false">
-            <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
-            <span>Yeni grup</span>
-          </button>
-          <button type="button" class="p8n-notesbtn" id="p8nNtBtn">
-            <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13 7l4 4"/></svg>
-            <span>Notlarım</span>
-          </button>
-        </div>
-        <div id="p8nMain">
-          <div id="p8nNewGroup"></div>
-          <div class="p8n-groups" id="p8nGroups"></div>
-          <div id="p8nTip"></div>
-        </div>
-        <div class="n-toast" id="p8nToast" hidden></div>
+        <button type="button" class="p8n-notesbtn p8n-newgrpbtn" id="p8nNewBtn" aria-label="Yeni grup" aria-expanded="false">
+          <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+          <span>Yeni grup</span>
+        </button>
+        <button type="button" class="p8n-notesbtn" id="p8nNtBtn" aria-label="Notlarım">
+          <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13 7l4 4"/></svg>
+          <span>Notlarım</span>
+        </button>
       </div>
+    </div>
+    <div class="p8m-scroll" id="p8mScroll">
+      <div id="p8nMain">
+        <div id="p8nNewGroup"></div>
+        <div class="p8n-groups" id="p8nGroups"></div>
+        <div id="p8nTip"></div>
+      </div>
+      <div class="n-toast" id="p8nToast" hidden></div>
     </div>
   </section>
 
@@ -56351,8 +56053,7 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
   // ---------- Gündelik yeni arayüz (büyük ekran, #p8n) ----------
   // Aynı page8State'i kullanır: rutin grupları ana ekran.
   (() => {
-    const root = document.getElementById('p8n');
-    if (!root) return;
+    if (!document.getElementById('p8nMain')) return;
     const $ = (id) => document.getElementById(id);
     const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
     const TICK = '<svg viewBox="0 0 24 24"><path d="M4 12.5l5 5.5 11-13"/></svg>';
@@ -56428,8 +56129,8 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
     const SC = 2 * Math.PI * 18;
     stat.innerHTML = `<div class="p8n-stat-ring"><svg viewBox="0 0 44 44"><circle class="bg" cx="22" cy="22" r="18"/><circle class="fg" cx="22" cy="22" r="18" stroke-dasharray="${SC}" stroke-dashoffset="${SC}"/></svg><b>0</b></div>`;
     const sFg = stat.querySelector('.fg'), sPct = stat.querySelector('b');
-    // Seri alevleri: masaüstü (#p8nFlame) ve telefon (#p8mFlame) aynı veriyle, aynı tasarımla çizilir.
-    const flames = ['p8nFlame', 'p8mFlame'].map((id) => document.getElementById(id)).filter(Boolean);
+    // Seri alevi (#p8mFlame) bugünkü veriyle çizilir.
+    const flames = ['p8mFlame'].map((id) => document.getElementById(id)).filter(Boolean);
     const FLAME_SVG = (uid) => `<span class="sflame-ico" aria-hidden="true"><svg class="sfl sfl-a" viewBox="0 0 48 60" aria-hidden="true"><defs><linearGradient id="${uid}o" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff4d1a"/><stop offset=".55" stop-color="#ff7a00"/><stop offset="1" stop-color="#ffa000"/></linearGradient><linearGradient id="${uid}m" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffa800"/><stop offset="1" stop-color="#ffd93a"/></linearGradient><linearGradient id="${uid}i" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff2a8"/><stop offset="1" stop-color="#fff9d6"/></linearGradient></defs><path fill="url(#${uid}o)" d="M24 58C11 58 4 48.5 4 37C4 28 8.5 22 12 17.5C12.5 22 14.5 24.5 17 25.5C15.5 17 19 8 27 2C27.5 11 33 16 38 23C42 28.5 44 33 44 38C44 49 36.5 58 24 58Z"/></svg><svg class="sfl sfl-b" viewBox="0 0 48 60" aria-hidden="true"><path fill="url(#${uid}m)" d="M24 56C14.5 56 9.5 49 9.5 40.5C9.5 34.5 12.5 30.5 15.5 26.5C16 30 17.5 31.5 19.5 32C19 26 22 20 27 15.5C28 21 33 25 36 30.5C38 34 38.5 37.5 38.5 40.5C38.5 49 33.5 56 24 56Z"/></svg><svg class="sfl sfl-c" viewBox="0 0 48 60" aria-hidden="true"><path fill="url(#${uid}i)" d="M24 56C18 56 14.5 51.5 14.5 46.5C14.5 42 17.5 39.5 20 36C20.5 38.5 21.5 39.8 23 40C22.8 36 24.5 33 27 30.5C28 34.5 33.5 38.5 33.5 46C33.5 52 29.5 56 24 56Z"/></svg><svg class="sfl-st" viewBox="0 0 48 60" aria-hidden="true"><ellipse cx="11.5" cy="38" rx="1.9" ry="4.2" fill="#fff" opacity=".45" transform="rotate(8 11.5 38)"/></svg><i class="sfsp s1"></i><i class="sfsp s2"></i><i class="sfsp s3"></i><i class="sfbu" style="--bx:-.43em;--by:-.32em;--d:.072em;--c:#ffd23f"></i><i class="sfbu" style="--bx:.43em;--by:-.36em;--d:.058em;--c:#ff9a1f"></i><i class="sfbu" style="--bx:-.29em;--by:-.57em;--d:.065em;--c:#ffe27a"></i><i class="sfbu" style="--bx:.30em;--by:-.59em;--d:.054em;--c:#ff7a1a"></i><i class="sfbu" style="--bx:0em;--by:-.68em;--d:.047em;--c:#ffd23f"></i><i class="sfbu" style="--bx:-.50em;--by:-.07em;--d:.05em;--c:#ffb347"></i><i class="sfbu" style="--bx:.50em;--by:-.11em;--d:.05em;--c:#ffb347"></i></span>`;
     flames.forEach((f, i) => { f.innerHTML = '<span class="sflame-wrap"><span class="sflame-glow"></span>' + FLAME_SVG('sf' + i) + '</span><span class="sflame-num">0</span>'; });
     const tween = (node, to, fmt) => {
@@ -56647,7 +56348,6 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
       cal.appendChild(grid);
     };
     // ---- Telefon: "tamamlandı" oyunu (düğme kaybolur → bugünün dairesi belirir, sayı silinir, çarpı çizilir → düğme geri gelir)
-    const phoneMQ = window.matchMedia('not all and (min-width: 768px) and (min-height: 600px)');
     const playGame = (card) => {
       const b = card.querySelector('.p8g-badge'); if (!b) return;
       b.querySelector('b').textContent = String(new Date().getDate());
@@ -56710,7 +56410,7 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
       const done = group.routines.filter((r) => r.done).length;
       const complete = total > 0 && done === total;
       card.classList.toggle('is-complete', complete);
-      if (complete && !wasComplete && drawToday && phoneMQ.matches) playGame(card);
+      if (complete && !wasComplete && drawToday) playGame(card);
       else if (!complete && card.classList.contains('is-game')) { clearTimeout(card._gameT); card.classList.remove('is-game'); }
       card.classList.toggle('is-now', groupSlot(group.name) === nowGroupKey() && !complete);
       card.querySelector('.p8g-count').textContent = total ? (complete ? `${done}/${total} ✓` : `${done}/${total}`) : '';
@@ -56968,7 +56668,7 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
           const sb = el('button', 'p8g-add', '+ Alt başlık'); sb.type = 'button'; sb.addEventListener('click', () => openSecForm(group)); acts.appendChild(sb);
           main.appendChild(acts);
         }
-        card.append(main, el('div', 'p8g-cal'));
+        card.append(main);
 
         // Kartın kendisine basılı tutma → grup menüsü (satır ve alt başlıklar kendi menüsünü açar)
         bindHold(card, (x, y, target) => {
@@ -57142,44 +56842,6 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
 
     snapshot();
     render();
-  })();
-
-  // ---- Gündelik (telefon): rutin tamamlama halkası (#p8nStat) ile "Yeni grup" ve
-  // "Notlarım" düğmeleri sabit üst çubuğun sağ ucuna taşınır (sıra: halka, Yeni grup,
-  // Notlarım; düğmelerin dinleyicileri aynı elemanlarda kalır); büyük ekrana dönülürse başlığındaki yerine geri konur.
-  // Halkayı güncelleyen kod (renderHero) aynı elemanı tuttuğu için değişmez.
-  (() => {
-    const stat = document.getElementById('p8nStat');
-    const slot = document.getElementById('p8mStatSlot');
-    const head = document.querySelector('#p8n .p8n-head');
-    const newBtn = document.getElementById('p8nNewBtn');
-    const ntBtn = document.getElementById('p8nNtBtn');
-    if (!stat || !slot || !head || !newBtn || !ntBtn) return;
-    newBtn.setAttribute('aria-label', 'Yeni grup');
-    ntBtn.setAttribute('aria-label', 'Notlarım');
-    const mq = window.matchMedia('not all and (min-width: 768px) and (min-height: 600px)');
-    // Kartların bulunduğu alan (#p8nMain) ve "Geri al" bildirimi (#p8nToast) telefonda
-    // kayan alana (#p8mScroll) taşınır; büyük ekrana dönülürse kendi yerine geri konur.
-    // Kartları çizen kod elemanları kimlikle bulduğu için değişmez.
-    const scroll = document.getElementById('p8mScroll');
-    const inner = document.querySelector('#p8n .p8n-inner');
-    const main = document.getElementById('p8nMain');
-    const toast = document.getElementById('p8nToast');
-    const place = () => {
-      const host = mq.matches ? slot : head;
-      host.append(stat, newBtn, ntBtn);
-      if (scroll && inner && main) {
-        if (mq.matches) {
-          scroll.appendChild(main);
-          if (toast) scroll.appendChild(toast);
-        } else {
-          inner.appendChild(main);
-          if (toast) inner.appendChild(toast);
-        }
-      }
-    };
-    if (mq.addEventListener) mq.addEventListener('change', place); else mq.addListener(place);
-    place();
   })();
 
   // ---------- Notlarım: Apple Notes tarzı not uygulaması ----------
