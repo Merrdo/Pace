@@ -16842,6 +16842,19 @@
     .cal-ev-actions, .cal-ev-clockact { margin-top: auto; padding-top: 1.25rem; }
     .cal-ev-wheels { margin-top: auto; margin-bottom: auto; }
     .cal-ev-confirm { flex: 1 1 auto; justify-content: center; }
+    /* İçerik büyüyen panele göre ölçeklenir; boş alan öğeler arasına eşit dağılır. */
+    #calEvEditView .cal-ev-input { height: 4rem; font-size: 1.2rem; padding: 0 1.3rem; border-radius: 1.35rem; }
+    #calEvEditView .cal-ev-lbl { margin: auto 0 .8rem .15rem; font-size: .76rem; }
+    #calEvEditView .cal-ev-colors { gap: .3rem; padding: .45rem .25rem; }
+    #calEvEditView .cal-ev-colors button { flex: 1 1 0; width: auto; max-width: 2.9rem; height: auto; aspect-ratio: 1; }
+    #calEvEditView .cal-ev-row { height: 4.1rem; margin-top: auto; font-size: 1.08rem; border-radius: 1.35rem; gap: .85rem; }
+    #calEvEditView .cal-ev-actions { margin-top: auto; padding-top: 1.6rem; }
+    .cal-ev-actions button, .cal-ev-clockact button { height: 3.3rem; font-size: 1rem; }
+    #calEvListView .cal-ev-list { max-height: none; flex: 0 1 auto; }
+    #calEvListView .cal-ev-item { padding: 1.05rem 1.1rem 1.05rem 1rem; }
+    #calEvListView .cal-ev-add { margin-top: auto; height: 3.3rem; font-size: 1rem; }
+    #calEvListView .cal-ev-list + .cal-ev-add { margin-top: auto; }
+    .cal-ev-clockact { padding-top: 1rem; }
   }
 
   /* Silme onayı (aynı pop-up içinde, diğer görünümler gibi kayarak gelir) */
@@ -73764,34 +73777,25 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
 .ztp-ov.is-in::before{opacity:1;}
 .ztp-stage,.ztp-row{position:relative;z-index:1;}
 .ztp-row{position:relative;width:100%;}
-.ztp-skel{--ar:.771;position:relative;overflow:hidden;display:flex;flex-direction:column;gap:3.4cqw;box-sizing:border-box;padding:6.5cqw;container-type:inline-size;
-  width:min(100%,calc((100vh - 170px) * var(--ar)));width:min(100%,calc((100dvh - 170px) * var(--ar)));aspect-ratio:var(--ar);
-  border-radius:26px;background:linear-gradient(160deg,rgba(255,255,255,.13),rgba(255,255,255,.05));
-  border:1px solid rgba(255,255,255,.16);
-  box-shadow:0 40px 90px -30px rgba(0,0,0,.75),inset 0 1px 0 rgba(255,255,255,.18);
-  animation:ztpRise .8s cubic-bezier(.16,1,.3,1) both;
-  transition:opacity .55s ease,transform .7s cubic-bezier(.16,1,.3,1),filter .55s ease;}
-.ztp-skel::after{content:"";position:absolute;inset:0;pointer-events:none;
-  background:linear-gradient(108deg,transparent 30%,rgba(255,255,255,.16) 50%,transparent 70%);
-  transform:translateX(-120%);animation:ztpShimmer 2.8s cubic-bezier(.4,0,.2,1) .5s infinite;}
-.ztp-skel.is-done{opacity:0;transform:scale(1.035);filter:blur(10px);pointer-events:none;}
-.ztp-sk-head{display:flex;align-items:baseline;gap:2.6cqw;font:800 11.5cqw/1 "Baloo 2","Space Grotesk",sans-serif;color:#fff;
-  animation:ztpTxt .7s cubic-bezier(.16,1,.3,1) .15s both;}
-.ztp-sk-head em{font-style:normal;color:var(--accent-color,#ff90e8);}
-.ztp-sk-stats{display:flex;gap:3cqw;animation:ztpTxt .7s cubic-bezier(.16,1,.3,1) .28s both;}
-.ztp-sk-stats b{flex:1;height:4.4cqw;border-radius:99px;background:linear-gradient(90deg,rgba(255,255,255,.18),rgba(255,255,255,.07));}
-.ztp-sk-wd{display:grid;grid-template-columns:repeat(7,1fr);gap:2.2cqw;padding:0 .5cqw;animation:ztpTxt .7s cubic-bezier(.16,1,.3,1) .38s both;}
-.ztp-sk-wd s{height:1.5cqw;border-radius:99px;background:rgba(255,255,255,.16);}
-.ztp-sk-grid{flex:1;min-height:0;display:grid;grid-template-columns:repeat(7,1fr);grid-template-rows:repeat(var(--rows,5),1fr);gap:2.2cqw;}
-.ztp-sk-grid i{border-radius:22%;background:rgba(255,255,255,.1);
-  animation:ztpCell .75s cubic-bezier(.16,1,.3,1) var(--d,0ms) both,ztpPulse 2.4s ease-in-out calc(var(--d,0ms) + 1s) infinite;}
-.ztp-sk-grid i.is-void{visibility:hidden;animation:none;}
-.ztp-sk-grid i.is-off{background:repeating-linear-gradient(135deg,rgba(255,59,59,.30) 0 5px,rgba(255,59,59,.12) 5px 10px);box-shadow:inset 0 0 0 1.5px rgba(255,59,59,.7);}
-.ztp-status{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;
+.ztp-fall{--fs:clamp(64px,21vw,116px);position:relative;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;
+  width:min(100%,460px);height:calc(var(--fs) * 5.2);max-height:calc(100dvh - 190px);overflow:visible;
+  transition:opacity .5s ease,transform .7s cubic-bezier(.16,1,.3,1),filter .5s ease;}
+.ztp-fall b{display:block;font:800 var(--fs)/.98 "Baloo 2","Space Grotesk",sans-serif;letter-spacing:-.01em;color:#fff;
+  opacity:0;animation:ztpDrop 1.15s linear calc(var(--k) * 300ms) both;will-change:transform,opacity;}
+.ztp-fall b:nth-child(1){opacity:.0;color:var(--accent-color,#ff90e8);--o:1;}
+.ztp-fall b:nth-child(2){--o:.92;}.ztp-fall b:nth-child(3){--o:.72;}.ztp-fall b:nth-child(4){--o:.5;}.ztp-fall b:nth-child(5){--o:.3;}
+.ztp-fall.is-done{opacity:0;transform:translateY(14px) scale(.97);filter:blur(10px);pointer-events:none;}
+@keyframes ztpDrop{
+  0%{opacity:0;transform:translateY(-95dvh);animation-timing-function:cubic-bezier(.55,0,.9,.55);}
+  10%{opacity:var(--o,1);}
+  64%{opacity:var(--o,1);transform:translateY(0);animation-timing-function:cubic-bezier(.2,.7,.3,1);}
+  80%{opacity:var(--o,1);transform:translateY(-7px);animation-timing-function:cubic-bezier(.5,0,.5,1);}
+  100%{opacity:var(--o,1);transform:translateY(0);}}
+.ztp-status{position:absolute;inset:0;z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;
   transition:opacity .35s ease,transform .5s cubic-bezier(.16,1,.3,1);animation:ztpTxt .7s cubic-bezier(.16,1,.3,1) .5s both;}
 .ztp-row.is-ready .ztp-status{opacity:0;transform:translateY(-10px);pointer-events:none;}
 .ztp-bar{width:min(240px,58vw);height:3px;border-radius:9px;background:rgba(255,255,255,.16);overflow:hidden;}
-.ztp-bar i{display:block;height:100%;border-radius:inherit;transform-origin:left center;transform:scaleX(0);transition:transform .3s linear;
+.ztp-bar i{display:block;height:100%;border-radius:inherit;transform-origin:left center;transform:scaleX(0);transition:transform var(--ztp-ms,2400ms) linear;
   background:linear-gradient(90deg,var(--accent-color,#ff90e8),#fff);box-shadow:0 0 14px var(--accent-color,#ff90e8);}
 .ztp-txt{font:700 15px "Baloo 2","Space Grotesk",sans-serif;letter-spacing:.03em;color:transparent;-webkit-text-fill-color:transparent;
   background:linear-gradient(100deg,rgba(255,255,255,.42) 35%,#fff 50%,rgba(255,255,255,.42) 65%) 100% 0/250% 100%;
@@ -73826,43 +73830,31 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
 @keyframes ztpText{to{background-position:0 0;}}
 @media (prefers-reduced-motion: reduce){
   .ztp-ov,.ztp-ov *{animation:none !important;transition-duration:.01s !important;transition-delay:0s !important;}
-  .ztp-skel::after,.ztp-ov::before{display:none;}
+  .ztp-ov::before{display:none;}
+  .ztp-fall b{opacity:var(--o,1) !important;}
 }`;
     document.head.appendChild(st);
   }
 
+  const ZTP_ANIM_MS = 2500; // son yazı ~2.35 sn'de yerine oturur; çubuk aynı sürede dolar
   function openSharePreview() {
     ensureShareCss();
     const ov = document.createElement('div');
     ov.className = 'ztp-ov';
     ov.setAttribute('role', 'dialog'); ov.setAttribute('aria-modal', 'true'); ov.setAttribute('aria-label', 'Takvim görseli');
-    // İskelet gerçek ayın düzenini gösterir (satır sayısı, off günleri); görsel boyutuyla aynı orana sahiptir.
-    const sy = view.y, sm = view.m, dim = new Date(sy, sm + 1, 0).getDate();
-    const lead = weekStartsSun() ? new Date(sy, sm, 1).getDay() : (new Date(sy, sm, 1).getDay() + 6) % 7;
-    const nrows = Math.ceil((lead + dim) / 7);
-    const arH = Math.max(1350, 370 + 56 + nrows * 162 + 110);
-    let cells = '';
-    for (let i = 0; i < nrows * 7; i += 1) {
-      const d = i - lead + 1, r = Math.floor(i / 7), c = i % 7;
-      if (d < 1 || d > dim) { cells += '<i class="is-void"></i>'; continue; }
-      let off = false; try { off = window.OffDay.isOff(new Date(sy, sm, d)); } catch (e) { /* yok say */ }
-      cells += `<i class="${off ? 'is-off' : ''}" style="--d:${260 + r * 70 + c * 32}ms"></i>`;
-    }
-    ov.innerHTML = `<div class="ztp-stage"><div class="ztp-skel" style="--ar:${(1080 / arH).toFixed(4)};--rows:${nrows}">`
-      + `<div class="ztp-sk-head"><span>${MONTHS[sm]}</span><em>${sy}</em></div>`
-      + '<div class="ztp-sk-stats"><b></b><b></b><b></b></div>'
-      + '<div class="ztp-sk-wd"><s></s><s></s><s></s><s></s><s></s><s></s><s></s></div>'
-      + `<div class="ztp-sk-grid">${cells}</div></div><div class="ztp-imgwrap"></div></div>`
+    // Pace yazıları sırayla yukarıdan düşüp alt alta dizilir; ilk düşen en altta kalır, en üstteki vurgu renginde.
+    let words = '';
+    for (let i = 0; i < 5; i += 1) words += `<b style="--k:${4 - i}">Pace</b>`;
+    ov.style.setProperty('--ztp-ms', ZTP_ANIM_MS + 'ms');
+    ov.innerHTML = `<div class="ztp-stage"><div class="ztp-fall" aria-hidden="true">${words}</div><div class="ztp-imgwrap"></div></div>`
       + '<div class="ztp-row"><div class="ztp-status" aria-live="polite"><div class="ztp-bar"><i></i></div><div class="ztp-txt">Görsel hazırlanıyor</div></div></div>';
-    const stage = ov.querySelector('.ztp-stage'), skel = ov.querySelector('.ztp-skel');
+    const stage = ov.querySelector('.ztp-stage'), skel = ov.querySelector('.ztp-fall');
     const wrap = ov.querySelector('.ztp-imgwrap'), row = ov.querySelector('.ztp-row');
     const bar = ov.querySelector('.ztp-bar i');
-    let pv = 0, praf = 0;
-    const tick = () => { pv += (0.93 - pv) * 0.028; bar.style.transform = `scaleX(${pv.toFixed(3)})`; praf = requestAnimationFrame(tick); };
-    tick();
+    requestAnimationFrame(() => requestAnimationFrame(() => { bar.style.transform = 'scaleX(1)'; })); // animasyon süresi boyunca doğrusal dolar
     let url = null, closed = false;
     const close = () => {
-      if (closed) return; closed = true; cancelAnimationFrame(praf);
+      if (closed) return; closed = true;
       ov.classList.remove('is-in'); ov.classList.add('is-out');
       setTimeout(() => { ov.remove(); if (url) URL.revokeObjectURL(url); }, 360);
     };
@@ -73872,8 +73864,7 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
 
     async function ready(blob, name) {
       if (closed) return;
-      cancelAnimationFrame(praf); bar.style.transform = 'scaleX(1)';
-      await new Promise((r) => setTimeout(r, 320)); // çubuk dolsun
+      await new Promise((r) => setTimeout(r, 350)); // dolu çubuk kısa süre görünsün
       if (closed) return;
       url = URL.createObjectURL(blob);
       const img = new Image();
@@ -73918,7 +73909,7 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
       if (!blob) { blob = await renderShareBlob(view.y, view.m); shareCache = { key, blob }; }
       if (!blob) throw new Error('boş görsel');
       // Görsel hazır olsa bile iskelet kısa süre görünsün: geçiş ani değil, akıcı hissettirir.
-      const left = 1600 - (performance.now() - t0);
+      const left = ZTP_ANIM_MS - (performance.now() - t0);
       if (left > 0) await new Promise((r) => setTimeout(r, left));
       await ui.ready(blob, `pace-zaman-takvimi-${view.y}-${pad(view.m + 1)}.png`);
     } catch (e) {
