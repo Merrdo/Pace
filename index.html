@@ -38664,10 +38664,6 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
   border: 2.5px solid var(--accent-color, #ff90e8); display: flex; align-items: center; justify-content: center;
   font-weight: 800; font-size: 1.05rem;
 }
-.zt-d-marker::before {
-  content: ""; position: absolute; inset: 0; background: var(--accent-color, #ff90e8);
-  opacity: 0.42; transform-origin: bottom; transform: scaleY(var(--f, 0));
-}
 .zt-d-marker span { position: relative; }
 .zt-d-titles { display: flex; flex-direction: column; min-width: 0; gap: 0.05rem; }
 .zt-d-name { font-weight: 700; font-size: 1.18rem; line-height: 1.15; }
@@ -38695,7 +38691,6 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
 @keyframes ztLabelIn { from { opacity: 0; transform: translateX(calc(var(--dir, 0) * 22px)); } }
 @keyframes ztBubblePop { from { opacity: 0; transform: scale(0.2); } }
 @keyframes ztTextIn { from { opacity: 0; transform: translateY(8px); } }
-@keyframes ztFill { from { transform: scaleY(0); } }
 @keyframes ztBar { from { transform: scaleX(0); } }
 #page-ztakvim.is-active .calendar-topbar-title { animation: ztSettle 0.5s var(--zt-ease) 40ms backwards; }
 #page-ztakvim.is-active .zt-nav { animation: ztSettle 0.55s var(--zt-ease) 90ms backwards; }
@@ -38706,7 +38701,6 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
 #page-ztakvim.is-active .zt-month.is-swap > span { animation: ztLabelIn 0.45s var(--zt-ease) backwards; }
 #page-ztakvim.is-active .zt-month.is-swap > .zt-month-year { animation-delay: 60ms; }
 #page-ztakvim.is-active .zt-detail-in > * { animation: ztTextIn 0.5s var(--zt-ease) calc(var(--base, 0ms) + var(--i, 0) * 60ms) backwards; }
-#page-ztakvim.is-active .zt-d-marker::before { animation: ztFill 0.7s var(--zt-ease) calc(var(--base, 0ms) + 100ms) backwards; }
 #page-ztakvim.is-active .zt-bar i { animation: ztBar 0.8s var(--zt-ease) calc(var(--base, 0ms) + 220ms + var(--i, 0) * 60ms) backwards; }
 @media (max-width: 380px) {
   .zt-stat-value { font-size: 0.98rem; }
@@ -38788,6 +38782,32 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
   .zt-d-time small { font-size: clamp(0.6rem, 14cqmin, 1.2rem); margin-top: 3cqmin; }
   .zt-d-zero { font-size: clamp(0.9rem, 27cqmin, 2.2rem); }
   .zt-weekday { font-size: clamp(0.72rem, 1.1vw, 1rem); }
+}
+
+/* ---- BÜYÜK EKRAN: mobildeki yeni takvim görünümü (1:1.2 hücre, küçük tarih + ana süre) ----
+   Hücre boyutu (--zt-cell) JS ile (fitDesk) mevcut genişlik/yüksekliğe göre hesaplanır ve
+   tüm ölçüler hücreye oranlanır; böylece mobil ve paylaşım görseliyle aynı orantı korunur. */
+@media (min-width: 768px) and (min-height: 600px) {
+  .zt-wrap { --zt-cell: 90px; --zt-gw: calc(var(--zt-cell) * 7.576); }
+  .zt-wrap > .zt-nav, .zt-wrap > .zt-stats, .zt-wrap > .zt-weekdays, .zt-wrap > .zt-grid {
+    width: var(--zt-gw); max-width: 100%; justify-self: center;
+  }
+  .zt-wrap > .zt-grid {
+    grid-template-rows: none; grid-auto-rows: auto; align-content: start;
+    gap: calc(var(--zt-cell) * 0.096);
+  }
+  .zt-weekdays { gap: calc(var(--zt-cell) * 0.096); }
+  .zt-weekday { font-size: calc(var(--zt-cell) * 0.24); }
+  .zt-day {
+    aspect-ratio: 1 / 1.2; height: auto; container-type: normal;
+    border-radius: calc(var(--zt-cell) * 0.21); padding-top: calc(var(--zt-cell) * 0.122);
+  }
+  .zt-bubble { border-radius: calc(var(--zt-cell) * 0.21); }
+  .zt-d-num { top: calc(var(--zt-cell) * 0.095); left: calc(var(--zt-cell) * 0.122); font-size: calc(var(--zt-cell) * 0.19); }
+  .zt-d-time b { font-size: calc(var(--zt-cell) * 0.38); }
+  .zt-d-time b.is-long { font-size: calc(var(--zt-cell) * 0.335); }
+  .zt-d-time small { font-size: calc(var(--zt-cell) * 0.175); margin-top: calc(var(--zt-cell) * 0.076); }
+  .zt-d-zero { font-size: calc(var(--zt-cell) * 0.305); }
 }
 
 </style>
@@ -73004,6 +73024,25 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
     }
   }
 
+  // Büyük ekranda hücre boyutunu (1:1.2 oranı korunarak) sütun genişliği ve kalan yüksekliğe sığdırır.
+  const wrapEl = page.querySelector('.zt-wrap');
+  const deskMQ = window.matchMedia('(min-width: 768px) and (min-height: 600px)');
+  function fitDesk() {
+    if (!wrapEl) return;
+    if (!deskMQ.matches) { wrapEl.style.removeProperty('--zt-cell'); return; }
+    for (let i = 0; i < 3; i += 1) {
+      const cs = getComputedStyle(wrapEl);
+      const cols = cs.gridTemplateColumns.split(' '), rws = cs.gridTemplateRows.split(' ');
+      const colW = parseFloat(cols[0]), rowH = parseFloat(rws[rws.length - 1]);
+      if (!(colW > 0) || !(rowH > 0)) return; // sayfa gizliyken ölçülemez
+      const n = Number(grid.style.getPropertyValue('--rows')) || 6, g = 0.096;
+      const cell = Math.max(36, Math.min(colW / (7 + 6 * g), rowH / (1.2 * n + (n - 1) * g)));
+      const prev = parseFloat(wrapEl.style.getPropertyValue('--zt-cell')) || 0;
+      if (Math.abs(prev - cell) < 0.5) return;
+      wrapEl.style.setProperty('--zt-cell', cell.toFixed(2) + 'px');
+    }
+  }
+
   function moveBubble(instant, pop) {
     const btn = grid.querySelector('.zt-day.is-selected');
     if (!btn) { bubble.classList.add('is-hidden'); return; }
@@ -73053,6 +73092,7 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
       b.innerHTML = `<span class="zt-d-num">${d}</span>${cellHtml(ms) || (date.getTime() <= today.getTime() ? '<span class="zt-d-zero">0dk</span>' : '')}`;
       grid.appendChild(b);
     }
+    fitDesk();
     grid.style.setProperty('--dir', dir || 0);
     grid.style.setProperty('--base', anim === 'first' ? '200ms' : '40ms');
 
@@ -73098,7 +73138,7 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
     if (bd.unlabeledMs >= MIN_MS && rows.length) rows.push({ name: 'Branşsız', ms: bd.unlabeledMs, color: 'rgba(127,127,127,.7)' });
     const scale = Math.max(monthScale(), 1);
     let idx = 0;
-    let html = `<div class="zt-d-head" style="--i:${idx++}"><div class="zt-d-marker" style="--f:${Math.min(1, ms / scale).toFixed(3)}"><span>${D}</span></div>` +
+    let html = `<div class="zt-d-head" style="--i:${idx++}"><div class="zt-d-marker"><span>${D}</span></div>` +
       `<div class="zt-d-titles"><span class="zt-d-name">${WD_FULL[date.getDay()]}, ${D} ${MONTHS[M - 1]}</span><span class="zt-d-rel">${esc(rel)}</span></div></div>`;
     html += `<div class="zt-d-total" style="--i:${idx++}"><span class="zt-d-total-v" id="ztTotalV">0 dk</span><span class="zt-d-total-l">toplam çalışma</span></div>`;
     if (isBest) html += `<span class="zt-d-best" style="--i:${idx++}">Ayın en uzun günü</span>`;
@@ -73182,6 +73222,9 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
   grid.addEventListener('pointercancel', () => { tracking = false; });
   if (window.ResizeObserver) new ResizeObserver(() => moveBubble(true, false)).observe(grid);
   else window.addEventListener('resize', () => moveBubble(true, false));
+  if (window.ResizeObserver && page.querySelector('.zt-wrap')) new ResizeObserver(() => { fitDesk(); }).observe(page.querySelector('.zt-wrap'));
+  else window.addEventListener('resize', fitDesk);
+  if (deskMQ.addEventListener) deskMQ.addEventListener('change', fitDesk);
 
   function openZt() {
     const cur = new Date();
@@ -73332,42 +73375,6 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
     }, 600);
   }
   const shareBtn = $('ztShareBtn');
-  // Görsel önce ekranda önizlenir; oradan "Paylaş" (sistem menüsü) ya da "Kaydet" (indir) seçilir.
-  // Böylece sistem paylaşım menüsü takılırsa bile görsel kaydedilebilir.
-  function showSharePreview(blob, name) {
-    const url = URL.createObjectURL(blob);
-    const ov = document.createElement('div');
-    ov.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.75);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:20px;box-sizing:border-box;';
-    const img = document.createElement('img');
-    img.src = url; img.alt = name;
-    img.style.cssText = 'max-width:100%;max-height:calc(100% - 84px);object-fit:contain;border-radius:14px;';
-    const row = document.createElement('div');
-    row.style.cssText = 'display:flex;gap:10px;flex-wrap:wrap;justify-content:center;';
-    const close = () => { ov.remove(); setTimeout(() => URL.revokeObjectURL(url), 5000); };
-    const mk = (label, primary, fn) => {
-      const b = document.createElement('button');
-      b.type = 'button'; b.textContent = label;
-      b.style.cssText = 'font:700 16px "Baloo 2","Space Grotesk",sans-serif;padding:12px 22px;border-radius:999px;border:0;cursor:pointer;'
-        + (primary ? 'background:var(--accent-color,#ff90e8);color:#16171b;' : 'background:rgba(255,255,255,.16);color:#fff;');
-      b.addEventListener('click', fn); row.appendChild(b);
-    };
-    mk('Kaydet', true, () => {
-      const a = document.createElement('a');
-      a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove();
-    });
-    const file = new File([blob], name, { type: 'image/png' });
-    if (navigator.canShare && navigator.canShare({ files: [file] })) {
-      mk('Paylaş', false, async () => {
-        try { await navigator.share({ files: [file] }); }
-        catch (e) { /* iptal / açılamadı: Kaydet kullanılabilir */ }
-      });
-    }
-    mk('Kapat', false, close);
-    ov.addEventListener('click', (e) => { if (e.target === ov) close(); });
-    ov.append(img, row);
-    document.body.appendChild(ov);
-  }
-
   async function doShare() {
     if (shareBtn.classList.contains('is-busy')) return;
     shareBtn.classList.add('is-busy');
@@ -73375,10 +73382,16 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
       const key = shareKey();
       let blob = shareCache && shareCache.key === key ? shareCache.blob : null;
       if (!blob) { blob = await renderShareBlob(view.y, view.m); shareCache = { key, blob }; }
-      if (!blob) { alert('Görsel oluşturulamadı.'); return; }
-      showSharePreview(blob, `pace-zaman-takvimi-${view.y}-${pad(view.m + 1)}.png`);
-    } catch (e) {
-      alert('Görsel oluşturulamadı: ' + (e && e.message ? e.message : e));
+      if (!blob) return;
+      const name = `pace-zaman-takvimi-${view.y}-${pad(view.m + 1)}.png`;
+      const file = new File([blob], name, { type: 'image/png' });
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        try { await navigator.share({ files: [file], title: `Zaman Takvimi · ${MONTHS[view.m]} ${view.y}` }); return; }
+        catch (e) { if (e && e.name === 'AbortError') return; /* paylaşım açılamadı: indirmeye düş */ }
+      }
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(a.href), 5000);
     } finally { shareBtn.classList.remove('is-busy'); }
   }
   shareBtn.addEventListener('click', doShare);
