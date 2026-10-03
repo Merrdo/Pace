@@ -38871,6 +38871,33 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
 }
 
 </style>
+
+<style id="perfBackdropCss">
+  /* ===== Performans: kapalı pop-up arka planları (kasma düzeltmesi) =====
+     Pop-up arka planları kapalıyken opacity:0 olsa da backdrop-filter (blur) taşıdıkları için
+     tarayıcı her biri için TAM EKRAN bir katman tutuyordu (~30 adet). Sayfada sürekli çalışan bir
+     animasyon olduğunda (ör. Gündelik'teki canlı seri alevi) her karede hepsi yeniden çiziliyor,
+     sayfa kasıyordu. Çözüm: bulanıklık yalnızca pop-up AÇIKKEN (.is-open) uygulanır, kapalıyken
+     yoktur; açılış/kapanışta opacity ile aynı sürede yumuşakça geçer, görünüm değişmez.
+     (.cal-ev-backdrop ve .task-sheet-backdrop zaten kapalıyken visibility:hidden; dokunulmadı.) */
+  .page9-add-backdrop:not(.is-open),
+  .settings-confirm-backdrop:not(.is-open),
+  .wheel-color-backdrop:not(.is-open),
+  .cd-confirm:not(.is-open),
+  .qhavuz-lightbox-backdrop:not(.is-open) {
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+  }
+  .page9-add-backdrop,
+  .settings-confirm-backdrop,
+  .wheel-color-backdrop {
+    transition: opacity 0.22s ease, backdrop-filter 0.22s ease, -webkit-backdrop-filter 0.22s ease;
+  }
+  .cd-confirm,
+  .qhavuz-lightbox-backdrop {
+    transition: opacity 0.25s ease, backdrop-filter 0.25s ease, -webkit-backdrop-filter 0.25s ease;
+  }
+</style>
 </head>
 <body oncopy="return false" oncut="return false" onselectstart="return false" ondragstart="return false">
 
