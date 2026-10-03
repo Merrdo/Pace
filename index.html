@@ -38443,7 +38443,7 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
 .zt-grid { position: relative; display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; touch-action: pan-y; }
 .zt-day {
   position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
-  gap: 2px; aspect-ratio: 1 / 1.12; min-width: 0; padding: 0;
+  gap: 1px; aspect-ratio: 1 / 1.2; min-width: 0; padding: 0; overflow: hidden;
   border: 2px solid transparent; border-radius: 14px;
   background: color-mix(in srgb, var(--accent-color, #ff90e8) var(--p, 0%), transparent);
   font-family: "Baloo 2", "Space Grotesk", sans-serif; color: var(--theme-text, #f2f2f7);
@@ -38453,13 +38453,17 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
 .zt-day.is-empty { visibility: hidden; pointer-events: none; }
 .zt-day:not(:disabled):active { transform: scale(0.92); }
 .zt-day:disabled { cursor: default; opacity: 0.3; }
-.zt-d-num { font-weight: 700; font-size: 0.98rem; line-height: 1; }
-.zt-d-time { font-weight: 600; font-size: 0.6rem; line-height: 1; min-height: 0.6rem; opacity: 0.75; font-variant-numeric: tabular-nums; white-space: nowrap; }
-.zt-day.is-weekend .zt-d-num { color: var(--weekend-color, #ff6b81); }
+.zt-d-num { position: absolute; top: 4px; left: 6px; font-weight: 700; font-size: 0.6rem; line-height: 1; opacity: 0.6; }
+.zt-d-time { display: flex; flex-direction: column; align-items: center; justify-content: center; max-width: 100%; margin-top: 0.55rem; line-height: 1; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.zt-d-time b { font-weight: 800; font-size: 1.02rem; letter-spacing: -0.04em; line-height: 1; }
+.zt-d-time b.is-long { font-size: 0.86rem; letter-spacing: -0.06em; }
+.zt-d-time small { font-weight: 700; font-size: 0.52rem; line-height: 1; margin-top: 2px; opacity: 0.6; letter-spacing: 0.02em; }
+.zt-day.is-weekend .zt-d-num { color: var(--weekend-color, #ff6b81); opacity: 0.85; }
+.zt-day.is-empty-day .zt-d-num { top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 0.85rem; opacity: 0.4; }
 .zt-day.is-today { border-color: var(--accent-color, #ff90e8); }
 .zt-day.is-selected { background: transparent; border-color: transparent; color: #16171b; }
 .zt-day.is-selected .zt-d-num { color: #16171b; }
-.zt-day.is-selected .zt-d-time { opacity: 0.8; }
+.zt-day.is-selected .zt-d-num { opacity: 0.7; }
 .zt-bubble {
   position: absolute; left: 0; top: 0; z-index: 0; pointer-events: none; border-radius: 14px;
   background: var(--accent-color, #ff90e8); box-shadow: 0 8px 16px -8px rgba(0,0,0,0.35);
@@ -38530,8 +38534,12 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
   .zt-grid, .zt-weekdays { gap: 8px; }
   .zt-day { aspect-ratio: 1 / 0.82; border-radius: 16px; }
   .zt-bubble { border-radius: 16px; }
-  .zt-d-num { font-size: 1.15rem; }
-  .zt-d-time { font-size: 0.74rem; min-height: 0.74rem; }
+  .zt-d-num { top: 7px; left: 10px; font-size: 0.74rem; }
+  .zt-day.is-empty-day .zt-d-num { font-size: 1.05rem; }
+  .zt-d-time { margin-top: 0.7rem; }
+  .zt-d-time b { font-size: 1.45rem; }
+  .zt-d-time b.is-long { font-size: 1.3rem; }
+  .zt-d-time small { font-size: 0.68rem; margin-top: 3px; }
   .zt-stat-value { font-size: 1.5rem; }
   .zt-stat-label { font-size: 0.8rem; }
 }
@@ -72659,11 +72667,14 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
     if (h >= 100) return `${h} sa`;
     return h ? `${h}sa ${pad(m)}dk` : `${m}dk`;
   };
-  const fmtCell = (ms) => {
+  // Hücre: büyük sayı + altında küçük birim. 1 saatten uzunsa "8:17 / sa", kısaysa "45 / dk".
+  // 5 karakterlik değerler (10:00 ve üstü) hücreye sığsın diye .is-long ile bir kademe küçülür.
+  const cellHtml = (ms) => {
     const mins = Math.floor(ms / 60000);
     if (mins < 1) return '';
     const h = Math.floor(mins / 60), m = mins % 60;
-    return h ? `${h}:${pad(m)}` : `${m}dk`;
+    const txt = h ? `${h}:${pad(m)}` : String(m);
+    return `<span class="zt-d-time"><b${txt.length >= 5 ? ' class="is-long"' : ''}>${txt}</b><small>${h ? 'sa' : 'dk'}</small></span>`;
   };
 
   // ---- Kronometre sayfasındaki alan: tüm zamanların en uzun gün süresi ----
@@ -72748,12 +72759,12 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
       const b = document.createElement('button');
       b.type = 'button';
       b.dataset.key = key;
-      b.className = 'zt-day' + (dow === 0 || dow === 6 ? ' is-weekend' : '') + (key === todayKey() ? ' is-today' : '') + (key === sel ? ' is-selected' : '') + (anim ? ' is-anim' : '');
+      b.className = 'zt-day' + (dow === 0 || dow === 6 ? ' is-weekend' : '') + (key === todayKey() ? ' is-today' : '') + (key === sel ? ' is-selected' : '') + (ms < MIN_MS ? ' is-empty-day' : '') + (anim ? ' is-anim' : '');
       b.style.setProperty('--r', row); b.style.setProperty('--c', col);
       b.style.setProperty('--p', (ms >= MIN_MS ? Math.round(14 + 46 * Math.min(1, ms / scale)) : 0) + '%');
       if (date.getTime() > today.getTime()) b.disabled = true;
       b.setAttribute('aria-label', `${d} ${MONTHS[m]}, ${ms >= MIN_MS ? fmtLong(ms) : 'çalışma yok'}`);
-      b.innerHTML = `<span class="zt-d-num">${d}</span><span class="zt-d-time">${fmtCell(ms)}</span>`;
+      b.innerHTML = `<span class="zt-d-num">${d}</span>${cellHtml(ms)}`;
       grid.appendChild(b);
     }
     grid.style.setProperty('--dir', dir || 0);
