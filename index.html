@@ -37901,6 +37901,12 @@
 .cdp-content { display: grid; flex: 1 1 auto; min-height: 0; margin-top: 1.1rem; }
 .cdp-pane { grid-area: 1 / 1; display: flex; flex-direction: column; min-height: 0; opacity: 0; visibility: hidden; pointer-events: none; transform: translateY(8px); transition: opacity 0.25s ease, transform 0.35s var(--cd-ease, ease), visibility 0s linear 0.25s; }
 .cdp-pane.is-on { opacity: 1; visibility: visible; pointer-events: auto; transform: none; transition: opacity 0.3s ease 0.08s, transform 0.4s var(--cd-ease, ease) 0.08s, visibility 0s; }
+/* DÜZELTME: .cdp-pane.is-on kendi başına visibility:visible + pointer-events:auto verdiği için, kapalı
+   (visibility:hidden) pop-up'ın içindeki dk/sn sayı kutuları büyük ekranda (kart opacity:0 ile ekranın
+   ortasında durur) görünmez ama dokunulabilir kalıyor ve her sayfada sayısal klavyeyi açıyordu.
+   Pop-up kapalıyken bu panel de gizlenir ve dokunuşa kapanır (gizleme, kapanış animasyonu bitince). */
+.cdp-backdrop:not(.is-open) .cdp-pane.is-on { visibility: hidden; pointer-events: none; transition: opacity 0.25s ease, transform 0.35s var(--cd-ease, ease), visibility 0s linear 0.5s; }
+.cdp-backdrop:not(.is-open) .cdp-card, .cdp-backdrop:not(.is-open) .cdp-card * { pointer-events: none !important; }
 .cdp-sec { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.7rem; flex: none; }
 .cdp-sec-t { font-size: 0.85rem; font-weight: 700; color: var(--cdp-mute); }
 .cdp-edit { border: 0; background: none; padding: 0.3rem 0.1rem; cursor: pointer; font-weight: 800; font-size: 0.9rem; line-height: 1; font-family: inherit; color: var(--cdp-ink); -webkit-tap-highlight-color: transparent; }
