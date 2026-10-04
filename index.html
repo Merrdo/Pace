@@ -15168,422 +15168,6 @@
     color: #f2f2f4;
   }
 
-  /* ---- Ayar butonuyla açılan "Hazır Süreler" pop-up'ı: page9-add
-     ailesiyle aynı brütalist dili paylaşır, sadece daha geniş bir
-     kart ve ızgara halinde dizilen süre çipleri kullanır. ---- */
-  .countdown-presets-card {
-    max-width: 460px;
-    /* "Hazır Süreler" içindeki ekleme satırı (dk/sn/+) her zaman kartın
-       en altında sabit dursun diye kart artık başlık (sabit) - içerik
-       (esnek, gerekirse kendi içinde kayan) - ekleme satırı (sabit)
-       şeklinde dikey bir flex düzeni kullanıyor; kartın kendisi artık
-       kaymıyor, sadece .countdown-presets-grid-scroll kayıyor (bkz.
-       aşağıdaki kurallar). */
-    max-height: 82vh;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-  }
-
-  .countdown-presets-card .page9-add-header {
-    flex-shrink: 0;
-  }
-
-  .countdown-presets-header-actions {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    flex-shrink: 0;
-  }
-
-  /* "Düzenle" butonu: basılınca çiplerin silme çarpıları belirir/kaybolur
-     (bkz. .countdown-presets-grid.is-editing aşağıda ve script'teki
-     countdownPresetsEditBtn dinleyicisi). Aktifken "Bitti" yazısına ve
-     vurgu rengine döner. */
-  .countdown-presets-edit-btn {
-    flex-shrink: 0;
-    padding: 0.4rem 0.75rem;
-    font-family: "Baloo 2", sans-serif;
-    font-weight: 800;
-    font-size: 0.78rem;
-    color: #121212;
-    background-color: #f2f2f2;
-    border: 2.5px solid #000;
-    border-radius: 0.6rem;
-    box-shadow: 2px 2px 0px 0px #000;
-    cursor: pointer;
-    transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.2s ease;
-  }
-
-  .countdown-presets-edit-btn:active {
-    transform: translate(1px, 1px);
-    box-shadow: 1px 1px 0px 0px #000;
-  }
-
-  .countdown-presets-edit-btn.is-active {
-    background-color: var(--accent-color, #ff90e8);
-  }
-
-  /* Bildirim butonu: Ayar (sayaç) ikonuyla aynı kare/köşeleri yumuşatılmış
-     brütalist dilde, ama pop-up başlığına uyacak küçük boyutta. */
-  .countdown-presets-notif-btn {
-    flex-shrink: 0;
-    width: 2rem;
-    height: 2rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: #f2f2f2;
-    border: 2.5px solid #000;
-    border-radius: 0.55rem;
-    box-shadow: 2px 2px 0px 0px #000;
-    color: #121212;
-    cursor: pointer;
-    transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.2s ease;
-  }
-
-  .countdown-presets-notif-btn:active {
-    transform: translate(1px, 1px);
-    box-shadow: 1px 1px 0px 0px #000;
-  }
-
-  .countdown-presets-notif-btn.is-active {
-    background-color: var(--accent-color, #ff90e8);
-  }
-
-  /* Bildirim panelinde ve başlıkta solup-belirme animasyonuyla oynatılan
-     yazılar; script bu elemanlara .cd-text-hidden sınıfını sırayla
-     ekleyip kaldırarak metinleri teker teker kaybedip belirtir. */
-  #countdownPresetsBackdrop .page9-add-title,
-  #countdownPresetsBackdrop .page9-add-subtitle,
-  #countdownPresetsBackdrop .countdown-preset-chip-time,
-  #countdownPresetsBackdrop .countdown-presets-empty,
-  .countdown-presets-soon-text {
-    transition: opacity 0.22s ease, transform 0.22s ease;
-  }
-
-  /* Aynı solup-belirme, yalnızca yazılarda değil; "Düzenle" butonu, her
-     hazır süre çipi ve ekleme satırı (girişler + "+" butonu) gibi
-     etkileşimli elemanlarda da geçerli olsun diye bunlara da opacity/
-     transform geçişi eklenir. Böylece bildirim butonuna basılınca tüm
-     içerik (yazı + buton fark etmeksizin) aynı yumuşak, sıralı geçişle
-     kaybolur/belirir; script'teki collectCountdownPresetsFadeEls bu
-     elemanları da .cd-text-hidden ile sırayla açıp kapatır. */
-  #countdownPresetsBackdrop .countdown-presets-edit-btn,
-  #countdownPresetsBackdrop .countdown-preset-chip,
-  #countdownPresetsBackdrop .countdown-presets-add-row {
-    transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.18s ease, opacity 0.22s ease;
-  }
-
-  .cd-text-hidden {
-    opacity: 0 !important;
-    transform: translateY(4px);
-  }
-
-  .countdown-presets-body {
-    display: flex;
-    flex-direction: column;
-    flex: 1 1 auto;
-    min-height: 0;
-  }
-
-  /* Hazır süre çipleri çoğalınca sarmalayıcı (.countdown-presets-body)
-     yukarı doğru büyümek yerine kendi içinde kayar; böylece altındaki
-     ekleme satırı (dk/sn/+) hep aynı yerde, kartın en altında sabit
-     kalır. Silme çarpısı çipin -0.55rem taşan köşesi kırpılmasın diye
-     etrafına küçük bir tampon (padding) ekleyip aynı miktarda negatif
-     margin ile görsel konumu koruyoruz. */
-  .countdown-presets-grid-scroll {
-    flex: 1 1 auto;
-    min-height: 0;
-    overflow-y: auto;
-    overflow-x: hidden;
-    overscroll-behavior: contain;
-    margin: -0.6rem;
-    padding: 0.6rem;
-  }
-
-  /* Body (ızgara + ekleme satırı) ile bildirim panelinin ortak sarmalayıcısı.
-     Bildirim butonuna basılınca içerik değişse de (body <-> "Yakında"
-     paneli) pop-up'ın toplam yüksekliği sabit kalsın diye, script bu
-     elemana o an gösterilen içeriğin en büyük doğal yüksekliğini
-     min-height olarak yazar (bkz. syncCountdownPresetsContentHeight). */
-  .countdown-presets-content {
-    position: relative;
-    flex: 1 1 auto;
-    min-height: 0;
-    display: flex;
-    flex-direction: column;
-  }
-
-  .countdown-presets-soon {
-    display: none;
-    flex-direction: column;
-    align-items: stretch;
-    min-height: 150px;
-  }
-
-  .countdown-presets-soon-text {
-    font-family: "Baloo 2", sans-serif;
-    font-weight: 800;
-    font-size: 1.3rem;
-    color: #121212;
-  }
-
-  /* ---- Bildirim paneli: sayaç bitiş sesi listesi ---- */
-  .countdown-sounds-list {
-    display: flex;
-    flex-direction: column;
-    gap: 0.55rem;
-    width: 100%;
-  }
-
-  .countdown-sound-row {
-    display: flex;
-    align-items: center;
-    gap: 0.65rem;
-    padding: 0.5rem 0.65rem;
-    background-color: #f2f2f2;
-    border: 2.5px solid #000;
-    border-radius: 0.65rem;
-    box-shadow: 2px 2px 0px 0px #000;
-    cursor: pointer;
-    transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.18s ease, opacity 0.22s ease;
-  }
-
-  .countdown-sound-row:active {
-    transform: translate(1px, 1px);
-    box-shadow: 1px 1px 0px 0px #000;
-  }
-
-  .countdown-sound-row.is-selected {
-    background-color: var(--accent-color, #ff90e8);
-  }
-
-  .countdown-sound-play-btn {
-    flex-shrink: 0;
-    width: 1.9rem;
-    height: 1.9rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: #fff;
-    border: 2px solid #000;
-    border-radius: 50%;
-    color: #121212;
-    cursor: pointer;
-    transition: transform 0.15s ease;
-  }
-
-  .countdown-sound-play-btn:active {
-    transform: translate(1px, 1px);
-  }
-
-  .countdown-sound-name {
-    flex: 1;
-    min-width: 0;
-    font-family: "Baloo 2", sans-serif;
-    font-weight: 700;
-    font-size: 0.9rem;
-    color: #121212;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  .countdown-sound-check {
-    flex-shrink: 0;
-    width: 1.3rem;
-    height: 1.3rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: #fff;
-    border: 2px solid #000;
-    border-radius: 50%;
-    color: #121212;
-  }
-
-  .countdown-sound-check svg {
-    opacity: 0;
-    transition: opacity 0.15s ease;
-  }
-
-  .countdown-sound-row.is-selected .countdown-sound-check svg {
-    opacity: 1;
-  }
-
-  body.is-anthracite .countdown-sound-row {
-    background-color: #2a2c2f;
-  }
-
-  body.is-anthracite .countdown-sound-name {
-    color: #f2f2f4;
-  }
-
-  body.is-anthracite .countdown-sound-play-btn,
-  body.is-anthracite .countdown-sound-check {
-    background-color: #1c1d1f;
-    color: #f2f2f4;
-  }
-
-  body.is-anthracite .countdown-presets-notif-btn {
-    background-color: #2a2c2f;
-    color: #f2f2f4;
-  }
-
-  body.is-anthracite .countdown-presets-soon-text {
-    color: #f2f2f4;
-  }
-
-  .countdown-presets-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 0.6rem;
-  }
-
-  .countdown-preset-chip {
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0.75rem 0.4rem;
-    background-color: #f2f2f2;
-    border: 2.5px solid #000;
-    border-radius: 0.75rem;
-    box-shadow: 3px 3px 0px 0px #000;
-    cursor: pointer;
-    transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.18s ease;
-  }
-
-  .countdown-preset-chip:active {
-    transform: translate(1px, 1px);
-    box-shadow: 1px 1px 0px 0px #000;
-    background-color: var(--accent-color, #ff90e8);
-  }
-
-  .countdown-preset-chip-time {
-    font-family: "Baloo 2", sans-serif;
-    font-weight: 800;
-    font-size: 0.92rem;
-    color: #121212;
-  }
-
-  /* Silme çarpısı varsayılan olarak gizli; yalnızca "Düzenle" ile
-     açılan .is-editing modunda görünür olur. Aniden görünüp kaybolmak
-     yerine (display:none/flex sert geçişi) opacity+scale ile yumuşak
-     biçimde belirip kaybolsun diye display her zaman flex bırakılıp
-     görünürlük opacity/pointer-events üzerinden yönetiliyor; geçiş
-     .delete-btn'in kendi "transition: transform..., opacity..." kuralı
-     üzerinden yürüyor. */
-  .countdown-preset-chip-delete {
-    display: flex;
-    position: absolute;
-    top: -0.55rem;
-    right: -0.55rem;
-    width: 1.45rem;
-    height: 1.45rem;
-    font-size: 0.8rem;
-    border-width: 2.5px;
-    box-shadow: 2px 2px 0px 0px #000;
-    opacity: 0;
-    transform: scale(0.6);
-    pointer-events: none;
-  }
-
-  .countdown-presets-grid.is-editing .countdown-preset-chip-delete {
-    opacity: 1;
-    transform: scale(1);
-    pointer-events: auto;
-  }
-
-  .countdown-presets-grid.is-editing .countdown-preset-chip {
-    animation: countdownPresetWiggle 0.22s ease-in-out infinite alternate;
-  }
-
-  @keyframes countdownPresetWiggle {
-    from { transform: rotate(-0.6deg); }
-    to { transform: rotate(0.6deg); }
-  }
-
-  .countdown-presets-empty {
-    grid-column: 1 / -1;
-    font-family: "Baloo 2", sans-serif;
-    font-weight: 600;
-    font-size: 0.82rem;
-    color: #121212;
-    opacity: 0.5;
-    text-align: center;
-    padding: 0.7rem 0;
-  }
-
-  .countdown-presets-add-row {
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-    margin-top: 1.1rem;
-    flex-shrink: 0;
-  }
-
-  .countdown-presets-add-field {
-    flex: 1 1 auto;
-    min-width: 0;
-  }
-
-  .countdown-presets-add-input {
-    width: 100%;
-    padding: 0.55rem 0.5rem;
-    text-align: center;
-    font-family: "Baloo 2", sans-serif;
-    font-weight: 700;
-    font-size: 0.95rem;
-    color: #121212;
-    background-color: #f2f2f2;
-    border: 2.5px solid #000;
-    border-radius: 0.65rem;
-    box-shadow: 3px 3px 0px 0px #000;
-    outline: none;
-    -moz-appearance: textfield;
-  }
-
-  .countdown-presets-add-input::-webkit-outer-spin-button,
-  .countdown-presets-add-input::-webkit-inner-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
-  }
-
-  /* dk/sn giriş kutularının arasındaki ":" — .countdown-setup-colon'un
-     aksine (o, büyük kurulum kartına göre boyutlanmış), bu satırdaki
-     kutularla aynı hizada, dikeyde ortalanmış küçük bir işaret. */
-  .countdown-presets-add-colon {
-    flex-shrink: 0;
-    font-family: "Baloo 2", sans-serif;
-    font-weight: 900;
-    font-size: 1.2rem;
-    line-height: 1;
-    color: #121212;
-  }
-
-  body.is-anthracite .countdown-preset-chip {
-    background-color: #2a2c2f;
-  }
-
-  body.is-anthracite .countdown-preset-chip-time,
-  body.is-anthracite .countdown-presets-empty,
-  body.is-anthracite .countdown-presets-add-colon {
-    color: #f2f2f4;
-  }
-
-  body.is-anthracite .countdown-presets-add-input {
-    background-color: #2a2c2f;
-    color: #f2f2f4;
-  }
-
-  body.is-anthracite .countdown-presets-edit-btn {
-    background-color: #2a2c2f;
-    color: #f2f2f4;
-  }
-
   /* ---- Sayaç tam ekran görünümü: Kronometre'nin tam ekranıyla aynı
      görsel dilde ama kendi (is-countdown-running) durumuna bağlı. ---- */
   .countdown-fullscreen {
@@ -38261,107 +37845,92 @@
 @keyframes cdSheen { 0%, 62% { left: -60%; } 100% { left: 130%; } }
 
 /* ==========================================================================
-   HAZIR SÜRELER — Branşlarım penceresiyle aynı sade siyah dil
+   ZAMANLAYICI AYARLARI — alttan açılan sayfa (Hazır süreler | Bildirim sesi)
    ========================================================================== */
-#countdownPresetsBackdrop {
-  background: rgba(0, 0, 0, 0.6);
-  -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px);
+.cdp-backdrop {
+  position: fixed; inset: 0; z-index: 70; display: flex; align-items: flex-end; justify-content: center;
+  background: rgba(0, 0, 0, 0.5); opacity: 0; visibility: hidden; pointer-events: none;
+  touch-action: none; overscroll-behavior: contain;
+  transition: opacity 0.3s ease, visibility 0s linear 0.3s;
 }
-#countdownPresetsBackdrop .page9-add-card.countdown-presets-card {
-  max-width: 420px; padding: 1.3rem 1.3rem 1.25rem;
-  background: #000; color: #fff;
-  border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 1.25rem;
-  box-shadow: none; font-family: var(--cd-font);
-  animation: cdRise 0.5s var(--cd-ease);
+.cdp-backdrop.is-open { opacity: 1; visibility: visible; pointer-events: auto; transition: opacity 0.3s ease, visibility 0s; }
+.cdp-card {
+  --cdp-ink: var(--theme-text, #f2f2f7);
+  --cdp-acc: var(--accent-color, #ff90e8);
+  --cdp-bg: color-mix(in srgb, var(--theme-bg, #121212) 92%, var(--cdp-ink));
+  --cdp-line: color-mix(in srgb, var(--cdp-ink) 12%, transparent);
+  --cdp-soft: color-mix(in srgb, var(--cdp-ink) 7%, transparent);
+  --cdp-mute: color-mix(in srgb, var(--cdp-ink) 55%, transparent);
+  width: 100%; max-width: 480px; box-sizing: border-box; display: flex; flex-direction: column;
+  max-height: 86vh; max-height: 86dvh; padding: 0.6rem 1.2rem calc(1.2rem + env(safe-area-inset-bottom, 0px));
+  color: var(--cdp-ink); background: var(--cdp-bg); border-radius: 1.75rem 1.75rem 0 0;
+  font-family: var(--cd-font, "Baloo 2", "Space Grotesk", sans-serif);
+  transform: translateY(100%); transition: transform 0.42s var(--cd-ease, cubic-bezier(0.16, 1, 0.3, 1));
+  touch-action: pan-y;
 }
-#countdownPresetsBackdrop .page9-add-header { margin-bottom: 1.1rem; align-items: center; }
-#countdownPresetsBackdrop .page9-add-title { font-family: var(--cd-font); font-weight: 700; font-size: 1.1rem; letter-spacing: -0.01em; color: #fff; }
-#countdownPresetsBackdrop .page9-add-subtitle { font-family: var(--cd-font); font-weight: 500; font-size: 0.8rem; color: #fff; opacity: 0.45; }
-#countdownPresetsBackdrop .countdown-presets-header-actions { gap: 0.4rem; }
+.cdp-backdrop.is-open .cdp-card { transform: none; }
+@media (min-width: 600px) {
+  .cdp-backdrop { align-items: center; }
+  .cdp-card { border-radius: 1.75rem; padding-bottom: 1.3rem; transform: translateY(24px) scale(0.96); opacity: 0; transition: transform 0.42s var(--cd-ease, ease), opacity 0.3s ease; }
+  .cdp-backdrop.is-open .cdp-card { transform: none; opacity: 1; }
+  .cdp-grab { display: none; }
+}
+.cdp-grab { width: 2.6rem; height: 0.28rem; border-radius: 9px; margin: 0 auto 0.8rem; background: var(--cdp-line); flex: none; }
+.cdp-top { display: flex; align-items: center; gap: 0.6rem; flex: none; }
+.cdp-tabs { position: relative; flex: 1; display: grid; grid-template-columns: 1fr 1fr; padding: 0.22rem; border-radius: 999px; background: var(--cdp-soft); }
+.cdp-pill { position: absolute; top: 0.22rem; bottom: 0.22rem; left: 0.22rem; width: calc(50% - 0.22rem); border-radius: 999px; background: var(--cdp-acc); transition: transform 0.4s var(--cd-ease, ease); }
+.cdp-tabs[data-tab="sound"] .cdp-pill { transform: translateX(100%); }
+.cdp-tab { position: relative; z-index: 1; padding: 0.6rem 0.3rem; border: 0; background: none; cursor: pointer; font-weight: 800; font-size: 0.92rem; line-height: 1; font-family: inherit; color: var(--cdp-mute); transition: color 0.25s ease; -webkit-tap-highlight-color: transparent; }
+.cdp-tab.is-on { color: #16171b; }
+.cdp-x { flex: none; width: 2.5rem; height: 2.5rem; border: 0; border-radius: 50%; display: grid; place-items: center; cursor: pointer; background: var(--cdp-soft); color: var(--cdp-ink); font-weight: 700; font-size: 1.3rem; line-height: 1; font-family: inherit; -webkit-tap-highlight-color: transparent; transition: transform 0.15s ease; }
+.cdp-x:active { transform: scale(0.9); }
+.cdp-content { display: grid; flex: 1 1 auto; min-height: 0; margin-top: 1.1rem; }
+.cdp-pane { grid-area: 1 / 1; display: flex; flex-direction: column; min-height: 0; opacity: 0; visibility: hidden; pointer-events: none; transform: translateY(8px); transition: opacity 0.25s ease, transform 0.35s var(--cd-ease, ease), visibility 0s linear 0.25s; }
+.cdp-pane.is-on { opacity: 1; visibility: visible; pointer-events: auto; transform: none; transition: opacity 0.3s ease 0.08s, transform 0.4s var(--cd-ease, ease) 0.08s, visibility 0s; }
+.cdp-sec { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.7rem; flex: none; }
+.cdp-sec-t { font-size: 0.85rem; font-weight: 700; color: var(--cdp-mute); }
+.cdp-edit { border: 0; background: none; padding: 0.3rem 0.1rem; cursor: pointer; font-weight: 800; font-size: 0.9rem; line-height: 1; font-family: inherit; color: var(--cdp-ink); -webkit-tap-highlight-color: transparent; }
+.cdp-edit.is-active { color: var(--cdp-acc); }
+.cdp-scroll { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; margin: -0.5rem; padding: 0.5rem; scrollbar-width: none; }
+.cdp-scroll::-webkit-scrollbar { display: none; }
+.cdp-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.55rem; }
+.cdp-chip { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; aspect-ratio: 1 / 0.9; border-radius: 1.1rem; cursor: pointer; background: var(--cdp-soft); -webkit-tap-highlight-color: transparent; transition: transform 0.18s var(--cd-ease, ease), background-color 0.2s ease; }
+.cdp-backdrop.is-open .cdp-pane.is-on .cdp-chip { animation: cdpTile 0.5s var(--cd-ease, ease) both; }
+.cdp-chip:nth-child(2) { animation-delay: .03s !important; } .cdp-chip:nth-child(3) { animation-delay: .06s !important; } .cdp-chip:nth-child(4) { animation-delay: .09s !important; }
+.cdp-chip:nth-child(5) { animation-delay: .12s !important; } .cdp-chip:nth-child(6) { animation-delay: .15s !important; } .cdp-chip:nth-child(7) { animation-delay: .18s !important; } .cdp-chip:nth-child(n+8) { animation-delay: .21s !important; }
+@keyframes cdpTile { from { opacity: 0; transform: translateY(14px) scale(0.9); } to { opacity: 1; transform: none; } }
+.cdp-chip:active { transform: scale(0.93); background: var(--cdp-acc); }
+.cdp-chip:active .cdp-chip-t, .cdp-chip:active .cdp-chip-t small { color: #16171b; }
+.cdp-chip-t { display: flex; flex-direction: column; align-items: center; font-weight: 800; font-size: 1.35rem; line-height: 1; font-variant-numeric: tabular-nums; color: var(--cdp-ink); }
+.cdp-chip-t small { margin-top: 0.2rem; font-size: 0.68rem; font-weight: 700; color: var(--cdp-mute); letter-spacing: 0.04em; }
+.cdp-chip-x { all: unset; position: absolute; top: -0.35rem; right: -0.35rem; width: 1.35rem; height: 1.35rem; display: grid; place-items: center; box-sizing: border-box; border-radius: 50%; background: #e5484d; color: #fff; font: 800 0.9rem/1 sans-serif; cursor: pointer; transform: scale(0); opacity: 0; transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.2s ease; }
+.cdp-grid.is-editing .cdp-chip-x { transform: scale(1); opacity: 1; }
+.cdp-grid.is-editing .cdp-chip { animation: cdpWiggle 0.5s ease-in-out infinite !important; }
+.cdp-grid.is-editing .cdp-chip:nth-child(even) { animation-delay: -0.2s !important; }
+@keyframes cdpWiggle { 0%, 100% { transform: rotate(-1.6deg); } 50% { transform: rotate(1.6deg); } }
+.cdp-empty { grid-column: 1 / -1; padding: 1.4rem 0; text-align: center; font-weight: 600; color: var(--cdp-mute); }
+.cdp-add { flex: none; display: flex; align-items: center; gap: 0.5rem; margin-top: 1.1rem; padding: 0.4rem 0.4rem 0.4rem 1rem; border-radius: 999px; background: var(--cdp-soft); }
+.cdp-add-in { flex: 1; min-width: 0; width: 100%; padding: 0.5rem 0; border: 0; background: none; text-align: center; font-weight: 800; font-size: 1.15rem; line-height: 1; font-family: inherit; color: var(--cdp-ink); font-variant-numeric: tabular-nums; -moz-appearance: textfield; }
+.cdp-add-in::-webkit-outer-spin-button, .cdp-add-in::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.cdp-add-in::placeholder { color: var(--cdp-mute); font-weight: 700; }
+.cdp-add-in:focus { outline: none; }
+.cdp-add-sep { font-weight: 800; color: var(--cdp-mute); }
+.cdp-add-btn { flex: none; border: 0; cursor: pointer; padding: 0.7rem 1.15rem; border-radius: 999px; background: var(--cdp-acc); color: #16171b; font-weight: 800; font-size: 0.92rem; line-height: 1; font-family: inherit; -webkit-tap-highlight-color: transparent; transition: transform 0.15s ease; }
+.cdp-add-btn:active { transform: scale(0.94); }
+.cdp-sounds { display: flex; flex-direction: column; gap: 0.55rem; overflow-y: auto; overscroll-behavior: contain; }
+.cdp-snd { display: flex; align-items: center; gap: 0.8rem; padding: 0.7rem 0.9rem 0.7rem 0.7rem; border-radius: 1.2rem; cursor: pointer; background: var(--cdp-soft); box-shadow: inset 0 0 0 2px transparent; -webkit-tap-highlight-color: transparent; transition: box-shadow 0.25s ease, background-color 0.25s ease, transform 0.15s ease; }
+.cdp-backdrop.is-open .cdp-pane.is-on .cdp-snd { animation: cdpTile 0.45s var(--cd-ease, ease) both; }
+.cdp-snd:nth-child(2) { animation-delay: .05s !important; } .cdp-snd:nth-child(3) { animation-delay: .1s !important; } .cdp-snd:nth-child(4) { animation-delay: .15s !important; }
+.cdp-snd:active { transform: scale(0.98); }
+.cdp-snd.is-selected { background: color-mix(in srgb, var(--cdp-acc) 16%, transparent); box-shadow: inset 0 0 0 2px var(--cdp-acc); }
+.cdp-snd-play { all: unset; flex: none; width: 2.6rem; height: 2.6rem; display: grid; place-items: center; box-sizing: border-box; border-radius: 50%; cursor: pointer; background: var(--cdp-ink); color: var(--theme-bg, #121212); -webkit-tap-highlight-color: transparent; transition: transform 0.15s ease; }
+.cdp-snd-play:active { transform: scale(0.9); }
+.cdp-snd-name { flex: 1; font-weight: 800; font-size: 1.05rem; color: var(--cdp-ink); }
+.cdp-snd-check { flex: none; width: 1.55rem; height: 1.55rem; display: grid; place-items: center; box-sizing: border-box; border-radius: 50%; border: 2px solid var(--cdp-line); color: transparent; transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease, transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1); }
+.cdp-snd.is-selected .cdp-snd-check { background: var(--cdp-acc); border-color: var(--cdp-acc); color: #16171b; transform: scale(1.08); }
+.cdp-snd-check svg { width: 0.8rem; height: 0.8rem; }
+@media (max-width: 340px) { .cdp-grid { grid-template-columns: repeat(3, 1fr); } }
 
-#countdownPresetsBackdrop .countdown-presets-edit-btn,
-#countdownPresetsBackdrop .countdown-presets-notif-btn,
-#countdownPresetsBackdrop .page9-add-close {
-  color: #fff; background: transparent; border: none; box-shadow: none;
-  -webkit-tap-highlight-color: transparent;
-  transition: background-color 0.18s ease, color 0.18s ease, transform 0.15s ease, opacity 0.22s ease;
-}
-#countdownPresetsBackdrop .countdown-presets-edit-btn {
-  padding: 0.4rem 0.85rem; border-radius: 999px; font-family: var(--cd-font); font-weight: 700; font-size: 0.85rem;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-}
-#countdownPresetsBackdrop .countdown-presets-notif-btn,
-#countdownPresetsBackdrop .page9-add-close {
-  width: 2rem; height: 2rem; padding: 0; border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
-}
-#countdownPresetsBackdrop .page9-add-close { font-family: var(--cd-font); font-size: 1.2rem; line-height: 1; }
-#countdownPresetsBackdrop .countdown-presets-edit-btn:active,
-#countdownPresetsBackdrop .countdown-presets-notif-btn:active,
-#countdownPresetsBackdrop .page9-add-close:active { transform: scale(0.92); box-shadow: none; background: rgba(255, 255, 255, 0.14); }
-#countdownPresetsBackdrop .countdown-presets-edit-btn.is-active,
-#countdownPresetsBackdrop .countdown-presets-notif-btn.is-active { background: #fff; color: #000; box-shadow: none; }
-
-/* Hazır süreler: ince çerçeveli hap; basınca vurgu rengi dolar */
-#countdownPresetsBackdrop .countdown-presets-grid { gap: 0.6rem; }
-#countdownPresetsBackdrop .countdown-preset-chip {
-  padding: 0.85rem 0.4rem; background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.22); border-radius: 999px; box-shadow: none;
-  -webkit-tap-highlight-color: transparent;
-  transition: transform 0.15s ease, background-color 0.2s ease, border-color 0.2s ease, opacity 0.22s ease;
-}
-#countdownPresetsBackdrop .countdown-preset-chip-time {
-  font-family: var(--cd-font); font-weight: 700; font-size: 1.02rem; font-variant-numeric: tabular-nums; color: #fff;
-}
-#countdownPresetsBackdrop .countdown-preset-chip:active { transform: scale(0.95); background: var(--cd-acc); border-color: var(--cd-acc); box-shadow: none; }
-#countdownPresetsBackdrop .countdown-preset-chip:active .countdown-preset-chip-time { color: #16171b; }
-#countdownPresetsBackdrop .countdown-preset-chip-delete {
-  top: -0.4rem; right: -0.4rem; width: 1.5rem; height: 1.5rem;
-  border: none; color: #fff; background: #e5484d; box-shadow: none;
-}
-#countdownPresetsBackdrop .countdown-presets-empty { font-family: var(--cd-font); color: #fff; }
-
-/* Ekleme satırı: alt çizgili alanlar */
-#countdownPresetsBackdrop .countdown-presets-add-row {
-  gap: 0.5rem; margin-top: 1.2rem; padding: 0; background: none; border-radius: 0; box-shadow: none;
-}
-#countdownPresetsBackdrop .countdown-presets-add-input {
-  padding: 0.55rem 0.1rem; font-family: var(--cd-font); font-weight: 600; font-size: 1rem; color: #fff;
-  background: transparent; border: none; border-bottom: 1px solid rgba(255, 255, 255, 0.22);
-  border-radius: 0; box-shadow: none; transition: border-color 0.2s ease;
-}
-#countdownPresetsBackdrop .countdown-presets-add-input:focus { outline: none; border-bottom-color: #fff; box-shadow: none; }
-#countdownPresetsBackdrop .countdown-presets-add-input::placeholder { color: #fff; opacity: 0.35; }
-#countdownPresetsBackdrop .countdown-presets-add-colon { font-family: var(--cd-font); font-weight: 700; color: #fff; opacity: 0.35; }
-#countdownPresetsBackdrop .page9-add-custom-btn {
-  flex-shrink: 0; width: 2.3rem; height: 2.3rem; padding: 0;
-  display: flex; align-items: center; justify-content: center;
-  font-family: var(--cd-font); font-size: 1.2rem; line-height: 1; color: #fff;
-  background: transparent; border: 1px solid rgba(255, 255, 255, 0.3); border-radius: 50%; box-shadow: none;
-  transition: background-color 0.18s ease, color 0.18s ease;
-}
-#countdownPresetsBackdrop .page9-add-custom-btn:active { transform: none; box-shadow: none; background: #fff; color: #000; }
-
-/* Bildirim sesi listesi: ince ayırıcı satırlar */
-#countdownPresetsBackdrop .countdown-sounds-list { gap: 0; }
-#countdownPresetsBackdrop .countdown-sound-row {
-  padding: 0.75rem 0.1rem; background: transparent; border: none; border-radius: 0; box-shadow: none;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
-  transition: opacity 0.2s ease;
-}
-#countdownPresetsBackdrop .countdown-sound-row:active { transform: none; opacity: 0.7; box-shadow: none; }
-#countdownPresetsBackdrop .countdown-sound-row.is-selected { background: transparent; box-shadow: none; }
-#countdownPresetsBackdrop .countdown-sound-name { font-family: var(--cd-font); font-weight: 600; font-size: 1rem; color: #fff; }
-#countdownPresetsBackdrop .countdown-sound-play-btn,
-#countdownPresetsBackdrop .countdown-sound-check {
-  border: 1px solid rgba(255, 255, 255, 0.3); color: #fff; background: transparent; box-shadow: none;
-}
-#countdownPresetsBackdrop .countdown-sound-play-btn { width: 2rem; height: 2rem; }
-#countdownPresetsBackdrop .countdown-sound-check { width: 1.35rem; height: 1.35rem; }
-#countdownPresetsBackdrop .countdown-sound-row.is-selected .countdown-sound-check {
-  background: var(--cd-acc); border-color: var(--cd-acc); color: #16171b;
-}
-#countdownPresetsBackdrop .countdown-presets-soon-text { color: #fff; }
 
 /* ---------- Sayaç tam ekranı: Kronometre ile aynı mantık ----------
    is-countdown-fs      : tam ekran açık (çalışırken VE duraklatılmışken)
@@ -38407,6 +37976,30 @@ body.is-countdown-fs.is-countdown-paused .countdown-fullscreen-time-row .stopwat
 @media (prefers-reduced-motion: reduce) {
   #countdownPage *, #countdownPage *::before, #countdownPage *::after,
   #countdownPresetsBackdrop *, .countdown-fullscreen *, .countdown-fullscreen *::before, .countdown-fullscreen *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+}
+</style>
+<style id="fsStartCss">
+/* Başlatma animasyonu (Kronometre + Zamanlayıcı tam ekranı): rakamlar hafif aşağıdan,
+   büyük ve soluk gelip yerine oturur; arkada yumuşak, dolu bir ışık dalgası yayılır. */
+.stopwatch-fullscreen-time-row.is-start-anim, .countdown-fullscreen-time-row.is-start-anim { animation: fsStartIn 0.75s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.stopwatch-fullscreen-time-row.is-start-anim::before, .countdown-fullscreen-time-row.is-start-anim::before {
+  inset: -3rem -4rem; border: 0; border-radius: 50%; opacity: 0;
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--accent-color, #ff90e8) 55%, transparent), transparent);
+  animation: fsStartGlow 0.95s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.countdown-fullscreen-time-row.is-start-anim::after { opacity: 0; animation: none; }
+@keyframes fsStartIn {
+  0% { opacity: 0.15; transform: translateY(18px) scale(1.18); }
+  55% { opacity: 1; transform: translateY(-2px) scale(0.985); }
+  100% { opacity: 1; transform: none; }
+}
+@keyframes fsStartGlow {
+  0% { opacity: 0.9; transform: scale(0.35); }
+  100% { opacity: 0; transform: scale(1.35); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .stopwatch-fullscreen-time-row.is-start-anim, .countdown-fullscreen-time-row.is-start-anim,
+  .stopwatch-fullscreen-time-row.is-start-anim::before, .countdown-fullscreen-time-row.is-start-anim::before { animation: none; }
 }
 </style>
 <style id="calNextCss">
@@ -41184,51 +40777,38 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
        hazır süreler ızgara halinde dizilir, dokununca doğrudan sayaca
        uygulanır; her çipin sağ üstünde silme butonu, altta da yeni bir
        hazır süre eklemek için dk/sn girişleri bulunur. -->
-  <div class="page9-add-backdrop" id="countdownPresetsBackdrop">
-    <div class="page9-add-card countdown-presets-card">
-      <div class="page9-add-header">
-        <div class="page9-add-heading">
-          <span class="page9-add-title">Hazır Süreler</span>
-          <span class="page9-add-subtitle">Dokununca zamanlayıcıya uygulanır</span>
+  <div class="cdp-backdrop" id="countdownPresetsBackdrop">
+    <div class="cdp-card" role="dialog" aria-modal="true" aria-label="Zamanlayıcı ayarları">
+      <div class="cdp-grab"></div>
+      <div class="cdp-top">
+        <div class="cdp-tabs" id="cdpTabs" data-tab="times" role="tablist">
+          <span class="cdp-pill"></span>
+          <button type="button" class="cdp-tab is-on" id="cdpTabTimes" role="tab" aria-selected="true">Hazır süreler</button>
+          <button type="button" class="cdp-tab" id="countdownPresetsNotifBtn" role="tab" aria-selected="false">Bildirim sesi</button>
         </div>
-        <div class="countdown-presets-header-actions">
-          <button type="button" class="countdown-presets-edit-btn" id="countdownPresetsEditBtn">Düzenle</button>
-          <!-- Bildirim butonu: basılınca aşağıdaki içerik ve başlıktaki
-               yazılar sırayla solup kaybolur, yerine "Yakında" yazısı
-               aynı sıralı beliriş animasyonuyla gelir (bkz. script'teki
-               showCountdownPresetsNotif / hideCountdownPresetsNotif). -->
-          <button type="button" class="countdown-presets-notif-btn" id="countdownPresetsNotifBtn" aria-label="Bildirimler">
-            <svg viewBox="0 0 24 24" width="15" height="15">
-              <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              <path d="M13.73 21a2 2 0 0 1-3.46 0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </button>
-          <button type="button" class="delete-btn page9-add-close" id="countdownPresetsClose" aria-label="Kapat">×</button>
-        </div>
+        <button type="button" class="cdp-x" id="countdownPresetsClose" aria-label="Kapat">×</button>
       </div>
 
-      <div class="countdown-presets-content" id="countdownPresetsContent">
-        <div class="countdown-presets-body" id="countdownPresetsBody">
-          <div class="countdown-presets-grid-scroll" id="countdownPresetsGridScroll">
-            <div class="countdown-presets-grid" id="countdownPresetsGrid"></div>
+      <div class="cdp-content" id="countdownPresetsContent">
+        <div class="cdp-pane is-on" id="countdownPresetsBody">
+          <div class="cdp-sec">
+            <span class="cdp-sec-t">Dokununca zamanlayıcıya uygulanır</span>
+            <button type="button" class="cdp-edit" id="countdownPresetsEditBtn">Düzenle</button>
           </div>
-
-          <div class="countdown-presets-add-row" id="countdownPresetsAddRow">
-            <div class="countdown-presets-add-field">
-              <input type="number" inputmode="numeric" class="countdown-presets-add-input" id="countdownPresetAddMin" placeholder="dk" min="0" max="180">
-            </div>
-            <span class="countdown-presets-add-colon">:</span>
-            <div class="countdown-presets-add-field">
-              <input type="number" inputmode="numeric" class="countdown-presets-add-input" id="countdownPresetAddSec" placeholder="sn" min="0" max="59">
-            </div>
-            <button type="button" class="page9-add-custom-btn" id="countdownPresetAddBtn" aria-label="Hazır süre ekle">+</button>
+          <div class="cdp-scroll" id="countdownPresetsGridScroll">
+            <div class="cdp-grid" id="countdownPresetsGrid"></div>
+          </div>
+          <div class="cdp-add" id="countdownPresetsAddRow">
+            <input type="number" inputmode="numeric" class="cdp-add-in" id="countdownPresetAddMin" placeholder="dk" min="0" max="180">
+            <span class="cdp-add-sep">:</span>
+            <input type="number" inputmode="numeric" class="cdp-add-in" id="countdownPresetAddSec" placeholder="sn" min="0" max="59">
+            <button type="button" class="cdp-add-btn" id="countdownPresetAddBtn">Ekle</button>
           </div>
         </div>
 
-        <!-- Bildirim paneli: sayaç bitince çalacak sesin seçildiği liste.
-             Satırlar script tarafından (renderCountdownSoundsList) COUNTDOWN_SOUND_OPTIONS'tan üretilir. -->
-        <div class="countdown-presets-soon" id="countdownPresetsSoon">
-          <div class="countdown-sounds-list" id="countdownSoundsList"></div>
+        <div class="cdp-pane" id="countdownPresetsSoon">
+          <div class="cdp-sec"><span class="cdp-sec-t">Süre bitince çalacak ses</span></div>
+          <div class="cdp-sounds" id="countdownSoundsList"></div>
         </div>
       </div>
     </div>
@@ -47825,10 +47405,8 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
   // baştan oluşturulduğu için, o anki satırları her seferinde canlı
   // olarak topluyoruz (referansları önceden sabitlemiyoruz).
   const collectCountdownSoundRows = () => (
-    countdownSoundsList ? Array.from(countdownSoundsList.querySelectorAll('.countdown-sound-row')) : []
+    countdownSoundsList ? Array.from(countdownSoundsList.querySelectorAll('.cdp-snd')) : []
   );
-  const countdownPresetsTitleEl = document.querySelector('#countdownPresetsBackdrop .page9-add-title');
-  const countdownPresetsSubtitleEl = document.querySelector('#countdownPresetsBackdrop .page9-add-subtitle');
   const countdownPresetAddMin = document.getElementById('countdownPresetAddMin');
   const countdownPresetAddSec = document.getElementById('countdownPresetAddSec');
   const countdownPresetAddBtn = document.getElementById('countdownPresetAddBtn');
@@ -47883,30 +47461,8 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
   // ortak sarmalayıcıya (.countdown-presets-content) min-height olarak
   // yazar. Gizli olan taraf, akışı bozmadan (position:absolute +
   // visibility:hidden) geçici olarak ölçülür.
-  const syncCountdownPresetsContentHeight = () => {
-    if (!countdownPresetsContent || !countdownPresetsBody || !countdownPresetsSoon) return;
-
-    const measureHeight = (el) => {
-      const wasHidden = el.style.display === 'none' || getComputedStyle(el).display === 'none';
-      if (!wasHidden) return el.offsetHeight;
-      const prevDisplay = el.style.display;
-      const prevPosition = el.style.position;
-      const prevVisibility = el.style.visibility;
-      el.style.position = 'absolute';
-      el.style.visibility = 'hidden';
-      el.style.display = el === countdownPresetsSoon ? 'flex' : '';
-      const height = el.offsetHeight;
-      el.style.display = prevDisplay;
-      el.style.position = prevPosition;
-      el.style.visibility = prevVisibility;
-      return height;
-    };
-
-    countdownPresetsContent.style.minHeight = '0px';
-    const bodyHeight = measureHeight(countdownPresetsBody);
-    const soonHeight = measureHeight(countdownPresetsSoon);
-    countdownPresetsContent.style.minHeight = `${Math.max(bodyHeight, soonHeight)}px`;
-  };
+  // Paneller aynı grid hücresinde üst üste durduğu için yükseklik otomatik sabit kalır.
+  const syncCountdownPresetsContentHeight = () => {};
 
   const applyCountdownPreset = (preset) => {
     cdMinutes = Math.max(0, Math.min(999, preset.minutes));
@@ -47923,7 +47479,7 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
     countdownPresetsGrid.innerHTML = '';
     if (!countdownPresets.length) {
       const empty = document.createElement('div');
-      empty.className = 'countdown-presets-empty';
+      empty.className = 'cdp-empty';
       empty.textContent = 'Henüz hazır süre yok. Aşağıdan ekleyebilirsin.';
       countdownPresetsGrid.appendChild(empty);
       if (!skipHeightSync) syncCountdownPresetsContentHeight();
@@ -47931,17 +47487,19 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
     }
     countdownPresets.forEach((preset) => {
       const chip = document.createElement('div');
-      chip.className = 'countdown-preset-chip';
+      chip.className = 'cdp-chip';
       chip.dataset.presetId = preset.id;
 
       const time = document.createElement('span');
-      time.className = 'countdown-preset-chip-time';
-      time.textContent = formatPresetLabel(preset.minutes, preset.seconds);
+      time.className = 'cdp-chip-t';
+      time.innerHTML = preset.seconds > 0
+        ? `${preset.minutes}:${pad2(preset.seconds)}<small>dk:sn</small>`
+        : `${preset.minutes}<small>dk</small>`;
       chip.appendChild(time);
 
       const del = document.createElement('button');
       del.type = 'button';
-      del.className = 'delete-btn countdown-preset-chip-delete';
+      del.className = 'cdp-chip-x';
       del.textContent = '×';
       del.setAttribute('aria-label', `"${formatPresetLabel(preset.minutes, preset.seconds)}" hazır süresini sil`);
       del.addEventListener('click', (e) => {
@@ -47968,7 +47526,7 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
   // hazır süre yok" mesajı için tek seferlik yeniden çizim yapılır.
   const animateRemoveCountdownPreset = (id) => {
     const chipEl = countdownPresetsGrid
-      ? countdownPresetsGrid.querySelector(`.countdown-preset-chip[data-preset-id="${id}"]`)
+      ? countdownPresetsGrid.querySelector(`.cdp-chip[data-preset-id="${id}"]`)
       : null;
 
     countdownPresets = countdownPresets.filter((p) => p.id !== id);
@@ -48044,7 +47602,7 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
     countdownSoundsList.innerHTML = '';
     COUNTDOWN_SOUND_OPTIONS.forEach((sound) => {
       const row = document.createElement('div');
-      row.className = 'countdown-sound-row';
+      row.className = 'cdp-snd';
       row.classList.toggle('is-selected', sound.id === countdownSelectedSoundId);
       row.setAttribute('role', 'button');
       row.setAttribute('tabindex', '0');
@@ -48052,7 +47610,7 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
       const isPlaying = countdownPreviewPlayingId === sound.id;
       const playBtn = document.createElement('button');
       playBtn.type = 'button';
-      playBtn.className = 'countdown-sound-play-btn';
+      playBtn.className = 'cdp-snd-play';
       playBtn.setAttribute('aria-label', isPlaying ? `"${sound.name}" sesini durdur` : `"${sound.name}" sesini dinle`);
       playBtn.innerHTML = isPlaying
         ? '<svg viewBox="0 0 24 24" width="11" height="11"><rect x="5" y="4" width="5" height="16" fill="currentColor"/><rect x="14" y="4" width="5" height="16" fill="currentColor"/></svg>'
@@ -48064,13 +47622,13 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
       row.appendChild(playBtn);
 
       const name = document.createElement('span');
-      name.className = 'countdown-sound-name';
+      name.className = 'cdp-snd-name';
       name.textContent = sound.name;
       row.appendChild(name);
 
       const check = document.createElement('span');
-      check.className = 'countdown-sound-check';
-      check.innerHTML = '<svg viewBox="0 0 24 24" width="10" height="10"><path d="M4 12l6 6L20 6" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+      check.className = 'cdp-snd-check';
+      check.innerHTML = '<svg viewBox="0 0 24 24" width="12" height="12"><path d="M4 12l6 6L20 6" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>';
       row.appendChild(check);
 
       row.addEventListener('click', () => selectCountdownSound(sound.id));
@@ -48094,123 +47652,24 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
     }
   };
 
-  const CD_TEXT_STAGGER_MS = 55;
-  const CD_TEXT_FADE_MS = 220;
+  // ---- Sekmeler: Hazır süreler | Bildirim sesi ----
+  const cdpTabs = document.getElementById('cdpTabs');
+  const cdpTabTimes = document.getElementById('cdpTabTimes');
   let countdownPresetsNotifShown = false;
-  let countdownPresetsNotifAnimating = false;
 
-  // Başlık/alt başlık iki panel arasında ortak kullanılır; panel değişince
-  // metin içerikleri bunlarla değiştirilir (bkz. showCountdownPresetsNotif /
-  // hideCountdownPresetsNotif), elemanların kendisi gizlenmez.
-  const COUNTDOWN_PRESETS_TITLE = 'Hazır Süreler';
-  const COUNTDOWN_PRESETS_SUBTITLE = 'Dokununca zamanlayıcıya uygulanır';
-  const COUNTDOWN_SOUND_PANEL_TITLE = 'Bildirim Sesi';
-  const COUNTDOWN_SOUND_PANEL_SUBTITLE = 'Zamanlayıcı bitince çalacak sesi seç';
-
-  // Pop-up içindeki, o an ekranda görünen "gövde" elemanlarını sırasıyla
-  // döndürür: boş-liste mesajı dahil, butonlar/etkileşimli elemanlar da
-  // (Düzenle butonu, her hazır süre çipi, ekleme satırının tamamı) dahildir.
-  // Başlık/alt başlık burada YOK; onlar gizlenmiyor, metinleri değişiyor
-  // (bkz. showCountdownPresetsNotif / hideCountdownPresetsNotif).
-  const collectCountdownPresetsFadeEls = () => {
-    const els = [countdownPresetsEditBtn];
-    if (countdownPresetsGrid) {
-      const chips = countdownPresetsGrid.querySelectorAll('.countdown-preset-chip');
-      if (chips.length) {
-        chips.forEach((el) => els.push(el));
-      } else {
-        countdownPresetsGrid.querySelectorAll('.countdown-presets-empty').forEach((el) => els.push(el));
-      }
-    }
-    if (countdownPresetsAddRow) els.push(countdownPresetsAddRow);
-    return els.filter(Boolean);
+  const setCdpTab = (tab) => {
+    const sound = tab === 'sound';
+    countdownPresetsNotifShown = sound;
+    if (sound && countdownPresetsEditing) setCountdownPresetsEditing(false);
+    if (!sound) stopCountdownPreview();
+    if (cdpTabs) cdpTabs.dataset.tab = sound ? 'sound' : 'times';
+    if (countdownPresetsBody) countdownPresetsBody.classList.toggle('is-on', !sound);
+    if (countdownPresetsSoon) countdownPresetsSoon.classList.toggle('is-on', sound);
+    if (cdpTabTimes) { cdpTabTimes.classList.toggle('is-on', !sound); cdpTabTimes.setAttribute('aria-selected', String(!sound)); }
+    if (countdownPresetsNotifBtn) { countdownPresetsNotifBtn.classList.toggle('is-on', sound); countdownPresetsNotifBtn.setAttribute('aria-selected', String(sound)); }
+    if (sound) renderCountdownSoundsList();
   };
-
-  // Verilen elemanları birer birer (aralarında CD_TEXT_STAGGER_MS ile)
-  // .cd-text-hidden sınıfını ekleyip/kaldırarak sırayla kaybettirir ya
-  // da belirtir; son elemanın geçişi bitince onDone çağrılır.
-  const cdRunTextStagger = (els, { hide }, onDone) => {
-    if (!els.length) {
-      if (onDone) onDone();
-      return;
-    }
-    els.forEach((el, idx) => {
-      setTimeout(() => {
-        el.classList.toggle('cd-text-hidden', hide);
-      }, idx * CD_TEXT_STAGGER_MS);
-    });
-    if (onDone) {
-      setTimeout(onDone, (els.length - 1) * CD_TEXT_STAGGER_MS + CD_TEXT_FADE_MS);
-    }
-  };
-
-  const showCountdownPresetsNotif = () => {
-    if (countdownPresetsNotifAnimating || countdownPresetsNotifShown) return;
-    countdownPresetsNotifAnimating = true;
-    if (countdownPresetsNotifBtn) countdownPresetsNotifBtn.classList.add('is-active');
-    // Düzenleme modu açıksa (çipler titreşiyor, silme çarpıları görünür)
-    // önce onu kapatıyoruz; aksi halde çiplerin kendi wiggle animasyonu
-    // solma geçişiyle çakışıp "sert" görünmesine yol açardı.
-    if (countdownPresetsEditing) setCountdownPresetsEditing(false);
-    const headingEls = [countdownPresetsTitleEl, countdownPresetsSubtitleEl].filter(Boolean);
-    cdRunTextStagger([...headingEls, ...collectCountdownPresetsFadeEls()], { hide: true }, () => {
-      if (countdownPresetsBody) countdownPresetsBody.style.display = 'none';
-      if (countdownPresetsTitleEl) countdownPresetsTitleEl.textContent = COUNTDOWN_SOUND_PANEL_TITLE;
-      if (countdownPresetsSubtitleEl) countdownPresetsSubtitleEl.textContent = COUNTDOWN_SOUND_PANEL_SUBTITLE;
-      renderCountdownSoundsList();
-      if (countdownPresetsSoon) countdownPresetsSoon.style.display = 'flex';
-      const revealEls = [...headingEls, ...collectCountdownSoundRows()];
-      if (revealEls.length) {
-        revealEls.forEach((el) => el.classList.add('cd-text-hidden'));
-        void countdownPresetsBackdrop.offsetWidth;
-        cdRunTextStagger(revealEls, { hide: false }, () => {
-          countdownPresetsNotifAnimating = false;
-        });
-      } else {
-        countdownPresetsNotifAnimating = false;
-      }
-      countdownPresetsNotifShown = true;
-    });
-  };
-
-  const hideCountdownPresetsNotif = () => {
-    if (countdownPresetsNotifAnimating || !countdownPresetsNotifShown) return;
-    countdownPresetsNotifAnimating = true;
-    if (countdownPresetsNotifBtn) countdownPresetsNotifBtn.classList.remove('is-active');
-    stopCountdownPreview();
-    const headingEls = [countdownPresetsTitleEl, countdownPresetsSubtitleEl].filter(Boolean);
-    const soonEls = [...headingEls, ...collectCountdownSoundRows()];
-    cdRunTextStagger(soonEls, { hide: true }, () => {
-      if (countdownPresetsSoon) countdownPresetsSoon.style.display = 'none';
-      if (countdownPresetsBody) countdownPresetsBody.style.display = '';
-      if (countdownPresetsTitleEl) countdownPresetsTitleEl.textContent = COUNTDOWN_PRESETS_TITLE;
-      if (countdownPresetsSubtitleEl) countdownPresetsSubtitleEl.textContent = COUNTDOWN_PRESETS_SUBTITLE;
-      const els = [...headingEls, ...collectCountdownPresetsFadeEls()];
-      els.forEach((el) => el.classList.add('cd-text-hidden'));
-      void countdownPresetsBackdrop.offsetWidth;
-      countdownPresetsNotifShown = false;
-      cdRunTextStagger(els, { hide: false }, () => {
-        countdownPresetsNotifAnimating = false;
-      });
-    });
-  };
-
-  // Pop-up her açıldığında bildirim paneli kapalı, normal içerik
-  // (ızgara + ekleme satırı) görünür durumda başlasın.
-  const resetCountdownPresetsNotif = () => {
-    countdownPresetsNotifAnimating = false;
-    countdownPresetsNotifShown = false;
-    stopCountdownPreview();
-    if (countdownPresetsNotifBtn) countdownPresetsNotifBtn.classList.remove('is-active');
-    if (countdownPresetsSoon) countdownPresetsSoon.style.display = 'none';
-    if (countdownPresetsBody) countdownPresetsBody.style.display = '';
-    if (countdownPresetsTitleEl) countdownPresetsTitleEl.textContent = COUNTDOWN_PRESETS_TITLE;
-    if (countdownPresetsSubtitleEl) countdownPresetsSubtitleEl.textContent = COUNTDOWN_PRESETS_SUBTITLE;
-    [countdownPresetsTitleEl, countdownPresetsSubtitleEl].filter(Boolean).forEach((el) => el.classList.remove('cd-text-hidden'));
-    collectCountdownPresetsFadeEls().forEach((el) => el.classList.remove('cd-text-hidden'));
-    renderCountdownSoundsList();
-    collectCountdownSoundRows().forEach((el) => el.classList.remove('cd-text-hidden'));
-  };
+  const resetCountdownPresetsNotif = () => setCdpTab('times');
 
   const openCountdownPresets = () => {
     setCountdownPresetsEditing(false);
@@ -48231,12 +47690,8 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
   if (countdownPresetsEditBtn) {
     countdownPresetsEditBtn.addEventListener('click', () => setCountdownPresetsEditing(!countdownPresetsEditing));
   }
-  if (countdownPresetsNotifBtn) {
-    countdownPresetsNotifBtn.addEventListener('click', () => {
-      if (countdownPresetsNotifShown) hideCountdownPresetsNotif();
-      else showCountdownPresetsNotif();
-    });
-  }
+  if (countdownPresetsNotifBtn) countdownPresetsNotifBtn.addEventListener('click', () => setCdpTab('sound'));
+  if (cdpTabTimes) cdpTabTimes.addEventListener('click', () => setCdpTab('times'));
   if (countdownPresetsBackdrop) {
     countdownPresetsBackdrop.addEventListener('click', (e) => {
       if (e.target === countdownPresetsBackdrop) closeCountdownPresets();
@@ -71050,7 +70505,7 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
   .gf-ov { position: fixed; inset: 0; z-index: 100000; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; cursor: pointer; -webkit-tap-highlight-color: transparent; font-family: "Baloo 2", "Space Grotesk", sans-serif; }
   /* Arka plan katmanı: içerikten (alev/yazılar) bağımsız solar; güvenli alan rengiyle AYNI anda, AYNI süre ve eğriyle
      (tema geçişlerindeki --theme-transition-* ile; tarayıcının theme-color geçişine uydurulmuş değerler) canlanır/solar. */
-  .gf-bd { position: absolute; inset: 0; z-index: 0; pointer-events: none; opacity: 0; background: radial-gradient(110% 80% at 50% 38%, rgba(70, 28, 6, .9), rgba(14, 8, 5, .96) 70%); -webkit-backdrop-filter: blur(16px) saturate(1.2); backdrop-filter: blur(16px) saturate(1.2); }
+  .gf-bd { position: absolute; inset: 0; z-index: 0; pointer-events: none; opacity: 0; background: radial-gradient(110% 80% at 50% 38%, rgba(70, 28, 6, .94), rgba(14, 8, 5, .98) 70%); }
   /* Üst güvenli alan: overlay'in üst kenar tonu (rgba(31,14,5,.94)) aktif tema rengiyle harmanlanır;
      <meta name="theme-color"> da aynı değere çekildiği için çentik/Dynamic Island şeridi ile overlay kesintisiz görünür. */
   .gf-bd::before { content: ""; position: absolute; left: 0; right: 0; top: 0; z-index: 0; pointer-events: none;
