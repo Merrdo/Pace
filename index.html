@@ -37881,7 +37881,15 @@
   .cdp-backdrop.is-open .cdp-card { transform: none; opacity: 1; }
   .cdp-grab { display: none; }
 }
-.cdp-grab { width: 2.6rem; height: 0.28rem; border-radius: 9px; margin: 0 auto 0.8rem; background: var(--cdp-line); flex: none; }
+.cdp-grab { position: relative; flex: none; width: 100%; height: 1.7rem; margin: -0.4rem 0 0.1rem; cursor: grab; touch-action: none; -webkit-tap-highlight-color: transparent; }
+.cdp-grab::before { content: ""; position: absolute; left: 50%; top: 0.7rem; width: 2.8rem; height: 0.3rem; border-radius: 9px; background: var(--cdp-line); transform: translateX(-50%); transition: background-color 0.2s ease, width 0.2s ease; }
+.cdp-card.is-dragging .cdp-grab { cursor: grabbing; }
+.cdp-card.is-dragging .cdp-grab::before { width: 3.2rem; background: var(--cdp-mute); }
+/* Sürüklerken kart parmağı birebir izler (geçiş yok); yukarı çekilince alttaki boşluğu bu uzantı doldurur. */
+.cdp-card.is-dragging { transition: none !important; }
+.cdp-backdrop.is-dragging::before { transition: none !important; }
+.cdp-backdrop.is-open::before { opacity: var(--cdp-dim, 1); }
+@media (max-width: 599.98px) { .cdp-card::after { content: ""; position: absolute; left: 0; right: 0; top: 100%; height: 120px; background: inherit; pointer-events: none; } }
 .cdp-top { display: flex; align-items: center; gap: 0.6rem; flex: none; }
 .cdp-tabs { position: relative; flex: 1; display: grid; grid-template-columns: 1fr 1fr; padding: 0.22rem; border-radius: 999px; background: var(--cdp-soft); }
 .cdp-pill { position: absolute; top: 0.22rem; bottom: 0.22rem; left: 0.22rem; width: calc(50% - 0.22rem); border-radius: 999px; background: var(--cdp-acc); transition: transform 0.4s var(--cd-ease, ease); }
@@ -47709,6 +47717,58 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
       closeCountdownPresets();
     }
   });
+
+  // ---- Çubuktan tutup sürükleme: aşağı = kapat (eşik/hız), yukarı = lastik gibi esner ve geri döner ----
+  (() => {
+    const grab = countdownPresetsBackdrop && countdownPresetsBackdrop.querySelector('.cdp-grab');
+    const card = countdownPresetsBackdrop && countdownPresetsBackdrop.querySelector('.cdp-card');
+    if (!grab || !card) return;
+    let startY = 0, dy = 0, lastY = 0, lastT = 0, vel = 0, drag = false, pid = null;
+    const SPRING = 'transform 0.55s cubic-bezier(0.34, 1.45, 0.64, 1)';
+    // Yukarı çekmede direnç: çekilen mesafe arttıkça kart daha az yükselir (en fazla ~40px).
+    const rubber = (up) => -40 * (1 - 1 / (1 + up / 140));
+    const apply = (raw) => {
+      const y = raw >= 0 ? raw : rubber(-raw);
+      card.style.transform = `translateY(${y}px)`;
+      const h = card.offsetHeight || 1;
+      countdownPresetsBackdrop.style.setProperty('--cdp-dim', String(Math.max(0, 1 - Math.max(0, y) / h)));
+    };
+    grab.addEventListener('pointerdown', (e) => {
+      if (drag || (e.pointerType === 'mouse' && e.button !== 0)) return;
+      drag = true; pid = e.pointerId; startY = lastY = e.clientY; lastT = performance.now(); vel = 0; dy = 0;
+      try { grab.setPointerCapture(pid); } catch (err) { /* yok say */ }
+      card.classList.add('is-dragging'); countdownPresetsBackdrop.classList.add('is-dragging');
+    });
+    grab.addEventListener('pointermove', (e) => {
+      if (!drag || e.pointerId !== pid) return;
+      dy = e.clientY - startY;
+      const now = performance.now(), dt = Math.max(1, now - lastT);
+      vel = 0.8 * vel + 0.2 * ((e.clientY - lastY) / dt); lastY = e.clientY; lastT = now;
+      apply(dy);
+    });
+    const end = (e) => {
+      if (!drag || (e && e.pointerId !== pid)) return;
+      drag = false;
+      try { grab.releasePointerCapture(pid); } catch (err) { /* yok say */ }
+      const h = card.offsetHeight || 1;
+      const shouldClose = dy > Math.min(130, h * 0.3) || (vel > 0.6 && dy > 24);
+      card.classList.remove('is-dragging'); countdownPresetsBackdrop.classList.remove('is-dragging');
+      countdownPresetsBackdrop.style.removeProperty('--cdp-dim');
+      if (shouldClose) {
+        card.style.transition = 'transform 0.4s cubic-bezier(0.16, 1, 0.3, 1)';
+        card.style.transform = '';
+        closeCountdownPresets();
+        setTimeout(() => { card.style.transition = ''; }, 520);
+      } else {
+        // Yeterince çekilmedi ya da yukarı çekildi: esneyerek eski yerine döner.
+        card.style.transition = SPRING;
+        card.style.transform = '';
+        setTimeout(() => { card.style.transition = ''; }, 600);
+      }
+    };
+    grab.addEventListener('pointerup', end);
+    grab.addEventListener('pointercancel', end);
+  })();
 
   if (countdownPresetAddBtn) {
     countdownPresetAddBtn.addEventListener('click', () => {
