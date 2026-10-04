@@ -618,7 +618,7 @@ body.is-qhavuz-test-open .pf-side{opacity:.35;pointer-events:none}}
 .pf-ov{position:fixed;inset:0;z-index:2147483003;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(0,0,0,.5);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);animation:pfFade .4s ease both}
 .pf-ov.pf-out{animation:pfFadeOut .3s ease both;pointer-events:none}
 @property --pc{syntax:'<color>';inherits:true;initial-value:#3e63dd}
-.pf-card{--pc:#3e63dd;position:relative;width:100%;max-width:460px;max-height:92vh;max-height:92dvh;overflow-y:auto;overscroll-behavior:none;box-sizing:border-box;padding:18px 22px 24px;border-radius:32px;background:var(--theme-bg,#0b0b0b);color:var(--theme-text,#121212);border:1px solid rgba(128,128,128,.25);box-shadow:0 30px 80px rgba(0,0,0,.5);animation:pfCardIn .7s cubic-bezier(.22,1,.36,1) both}
+.pf-card{--pc:#3e63dd;position:relative;width:100%;max-width:460px;max-height:92vh;max-height:92dvh;overflow-y:auto;overscroll-behavior:contain;box-sizing:border-box;padding:18px 22px 24px;border-radius:32px;background:var(--theme-bg,#0b0b0b);color:var(--theme-text,#121212);border:1px solid rgba(128,128,128,.25);box-shadow:0 30px 80px rgba(0,0,0,.5);animation:pfCardIn .7s cubic-bezier(.22,1,.36,1) both}
 .pf-ov.pf-out .pf-card{animation:pfCardOut .3s cubic-bezier(.5,0,.75,0) both}
 .pf-card{background-image:radial-gradient(ellipse 250px 190px at 50% 40px,color-mix(in srgb,var(--pc) 24%,transparent),transparent);background-repeat:no-repeat;transition:--pc .6s ease}
 .pf-card>*{position:relative}
