@@ -38056,7 +38056,18 @@ body.is-countdown-fs.is-countdown-paused .countdown-fullscreen-time-row .stopwat
 .tsh-btn[disabled] { opacity: 0.35; pointer-events: none; }
 .tsh-more { background: var(--tsh-soft); color: var(--tsh-ink); }
 .tsh-go { flex: 1; background: var(--tsh-acc); color: #16171b; }
-.tsh-card.is-list .tsh-more { display: none; }
+.tsh-card.is-list .tsh-more, .tsh-card.is-edit .tsh-more { display: none; }
+.tsh-card.is-confirm .tsh-more { display: block; }
+.tsh-card.is-confirm .tsh-ta { display: none; }
+.tsh-card.is-confirm .tsh-label { white-space: normal; }
+.tsh-msg { display: none; margin: 1rem 0 1.1rem; font-weight: 600; font-size: 1.05rem; line-height: 1.45; color: var(--tsh-mute); }
+.tsh-card.is-confirm .tsh-msg { display: block; }
+.tsh-sw { display: none; flex-wrap: wrap; gap: .65rem; margin: 0 0 1rem; }
+.tsh-card.has-sw .tsh-sw { display: flex; }
+.tsh-sw button { width: 2.2rem; height: 2.2rem; padding: 0; border-radius: 50%; cursor: pointer; border: 3px solid transparent; box-shadow: inset 0 0 0 2px var(--theme-bg, #121212); transition: transform .15s ease, border-color .2s ease; }
+.tsh-sw button:active { transform: scale(.9); }
+.tsh-sw button.is-sel { border-color: var(--tsh-ink); }
+.tsh-go.is-danger { background: #e5484d; color: #fff; }
 .tsh-card.is-list .tsh-ta { min-height: 3.4rem; margin-top: 1rem; margin-bottom: 0.9rem; font-size: 1.5rem; font-weight: 800; line-height: 1.4; }
 .hl-head.is-tappable { cursor: pointer; }
 .tsh-grab { position: relative; flex: none; width: 100%; height: 1.7rem; cursor: grab; touch-action: none; -webkit-tap-highlight-color: transparent; }
@@ -47932,7 +47943,21 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
   box-shadow:0 -20px 60px -20px rgba(0,0,0,.6);transform:translateY(105%);transition:transform .55s cubic-bezier(.16,1,.3,1);}
 .ofs-ov.is-in .ofs-sheet{transform:none;}
 .ofs-ov.is-out{opacity:0;transition:opacity .3s ease;}
-@media (min-width:768px){.ofs-ov{align-items:center;}.ofs-sheet{border-radius:28px;max-height:88%;}}
+.ofs-ov{height:var(--ofs-vh,100%);bottom:auto;}
+.ofs-sheet{width:min(100%,520px);max-width:none;max-height:calc(var(--ofs-vh,100dvh) - 12px);overscroll-behavior:contain;}
+.ofs-ov.is-top{align-items:flex-start;}
+.ofs-ov.is-top .ofs-sheet{border-radius:0 0 28px 28px;padding:calc(18px + env(safe-area-inset-top,0px)) 20px 12px;transform:translateY(-105%);box-shadow:0 20px 60px -20px rgba(0,0,0,.6);}
+.ofs-ov.is-top .ofs-grab{order:99;margin:12px auto 0;}
+.ofs-ov.is-top .ofs-sheet{display:flex;flex-direction:column;}
+.ofs-ov.is-top.is-in .ofs-sheet{transform:none;}
+.ofs-sheet.is-drag{transition:none;}
+@media (min-width:768px){.ofs-ov{align-items:center;}.ofs-ov.is-top{align-items:flex-start;}.ofs-sheet{border-radius:28px;}.ofs-ov.is-top .ofs-sheet{border-radius:0 0 28px 28px;}.ofs-ov:not(.is-top) .ofs-sheet{max-height:88%;}}
+@media (min-width:560px) and (max-height:760px),(orientation:landscape) and (max-height:520px){
+  .ofs-opts{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+  .ofs-sheet{width:min(100%,640px);padding-top:8px;}
+  .ofs-grab{margin-bottom:8px;}.ofs-head{margin-bottom:8px;}.ofs-badge{width:2.8rem;height:2.8rem;font-size:.7rem;}
+  .ofs-opt{padding:8px 12px;}.ofs-act{margin-top:10px;}.ofs-act button{padding:10px 16px;}
+}
 .ofs-grab{width:42px;height:4px;border-radius:9px;margin:0 auto 14px;background:currentColor;opacity:.2;}
 .ofs-head{display:flex;align-items:center;gap:14px;margin-bottom:14px;}
 .ofs-badge{position:relative;flex:none;width:3.4rem;height:3.4rem;border-radius:50%;border:2.5px solid var(--off-red);color:var(--off-red);
@@ -47995,7 +48020,7 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
       }
       ov.innerHTML = h + '</div>';
     };
-    const openSheet = (d) => {
+    const openSheet = (d, opts) => {
       if (ov) ov.remove();
       date = new Date(d.getFullYear(), d.getMonth(), d.getDate()); rule = find(date); pick = 'once';
       ov = document.createElement('div'); ov.className = 'ofs-ov'; render();
@@ -48017,6 +48042,17 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
         }
         closeSheet();
       });
+      // Esnek konum: açık sayfa üstten açılıyorsa (Gündelik/Hatırlanacaklar vb.) ya da opts.from === 'top' ise yukarıdan, aksi halde aşağıdan.
+      const topOpen = document.querySelector('.tsh-backdrop.is-open');
+      if ((opts && opts.from === 'top') || (!(opts && opts.from) && topOpen)) ov.classList.add('is-top');
+      const fitVh = () => { if (ov) ov.style.setProperty('--ofs-vh', ((window.visualViewport && window.visualViewport.height) || window.innerHeight) + 'px'); };
+      fitVh(); if (window.visualViewport) { const vf = () => { if (ov) fitVh(); else window.visualViewport.removeEventListener('resize', vf); }; window.visualViewport.addEventListener('resize', vf); }
+      // Sürükleyerek kapat (aşağıdan açılıyorsa aşağı, yukarıdan açılıyorsa yukarı).
+      let sy = 0, dy = 0, dr = false;
+      ov.addEventListener('pointerdown', (e) => { const sh = e.target.closest('.ofs-grab'); if (!sh) return; dr = true; sy = e.clientY; dy = 0; ov.querySelector('.ofs-sheet').classList.add('is-drag'); try { sh.setPointerCapture(e.pointerId); } catch (x) { /* yok say */ } });
+      ov.addEventListener('pointermove', (e) => { if (!dr) return; const top = ov.classList.contains('is-top'); dy = e.clientY - sy; if (top ? dy > 0 : dy < 0) dy = 0; ov.querySelector('.ofs-sheet').style.transform = `translateY(${dy}px)`; });
+      const endDrag = () => { if (!dr) return; dr = false; const sh = ov && ov.querySelector('.ofs-sheet'); if (!sh) return; sh.classList.remove('is-drag'); if (Math.abs(dy) > 70) closeSheet(); else sh.style.transform = ''; };
+      ov.addEventListener('pointerup', endDrag); ov.addEventListener('pointercancel', endDrag);
       document.body.appendChild(ov);
       requestAnimationFrame(() => requestAnimationFrame(() => ov && ov.classList.add('is-in')));
     };
@@ -71152,21 +71188,23 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
   // ---------- Görev ekleme sayfası: yukarıdan aşağıya açılan kart ----------
   window.gundelikTaskSheet = window.gundelikTaskSheet || (() => {
     let bd = null, card, ta, proxy, focusT = 0, goBtn, moreBtn, labelEl, listMode = false, onSubmit = null, curId = null, opened = false;
+    let confirmMode = false, noDraft = false, onDismiss = null, curCol = null, swEl, msgEl;
     const drafts = new Map();
     const mk = (t, c, x) => { const e = document.createElement(t); if (c) e.className = c; if (x != null) e.textContent = x; return e; };
     const vv = () => { const h = (window.visualViewport && window.visualViewport.height) || window.innerHeight; if (bd) bd.style.setProperty('--tsh-vh', h + 'px'); };
-    const sync = () => { const empty = !ta.value.trim(); goBtn.disabled = empty; moreBtn.disabled = empty; };
+    const sync = () => { const empty = !confirmMode && !ta.value.trim(); goBtn.disabled = empty; moreBtn.disabled = empty; };
     const grow = () => { ta.style.height = 'auto'; ta.style.height = Math.max(ta.scrollHeight, 0) + 'px'; sync(); };
     const close = (keepDraft = true) => {
       if (!opened) return; opened = false;
-      if (curId != null) { if (keepDraft && ta.value.trim()) drafts.set(curId, ta.value); else drafts.delete(curId); }
+      if (curId != null && !noDraft) { if (keepDraft && ta.value.trim()) drafts.set(curId, ta.value); else drafts.delete(curId); }
+      { const d = onDismiss; onDismiss = null; if (d) d(); }
       clearTimeout(focusT);
       try { ta.blur(); proxy.blur(); } catch (e) { /* yok say */ }
       bd.classList.remove('is-open'); card.style.transform = '';
     };
     const submit = (more) => {
-      const v = ta.value.trim(); if (!v || !onSubmit) return;
-      onSubmit(v); drafts.delete(curId); ta.value = '';
+      const v = ta.value.trim(); if ((!v && !confirmMode) || !onSubmit) return;
+      onSubmit(v, curCol); drafts.delete(curId); ta.value = '';
       if (more) { grow(); try { ta.focus(); } catch (e) { /* yok say */ } } else close(false);
     };
     const build = () => {
@@ -71182,11 +71220,11 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
       // oturduktan sonra asıl alana taşınır (kayarken imleç yanlış yerde görünmesin).
       proxy = mk('input'); proxy.type = 'text'; proxy.tabIndex = -1; proxy.setAttribute('aria-hidden', 'true'); proxy.setAttribute('autocomplete', 'off');
       proxy.style.cssText = 'position:fixed;top:0;left:0;width:1px;height:1px;opacity:0;border:0;padding:0;pointer-events:none;font-size:16px;';
-      card.append(top, ta, bar, grab); bd.append(card, proxy); document.body.appendChild(bd);
+      msgEl = mk('p', 'tsh-msg'); swEl = mk('div', 'tsh-sw'); card.append(top, msgEl, ta, swEl, bar, grab); bd.append(card, proxy); document.body.appendChild(bd);
       ta.addEventListener('input', grow);
       ta.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); else if (e.key === 'Enter' && (listMode ? !e.shiftKey : (e.ctrlKey || e.metaKey))) { e.preventDefault(); submit(false); } });
       x.addEventListener('click', () => close());
-      goBtn.addEventListener('click', () => submit(false)); moreBtn.addEventListener('click', () => submit(true));
+      goBtn.addEventListener('click', () => submit(false)); moreBtn.addEventListener('click', () => (confirmMode ? close(false) : submit(true)));
       [goBtn, moreBtn].forEach((b) => b.addEventListener('pointerdown', (e) => e.preventDefault()));
       // Boş yere dokunma: yalnızca paneli kapatır. Kapanış 'click' anında yapılır ve olay burada
       // tüketilir; böylece aynı dokunuş arkadaki görev/başlığa geçmez.
@@ -71226,13 +71264,24 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
     return {
       open: (g, submitFn, opts) => {
         if (!bd) build();
-        listMode = !!(opts && opts.list);
-        card.classList.toggle('is-list', listMode); labelEl.textContent = listMode ? 'Yeni liste' : (g.name || 'Liste');
-        goBtn.textContent = listMode ? 'Listeyi oluştur' : 'Görevi ekle';
+        opts = opts || {}; { const d = onDismiss; onDismiss = null; if (d && opened) d(); }
+        confirmMode = !!opts.confirm; noDraft = !!(opts.edit || opts.confirm); onDismiss = opts.onDismiss || null;
+        listMode = !!opts.list && !confirmMode;
+        card.classList.toggle('is-list', listMode); card.classList.toggle('is-confirm', confirmMode); card.classList.toggle('is-edit', !!opts.edit);
+        labelEl.textContent = opts.label || (listMode ? 'Yeni liste' : (g.name || 'Liste'));
+        goBtn.textContent = opts.go || (listMode ? 'Listeyi oluştur' : 'Görevi ekle'); goBtn.classList.toggle('is-danger', !!opts.danger);
+        moreBtn.textContent = confirmMode ? 'Vazgeç' : 'Ekle ve yeni yaz'; msgEl.textContent = opts.msg || '';
         ta.placeholder = listMode ? 'Liste adı (örn. Market)' : 'Görevi buraya yaz…'; ta.rows = listMode ? 1 : 5; ta.maxLength = listMode ? 120 : 100000;
-        curId = g.id; onSubmit = submitFn; opened = true;
+        curId = g.id; onSubmit = submitFn; opened = true; curCol = g.color || null;
         card.style.setProperty('--tsh-gc', g.color || 'var(--accent-color,#ff90e8)');
-        ta.value = drafts.get(g.id) || ''; vv(); grow();
+        swEl.innerHTML = ''; card.classList.toggle('has-sw', !!opts.colors);
+        (opts.colors || []).forEach((c) => {
+          const b = mk('button'); b.type = 'button'; b.style.background = c; b.setAttribute('aria-label', 'Renk ' + c); if (c === curCol) b.className = 'is-sel';
+          b.addEventListener('pointerdown', (e) => e.preventDefault());
+          b.addEventListener('click', () => { curCol = c; card.style.setProperty('--tsh-gc', c); swEl.querySelectorAll('button').forEach((x) => x.classList.toggle('is-sel', x === b)); });
+          swEl.appendChild(b);
+        });
+        ta.value = opts.text != null ? opts.text : (noDraft ? '' : (drafts.get(g.id) || '')); vv(); grow();
         bd.classList.add('is-open');
         try { proxy.focus({ preventScroll: true }); } catch (e) { /* yok say */ }
         let moved = false;
@@ -71351,13 +71400,8 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
     // ---- Yardımcılar: geri al bildirimi, onay, yerinde düzenleme, form ----
     const toast = (msg, undo) => window.paceNToast(msg, undo, 5000);
     const confirmDel = (title, msg) => new Promise((resolve) => {
-      const bk = el('div', 'p8n-dlg-back'), d = el('div', 'p8n-dlg'); d.setAttribute('role', 'dialog');
-      const no = el('button', 'p8n-dlg-btn', 'Vazgeç'), ok = el('button', 'p8n-dlg-btn danger', 'Sil'); no.type = ok.type = 'button';
-      const row = el('div', 'p8n-dlg-row'); row.append(no, ok); d.append(el('h3', '', title), el('p', '', msg), row); bk.appendChild(d);
-      const fin = (v) => { bk.classList.remove('is-in'); setTimeout(() => bk.remove(), 320); resolve(v); };
-      no.onclick = () => fin(false); ok.onclick = () => fin(true);
-      bk.addEventListener('pointerdown', (e) => { if (e.target === bk) fin(false); });
-      document.body.appendChild(bk); requestAnimationFrame(() => requestAnimationFrame(() => bk.classList.add('is-in')));
+      let done = false; const fin = (v) => { if (!done) { done = true; resolve(v); } };
+      window.gundelikTaskSheet.open({ id: 'cf:' + P, name: title, color: '#e5484d' }, () => fin(true), { confirm: true, label: title, msg, go: 'Sil', danger: true, onDismiss: () => fin(false) });
     });
     // multi=true: madde metni için çok satırlı, harf sınırsız kutu (Enter = yeni satır;
     // Ctrl/⌘+Enter, ✓ düğmesi ya da dışarı dokunmak kaydeder; Esc vazgeçer).
@@ -71457,7 +71501,7 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
       row.addEventListener('click', () => { it.done = !it.done; row.classList.toggle('is-done', it.done); save(); upd(); autoSweep(g, it); emitProg(true); });
       hold(row, (x, y) => openMenu(row, [
         { ic: IC.copy, title: 'Kopyala', sub: 'Metni panoya al', fn: async () => { const ok = await window.gundelikCopyText(it.text); toast(ok ? 'Kopyalandı' : 'Kopyalanamadı'); } },
-        { ic: IC.edit, title: 'Metni Düzenle', sub: 'Görevin metnini değiştir', fn: () => editInline(t, it.text, (v) => { it.text = v; save(); }, true) },
+        { ic: IC.edit, title: 'Metni Düzenle', sub: 'Görevin metnini değiştir', fn: () => window.gundelikTaskSheet.open({ id: 'e:' + it.id, name: g.name, color: g.color }, (v) => { it.text = v; save(); render(); }, { edit: true, text: it.text, label: 'Görevi düzenle', go: 'Kaydet' }) },
         { ic: IC.trash, title: 'Sil', sub: 'Bu görevi kaldır', danger: true, fn: () => window.gkAnim.leave(row, () => { const idx = g.items.indexOf(it); g.items = g.items.filter((x2) => x2 !== it); save(); render(); toast('Görev silindi', () => { g.items.splice(Math.min(idx, g.items.length), 0, it); save(); render(); }); }) }
       ], x, y));
       return row;
@@ -71479,6 +71523,7 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
       }
     };
 
+    const editList = (g) => window.gundelikTaskSheet.open({ id: 'e:' + g.id, name: g.name, color: g.color }, (v, c) => { g.name = v; if (c) g.color = c; save(); render(); }, { edit: true, list: true, text: g.name, label: 'Listeyi düzenle', go: 'Kaydet', colors: pal });
     // ---- Çizim ----
     function render() { window.gkAnim.flip(list, renderNow); }
     function renderNow() {
@@ -71499,8 +71544,8 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
         head.classList.add('is-tappable');
         head.addEventListener('click', (e) => { if (e.target.closest && e.target.closest('input, textarea, .hl-editwrap')) return; openTaskSheet(g); });
         hold(head, (x, y) => openMenu(head, [
-          { ic: IC.edit, title: 'Adı Değiştir', sub: 'Listenin ismini düzenle', fn: () => editInline(head.querySelector('.hl-name'), g.name, (v) => { g.name = v; save(); }) },
-          { ic: IC.color, title: 'Rengi Değiştir', sub: 'Listenin vurgu rengi', fn: () => { if (typeof openColorPicker === 'function') openColorPicker(g.name, g.color, (c) => { g.color = c; save(); render(); }); } },
+          { ic: IC.edit, title: 'Adı Değiştir', sub: 'Listenin ismini düzenle', fn: () => editList(g) },
+          { ic: IC.color, title: 'Rengi Değiştir', sub: 'Listenin vurgu rengi', fn: () => editList(g) },
           ...(g.items.some((i) => i.done) ? [{ ic: IC.clean, title: 'Tamamlananları Temizle', sub: 'İşaretli görevleri kaldır', fn: () => window.gkAnim.leave(Array.from(box.querySelectorAll('.hl-r.is-done')), () => { const old = g.items.slice(); g.items = g.items.filter((i) => !i.done); save(); render(); toast('Tamamlananlar temizlendi', () => { g.items = old; save(); render(); }); }) }] : []),
           { ic: IC.trash, title: 'Listeyi Sil', sub: 'İçindeki görevlerle birlikte', danger: true, fn: async () => {
             if (!(await confirmDel(`"${g.name}" listesi silinsin mi?`, g.items.length ? `İçindeki ${g.items.length} görev de silinecek. Hemen ardından geri alabilirsin.` : 'Bu liste silinecek. Hemen ardından geri alabilirsin.'))) return;
