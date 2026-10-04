@@ -38101,6 +38101,28 @@ body.is-fs-idle .countdown-fullscreen-time-row .stopwatch-time,
 body.is-fs-idle .stopwatch-fullscreen-time-row .stopwatch-time,
 body.is-fs-idle .stopwatch-fullscreen-time-row .stopwatch-centis{animation:none !important;}
 @media (prefers-reduced-motion:reduce){.fsm,.fsm-ind,.fsm button{transition-duration:.01s !important;transition-delay:0s !important;}}
+/* SADECE MOBİL: Duraklatılmışken boş alana dokununca tur listesi, sağ üstteki
+   panellerin (mod seçici .fsm + müzik butonu .wn-fs) üstüne biniyordu.
+   Artık önce paneller kaybolur, ardından tur listesi belirir; liste
+   kapanırken de önce liste kaybolur, sonra paneller geri gelir.
+   Geri butonu görünür kalır. Büyük ekranlar etkilenmez. */
+@media (max-width:767.98px){
+  body.is-sw-laps-shown .fsm,
+  body.is-sw-laps-shown .wn-fs{
+    opacity:0 !important;visibility:hidden !important;pointer-events:none !important;
+    transform:translateY(-6px) !important;
+    transition:opacity .25s ease,transform .25s ease,visibility 0s linear .25s !important;
+  }
+  /* Liste kapandıktan sonra paneller, liste soluşunu bekleyip geri gelir */
+  body.is-sw-laps-returning .fsm,
+  body.is-sw-laps-returning .wn-fs{
+    transition-delay:.3s !important;
+  }
+  /* Paneller kaybolduktan sonra liste belirir */
+  body.is-stopwatch-fs:not(.is-stopwatch-running) .stopwatch-laps.is-visible{
+    transition-delay:.3s;
+  }
+}
 </style>
 <style id="calNextCss">
 .cal-next{display:none;}
@@ -46255,7 +46277,23 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
   // Tam ekrandaki tur listesini ve ayrı "Turlarım" sayfasındaki listeyi günceller.
   const renderLaps = () => {
     stopwatchLapsEl.innerHTML = buildFullscreenLapsHtml();
-    stopwatchLapsEl.classList.toggle('is-visible', stopwatchLaps.length > 0 && stopwatchControlsVisible);
+    const lapsShown = stopwatchLaps.length > 0 && stopwatchControlsVisible;
+    stopwatchLapsEl.classList.toggle('is-visible', lapsShown);
+    // Mobilde tur listesi belirirken üstteki paneller (mod seçici, müzik
+    // butonu) önce kaybolur; liste kapanınca liste soluştuktan sonra geri
+    // gelirler (bkz. CSS "is-sw-laps-shown / is-sw-laps-returning").
+    const wasLapsShown = document.body.classList.contains('is-sw-laps-shown');
+    if (wasLapsShown !== lapsShown) {
+      document.body.classList.toggle('is-sw-laps-shown', lapsShown);
+      if (!lapsShown) {
+        document.body.classList.add('is-sw-laps-returning');
+        clearTimeout(renderLaps._retT);
+        renderLaps._retT = setTimeout(() => document.body.classList.remove('is-sw-laps-returning'), 800);
+      } else {
+        clearTimeout(renderLaps._retT);
+        document.body.classList.remove('is-sw-laps-returning');
+      }
+    }
     // Boş alana dokununca (kontroller açıkken) sol üstteki çıkış tuşu da görünür.
     document.body.classList.toggle('is-stopwatch-fs-controls', stopwatchControlsVisible);
 
