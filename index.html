@@ -38096,6 +38096,18 @@ body.is-fs-pressing.is-countdown-fs.is-countdown-paused .fsm{transform:scale(.97
   .fsm button{font-size:1.05rem;}.fsm button:hover:not([aria-checked="true"]){color:var(--theme-text,#f2f2f7);}
 }
 @media (max-width:340px){.fsm{width:12.2rem;}.fsm button{font-size:.82rem;}}
+/* Zamanlayıcı modunda panelin sağ altında beliren ayar düğmesi (işlev sonra eklenecek) */
+.fsm-set{position:fixed;z-index:70;right:calc(env(safe-area-inset-right,0px) + .9rem);top:calc(env(safe-area-inset-top,0px) + .9rem + 2.9rem + .55rem);
+  width:2.4rem;height:2.4rem;padding:0;margin:0;border:0;border-radius:50%;display:grid;place-items:center;cursor:pointer;
+  color:color-mix(in srgb,var(--theme-text,#f2f2f7) 70%,transparent);background:color-mix(in srgb,var(--theme-text,#f2f2f7) 8%,transparent);-webkit-tap-highlight-color:transparent;
+  opacity:0;visibility:hidden;pointer-events:none;transform:translateY(-8px) scale(.8);transform-origin:top right;
+  transition:opacity .2s ease,transform .25s cubic-bezier(.16,1,.3,1),visibility 0s linear .25s;}
+.fsm-set svg{display:block;width:1.15rem;height:1.15rem;}
+body.is-countdown-fs.is-countdown-paused .fsm-set{opacity:1;visibility:visible;pointer-events:auto;transform:none;
+  transition:opacity .35s ease .2s,transform .5s cubic-bezier(.34,1.56,.64,1) .2s,visibility 0s;}
+body.is-fs-pressing.is-countdown-fs.is-countdown-paused .fsm-set{transform:scale(.97);transition:transform .35s cubic-bezier(.34,1.56,.64,1);}
+@media (min-width:768px){.fsm-set{right:calc(env(safe-area-inset-right,0px) + 1.5rem);top:calc(env(safe-area-inset-top,0px) + 1.5rem + 3.4rem + .65rem);width:2.9rem;height:2.9rem;}.fsm-set svg{width:1.3rem;height:1.3rem;}}
+@media (prefers-reduced-motion:reduce){.fsm-set{transition-duration:.01s !important;transition-delay:0s !important;}}
 /* Henüz başlamamış (boş) tam ekranda rakamlar yanıp sönmez */
 body.is-fs-idle .countdown-fullscreen-time-row .stopwatch-time,
 body.is-fs-idle .stopwatch-fullscreen-time-row .stopwatch-time,
@@ -47478,6 +47490,11 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
     const box = document.createElement('div'); box.className = 'fsm'; box.setAttribute('role', 'radiogroup'); box.setAttribute('aria-label', 'Mod');
     box.innerHTML = '<span class="fsm-ind"></span><button type="button" role="radio" data-m="stopwatch">Kronometre</button><button type="button" role="radio" data-m="countdown">Zamanlayıcı</button>';
     body.appendChild(box);
+    // Zamanlayıcı modunda panelin sağ altında ayar düğmesi (şimdilik işlevsiz).
+    const setBtn = document.createElement('button'); setBtn.type = 'button'; setBtn.className = 'fsm-set'; setBtn.setAttribute('aria-label', 'Ayarlar');
+    setBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1.08-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>';
+    setBtn.addEventListener('click', (e) => e.stopPropagation());
+    body.appendChild(setBtn);
     const cur = () => (body.classList.contains('is-countdown-fs') ? 'countdown' : 'stopwatch');
     const paint = () => { const c = cur(); box.dataset.sel = c; box.querySelectorAll('button').forEach((b) => b.setAttribute('aria-checked', b.dataset.m === c ? 'true' : 'false')); };
     new MutationObserver(paint).observe(body, { attributes: true, attributeFilter: ['class'] }); paint();
@@ -47503,10 +47520,19 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
       stopwatchFullscreenHint.classList.remove('is-hidden');
     };
     // Sayfada dokununca küçülme efekti (panelin kendisi katmanların dışında; panele basınca sayfa küçülmez, panel de tepki vermez).
+    let originT = 0;
     [document.getElementById('stopwatchFullscreen'), document.getElementById('countdownFullscreen')].forEach((l) => {
       if (!l) return;
-      const off = () => { l.classList.remove('is-fs-press'); document.body.classList.remove('is-fs-pressing'); };
-      l.addEventListener('pointerdown', () => { l.classList.add('is-fs-press'); document.body.classList.add('is-fs-pressing'); });
+      // Sayfa ekranın merkezine doğru küçüldüğü için panel ve ayar düğmesi de aynı merkeze doğru (geri düğmesiyle aynı yönde) küçülür.
+      const off = () => {
+        l.classList.remove('is-fs-press'); document.body.classList.remove('is-fs-pressing');
+        clearTimeout(originT); originT = setTimeout(() => { box.style.transformOrigin = ''; setBtn.style.transformOrigin = ''; }, 500);
+      };
+      l.addEventListener('pointerdown', () => {
+        clearTimeout(originT);
+        [box, setBtn].forEach((el) => { const r = el.getBoundingClientRect(); el.style.transformOrigin = `${window.innerWidth / 2 - r.left}px ${window.innerHeight / 2 - r.top}px`; });
+        l.classList.add('is-fs-press'); document.body.classList.add('is-fs-pressing');
+      });
       ['pointerup', 'pointercancel', 'pointerleave'].forEach((ev) => l.addEventListener(ev, off));
     });
     box.addEventListener('click', (e) => {
