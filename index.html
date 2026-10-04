@@ -38085,9 +38085,9 @@ body.is-countdown-fs.is-countdown-paused .fsm{opacity:1;visibility:visible;point
 .fsm button{position:relative;z-index:1;min-width:0;margin:0;padding:0;border:0;background:none;cursor:pointer;font-family:inherit;font-weight:700;font-size:.9rem;line-height:1;white-space:nowrap;
   color:color-mix(in srgb,var(--theme-text,#f2f2f7) 55%,transparent);-webkit-tap-highlight-color:transparent;transition:color .3s ease;}
 .fsm button[aria-checked="true"]{color:var(--theme-bg,#121212);}
-/* Dokununca panel, tam ekran katmanıyla aynı şekilde hafifçe küçülür (sayfa küçülmez) */
-body.is-stopwatch-fs:not(.is-stopwatch-running) .fsm:active,
-body.is-countdown-fs.is-countdown-paused .fsm:active{transform:scale(.94);transition:transform .15s ease;}
+/* Kısa dokunuşta tepki yok; panele BASILI TUTULURSA (.is-held) hafifçe küçülür */
+body.is-stopwatch-fs:not(.is-stopwatch-running) .fsm.is-held,
+body.is-countdown-fs.is-countdown-paused .fsm.is-held{transform:scale(.94);transition:transform .2s ease;}
 @media (min-width:768px){
   .fsm{--fsm-pad:5px;top:calc(env(safe-area-inset-top,0px) + 1.5rem);right:calc(env(safe-area-inset-right,0px) + 1.5rem);width:17rem;height:3.4rem;}
   .fsm button{font-size:1.05rem;}.fsm button:hover:not([aria-checked="true"]){color:var(--theme-text,#f2f2f7);}
@@ -47499,6 +47499,12 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
       stopwatchFullscreenHint.textContent = idle ? 'Başlatmak için dokun' : 'Devam etmek için dokun';
       stopwatchFullscreenHint.classList.remove('is-hidden');
     };
+    // Basılı tutma: ~350 ms sonra küçülür, bırakınca geri döner; kısa dokunuşta hiçbir tepki yok.
+    let holdT = 0;
+    const unhold = () => { clearTimeout(holdT); box.classList.remove('is-held'); };
+    box.addEventListener('pointerdown', () => { clearTimeout(holdT); holdT = setTimeout(() => box.classList.add('is-held'), 350); });
+    ['pointerup', 'pointercancel', 'pointerleave'].forEach((ev) => box.addEventListener(ev, unhold));
+    box.addEventListener('contextmenu', (e) => e.preventDefault());
     box.addEventListener('click', (e) => {
       e.stopPropagation();
       const b = e.target.closest('button[data-m]');
