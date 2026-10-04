@@ -37849,11 +37849,17 @@
    ========================================================================== */
 .cdp-backdrop {
   position: fixed; inset: 0; z-index: 70; display: flex; align-items: flex-end; justify-content: center;
-  background: rgba(0, 0, 0, 0.5); opacity: 0; visibility: hidden; pointer-events: none;
-  touch-action: none; overscroll-behavior: contain;
-  transition: opacity 0.3s ease, visibility 0s linear 0.3s;
+  visibility: hidden; pointer-events: none; touch-action: none; overscroll-behavior: contain;
+  transition: visibility 0s linear var(--theme-transition-duration, 480ms);
 }
-.cdp-backdrop.is-open { opacity: 1; visibility: visible; pointer-events: auto; transition: opacity 0.3s ease, visibility 0s; }
+/* Karartma ayrı katmanda: üst güvenli alan (theme-color) ile AYNI süre ve eğriyle, AYNI anda solar/belirir. */
+.cdp-backdrop::before {
+  content: ""; position: absolute; inset: 0; pointer-events: none; background: rgba(0, 0, 0, 0.5); opacity: 0;
+  transition: opacity var(--theme-transition-duration, 480ms) var(--theme-transition-easing, cubic-bezier(0.16, 1, 0.3, 1));
+}
+.cdp-backdrop.is-open { visibility: visible; pointer-events: auto; transition: visibility 0s; }
+.cdp-backdrop.is-open::before { opacity: 1; }
+.cdp-card { position: relative; z-index: 1; }
 .cdp-card {
   --cdp-ink: var(--theme-text, #f2f2f7);
   --cdp-acc: var(--accent-color, #ff90e8);
@@ -44874,6 +44880,7 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
     ['.p8n-dlg-back', { r: 0, g: 0, b: 0, alpha: 0.42 }],
     ['.nt-dlg-back', { r: 0, g: 0, b: 0, alpha: 0.26 }],
     ['.cal-ev-backdrop', { r: 0, g: 0, b: 0, alpha: 0.42 }],
+    ['.cdp-backdrop', { r: 0, g: 0, b: 0, alpha: 0.5 }],
     ['.qt-exit-backdrop', { r: 8, g: 8, b: 12, alpha: 0.6 }]
   ];
   const POPUP_ALL = POPUP_TINTS.map((t) => t[0]).join(',');
@@ -70513,10 +70520,9 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
     background: linear-gradient(to bottom, var(--gf-top, #1f0e05) 0, var(--gf-top, #1f0e05) env(safe-area-inset-top, 0px), transparent 100%); }
   .gf-ov > :not(.gf-bd) { position: relative; z-index: 1; }
   .gf-stage { position: relative; width: min(52vw, 210px, 27vh); aspect-ratio: 100 / 132; }
-  .gf-glow { position: absolute; left: 50%; top: 58%; width: 360%; aspect-ratio: 1; border-radius: 50%; pointer-events: none; opacity: 0; transform: translate(-50%, -50%); background: radial-gradient(circle, rgba(255, 150, 40, .5) 0, rgba(255, 100, 10, .16) 34%, rgba(255, 80, 0, 0) 66%); }
+  .gf-glow { position: absolute; left: 50%; top: 58%; width: 360%; aspect-ratio: 1; border-radius: 50%; pointer-events: none; opacity: 0; transform: translate(-50%, -50%); display: none; }
   .gf-fly { position: absolute; inset: 0; will-change: transform; }
-  .gf-fly .gf { filter: drop-shadow(0 0 24px rgba(255, 120, 20, .55)); }
-  .gf-fly:not(.is-lit) .gf { filter: none; }
+  .gf-fly .gf, .gf-fly.is-lit .gf { filter: none; }
   .gf-big { margin-top: clamp(6px, 2vh, 18px); font-size: clamp(76px, 12vh, 112px); font-weight: 800; line-height: 1; color: #ffc43d; opacity: 0; }
   .gf-lab { margin-top: .1rem; font-size: clamp(20px, 5vw, 26px); font-weight: 800; color: #ffd9a0; opacity: 0; }
   .gf-sub { margin-top: .35rem; padding: 0 28px; text-align: center; font-size: clamp(15px, 4vw, 18px); font-weight: 600; color: rgba(255, 236, 210, .7); opacity: 0; }
