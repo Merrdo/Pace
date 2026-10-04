@@ -20160,20 +20160,6 @@
       max-width: 38ch;
     }
 
-    /* "Gündelik" kartı (İşaretlenince otomatik sil) tek satırlık uzun bir
-       açıklama içerdiği için sağ sütundaki diğer kartlara göre dikeyde
-       fazla uzuyordu. Açıklamanın satır genişliğini kart genişliğine
-       (38ch sınırını kaldırarak) yayıp satır aralığını sıkılaştırıyoruz;
-       böylece metin daha az satıra yayılıp kart kısalıyor. */
-    .settings-col-right .settings-section:nth-child(2) .settings-row-desc {
-      max-width: none;
-      line-height: 1.28;
-    }
-
-    .settings-col-right .settings-section:nth-child(2) .settings-row {
-      padding: clamp(0.3rem, 1dvh, 0.6rem) 0;
-    }
-
     .settings-col-right .settings-row {
       padding: clamp(0.25rem, 0.9dvh, 0.55rem) 0;
     }
@@ -41113,24 +41099,6 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
       </div>
 
       <div class="settings-section">
-        <span class="settings-section-label">Gündelik</span>
-        <div class="settings-card">
-          <div class="settings-row">
-            <div class="settings-row-text">
-              <span class="settings-row-title">İşaretlenince otomatik sil</span>
-              <span class="settings-row-desc">Kapalıyken (varsayılan) bir görevi tamamlandı işaretlemek onu sadece üstü çizili bırakır, silmeyi sen yaparsın. Açıkken işaretlenen görev listeden otomatik kalkar. Sadece Görevler'i etkiler, rutinleri etkilemez.</span>
-            </div>
-            <label class="toggle brutal-toggle settings-toggle" id="settingsPage8AutoDeleteToggleWrap">
-              <input type="checkbox" id="settingsPage8AutoDeleteToggle" />
-              <span class="track">
-                <span class="thumb"></span>
-              </span>
-            </label>
-          </div>
-        </div>
-      </div>
-
-      <div class="settings-section">
         <span class="settings-section-label">Veri</span>
         <div class="settings-card">
           <div class="settings-row">
@@ -41547,15 +41515,15 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
       transition: opacity 0.3s ease, transform 0.3s ease, visibility 0s linear 0.3s;
     }
     body.is-gundelik-page .gundelik-fab-bar { visibility: visible; transition-delay: 0s; }
-    /* Sağdaki Notlarım düğmesi: Geri ile aynı nötr zemin, yuvarlak ikon. */
+    /* Sağ alttaki ekle (+) düğmesi: şeffaf değil, vurgu renginde DOLU (büyük ekrandaki ve Soru Havuzu'ndaki "ekle" düğmeleriyle aynı görünüm). */
     .gundelik-fab-extra {
-      --d: 0.14s; justify-self: end; width: 2.7rem; height: 2.7rem; padding: 0; border-radius: 50%;
-      color: color-mix(in srgb, var(--theme-text, #121212) 94%, transparent);
-      background: color-mix(in srgb, var(--theme-text, #121212) 8%, transparent);
-      box-shadow: inset 0 1px 3px 0 color-mix(in srgb, var(--theme-text, #121212) 10%, transparent);
+      --d: 0.14s; justify-self: end; width: 3.25rem; height: 3.25rem; padding: 0; border-radius: 50%;
+      color: #fff;
+      background: linear-gradient(180deg, color-mix(in srgb, var(--accent-color, #ff90e8) 100%, white 12%), var(--accent-color, #ff90e8));
+      box-shadow: 0 3px 12px 0 color-mix(in srgb, var(--accent-color, #ff90e8) 50%, transparent), inset 0 1px 0 0 rgba(255, 255, 255, 0.35);
     }
-    .gundelik-fab-extra:active { background: color-mix(in srgb, var(--theme-text, #121212) 13%, transparent); }
-    .gundelik-fab-extra .qhavuz-fab-icon { width: 20px; height: 20px; stroke-width: 2.3; }
+    .gundelik-fab-extra:active { transform: scale(.92); }
+    .gundelik-fab-extra .qhavuz-fab-icon { width: 22px; height: 22px; stroke-width: 2.6; }
     /* Soru Havuzu / Denemelerim açıkken Gündelik çubuğu kesinlikle görünmez
        (ortak .qhavuz-fab kuralları yüzünden orada da beliriyordu). */
     body:not(.is-gundelik-page) .gundelik-fab-bar { visibility: hidden !important; pointer-events: none !important; }
@@ -41650,8 +41618,6 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
     :is(#page-hatirla, #page-8) .hl-tt { background: linear-gradient(currentColor, currentColor) no-repeat 0 var(--strike-y, 50%) / 0 2px; -webkit-box-decoration-break: clone; box-decoration-break: clone; transition: background-size .45s ease; }
     :is(#page-hatirla, #page-8) .hl-r.is-done .hl-t { opacity: .4; }
     :is(#page-hatirla, #page-8) .hl-r.is-done .hl-tt { background-size: 100% 2px; }
-    :is(#page-hatirla, #page-8) .hl-add { display: block; width: 100%; box-sizing: border-box; padding: .65rem .3rem; border: none; background: none; text-align: left; font: inherit; font-weight: 700; font-size: .95rem; color: var(--hl-mute); cursor: pointer; -webkit-tap-highlight-color: transparent; }
-    :is(#page-hatirla, #page-8) .hl-add:active { color: var(--theme-text, #121212); }
     :is(#page-hatirla, #page-8) .hl-form { display: flex; align-items: center; gap: .5rem; padding: .3rem 0 .4rem; }
     :is(#page-hatirla, #page-8) .hl-in, :is(#page-hatirla, #page-8) .hl-edit { flex: 1 1 auto; min-width: 0; box-sizing: border-box; font: inherit; font-weight: 600; font-size: 1rem; color: inherit; background: var(--hl-soft); border: none; outline: none; border-radius: 999px; padding: .65rem 1rem; }
     :is(#page-hatirla, #page-8) .hl-edit { font-size: 1.05rem; padding: .3rem .8rem; }
@@ -41703,7 +41669,6 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
     :is(#page-hatirla, #page-8) .hl-c { width: 1.85rem; height: 1.85rem; }
     :is(#page-hatirla, #page-8) .hl-c svg { width: 1rem; height: 1rem; }
     :is(#page-hatirla, #page-8) .hl-t { font-size: 1.25rem; }
-    :is(#page-hatirla, #page-8) .hl-add { font-size: 1rem; padding: .7rem .4rem; }
     :is(#page-hatirla, #page-8) .hl-in, :is(#page-hatirla, #page-8) .hl-edit { font-size: 1.05rem; }
     :is(#page-hatirla, #page-8) #hlNewForm, :is(#page-hatirla, #page-8) #gdNewForm { max-width: 560px; }
     :is(#page-hatirla, #page-8) .hl-empty { text-align: left; font-size: 1.1rem; }
@@ -56506,18 +56471,6 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
     }
   });
 
-  // ---- Ayarlar > Gündelik: "İşaretlenince otomatik sil" anahtarı ----
-  // Sadece Görevler kartlarını etkiler (bkz. renderItems içindeki
-  // autoDeleteOnCheck parametresi); rutinler her gün sıfırlandığından bu
-  // ayardan bağımsız olarak hep eski (silinmeyen) davranışla kalır.
-  const settingsPage8AutoDeleteToggle = document.getElementById('settingsPage8AutoDeleteToggle');
-  if (settingsPage8AutoDeleteToggle) {
-    settingsPage8AutoDeleteToggle.checked = !!page8State.autoDeleteTasks;
-    settingsPage8AutoDeleteToggle.addEventListener('change', () => {
-      page8State.autoDeleteTasks = settingsPage8AutoDeleteToggle.checked;
-      savePage8State();
-    });
-  }
 </script>
 
 <script>
@@ -71094,13 +71047,16 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
   .gn-s i { display: block; height: 1.1em; font-style: normal; }
 
   /* tam ekran kutlama */
-  .gf-ov { position: fixed; inset: 0; z-index: 100000; display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 0; overflow: hidden; cursor: pointer; -webkit-tap-highlight-color: transparent; font-family: "Baloo 2", "Space Grotesk", sans-serif; background: radial-gradient(110% 80% at 50% 38%, rgba(70, 28, 6, .9), rgba(14, 8, 5, .96) 70%); -webkit-backdrop-filter: blur(16px) saturate(1.2); backdrop-filter: blur(16px) saturate(1.2); }
+  .gf-ov { position: fixed; inset: 0; z-index: 100000; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; cursor: pointer; -webkit-tap-highlight-color: transparent; font-family: "Baloo 2", "Space Grotesk", sans-serif; }
+  /* Arka plan katmanı: içerikten (alev/yazılar) bağımsız solar; güvenli alan rengiyle AYNI anda, AYNI süre ve eğriyle
+     (tema geçişlerindeki --theme-transition-* ile; tarayıcının theme-color geçişine uydurulmuş değerler) canlanır/solar. */
+  .gf-bd { position: absolute; inset: 0; z-index: 0; pointer-events: none; opacity: 0; background: radial-gradient(110% 80% at 50% 38%, rgba(70, 28, 6, .9), rgba(14, 8, 5, .96) 70%); -webkit-backdrop-filter: blur(16px) saturate(1.2); backdrop-filter: blur(16px) saturate(1.2); }
   /* Üst güvenli alan: overlay'in üst kenar tonu (rgba(31,14,5,.94)) aktif tema rengiyle harmanlanır;
      <meta name="theme-color"> da aynı değere çekildiği için çentik/Dynamic Island şeridi ile overlay kesintisiz görünür. */
-  .gf-ov::before { content: ""; position: absolute; left: 0; right: 0; top: 0; z-index: 0; pointer-events: none;
+  .gf-bd::before { content: ""; position: absolute; left: 0; right: 0; top: 0; z-index: 0; pointer-events: none;
     height: calc(env(safe-area-inset-top, 0px) + 28px);
     background: linear-gradient(to bottom, var(--gf-top, #1f0e05) 0, var(--gf-top, #1f0e05) env(safe-area-inset-top, 0px), transparent 100%); }
-  .gf-ov > * { position: relative; z-index: 1; }
+  .gf-ov > :not(.gf-bd) { position: relative; z-index: 1; }
   .gf-stage { position: relative; width: min(52vw, 210px, 27vh); aspect-ratio: 100 / 132; }
   .gf-glow { position: absolute; left: 50%; top: 58%; width: 360%; aspect-ratio: 1; border-radius: 50%; pointer-events: none; opacity: 0; transform: translate(-50%, -50%); background: radial-gradient(circle, rgba(255, 150, 40, .5) 0, rgba(255, 100, 10, .16) 34%, rgba(255, 80, 0, 0) 66%); }
   .gf-fly { position: absolute; inset: 0; will-change: transform; }
@@ -71209,10 +71165,13 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
     function celebrate(from, to, relight) {
       busy = true; const rm = reduce(), t0 = performance.now();
       const ov = document.createElement('div'); ov.className = 'gf-ov'; ov.setAttribute('role', 'dialog'); ov.setAttribute('aria-label', 'Seri: ' + to + ' gün');
-      ov.innerHTML = '<div class="gf-stage"><div class="gf-glow"></div><div class="gf-fly"></div></div>'
+      ov.innerHTML = '<div class="gf-bd"></div><div class="gf-stage"><div class="gf-glow"></div><div class="gf-fly"></div></div>'
         + '<div class="gf-big gn"></div><div class="gf-lab">günlük seri</div><div class="gf-sub"></div>';
       ov.querySelector('.gf-sub').textContent = cur.total === 1 ? 'Bugünkü görevi tamamladın' : 'Bugünkü ' + cur.total + ' görevin hepsi tamam';
-      ov.style.setProperty('--gf-top', 'color-mix(in srgb, var(--theme-bg, #F6F4EF) 6%, rgb(31 14 5))');
+      const bd = ov.querySelector('.gf-bd'); // arka plan + üst güvenli alan şeridi
+      bd.style.setProperty('--gf-top', 'color-mix(in srgb, var(--theme-bg, #F6F4EF) 6%, rgb(31 14 5))');
+      const EASE = (getComputedStyle(document.documentElement).getPropertyValue('--theme-transition-easing') || '').trim() || 'cubic-bezier(0.16, 1, 0.3, 1)';
+      const BD_MS = rm ? 200 : 480;
       ov._themeTint = { r: 31, g: 14, b: 5, alpha: 0.94 }; // overlay'in üst kenar tonu (radial-gradient'in y=0 noktası)
       document.body.appendChild(ov);
       if (window.watchBackdropForThemeColor) { window.watchBackdropForThemeColor(ov); ov.classList.add('is-in'); } // is-in: üst güvenli alan rengini overlay'e eşler
@@ -71226,7 +71185,7 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
         if (rm) return;
         A(fly, [{ transform: 'scale(1)' }, { transform: 'scale(1.2)', offset: .35 }, { transform: 'scale(1)' }], { duration: 800, easing: 'cubic-bezier(.3,1.4,.5,1)' });
       };
-      A(ov, [{ opacity: 0 }, { opacity: 1 }], { duration: rm ? 200 : 380, easing: 'ease-out' });
+      A(bd, [{ opacity: 0 }, { opacity: 1 }], { duration: BD_MS, easing: EASE }); // güvenli alan (is-in) ile aynı karede başlar
       if (relight) fly.classList.add('is-lit');
       if (rm) {
         fly.classList.add('is-lit'); roll(big, to, to); [big, lab, sub].forEach((n) => A(n, [{ opacity: 0 }, { opacity: 1 }], { duration: 250, delay: 120 }));
@@ -71242,26 +71201,28 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
         setTimeout(() => roll(big, from, to, { anim: from !== to, dur: 950 }), 1500);
       }
       let closed = false, timer = null;
-      const onKey = (e) => { if (e.key === 'Escape' || e.key === 'Enter' || e.key === ' ') close(); };
+      const onKey = (e) => { if ((e.key === 'Escape' || e.key === 'Enter' || e.key === ' ') && performance.now() - t0 > ANIM_END) close(); };
       function finish() {
         ov.classList.remove('is-in'); ov.remove(); document.removeEventListener('keydown', onKey); busy = false; btn.classList.remove('is-away');
         setLit(cur.total > 0 && cur.done === cur.total); ignite(); setShown(cur.done === cur.total && cur.total > 0 ? cur.streak : cur.base, true);
       }
       function close() {
         if (closed) return; closed = true; clearTimeout(timer);
-        // Güvenli alan rengi, overlay solmaya başladığında (300ms gecikme) değil biraz sonra geri dönsün:
-        // tarayıcının kendi geçişi başta hızlı olduğu için erken başlatmak şeridi overlay'den önce açıyordu.
-        if (rm) ov.classList.remove('is-in'); else setTimeout(() => ov.classList.remove('is-in'), 420);
-        if (rm) { A(ov, [{ opacity: 1 }, { opacity: 0 }], { duration: 220 }); setTimeout(finish, 230); return; }
+        // Arka planın solması ile güvenli alanın geri dönmesi AYNI karede başlar (aynı süre + eğri).
+        const fadeBd = () => { A(bd, [{ opacity: 1 }, { opacity: 0 }], { duration: BD_MS, easing: EASE }); ov.classList.remove('is-in'); };
+        if (rm) { fadeBd(); [big, lab, sub, fly, glow].forEach((n) => A(n, [{ opacity: 1 }, { opacity: 0 }], { duration: 200 })); setTimeout(finish, 230); return; }
         [big, lab, sub].forEach((n) => A(n, [{ opacity: 1 }, { opacity: 0 }], { duration: 260, easing: 'ease-in' }));
         A(glow, [{ opacity: 1 }, { opacity: 0 }], { duration: 400 });
         A(fly, [{ transform: 'none' }, { transform: 'translate(' + dx + 'px,' + dy + 'px) scale(' + sc + ')' }], { duration: 650, easing: 'cubic-bezier(.6,0,.3,1)' });
-        A(ov, [{ opacity: 1 }, { opacity: 0 }], { duration: 380, delay: 300, easing: 'ease-in' });
+        A(fly, [{ opacity: 1 }, { opacity: 0 }], { duration: 120, delay: 540, easing: 'ease-in' }); // alev başlıktaki yerine konunca söner
+        setTimeout(fadeBd, 200); // alev uçmaya başladıktan sonra arka plan + güvenli alan birlikte solar (200 + 480 = 680ms)
         setTimeout(finish, 700);
       }
-      ov.addEventListener('click', () => { if (performance.now() - t0 > 1100) close(); });
+      // Animasyon (sayı çarkı dahil ~2.6sn) bitmeden dokunarak kapatılamaz; bitince kendiliğinden kapanır.
+      const ANIM_END = rm ? 450 : 2600, HOLD = rm ? 1000 : 1000;
+      ov.addEventListener('click', () => { if (performance.now() - t0 > ANIM_END) close(); });
       document.addEventListener('keydown', onKey);
-      timer = setTimeout(close, rm ? 1800 : 4600);
+      timer = setTimeout(close, ANIM_END + HOLD);
     }
 
     window.addEventListener('gundelik-progress', (e) => {
@@ -71449,6 +71410,8 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
       return f;
     };
     const focusIn = () => { const i = page.querySelector('.hl-in'); if (i) window.gkAnim.focus(i); };
+    // Madde ekleme formu: yalnızca odaklar. Kaydırma/hizalama YOK (yeni biçime geçilecek; eski davranış taşınmıyor).
+    const focusForm = () => { const i = page.querySelector('.hl-form .hl-in'); if (i) { try { i.focus(); } catch (e) { /* yoksay */ } } };
 
     // ---- Otomatik silme anahtarı ----
     // AÇIK iken yapıldı işaretlenen madde, üstü çizilme animasyonu görünsün diye kısa bir süre
@@ -71491,24 +71454,18 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
       ], x, y));
       return row;
     };
-    // Madde ekleme: liste baştan çizilmez; satır yerine eklenir, odak ve klavye korunur, kaydırma tek seferde yapılır.
+    // Madde ekleme: liste baştan çizilmez; satır yerine eklenir, odak ve klavye korunur (kaydırma/hizalama yok).
     const addItemInPlace = (g, box, v) => {
       const f = box.querySelector('.hl-form'), inp = f && f.querySelector('.hl-in');
       const it = { id: gid(), text: v, done: false };
       g.items.push(it); save();
-      if (!f || !inp) { render(); focusIn(); return; }
+      if (!f || !inp) { render(); focusForm(); return; }
       emitProg(false);
       const row = mkRow(g, it, box, box._upd);
       box.insertBefore(row, f);
       if (box._upd) box._upd();
       inp.value = ''; window.gundelikAutoGrow(inp);
       try { inp.focus({ preventScroll: true }); } catch (e) { inp.focus(); }
-      const sc = $(P + 'Scroll');
-      if (sc) {
-        const vv = window.visualViewport, vh = vv ? vv.height : window.innerHeight, vt = vv ? vv.offsetTop : 0;
-        const over = f.getBoundingClientRect().bottom - (vt + vh - 20);
-        if (over > 1) sc.scrollTo({ top: sc.scrollTop + over, behavior: 'instant' });
-      }
       if (row.animate && !(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches)) {
         row.animate([{ opacity: 0, transform: 'translateY(-6px)' }, { opacity: 1, transform: 'none' }], { duration: 360, easing: 'cubic-bezier(.16,1,.3,1)' });
       }
@@ -71520,7 +71477,7 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
       emitProg(false);
       closeMenu(); list.innerHTML = '';
       const nf = $(P + 'NewForm'); nf.innerHTML = '';
-      if (newOpen) { const f = mkForm('Yeni liste adı (örn. Market)', (v) => { newOpen = false; st.groups.push({ id: gid(), name: v, color: pal[st.groups.length % pal.length], items: [] }); addOpen = st.groups[st.groups.length - 1].id; save(); render(); focusIn(); }, () => softCloseNew()); f.classList.add('hl-newform'); const sw = el('div', 'soft-wrap'); sw.appendChild(f); nf.appendChild(sw); if (newAnim) { newAnim = false; window.softOpen(sw); } }
+      if (newOpen) { const f = mkForm('Yeni liste adı (örn. Market)', (v) => { newOpen = false; st.groups.push({ id: gid(), name: v, color: pal[st.groups.length % pal.length], items: [] }); addOpen = st.groups[st.groups.length - 1].id; save(); render(); focusForm(); }, () => softCloseNew()); f.classList.add('hl-newform'); const sw = el('div', 'soft-wrap'); sw.appendChild(f); nf.appendChild(sw); if (newAnim) { newAnim = false; window.softOpen(sw); } }
       $(P + 'Tip').textContent = st.groups.length ? 'İpucu: Bir listeye ya da maddeye basılı tut, seçenekler açılsın.' : '';
       if (!st.groups.length) { list.appendChild(el('p', 'hl-empty', 'Henüz listen yok. Sağ alttaki + ile ekle.')); return; }
       st.groups.forEach((g, gi) => {
@@ -71546,7 +71503,6 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
         box._upd = upd;
         g.items.forEach((it) => box.appendChild(mkRow(g, it, box, upd)));
         if (addOpen === g.id) box.appendChild(fk(mkForm('Yeni madde ekle', (v) => addItemInPlace(g, box, v), () => { addOpen = null; render(); }, true), 'hf:' + g.id));
-        else { const b = el('button', 'hl-add', '+ Madde ekle'); b.type = 'button'; b.dataset.fk = 'ha:' + g.id; b.onclick = () => { addOpen = g.id; render(); focusIn(); }; box.appendChild(b); }
         list.appendChild(box);
       });
       firstPaint = false;
@@ -71601,7 +71557,7 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
       page, hold, openMenu,
       groups: () => st.groups,
       newList: newListPopup,
-      addItem: (g) => { addOpen = g.id; render(); focusIn(); }
+      addItem: (g) => { addOpen = g.id; render(); focusForm(); }
     };
   };
 
@@ -72576,7 +72532,10 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
 .ztp-stage>*{grid-area:1/1;}
 .ztp-ov{overflow:hidden;}
 .ztp-ov::before{content:"";position:absolute;inset:-25%;pointer-events:none;opacity:0;z-index:0;filter:blur(36px);
-  background:radial-gradient(36% 30% at 30% 32%,color-mix(in srgb,var(--accent-color,#ff90e8) 46%,transparent),transparent 72%),
+  background:/* Sol vurgu lekesi: eskiden elips (36% x 30%) ve üst kenara taşıyordu; üst kısmı ekran kenarında/güvenli alan şeridinde kesiliyordu.
+     Şimdi TAM DAİRE ve yarıçapı ekrana göre sınırlı; merkezi aşağı alındı (kutu %42 = ekranın ~%38'i), aurora animasyonunun
+     yukarı kayma + büyüme payı hesaba katılarak üst kenara/şeride ulaşmadan tamamlanıyor. */
+  radial-gradient(circle min(34vw,28vh) at 36.7% 42%,color-mix(in srgb,var(--accent-color,#ff90e8) 46%,transparent),transparent 72%),
              radial-gradient(34% 30% at 72% 70%,rgba(110,140,255,.30),transparent 72%);
   transition:opacity 1.2s ease;animation:ztpAurora 9s ease-in-out infinite alternate;}
 .ztp-ov.is-in::before{opacity:1;}
