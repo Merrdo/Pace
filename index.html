@@ -71248,7 +71248,10 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
         setLit(cur.total > 0 && cur.done === cur.total); ignite(); setShown(cur.done === cur.total && cur.total > 0 ? cur.streak : cur.base, true);
       }
       function close() {
-        if (closed) return; closed = true; clearTimeout(timer); ov.classList.remove('is-in');
+        if (closed) return; closed = true; clearTimeout(timer);
+        // Güvenli alan rengi, overlay solmaya başladığında (300ms gecikme) değil biraz sonra geri dönsün:
+        // tarayıcının kendi geçişi başta hızlı olduğu için erken başlatmak şeridi overlay'den önce açıyordu.
+        if (rm) ov.classList.remove('is-in'); else setTimeout(() => ov.classList.remove('is-in'), 420);
         if (rm) { A(ov, [{ opacity: 1 }, { opacity: 0 }], { duration: 220 }); setTimeout(finish, 230); return; }
         [big, lab, sub].forEach((n) => A(n, [{ opacity: 1 }, { opacity: 0 }], { duration: 260, easing: 'ease-in' }));
         A(glow, [{ opacity: 1 }, { opacity: 0 }], { duration: 400 });
@@ -72578,6 +72581,12 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
   transition:opacity 1.2s ease;animation:ztpAurora 9s ease-in-out infinite alternate;}
 .ztp-ov.is-in::before{opacity:1;}
 .ztp-stage,.ztp-row{position:relative;z-index:1;}
+/* Üst güvenli alan: aurora/blur şeridin rengini bozmasın diye üstte DÜZ bir şerit; rengi meta theme-color ile birebir
+   (tema rengi %26 + siyah %74 = rgba(0,0,0,.74) karartmanın tema üzerindeki sonucu). Karartmayla aynı sürede (.5s) belirir. */
+.ztp-ov::after{content:"";position:absolute;left:0;right:0;top:0;z-index:2;pointer-events:none;opacity:0;transition:opacity .5s ease;
+  height:calc(env(safe-area-inset-top,0px) + 28px);
+  background:linear-gradient(to bottom,var(--ztp-top,#000) 0,var(--ztp-top,#000) env(safe-area-inset-top,0px),transparent 100%);}
+.ztp-ov.is-in::after{opacity:1;}
 .ztp-row{position:relative;width:100%;}
 .ztp-fall{--fs:clamp(64px,21vw,116px);position:relative;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;
   width:min(100%,460px);height:calc(var(--fs) * 5.2);max-height:calc(100dvh - 190px);overflow:visible;
@@ -72678,6 +72687,7 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
     // Üst güvenli alan (çentik/Dynamic Island): arka plan karartması rgba(0,0,0,.74); aktif tema rengiyle
     // harmanlanıp <meta name="theme-color">'a yazılır (is-in sınıfıyla açılır, kapanırken geri döner).
     ov._themeTint = { r: 0, g: 0, b: 0, alpha: 0.74 };
+    ov.style.setProperty('--ztp-top', 'color-mix(in srgb, var(--theme-bg, #F6F4EF) 26%, #000)');
     document.body.appendChild(ov);
     if (window.watchBackdropForThemeColor) window.watchBackdropForThemeColor(ov);
     requestAnimationFrame(() => requestAnimationFrame(() => ov.classList.add('is-in')));
