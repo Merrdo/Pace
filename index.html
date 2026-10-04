@@ -47900,6 +47900,7 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
 .cal-off-btn.is-on,.zt-off-btn.is-on{background:var(--off-red);color:#fff;}
 .cal-off-btn:active,.zt-off-btn:active{transform:scale(.93);}
 .zt-off-btn{align-self:flex-start;font-size:.9rem;padding:.55rem 1.1rem;}
+.zt-off-head{align-self:center;margin-left:auto;font-size:.82rem;padding:.45rem .95rem;white-space:nowrap;}
 .zt-d-marker.is-off{border-color:var(--off-red);color:var(--off-red);}
 .zt-d-offtag{align-self:flex-start;padding:.15rem .7rem;border-radius:999px;font-weight:800;font-size:.78rem;letter-spacing:.04em;color:#fff;background:var(--off-red);}
 /* Zaman takvimi hücresi */
@@ -70631,6 +70632,39 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
   .gf-big { margin-top: clamp(6px, 2vh, 18px); font-size: clamp(76px, 12vh, 112px); font-weight: 800; line-height: 1; color: #ffc43d; opacity: 0; }
   .gf-lab { margin-top: .1rem; font-size: clamp(20px, 5vw, 26px); font-weight: 800; color: #ffd9a0; opacity: 0; }
   .gf-sub { margin-top: .35rem; padding: 0 28px; text-align: center; font-size: clamp(15px, 4vw, 18px); font-weight: 600; color: rgba(255, 236, 210, .7); opacity: 0; }
+  /* ===== Off day (Gündelik): başlıkta kırmızı sayı + tam ekran off day animasyonu ===== */
+  #gdFlame.is-off:not(.is-lit) .gf-num { color: #ff3b3b; }
+  .of-bd { background: radial-gradient(110% 80% at 50% 38%, rgba(82, 12, 18, .95), rgba(14, 6, 8, .98) 70%); }
+  /* Düzen: tüm öğeler akışta ve küçülmez (flex:none); çizim kendi kutusunun İÇİNDE kalır, yazılar altında düzgün aralıkla dizilir. */
+  .gf-ov.of-ov > :not(.gf-bd) { flex: none; }
+  .of-stage { position: relative; width: min(52vw, 200px, 27vh); aspect-ratio: 1; }
+  .of-stage svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: hidden; }
+  .of-stage svg * { transform-box: fill-box; transform-origin: 50% 50%; }
+  .of-s { fill: none; stroke: #ff5a5a; stroke-width: 3.2; stroke-linecap: round; stroke-linejoin: round; opacity: 0; }
+  .of-s2 { fill: none; stroke: #ffc4c4; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; opacity: 0; }
+  .of-fill { fill: rgba(255, 59, 59, .13); stroke: none; opacity: 0; }
+  .of-cupfill { fill: rgba(255, 150, 150, .12); stroke: none; opacity: 0; }
+  .of-coffee { fill: rgba(255, 110, 90, .5); }
+  .of-rip { fill: none; stroke: #ff5a5a; stroke-width: 1.4; opacity: 0; }
+  .of-chip { order: 3; flex: 0 0 auto; display: none; align-items: center; gap: .32rem; margin: 0 auto 0 0; padding: .3rem .7rem .3rem .5rem; border: 1.5px solid rgba(255, 90, 90, .6); border-radius: 999px; background: rgba(255, 59, 59, .13); color: #ff4a4a; font: 800 .74rem/1 "Baloo 2", "Space Grotesk", sans-serif; letter-spacing: .06em; white-space: nowrap; cursor: pointer; -webkit-tap-highlight-color: transparent; position: relative; overflow: hidden; transition: transform .2s cubic-bezier(.34, 1.56, .64, 1); }
+  .of-chip.is-on { display: inline-flex; }
+  .of-chip.is-pop { animation: ofChipIn .7s cubic-bezier(.34, 1.56, .64, 1) both; }
+  .of-chip:active { transform: scale(.93); }
+  .of-chip svg { width: 15px; height: 15px; flex: none; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .of-chip::after { content: ""; position: absolute; inset: 0; background: linear-gradient(105deg, transparent 35%, rgba(255, 255, 255, .45) 50%, transparent 65%); transform: translateX(-120%); animation: ofChipShine 3.6s ease-in-out 1.2s infinite; pointer-events: none; }
+  #gdFlame.has-chip { margin-right: .5rem; }
+  @keyframes ofChipIn { 0% { opacity: 0; transform: scale(.4) translateY(-6px); } 100% { opacity: 1; transform: none; } }
+  @keyframes ofChipShine { 0%, 55% { transform: translateX(-120%); } 85%, 100% { transform: translateX(120%); } }
+  @media (prefers-reduced-motion: reduce) { .of-chip::after, .of-chip.is-pop { animation: none !important; } }
+  .of-big { margin-top: clamp(16px, 3.4vh, 30px); display: flex; font-size: clamp(42px, 8vh, 66px); font-weight: 800; line-height: 1; letter-spacing: .05em; color: #ff6b6b; }
+  .of-big span { display: inline-block; opacity: 0; }
+  .of-lab { margin-top: clamp(10px, 2vh, 18px); font-size: clamp(20px, 5vw, 26px); font-weight: 800; line-height: 1.15; color: #ffc9c9; opacity: 0; }
+  .of-sub { margin-top: .35rem; padding: 0 28px; text-align: center; font-size: clamp(15px, 4vw, 18px); font-weight: 600; line-height: 1.25; color: rgba(255, 228, 228, .7); opacity: 0; }
+  .of-keep { margin-top: clamp(12px, 2.4vh, 20px); display: flex; align-items: center; gap: .45rem; font-size: clamp(15px, 4vw, 18px); font-weight: 800; line-height: 1.2; color: #ffd9a0; opacity: 0; }
+  .of-kf { display: inline-block; width: 20px; height: 26px; }
+  .of-btn { margin-top: clamp(16px, 3.2vh, 26px); padding: .7rem 1.4rem; border-radius: 999px; border: 1.5px solid rgba(255, 140, 140, .55); background: rgba(255, 59, 59, .12); color: #ffd0d0; font: 800 15px/1 "Baloo 2", "Space Grotesk", sans-serif; opacity: 0; pointer-events: none; cursor: pointer; -webkit-tap-highlight-color: transparent; transition: transform .2s cubic-bezier(.34, 1.56, .64, 1), background-color .2s ease; }
+  .of-btn:active { transform: scale(.94); background: rgba(255, 59, 59, .22); }
+  .of-hint { margin-top: .6rem; min-height: 1.2em; padding: 0 28px; text-align: center; font-size: 14px; font-weight: 600; line-height: 1.25; color: rgba(255, 228, 228, .65); opacity: 0; }
   @media (prefers-reduced-motion: reduce) { #gdFlame.is-lit .gf-ic::after, #gdFlame.is-ignite .gf-ic, #gdFlame.is-nudge .gf-ic { animation: none !important; } .gf-grey, .gf-on { transition: opacity .2s ease; transform: none; } }
 </style>
 <script id="gd-flame-js">
@@ -70642,6 +70676,172 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
     const reduce = () => !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
     const rnd = (a, b) => a + Math.random() * (b - a);
     const A = (n, kf, o) => n.animate(kf, Object.assign({ fill: 'both' }, o));
+
+    // ---------- Ses efektleri (Web Audio, dosyasız): her ses, animasyonun kendi zaman çizelgesine (ms) bağlıdır ----------
+    // Kapatmak için: saveAppState({ sfxOff: true }). İlk dokunuşta ses motoru uyandırılır (tarayıcı kuralı).
+    const SFX = (() => {
+      let ctx = null, bus = null, nbuf = null, fbuf = null, ibuf = null;
+      const AC = window.AudioContext || window.webkitAudioContext;
+      const wake = () => {
+        if (!AC) return null;
+        if (!ctx) { ctx = new AC(); bus = ctx.createGain(); bus.gain.value = .8; bus.connect(ctx.destination); }
+        if (ctx.state !== 'running') { try { ctx.resume(); } catch (e) {} }
+        return ctx;
+      };
+      ['pointerdown', 'touchstart', 'keydown'].forEach((ev) => window.addEventListener(ev, () => { if (!ctx || ctx.state !== 'running') wake(); }, { passive: true }));
+      const noiseBuf = (c) => { if (!nbuf) { nbuf = c.createBuffer(1, c.sampleRate * 2, c.sampleRate); const d = nbuf.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1; } return nbuf; };
+      // Yumuşak oda yankısı (sentetik): parıltılı seslere "cam çan" derinliği verir
+      const irBuf = (c) => {
+        if (ibuf) return ibuf; const sr = c.sampleRate, n = Math.floor(sr * 1.6); ibuf = c.createBuffer(2, n, sr);
+        for (let ch = 0; ch < 2; ch++) { const d = ibuf.getChannelData(ch); let lp = 0; for (let i = 0; i < n; i++) { lp += .35 * ((Math.random() * 2 - 1) - lp); d[i] = lp * Math.pow(1 - i / n, 3.4); } }
+        return ibuf;
+      };
+      // Ateş: 8 sn'lik döngü, yalnızca çıtırtı dokusu (rüzgâr/homurtu yok). Üç iç katman:
+      //  1) ince cızırtı: saniyede yüzlerce minik, yumuşatılmış tık — "kıtır kıtır" yanan odunun sürekli dokusu (selofan buruşması gibi)
+      //  2) odun çıtırtıları: rezonanslı (filtrelenmiş) kısa patlamalar, 500–2300 Hz, kümeler halinde
+      //  3) ara sıra odun "pop"u: alçak rezonans + tok gövde. Hiçbir yerde saf/tiz sinüs yok.
+      const fireBufs = (c) => {
+        if (fbuf) return fbuf;
+        const sr = c.sampleRate, n = sr * 8, cb = c.createBuffer(1, n, sr), k = cb.getChannelData(0), TP = 6.2832;
+        const rnd = (a, b) => a + Math.random() * (b - a);
+        // 1) ince cızırtı
+        for (let pos = 0; pos < n - 200; pos += -Math.log(1 - Math.random()) / rnd(110, 190) * sr) {
+          const len = Math.floor(rnd(.8, 2.2) / 1000 * sr), amp = Math.pow(Math.random(), 2.4) * .3 + .02; let y = 0;
+          for (let j = 0; j < len; j++) { y += .45 * ((Math.random() * 2 - 1) - y); k[Math.floor(pos) + j] += y * amp * Math.exp(-j / (len * .45)); }
+        }
+        // 2) + 3) rezonanslı çıtırtılar ve pop'lar
+        let pos = 0, dens = 12;
+        while (true) {
+          dens += (rnd(4, 24) - dens) * .07; pos += -Math.log(1 - Math.random()) / dens * sr; if (pos >= n - sr * .08) break;
+          const pop = Math.random() < .07, f = pop ? rnd(180, 520) : rnd(500, 2300), r = pop ? .985 : rnd(.9, .955), w = TP * f / sr;
+          const len = Math.floor((pop ? rnd(30, 60) : rnd(6, 26)) / 1000 * sr), amp = pop ? rnd(.5, .9) : .08 + Math.pow(Math.random(), 2) * .5;
+          let y1 = 0, y2 = 0;
+          for (let j = 0; j < len && pos + j < n; j++) {
+            const x = (Math.random() * 2 - 1) * Math.exp(-j / (len * .22)), y = x + 2 * r * Math.cos(w) * y1 - r * r * y2; y2 = y1; y1 = y;
+            k[Math.floor(pos) + j] += y * (1 - r) * amp * 2.4;
+          }
+        }
+        let e = 0; for (let i = 0; i < n; i++) e += k[i] * k[i]; const g = .17 / (Math.sqrt(e / n) || 1); for (let i = 0; i < n; i++) k[i] = Math.tanh(k[i] * g * 1.6) / 1.6 * 1.6; // RMS'e göre seviyele, tepeleri yumuşakça sıkıştır (pop'lar bastırmasın)
+        const ed = Math.floor(sr * .05); for (let i = 0; i < ed; i++) { const f = i / ed; k[i] *= f; k[n - 1 - i] *= f; }
+        return (fbuf = { cb });
+      };
+      // Bir "çalma": T0 anından itibaren ms cinsinden planlanan sesler. fx = tek seferlik sesler, amb = sürekli (ateş) ses.
+      const run = (rev) => {
+        if (APP_STATE.sfxOff) return null;
+        const c = wake(); if (!c || c.state !== 'running') return null; // ses motoru uyanık değilse sessizce atla (gecikmeli çalıp animasyondan kaymasın)
+        const fx = c.createGain(), amb = c.createGain(); fx.connect(bus); amb.connect(bus);
+        if (rev) { const cv = c.createConvolver(), wg = c.createGain(); cv.buffer = irBuf(c); wg.gain.value = .45; fx.connect(cv); cv.connect(wg); wg.connect(bus); }
+        const T0 = c.currentTime + .03;
+        const tone = (ms, o) => {
+          const t = T0 + ms / 1000, os = c.createOscillator(), g = c.createGain(), a = o.att || .006;
+          os.type = o.type || 'sine'; os.frequency.setValueAtTime(o.f, t); if (o.f2) os.frequency.exponentialRampToValueAtTime(o.f2, t + o.dur);
+          g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(o.g || .1, t + a); g.gain.exponentialRampToValueAtTime(.0001, t + o.dur);
+          os.connect(g); g.connect(fx); os.start(t); os.stop(t + o.dur + .05);
+        };
+        const noise = (ms, o) => {
+          const t = T0 + ms / 1000, src = c.createBufferSource(), f = c.createBiquadFilter(), g = c.createGain();
+          src.buffer = noiseBuf(c); src.loop = true; f.type = o.type || 'bandpass'; f.Q.value = o.q || 1;
+          f.frequency.setValueAtTime(o.f, t); if (o.f2) f.frequency.exponentialRampToValueAtTime(o.f2, t + o.dur);
+          g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(o.g || .05, t + Math.min(o.att || .05, o.dur * .8)); g.gain.exponentialRampToValueAtTime(.0001, t + o.dur);
+          src.connect(f); f.connect(g); g.connect(fx); src.start(t, Math.random()); src.stop(t + o.dur + .05);
+        };
+        // Çizim sesi: kalemin/tebeşirin kağıtta "çıs" sesi — çizgi süresince sürer, düzensiz titreşir
+        const scratch = (ms, dur, o) => {
+          const t = T0 + ms / 1000, d = dur / 1000, src = c.createBufferSource(), f = c.createBiquadFilter(), g = c.createGain(), lv = o.g || .04;
+          src.buffer = noiseBuf(c); src.loop = true; f.type = 'bandpass'; f.Q.value = 2.2;
+          f.frequency.setValueAtTime(o.f, t); f.frequency.linearRampToValueAtTime(o.f2 || o.f, t + d);
+          g.gain.setValueAtTime(.0001, t); g.gain.linearRampToValueAtTime(lv, t + .05);
+          for (let x = .08; x < d - .06; x += .03) g.gain.linearRampToValueAtTime(lv * (.5 + .5 * Math.random()), t + x);
+          g.gain.linearRampToValueAtTime(.0001, t + d);
+          src.connect(f); f.connect(g); g.connect(fx); src.start(t, Math.random()); src.stop(t + d + .05);
+        };
+        // Sıvı dolma sesi: yükselen tonlu rezonans + minik kabarcık "plip"leri (kap doldukça ses incelir)
+        const liquid = (ms, dur) => {
+          const d = dur / 1000; noise(ms, { dur: d, f: 280, f2: 1100, q: 9, g: .05, att: d * .3 });
+          noise(ms, { dur: d, type: 'lowpass', f: 700, q: .5, g: .02, att: d * .4 });
+          for (let i = 0; i < 16; i++) { const at = ms + Math.pow(Math.random(), .8) * dur * .92, f = 500 + (at - ms) / dur * 900 + Math.random() * 300; tone(at, { f, f2: f * 1.7, dur: .06, g: .025 + Math.random() * .03, att: .004 }); }
+        };
+        // Ateş: sürekli, sakinleştirici kamp ateşi sesi (alçak gövde + yumuşak nefes + kısık çıtırtılar); stop(…, ms) ile azalarak kapanır
+        const fire = (ms, fadeIn, level) => {
+          const t = T0 + ms / 1000, bf = fireBufs(c), lv = level || 1, off = Math.random() * 3;
+          const layer = (buf, type, fq, q, gain, o2, top) => {
+            const s1 = c.createBufferSource(), f1 = c.createBiquadFilter(), g1 = c.createGain(); let end = f1;
+            s1.buffer = buf; s1.loop = true; f1.type = type; f1.frequency.value = fq; f1.Q.value = q; g1.gain.value = gain * lv;
+            s1.connect(f1);
+            if (top) { const f2 = c.createBiquadFilter(); f2.type = 'lowpass'; f2.frequency.value = top; f2.Q.value = .4; f1.connect(f2); end = f2; } // tizi kes
+            end.connect(g1); g1.connect(amb); s1.start(t, o2);
+          };
+          layer(bf.cb, 'highpass', 90, .5, 1.1, off, 4600);     // çıtırtılar: yumuşak, tiz kesilmiş
+          amb.gain.cancelScheduledValues(t); amb.gain.setValueAtTime(.0001, t); amb.gain.exponentialRampToValueAtTime(1, t + (fadeIn || .5));
+        };
+        const stop = (fxMs, ambMs) => {
+          const n = c.currentTime;
+          try { fx.gain.cancelScheduledValues(n); fx.gain.setValueAtTime(fx.gain.value, n); fx.gain.linearRampToValueAtTime(0, n + (fxMs || .15)); } catch (e) {}
+          try { amb.gain.cancelScheduledValues(n); amb.gain.setValueAtTime(Math.max(amb.gain.value, .0001), n); amb.gain.exponentialRampToValueAtTime(.0001, n + (ambMs || .15)); } catch (e) {}
+        };
+        // Cam çan: temel ses + çan armonikleri + hafif detune ışıltısı (yumuşak atak, uzun parıltılı sönüm)
+        const glass = (ms, f, g, len) => {
+          tone(ms, { f, dur: len, g, att: .005 });
+          tone(ms, { f: f * 1.004, dur: len * .85, g: g * .5, att: .005 });
+          tone(ms, { f: f * 2.76, dur: len * .35, g: g * .22, att: .003 });
+          tone(ms, { f: f * 5.4, dur: len * .15, g: g * .08, att: .002 });
+        };
+        // Sayı çarkı sesi: TEK jest — yükselen "bloop" süzülmesi, sayı yerine oturduğu anda tek yumuşak çan (roll() eğrisine uygun)
+        const roll = (ms) => {
+          tone(ms, { f: 360, f2: 1180, dur: .27, g: .075, att: .012 });
+          tone(ms, { f: 720, f2: 2360, dur: .22, g: .01, att: .01, type: 'triangle' });
+          noise(ms, { dur: .3, f: 1100, f2: 4200, q: 1.3, g: .04, att: .025 });
+          glass(ms + 255, 1174.7, .06, .65);
+        };
+        return { tone, noise, scratch, liquid, fire, stop, roll, glass };
+      };
+      const bell = (r, ms, f, g, len) => { r.tone(ms, { f, dur: len, g }); r.tone(ms, { f: f * 1.5, dur: len * .7, g: g * .45 }); r.tone(ms, { f: f * 2.4, dur: len * .3, g: g * .2 }); };
+      const tick = (r, ms, f, g) => { r.noise(ms, { dur: .02, f: 3200, q: 3, g: g * 1.2, att: .002 }); r.tone(ms, { f, f2: f * .6, dur: .06, g, type: 'triangle', att: .003 }); };
+      return {
+        wake,
+        // ALEV "köz ışıltısı": alev süzülürken kabaran ateş nefesi → yumuşak "fuum" tutuşma + cam çan kıvılcımları (yükselen pentatonik)
+        // → sürekli ateş sesi → sayı değişirken TEK ses (yalnızca from !== to) → kapanışta ateş azalarak söner.
+        celebrate(from, to, relight, rm) {
+          const r = run(true); if (!r) return null; const bt = rm ? 0 : (relight ? 600 : 950), d = bt / 1000;
+          if (!rm) {
+            r.noise(0, { dur: d + .2, f: 260, f2: 1700, q: .8, g: .08, att: d * .9 });                    // süzülürken kabaran nefes
+            r.tone(0, { f: 110, f2: 230, dur: d + .1, g: .05, att: d * .8 });                              // alçak kabarma
+          }
+          r.noise(bt, { dur: .6, type: 'lowpass', f: 350, f2: 2600, q: .5, g: .15, att: .05 });          // "fuum": filtre açılır (yumuşak atak, tık yok)
+          r.tone(bt, { f: 95, f2: 52, dur: .6, g: .12, att: .035 });                                      // gövde
+          r.noise(bt + 120, { dur: .8, type: 'lowpass', f: 2400, f2: 260, q: .5, g: .06, att: .15 });
+          [784, 987.8, 1174.7, 1318.5, 1568].forEach((f, i) => r.glass(bt + 60 + i * 75, f, .042 - i * .004, i === 4 ? .6 : .45)); // köz kıvılcımları
+          // (sürekli ateş/çıtırtı sesi kaldırıldı: tutuşma ve kıvılcımlardan sonra arka planda ses yok)
+          if (!rm && from !== to) r.roll(1500 - 30);                                                      // sayı çarkı (roll() başlangıcı = 1500 ms)
+          return r;
+        },
+        // OFF DAY: çizim sesi (çizgiler çizilirken) → dolma sesi → harf sesleri → fincan tıngısı → kapanış
+        off(rm) {
+          const r = run(); if (!r) return null;
+          if (rm) { bell(r, 150, 1318, .07, 1); return r; }
+          r.scratch(200, 1300, { f: 2400, f2: 3600, g: .04 });     // halka
+          r.scratch(800, 550, { f: 2100, f2: 2800, g: .035 });     // tabak
+          r.scratch(1000, 750, { f: 2800, f2: 2200, g: .038 });    // gövde
+          r.scratch(1450, 450, { f: 2500, f2: 3300, g: .035 });    // ağız
+          r.scratch(1650, 450, { f: 2000, f2: 3000, g: .035 });    // kulp
+          r.scratch(2000, 300, { f: 3200, f2: 3800, g: .03 });     // parlama çizgisi
+          r.liquid(1500, 1000);                                    // içi dolarken
+          for (let i = 0; i < 7; i++) if (i !== 3) { const f = 230 + i * 26; r.noise(1700 + i * 110 + 120, { dur: .022, f: 2300, q: 3, g: .07, att: .002 }); r.tone(1700 + i * 110 + 120, { f: f * 1.5, f2: f, dur: .1, g: .085, type: 'triangle', att: .004 }); }
+          r.tone(2640, { f: 2093, dur: .7, g: .03 }); r.tone(2700, { f: 2637, dur: .6, g: .025 }); // yazı bitince parıltı
+          bell(r, 2300, 1318.5, .085, 1.2);                        // fincan tıngısı (ışık halkalarıyla)
+          r.noise(2500, { dur: 1.6, type: 'highpass', f: 3600, q: .5, g: .011, att: .6 }); // buhar fısıltısı
+          return r;
+        },
+        // KAPANIŞ: flame → ateş 650 ms'de azalarak söner + alçalan süzülme + minik "pof"; off → yumuşak alçalan süzülme
+        close(r, kind) {
+          const flame = kind === 'flame';
+          if (r) r.stop(flame ? .5 : .15, flame ? .7 : .3);   // alev: ateş sesi alevin başlığa dönüş süresi boyunca azalarak söner
+          if (flame) return;                                    // alev kapanışında ek ses yok, yalnızca ateş sönüşü
+          const c = run(); if (!c) return;
+          { c.noise(0, { dur: .5, f: 1700, f2: 280, q: .9, g: .035, att: .12 }); c.tone(0, { f: 320, f2: 170, dur: .4, g: .035, att: .05 }); }
+        }
+      };
+    })();
 
     // ---- Prosedürel alev: her karede kontrol noktaları dalgalanır, eğri yumuşatılır ----
     // Elle tasarlanmış kübik Bézier alevler: [başX, başY, (c1x c1y c2x c2y x y)...]. Hareket, TÜM noktalara
@@ -70742,6 +70942,7 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
       const r = ic.getBoundingClientRect(), sr = fly.getBoundingClientRect();
       const dx = (r.left + r.width / 2) - (sr.left + sr.width / 2), dy = (r.top + r.height / 2) - (sr.top + sr.height / 2), sc = r.width / sr.width;
       btn.classList.add('is-away');
+      const sfxR = SFX.celebrate(from, to, relight, rm);
       const burst = () => {
         fly.classList.add('is-lit'); if (navigator.vibrate) navigator.vibrate([16, 60, 28]);
         if (rm) return;
@@ -70769,7 +70970,7 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
         setLit(cur.total > 0 && cur.done === cur.total); ignite(); setShown(cur.done === cur.total && cur.total > 0 ? cur.streak : cur.base, true);
       }
       function close() {
-        if (closed) return; closed = true; clearTimeout(timer);
+        if (closed) return; closed = true; clearTimeout(timer); SFX.close(sfxR, 'flame');
         // Arka planın solması ile güvenli alanın geri dönmesi AYNI karede başlar (aynı süre + eğri).
         const fadeBd = () => { A(bd, [{ opacity: 1 }, { opacity: 0 }], { duration: BD_MS, easing: EASE }); ov.classList.remove('is-in'); };
         if (rm) { fadeBd(); [big, lab, sub, fly, glow].forEach((n) => A(n, [{ opacity: 1 }, { opacity: 0 }], { duration: 200 })); setTimeout(finish, 230); return; }
@@ -70781,13 +70982,148 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
         setTimeout(finish, 700);
       }
       // Animasyon (sayı çarkı dahil ~2.6sn) bitmeden dokunarak kapatılamaz; bitince kendiliğinden kapanır.
-      const ANIM_END = rm ? 450 : 2600, HOLD = rm ? 1000 : 1000;
+      const ANIM_END = rm ? 450 : 2600, HOLD = rm ? 1000 : 1500; // +500 ms: alev ve sayı yerine oturduktan sonra biraz daha kalır
       ov.addEventListener('click', () => { if (performance.now() - t0 > ANIM_END) close(); });
       document.addEventListener('keydown', onKey);
       timer = setTimeout(close, ANIM_END + HOLD);
     }
 
+    // ---- Off day: Gündelik'e her girişte (ve alevin üstüne dokununca) oynayan tam ekran animasyon ----
+    const isOffToday = () => !!(window.OffDay && window.OffDay.isOff(new Date()));
+    const syncOff = () => { btn.classList.toggle('is-off', isOffToday()); chipSync(); };
+    const isoToday = () => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); };
+    // Tercih: APP_STATE.offAnimOnce (true = yalnızca off day'in ilk girişinde oynat), APP_STATE.offAnimDay = en son oynadığı gün.
+    const offOnce = () => !!APP_STATE.offAnimOnce;
+    const autoAllowed = () => !(offOnce() && APP_STATE.offAnimDay === isoToday());
+    function offShow() {
+      if (busy) return; busy = true; const rm = reduce(), t0 = performance.now();
+      saveAppState({ offAnimDay: isoToday() });
+      hideChip();
+      const uid = 'of' + Math.floor(Math.random() * 1e6);
+      const ov = document.createElement('div'); ov.className = 'gf-ov of-ov'; ov.setAttribute('role', 'dialog'); ov.setAttribute('aria-label', 'Bugün off day');
+      const big = 'OFF DAY'.split('').map((ch) => '<span>' + (ch === ' ' ? '&nbsp;' : ch) + '</span>').join('');
+      const P = (c, d, extra) => '<path class="' + c + '" d="' + d + '"' + (extra || '') + '/>';
+      // Sıfırdan çizilen fincan (160x160): halka içinde ayaklı fincan, kulp, tabak, parlama çizgisi ve üç buhar kıvrımı.
+      ov.innerHTML = '<div class="gf-bd of-bd"></div><div class="of-stage"><svg viewBox="0 0 160 160" aria-hidden="true">'
+        + '<circle class="of-rip" cx="80" cy="80" r="58"/><circle class="of-rip" cx="80" cy="80" r="58"/>'
+        + '<circle class="of-fill" cx="80" cy="80" r="58"/>'
+        + '<circle class="of-s of-line of-ring" cx="80" cy="80" r="58" style="transform:rotate(-90deg)"/>'
+        + '<g class="of-cup">'
+        + P('of-cupfill', 'M50 70C50 98 62 108 80 108C98 108 110 98 110 70Z')
+        + P('of-cupfill', 'M34 114H126C122 121 104 124 80 124C56 124 38 121 34 114Z')
+        + '<ellipse class="of-cupfill of-coffee" cx="80" cy="70" rx="26" ry="5"/>'
+        + P('of-s of-line of-cp', 'M34 114H126C122 121 104 124 80 124C56 124 38 121 34 114Z')
+        + P('of-s of-line of-cp', 'M50 70C50 98 62 108 80 108C98 108 110 98 110 70')
+        + '<ellipse class="of-s of-line of-cp" cx="80" cy="70" rx="30" ry="7"/>'
+        + P('of-s of-line of-cp', 'M109.5 77C125 75 126 98 104 98')
+        + P('of-s2 of-line of-cp', 'M59 83C60 91 64 97 70 100', ' style="stroke-width:2"')
+        + '</g>'
+        + P('of-s2 of-line of-steam', 'M67 58C61 51 73 47 67 39C63 33 68 30 67 26')
+        + P('of-s2 of-line of-steam', 'M80 56C74 49 86 44 80 35C76 28 82 24 80 18')
+        + P('of-s2 of-line of-steam', 'M93 58C87 51 99 47 93 39C89 33 94 30 93 26')
+        + '</svg></div>'
+        + '<div class="of-big">' + big + '</div><div class="of-lab">Bugün dinlen</div><div class="of-sub">Rutinler zorunlu değil</div>'
+        + '<div class="of-keep"><span class="of-kf"></span><span class="of-kt"></span></div>'
+        + '<button type="button" class="of-btn"></button><div class="of-hint"></div>';
+      ov.querySelector('.of-kt').textContent = cur.base > 0 ? cur.base + ' günlük seri korunuyor' : 'Serin bozulmaz';
+      const bd = ov.querySelector('.gf-bd');
+      bd.style.setProperty('--gf-top', 'color-mix(in srgb, var(--theme-bg, #F6F4EF) 6%, rgb(40 8 12))');
+      const EASE = (getComputedStyle(document.documentElement).getPropertyValue('--theme-transition-easing') || '').trim() || 'cubic-bezier(0.16, 1, 0.3, 1)';
+      const BD_MS = rm ? 200 : 480;
+      ov._themeTint = { r: 40, g: 8, b: 12, alpha: 0.94 };
+      document.body.appendChild(ov);
+      if (window.watchBackdropForThemeColor) { window.watchBackdropForThemeColor(ov); ov.classList.add('is-in'); }
+      const q = (x) => ov.querySelector(x), qa = (x) => Array.from(ov.querySelectorAll(x));
+      const ring = q('.of-ring'), fill = q('.of-fill'), stage = q('.of-stage');
+      const cps = qa('.of-cp'), cfills = qa('.of-cupfill'), steams = qa('.of-steam');
+      const letters = qa('.of-big span'), lab = q('.of-lab'), sub = q('.of-sub'), keep = q('.of-keep'), rips = qa('.of-rip');
+      const obtn = q('.of-btn'), hint = q('.of-hint');
+      const kf = q('.of-kf'); if (cur.base > 0) { kf.classList.add('is-lit'); mkFlame(kf, true); } else kf.remove();
+      obtn.textContent = offOnce() ? 'Her girişte göster' : 'Animasyonu tekrar gösterme';
+      A(bd, [{ opacity: 0 }, { opacity: 1 }], { duration: BD_MS, easing: EASE });
+      const sfxR = SFX.off(rm);
+      const OUT = 'cubic-bezier(.22,1,.36,1)';
+      // Çizgi çizme: her çizginin GERÇEK uzunluğu ölçülür; çizgi başlangıçta tamamen yolun dışında bekler ve sırası gelene kadar saydamdır (nokta/iz kalmaz).
+      qa('.of-line').forEach((n) => { const L = n.getTotalLength(); n.dataset.L = L; n.style.strokeDasharray = L + ' ' + (L + 24); n.style.strokeDashoffset = L + 6; });
+      const draw = (n, delay, dur) => { const L = +n.dataset.L; return A(n, [{ strokeDashoffset: L + 6, opacity: 0, offset: 0 }, { strokeDashoffset: L + 5.5, opacity: 1, offset: .02 }, { strokeDashoffset: 0, opacity: 1, offset: 1 }], { duration: dur, delay, easing: 'cubic-bezier(.65,0,.25,1)' }); };
+      const fade = (n, delay, dur, to) => A(n, [{ opacity: 0 }, { opacity: to == null ? 1 : to }], { duration: dur, delay });
+      const rise = (n, delay) => A(n, [{ opacity: 0, transform: 'translateY(14px)' }, { opacity: 1, transform: 'none' }], { duration: 850, delay, easing: OUT });
+      const BTN_AT = rm ? 450 : 3700;
+      if (rm) {
+        qa('.of-line').forEach((n) => { n.style.strokeDasharray = 'none'; n.style.strokeDashoffset = 0; n.style.opacity = 1; });
+        [fill, ...cfills, ...letters, lab, sub, keep].forEach((n) => A(n, [{ opacity: 0 }, { opacity: 1 }], { duration: 250, delay: 120 }));
+      } else {
+        draw(ring, 200, 1300); fade(fill, 1100, 700);
+        draw(cps[0], 800, 550);            // tabak
+        draw(cps[1], 1000, 750);           // gövde
+        draw(cps[2], 1450, 450);           // ağız
+        draw(cps[3], 1650, 450);           // kulp
+        draw(cps[4], 2000, 300);           // parlama
+        cfills.forEach((n, i) => fade(n, i === 2 ? 1900 : 1500, 600, i === 2 ? .5 : 1));
+        // Buhar: kıvrım boyunca yukarı süzülen kısa çizgi parçası
+        steams.forEach((st, i) => { const L = +st.dataset.L; st.style.strokeDasharray = (L * .45) + ' ' + (L * 3); A(st, [{ strokeDashoffset: L * .5, opacity: 0 }, { opacity: .95, offset: .25 }, { opacity: .8, offset: .6 }, { strokeDashoffset: -L * 1.05, opacity: 0 }], { duration: 2400 + i * 250, delay: 2500 + i * 400, iterations: Infinity, easing: 'ease-in-out' }); });
+        A(stage, [{ transform: 'scale(1)' }, { transform: 'scale(1.08)', offset: .4 }, { transform: 'scale(1)' }], { duration: 900, delay: 2300, easing: 'cubic-bezier(.3,1.4,.5,1)' });
+        rips.forEach((r, i) => A(r, [{ opacity: .4, transform: 'scale(1)' }, { opacity: 0, transform: 'scale(1.32)' }], { duration: 2400, delay: 2400 + i * 900, iterations: 3, fill: 'none', easing: 'cubic-bezier(.2,.7,.3,1)' }));
+        letters.forEach((l, i) => A(l, [{ opacity: 0, transform: 'translateY(26px)', filter: 'blur(6px)' }, { opacity: 1, transform: 'none', filter: 'blur(0)' }], { duration: 900, delay: 1700 + i * 110, easing: OUT }));
+        rise(lab, 2700); rise(sub, 3000); rise(keep, 3300);
+      }
+      // Animasyon bitince yavaşça beliren düğme
+      const btnT = setTimeout(() => { if (closed) return; obtn.style.pointerEvents = 'auto'; A(obtn, [{ opacity: 0, transform: 'translateY(8px)' }, { opacity: 1, transform: 'none' }], { duration: rm ? 250 : 1100, easing: OUT }); }, BTN_AT);
+      let closed = false, timer = null;
+      const ANIM_END = rm ? 450 : 3900, HOLD = 3000;
+      obtn.addEventListener('click', (e) => {
+        e.stopPropagation(); if (closed) return;
+        const nv = !offOnce(); saveAppState({ offAnimOnce: nv, offAnimDay: isoToday() });
+        obtn.disabled = true; obtn.textContent = 'Tamam ✓'; obtn.style.pointerEvents = 'none';
+        hint.textContent = nv ? 'Artık yalnızca off day’in ilk girişinde göstereceğim' : 'Artık off day’de her girişte göstereceğim';
+        A(hint, [{ opacity: 0 }, { opacity: 1 }], { duration: rm ? 150 : 600 });
+        clearTimeout(timer); timer = setTimeout(close, 1800);
+      });
+      const onKey = (e) => { if ((e.key === 'Escape' || e.key === 'Enter' || e.key === ' ') && performance.now() - t0 > ANIM_END) close(); };
+      function finish() {
+        ov.classList.remove('is-in'); ov.remove(); document.removeEventListener('keydown', onKey); busy = false;
+        setLit(cur.total > 0 && cur.done === cur.total); setShown(cur.done === cur.total && cur.total > 0 ? cur.streak : cur.base, true);
+        showChip(true); // animasyon bitti → sayfada "OFF DAY" ibaresi belirir (dokununca animasyon tekrar oynar)
+      }
+      function close() {
+        if (closed) return; closed = true; clearTimeout(timer); clearTimeout(btnT); SFX.close(sfxR, 'off');
+        const fadeBd = () => { A(bd, [{ opacity: 1 }, { opacity: 0 }], { duration: BD_MS, easing: EASE }); ov.classList.remove('is-in'); };
+        [stage, ...letters, lab, sub, keep, obtn, hint].forEach((n) => A(n, [{ opacity: 1 }, { opacity: 0 }], { duration: rm ? 200 : 350, easing: 'ease-in' }));
+        if (!rm) A(stage, [{ transform: 'scale(1)' }, { transform: 'scale(.86)' }], { duration: 450, easing: 'cubic-bezier(.6,0,.3,1)' });
+        setTimeout(fadeBd, rm ? 0 : 180); setTimeout(finish, rm ? 230 : 700);
+      }
+      ov.addEventListener('click', () => { if (performance.now() - t0 > ANIM_END) close(); });
+      document.addEventListener('keydown', onKey);
+      timer = setTimeout(close, ANIM_END + HOLD);
+    }
+
+    // ---- Sayfadaki "OFF DAY" ibaresi: bugün off day ise görünür; dokununca animasyon yeniden oynar ----
+    const chip = document.createElement('button');
+    chip.type = 'button'; chip.className = 'of-chip'; chip.id = 'gdOffChip'; chip.setAttribute('aria-label', 'Bugün off day. Animasyonu tekrar izlemek için dokun');
+    chip.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 9h11v6a4 4 0 0 1-4 4h-3a4 4 0 0 1-4-4z"/><path d="M15.5 10.5H17a2.5 2.5 0 0 1 0 5h-1.5M8 3.5v2M12 3.5v2"/></svg><span>OFF DAY</span>';
+    btn.insertAdjacentElement('afterend', chip);
+    function showChip(pop) {
+      if (!isOffToday()) { hideChip(); return; }
+      btn.classList.add('has-chip'); chip.classList.add('is-on');
+      chip.classList.remove('is-pop'); if (pop && !reduce()) { void chip.offsetWidth; chip.classList.add('is-pop'); }
+    }
+    function hideChip() { chip.classList.remove('is-on', 'is-pop'); btn.classList.remove('has-chip'); }
+    chip.addEventListener('click', (e) => { e.stopPropagation(); if (!busy) offShow(); });
+    // Animasyon otomatik oynamayacaksa (tercih: günde bir kez) ibare doğrudan görünür.
+    function chipSync() { if (busy) return; if (isOffToday()) showChip(false); else hideChip(); }
+    (() => { // Gündelik sayfası her açıldığında off day ise animasyonu oynat
+      const pg = document.getElementById('page-8'); if (!pg || !window.MutationObserver) return;
+      let was = pg.classList.contains('is-active');
+      new MutationObserver(() => {
+        const on = pg.classList.contains('is-active');
+        if (on && !was) { syncOff(); if (inited && isOffToday() && autoAllowed()) setTimeout(() => { if (pg.classList.contains('is-active')) offShow(); }, 350); }
+        was = on;
+      }).observe(pg, { attributes: true, attributeFilter: ['class'] });
+    })();
+    window.addEventListener('offdays-changed', syncOff);
+
     window.addEventListener('gundelik-progress', (e) => {
+      syncOff();
       const d = e.detail || {}; cur = { total: d.total | 0, done: d.done | 0, streak: d.streak | 0, base: d.base | 0 };
       const all = cur.total > 0 && cur.done === cur.total, num = all ? cur.streak : cur.base;
       if (!inited) { setLit(all); setShown(num, false); inited = true; return; }
@@ -70799,10 +71135,11 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
     btn.addEventListener('click', () => {
       if (busy) return;
       if (lit) { celebrate(cur.streak, cur.streak, true); return; }
+      if (isOffToday()) { offShow(); return; }
       btn.classList.remove('is-nudge'); void btn.offsetWidth; btn.classList.add('is-nudge'); setTimeout(() => btn.classList.remove('is-nudge'), 600);
       toast(cur.total === 0 ? 'Alevi yakmak için önce görev ekle' : 'Alevi yakmak için ' + (cur.total - cur.done) + ' görev kaldı');
     });
-    label();
+    label(); syncOff();
   })();
 </script>
 
@@ -70943,9 +71280,13 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
       if (all && !has) { days = days.concat(today); st.flameDays = days.slice(-800); save(); }
       else if (!all && has) { st.flameDays = days.filter((x) => x !== today); save(); }
       const set = new Set(st.flameDays || []), c = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
-      let base = 0; while (set.has(isoD(c))) { base++; c.setDate(c.getDate() - 1); }
+      // Off day'ler seriyi bozmaz: geriye sayarken atlanır (ne sayılır ne de seriyi keser).
+      const isOffD = (d) => !!(window.OffDay && window.OffDay.isOff(d));
+      let base = 0, guard = 0;
+      while (guard++ < 900) { if (set.has(isoD(c))) base++; else if (!isOffD(c)) break; c.setDate(c.getDate() - 1); }
       window.dispatchEvent(new CustomEvent('gundelik-progress', { detail: { total: t, done: d, user: !!user, base, streak: all ? base + 1 : base } }));
     };
+    if (cfg.progress) window.addEventListener('offdays-changed', () => emitProg(false)); // off day değişince seri/alev güncellensin
     const list = $(P + 'List');
     let addOpen = null, newOpen = false, firstPaint = true, newAnim = false;
     const seenGroups = new Set();
@@ -71914,7 +72255,8 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
     const offRule = window.OffDay.find(date);
     let idx = 0;
     let html = `<div class="zt-d-head" style="--i:${idx++}"><div class="zt-d-marker${offRule ? ' is-off' : ''}"><span>${D}</span></div>` +
-      `<div class="zt-d-titles"><span class="zt-d-name">${WD_FULL[date.getDay()]}, ${D} ${MONTHS[M - 1]}</span><span class="zt-d-rel">${esc(rel)}</span></div></div>`;
+      `<div class="zt-d-titles"><span class="zt-d-name">${WD_FULL[date.getDay()]}, ${D} ${MONTHS[M - 1]}</span><span class="zt-d-rel">${esc(rel)}</span></div>` +
+      `<button type="button" class="zt-off-btn zt-off-head${offRule ? ' is-on' : ''}" data-offday="1" aria-label="${offRule ? 'Off day düzenle' : 'Off day ekle'}">${offRule ? 'Off day ✓' : 'Off day'}</button></div>`;
     html += `<div class="zt-d-total" style="--i:${idx++}"><span class="zt-d-total-v" id="ztTotalV">0 dk</span><span class="zt-d-total-l">toplam çalışma</span></div>`;
     if (isBest) html += `<span class="zt-d-best" style="--i:${idx++}">Ayın en uzun günü</span>`;
     if (ms < MIN_MS) {
@@ -71927,7 +72269,6 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
       html += `<div class="zt-empty" style="--i:${idx++}">Branş seçilmeden çalışıldı.</div>`;
     }
     if (offRule) html += `<span class="zt-d-offtag" style="--i:${idx++}">OFF DAY · ${esc(window.OffDay.label(offRule))}</span>`;
-    html += `<button type="button" class="zt-off-btn${offRule ? ' is-on' : ''}" data-offday="1" style="--i:${idx++}">${offRule ? 'Off day ✓ · düzenle' : 'Off day ekle'}</button>`;
     detailEl.innerHTML = `<div class="zt-detail-in" style="--base:${first ? 420 : 0}ms">${html}</div>`;
     countTo($('ztTotalV'), ms >= MIN_MS ? ms : 0);
   }
