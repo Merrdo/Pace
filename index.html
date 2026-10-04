@@ -72518,7 +72518,7 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
       el._saSync = 1; el._themeTint = { r: 0, g: 0, b: 0, alpha: a };
       window.watchBackdropForThemeColor(el);
       requestAnimationFrame(function () { if (el.isConnected && !isOut(el)) el.classList.add('is-in'); });
-      new MutationObserver(function () { if (isOut(el)) el.classList.remove('is-in'); })
+      new MutationObserver(function () { if (isOut(el) && el.classList.contains('is-in')) el.classList.remove('is-in'); })
         .observe(el, { attributes: true, attributeFilter: ['class'] });
     }
     function scan(n) {
@@ -72529,7 +72529,7 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
     new MutationObserver(function (muts) {
       muts.forEach(function (m) {
         m.addedNodes.forEach(scan);
-        m.removedNodes.forEach(function (n) { if (n._saSync) n.classList.remove('is-in'); });
+        m.removedNodes.forEach(function (n) { if (n._saSync && n.classList.contains('is-in')) n.classList.remove('is-in'); });
       });
     }).observe(document.body, { childList: true });
     scan(document.body);
