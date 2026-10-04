@@ -38076,28 +38076,30 @@ body.is-countdown-fs.is-countdown-paused .countdown-fullscreen-time-row .stopwat
 .tsh-card.is-dragging .tsh-grab::before { width: 3.2rem; background: var(--tsh-mute); }
 </style>
 <style id="fsModeCss">
-/* Duraklatılınca tam ekranda sağ üstte beliren mod seçici (Kronometre | Zamanlayıcı) */
-.fsm{--fsm-h:2.6rem;--fsm-pad:.22rem;position:absolute;z-index:6;top:calc(env(safe-area-inset-top,0px) + .9rem);right:calc(env(safe-area-inset-right,0px) + .9rem);
-  display:grid;grid-template-columns:1fr 1fr;box-sizing:border-box;width:min(13.4rem,calc(100% - 5.6rem));height:var(--fsm-h);padding:var(--fsm-pad);border-radius:.9rem;
-  background:color-mix(in srgb,var(--theme-text,#f2f2f7) 9%,transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--theme-text,#f2f2f7) 10%,transparent);
-  -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);font-family:var(--cd-font,"Baloo 2","Space Grotesk",sans-serif);
-  opacity:0;visibility:hidden;pointer-events:none;transform:translateY(-10px) scale(.9);transform-origin:top right;
-  transition:opacity .25s ease,transform .25s ease,visibility 0s linear .25s;}
-body.is-stopwatch-fs:not(.is-stopwatch-running) #stopwatchFullscreen .fsm,
-body.is-countdown-fs.is-countdown-paused #countdownFullscreen .fsm{opacity:1;visibility:visible;pointer-events:auto;transform:none;
-  transition:opacity .35s ease .08s,transform .55s cubic-bezier(.34,1.4,.64,1) .08s,visibility 0s;}
-.fsm-ind{position:absolute;top:var(--fsm-pad);bottom:var(--fsm-pad);left:var(--fsm-pad);width:calc(50% - var(--fsm-pad));border-radius:.68rem;background:var(--accent-color,#ff90e8);
-  transition:transform .4s cubic-bezier(.34,1.3,.64,1);}
+/* Duraklatılınca tam ekranda sağ üstte beliren sade mod seçici (Kronometre | Zamanlayıcı) */
+.fsm{--fsm-pad:2px;position:fixed;z-index:70;top:calc(env(safe-area-inset-top,0px) + 1.2rem);right:calc(env(safe-area-inset-right,0px) + .9rem);
+  display:grid;grid-template-columns:1fr 1fr;box-sizing:border-box;width:10.2rem;height:2rem;padding:var(--fsm-pad);border-radius:.7rem;
+  background:color-mix(in srgb,var(--theme-text,#f2f2f7) 8%,transparent);font-family:var(--cd-font,"Baloo 2","Space Grotesk",sans-serif);
+  opacity:0;visibility:hidden;pointer-events:none;transform:translateY(-6px);
+  transition:opacity .25s ease,transform .3s cubic-bezier(.16,1,.3,1),visibility 0s linear .25s;}
+body.is-stopwatch-fs:not(.is-stopwatch-running) .fsm,
+body.is-countdown-fs.is-countdown-paused .fsm{opacity:1;visibility:visible;pointer-events:auto;transform:none;
+  transition:opacity .35s ease .1s,transform .5s cubic-bezier(.16,1,.3,1) .1s,visibility 0s;}
+.fsm-ind{position:absolute;top:var(--fsm-pad);bottom:var(--fsm-pad);left:var(--fsm-pad);width:calc(50% - var(--fsm-pad));border-radius:.55rem;background:var(--theme-text,#f2f2f7);
+  transition:transform .35s cubic-bezier(.16,1,.3,1);}
 .fsm[data-sel="countdown"] .fsm-ind{transform:translateX(100%);}
-.fsm button{position:relative;z-index:1;min-width:0;margin:0;padding:0 .3rem;border:0;border-radius:.68rem;background:none;cursor:pointer;font:800 .84rem/1 inherit;font-family:inherit;white-space:nowrap;
-  color:color-mix(in srgb,var(--theme-text,#f2f2f7) 70%,transparent);-webkit-tap-highlight-color:transparent;transition:color .3s ease,transform .15s ease;}
-.fsm button:active{transform:scale(.95);}
-.fsm button[aria-checked="true"]{color:#16171b;}
+.fsm button{position:relative;z-index:1;min-width:0;margin:0;padding:0;border:0;background:none;cursor:pointer;font-family:inherit;font-weight:700;font-size:.72rem;line-height:1;white-space:nowrap;
+  color:color-mix(in srgb,var(--theme-text,#f2f2f7) 55%,transparent);-webkit-tap-highlight-color:transparent;transition:color .3s ease;}
+.fsm button[aria-checked="true"]{color:var(--theme-bg,#121212);}
 @media (min-width:768px){
-  .fsm{--fsm-h:3rem;--fsm-pad:.26rem;top:calc(env(safe-area-inset-top,0px) + 1.4rem);right:calc(env(safe-area-inset-right,0px) + 1.4rem);width:15.5rem;border-radius:1rem;}
-  .fsm-ind{border-radius:.76rem;}.fsm button{font-size:.95rem;border-radius:.76rem;}.fsm button:hover:not([aria-checked="true"]){color:var(--theme-text,#f2f2f7);}
+  .fsm{--fsm-pad:3px;top:calc(env(safe-area-inset-top,0px) + 1.5rem);right:calc(env(safe-area-inset-right,0px) + 1.5rem);width:13rem;height:2.5rem;border-radius:.85rem;}
+  .fsm-ind{border-radius:.68rem;}.fsm button{font-size:.85rem;}.fsm button:hover:not([aria-checked="true"]){color:var(--theme-text,#f2f2f7);}
 }
-@media (max-width:340px){.fsm button{font-size:.76rem;}}
+@media (max-width:340px){.fsm{width:9.2rem;}.fsm button{font-size:.68rem;}}
+/* Henüz başlamamış (boş) tam ekranda rakamlar yanıp sönmez */
+body.is-fs-idle .countdown-fullscreen-time-row .stopwatch-time,
+body.is-fs-idle .stopwatch-fullscreen-time-row .stopwatch-time,
+body.is-fs-idle .stopwatch-fullscreen-time-row .stopwatch-centis{animation:none !important;}
 @media (prefers-reduced-motion:reduce){.fsm,.fsm-ind,.fsm button{transition-duration:.01s !important;transition-delay:0s !important;}}
 </style>
 <style id="calNextCss">
@@ -47284,8 +47286,13 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
       dismissFinishedCountdown();
       return;
     }
-    if (cdRunning) pauseCountdown();
-    else startCountdown();
+    if (cdRunning) { pauseCountdown(); return; }
+    if (countdownSetup.style.display !== 'none') {
+      cdTotalMs = (cdMinutes * 60 + cdSeconds) * 1000;
+      if (cdTotalMs <= 0) return;
+      cdRemainingMs = cdTotalMs; renderCountdownTime(); showCountdownRunningUI();
+    }
+    startCountdown();
   };
 
   const resetCountdown = () => {
@@ -47464,29 +47471,44 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
   }
 
   // ---- Duraklatılınca sağ üstte mod seçici: Kronometre | Zamanlayıcı ----
-  // Tam ekrandan çıkmadan diğer moda geçirir; hangi moddaysak o seçili görünür.
+  // Sayfaya çıkılmaz, sayfa çevirme animasyonu oynamaz: seçilen modun tam ekranı doğrudan gelir
+  // (kurulu süre / mevcut süre ile, dokunulunca başlar). Seçili mod gövde sınıflarından okunur.
   (() => {
-    const mount = (host, cur, leaveFs) => {
-      if (!host || host.querySelector('.fsm')) return;
-      const box = document.createElement('div'); box.className = 'fsm'; box.dataset.sel = cur; box.setAttribute('role', 'radiogroup'); box.setAttribute('aria-label', 'Mod');
-      box.innerHTML = '<span class="fsm-ind"></span>'
-        + '<button type="button" role="radio" data-m="stopwatch">Kronometre</button>'
-        + '<button type="button" role="radio" data-m="countdown">Zamanlayıcı</button>';
-      const mark = () => box.querySelectorAll('button').forEach((b) => b.setAttribute('aria-checked', b.dataset.m === box.dataset.sel ? 'true' : 'false'));
-      mark();
-      box.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const b = e.target.closest('button[data-m]'); if (!b || b.dataset.m === cur || stopwatchFlipAnimating || swRunning || cdRunning) return;
-        box.dataset.sel = b.dataset.m; mark();
-        setTimeout(() => {
-          leaveFs(); switchStopwatchViewMode(b.dataset.m);
-          setTimeout(() => { box.dataset.sel = cur; mark(); }, 700);
-        }, 260);
-      });
-      host.appendChild(box);
+    const body = document.body;
+    const box = document.createElement('div'); box.className = 'fsm'; box.setAttribute('role', 'radiogroup'); box.setAttribute('aria-label', 'Mod');
+    box.innerHTML = '<span class="fsm-ind"></span><button type="button" role="radio" data-m="stopwatch">Kronometre</button><button type="button" role="radio" data-m="countdown">Zamanlayıcı</button>';
+    body.appendChild(box);
+    const cur = () => (body.classList.contains('is-countdown-fs') ? 'countdown' : 'stopwatch');
+    const paint = () => { const c = cur(); box.dataset.sel = c; box.querySelectorAll('button').forEach((b) => b.setAttribute('aria-checked', b.dataset.m === c ? 'true' : 'false')); };
+    new MutationObserver(paint).observe(body, { attributes: true, attributeFilter: ['class'] }); paint();
+    const goCountdown = () => {
+      setStopwatchViewMode('countdown');
+      exitStopwatchFullscreen();
+      const idle = countdownSetup.style.display !== 'none';
+      if (idle) { cdTotalMs = (cdMinutes * 60 + cdSeconds) * 1000; cdRemainingMs = cdTotalMs; }
+      renderCountdownTime();
+      body.classList.toggle('is-fs-idle', idle);
+      body.classList.add('is-countdown-fs', 'is-countdown-paused');
+      countdownFullscreenHint.textContent = idle ? 'Başlatmak için dokun' : 'Devam etmek için dokun';
+      countdownFullscreenHint.classList.remove('is-hidden');
     };
-    mount(document.getElementById('stopwatchFullscreen'), 'stopwatch', exitStopwatchFullscreen);
-    mount(document.getElementById('countdownFullscreen'), 'countdown', exitCountdownFullscreen);
+    const goStopwatch = () => {
+      setStopwatchViewMode('stopwatch');
+      hideCountdownFsControls(); hideCountdownFullscreenSubject();
+      body.classList.remove('is-countdown-fs', 'is-countdown-paused', 'is-countdown-fs-controls');
+      const idle = currentElapsedMs() === 0;
+      body.classList.toggle('is-fs-idle', idle);
+      body.classList.add('is-stopwatch-fs');
+      stopwatchFullscreenHint.textContent = idle ? 'Başlatmak için dokun' : 'Devam etmek için dokun';
+      stopwatchFullscreenHint.classList.remove('is-hidden');
+    };
+    box.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const b = e.target.closest('button[data-m]');
+      if (!b || b.dataset.m === cur() || swRunning || cdRunning || cdFinished || stopwatchFlipAnimating) return;
+      if (b.dataset.m === 'countdown') goCountdown(); else goStopwatch();
+    });
+    document.addEventListener('click', (e) => { if (e.target.closest && e.target.closest('.stopwatch-exit-zone, .countdown-exit-zone, .stopwatch-fs-back-btn')) body.classList.remove('is-fs-idle'); }, true);
   })();
 
   if (countdownExitZone) {
