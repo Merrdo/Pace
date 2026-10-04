@@ -71065,7 +71065,7 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
   #gdFlame { --gf-h: 34px; flex: 0 0 auto; position: relative; display: inline-flex; align-items: center; gap: .3rem; margin: 0 auto 0 .15rem; padding: 0; border: 0; background: none; color: inherit; font: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent; }
   #gdFlame::before { content: ""; position: absolute; inset: -8px -10px; }
   #gdFlame:focus-visible { outline: 2px solid var(--accent-color, #ff90e8); outline-offset: 4px; border-radius: 14px; }
-  .gf-ic { position: relative; display: block; width: calc(var(--gf-h) * .76); height: var(--gf-h); }
+  .gf-ic { position: relative; top: calc(var(--gf-h) * -.14); display: block; width: calc(var(--gf-h) * .76); height: var(--gf-h); }
   .gf-ic::after { content: ""; position: absolute; left: 50%; top: 62%; width: 260%; aspect-ratio: 1; border-radius: 50%; pointer-events: none; opacity: 0; transform: translate(-50%, -50%); transition: opacity .7s ease; background: radial-gradient(circle, rgba(255, 140, 30, .55) 0, rgba(255, 110, 20, .16) 38%, rgba(255, 100, 0, 0) 66%); }
   #gdFlame.is-lit .gf-ic::after { opacity: .5; }
   #gdFlame.is-away .gf-ic { opacity: 0; }
@@ -71316,6 +71316,7 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
     };
     const list = $(P + 'List');
     let addOpen = null, newOpen = false, firstPaint = true, newAnim = false;
+    const seenGroups = new Set();
     const softCloseNew = () => {
       if (!newOpen) return; newOpen = false;
       const w = $(P + 'NewForm').querySelector('.soft-wrap');
@@ -71423,6 +71424,7 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
       if (multi) { inp.rows = 1; inp.enterKeyHint = 'enter'; inp.addEventListener('input', () => window.gundelikAutoGrow(inp)); }
       else { inp.type = 'text'; inp.enterKeyHint = 'done'; inp.maxLength = 120; }
       const go2 = el('button', 'hl-go'); go2.type = 'submit'; go2.setAttribute('aria-label', 'Ekle'); go2.innerHTML = UP;
+      go2.addEventListener('pointerdown', (e) => e.preventDefault());
       f.append(inp, go2);
       f.addEventListener('submit', (e) => { e.preventDefault(); const v = inp.value.trim(); if (!v) { inp.focus(); return; } onSubmit(v); });
       const softCancel = () => {
@@ -71466,6 +71468,40 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
       toast(st.autoDelete ? 'Otomatik silme açık: yapılanlar silinir' : 'Otomatik silme kapalı: yapılanlar listede kalır');
     });
 
+    const mkRow = (g, it, box, upd) => {
+      const row = el('div', 'hl-r' + (it.done ? ' is-done' : '')), c = el('span', 'hl-c'), t = el('span', 'hl-t'); t.appendChild(el('span', 'hl-tt', it.text));
+      c.innerHTML = TICK; row.append(c, t); row.dataset.fk = 'hr:' + it.id;
+      row.addEventListener('click', () => { it.done = !it.done; row.classList.toggle('is-done', it.done); save(); upd(); autoSweep(g, it); emitProg(true); });
+      hold(row, (x, y) => openMenu(row, [
+        { ic: IC.copy, title: 'Kopyala', sub: 'Metni panoya al', fn: async () => { const ok = await window.gundelikCopyText(it.text); toast(ok ? 'Kopyalandı' : 'Kopyalanamadı'); } },
+        { ic: IC.edit, title: 'Metni Düzenle', sub: 'Maddenin adını değiştir', fn: () => editInline(t, it.text, (v) => { it.text = v; save(); }, true) },
+        { ic: IC.trash, title: 'Sil', sub: 'Bu maddeyi kaldır', danger: true, fn: () => window.gkAnim.leave(row, () => { const idx = g.items.indexOf(it); g.items = g.items.filter((x2) => x2 !== it); save(); render(); toast('Madde silindi', () => { g.items.splice(Math.min(idx, g.items.length), 0, it); save(); render(); }); }) }
+      ], x, y));
+      return row;
+    };
+    // Madde ekleme: liste baştan çizilmez; satır yerine eklenir, odak ve klavye korunur, kaydırma tek seferde yapılır.
+    const addItemInPlace = (g, box, v) => {
+      const f = box.querySelector('.hl-form'), inp = f && f.querySelector('.hl-in');
+      const it = { id: gid(), text: v, done: false };
+      g.items.push(it); save();
+      if (!f || !inp) { render(); focusIn(); return; }
+      emitProg(false);
+      const row = mkRow(g, it, box, box._upd);
+      box.insertBefore(row, f);
+      if (box._upd) box._upd();
+      inp.value = ''; window.gundelikAutoGrow(inp);
+      try { inp.focus({ preventScroll: true }); } catch (e) { inp.focus(); }
+      const sc = $(P + 'Scroll');
+      if (sc) {
+        const vv = window.visualViewport, vh = vv ? vv.height : window.innerHeight, vt = vv ? vv.offsetTop : 0;
+        const over = f.getBoundingClientRect().bottom - (vt + vh - 20);
+        if (over > 1) sc.scrollTo({ top: sc.scrollTop + over, behavior: 'instant' });
+      }
+      if (row.animate && !(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches)) {
+        row.animate([{ opacity: 0, transform: 'translateY(-6px)' }, { opacity: 1, transform: 'none' }], { duration: 360, easing: 'cubic-bezier(.16,1,.3,1)' });
+      }
+    };
+
     // ---- Çizim ----
     function render() { window.gkAnim.flip(list, renderNow); }
     function renderNow() {
@@ -71478,6 +71514,7 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
       st.groups.forEach((g, gi) => {
         const box = el('section', 'hl-g'); box.dataset.fk = 'hg:' + g.id; box.style.setProperty('--gc', g.color); box.style.setProperty('--gt', tickColor(g.color));
         if (firstPaint) box.style.animationDelay = `${gi * 70}ms`;
+        if (!firstPaint && seenGroups.has(g.id)) box.style.animation = 'none'; seenGroups.add(g.id);
         const head = el('div', 'hl-head'), cnt = el('span', 'hl-count');
         head.append(el('span', 'hl-name', g.name), cnt);
         const upd = () => { const d = g.items.filter((i) => i.done).length; cnt.textContent = g.items.length ? `${d}/${g.items.length}` : ''; };
@@ -71494,18 +71531,9 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
             });
           } }
         ], x, y));
-        g.items.forEach((it) => {
-          const row = el('div', 'hl-r' + (it.done ? ' is-done' : '')), c = el('span', 'hl-c'), t = el('span', 'hl-t'); t.appendChild(el('span', 'hl-tt', it.text));
-          c.innerHTML = TICK; row.append(c, t); row.dataset.fk = 'hr:' + it.id;
-          row.addEventListener('click', () => { it.done = !it.done; row.classList.toggle('is-done', it.done); save(); upd(); autoSweep(g, it); emitProg(true); });
-          hold(row, (x, y) => openMenu(row, [
-            { ic: IC.copy, title: 'Kopyala', sub: 'Metni panoya al', fn: async () => { const ok = await window.gundelikCopyText(it.text); toast(ok ? 'Kopyalandı' : 'Kopyalanamadı'); } },
-            { ic: IC.edit, title: 'Metni Düzenle', sub: 'Maddenin adını değiştir', fn: () => editInline(t, it.text, (v) => { it.text = v; save(); }, true) },
-            { ic: IC.trash, title: 'Sil', sub: 'Bu maddeyi kaldır', danger: true, fn: () => window.gkAnim.leave(row, () => { const idx = g.items.indexOf(it); g.items = g.items.filter((x2) => x2 !== it); save(); render(); toast('Madde silindi', () => { g.items.splice(Math.min(idx, g.items.length), 0, it); save(); render(); }); }) }
-          ], x, y));
-          box.appendChild(row);
-        });
-        if (addOpen === g.id) box.appendChild(fk(mkForm('Yeni madde ekle', (v) => { g.items.push({ id: gid(), text: v, done: false }); save(); render(); focusIn(); }, () => { addOpen = null; render(); }, true), 'hf:' + g.id));
+        box._upd = upd;
+        g.items.forEach((it) => box.appendChild(mkRow(g, it, box, upd)));
+        if (addOpen === g.id) box.appendChild(fk(mkForm('Yeni madde ekle', (v) => addItemInPlace(g, box, v), () => { addOpen = null; render(); }, true), 'hf:' + g.id));
         else { const b = el('button', 'hl-add', '+ Madde ekle'); b.type = 'button'; b.dataset.fk = 'ha:' + g.id; b.onclick = () => { addOpen = g.id; render(); focusIn(); }; box.appendChild(b); }
         list.appendChild(box);
       });
