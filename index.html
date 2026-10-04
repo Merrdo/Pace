@@ -38036,15 +38036,13 @@ body.is-countdown-fs.is-countdown-paused .countdown-fullscreen-time-row .stopwat
 .tsh-card::before { content: ""; position: absolute; left: 0; right: 0; bottom: 100%; height: 140px; background: var(--theme-bg, #121212); pointer-events: none; }
 .tsh-card.is-dragging { transition: none !important; }
 .tsh-top { display: flex; align-items: center; justify-content: space-between; gap: 0.6rem; flex: none; }
-.tsh-label { font-weight: 800; font-size: 0.8rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--tsh-mute); }
+.tsh-head { display: flex; align-items: center; gap: 0.75rem; min-width: 0; }
+.tsh-tile { flex: none; width: 2.5rem; height: 2.5rem; display: grid; place-items: center; border-radius: 0.85rem; background: var(--tsh-gc); color: #16171b; }
+.tsh-tile svg { width: 1.15rem; height: 1.15rem; fill: none; stroke: currentColor; stroke-width: 2.8; stroke-linecap: round; }
+.tsh-label { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 800; font-size: 1.4rem; line-height: 1.2; color: var(--tsh-ink); }
 .tsh-x { flex: none; width: 2.4rem; height: 2.4rem; border: 0; border-radius: 50%; display: grid; place-items: center; cursor: pointer; background: var(--tsh-soft); color: var(--tsh-ink); font-size: 1.3rem; line-height: 1; font-family: inherit; -webkit-tap-highlight-color: transparent; }
 .tsh-x:active { transform: scale(0.9); }
-.tsh-target { display: flex; align-items: center; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.7rem; flex: none; }
-.tsh-target-k { font-weight: 700; font-size: 0.9rem; color: var(--tsh-mute); }
-.tsh-target-v { display: inline-flex; align-items: center; gap: 0.45rem; max-width: 100%; padding: 0.38rem 0.85rem 0.38rem 0.7rem; border-radius: 999px; background: color-mix(in srgb, var(--tsh-gc) 20%, transparent); font-weight: 800; font-size: 0.98rem; }
-.tsh-target-v i { flex: none; width: 0.65rem; height: 0.65rem; border-radius: 50%; background: var(--tsh-gc); }
-.tsh-target-v span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.tsh-ta { display: block; flex: 1 1 auto; width: 100%; min-height: 11rem; max-height: calc(var(--tsh-vh, 100dvh) - 17rem); margin-top: 0.9rem; padding: 0.2rem 0; box-sizing: border-box; border: 0; outline: 0; resize: none; background: none; overflow-y: auto; font-family: inherit; font-weight: 600; font-size: 1.2rem; line-height: 1.65; color: var(--tsh-ink); caret-color: var(--tsh-gc); }
+.tsh-ta { display: block; flex: 1 1 auto; width: 100%; min-height: 11rem; max-height: calc(var(--tsh-vh, 100dvh) - 15rem); margin-top: 1.1rem; padding: 0.2rem 0; box-sizing: border-box; border: 0; outline: 0; resize: none; background: none; overflow-y: auto; font-family: inherit; font-weight: 600; font-size: 1.2rem; line-height: 1.65; color: var(--tsh-ink); caret-color: var(--tsh-gc); }
 .tsh-ta::placeholder { color: var(--tsh-mute); font-weight: 600; }
 .tsh-bar { display: flex; align-items: center; gap: 0.6rem; flex: none; padding-top: 0.7rem; border-top: 1px solid var(--tsh-line); }
 .tsh-btn { border: 0; cursor: pointer; font-family: inherit; font-weight: 800; font-size: 0.95rem; line-height: 1; padding: 0.85rem 1.2rem; border-radius: 999px; -webkit-tap-highlight-color: transparent; transition: transform 0.15s ease, opacity 0.2s ease; }
@@ -38052,7 +38050,7 @@ body.is-countdown-fs.is-countdown-paused .countdown-fullscreen-time-row .stopwat
 .tsh-btn[disabled] { opacity: 0.35; pointer-events: none; }
 .tsh-more { background: var(--tsh-soft); color: var(--tsh-ink); }
 .tsh-go { flex: 1; background: var(--tsh-acc); color: #16171b; }
-.tsh-card.is-list .tsh-target, .tsh-card.is-list .tsh-more { display: none; }
+.tsh-card.is-list .tsh-more { display: none; }
 .tsh-card.is-list .tsh-ta { min-height: 3.4rem; margin-top: 1rem; margin-bottom: 0.9rem; font-size: 1.5rem; font-weight: 800; line-height: 1.4; }
 .hl-head.is-tappable { cursor: pointer; }
 .tsh-grab { position: relative; flex: none; width: 100%; height: 1.7rem; cursor: grab; touch-action: none; -webkit-tap-highlight-color: transparent; }
@@ -70813,7 +70811,7 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
   // cfg: { p: kimlik öneki ('hl' | 'gd'), page, key, other, defName, navBack }
   // ---------- Görev ekleme sayfası: yukarıdan aşağıya açılan kart ----------
   window.gundelikTaskSheet = window.gundelikTaskSheet || (() => {
-    let bd = null, card, ta, proxy, focusT = 0, nameEl, dot, goBtn, moreBtn, labelEl, listMode = false, onSubmit = null, curId = null, opened = false;
+    let bd = null, card, ta, proxy, focusT = 0, goBtn, moreBtn, labelEl, listMode = false, onSubmit = null, curId = null, opened = false;
     const drafts = new Map();
     const mk = (t, c, x) => { const e = document.createElement(t); if (c) e.className = c; if (x != null) e.textContent = x; return e; };
     const vv = () => { const h = (window.visualViewport && window.visualViewport.height) || window.innerHeight; if (bd) bd.style.setProperty('--tsh-vh', h + 'px'); };
@@ -70834,9 +70832,8 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
     const build = () => {
       bd = mk('div', 'tsh-backdrop'); card = mk('div', 'tsh-card'); card.setAttribute('role', 'dialog'); card.setAttribute('aria-modal', 'true'); card.setAttribute('aria-label', 'Görev ekle');
       const top = mk('div', 'tsh-top'), x = mk('button', 'tsh-x', '×'); x.type = 'button'; x.setAttribute('aria-label', 'Kapat');
-      labelEl = mk('span', 'tsh-label', 'Yeni görev'); top.append(labelEl, x);
-      const tg = mk('div', 'tsh-target'); dot = mk('i'); nameEl = mk('span'); const v = mk('span', 'tsh-target-v'); v.append(dot, nameEl);
-      tg.append(mk('span', 'tsh-target-k', 'Eklenecek başlık:'), v);
+      const hd = mk('div', 'tsh-head'), tile = mk('span', 'tsh-tile'); tile.innerHTML = '<svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>';
+      labelEl = mk('span', 'tsh-label', 'Yeni görev'); hd.append(tile, labelEl); top.append(hd, x);
       ta = mk('textarea', 'tsh-ta'); ta.placeholder = 'Görevi buraya yaz…'; ta.rows = 5; ta.enterKeyHint = 'enter'; ta.setAttribute('autocomplete', 'off');
       const bar = mk('div', 'tsh-bar'); moreBtn = mk('button', 'tsh-btn tsh-more', 'Ekle ve yeni yaz'); goBtn = mk('button', 'tsh-btn tsh-go', 'Görevi ekle');
       moreBtn.type = goBtn.type = 'button'; bar.append(moreBtn, goBtn);
@@ -70845,13 +70842,15 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
       // oturduktan sonra asıl alana taşınır (kayarken imleç yanlış yerde görünmesin).
       proxy = mk('input'); proxy.type = 'text'; proxy.tabIndex = -1; proxy.setAttribute('aria-hidden', 'true'); proxy.setAttribute('autocomplete', 'off');
       proxy.style.cssText = 'position:fixed;top:0;left:0;width:1px;height:1px;opacity:0;border:0;padding:0;pointer-events:none;font-size:16px;';
-      card.append(top, tg, ta, bar, grab); bd.append(card, proxy); document.body.appendChild(bd);
+      card.append(top, ta, bar, grab); bd.append(card, proxy); document.body.appendChild(bd);
       ta.addEventListener('input', grow);
       ta.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); else if (e.key === 'Enter' && (listMode ? !e.shiftKey : (e.ctrlKey || e.metaKey))) { e.preventDefault(); submit(false); } });
       x.addEventListener('click', () => close());
       goBtn.addEventListener('click', () => submit(false)); moreBtn.addEventListener('click', () => submit(true));
       [goBtn, moreBtn].forEach((b) => b.addEventListener('pointerdown', (e) => e.preventDefault()));
-      bd.addEventListener('pointerdown', (e) => { if (e.target === bd) close(); });
+      // Boş yere dokunma: yalnızca paneli kapatır. Kapanış 'click' anında yapılır ve olay burada
+      // tüketilir; böylece aynı dokunuş arkadaki görev/başlığa geçmez.
+      bd.addEventListener('click', (e) => { if (e.target !== bd) return; e.preventDefault(); e.stopPropagation(); close(); });
       if (window.visualViewport) window.visualViewport.addEventListener('resize', vv);
       // Sürükleme: yukarı = kapat (eşik/hız), aşağı = lastik gibi esner ve geri döner.
       let sy = 0, dy = 0, ly = 0, lt = 0, vel = 0, drag = false, pid = null;
@@ -70888,11 +70887,11 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
       open: (g, submitFn, opts) => {
         if (!bd) build();
         listMode = !!(opts && opts.list);
-        card.classList.toggle('is-list', listMode); labelEl.textContent = listMode ? 'Yeni liste' : 'Yeni görev';
+        card.classList.toggle('is-list', listMode); labelEl.textContent = listMode ? 'Yeni liste' : (g.name || 'Liste');
         goBtn.textContent = listMode ? 'Listeyi oluştur' : 'Görevi ekle';
         ta.placeholder = listMode ? 'Liste adı (örn. Market)' : 'Görevi buraya yaz…'; ta.rows = listMode ? 1 : 5; ta.maxLength = listMode ? 120 : 100000;
         curId = g.id; onSubmit = submitFn; opened = true;
-        nameEl.textContent = g.name || 'Liste'; card.style.setProperty('--tsh-gc', g.color || 'var(--accent-color,#ff90e8)');
+        card.style.setProperty('--tsh-gc', g.color || 'var(--accent-color,#ff90e8)');
         ta.value = drafts.get(g.id) || ''; vv(); grow();
         bd.classList.add('is-open');
         try { proxy.focus({ preventScroll: true }); } catch (e) { /* yok say */ }
