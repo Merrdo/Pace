@@ -615,17 +615,14 @@ body.is-qhavuz-test-open .pf-side{opacity:.35;pointer-events:none}}
 #pfView.out .pv-meta,#pfView.out .pv-x{animation:pfFadeOut .2s both}
 
 /* ---- Profil düzenleme ---- */
-.pf-ov{position:fixed;inset:0;z-index:2147483003;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(0,0,0,.55);animation:pfFade .4s ease both}
-@media(min-width:601px){.pf-ov{background:rgba(0,0,0,.5);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}}
-/* Profil açıkken arkadaki sonsuz animasyonları durdur: esneme/kaydırma sırasında kare düşmesini önler */
-body:has(.pf-ov) .home-live-widget-wave,body:has(.pf-ov) .home-kronometre-widget,body:has(.pf-ov) .home-kronometre-ring-text{animation-play-state:paused}
+.pf-ov{position:fixed;inset:0;z-index:2147483003;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(0,0,0,.5);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);animation:pfFade .4s ease both}
 .pf-ov.pf-out{animation:pfFadeOut .3s ease both;pointer-events:none}
 @property --pc{syntax:'<color>';inherits:true;initial-value:#3e63dd}
-.pf-card{--pc:#3e63dd;position:relative;width:100%;max-width:460px;max-height:92vh;max-height:92dvh;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;transform:translateZ(0);box-sizing:border-box;padding:18px 22px 24px;border-radius:32px;background:var(--theme-bg,#0b0b0b);color:var(--theme-text,#121212);border:1px solid rgba(128,128,128,.25);box-shadow:0 30px 80px rgba(0,0,0,.5);animation:pfCardIn .7s cubic-bezier(.22,1,.36,1) backwards}
+.pf-card{--pc:#3e63dd;position:relative;width:100%;max-width:460px;max-height:92vh;max-height:92dvh;overflow-y:auto;overscroll-behavior:contain;box-sizing:border-box;padding:18px 22px 24px;border-radius:32px;background:var(--theme-bg,#0b0b0b);color:var(--theme-text,#121212);border:1px solid rgba(128,128,128,.25);box-shadow:0 30px 80px rgba(0,0,0,.5);animation:pfCardIn .7s cubic-bezier(.22,1,.36,1) both}
 .pf-ov.pf-out .pf-card{animation:pfCardOut .3s cubic-bezier(.5,0,.75,0) both}
 .pf-card{background-image:radial-gradient(ellipse 250px 190px at 50% 40px,color-mix(in srgb,var(--pc) 24%,transparent),transparent);background-repeat:no-repeat;transition:--pc .6s ease}
 .pf-card>*{position:relative}
-@media(max-width:600px){.pf-ov{padding:0;align-items:flex-end}.pf-card{max-width:none;max-height:94vh;max-height:94dvh;border-radius:32px 32px 0 0;border-bottom:0;padding:18px 20px calc(env(safe-area-inset-bottom,0px) + 22px);animation:pfSheetIn .6s cubic-bezier(.22,1,.36,1) backwards}.pf-ov.pf-out .pf-card{animation:pfSheetOut .32s cubic-bezier(.5,0,.75,0) both}}
+@media(max-width:600px){.pf-ov{padding:0;align-items:flex-end}.pf-card{max-width:none;max-height:94vh;max-height:94dvh;border-radius:32px 32px 0 0;border-bottom:0;padding:18px 20px calc(env(safe-area-inset-bottom,0px) + 22px);animation:pfSheetIn .6s cubic-bezier(.22,1,.36,1) both}.pf-ov.pf-out .pf-card{animation:pfSheetOut .32s cubic-bezier(.5,0,.75,0) both}}
 .pf-top{display:grid;grid-template-columns:40px 1fr 40px;align-items:center;text-align:center;font-size:19px;font-weight:700}
 .pf-x{width:38px;height:38px;border-radius:50%;border:0;background:rgba(128,128,128,.18);color:inherit;font-size:15px;cursor:pointer;transition:transform .25s,background .25s}.pf-x:active{transform:scale(.9)}
 .pf-hero{position:relative;width:var(--hs,128px);height:var(--hs,128px);margin:16px auto 24px}
