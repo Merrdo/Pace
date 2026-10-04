@@ -38085,6 +38085,9 @@ body.is-countdown-fs.is-countdown-paused .fsm{opacity:1;visibility:visible;point
 .fsm button{position:relative;z-index:1;min-width:0;margin:0;padding:0;border:0;background:none;cursor:pointer;font-family:inherit;font-weight:700;font-size:.9rem;line-height:1;white-space:nowrap;
   color:color-mix(in srgb,var(--theme-text,#f2f2f7) 55%,transparent);-webkit-tap-highlight-color:transparent;transition:color .3s ease;}
 .fsm button[aria-checked="true"]{color:var(--theme-bg,#121212);}
+/* Panele BASILI TUTULURSA (.is-held) yalnızca panel hafifçe küçülür; kısa dokunuşta tepki yok */
+body.is-stopwatch-fs:not(.is-stopwatch-running) .fsm.is-held,
+body.is-countdown-fs.is-countdown-paused .fsm.is-held{transform:scale(.94);transition:transform .2s ease;}
 /* Tam ekran sayfada boş alana dokununca sayfa hafifçe küçülür (CSS :active ile aynı; dokunmatikte garanti için sınıfla da) */
 body.is-stopwatch-fs .stopwatch-fullscreen.is-fs-press,
 body.is-countdown-fs .countdown-fullscreen.is-fs-press{transform:scale(.97);}
@@ -47506,6 +47509,11 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
       l.addEventListener('pointerdown', () => l.classList.add('is-fs-press'));
       ['pointerup', 'pointercancel', 'pointerleave'].forEach((ev) => l.addEventListener(ev, off));
     });
+    let holdT = 0;
+    const unhold = () => { clearTimeout(holdT); box.classList.remove('is-held'); };
+    box.addEventListener('pointerdown', () => { clearTimeout(holdT); holdT = setTimeout(() => box.classList.add('is-held'), 350); });
+    ['pointerup', 'pointercancel', 'pointerleave'].forEach((ev) => box.addEventListener(ev, unhold));
+    box.addEventListener('contextmenu', (e) => e.preventDefault());
     box.addEventListener('click', (e) => {
       e.stopPropagation();
       const b = e.target.closest('button[data-m]');
