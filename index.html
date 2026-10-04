@@ -71095,6 +71095,12 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
 
   /* tam ekran kutlama */
   .gf-ov { position: fixed; inset: 0; z-index: 100000; display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 0; overflow: hidden; cursor: pointer; -webkit-tap-highlight-color: transparent; font-family: "Baloo 2", "Space Grotesk", sans-serif; background: radial-gradient(110% 80% at 50% 38%, rgba(70, 28, 6, .9), rgba(14, 8, 5, .96) 70%); -webkit-backdrop-filter: blur(16px) saturate(1.2); backdrop-filter: blur(16px) saturate(1.2); }
+  /* Üst güvenli alan: overlay'in üst kenar tonu (rgba(31,14,5,.94)) aktif tema rengiyle harmanlanır;
+     <meta name="theme-color"> da aynı değere çekildiği için çentik/Dynamic Island şeridi ile overlay kesintisiz görünür. */
+  .gf-ov::before { content: ""; position: absolute; left: 0; right: 0; top: 0; z-index: 0; pointer-events: none;
+    height: calc(env(safe-area-inset-top, 0px) + 28px);
+    background: linear-gradient(to bottom, var(--gf-top, #1f0e05) 0, var(--gf-top, #1f0e05) env(safe-area-inset-top, 0px), transparent 100%); }
+  .gf-ov > * { position: relative; z-index: 1; }
   .gf-stage { position: relative; width: min(52vw, 210px, 27vh); aspect-ratio: 100 / 132; }
   .gf-glow { position: absolute; left: 50%; top: 58%; width: 360%; aspect-ratio: 1; border-radius: 50%; pointer-events: none; opacity: 0; transform: translate(-50%, -50%); background: radial-gradient(circle, rgba(255, 150, 40, .5) 0, rgba(255, 100, 10, .16) 34%, rgba(255, 80, 0, 0) 66%); }
   .gf-fly { position: absolute; inset: 0; will-change: transform; }
@@ -71206,7 +71212,10 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
       ov.innerHTML = '<div class="gf-stage"><div class="gf-glow"></div><div class="gf-fly"></div></div>'
         + '<div class="gf-big gn"></div><div class="gf-lab">günlük seri</div><div class="gf-sub"></div>';
       ov.querySelector('.gf-sub').textContent = cur.total === 1 ? 'Bugünkü görevi tamamladın' : 'Bugünkü ' + cur.total + ' görevin hepsi tamam';
+      ov.style.setProperty('--gf-top', 'color-mix(in srgb, var(--theme-bg, #F6F4EF) 6%, rgb(31 14 5))');
+      ov._themeTint = { r: 31, g: 14, b: 5, alpha: 0.94 }; // overlay'in üst kenar tonu (radial-gradient'in y=0 noktası)
       document.body.appendChild(ov);
+      if (window.watchBackdropForThemeColor) { window.watchBackdropForThemeColor(ov); ov.classList.add('is-in'); } // is-in: üst güvenli alan rengini overlay'e eşler
       const q = (s) => ov.querySelector(s), stage = q('.gf-stage'), fly = q('.gf-fly'), glow = q('.gf-glow'), big = q('.gf-big'), lab = q('.gf-lab'), sub = q('.gf-sub');
       mkFlame(fly, true); roll(big, from, from);
       const r = ic.getBoundingClientRect(), sr = fly.getBoundingClientRect();
@@ -71235,11 +71244,11 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
       let closed = false, timer = null;
       const onKey = (e) => { if (e.key === 'Escape' || e.key === 'Enter' || e.key === ' ') close(); };
       function finish() {
-        ov.remove(); document.removeEventListener('keydown', onKey); busy = false; btn.classList.remove('is-away');
+        ov.classList.remove('is-in'); ov.remove(); document.removeEventListener('keydown', onKey); busy = false; btn.classList.remove('is-away');
         setLit(cur.total > 0 && cur.done === cur.total); ignite(); setShown(cur.done === cur.total && cur.total > 0 ? cur.streak : cur.base, true);
       }
       function close() {
-        if (closed) return; closed = true; clearTimeout(timer);
+        if (closed) return; closed = true; clearTimeout(timer); ov.classList.remove('is-in');
         if (rm) { A(ov, [{ opacity: 1 }, { opacity: 0 }], { duration: 220 }); setTimeout(finish, 230); return; }
         [big, lab, sub].forEach((n) => A(n, [{ opacity: 1 }, { opacity: 0 }], { duration: 260, easing: 'ease-in' }));
         A(glow, [{ opacity: 1 }, { opacity: 0 }], { duration: 400 });
@@ -72666,7 +72675,11 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
       setTimeout(() => { ov.remove(); if (url) URL.revokeObjectURL(url); }, 360);
     };
     ov.addEventListener('click', (e) => { if (e.target === ov || e.target === stage) close(); });
+    // Üst güvenli alan (çentik/Dynamic Island): arka plan karartması rgba(0,0,0,.74); aktif tema rengiyle
+    // harmanlanıp <meta name="theme-color">'a yazılır (is-in sınıfıyla açılır, kapanırken geri döner).
+    ov._themeTint = { r: 0, g: 0, b: 0, alpha: 0.74 };
     document.body.appendChild(ov);
+    if (window.watchBackdropForThemeColor) window.watchBackdropForThemeColor(ov);
     requestAnimationFrame(() => requestAnimationFrame(() => ov.classList.add('is-in')));
 
     async function ready(blob, name) {
