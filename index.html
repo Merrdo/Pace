@@ -14632,9 +14632,6 @@
     transform: scale(1);
   }
 
-  body.is-stopwatch-fs .stopwatch-fullscreen:active {
-    transform: scale(0.97);
-  }
 
   /* Kronometre duraklatılınca tam ekranda kalınır; sol üstte küçük bir
      geri butonu belirir, basınca tam ekrandan çıkılır. Duraklatılmışken
@@ -15194,9 +15191,6 @@
     transform: scale(1);
   }
 
-  body.is-countdown-fs .countdown-fullscreen:active {
-    transform: scale(0.97);
-  }
 
   .countdown-fullscreen-time-row {
     position: relative;
@@ -38077,25 +38071,28 @@ body.is-countdown-fs.is-countdown-paused .countdown-fullscreen-time-row .stopwat
 </style>
 <style id="fsModeCss">
 /* Duraklatılınca tam ekranda sağ üstte beliren sade mod seçici (Kronometre | Zamanlayıcı) */
-.fsm{--fsm-pad:2px;position:fixed;z-index:70;top:calc(env(safe-area-inset-top,0px) + 1.2rem);right:calc(env(safe-area-inset-right,0px) + .9rem);
-  display:grid;grid-template-columns:1fr 1fr;box-sizing:border-box;width:10.2rem;height:2rem;padding:var(--fsm-pad);border-radius:.7rem;
+.fsm{--fsm-pad:4px;--fsm-r:999px;transform-origin:top right;position:fixed;z-index:70;top:calc(env(safe-area-inset-top,0px) + .9rem);right:calc(env(safe-area-inset-right,0px) + .9rem);
+  display:grid;grid-template-columns:1fr 1fr;box-sizing:border-box;width:14rem;height:2.9rem;padding:var(--fsm-pad);border-radius:var(--fsm-r);
   background:color-mix(in srgb,var(--theme-text,#f2f2f7) 8%,transparent);font-family:var(--cd-font,"Baloo 2","Space Grotesk",sans-serif);
   opacity:0;visibility:hidden;pointer-events:none;transform:translateY(-6px);
   transition:opacity .25s ease,transform .3s cubic-bezier(.16,1,.3,1),visibility 0s linear .25s;}
 body.is-stopwatch-fs:not(.is-stopwatch-running) .fsm,
 body.is-countdown-fs.is-countdown-paused .fsm{opacity:1;visibility:visible;pointer-events:auto;transform:none;
   transition:opacity .35s ease .1s,transform .5s cubic-bezier(.16,1,.3,1) .1s,visibility 0s;}
-.fsm-ind{position:absolute;top:var(--fsm-pad);bottom:var(--fsm-pad);left:var(--fsm-pad);width:calc(50% - var(--fsm-pad));border-radius:.55rem;background:var(--theme-text,#f2f2f7);
+.fsm-ind{position:absolute;top:var(--fsm-pad);bottom:var(--fsm-pad);left:var(--fsm-pad);width:calc(50% - var(--fsm-pad));border-radius:999px;background:var(--theme-text,#f2f2f7);
   transition:transform .35s cubic-bezier(.16,1,.3,1);}
 .fsm[data-sel="countdown"] .fsm-ind{transform:translateX(100%);}
-.fsm button{position:relative;z-index:1;min-width:0;margin:0;padding:0;border:0;background:none;cursor:pointer;font-family:inherit;font-weight:700;font-size:.72rem;line-height:1;white-space:nowrap;
+.fsm button{position:relative;z-index:1;min-width:0;margin:0;padding:0;border:0;background:none;cursor:pointer;font-family:inherit;font-weight:700;font-size:.9rem;line-height:1;white-space:nowrap;
   color:color-mix(in srgb,var(--theme-text,#f2f2f7) 55%,transparent);-webkit-tap-highlight-color:transparent;transition:color .3s ease;}
 .fsm button[aria-checked="true"]{color:var(--theme-bg,#121212);}
+/* Dokununca panel, tam ekran katmanıyla aynı şekilde hafifçe küçülür (sayfa küçülmez) */
+body.is-stopwatch-fs:not(.is-stopwatch-running) .fsm:active,
+body.is-countdown-fs.is-countdown-paused .fsm:active{transform:scale(.94);transition:transform .15s ease;}
 @media (min-width:768px){
-  .fsm{--fsm-pad:3px;top:calc(env(safe-area-inset-top,0px) + 1.5rem);right:calc(env(safe-area-inset-right,0px) + 1.5rem);width:13rem;height:2.5rem;border-radius:.85rem;}
-  .fsm-ind{border-radius:.68rem;}.fsm button{font-size:.85rem;}.fsm button:hover:not([aria-checked="true"]){color:var(--theme-text,#f2f2f7);}
+  .fsm{--fsm-pad:5px;top:calc(env(safe-area-inset-top,0px) + 1.5rem);right:calc(env(safe-area-inset-right,0px) + 1.5rem);width:17rem;height:3.4rem;}
+  .fsm button{font-size:1.05rem;}.fsm button:hover:not([aria-checked="true"]){color:var(--theme-text,#f2f2f7);}
 }
-@media (max-width:340px){.fsm{width:9.2rem;}.fsm button{font-size:.68rem;}}
+@media (max-width:340px){.fsm{width:12.2rem;}.fsm button{font-size:.82rem;}}
 /* Henüz başlamamış (boş) tam ekranda rakamlar yanıp sönmez */
 body.is-fs-idle .countdown-fullscreen-time-row .stopwatch-time,
 body.is-fs-idle .stopwatch-fullscreen-time-row .stopwatch-time,
