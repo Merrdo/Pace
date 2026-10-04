@@ -38054,6 +38054,7 @@ body.is-countdown-fs.is-countdown-paused .countdown-fullscreen-time-row .stopwat
 .tsh-go { flex: 1; background: var(--tsh-acc); color: #16171b; }
 .tsh-card.is-list .tsh-target, .tsh-card.is-list .tsh-more { display: none; }
 .tsh-card.is-list .tsh-ta { min-height: 3.4rem; margin-top: 1rem; margin-bottom: 0.9rem; font-size: 1.5rem; font-weight: 800; line-height: 1.4; }
+.hl-head.is-tappable { cursor: pointer; }
 .tsh-grab { position: relative; flex: none; width: 100%; height: 1.7rem; cursor: grab; touch-action: none; -webkit-tap-highlight-color: transparent; }
 .tsh-grab::before { content: ""; position: absolute; left: 50%; bottom: 0.55rem; width: 2.8rem; height: 0.3rem; border-radius: 9px; background: var(--tsh-line); transform: translateX(-50%); transition: background-color 0.2s ease, width 0.2s ease; }
 .tsh-card.is-dragging .tsh-grab { cursor: grabbing; }
@@ -40951,7 +40952,6 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
     <div class="hl-top">
       <h1 class="hl-title" id="gdTitle" role="button" tabindex="0" title="Hatırlanacaklar'a geç">Gündelik</h1>
       <button type="button" class="gd-flame" id="gdFlame" aria-label="Alev sönük: bugün tamamlanmamış görev var"></button>
-      <button type="button" class="hl-new" id="gdNew" aria-label="Yeni liste"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
       <button type="button" class="gk-switch" id="gdSwitch" aria-label="Hatırlanacaklar sayfasına geç"><svg class="gk-switch-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7h11l-3-3M17 17H6l3 3"/></svg><span class="gk-switch-lbls"><span class="gk-switch-lbl gk-switch-lbl-a">Hatırlanacaklar</span><span class="gk-switch-lbl gk-switch-lbl-b" aria-hidden="true">Gündelik</span></span></button>
     </div>
     <div class="hl-scroll" id="gdScroll"><div id="gdNewForm"></div><div id="gdList"></div><p class="hl-tip" id="gdTip"></p></div>
@@ -41176,7 +41176,6 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
     .gundelik-fab-switch.is-alt .gundelik-fab-lbl-b { opacity: 1; transform: none; }
     /* Başlıktaki ekle düğmeleri telefonda kaldırıldı: ekleme artık alttaki "+" düğmesinden (#gundelikFabAddBtn).
        Elemanlar DOM'da duruyor (kod onlara bağlı); büyük ekranda görünmeye devam ederler. */
-    #gdNew, #hlNew { display: none; }
     body.is-gundelik-page .gundelik-fab-bar .qhavuz-fab {
       opacity: 1; transform: none; pointer-events: auto;
       transition-delay: var(--d, 0s), var(--d, 0s), 0s;
@@ -41289,7 +41288,6 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
     @keyframes gkSwIn { from { opacity: 0; transform: translateY(-8px) scale(.85); } to { opacity: 1; transform: none; } }
 
     /* Başlıktaki "Yeni grup" / "Yeni liste" düğmeleri: yerine sağ alttaki hızlı eylem düğmesi */
-    #gdNew, #hlNew { display: none !important; }
 
     /* Hatırlanacaklar sayfası */
     :is(#page-hatirla, #page-8) { align-items: stretch; }
@@ -41338,7 +41336,6 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
           <path class="ad-slash" d="M4 4l16 16"/>
         </svg>
       </button>
-      <button type="button" class="hl-new" id="hlNew" aria-label="Yeni liste"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
       <button type="button" class="gk-switch" id="hlSwitch" aria-label="Gündelik sayfasına geç"><svg class="gk-switch-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7h11l-3-3M17 17H6l3 3"/></svg><span class="gk-switch-lbls"><span class="gk-switch-lbl gk-switch-lbl-a">Gündelik</span><span class="gk-switch-lbl gk-switch-lbl-b" aria-hidden="true">Hatırlanacaklar</span></span></button>
     </div>
     <div class="hl-scroll" id="hlScroll"><div id="hlNewForm"></div><div id="hlList"></div><p class="hl-tip" id="hlTip"></p></div>
@@ -70816,7 +70813,7 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
   // cfg: { p: kimlik öneki ('hl' | 'gd'), page, key, other, defName, navBack }
   // ---------- Görev ekleme sayfası: yukarıdan aşağıya açılan kart ----------
   window.gundelikTaskSheet = window.gundelikTaskSheet || (() => {
-    let bd = null, card, ta, nameEl, dot, goBtn, moreBtn, labelEl, listMode = false, onSubmit = null, curId = null, opened = false;
+    let bd = null, card, ta, proxy, focusT = 0, nameEl, dot, goBtn, moreBtn, labelEl, listMode = false, onSubmit = null, curId = null, opened = false;
     const drafts = new Map();
     const mk = (t, c, x) => { const e = document.createElement(t); if (c) e.className = c; if (x != null) e.textContent = x; return e; };
     const vv = () => { const h = (window.visualViewport && window.visualViewport.height) || window.innerHeight; if (bd) bd.style.setProperty('--tsh-vh', h + 'px'); };
@@ -70825,7 +70822,8 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
     const close = (keepDraft = true) => {
       if (!opened) return; opened = false;
       if (curId != null) { if (keepDraft && ta.value.trim()) drafts.set(curId, ta.value); else drafts.delete(curId); }
-      try { ta.blur(); } catch (e) { /* yok say */ }
+      clearTimeout(focusT);
+      try { ta.blur(); proxy.blur(); } catch (e) { /* yok say */ }
       bd.classList.remove('is-open'); card.style.transform = '';
     };
     const submit = (more) => {
@@ -70843,7 +70841,11 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
       const bar = mk('div', 'tsh-bar'); moreBtn = mk('button', 'tsh-btn tsh-more', 'Ekle ve yeni yaz'); goBtn = mk('button', 'tsh-btn tsh-go', 'Görevi ekle');
       moreBtn.type = goBtn.type = 'button'; bar.append(moreBtn, goBtn);
       const grab = mk('div', 'tsh-grab'); grab.setAttribute('aria-label', 'Yukarı sürükleyerek kapat');
-      card.append(top, tg, ta, bar, grab); bd.appendChild(card); document.body.appendChild(bd);
+      // Klavye dokunuş anında açılsın diye önce görünmez bir kutuya odaklanılır; imleç, kart yerine
+      // oturduktan sonra asıl alana taşınır (kayarken imleç yanlış yerde görünmesin).
+      proxy = mk('input'); proxy.type = 'text'; proxy.tabIndex = -1; proxy.setAttribute('aria-hidden', 'true'); proxy.setAttribute('autocomplete', 'off');
+      proxy.style.cssText = 'position:fixed;top:0;left:0;width:1px;height:1px;opacity:0;border:0;padding:0;pointer-events:none;font-size:16px;';
+      card.append(top, tg, ta, bar, grab); bd.append(card, proxy); document.body.appendChild(bd);
       ta.addEventListener('input', grow);
       ta.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); else if (e.key === 'Enter' && (listMode ? !e.shiftKey : (e.ctrlKey || e.metaKey))) { e.preventDefault(); submit(false); } });
       x.addEventListener('click', () => close());
@@ -70893,7 +70895,14 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
         nameEl.textContent = g.name || 'Liste'; card.style.setProperty('--tsh-gc', g.color || 'var(--accent-color,#ff90e8)');
         ta.value = drafts.get(g.id) || ''; vv(); grow();
         bd.classList.add('is-open');
-        try { ta.focus(); ta.setSelectionRange(ta.value.length, ta.value.length); } catch (e) { /* yok say */ }
+        try { proxy.focus({ preventScroll: true }); } catch (e) { /* yok say */ }
+        let moved = false;
+        const toTa = () => {
+          if (moved || !opened) return; moved = true; clearTimeout(focusT);
+          try { ta.focus({ preventScroll: true }); ta.setSelectionRange(ta.value.length, ta.value.length); } catch (e) { /* yok say */ }
+        };
+        card.addEventListener('transitionend', function te(ev) { if (ev.target !== card || ev.propertyName !== 'transform') return; card.removeEventListener('transitionend', te); toTa(); });
+        focusT = setTimeout(toTa, 560);
       }
     };
   })();
@@ -71140,7 +71149,7 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
       closeMenu(); list.innerHTML = '';
       const nf = $(P + 'NewForm'); nf.innerHTML = '';
       if (newOpen) { const f = mkForm('Yeni liste adı (örn. Market)', (v) => { newOpen = false; st.groups.push({ id: gid(), name: v, color: pal[st.groups.length % pal.length], items: [] }); const ng = st.groups[st.groups.length - 1]; save(); render(); openTaskSheet(ng); }, () => softCloseNew()); f.classList.add('hl-newform'); const sw = el('div', 'soft-wrap'); sw.appendChild(f); nf.appendChild(sw); if (newAnim) { newAnim = false; window.softOpen(sw); } }
-      $(P + 'Tip').textContent = st.groups.length ? 'İpucu: Bir listeye ya da göreve basılı tut, seçenekler açılsın.' : '';
+      $(P + 'Tip').textContent = st.groups.length ? 'İpucu: Başlığa dokun, görev ekle. Bir listeye ya da göreve basılı tut, seçenekler açılsın.' : '';
       if (!st.groups.length) { list.appendChild(el('p', 'hl-empty', 'Henüz listen yok. Sağ alttaki + ile ekle.')); return; }
       st.groups.forEach((g, gi) => {
         const box = el('section', 'hl-g'); box.dataset.fk = 'hg:' + g.id; box.style.setProperty('--gc', g.color); box.style.setProperty('--gt', tickColor(g.color));
@@ -71150,6 +71159,8 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
         head.append(el('span', 'hl-name', g.name), cnt);
         const upd = () => { const d = g.items.filter((i) => i.done).length; cnt.textContent = g.items.length ? `${d}/${g.items.length}` : ''; };
         upd(); box.appendChild(head);
+        head.classList.add('is-tappable');
+        head.addEventListener('click', (e) => { if (e.target.closest && e.target.closest('input, textarea, .hl-editwrap')) return; openTaskSheet(g); });
         hold(head, (x, y) => openMenu(head, [
           { ic: IC.edit, title: 'Adı Değiştir', sub: 'Listenin ismini düzenle', fn: () => editInline(head.querySelector('.hl-name'), g.name, (v) => { g.name = v; save(); }) },
           { ic: IC.color, title: 'Rengi Değiştir', sub: 'Listenin vurgu rengi', fn: () => { if (typeof openColorPicker === 'function') openColorPicker(g.name, g.color, (c) => { g.color = c; save(); render(); }); } },
@@ -71168,7 +71179,6 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
       });
       firstPaint = false;
     }
-    $(P + 'New').addEventListener('click', () => { if (newOpen) { softCloseNew(); return; } newOpen = true; newAnim = true; render(); focusIn(); });
     document.addEventListener('pointerdown', (e) => {
       if (!newOpen) return; const w = $(P + 'NewForm').querySelector('.soft-wrap');
       if (!w || w.classList.contains('soft-close') || w.contains(e.target)) return;
