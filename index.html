@@ -47595,7 +47595,7 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
 .wn-fs.is-playing{color:var(--accent-color,#ff90e8);}.wn-fs.is-paused .wn-eq i{animation-play-state:paused;transform:scaleY(.4);}
 .wn-fs{position:fixed;z-index:70;right:calc(env(safe-area-inset-right,0px) + .9rem);top:calc(env(safe-area-inset-top,0px) + .9rem + 2.9rem + .55rem);min-width:2.4rem;height:2.4rem;padding:0;margin:0;border:0;border-radius:999px;display:flex;align-items:center;justify-content:center;cursor:pointer;
   color:color-mix(in srgb,var(--theme-text,#f2f2f7) 70%,transparent);background:color-mix(in srgb,var(--theme-text,#f2f2f7) 8%,transparent);-webkit-tap-highlight-color:transparent;
-  opacity:0;visibility:hidden;pointer-events:none;transform:translateY(-8px) scale(.8);transform-origin:top right;transition:opacity .2s ease,transform .25s cubic-bezier(.16,1,.3,1),visibility 0s linear .25s;}
+  opacity:0;visibility:hidden;pointer-events:none;transform:translateY(-8px) scale(.8);transform-origin:center;transition:opacity .2s ease,transform .25s cubic-bezier(.16,1,.3,1),visibility 0s linear .25s;}
 .wn-fs .wn-ic{display:block;flex:none;width:1.15rem;height:1.15rem;transition:width .45s cubic-bezier(.16,1,.3,1),opacity .3s ease;}
 .wn-fs .wn-eq{display:flex;flex:none;width:0;opacity:0;overflow:hidden;transition:width .45s cubic-bezier(.16,1,.3,1),opacity .3s ease;}
 .wn-fs.is-playing{padding:0 .95rem;}.wn-fs.is-playing .wn-ic{width:0;opacity:0;}.wn-fs.is-playing .wn-eq{width:13px;opacity:1;}
@@ -47603,7 +47603,7 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
 .wn-fs.is-playing .wn-lbl{opacity:1;margin-left:.55rem;color:var(--theme-text,#f2f2f7);}.wn-fs.is-paused .wn-lbl{opacity:.55;}
 body.is-stopwatch-fs:not(.is-stopwatch-running) .wn-fs,body.is-countdown-fs.is-countdown-paused .wn-fs{opacity:1;visibility:visible;pointer-events:auto;transform:none;transition:opacity .35s ease .1s,transform .35s cubic-bezier(.34,1.56,.64,1),visibility 0s,padding .5s cubic-bezier(.16,1,.3,1);}
 .wn-fs:active{transform:scale(.9) !important;}
-body.is-fs-pressing.is-stopwatch-fs:not(.is-stopwatch-running) .wn-fs,body.is-fs-pressing.is-countdown-fs.is-countdown-paused .wn-fs{transform:scale(.97);transition:transform .35s cubic-bezier(.34,1.56,.64,1);}
+body.is-fs-pressing.is-stopwatch-fs:not(.is-stopwatch-running) .wn-fs,body.is-fs-pressing.is-countdown-fs.is-countdown-paused .wn-fs{transform:translate(var(--wn-tx,0px),var(--wn-ty,0px)) scale(.97);transition:transform .35s cubic-bezier(.34,1.56,.64,1);}
 @media (min-width:768px){.wn-fs{right:calc(env(safe-area-inset-right,0px) + 1.5rem);top:calc(env(safe-area-inset-top,0px) + 1.5rem + 3.4rem + .65rem);min-width:2.9rem;height:2.9rem;}.wn-fs .wn-ic{width:1.3rem;height:1.3rem;}.wn-lbl{font-size:.95rem;}}
 .wn-ov{position:fixed;inset:0;z-index:99990;display:flex;align-items:flex-end;justify-content:center;background:rgba(0,0,0,0);-webkit-backdrop-filter:blur(0);backdrop-filter:blur(0);visibility:hidden;pointer-events:none;--wn-t:var(--theme-transition-duration,480ms) var(--theme-transition-easing,cubic-bezier(.16,1,.3,1));
   transition:background var(--wn-t),backdrop-filter var(--wn-t),-webkit-backdrop-filter var(--wn-t),visibility 0s linear var(--theme-transition-duration,480ms);font-family:"Baloo 2","Space Grotesk",sans-serif;--wn-ac:var(--accent-color,#ff90e8);}
@@ -47724,11 +47724,14 @@ body.is-fs-pressing.is-stopwatch-fs:not(.is-stopwatch-running) .wn-fs,body.is-fs
     ov.addEventListener('pointerup', endDrag); ov.addEventListener('pointercancel', endDrag);
 
     // Tam ekranda basılı tutunca sayfa küçülür: ses butonu da (panel gibi) aynı anda ve aynı merkeze doğru küçülür.
-    let oT = 0;
+    // Merkez sabit kalır (sıçrama olmasın); ekran merkezine doğru küçülme, %3'lük kaydırma (translate) ile eşdeğer şekilde verilir.
     ['stopwatchFullscreen', 'countdownFullscreen'].forEach((id) => {
       const l = document.getElementById(id); if (!l) return;
-      l.addEventListener('pointerdown', () => { clearTimeout(oT); const r = fsBtn.getBoundingClientRect(); fsBtn.style.transformOrigin = (window.innerWidth / 2 - r.left) + 'px ' + (window.innerHeight / 2 - r.top) + 'px'; });
-      ['pointerup', 'pointercancel', 'pointerleave'].forEach((ev) => l.addEventListener(ev, () => { clearTimeout(oT); oT = setTimeout(() => { fsBtn.style.transformOrigin = ''; }, 500); }));
+      l.addEventListener('pointerdown', () => {
+        const r = fsBtn.getBoundingClientRect();
+        fsBtn.style.setProperty('--wn-tx', ((window.innerWidth / 2 - (r.left + r.width / 2)) * 0.03).toFixed(2) + 'px');
+        fsBtn.style.setProperty('--wn-ty', ((window.innerHeight / 2 - (r.top + r.height / 2)) * 0.03).toFixed(2) + 'px');
+      });
     });
 
     // Sayaç / kronometre ile birlikte duraklat-devam et
