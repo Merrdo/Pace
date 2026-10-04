@@ -70714,11 +70714,7 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
     function setLit(on) { lit = on; btn.classList.toggle('is-lit', on); label(); }
     function ignite() { btn.classList.remove('is-ignite'); void btn.offsetWidth; btn.classList.add('is-ignite'); setTimeout(() => btn.classList.remove('is-ignite'), 900); }
     function setShown(n, anim) { if (n === shown && inited) return; roll(numEl, shown, n, { anim: anim && inited }); shown = n; label(); }
-    let te = null, tt = null;
-    const toast = (msg) => {
-      if (te) te.remove(); clearTimeout(tt); te = document.createElement('div'); te.className = 'n-toast';
-      const sp = document.createElement('span'); sp.textContent = msg; te.appendChild(sp); document.body.appendChild(te); tt = setTimeout(() => te && te.remove(), 2600);
-    };
+    const toast = (msg) => window.paceNToast(msg, null, 2600);
 
     // ---- Tam ekran kutlama ----
     function celebrate(from, to, relight) {
@@ -71005,13 +71001,7 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
     };
 
     // ---- Yardımcılar: geri al bildirimi, onay, yerinde düzenleme, form ----
-    let toastEl = null, toastT = null;
-    const toast = (msg, undo) => {
-      if (toastEl) toastEl.remove(); clearTimeout(toastT);
-      const t = el('div', 'n-toast'); t.appendChild(el('span', '', msg));
-      if (undo) { const b = el('button', '', 'Geri al'); b.type = 'button'; b.onclick = () => { undo(); t.remove(); }; t.appendChild(b); }
-      document.body.appendChild(t); toastEl = t; toastT = setTimeout(() => t.remove(), 5000);
-    };
+    const toast = (msg, undo) => window.paceNToast(msg, undo, 5000);
     const confirmDel = (title, msg) => new Promise((resolve) => {
       const bk = el('div', 'p8n-dlg-back'), d = el('div', 'p8n-dlg'); d.setAttribute('role', 'dialog');
       const no = el('button', 'p8n-dlg-btn', 'Vazgeç'), ok = el('button', 'p8n-dlg-btn danger', 'Sil'); no.type = ok.type = 'button';
@@ -71156,7 +71146,7 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
         if (!firstPaint && seenGroups.has(g.id)) box.style.animation = 'none'; seenGroups.add(g.id);
         const head = el('div', 'hl-head'), cnt = el('span', 'hl-count');
         head.append(el('span', 'hl-name', g.name), cnt);
-        const upd = () => { const d = g.items.filter((i) => i.done).length; cnt.textContent = g.items.length ? `${d}/${g.items.length}` : ''; };
+        const upd = () => { const d = g.items.filter((i) => i.done).length; cnt.textContent = g.items.length ? `${d}/${g.items.length}` : ''; head.style.setProperty('--pr', g.items.length ? (d / g.items.length).toFixed(3) : 0); };
         upd(); box.appendChild(head);
         head.classList.add('is-tappable');
         head.addEventListener('click', (e) => { if (e.target.closest && e.target.closest('input, textarea, .hl-editwrap')) return; openTaskSheet(g); });
@@ -72394,6 +72384,121 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
 })();
 </script>
 
+<style id="toastMobileCss">
+  /* ===== Bildirimler (toast): mobil uyumlu + yumuşak giriş/çıkış =====
+     Eski hata: left:50% + translateX(-50%) kutuyu ekranın yarısına sıkıştırıyordu,
+     yazı ve düğme alt satıra kırılıyordu. width:max-content ile çözüldü. */
+  .n-toast {
+    left: 50%; width: max-content; max-width: calc(100vw - 28px); box-sizing: border-box;
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 86px);
+    transform: translate(-50%, var(--ty, 0px)); will-change: transform, opacity;
+    gap: .75rem; padding: .5rem .5rem .5rem 1.15rem; min-height: 3rem;
+    background: color-mix(in srgb, #121212 94%, transparent);
+    -webkit-backdrop-filter: blur(14px) saturate(1.3); backdrop-filter: blur(14px) saturate(1.3);
+    box-shadow: 0 14px 34px -12px rgba(0,0,0,.55), 0 0 0 1px rgba(255,255,255,.07);
+    touch-action: none; user-select: none; -webkit-user-select: none;
+    animation: nToastIn .55s cubic-bezier(.22,1,.36,1);
+  }
+  .n-toast > span { min-width: 0; flex: 1 1 auto; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.2; }
+  .n-toast button { flex: 0 0 auto; white-space: nowrap; min-height: 2.25rem; padding: 0 1.05rem; font-size: .88rem; -webkit-tap-highlight-color: transparent; transition: transform .15s ease; }
+  .n-toast button:active { transform: scale(.93); }
+  .n-toast.is-out { pointer-events: none; animation: nToastOut .32s cubic-bezier(.4,0,1,1) forwards; }
+  @keyframes nToastIn {
+    from { opacity: 0; transform: translate(-50%, 22px) scale(.92); filter: blur(3px); }
+    55% { filter: blur(0); }
+    to { opacity: 1; transform: translate(-50%, 0) scale(1); }
+  }
+  @keyframes nToastOut {
+    from { opacity: 1; transform: translate(-50%, var(--ty, 0px)) scale(1); }
+    to { opacity: 0; transform: translate(-50%, calc(var(--ty, 0px) + 18px)) scale(.94); }
+  }
+  /* Diğer bildirimler: aynı genişlik düzeltmesi, alt çubuğun üstünde, yumuşak geçiş */
+  .page8-copy-toast, .app-toast {
+    width: max-content; max-width: calc(100vw - 28px); box-sizing: border-box;
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 24px);
+    font-family: "Baloo 2", "Space Grotesk", sans-serif; line-height: 1.25; text-align: center;
+    transform: translate(-50%, 18px) scale(.94);
+    transition: opacity .35s ease, transform .55s cubic-bezier(.22,1,.36,1);
+  }
+  .page8-copy-toast.is-visible, .app-toast.is-visible { transform: translate(-50%, 0) scale(1); }
+  @media not all and (min-width: 768px) and (min-height: 600px) {
+    .page8-copy-toast, .app-toast { bottom: calc(env(safe-area-inset-bottom, 0px) + 88px); }
+  }
+  @media (min-width: 768px) and (min-height: 600px) {
+    .n-toast { bottom: 32px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .n-toast { animation: none; }
+    .n-toast.is-out { animation: nToastFade .2s linear forwards; }
+    @keyframes nToastFade { to { opacity: 0; } }
+    .page8-copy-toast, .app-toast { transition: opacity .2s linear; transform: translate(-50%, 0); }
+  }
+
+  /* ===== Gündelik + Hatırlanacaklar: liste başlıkları =====
+     Nokta yerine: liste renginde yumuşak zemin, renkli dikey şerit, sağda sayaç hapı
+     ve altta ilerleme çizgisi (tamamlanan / toplam). */
+  :is(#page-hatirla, #page-8) .hl-head {
+    --hh: 17%; position: relative; align-items: center; gap: .65rem;
+    margin: 0 0 .35rem; padding: .6rem .75rem .7rem .7rem; border-radius: 1.15rem;
+    background-color: color-mix(in srgb, var(--gc) var(--hh), transparent);
+    background-image: linear-gradient(var(--gc), var(--gc));
+    background-repeat: no-repeat; background-position: 0 100%;
+    background-size: calc(var(--pr, 0) * 100%) 3px;
+    transition: background-color .25s ease, background-size .6s cubic-bezier(.22,1,.36,1);
+  }
+  :is(#page-hatirla, #page-8) .hl-head.is-pressing, :is(#page-hatirla, #page-8) .hl-head.is-ctx-active {
+    --hh: 30%;
+    background-color: color-mix(in srgb, var(--gc) var(--hh), transparent);
+    background-image: linear-gradient(var(--gc), var(--gc));
+    background-repeat: no-repeat; background-position: 0 100%; background-size: calc(var(--pr, 0) * 100%) 3px;
+  }
+  :is(#page-hatirla, #page-8) .hl-name { flex: 1 1 auto; gap: .65rem; font-size: 1.3rem; font-weight: 800; }
+  :is(#page-hatirla, #page-8) .hl-name::before {
+    width: .32rem; height: 1.3em; border-radius: 99px; background: var(--gc); flex: 0 0 auto;
+  }
+  :is(#page-hatirla, #page-8) .hl-count {
+    flex: 0 0 auto; margin-left: auto; padding: .12rem .65rem; border-radius: 999px;
+    font-size: .8rem; font-weight: 800; color: var(--theme-text, #121212);
+    background: color-mix(in srgb, var(--gc) 34%, transparent);
+  }
+  :is(#page-hatirla, #page-8) .hl-count:empty { display: none; }
+  @media (min-width: 768px) and (min-height: 600px) {
+    :is(#page-hatirla, #page-8) .hl-head { margin-bottom: .45rem; padding: .7rem .9rem .8rem .85rem; }
+    :is(#page-hatirla, #page-8) .hl-name { font-size: 1.6rem; }
+    :is(#page-hatirla, #page-8) .hl-count { font-size: .95rem; padding: .15rem .8rem; }
+  }
+</style>
+<script id="toastHelper">
+  /* Ortak bildirim: window.paceNToast(mesaj, geriAlFn?, süreMs?) - yumuşak belirir/kaybolur, aşağı kaydırarak kapanır */
+  (function () {
+    var cur = null, timer = null;
+    function hide(t) {
+      if (!t || t._gone) return; t._gone = true; clearTimeout(timer);
+      t.classList.add('is-out'); setTimeout(function () { t.remove(); }, 340);
+      if (cur === t) cur = null;
+    }
+    window.paceNToast = function (msg, undo, ms) {
+      if (cur) { cur._gone = true; cur.remove(); } clearTimeout(timer);
+      var t = document.createElement('div'); t.className = 'n-toast'; t.setAttribute('role', 'status'); t.setAttribute('aria-live', 'polite');
+      var sp = document.createElement('span'); sp.textContent = msg; t.appendChild(sp);
+      if (undo) {
+        var b = document.createElement('button'); b.type = 'button'; b.textContent = 'Geri al';
+        b.addEventListener('click', function () { if (t._gone) return; hide(t); undo(); });
+        t.appendChild(b);
+      }
+      var sy = null;
+      t.addEventListener('pointerdown', function (e) { if (e.target.closest('button')) return; sy = e.clientY; clearTimeout(timer); try { t.setPointerCapture(e.pointerId); } catch (x) {} });
+      t.addEventListener('pointermove', function (e) { if (sy == null) return; t.style.setProperty('--ty', Math.max(0, e.clientY - sy) + 'px'); });
+      var end = function (e) {
+        if (sy == null) return; var dy = Math.max(0, e.clientY - sy); sy = null;
+        if (dy > 28) hide(t); else { t.style.removeProperty('--ty'); timer = setTimeout(function () { hide(t); }, 2000); }
+      };
+      t.addEventListener('pointerup', end); t.addEventListener('pointercancel', end);
+      document.body.appendChild(t); cur = t;
+      timer = setTimeout(function () { hide(t); }, ms || 3000);
+    };
+  })();
+</script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" crossorigin="anonymous"></script>
 <script src="sync.js?v=36"></script>
 </body>
