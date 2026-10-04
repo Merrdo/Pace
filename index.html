@@ -47592,22 +47592,25 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
 .wn-eq i{display:block;width:3px;height:100%;border-radius:2px;background:currentColor;transform-origin:bottom;animation:wnEq 1s ease-in-out infinite;}
 .wn-eq i:nth-child(2){animation-delay:-.35s;animation-duration:.8s;}.wn-eq i:nth-child(3){animation-delay:-.7s;animation-duration:1.15s;}
 @keyframes wnEq{0%,100%{transform:scaleY(.3);}50%{transform:scaleY(1);}}
-.wn-fs.is-playing .wn-ic{display:none;}.wn-fs.is-playing .wn-eq{display:flex;}
 .wn-fs.is-playing{color:var(--accent-color,#ff90e8);}.wn-fs.is-paused .wn-eq i{animation-play-state:paused;transform:scaleY(.4);}
-.wn-fs{position:fixed;z-index:70;right:calc(env(safe-area-inset-right,0px) + .9rem);top:calc(env(safe-area-inset-top,0px) + .9rem + 2.9rem + .55rem);width:2.4rem;height:2.4rem;padding:0;margin:0;border:0;border-radius:50%;display:grid;place-items:center;cursor:pointer;
+.wn-fs{position:fixed;z-index:70;right:calc(env(safe-area-inset-right,0px) + .9rem);top:calc(env(safe-area-inset-top,0px) + .9rem + 2.9rem + .55rem);min-width:2.4rem;height:2.4rem;padding:0;margin:0;border:0;border-radius:999px;display:flex;align-items:center;justify-content:center;cursor:pointer;
   color:color-mix(in srgb,var(--theme-text,#f2f2f7) 70%,transparent);background:color-mix(in srgb,var(--theme-text,#f2f2f7) 8%,transparent);-webkit-tap-highlight-color:transparent;
   opacity:0;visibility:hidden;pointer-events:none;transform:translateY(-8px) scale(.8);transform-origin:top right;transition:opacity .2s ease,transform .25s cubic-bezier(.16,1,.3,1),visibility 0s linear .25s;}
-.wn-fs svg{display:block;width:1.15rem;height:1.15rem;}
-body.is-stopwatch-fs:not(.is-stopwatch-running) .wn-fs,body.is-countdown-fs.is-countdown-paused .wn-fs{opacity:1;visibility:visible;pointer-events:auto;transform:none;transition:opacity .35s ease .2s,transform .5s cubic-bezier(.34,1.56,.64,1) .2s,visibility 0s;}
+.wn-fs .wn-ic{display:block;flex:none;width:1.15rem;height:1.15rem;transition:width .45s cubic-bezier(.16,1,.3,1),opacity .3s ease;}
+.wn-fs .wn-eq{display:flex;flex:none;width:0;opacity:0;overflow:hidden;transition:width .45s cubic-bezier(.16,1,.3,1),opacity .3s ease;}
+.wn-fs.is-playing{padding:0 .95rem;}.wn-fs.is-playing .wn-ic{width:0;opacity:0;}.wn-fs.is-playing .wn-eq{width:13px;opacity:1;}
+.wn-lbl{display:block;max-width:0;opacity:0;margin-left:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;font:800 .82rem/1.2 "Baloo 2","Space Grotesk",sans-serif;transition:max-width .55s cubic-bezier(.16,1,.3,1),opacity .35s ease,margin .45s cubic-bezier(.16,1,.3,1);}
+.wn-fs.is-playing .wn-lbl{opacity:1;margin-left:.55rem;color:var(--theme-text,#f2f2f7);}.wn-fs.is-paused .wn-lbl{opacity:.55;}
+body.is-stopwatch-fs:not(.is-stopwatch-running) .wn-fs,body.is-countdown-fs.is-countdown-paused .wn-fs{opacity:1;visibility:visible;pointer-events:auto;transform:none;transition:opacity .35s ease .1s,transform .35s cubic-bezier(.34,1.56,.64,1),visibility 0s,padding .5s cubic-bezier(.16,1,.3,1);}
 .wn-fs:active{transform:scale(.9) !important;}
 body.is-fs-pressing.is-stopwatch-fs:not(.is-stopwatch-running) .wn-fs,body.is-fs-pressing.is-countdown-fs.is-countdown-paused .wn-fs{transform:scale(.97);transition:transform .35s cubic-bezier(.34,1.56,.64,1);}
 body.wn-anim .stopwatch-fullscreen,body.wn-anim .countdown-fullscreen{transition:opacity .35s ease,transform .35s cubic-bezier(.34,1.56,.64,1),padding-bottom .55s cubic-bezier(.16,1,.3,1);}
 body.wn-open .stopwatch-fullscreen,body.wn-open .countdown-fullscreen{padding-bottom:calc(env(safe-area-inset-bottom,0px) + var(--wn-h,0px));}
 body.wn-drag .stopwatch-fullscreen,body.wn-drag .countdown-fullscreen{transition:opacity .35s ease,transform .35s cubic-bezier(.34,1.56,.64,1) !important;}
-@media (min-width:768px){.wn-fs{right:calc(env(safe-area-inset-right,0px) + 1.5rem);top:calc(env(safe-area-inset-top,0px) + 1.5rem + 3.4rem + .65rem);width:2.9rem;height:2.9rem;}.wn-fs svg{width:1.3rem;height:1.3rem;}}
-.wn-ov{position:fixed;inset:0;z-index:99990;display:flex;align-items:flex-end;justify-content:center;background:rgba(0,0,0,0);-webkit-backdrop-filter:blur(0);backdrop-filter:blur(0);visibility:hidden;pointer-events:none;
-  transition:background .4s ease,backdrop-filter .4s ease,-webkit-backdrop-filter .4s ease,visibility 0s linear .55s;font-family:"Baloo 2","Space Grotesk",sans-serif;--wn-ac:var(--accent-color,#ff90e8);}
-.wn-ov.is-in{visibility:visible;pointer-events:auto;background:rgba(0,0,0,.55);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);transition:background .4s ease,backdrop-filter .4s ease,-webkit-backdrop-filter .4s ease;}
+@media (min-width:768px){.wn-fs{right:calc(env(safe-area-inset-right,0px) + 1.5rem);top:calc(env(safe-area-inset-top,0px) + 1.5rem + 3.4rem + .65rem);min-width:2.9rem;height:2.9rem;}.wn-fs .wn-ic{width:1.3rem;height:1.3rem;}.wn-lbl{font-size:.95rem;}}
+.wn-ov{position:fixed;inset:0;z-index:99990;display:flex;align-items:flex-end;justify-content:center;background:rgba(0,0,0,0);-webkit-backdrop-filter:blur(0);backdrop-filter:blur(0);visibility:hidden;pointer-events:none;--wn-t:var(--theme-transition-duration,480ms) var(--theme-transition-easing,cubic-bezier(.16,1,.3,1));
+  transition:background var(--wn-t),backdrop-filter var(--wn-t),-webkit-backdrop-filter var(--wn-t),visibility 0s linear var(--theme-transition-duration,480ms);font-family:"Baloo 2","Space Grotesk",sans-serif;--wn-ac:var(--accent-color,#ff90e8);}
+.wn-ov.is-in{visibility:visible;pointer-events:auto;background:rgba(0,0,0,.55);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);transition:background var(--wn-t),backdrop-filter var(--wn-t),-webkit-backdrop-filter var(--wn-t);}
 .wn-ov.is-drag{transition:none !important;}
 .wn-sheet{width:min(100%,520px);max-height:92%;overflow-y:auto;overscroll-behavior:contain;box-sizing:border-box;padding:12px 20px calc(22px + env(safe-area-inset-bottom,0px));border-radius:28px 28px 0 0;
   background:var(--theme-bg,#1b1b1f);color:var(--theme-text,#f2f2f7);box-shadow:0 -20px 60px -20px rgba(0,0,0,.6);transform:translateY(105%);transition:transform .55s cubic-bezier(.16,1,.3,1);}
@@ -47639,8 +47642,9 @@ body.wn-drag .stopwatch-fullscreen,body.wn-drag .countdown-fullscreen{transition
 @media (prefers-reduced-motion:reduce){.wn-card,.wn-eq i{animation:none !important;}.wn-sheet,.wn-ov{transition-duration:.01s !important;}}`;
     document.head.appendChild(st);
 
-    const WAVE = '<svg class="wn-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12h2M7 8v8M11 4v16M15 8v8M19 10v4M21 12h0"/></svg><span class="wn-eq" aria-hidden="true"><i></i><i></i><i></i></span>';
-    const fsBtn = document.createElement('button'); fsBtn.type = 'button'; fsBtn.className = 'wn-fs'; fsBtn.setAttribute('aria-label', 'Sesler'); fsBtn.innerHTML = WAVE; document.body.appendChild(fsBtn);
+    const WAVE = '<span class="wn-eq" aria-hidden="true"><i></i><i></i><i></i></span><svg class="wn-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12h2M7 8v8M11 4v16M15 8v8M19 10v4M21 12h0"/></svg>';
+    const fsBtn = document.createElement('button'); fsBtn.type = 'button'; fsBtn.className = 'wn-fs'; fsBtn.setAttribute('aria-label', 'Sesler'); fsBtn.innerHTML = WAVE + '<span class="wn-lbl"></span>'; document.body.appendChild(fsBtn);
+    const lbl = fsBtn.querySelector('.wn-lbl');
     const triggers = [fsBtn];
 
     const ov = document.createElement('div'); ov.className = 'wn-ov';
@@ -47650,12 +47654,20 @@ body.wn-drag .stopwatch-fullscreen,body.wn-drag .countdown-fullscreen{transition
       + '<div class="wn-row"><span>Genel ses</span><input type="range" id="wnMaster" min="0" max="100" aria-label="Genel ses"></div>'
       + '<div class="wn-row is-sw"><span>Sayaçla birlikte duraklat</span><button type="button" class="wn-sw" id="wnSync" role="switch" aria-label="Sayaçla birlikte duraklat"></button></div></div>';
     document.body.appendChild(ov);
+    // Üst güvenli alan (theme-color): karartma tonu (0,0,0,.55) ile harmanlanır; panel açılınca/kapanınca karartmayla aynı anda değişir.
+    ov._themeTint = { r: 0, g: 0, b: 0, alpha: 0.55 };
+    if (window.watchBackdropForThemeColor) window.watchBackdropForThemeColor(ov);
     const $ = (q) => ov.querySelector(q), sheet = $('.wn-sheet'), playBtn = $('#wnPlay'), master$ = $('#wnMaster'), syncBtn = $('#wnSync'), sub = $('#wnSub');
     const fill = (el, v) => { el.value = Math.round(v * 100); el.style.setProperty('--p', Math.round(v * 100) + '%'); };
 
     function paint() {
       const ids = mixIds(), live = ids.length > 0, playing = live && !S.paused;
       triggers.forEach((b) => { b.classList.toggle('is-playing', live); b.classList.toggle('is-paused', live && S.paused); });
+      if (live) {
+        const nm = ids.map((id) => byId(id).name), txt = nm.length <= 2 ? nm.join(' + ') : nm.slice(0, 2).join(' + ') + ' +' + (nm.length - 2);
+        if (lbl.textContent !== txt) lbl.textContent = txt;
+        lbl.style.maxWidth = Math.min(lbl.scrollWidth + 1, window.innerWidth * 0.55) + 'px';
+      } else lbl.style.maxWidth = '0px';
       ov.querySelectorAll('.wn-card').forEach((c) => {
         const s = byId(c.dataset.id), on = ids.indexOf(s.id) >= 0;
         c.classList.toggle('is-sel', on); c.classList.toggle('is-live', on); c.classList.toggle('is-paused', on && S.paused); c.classList.toggle('is-na', !s.src || !!s.err);
