@@ -38462,78 +38462,45 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
 }
 
 </style>
-<style id="modeDialCss">
-/* ===== Mod çarkı (Kronometre / Zamanlayıcı / hazır süreler) =====
-   Kamera "mod çarkı" benzeri: sabit tik yayı, üstte seçili öğe, öğeler yay
-   üzerinde döner ve bırakınca en yakın öğeye yaylanarak oturur. */
-.mdial {
-  --md-fg: var(--theme-text, #1a1a1a);
-  --md-bg: var(--theme-bg, #f6f4ef);
-  position: absolute; z-index: 2;
-  left: 50%; width: min(440px, calc(100% - 28px));
-  height: 168px; margin-left: calc(min(440px, 100% - 28px) / -2);
-  bottom: calc(env(safe-area-inset-bottom, 0px) + 96px + 0.9rem + clamp(1rem, 3dvh, 2rem) + 80px);
-  color: var(--md-fg);
+
+<style id="bottomDialCss">
+/* ===== Alt çark (tam ekran Kronometre / Zamanlayıcı) =====
+   Ekranın en altına sabitlenir; sadece tam ekran görünümde belirir.
+   Tik yayı sabittir, harf düğmeleri yay üzerinde döner. Konum her karede
+   JS tarafından yalnızca transform + opacity ile yazılır (layout/paint yok). */
+:root { --bdial-h: 132px; }
+
+.bdial {
+  position: fixed; z-index: 61; left: 0; right: 0; bottom: 0;
+  width: min(100%, 520px); margin: 0 auto;
+  height: calc(var(--bdial-h) + env(safe-area-inset-bottom, 0px));
+  overflow: hidden; contain: layout paint style;
+  color: var(--theme-text, #1a1a1a);
   touch-action: none; cursor: grab;
   -webkit-user-select: none; user-select: none;
-  opacity: 1; transform: translateY(0);
-  transition: opacity .35s ease, transform .5s cubic-bezier(.16,1,.3,1);
-  font-family: "Baloo 2", "Space Grotesk", -apple-system, sans-serif;
-  /* kenarlara doğru yumuşak sönme */
-  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 14%, #000 86%, transparent 100%);
-          mask-image: linear-gradient(90deg, transparent 0, #000 14%, #000 86%, transparent 100%);
+  opacity: 0; pointer-events: none; transform: translate3d(0, 28px, 0);
+  transition: opacity .35s ease, transform .55s cubic-bezier(.16, 1, .3, 1);
+  font-family: "Baloo 2", -apple-system, sans-serif;
 }
-.mdial.is-dragging { cursor: grabbing; }
-.mdial.is-locked { opacity: .28; pointer-events: none; }
-.mdial.is-hidden, body.is-stopwatch-fs .mdial, body.is-countdown-fs .mdial {
-  opacity: 0; pointer-events: none; transform: translateY(18px);
+body.is-stopwatch-fs .bdial, body.is-countdown-fs .bdial { opacity: 1; pointer-events: auto; transform: none; }
+.bdial.is-dragging { cursor: grabbing; }
+.bdial:focus-visible { outline: 2px solid color-mix(in srgb, currentColor 35%, transparent); outline-offset: -4px; border-radius: 20px; }
+
+.bdial-ticks { position: absolute; inset: 0; width: 100%; height: 100%; }
+.bdial-ticks line { stroke: currentColor; stroke-linecap: round; }
+
+.bdial-item {
+  position: absolute; left: 50%; top: 0; width: 28px; height: 28px; margin: -14px 0 0 -14px;
+  display: grid; place-items: center; border-radius: 50%;
+  background: var(--theme-text, #1a1a1a); color: var(--theme-bg, #f6f4ef);
+  font-weight: 800; font-size: 13px; line-height: 1;
+  will-change: transform, opacity; opacity: 0;
 }
-.mdial:focus-visible { outline: 2px solid color-mix(in srgb, var(--md-fg) 40%, transparent); outline-offset: 4px; border-radius: 18px; }
-.mdial-stage { position: absolute; left: 0; top: 0; width: 100%; height: 100%; overflow: visible;
-  -webkit-mask-image: linear-gradient(180deg, #000 0, #000 62%, transparent 94%); mask-image: linear-gradient(180deg, #000 0, #000 62%, transparent 94%); }
-.mdial-ticks { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
-.mdial-ticks line { stroke: var(--md-fg); stroke-linecap: round; transition: opacity .25s ease; }
-.mdial-origin { position: absolute; left: 50%; top: 0; width: 0; height: 0; }
-.mdial-item {
-  position: absolute; left: 0; top: 0; width: 0; height: 0;
-  will-change: transform, opacity;
-}
-.mdial-item > span {
-  position: absolute; left: 0; top: 0; display: flex; align-items: center; justify-content: center;
-  transform: translate(-50%, -50%); white-space: nowrap; line-height: 1;
-  transition: transform .45s cubic-bezier(.34,1.56,.64,1), background-color .3s ease, color .3s ease, border-color .3s ease;
-}
-/* 1) Hap: AUTO benzeri çerçeveli */
-.mdial-item.k-pill > span {
-  height: 22px; padding: 0 9px; border-radius: 999px; border: 1.6px solid var(--md-fg);
-  font-weight: 800; font-size: 10.5px; letter-spacing: .08em;
-  /* uzun eksen yay boyunca: yazı teğet yönde */
-}
-/* 2) Dolu daire: P S A M benzeri (hazır süreler) */
-.mdial-item.k-dot > span {
-  width: 26px; height: 26px; border-radius: 50%; background: var(--md-fg); color: var(--md-bg);
-  font-weight: 800; font-size: 12px; letter-spacing: -.02em; font-variant-numeric: tabular-nums;
-}
-.mdial-item.k-dot.is-wide > span { width: 32px; border-radius: 13px; font-size: 11px; }
-.mdial-item.is-sel > span { transform: translate(-50%, -50%) scale(1.14); }
-.mdial-item.k-pill.is-sel > span { background: var(--md-fg); color: var(--md-bg); }
-/* ortadaki uzun tik göstergesi */
-.mdial-center { position: absolute; inset: 0; pointer-events: none; z-index: 1; padding-top: 0; display: flex; flex-direction: column;
-  align-items: center; justify-content: flex-end; padding-bottom: 6px; }
-.mdial-cap { position: relative; height: 46px; width: 100%; display: flex; align-items: center; justify-content: center; }
-.mdial-cap-in { position: absolute; display: flex; flex-direction: column; align-items: center; gap: 3px;
-  opacity: 0; transform: translateY(8px) scale(.96); filter: blur(4px);
-  transition: opacity .32s ease, transform .5s cubic-bezier(.16,1,.3,1), filter .32s ease; }
-.mdial-cap-in.is-on { opacity: 1; transform: none; filter: none; }
-.mdial-cap-main { font-weight: 800; font-size: 1.55rem; letter-spacing: -.02em; line-height: 1; }
-.mdial-cap-sub { font-weight: 600; font-size: .72rem; letter-spacing: .06em; text-transform: uppercase; opacity: .5; line-height: 1; }
-@media (hover: hover) { .mdial-item:hover > span { transform: translate(-50%, -50%) scale(1.08); } .mdial-item.is-sel:hover > span { transform: translate(-50%, -50%) scale(1.14); } }
-@media (min-width: 768px) and (min-height: 600px) {
-  /* Geniş ekran: çark, Kronometre kartı ile Zaman Takvimi satırı arasındaki boşlukta durur
-     (akışta Zaman Takvimi'nin altına eklenir, görsel olarak yukarı alınır ve kapladığı yer geri verilir). */
-  .mdial { position: relative; left: auto; bottom: auto; top: -264px; margin: 1.2rem auto -190px; width: min(340px, 100%); flex: none; }
-}
-@media (prefers-reduced-motion: reduce) { .mdial, .mdial-item > span, .mdial-cap-in { transition-duration: .01ms !important; } }
+
+/* Alttaki çark, branş etiketinin üstüne binmesin */
+body .stopwatch-fullscreen-subject { bottom: calc(env(safe-area-inset-bottom) + var(--bdial-h) + 1rem); }
+
+@media (prefers-reduced-motion: reduce) { .bdial { transition-duration: .01ms; } }
 </style>
 
 </head>
@@ -40405,14 +40372,6 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
       </span>
     </button>
 
-<!-- Mod çarkı: Kronometre / Zamanlayıcı / hazır süreler (bkz. #modeDialCss ve modeDial script'i) -->
-<div class="mdial" id="modeDial" role="listbox" tabindex="0" aria-label="Mod ve süre çarkı">
-  <div class="mdial-stage">
-    <svg class="mdial-ticks" id="modeDialTicks" aria-hidden="true"></svg>
-    <div class="mdial-origin" id="modeDialOrigin"></div>
-  </div>
-  <div class="mdial-center"><div class="mdial-cap" id="modeDialCap" aria-live="polite"></div></div>
-</div>
 
     <!-- Kronometre çalışırken beliren, ekranı tam kaplayan büyük görünüm.
          Sayının üzerindeki görünmez alana dokunmak duraklatıp tam
@@ -48364,319 +48323,222 @@ body.is-fs-pressing.is-stopwatch-fs:not(.is-stopwatch-running) .wn-fs,body.is-fs
     });
   }
 </script>
-<script id="modeDialJs">
-/* Mod çarkı mantığı. Ana script'in global değişkenlerini kullanır:
-   swRunning, cdRunning, stopwatchViewMode, switchStopwatchViewMode, applyCountdownPreset,
-   countdownPresets, cdMinutes, cdSeconds. */
+<!-- Alt çark: tam ekran Kronometre / Zamanlayıcı görünümünün en altı (bkz. #bottomDialCss, #bottomDialJs) -->
+<div class="bdial" id="bottomDial" role="listbox" aria-orientation="horizontal" aria-label="Seçenek çarkı" tabindex="0">
+  <svg class="bdial-ticks" id="bottomDialTicks" aria-hidden="true"></svg>
+</div>
+<script id="bottomDialJs">
+/* Alt çark. Şimdilik yalnızca seçim yapar (A, B, C…); işlev eklenecek.
+   Seçim değişince `bottomdial:change` olayı yayılır → detail: { index, id, label }.
+
+   Hareket modeli: konum `pos` öğe birimindedir (0 = ilk öğe). Sürüklerken parmağı
+   birebir izler; bırakınca hız korunarak en yakın öğeye kritik sönümlü yay
+   (kapalı formlu çözüm, sıçrama/titreme yok, kare hızından bağımsız) ile oturur. */
 (() => {
-  const root = document.getElementById('modeDial');
-  const origin = document.getElementById('modeDialOrigin');
-  const ticksSvg = document.getElementById('modeDialTicks');
-  const capEl = document.getElementById('modeDialCap');
-  const page5 = document.getElementById('page-5');
-  if (!root || !origin || !page5) return;
+  const root = document.getElementById('bottomDial');
+  const ticksSvg = document.getElementById('bottomDialTicks');
+  if (!root || !ticksSvg) return;
 
-  const SVGNS = 'http://www.w3.org/2000/svg';
-  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-  let W = 400, R = 190, RI = 150, CY = 190; // yarıçaplar (px), yayın merkezi y'si
-  let items = [];       // {kind, label, sub, el, pos, w, preset}
-  let scroll = 0;       // px (yay boyunca), seçili öğenin pos değeri
-  let vel = 0;
-  let selIdx = 0;
-  let dragging = false, pointerId = null, lastX = 0, lastT = 0, moved = 0, downItem = -1;
-  let raf = 0, target = null; // target: yaylanma hedefi (px)
-  let lastTickIdx = -1;
+  /* ---- Ayarlar ---- */
+  const OPTIONS = 'ABCDEFGH'.split('').map((label) => ({ id: label.toLowerCase(), label }));
+  const DEFAULT_INDEX = 3;
+  const DIAL_H = 132;          // px; CSS'teki --bdial-h ile aynı
+  const STEP_DEG = 16;         // öğeler arası açı
+  const SPRING_W = 17;         // rad/s; büyüdükçe daha sert oturur
+  const GLIDE_S = 0.2;         // bırakma hızının ileri izdüşüm süresi
+  const MAX_V = 14;            // öğe/sn
+  const TAP_SLOP = 6;          // px
+  const EDGE_RESIST = 0.4;     // uçlarda sürükleme direnci
+  const SVG_NS = 'http://www.w3.org/2000/svg';
 
-  const pad2 = (n) => String(n).padStart(2, '0');
-  const fmtPreset = (p) => {
-    const m = p.minutes, s = p.seconds;
-    if (m > 0 && s === 0) return { main: String(m), long: m + ' dk' };
-    if (m === 0) return { main: s + 'sn', long: s + ' sn' };
-    return { main: m + ':' + pad2(s), long: m + ' dk ' + pad2(s) + ' sn' };
+  const STEP = STEP_DEG * Math.PI / 180;
+  const LAST = OPTIONS.length - 1;
+  const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
+
+  /* ---- Öğeler ---- */
+  const items = OPTIONS.map((opt, i) => {
+    const el = document.createElement('div');
+    el.className = 'bdial-item';
+    el.id = 'bdial-opt-' + opt.id;
+    el.setAttribute('role', 'option');
+    el.innerHTML = '<span></span>';
+    el.firstChild.textContent = opt.label;
+    root.appendChild(el);
+    return el;
+  });
+
+  /* ---- Geometri (yeniden ölçülür) ---- */
+  let R = 190, RI = 148, CY = 196;
+  const layout = () => {
+    const w = root.clientWidth || 390;
+    const h = root.clientHeight || DIAL_H;
+    R = Math.min(230, w / 2 - 6);
+    RI = R * 0.78;
+    CY = 6 + R;                                    // yay merkezi (kutunun altında kalır)
+    drawTicks(w, h);
+    render();
   };
 
-  /* ---------- Tik yayı (sabit) ---------- */
-  const buildTicks = () => {
-    ticksSvg.setAttribute('viewBox', `0 0 ${W} ${Math.round(R * .9 + 20)}`); ticksSvg.setAttribute('preserveAspectRatio', 'none');
-    ticksSvg.innerHTML = '';
-    const cx = W / 2, cy = CY;
-    const span = 82, step = 2.5; // derece
-    for (let a = -span; a <= span + .01; a += step) {
-      const major = Math.abs(a) < .01;
-      const mid = Math.abs(a % 10) < .01;
-      const r1 = R, r2 = R - (major ? 22 : mid ? 11 : 8);
+  const drawTicks = (w, h) => {
+    ticksSvg.setAttribute('viewBox', `0 0 ${w} ${h}`);
+    const frag = document.createDocumentFragment();
+    const maxDeg = Math.acos(clamp((CY - h) / R, -1, 1)) * 180 / Math.PI;
+    for (let a = -maxDeg; a <= maxDeg + 0.01; a += 2.5) {
       const rad = a * Math.PI / 180;
-      const ln = document.createElementNS(SVGNS, 'line');
-      ln.setAttribute('x1', cx + Math.sin(rad) * r1); ln.setAttribute('y1', cy - Math.cos(rad) * r1);
-      ln.setAttribute('x2', cx + Math.sin(rad) * r2); ln.setAttribute('y2', cy - Math.cos(rad) * r2);
-      ln.setAttribute('stroke-width', major ? 2 : 1.3);
-      const fade = Math.max(0, Math.min(1, (span + 4 - Math.abs(a)) / 28));
-      ln.style.opacity = major ? 1 : (mid ? .75 : .5) * Math.min(1, .35 + fade);
-      ticksSvg.appendChild(ln);
+      const major = Math.abs(a) < 0.5;
+      const mid = Math.abs(a / 10 - Math.round(a / 10)) < 0.01;
+      const len = major ? 22 : mid ? 11 : 8;
+      const line = document.createElementNS(SVG_NS, 'line');
+      line.setAttribute('x1', w / 2 + Math.sin(rad) * R);
+      line.setAttribute('y1', CY - Math.cos(rad) * R);
+      line.setAttribute('x2', w / 2 + Math.sin(rad) * (R - len));
+      line.setAttribute('y2', CY - Math.cos(rad) * (R - len));
+      line.setAttribute('stroke-width', major ? 2 : 1.3);
+      line.setAttribute('opacity', major ? 1 : mid ? 0.7 : 0.45);
+      frag.appendChild(line);
     }
+    ticksSvg.replaceChildren(frag);
   };
 
-  /* ---------- Öğeler ---------- */
-  const buildItems = () => {
-    origin.innerHTML = '';
-    const list = [
-      { kind: 'pill', label: 'KRONO', main: 'Kronometre', sub: 'İleri sayım', mode: 'stopwatch' },
-      { kind: 'pill', label: 'SAYAÇ', main: 'Zamanlayıcı', sub: 'Süreyi ayarla', mode: 'countdown' },
-    ];
-    const src = (Array.isArray(window.countdownPresets) || (typeof countdownPresets !== 'undefined' && Array.isArray(countdownPresets)))
-      ? countdownPresets : [];
-    const presets = (src.length ? src : [{minutes:5,seconds:0},{minutes:10,seconds:0},{minutes:15,seconds:0},{minutes:25,seconds:0},{minutes:45,seconds:0},{minutes:60,seconds:0}])
-      .filter((p) => (p.minutes * 60 + p.seconds) > 0)
-      .slice().sort((a, b) => (a.minutes * 60 + a.seconds) - (b.minutes * 60 + b.seconds))
-      .slice(0, 10);
-    presets.forEach((p) => {
-      const f = fmtPreset(p);
-      list.push({ kind: 'dot', label: f.main, main: f.long, sub: 'Zamanlayıcı', mode: 'countdown', preset: p, wide: f.main.length > 2 });
-    });
+  /* ---- Çizim: yalnızca transform + opacity ---- */
+  let pos = DEFAULT_INDEX;
+  let selected = -1;
 
-    // Yay uzunluğu hesabı: her öğenin kaplayacağı genişlik + boşluk
-    const GAP = 11;
-    let acc = 0;
-    items = list.map((d, i) => {
-      const w = d.kind === 'pill' ? 20 + d.label.length * 8.2 : (d.wide ? 32 : 26);
-      const el = document.createElement('div');
-      el.className = 'mdial-item k-' + d.kind + (d.wide ? ' is-wide' : '');
-      el.setAttribute('role', 'option');
-      const span = document.createElement('span');
-      span.textContent = d.label;
-      el.appendChild(span);
-      origin.appendChild(el);
-      const startPos = i === 0 ? 0 : acc;
-      const pos = i === 0 ? 0 : startPos + w / 2;
-      acc = (i === 0 ? w / 2 : startPos + w) + GAP + 0;
-      if (i === 0) acc = w / 2 + GAP;
-      // pos: öğenin merkezi (yay boyunca px)
-      const item = Object.assign(d, { el, w, pos: 0 });
-      return item;
-    });
-    // pos'ları temiz hesapla
-    let cur = 0;
-    items.forEach((it, i) => {
-      if (i === 0) { it.pos = 0; cur = it.w / 2; }
-      else { it.pos = cur + GAP + it.w / 2; cur = it.pos + it.w / 2; }
-      // yay üzerinde kiriş farkı için hafif genişletme (dış yarıçap daha az sıkışır)
-      it.pos *= 1.0;
-    });
-    capEl.innerHTML = '';
-    items.forEach((it) => {
-      const c = document.createElement('div'); c.className = 'mdial-cap-in';
-      c.innerHTML = '<span class="mdial-cap-main"></span><span class="mdial-cap-sub"></span>';
-      c.firstChild.textContent = it.main; c.lastChild.textContent = it.sub;
-      capEl.appendChild(c); it.cap = c;
-    });
-  };
-
-  const minScroll = () => items.length ? items[0].pos : 0;
-  const maxScroll = () => items.length ? items[items.length - 1].pos : 0;
-
-  /* ---------- Çizim ---------- */
   const render = () => {
-    const sel = nearestIndex(scroll);
     for (let i = 0; i < items.length; i++) {
-      const it = items[i];
-      const ang = (it.pos - scroll) / RI;              // radyan
-      const deg = ang * 180 / Math.PI;
-      const ad = Math.abs(deg);
-      const o = ad < 60 ? 1 : Math.max(0, 1 - (ad - 60) / 24);
-      const base = i === sel ? 1 : .62;
-      it.el.style.opacity = (o * base).toFixed(3);
-      it.el.style.visibility = o <= 0.01 ? 'hidden' : 'visible';
-      // origin (0,0) = yay merkezi; öğe yarıçap RI'de, merkezden yukarı
-      it.el.style.transform = `translate3d(0, ${CY}px, 0) rotate(${deg.toFixed(3)}deg) translate3d(0, ${-RI}px, 0)`;
+      const off = i - pos;
+      const ang = off * STEP;
+      const deg = off * STEP_DEG;
+      const near = Math.max(0, 1 - Math.abs(off));           // 1: tam ortada
+      const edge = Math.abs(deg) < 56 ? 1 : Math.max(0, 1 - (Math.abs(deg) - 56) / 24);
+      const el = items[i];
+      el.style.transform =
+        `translate3d(${(Math.sin(ang) * RI).toFixed(2)}px,${(CY - Math.cos(ang) * RI).toFixed(2)}px,0) ` +
+        `rotate(${deg.toFixed(2)}deg) scale(${(1 + 0.16 * near).toFixed(3)})`;
+      el.style.opacity = ((0.5 + 0.5 * near) * edge).toFixed(3);
     }
-    if (sel !== lastTickIdx) {
-      lastTickIdx = sel;
-      items.forEach((it, i) => it.el.classList.toggle('is-sel', i === sel));
-      if (dragging || target !== null) { try { navigator.vibrate && navigator.vibrate(6); } catch (e) {} }
-    }
+    const idx = clamp(Math.round(pos), 0, LAST);
+    if (idx !== selected) select(idx);
   };
 
-  const nearestIndex = (s) => {
-    let best = 0, bd = Infinity;
-    for (let i = 0; i < items.length; i++) { const d = Math.abs(items[i].pos - s); if (d < bd) { bd = d; best = i; } }
+  const select = (idx) => {
+    const first = selected === -1;
+    selected = idx;
+    items.forEach((el, i) => el.setAttribute('aria-selected', String(i === idx)));
+    root.setAttribute('aria-activedescendant', items[idx].id);
+    if (first) return;
+    if (navigator.vibrate) { try { navigator.vibrate(4); } catch (e) { /* yok say */ } }
+    root.dispatchEvent(new CustomEvent('bottomdial:change', { bubbles: true, detail: { index: idx, ...OPTIONS[idx] } }));
+  };
+
+  /* ---- Tek rAF döngüsü ---- */
+  let raf = 0;
+  let spring = null;            // { a, b, to, t0 }
+  let dragging = false;
+
+  const tick = (now) => {
+    raf = 0;
+    if (spring) {
+      const t = (now - spring.t0) / 1000;
+      const e = Math.exp(-SPRING_W * t);
+      pos = spring.to + (spring.a + spring.b * t) * e;
+      const vel = (spring.b - SPRING_W * (spring.a + spring.b * t)) * e;
+      if (Math.abs(pos - spring.to) < 5e-4 && Math.abs(vel) < 5e-3) { pos = spring.to; spring = null; }
+    }
+    render();
+    if (spring || dragging) request();
+  };
+  const request = () => { if (!raf) raf = requestAnimationFrame(tick); };
+
+  const springTo = (to, v0 = 0) => {
+    const a = pos - to;
+    spring = { a, b: v0 + SPRING_W * a, to, t0: performance.now() };
+    request();
+  };
+
+  /* ---- Parmak / fare ---- */
+  let pointerId = null, lastX = 0, travelled = 0, samples = [];
+
+  const pxPerItem = () => RI * STEP;
+
+  const releaseVelocity = () => {
+    const last = samples[samples.length - 1];
+    const ref = samples.find((s) => last.t - s.t <= 90) || last;
+    const dt = (last.t - ref.t) / 1000;
+    return dt > 0 ? clamp((last.pos - ref.pos) / dt, -MAX_V, MAX_V) : 0;
+  };
+
+  const itemAt = (x, y) => {
+    let best = -1, bestD = 30;
+    items.forEach((el, i) => {
+      const r = el.getBoundingClientRect();
+      const d = Math.hypot(r.left + r.width / 2 - x, r.top + r.height / 2 - y);
+      if (d < bestD && getComputedStyle(el).opacity > 0.05) { bestD = d; best = i; }
+    });
     return best;
   };
 
-  /* ---------- Fizik: atalet + yaylanma ---------- */
-  const frame = (now) => {
-    raf = 0;
-    if (dragging) return;
-    const dt = Math.min(.034, (now - (frame.t || now)) / 1000 || .016); frame.t = now;
-    if (target === null) {
-      // atalet
-      scroll += vel * dt; vel *= Math.pow(.0009, dt);   // sürtünme
-      const lo = minScroll(), hi = maxScroll();
-      if (scroll < lo || scroll > hi) { vel *= .6; }
-      if (Math.abs(vel) < 40 || scroll < lo - 4 || scroll > hi + 4) {
-        const i = nearestIndex(Math.max(lo, Math.min(hi, scroll + vel * .12)));
-        target = items[i].pos; commit(i);
-      }
-    }
-    if (target !== null) {
-      // kritik sönümlü yay
-      const k = 520, c = 2 * Math.sqrt(k) * .86;
-      const a = k * (target - scroll) - c * vel;
-      vel += a * dt; scroll += vel * dt;
-      if (Math.abs(target - scroll) < .4 && Math.abs(vel) < 14) {
-        scroll = target; vel = 0;
-        const i = nearestIndex(scroll); target = null; render(); showCap(i); return;
-      }
-    }
-    render();
-    raf = requestAnimationFrame(frame);
-  };
-  const kick = () => { frame.t = 0; if (!raf) raf = requestAnimationFrame(frame); };
-
-  const goTo = (i, instant) => {
-    i = Math.max(0, Math.min(items.length - 1, i));
-    if (instant || reduceMotion.matches) { scroll = items[i].pos; vel = 0; target = null; render(); commit(i); return; }
-    vel = 0; target = items[i].pos; commit(i); kick();
-  };
-
-  /* ---------- Başlık (çarkın içi) ---------- */
-  let capIdx = -1;
-  const showCap = (i) => {
-    if (i === capIdx) return;
-    capIdx = i;
-    items.forEach((it, k) => it.cap.classList.toggle('is-on', k === i));
-  };
-
-  /* ---------- Seçimi uygulamaya bağla ---------- */
-  let applying = false;
-  const isBusy = () => (typeof swRunning !== 'undefined' && swRunning) || (typeof cdRunning !== 'undefined' && cdRunning);
-  const commit = (i) => {
-    selIdx = i; showCap(i);
-    if (applying) return;
-    if (commit.last === i && !commit.force) return;
-    commit.last = i;
-    const it = items[i];
-    if (isBusy()) { syncFromApp(); return; }
-    if (typeof stopwatchFlipAnimating !== 'undefined' && stopwatchFlipAnimating && stopwatchViewMode !== it.mode) {
-      setTimeout(() => { if (selIdx === i && !dragging && target === null) commit(i); }, 340); return;
-    }
-    if (stopwatchViewMode !== it.mode) switchStopwatchViewMode(it.mode);
-    if (it.preset) {
-      try { applyCountdownPreset({ minutes: it.preset.minutes, seconds: it.preset.seconds }); } catch (e) {}
-    }
-    // Geçiş animasyonu devam ederken reddedilirse çarkı gerçek duruma geri al
-    clearTimeout(commit.t);
-    commit.t = setTimeout(syncFromApp, 900);
-  };
-
-  const presetMatchesApp = (p) => typeof cdMinutes !== 'undefined' && p.minutes === cdMinutes && p.seconds === cdSeconds;
-  const syncFromApp = () => {
-    lock();
-    const mode = stopwatchViewMode;
-    const cur = items[selIdx];
-    let idx = selIdx;
-    if (mode === 'stopwatch') idx = 0;
-    else if (!(cur && cur.mode === 'countdown' && (!cur.preset || presetMatchesApp(cur.preset)))) {
-      const m = items.findIndex((it) => it.preset && presetMatchesApp(it.preset));
-      idx = m > 0 ? m : 1;
-    }
-    if (idx !== selIdx || Math.abs(scroll - items[idx].pos) > 1) { applying = true; selIdx = idx; commit.last = idx; goTo(idx); setTimeout(() => { applying = false; }, 700); }
-    showCap(idx);
-  };
-
-  const lock = () => root.classList.toggle('is-locked', isBusy());
-
-  /* ---------- Sürükleme ---------- */
   root.addEventListener('pointerdown', (e) => {
-    if (dragging || isBusy()) return;
-    dragging = true; pointerId = e.pointerId; moved = 0; lastX = e.clientX; lastT = performance.now(); vel = 0; target = null;
+    if (dragging || (e.pointerType === 'mouse' && e.button !== 0)) return;
+    dragging = true; pointerId = e.pointerId; lastX = e.clientX; travelled = 0;
+    spring = null;
+    samples = [{ t: e.timeStamp, pos }];
     root.classList.add('is-dragging');
-    try { root.setPointerCapture(e.pointerId); } catch (err) {}
-    const it = e.target.closest && e.target.closest('.mdial-item');
-    downItem = it ? items.findIndex((x) => x.el === it) : -1;
+    root.setPointerCapture(pointerId);
+    request();
   });
+
   root.addEventListener('pointermove', (e) => {
     if (!dragging || e.pointerId !== pointerId) return;
-    const dx = e.clientX - lastX; const now = performance.now(); const dt = Math.max(1, now - lastT);
-    lastX = e.clientX; lastT = now; moved += Math.abs(dx);
-    // sağa sürükle → öğeler sağa (saat yönü) kayar → scroll azalır
-    let delta = -dx;
-    const lo = minScroll(), hi = maxScroll();
-    if ((scroll < lo && delta < 0) || (scroll > hi && delta > 0)) delta *= .35; // kenar direnci
-    scroll += delta;
-    vel = vel * .6 + (delta / dt * 1000) * .4;
-    render();
-  });
-  const end = (e) => {
-    if (!dragging || (e && e.pointerId !== pointerId)) return;
-    dragging = false; root.classList.remove('is-dragging');
-    try { root.releasePointerCapture(pointerId); } catch (err) {}
-    if (moved < 6 && downItem >= 0) { goTo(downItem); return; }   // dokunma → o öğeye git
-    if (reduceMotion.matches) { goTo(nearestIndex(scroll)); return; }
-    kick();
-  };
-  root.addEventListener('pointerup', end);
-  root.addEventListener('pointercancel', end);
-  root.addEventListener('wheel', (e) => {
-    if (isBusy()) return;
-    e.preventDefault();
-    const d = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
-    const i = nearestIndex(scroll) + (d > 0 ? 1 : -1);
-    if (!root._wheelLock) { root._wheelLock = true; goTo(i); setTimeout(() => { root._wheelLock = false; }, 160); }
-  }, { passive: false });
-  root.addEventListener('keydown', (e) => {
-    if (isBusy()) return;
-    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); goTo(nearestIndex(scroll) + 1); }
-    else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); goTo(nearestIndex(scroll) - 1); }
+    const dx = e.clientX - lastX;
+    lastX = e.clientX;
+    travelled += Math.abs(dx);
+    // sağa sürükle → öğeler sağa kayar → pos azalır
+    const outside = pos < 0 || pos > LAST;
+    pos -= (dx / pxPerItem()) * (outside ? EDGE_RESIST : 1);
+    samples.push({ t: e.timeStamp, pos });
+    if (samples.length > 12) samples.shift();
   });
 
-  /* ---------- Ölçü ---------- */
-  const measure = () => {
-    const r = root.getBoundingClientRect();
-    W = Math.max(280, Math.round(r.width || 400));
-    R = Math.round(W * .47);
-    RI = Math.round(R * .79);
-    CY = R + 4;
-    root.style.height = Math.round(R * .9 + 20) + 'px';
-    buildTicks(); render();
-  };
-
-  /* ---------- Dış değişikliklerle eşitle ---------- */
-  const swPage = document.getElementById('stopwatchPage');
-  const cdPage = document.getElementById('countdownPage');
-  const mo = new MutationObserver(() => { clearTimeout(mo.t); mo.t = setTimeout(syncFromApp, 60); });
-  [swPage, cdPage].forEach((p) => p && mo.observe(p, { attributes: true, attributeFilter: ['style'] }));
-  ['countdownMinValue', 'countdownSecValue'].forEach((id) => {
-    const el = document.getElementById(id);
-    if (el) new MutationObserver(() => { clearTimeout(mo.t2); mo.t2 = setTimeout(() => { if (!dragging && target === null) syncFromApp(); }, 80); }).observe(el, { childList: true, characterData: true, subtree: true });
-  });
-  new MutationObserver(() => lock()).observe(document.body, { attributes: true, attributeFilter: ['class'] });
-  // Sayfa açıldığında hazır süre listesi değişmiş olabilir: yeniden kur
-  let wasActive = page5.classList.contains('is-active');
-  new MutationObserver(() => {
-    const now = page5.classList.contains('is-active');
-    if (now && !wasActive) { rebuild(); }
-    wasActive = now;
-  }).observe(page5, { attributes: true, attributeFilter: ['class'] });
-  window.addEventListener('resize', () => { clearTimeout(measure.t); measure.t = setTimeout(measure, 80); });
-
-  const rebuild = () => {
-    const prev = items[selIdx];
-    buildItems();
-    let idx = 0;
-    if (prev) {
-      const f = items.findIndex((it) => it.mode === prev.mode && ((!it.preset && !prev.preset) || (it.preset && prev.preset && it.preset.minutes === prev.preset.minutes && it.preset.seconds === prev.preset.seconds)));
-      idx = f >= 0 ? f : 0;
+  const endDrag = (e) => {
+    if (!dragging || e.pointerId !== pointerId) return;
+    dragging = false;
+    root.classList.remove('is-dragging');
+    if (root.hasPointerCapture(pointerId)) root.releasePointerCapture(pointerId);
+    if (e.type === 'pointerup' && travelled < TAP_SLOP) {
+      const tapped = itemAt(e.clientX, e.clientY);
+      if (tapped >= 0) { springTo(tapped); return; }
     }
-    selIdx = idx; capIdx = -1; scroll = items[idx].pos; vel = 0; target = null; lastTickIdx = -1;
-    measure(); syncFromApp(); render(); showCap(selIdx); lock();
+    const v = releaseVelocity();
+    springTo(clamp(Math.round(pos + v * GLIDE_S), 0, LAST), v);
   };
+  root.addEventListener('pointerup', endDrag);
+  root.addEventListener('pointercancel', endDrag);
 
-  // Boyutu görünür olduktan sonra ölç (sayfa gizliyken 0 çıkabilir)
-  rebuild();
-  setTimeout(measure, 300);
-  window.__modeDial = { goTo, items: () => items, sel: () => selIdx };
+  /* ---- Tekerlek ve klavye ---- */
+  let wheelLock = 0;
+  root.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    const now = performance.now();
+    if (now - wheelLock < 140) return;
+    wheelLock = now;
+    const d = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
+    springTo(clamp(Math.round(pos) + Math.sign(d), 0, LAST));
+  }, { passive: false });
+
+  root.addEventListener('keydown', (e) => {
+    const dir = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }[e.key];
+    if (!dir) return;
+    e.preventDefault();
+    springTo(clamp(Math.round(pos) + dir, 0, LAST));
+  });
+
+  /* ---- Başlat ---- */
+  new ResizeObserver(layout).observe(root);
+  layout();
 })();
 </script>
+
 
 
 <script>
