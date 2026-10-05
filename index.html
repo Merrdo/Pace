@@ -38502,6 +38502,8 @@ body.is-stopwatch-fs .bdial, body.is-countdown-fs .bdial { opacity: 1; pointer-e
 .bdial-item::after { content: ""; position: absolute; inset: 0; border-radius: 50%; border: 2px solid var(--accent-color, #ff90e8); opacity: 0; pointer-events: none; }
 .bdial-item.is-on:not(.is-paused)::after { animation: bdialRing 2.2s cubic-bezier(.2, .6, .3, 1) infinite; }
 @keyframes bdialRing { 0% { opacity: .75; transform: scale(1); } 100% { opacity: 0; transform: scale(1.9); } }
+.bdial-glow { position: absolute; left: 50%; top: -150px; width: 440px; height: 440px; margin-left: -220px; border-radius: 50%; pointer-events: none; opacity: 0;
+  background: radial-gradient(circle, color-mix(in srgb, var(--accent-color, #ff90e8) 50%, transparent), transparent 62%); }
 .bdial-hud { position: absolute; left: 50%; top: 76px; transform: translateX(-50%); width: 130px; display: grid; justify-items: center; gap: 2px; text-align: center; pointer-events: none; }
 .bdial-hn { font-weight: 800; font-size: 15px; line-height: 1.1; white-space: nowrap; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
 .bdial-hs { font-weight: 700; font-size: 11.5px; opacity: .5; transition: opacity .3s; }
@@ -47648,9 +47650,9 @@ body .stopwatch-fullscreen-subject { bottom: calc(env(safe-area-inset-bottom) + 
     const mixIds = () => Object.keys(S.mix).filter((id) => byId(id) && byId(id).src && !byId(id).err);
 
     // ---- Ses motoru ----
-    let ctx = null, master = null; const voices = {}, bufs = {};
+    let ctx = null, master = null, an = null; const voices = {}, bufs = {};
     const ensure = () => {
-      if (!ctx) { const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return null; ctx = new AC(); master = ctx.createGain(); master.gain.value = 0; master.connect(ctx.destination); }
+      if (!ctx) { const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return null; ctx = new AC(); master = ctx.createGain(); master.gain.value = 0; master.connect(ctx.destination); an = ctx.createAnalyser(); an.fftSize = 128; an.smoothingTimeConstant = 0.8; master.connect(an); }
       if (ctx.state === 'suspended') ctx.resume();
       return ctx;
     };
@@ -47830,7 +47832,7 @@ body.is-fs-pressing.is-stopwatch-fs:not(.is-stopwatch-running) .wn-fs,body.is-fs
     playBtn.addEventListener('click', togglePlay);
     // Alt çark için köprü: çark sesleri buradan yönetir ve durumu 'wn:change' olayıyla dinler
     window.wnApi = {
-      sounds: WN_SOUNDS, ids: mixIds, mix: () => S.mix, paused: () => S.paused, play: () => togglePlay(),
+      sounds: WN_SOUNDS, analyser: () => an, ids: mixIds, mix: () => S.mix, paused: () => S.paused, play: () => togglePlay(),
       toggle(id) { const s = byId(id); if (!s || !s.src || s.err) return; if (S.mix[id] != null) delete S.mix[id]; else { S.mix[id] = 0.7; autoPaused = false; S.paused = false; } focus = id; save(); apply(); },
       setVol(id, v) { if (S.mix[id] == null) return; v = Math.max(0, Math.min(1, v)); S.mix[id] = v; const vo = voices[id]; if (vo && vo.g) ramp(vo.g.gain, v, 0.05); save(); paint(); }
     };
@@ -48403,9 +48405,21 @@ body.is-fs-pressing.is-stopwatch-fs:not(.is-stopwatch-running) .wn-fs,body.is-fs
     render();
   };
 
-  let tks = [], K = STEP_DEG, volShow = 0, volLevel = 0, volUntil = 0, needAnim = false;
+  let tks = [], K = STEP_DEG, volShow = 0, volLevel = 0, volUntil = 0, needAnim = false, tw = 390;
+  let P = [], playing = false, playShow = 0, wasPlaying = false, rt0 = 0;
+  const fd = new Uint8Array(64);
+  const nearestP = (v) => P.reduce((b, x) => (Math.abs(x - v) < Math.abs(b - v) ? x : b), P[0]);
+  /* Çalma modunda ikonlar sadece çalan seslerden oluşan sıkı bir yay olur; bu, o yaydaki sürekli konumdur */
+  const toQ = (v) => {
+    const n = P.length; if (v <= P[0]) return v - P[0]; if (v >= P[n - 1]) return n - 1 + v - P[n - 1];
+    let k = 0; while (P[k + 1] < v) k++; return k + (v - P[k]) / (P[k + 1] - P[k]);
+  };
+  const stepTo = (d) => {
+    if (playShow > 0.5 && P.length > 1) springTo(P[clamp(P.indexOf(nearestP(pos)) + d, 0, P.length - 1)]);
+    else springTo(clamp(Math.round(pos) + d, 0, LAST));
+  };
   const drawTicks = (w, h) => {
-    ticksSvg.setAttribute('viewBox', `0 0 ${w} ${h}`);
+    ticksSvg.setAttribute('viewBox', `0 0 ${w} ${h}`); tw = w;
     const frag = document.createDocumentFragment();
     const maxDeg = Math.acos(clamp((CY - h) / R, -1, 1)) * 180 / Math.PI;
     K = Math.min(STEP_DEG, (maxDeg - 3) / (LAST / 2));       // çark konumu → yay açısı ölçeği
@@ -48422,7 +48436,7 @@ body.is-fs-pressing.is-stopwatch-fs:not(.is-stopwatch-running) .wn-fs,body.is-fs
       line.setAttribute('stroke-width', 1.3);
       line.setAttribute('opacity', o);
       frag.appendChild(line);
-      tks.push({ el: line, a, f, o, col: `hsl(${Math.round(120 * f)} 88% 52%)`, k: '' });
+      tks.push({ el: line, a, f, o, len, sn: Math.sin(rad), cs: Math.cos(rad), e: 0, L: len, col: `hsl(${Math.round(120 * f)} 88% 52%)`, k: '' });
     }
     ticksSvg.replaceChildren(frag);
   };
@@ -48431,20 +48445,49 @@ body.is-fs-pressing.is-stopwatch-fs:not(.is-stopwatch-running) .wn-fs,body.is-fs
      Seviye ayarlanırken yay soldan sağa kırmızı → sarı → yeşil dolar, bırakınca beyaza döner. */
   const paintTicks = () => {
     if (!tks.length) return;
-    const angP = (pos - LAST / 2) * K, now = performance.now();
+    const now = performance.now(), cl = document.body.classList, tt = now / 1000;
+    const visible = (cl.contains('is-stopwatch-fs') || cl.contains('is-countdown-fs')) && !document.hidden;
+    const angP = (pos - LAST / 2) * K, Lmax = Math.max(14, R * 0.22 - 21);
     const volOn = (mode === 'vol' && dragging) || now < volUntil, tgt = volOn ? 1 : 0;
     volShow += (tgt - volShow) * 0.18; if (Math.abs(tgt - volShow) < 0.01) volShow = tgt;
     const lvT = API && selected >= 0 ? (API.mix()[OPTIONS[selected].id] || 0) : 0;
     volLevel += (lvT - volLevel) * 0.35; if (Math.abs(lvT - volLevel) < 0.003) volLevel = lvT;
-    needAnim = volOn || volShow !== tgt || volLevel !== lvT;
+    const pT = playing ? 1 : 0;
+    playShow += (pT - playShow) * 0.1; if (Math.abs(pT - playShow) < 0.01) playShow = pT;
+    if (playing && !wasPlaying) rt0 = now;
+    wasPlaying = playing;
+    /* Gerçek ses spektrumu (analizör); sessizken bile canlı bir nefes */
+    const A = API && API.analyser && API.analyser(), fresh = !!(A && playShow > 0 && (A.getByteFrequencyData(fd), true));
+    const age = (now - rt0) / 1000;
+    let sum = 0, maxE = 0;
     for (let i = 0; i < tks.length; i++) {
       const t = tks[i], b = Math.max(0, 1 - Math.abs(t.a - angP) / 7);
-      let c = '', o, w = 1.3;
+      let e = 0;
+      if (playShow > 0) {
+        const d = Math.abs(t.f - 0.5) * 2;
+        const real = fresh ? Math.pow(fd[Math.min(63, Math.floor(d * d * 40))] / 255, 1.25) : 0;
+        const idle = 0.2 + 0.14 * Math.sin(tt * 2.6 + t.f * 12);
+        const rip = age < 1.3 ? 0.9 * Math.exp(-Math.pow(d - age * 1.5, 2) / 0.03) * (1 - age / 1.3) : 0;
+        t.e += ((Math.max(real, idle) + rip) * playShow - t.e) * 0.3;
+      } else t.e *= 0.8;
+      e = t.e; sum += e; if (e > maxE) maxE = e;
+      let c = '', o, w = 1.3, L = t.len;
       if (volShow > 0.5) { const lit = t.f <= volLevel; if (lit) { c = t.col; w = 2.6; } o = lit ? 1 : 0.22; }
-      else { if (b > 0.02) c = '#fff'; if (b > 0.5) w = 2.6; o = t.o + (1 - t.o) * b; }
-      const k = c + '|' + o.toFixed(2) + '|' + w;
-      if (k !== t.k) { t.k = k; t.el.style.stroke = c; t.el.setAttribute('opacity', o.toFixed(2)); t.el.setAttribute('stroke-width', w); }
+      else {
+        if (e > 0.06) c = 'var(--accent-color,#ff90e8)';
+        if (b > 0.02) c = 'currentColor';
+        if (b > 0.5) w = 2.6; else if (e > 0.4) w = 2;
+        o = t.o + (1 - t.o) * Math.max(b, e * 0.9);
+        L = Math.min(Lmax, t.len + 12 * b + (Lmax - t.len) * Math.min(1, e));
+      }
+      const k = c + '|' + o.toFixed(2) + '|' + w + '|' + L.toFixed(1);
+      if (k !== t.k) {
+        t.k = k; t.el.style.stroke = c; t.el.setAttribute('opacity', o.toFixed(2)); t.el.setAttribute('stroke-width', w);
+        t.el.setAttribute('x2', (tw / 2 + t.sn * (R - L)).toFixed(2)); t.el.setAttribute('y2', (CY - t.cs * (R - L)).toFixed(2));
+      }
     }
+    if (glow) glow.style.opacity = (playShow * (0.2 + 0.7 * Math.min(1, sum / tks.length * 2.4))).toFixed(3);
+    needAnim = volOn || volShow !== tgt || volLevel !== lvT || playShow !== pT || maxE > 0.004 || (playing && visible);
   };
 
   /* ---- Çizim: yalnızca transform + opacity ---- */
@@ -48478,15 +48521,22 @@ body.is-fs-pressing.is-stopwatch-fs:not(.is-stopwatch-running) .wn-fs,body.is-fs
   const hud = document.createElement('div'); hud.className = 'bdial-hud';
   hud.innerHTML = '<b class="bdial-hn"></b><small class="bdial-hs"></small><i class="bdial-hb"><u></u></i>';
   root.appendChild(hud);
+  const glow = document.createElement('div'); glow.className = 'bdial-glow'; root.insertBefore(glow, root.firstChild);
+  new MutationObserver(() => request()).observe(document.body, { attributes: true, attributeFilter: ['class'] });
   const hn = hud.querySelector('.bdial-hn'), hs = hud.querySelector('.bdial-hs'), hu = hud.querySelector('u');
   const paintDial = () => {
     if (!API) return;
     const mix = API.mix(), on = API.ids(), paused = API.paused();
+    const np = []; OPTIONS.forEach((o, i) => { if (on.indexOf(o.id) >= 0) np.push(i); });
+    if (np.length) P = np;
+    playing = np.length > 0 && !paused;
     items.forEach((el, i) => { const lit = on.indexOf(OPTIONS[i].id) >= 0; el.classList.toggle('is-on', lit); el.classList.toggle('is-paused', lit && paused); });
     const o = OPTIONS[Math.max(0, selected)], lit = on.indexOf(o.id) >= 0, v = lit ? mix[o.id] : 0;
     hs.textContent = lit ? (paused ? 'Duraklatıldı · %' : 'Çalıyor · %') + Math.round(v * 100) : 'Eklemek için dokun';
     hu.style.transform = 'scaleX(' + v + ')';
     hud.classList.toggle('is-lit', lit);
+    if (playing && !dragging && P.indexOf(clamp(Math.round(pos), 0, LAST)) < 0) springTo(nearestP(pos));
+    request();
   };
   const hudUpdate = (animate) => {
     const o = OPTIONS[selected];
@@ -48501,7 +48551,9 @@ body.is-fs-pressing.is-stopwatch-fs:not(.is-stopwatch-running) .wn-fs,body.is-fs
   const render = () => {
     paintTicks();
     for (let i = 0; i < items.length; i++) {
-      const off = i - pos;
+      let off = i - pos, hide = 0;
+      const j = playShow > 0 && P.length ? P.indexOf(i) : -2;
+      if (j >= 0) off += ((j - toQ(pos)) - off) * playShow; else if (j === -1) hide = playShow;
       const ang = off * STEP;
       const deg = off * STEP_DEG;
       const near = Math.max(0, 1 - Math.abs(off));           // 1: tam ortada
@@ -48509,10 +48561,11 @@ body.is-fs-pressing.is-stopwatch-fs:not(.is-stopwatch-running) .wn-fs,body.is-fs
       const el = items[i];
       el.style.transform =
         `translate3d(${(Math.sin(ang) * RI).toFixed(2)}px,${(CY - Math.cos(ang) * RI).toFixed(2)}px,0) ` +
-        `rotate(${deg.toFixed(2)}deg) scale(${(1 + 0.16 * near).toFixed(3)})`;
-      el.style.opacity = ((0.5 + 0.5 * near) * edge).toFixed(3);
+        `rotate(${deg.toFixed(2)}deg) scale(${((1 + 0.16 * near) * (1 - 0.5 * hide)).toFixed(3)})`;
+      el.style.opacity = ((0.5 + 0.5 * near) * edge * (1 - hide)).toFixed(3);
     }
-    const idx = clamp(Math.round(pos), 0, LAST);
+    let idx = clamp(Math.round(pos), 0, LAST);
+    if (playShow > 0.5 && P.length) idx = nearestP(pos);
     const tk = Math.round(pos * STEP_DEG / 2.5), moving = dragging || spring;
     if (idx !== selected) { select(idx); if (moving) tickSound(true); lastTk = tk; }
     else if (tk !== lastTk) { lastTk = tk; if (moving) tickSound(false); }
@@ -48605,7 +48658,7 @@ body.is-fs-pressing.is-stopwatch-fs:not(.is-stopwatch-running) .wn-fs,body.is-fs
       /* Yön kilidi: yatay = döndür (ses seç), dikey = seçili sesin seviyesi */
       mode = Math.abs(e.clientY - sy) > Math.abs(e.clientX - sx) * 1.2 ? 'vol' : 'rot';
       if (mode === 'vol') {
-        root.classList.add('is-vol'); volId = OPTIONS[clamp(Math.round(pos), 0, LAST)].id;
+        root.classList.add('is-vol'); volId = OPTIONS[Math.max(0, selected)].id;
         if (API && API.mix()[volId] == null) API.toggle(volId);
       }
     }
@@ -48638,7 +48691,7 @@ body.is-fs-pressing.is-stopwatch-fs:not(.is-stopwatch-running) .wn-fs,body.is-fs
       }
     }
     const v = releaseVelocity();
-    springTo(clamp(Math.round(pos + v * GLIDE_S), 0, LAST), v);
+    springTo(playShow > 0.5 && P.length ? nearestP(pos + v * GLIDE_S) : clamp(Math.round(pos + v * GLIDE_S), 0, LAST), v);
   };
   root.addEventListener('pointerup', endDrag);
   root.addEventListener('pointercancel', endDrag);
@@ -48651,7 +48704,7 @@ body.is-fs-pressing.is-stopwatch-fs:not(.is-stopwatch-running) .wn-fs,body.is-fs
     if (now - wheelLock < 140) return;
     wheelLock = now;
     const d = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
-    springTo(clamp(Math.round(pos) + Math.sign(d), 0, LAST));
+    stepTo(Math.sign(d));
   }, { passive: false });
 
   root.addEventListener('keydown', (e) => {
@@ -48660,7 +48713,7 @@ body.is-fs-pressing.is-stopwatch-fs:not(.is-stopwatch-running) .wn-fs,body.is-fs
     const dir = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }[e.key];
     if (!dir) return;
     e.preventDefault();
-    springTo(clamp(Math.round(pos) + dir, 0, LAST));
+    stepTo(dir);
   });
 
   /* ---- Başlat ---- */
