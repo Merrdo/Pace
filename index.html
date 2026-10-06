@@ -72160,7 +72160,7 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
         labelEl.textContent = opts.label || (listMode ? 'Yeni liste' : (g.name || 'Liste'));
         goBtn.textContent = opts.go || (listMode ? 'Listeyi oluştur' : 'Görevi ekle'); goBtn.classList.toggle('is-danger', !!opts.danger);
         moreBtn.textContent = confirmMode ? 'Vazgeç' : 'Ekle ve yeni yaz'; msgEl.textContent = opts.msg || '';
-        ta.placeholder = listMode ? 'Liste adı (örn. Market)' : 'Görevi buraya yaz…'; ta.rows = listMode ? 1 : 5; ta.maxLength = listMode ? 120 : 100000;
+        ta.placeholder = opts.ph || (listMode ? 'Liste adı (örn. Market)' : 'Görevi buraya yaz…'); ta.rows = listMode ? 1 : 5; ta.maxLength = listMode ? 120 : 100000;
         curId = g.id; onSubmit = submitFn; opened = true; curCol = g.color || null;
         card.style.setProperty('--tsh-gc', g.color || 'var(--accent-color,#ff90e8)');
         swEl.innerHTML = ''; card.classList.toggle('has-sw', !!opts.colors);
@@ -72195,6 +72195,7 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
       edit: '<svg viewBox="0 0 24 24"><path d="M4 20h4L19 9a2.1 2.1 0 0 0-3-3L5 17v3z"/><path d="M14.5 7.5l3 3"/></svg>',
       color: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><circle cx="8.6" cy="11" r="1"/><circle cx="12" cy="7.9" r="1"/><circle cx="15.4" cy="11" r="1"/></svg>',
       copy: '<svg viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2.5"/><path d="M5 15V6.5A2.5 2.5 0 0 1 7.5 4H15"/></svg>',
+      sub: '<svg viewBox="0 0 24 24"><path d="M4 6.5h9"/><path d="M4 12h16"/><path d="M4 17.5h11"/></svg>',
       clean: '<svg viewBox="0 0 24 24"><path d="M4 12.5l5 5.5 11-13"/></svg>',
       trash: '<svg viewBox="0 0 24 24"><path d="M3.5 6h17"/><path d="M8.5 6V4.3a1 1 0 0 1 1-1h5a1 1 0 0 1 1 1V6"/><path d="M6 6l.9 13.2a2 2 0 0 0 2 1.8h6.2a2 2 0 0 0 2-1.8L18 6"/></svg>'
     };
@@ -72212,7 +72213,7 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
     const isoD = (d) => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
     const emitProg = (user) => {
       if (!cfg.progress) return;
-      let t = 0, d = 0; st.groups.forEach((g) => g.items.forEach((i) => { t++; if (i.done) d++; }));
+      let t = 0, d = 0; st.groups.forEach((g) => g.items.forEach((i) => { if (i.sub) return; t++; if (i.done) d++; }));
       const all = t > 0 && d === t, now = new Date(), today = isoD(now);
       let days = Array.isArray(st.flameDays) ? st.flameDays : [], has = days.indexOf(today) >= 0;
       if (all && !has) { days = days.concat(today); st.flameDays = days.slice(-800); save(); }
@@ -72345,7 +72346,8 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
       // Liste baştan çizilmez, kaydırma yapılmaz: görev kendi yerine eklenir, yalnızca yumuşakça belirir.
       emitProg(false);
       const row = mkRow(g, it, box, box._upd);
-      box.appendChild(row); box._upd();
+      { const shs = box.querySelectorAll('.hl-sh'), ls = shs[shs.length - 1]; if (ls && ls.classList.contains('is-collapsed')) ls.click(); }   // kapalı bölüme görev eklenirse açılır
+      tailOf(box).appendChild(row); box._upd();
       if (row.animate && !(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches)) {
         row.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 320, delay: 160, easing: 'ease-out', fill: 'backwards' });
       }
@@ -72385,12 +72387,14 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
     });
 
     const mkRow = (g, it, box, upd) => {
+      if (it.sub) return mkSub(g, it, box);
       const row = el('div', 'hl-r' + (it.done ? ' is-done' : '')), c = el('span', 'hl-c'), t = el('span', 'hl-t'); t.appendChild(el('span', 'hl-tt', it.text));
       c.innerHTML = TICK; row.append(c, t); row.dataset.fk = 'hr:' + it.id;
       row.addEventListener('click', () => { it.done = !it.done; row.classList.toggle('is-done', it.done); save(); upd(); autoSweep(g, it); emitProg(true); });
       hold(row, (x, y) => openMenu(row, [
         { ic: IC.copy, title: 'Kopyala', sub: 'Metni panoya al', fn: async () => { const ok = await window.gundelikCopyText(it.text); toast(ok ? 'Kopyalandı' : 'Kopyalanamadı'); } },
         { ic: IC.edit, title: 'Metni Düzenle', sub: 'Görevin metnini değiştir', fn: () => window.gundelikTaskSheet.open({ id: 'e:' + it.id, name: g.name, color: g.color }, (v) => { it.text = v; save(); render(); }, { edit: true, text: it.text, label: 'Görevi düzenle', go: 'Kaydet' }) },
+        ...(SUB ? [{ ic: IC.sub, title: 'Üstüne Alt Başlık', sub: 'Bu görevden önce yeni bölüm başlat', fn: () => addSub(g, g.items.indexOf(it)) }] : []),
         { ic: IC.trash, title: 'Sil', sub: 'Bu görevi kaldır', danger: true, fn: () => window.gkAnim.leave(row, () => { const idx = g.items.indexOf(it); g.items = g.items.filter((x2) => x2 !== it); save(); render(); toast('Görev silindi', () => { g.items.splice(Math.min(idx, g.items.length), 0, it); save(); render(); }); }) }
       ], x, y));
       return row;
@@ -72413,6 +72417,46 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
     };
 
     const editList = (g) => window.gundelikTaskSheet.open({ id: 'e:' + g.id, name: g.name, color: g.color }, (v, c) => { g.name = v; if (c) g.color = c; save(); render(); }, { edit: true, list: true, text: g.name, label: 'Listeyi düzenle', go: 'Kaydet', colors: pal });
+    // ---- Alt başlıklar (yalnızca cfg.subheads: Gündelik) ----
+    // Alt başlık, liste maddeleri arasında {id, text, sub:true, c?:1} biçiminde duran bir satırdır (c = kapalı).
+    // Sıra g.items sırasıdır; bir alt başlıktan sonra gelen görevler sıradaki alt başlığa kadar onun bölümüdür.
+    const SUB = !!cfg.subheads;
+    const CHEV = '<svg viewBox="0 0 24 24"><path d="M6 9.5l6 6 6-6"/></svg>';
+    let newSubId = null;
+    const tailOf = (box) => { const s = box.querySelectorAll('.hl-sec-in'); return s.length ? s[s.length - 1] : box; };
+    const addSub = (g, at) => window.gundelikTaskSheet.open({ id: 'sub:' + g.id, name: g.name, color: g.color }, (v) => {
+      const s = { id: gid(), text: v, sub: true }; newSubId = s.id;
+      if (at == null || at < 0) g.items.push(s); else g.items.splice(at, 0, s);
+      save(); render();
+    }, { list: true, label: 'Alt başlık ekle', go: 'Ekle', ph: 'Alt başlık (örn. Sebze & Meyve)' });
+    const mkSub = (g, it, box) => {
+      const row = el('div', 'hl-sh' + (it.c ? ' is-collapsed' : '')), t = el('span', 'hl-sh-t', it.text), n = el('span', 'hl-sh-n'), ch = el('span', 'hl-sh-ch');
+      ch.innerHTML = CHEV; row.append(t, n, ch);
+      row.dataset.fk = 'hs:' + it.id; row.setAttribute('role', 'button'); row.setAttribute('aria-expanded', it.c ? 'false' : 'true');
+      if (firstPaint || it.id === newSubId) row.classList.add('is-new');
+      if (it.id === newSubId) newSubId = null;
+      const sec = el('div', 'hl-sec' + (it.c ? ' is-collapsed' : '')), inn = el('div', 'hl-sec-in'); sec.appendChild(inn);
+      row._sec = sec; row._inn = inn; (box._subs = box._subs || []).push({ cnt: n, sec });
+      row.addEventListener('click', (e) => {
+        if (e.target.closest && e.target.closest('input, textarea, .hl-editwrap')) return;
+        it.c = it.c ? 0 : 1; if (!it.c) delete it.c;
+        row.classList.toggle('is-collapsed', !!it.c); sec.classList.toggle('is-collapsed', !!it.c); row.setAttribute('aria-expanded', it.c ? 'false' : 'true'); save();
+      });
+      hold(row, (x, y) => openMenu(row, [
+        { ic: IC.edit, title: 'Alt Başlığı Düzenle', sub: 'Adını değiştir', fn: () => window.gundelikTaskSheet.open({ id: 'e:' + it.id, name: g.name, color: g.color }, (v) => { it.text = v; save(); render(); }, { edit: true, list: true, text: it.text, label: 'Alt başlığı düzenle', go: 'Kaydet', ph: 'Alt başlık' }) },
+        { ic: IC.trash, title: 'Başlığı Sil', sub: 'Görevler listede kalır', danger: true, fn: () => window.gkAnim.leave(row, () => {
+          const idx = g.items.indexOf(it); g.items = g.items.filter((x2) => x2 !== it); save(); render();
+          toast('Alt başlık silindi', () => { g.items.splice(Math.min(idx, g.items.length), 0, it); save(); render(); });
+        }) },
+        { ic: IC.trash, title: 'Bölümü Sil', sub: 'Başlık ve altındaki görevler', danger: true, fn: () => window.gkAnim.leave([row, sec], () => {
+          const idx = g.items.indexOf(it); let end = idx + 1; while (end < g.items.length && !g.items[end].sub) end++;
+          const gone = g.items.slice(idx, end); g.items = g.items.filter((x2) => gone.indexOf(x2) < 0); save(); render();
+          toast('Bölüm silindi', () => { g.items.splice(Math.min(idx, g.items.length), 0, ...gone); save(); render(); });
+        }) }
+      ], x, y));
+      return row;
+    };
+
     // ---- Çizim ----
     function render() { window.gkAnim.flip(list, renderNow); }
     function renderNow() {
@@ -72428,16 +72472,17 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
         if (!firstPaint && seenGroups.has(g.id)) box.style.animation = 'none'; seenGroups.add(g.id);
         const head = el('div', 'hl-head'), cnt = el('span', 'hl-count');
         head.append(el('span', 'hl-name', g.name), cnt);
-        const upd = () => { const d = g.items.filter((i) => i.done).length; cnt.textContent = g.items.length ? `${d}/${g.items.length}` : ''; head.style.setProperty('--pr', g.items.length ? (d / g.items.length).toFixed(3) : 0); };
+        const upd = () => { const rl = g.items.filter((i) => !i.sub), d = rl.filter((i) => i.done).length; cnt.textContent = rl.length ? `${d}/${rl.length}` : ''; head.style.setProperty('--pr', rl.length ? (d / rl.length).toFixed(3) : 0); if (box._subs) box._subs.forEach((sb) => { const tot = sb.sec.querySelectorAll('.hl-r').length, dn = sb.sec.querySelectorAll('.hl-r.is-done').length; sb.cnt.textContent = tot ? `${dn}/${tot}` : ''; }); };
         upd(); box.appendChild(head);
         head.classList.add('is-tappable');
         head.addEventListener('click', (e) => { if (e.target.closest && e.target.closest('input, textarea, .hl-editwrap')) return; openTaskSheet(g); });
         hold(head, (x, y) => openMenu(head, [
           { ic: IC.edit, title: 'Adı Değiştir', sub: 'Listenin ismini düzenle', fn: () => editList(g) },
           { ic: IC.color, title: 'Rengi Değiştir', sub: 'Listenin vurgu rengi', fn: () => editList(g) },
+          ...(SUB ? [{ ic: IC.sub, title: 'Alt Başlık Ekle', sub: 'Listeye bir bölüm başlığı koy', fn: () => addSub(g) }] : []),
           ...(g.items.some((i) => i.done) ? [{ ic: IC.clean, title: 'Tamamlananları Temizle', sub: 'İşaretli görevleri kaldır', fn: () => window.gkAnim.leave(Array.from(box.querySelectorAll('.hl-r.is-done')), () => { const old = g.items.slice(); g.items = g.items.filter((i) => !i.done); save(); render(); toast('Tamamlananlar temizlendi', () => { g.items = old; save(); render(); }); }) }] : []),
           { ic: IC.trash, title: 'Listeyi Sil', sub: 'İçindeki görevlerle birlikte', danger: true, fn: async () => {
-            if (!(await confirmDel(`"${g.name}" listesi silinsin mi?`, g.items.length ? `İçindeki ${g.items.length} görev de silinecek. Hemen ardından geri alabilirsin.` : 'Bu liste silinecek. Hemen ardından geri alabilirsin.'))) return;
+            if (!(await confirmDel(`"${g.name}" listesi silinsin mi?`, g.items.some((i) => !i.sub) ? `İçindeki ${g.items.filter((i) => !i.sub).length} görev de silinecek. Hemen ardından geri alabilirsin.` : 'Bu liste silinecek. Hemen ardından geri alabilirsin.'))) return;
             window.gkAnim.leave(box, () => {
               const idx = st.groups.indexOf(g); st.groups = st.groups.filter((x) => x !== g); save(); render();
               toast(`"${g.name}" silindi`, () => { st.groups.splice(Math.min(idx, st.groups.length), 0, g); save(); render(); });
@@ -72445,7 +72490,14 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
           } }
         ], x, y));
         box._upd = upd;
-        g.items.forEach((it) => box.appendChild(mkRow(g, it, box, upd)));
+        if (SUB) {
+          let cur = box;
+          g.items.forEach((it) => {
+            if (it.sub) { const sh = mkSub(g, it, box); box.append(sh, sh._sec); cur = sh._inn; }
+            else cur.appendChild(mkRow(g, it, box, upd));
+          });
+          upd();
+        } else g.items.forEach((it) => box.appendChild(mkRow(g, it, box, upd)));
         list.appendChild(box);
       });
       firstPaint = false;
@@ -72501,7 +72553,7 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
   };
 
   const hlInst = mountList({ p: 'hl', page: 'page-hatirla', key: 'hatirla', other: 'page-8', defName: 'Genel', navBack: true });
-  const gdInst = mountList({ p: 'gd', page: 'page-8', key: 'gundelik', other: 'page-hatirla', defName: 'Günlük', navBack: false, dailyReset: true, progress: true });
+  const gdInst = mountList({ p: 'gd', page: 'page-8', key: 'gundelik', other: 'page-hatirla', defName: 'Günlük', navBack: false, dailyReset: true, progress: true, subheads: true });
 
   // Sayfa bağımsız parçalar: sol alttaki Geri / geçiş düğmeleri ve sağ alttaki "+" (hangi sayfa açıksa ona ekler).
   (() => {
@@ -74106,6 +74158,55 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
     :is(#page-hatirla, #page-8) .hl-head { padding: .3rem .2rem .7rem; }
     :is(#page-hatirla, #page-8) .hl-name { font-size: 1.7rem; }
     :is(#page-hatirla, #page-8) .hl-count { font-size: 1rem; padding: 0; }
+  }
+</style>
+<style id="gdSubCss">
+  /* ===== Gündelik: alt başlıklar =====
+     Minimal: kalın başlık + liste renginde kısa çubuk, sağa doğru solan ince çizgi, sağda küçük ok.
+     Dokununca bölüm yumuşakça kapanır/açılır; basılı tutunca seçenekler. Silmek için bu blok kaldırılır. */
+  #page-8 .hl-sh {
+    position: relative; display: flex; align-items: center; gap: .55rem; margin: 1.05rem 0 .2rem; padding: .4rem .3rem .4rem .85rem;
+    border-radius: .85rem; cursor: pointer; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent;
+    transition: background-color .25s ease, transform .35s cubic-bezier(.34, 1.4, .64, 1);
+  }
+  #page-8 .hl-sh::before {
+    content: ''; position: absolute; left: .2rem; top: 50%; width: .24rem; height: 1.15rem; margin-top: -.575rem; border-radius: 99px;
+    background: var(--gc); transition: height .35s cubic-bezier(.34, 1.4, .64, 1), margin-top .35s cubic-bezier(.34, 1.4, .64, 1);
+  }
+  #page-8 .hl-sh.is-collapsed::before { height: .55rem; margin-top: -.275rem; }
+  #page-8 .hl-sh.is-pressing, #page-8 .hl-sh.is-ctx-active { background: color-mix(in srgb, var(--gc) 14%, transparent); }
+  #page-8 .hl-sh:active { transform: scale(.985); }
+  #page-8 .hl-sh-t { flex: 0 1 auto; min-width: 0; font-size: 1.02rem; font-weight: 800; letter-spacing: .005em; line-height: 1.2; overflow-wrap: anywhere; color: var(--theme-text, #121212); }
+  #page-8 .hl-sh-n { flex: 0 0 auto; font-size: .8rem; font-weight: 700; color: var(--hl-mute); font-variant-numeric: tabular-nums; }
+  #page-8 .hl-sh-n:empty { display: none; }
+  #page-8 .hl-sh::after {
+    content: ''; order: 2; flex: 1 1 auto; min-width: .6rem; height: 2px; border-radius: 2px;
+    background: linear-gradient(90deg, color-mix(in srgb, var(--gc) 60%, transparent), transparent); transform-origin: left center;
+    transition: opacity .3s ease, transform .45s cubic-bezier(.22, 1, .36, 1);
+  }
+  #page-8 .hl-sh.is-collapsed::after { opacity: .55; transform: scaleX(.6); }
+  #page-8 .hl-sh-ch { order: 3; flex: 0 0 auto; display: grid; place-items: center; width: 1.3rem; height: 1.3rem; color: var(--hl-mute); transition: transform .45s cubic-bezier(.34, 1.4, .64, 1), color .25s ease; }
+  #page-8 .hl-sh-ch svg { width: 1.05rem; height: 1.05rem; fill: none; stroke: currentColor; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; }
+  #page-8 .hl-sh.is-collapsed .hl-sh-ch { transform: rotate(-90deg); color: var(--gc); }
+  /* Bölüm: yüksekliği 0'a yumuşakça iner (grid satırı animasyonu) */
+  #page-8 .hl-sec { display: grid; grid-template-rows: 1fr; transition: grid-template-rows .45s cubic-bezier(.22, 1, .36, 1); }
+  #page-8 .hl-sec-in { min-height: 0; overflow: hidden; transition: opacity .3s ease .05s, transform .45s cubic-bezier(.22, 1, .36, 1); }
+  #page-8 .hl-sec.is-collapsed { grid-template-rows: 0fr; }
+  #page-8 .hl-sec.is-collapsed > .hl-sec-in { opacity: 0; transform: translateY(-6px); visibility: hidden; transition: opacity .2s ease, transform .45s cubic-bezier(.22, 1, .36, 1), visibility 0s linear .45s; }
+  /* Yeni / ilk çizim: başlık soldan kayarak gelir, çizgi çizilir */
+  #page-8 .hl-sh.is-new { animation: hlShIn .5s cubic-bezier(.22, 1, .36, 1) backwards; }
+  #page-8 .hl-sh.is-new::after { animation: hlShLine .75s .12s cubic-bezier(.22, 1, .36, 1) backwards; }
+  #page-8 .hl-sh.is-new::before { animation: hlShBar .55s .05s cubic-bezier(.34, 1.56, .64, 1) backwards; }
+  @keyframes hlShIn { from { opacity: 0; transform: translateX(-12px); } to { opacity: 1; transform: none; } }
+  @keyframes hlShLine { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+  @keyframes hlShBar { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+  @media (min-width: 768px) and (min-height: 600px) {
+    #page-8 .hl-sh { margin-top: 1.2rem; padding: .5rem .4rem .5rem 1rem; }
+    #page-8 .hl-sh-t { font-size: 1.15rem; }
+    #page-8 .hl-sh-n { font-size: .9rem; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    #page-8 .hl-sh, #page-8 .hl-sh::before, #page-8 .hl-sh::after, #page-8 .hl-sh-ch, #page-8 .hl-sec, #page-8 .hl-sec-in { animation: none !important; transition: none !important; }
   }
 </style>
 <style id="safeAreaSyncCss">
