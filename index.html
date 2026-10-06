@@ -47642,7 +47642,8 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
 
     // ---- Arayüz (v2): minimal titreşim çubukları; aynı alanda ses ayarı ve baloncuk menüsü ----
     //  • Çubuklar: ses çalarken sese tepki verir. Soluk nokta çizgisi = ses yok.
-    //  • Sol yarıya dokun ya da herhangi bir yerden yatay kaydır → aynı çubuklar ses çubuğuna dönüşür
+    //  • Sol yarıya dokun → çalan ses duraklar / devam eder (ses seçili değilse menü açılır).
+    //  • Herhangi bir yerden yatay kaydır → aynı çubuklar ses çubuğuna dönüşür
     //    (kırmızı → sarı → yeşil). Çubuğun neresinden tutarsan tut, kaydırdığın kadar değişir; çubuğa dokunmak o noktaya götürür.
     //  • Sağ yarıya dokun → çubuklar kaybolur, aynı alana saydam, nefes alan baloncuklar süzülerek gelir. Seçilince gider, ses başlar.
     //  • Aynı anda tek ses çalar.
@@ -47662,7 +47663,22 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
 .wn2.is-vol .wn2-bars{opacity:1;}
 .wn2.is-vol .wn2-bars i{background:color-mix(in srgb,currentColor 20%,transparent);}.wn2.is-vol .wn2-bars i.on{background:var(--c);}
 .wn2-name{position:absolute;left:0;right:0;top:50%;margin-top:14px;text-align:center;font-weight:700;font-size:.72rem;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;opacity:0;transition:opacity .4s ease;pointer-events:none;font-variant-numeric:tabular-nums;}
-.wn2.is-live .wn2-name{opacity:.5;}.wn2.is-vol .wn2-name{opacity:.65;}
+.wn2.is-live .wn2-name{opacity:.5;}.wn2.is-vol .wn2-name{opacity:.65;}.wn2.is-flash .wn2-name{opacity:.7;}
+.wn2-hint{position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity .45s ease;}
+.wn2-hint.is-on{opacity:1;}
+.wn2-hint-cap{position:absolute;left:50%;bottom:calc(100% + 4px);transform:translateX(-50%);white-space:nowrap;font-weight:700;font-size:.8rem;opacity:.85;}
+.wn2-hint-cap.is-in{animation:wn2CapIn .5s ease both;}
+@keyframes wn2CapIn{from{opacity:0;transform:translate(-50%,6px);}to{opacity:.85;transform:translate(-50%,0);}}
+.wn2-hint-dot{position:absolute;top:calc(50% - 4px);left:25%;width:34px;height:34px;margin:-17px 0 0 -17px;border-radius:50%;
+  background:color-mix(in srgb,currentColor 22%,transparent);box-shadow:0 0 0 1.5px color-mix(in srgb,currentColor 55%,transparent);
+  transition:left .7s cubic-bezier(.22,1,.36,1);}
+.wn2-hint-dot::after{content:"";position:absolute;inset:0;border-radius:50%;border:2px solid currentColor;opacity:0;}
+.wn2-hint-dot.is-tap{animation:wn2Tap .8s ease-out .7s 2;}
+.wn2-hint-dot.is-tap::after{animation:wn2Ring .8s ease-out .7s 2;}
+.wn2-hint-dot.is-swipe{transition:left 1.4s ease-in-out .3s;}
+@keyframes wn2Tap{0%,100%{transform:scale(1);}35%{transform:scale(.74);}}
+@keyframes wn2Ring{0%{transform:scale(1);opacity:.7;}100%{transform:scale(2.3);opacity:0;}}
+@media (prefers-reduced-motion:reduce){.wn2-hint-dot,.wn2-hint-dot::after,.wn2-hint-cap{animation:none !important;transition:none !important;}}
 .wn2.is-pl .wn2-bars{transform:translateX(-50%) scaleX(.97);}.wn2.is-pr .wn2-bars{transform:translateX(-50%) scaleX(.97);}
 .wn2-menu{--D:clamp(58px,15vw,72px);position:fixed;inset:0;z-index:63;visibility:hidden;pointer-events:none;touch-action:none;transition:visibility 0s linear .9s;}
 .wn2-menu.is-on{visibility:visible;pointer-events:auto;transition:visibility 0s;}
@@ -47693,6 +47709,7 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
 .wn2-slot.is-sel .wn2-n{opacity:1;}
 .wn2-opt{display:block;margin:2px auto 0;padding:.5rem .8rem;border:0;background:none;cursor:pointer;color:inherit;font:700 .8rem/1.2 "Baloo 2","Space Grotesk",sans-serif;opacity:0;transition:opacity .4s ease;-webkit-tap-highlight-color:transparent;}
 .wn2-menu.is-on .wn2-opt{opacity:.6;transition-delay:.35s;}
+.wn2-help{margin-top:0;padding-top:.15rem;font-size:.72rem;font-weight:600;}
 .wn2-opt-v{display:inline-block;min-width:3.2ch;text-align:left;font-weight:800;}
 .wn2-opt-v.is-sw{animation:wn2Sw .38s ease;}
 @keyframes wn2Sw{0%{opacity:1;transform:none;filter:none;}42%{opacity:0;transform:translateY(-5px);filter:blur(2px);}58%{opacity:0;transform:translateY(5px);filter:blur(2px);}100%{opacity:1;transform:none;filter:none;}}
@@ -47710,10 +47727,10 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
     document.head.appendChild(st);
 
     const NB = 24;
-    const strip = document.createElement('div'); strip.className = 'wn2'; strip.tabIndex = 0; strip.setAttribute('role', 'slider'); strip.setAttribute('aria-label', 'Ses seviyesi / müzikler');
+    const strip = document.createElement('div'); strip.className = 'wn2'; strip.tabIndex = 0; strip.setAttribute('role', 'slider'); strip.setAttribute('aria-label', 'Sol: sesi duraklat/başlat · Sağ: müzikler · Kaydır: ses seviyesi');
     strip.innerHTML = '<div class="wn2-bars" aria-hidden="true">' + '<i></i>'.repeat(NB) + '</div><div class="wn2-name"></div>';
     const menu = document.createElement('div'); menu.className = 'wn2-menu';
-    menu.innerHTML = '<div class="wn2-wrap"><div class="wn2-scroll"><div class="wn2-track"></div></div><button type="button" class="wn2-opt"><span>Sayaçla birlikte çalsın: </span><span class="wn2-opt-v"></span></button></div>';
+    menu.innerHTML = '<div class="wn2-wrap"><div class="wn2-scroll"><div class="wn2-track"></div></div><button type="button" class="wn2-opt"><span>Sayaçla birlikte çalsın: </span><span class="wn2-opt-v"></span></button><button type="button" class="wn2-opt wn2-help">Nasıl kullanılır?</button></div>';
     document.body.appendChild(strip); document.body.appendChild(menu);
 
     const barsEl = strip.querySelector('.wn2-bars'), sBars = [...barsEl.children], sName = strip.querySelector('.wn2-name');
@@ -47760,6 +47777,7 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
 
     const paintName = () => {
       if (volMode) { sName.textContent = S.master <= 0 ? 'sessiz' : Math.round(S.master * 100) + '%'; return; }
+      if (flashMsg) { sName.textContent = flashMsg; return; }
       const id = mixIds()[0]; sName.textContent = id ? byId(id).name : '';
     };
     function paint() {
@@ -47784,13 +47802,24 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
       if (ctx && !S.paused) ramp(master.gain, v, 0.05);
       save(); paintVol();
     };
+    // ---- Sol dokunuş: çalan sesi anında duraklat / devam ettir ----
+    let flashMsg = '', flashT = 0;
+    const flash = (m) => {
+      flashMsg = m; strip.classList.add('is-flash'); paintName(); clearTimeout(flashT);
+      flashT = setTimeout(() => { flashMsg = ''; strip.classList.remove('is-flash'); paintName(); }, 1100);
+    };
+    const togglePlay = () => {
+      if (!mixIds().length) { openMenu(); return; }   // henüz ses seçilmediyse seçim menüsünü aç
+      autoPaused = false;                              // elle verilen karar, otomatik duraklatmayı geçersiz kılar
+      S.paused = !S.paused; apply();
+      flash(S.paused ? 'duraklatıldı' : 'çalıyor');
+    };
     const barsW = () => barsEl.getBoundingClientRect().width || 200;
     strip.addEventListener('pointerdown', (e) => {
-      if (pid != null) return; pid = e.pointerId; x0 = e.clientX; v0 = S.master; moved = false; wasVol = volMode;
+      if (pid != null) return; hintStop(true); pid = e.pointerId; x0 = e.clientX; v0 = S.master; moved = false; wasVol = volMode;
       const r = strip.getBoundingClientRect(); side = e.clientX < r.left + r.width / 2 ? 'l' : 'r';
       try { strip.setPointerCapture(pid); } catch (x) { /* yok say */ }
       clearTimeout(volT); strip.classList.add(side === 'l' ? 'is-pl' : 'is-pr');
-      if (side === 'l') enterVol();
     });
     strip.addEventListener('pointermove', (e) => {
       if (e.pointerId !== pid) return; const dx = e.clientX - x0;
@@ -47802,6 +47831,7 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
       if (!cancel && !moved) {
         if (wasVol) { const br = barsEl.getBoundingClientRect(); let v = (e.clientX - br.left) / br.width; if (v < 0.03) v = 0; if (v > 0.97) v = 1; setVol(v); }
         else if (side === 'r') { openMenu(); return; }
+        else { togglePlay(); return; }
       }
       exitVolSoon(1700);
     };
@@ -47843,7 +47873,7 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
       slots.forEach((d) => io.observe(d));
     };
     function openMenu() {
-      if (menuOpen) return; menuOpen = true; clearTimeout(closeT); clearTimeout(volT);
+      if (menuOpen) return; menuOpen = true; hintStop(true); clearTimeout(closeT); clearTimeout(volT);
       volMode = false; strip.classList.remove('is-vol'); paintName();
       slots.forEach((d) => d.classList.remove('is-pick'));
       layout(); scroll.scrollLeft = 0; menu.classList.add('is-on'); document.body.classList.add('wn2-menu-open');
@@ -47867,6 +47897,7 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
       setTimeout(() => { optV.textContent = S.sync ? 'Açık' : 'Kapalı'; }, 160);
     };
     menu.addEventListener('click', (e) => {
+      if (e.target.closest('.wn2-help')) { closeMenu(); maybeHint(true); return; }
       if (e.target.closest('.wn2-opt')) { toggleSync(); return; }
       const sl = e.target.closest('.wn2-slot');
       if (sl) {
@@ -47880,8 +47911,47 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
     window.addEventListener('resize', () => { if (menuOpen) layout(); });
     document.addEventListener('visibilitychange', kick);
 
+    // ---- Yeni kullanıcı için tek seferlik animasyonlu ipucu ----
+    // Tam ekran ilk kez açıldığında: sol dokunuş → sol yarıda parmak, sağ dokunuş → sağ yarıda parmak,
+    // kaydırma → yatay hareket. Şeride dokunulunca / menü açılınca / tur bitince kapanır ve bir daha gösterilmez.
+    const HK = 'wnHintSeen';
+    let hSeen = false; try { hSeen = localStorage.getItem(HK) === '1'; } catch (e) { /* yok say */ }
+    const hint = document.createElement('div'); hint.className = 'wn2-hint'; hint.setAttribute('aria-hidden', 'true');
+    hint.innerHTML = '<div class="wn2-hint-cap"></div><div class="wn2-hint-dot"></div>';
+    strip.appendChild(hint);
+    const hCap = hint.firstChild, hDot = hint.lastChild;
+    const H_PH = [['Sola dokun: sesi duraklat / başlat', 0.25], ['Sağa dokun: müzik seç', 0.75], ['Kaydır: ses seviyesi', null]];
+    let hOn = false, hStep = 0, hT = 0;
+    function hintStop(mark) {
+      clearTimeout(hT);
+      if (hOn) { hOn = false; hint.classList.remove('is-on'); hDot.classList.remove('is-tap', 'is-swipe'); }
+      if (mark && !hSeen) { hSeen = true; try { localStorage.setItem(HK, '1'); } catch (e) { /* yok say */ } }
+    }
+    function hintStep() {
+      if (!hOn) return;
+      if (!fsVisible() || menuOpen) { hintStop(false); return; }
+      if (hStep >= H_PH.length * 2) { hintStop(true); return; }
+      const p = H_PH[hStep++ % H_PH.length];
+      hCap.textContent = p[0]; hCap.classList.remove('is-in'); void hCap.offsetWidth; hCap.classList.add('is-in');
+      hDot.classList.remove('is-tap', 'is-swipe'); void hDot.offsetWidth;
+      if (p[1] != null) { hDot.style.left = (p[1] * 100) + '%'; hDot.classList.add('is-tap'); }
+      else {
+        hDot.style.transition = 'none'; hDot.style.left = '32%'; void hDot.offsetWidth;
+        hDot.style.transition = ''; hDot.classList.add('is-swipe'); hDot.style.left = '68%';
+      }
+      hT = setTimeout(hintStep, p[1] != null ? 3000 : 3200);
+    }
+    function maybeHint(force) {
+      if ((hSeen && !force) || hOn || menuOpen) return; hOn = true; hStep = 0;
+      // Mevcut "Duraklatmak için dokun" yazısı 3 sn sonra kaybolur; çakışmamak için ondan sonra başla
+      hT = setTimeout(() => {
+        if (!hOn || !fsVisible() || menuOpen) { hintStop(false); return; }
+        hint.classList.add('is-on'); hintStep();
+      }, force ? 1000 : 3600);
+    }
+
     // Tam ekran görünmüyorsa (çıkıldı) menü kapanır; görününce çubuklar tekrar canlanır
-    new MutationObserver(() => { if (!fsVisible()) closeMenu(); else kick(); }).observe(document.body, { attributes: true, attributeFilter: ['class'] });
+    new MutationObserver(() => { if (!fsVisible()) { closeMenu(); hintStop(false); } else { kick(); maybeHint(); } }).observe(document.body, { attributes: true, attributeFilter: ['class'] });
 
     // Sayaç / kronometre ile birlikte duraklat-devam et
     let was = false;
