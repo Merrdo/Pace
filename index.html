@@ -41504,14 +41504,14 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
 <style id="q9mCss">
 /* ===== Soru Takibi · mobil yeniden tasarım v2 (büyük ekrana dokunmaz) ===== */
 #q9m{display:none}
-.q9m,.q9-ov,.q9-sp{--t:var(--theme-text,#121212);--bg:var(--theme-bg,#f6f4ef);--soft:color-mix(in srgb,var(--t) 6%,transparent);--soft2:color-mix(in srgb,var(--t) 12%,transparent);--mute:color-mix(in srgb,var(--t) 52%,transparent);--ease:cubic-bezier(.22,1,.36,1);--glide:cubic-bezier(.33,.9,.4,1);--spring:cubic-bezier(.34,1.45,.64,1);font-family:"Baloo 2","Space Grotesk",sans-serif;color:var(--t)}
-.q9-ov,.q9-sp{display:none}
+.q9m,.q9-ov,.q9-sp,.q9-tour{--t:var(--theme-text,#121212);--bg:var(--theme-bg,#f6f4ef);--soft:color-mix(in srgb,var(--t) 6%,transparent);--soft2:color-mix(in srgb,var(--t) 12%,transparent);--mute:color-mix(in srgb,var(--t) 52%,transparent);--ease:cubic-bezier(.22,1,.36,1);--glide:cubic-bezier(.33,.9,.4,1);--spring:cubic-bezier(.34,1.45,.64,1);font-family:"Baloo 2","Space Grotesk",sans-serif;color:var(--t)}
+.q9-ov,.q9-sp,.q9-tour{display:none}
 @media not all and (min-width:768px) and (min-height:600px){
 #page-9 .page9-wrap{display:none !important}
 #page-9.page{padding:0 18px calc(120px + env(safe-area-inset-bottom))}
 #page-9 #q9m{display:block;width:100%;max-width:440px;margin:0 auto}
-.q9-ov,.q9-sp{display:block}
-:where(.q9m,.q9-ov,.q9-sp) button{font-family:inherit;color:inherit;border:0;background:none;padding:0;margin:0;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.q9-ov,.q9-sp,.q9-tour{display:block}
+:where(.q9m,.q9-ov,.q9-sp,.q9-tour) button{font-family:inherit;color:inherit;border:0;background:none;padding:0;margin:0;cursor:pointer;-webkit-tap-highlight-color:transparent}
 
 /* ---------- Sabit üst alan: tarih + takvim şeridi ---------- */
 .q9-head{--k:0;position:sticky;top:0;z-index:30;padding:calc(14px + env(safe-area-inset-top)) 0 12px}
@@ -41648,6 +41648,99 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
 .q9-cust input{flex:1;min-width:0;font:700 .95rem "Baloo 2",sans-serif;color:inherit;background:var(--soft);border:0;outline:0;border-radius:99px;padding:13px 18px;-webkit-user-select:text;user-select:text}
 .q9-cust button{width:48px;border-radius:50%;background:var(--t) !important;color:var(--bg) !important;font-size:1.5rem;font-weight:800}
 
+
+/* ---------- KULLANIM REHBERİ (animasyonlu tur) ---------- */
+.q9-act{display:flex;align-items:center;gap:8px}
+.q9-help{width:40px;height:40px;border-radius:50%;background:var(--soft) !important;font-weight:800;font-size:1.05rem;line-height:1;display:grid;place-items:center;transition:transform .4s var(--ease),background .3s}
+.q9-help:active{transform:scale(.92);background:var(--soft2) !important}
+.q9-tour{position:fixed;inset:0;z-index:7000;pointer-events:none;visibility:hidden;touch-action:none;transition:visibility 0s linear .5s}
+.q9-tour.is-open{pointer-events:auto;visibility:visible;transition:visibility 0s}
+.q9-spot{position:fixed;top:50%;left:50%;width:0;height:0;border-radius:28px;box-shadow:0 0 0 200vmax rgba(0,0,0,0);transition:top .75s var(--ease),left .75s var(--ease),width .75s var(--ease),height .75s var(--ease),border-radius .75s var(--ease),box-shadow .5s ease;pointer-events:none}
+.q9-tour.is-open .q9-spot{box-shadow:0 0 0 200vmax rgba(8,8,10,.62)}
+.q9-spot::after{content:"";position:absolute;inset:-3px;border-radius:inherit;border:2px solid rgba(255,255,255,.85);opacity:0;animation:q9Ring 2.4s ease-in-out infinite}
+.q9-spot.has-t::after{opacity:1}
+.q9-tip{position:fixed;left:50%;width:min(calc(100vw - 28px),420px);transform:translate(-50%,24px);opacity:0;background:var(--bg);color:var(--t);border-radius:32px;padding:14px 18px 18px;box-shadow:0 24px 60px -16px rgba(0,0,0,.5);transition:opacity .35s ease,transform .6s var(--ease)}
+.q9-tip.at-bot{bottom:calc(14px + env(safe-area-inset-bottom));top:auto}
+.q9-tip.at-top{top:calc(14px + env(safe-area-inset-top));bottom:auto}
+.q9-tour.is-open .q9-tip{opacity:1;transform:translate(-50%,0)}
+.q9-tour.is-open .q9-tip.is-swap{opacity:0;transform:translate(-50%,8px);transition-duration:.16s}
+.q9-tt{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.q9-tt span{font-size:.78rem;font-weight:800;color:var(--mute)}
+.q9-tt button{font-size:.82rem;font-weight:800;color:var(--mute);padding:6px 4px}
+.q9-demo{position:relative;height:118px;border-radius:24px;background:var(--soft);overflow:hidden;display:grid;place-items:center;margin-bottom:14px}
+.q9-tip h3{font-size:1.28rem;font-weight:800;margin:0 0 5px;line-height:1.15}
+.q9-tip p{font-size:.9rem;font-weight:600;line-height:1.42;color:color-mix(in srgb,var(--t) 72%,transparent);margin:0;min-height:5.8em}
+.q9-tdots{display:flex;gap:5px;justify-content:center;margin:12px 0 14px}
+.q9-tdots i{width:6px;height:6px;border-radius:99px;background:var(--soft2);transition:width .5s var(--ease),background .4s}
+.q9-tdots i.on{width:20px;background:var(--t)}
+.q9-tb{display:flex;gap:10px}
+.q9-tb button{flex:1;padding:14px;border-radius:99px;font-weight:800;font-size:.95rem;transition:transform .35s var(--ease),opacity .3s}
+.q9-tb button:active{transform:scale(.96)}
+.q9-tb .prev{background:var(--soft) !important;flex:0 0 34%}
+.q9-tb .prev.is-hide{opacity:0;pointer-events:none}
+.q9-tb .next{background:var(--t) !important;color:var(--bg) !important}
+/* demo parçaları */
+.dm{--w:260px;position:relative;width:var(--w);height:100%}
+.dm *{box-sizing:border-box}
+.dm-finger{position:absolute;width:30px;height:30px;border-radius:50%;background:rgba(120,120,128,.35);border:2px solid color-mix(in srgb,var(--t) 55%,transparent);z-index:5}
+.dm-week{position:absolute;left:0;right:0;top:34px;display:grid;grid-template-columns:repeat(7,1fr);height:52px}
+.dm-week b{display:grid;place-items:center;font-size:.9rem;font-weight:800;position:relative;z-index:1;color:#fff;mix-blend-mode:difference}
+.dm-pill{position:absolute;top:0;bottom:0;left:0;width:calc(100%/7);border-radius:99px;background:var(--t);animation:dmPill 3.2s var(--ease) infinite}
+.dm-sw .dm-finger{top:48px;left:0;animation:dmSwipe 3.2s var(--ease) infinite}
+.dm-ring{position:absolute;left:50%;top:50%;width:92px;height:92px;margin:-46px 0 0 -46px}
+.dm-ring svg{width:100%;height:100%}
+.dm-ring circle{fill:none;stroke-width:9}
+.dm-ring .a{stroke:var(--soft2)}
+.dm-ring .b{stroke:var(--t);stroke-linecap:round;stroke-dasharray:226;stroke-dashoffset:226;animation:dmFill 3.4s var(--ease) infinite}
+.dm-ring span{position:absolute;inset:0;display:grid;place-items:center;font-weight:800;font-size:1.5rem}
+.dm-seg{position:absolute;left:50%;top:38px;width:170px;height:42px;margin-left:-85px;border-radius:99px;background:var(--soft2);display:grid;grid-template-columns:1fr 1fr;padding:3px}
+.dm-seg i{position:absolute;top:3px;bottom:3px;left:3px;width:calc(50% - 3px);border-radius:99px;background:var(--t);animation:dmSeg 3.4s var(--ease) infinite}
+.dm-seg b{position:relative;z-index:1;display:grid;place-items:center;font-size:.85rem;font-weight:800}
+.dm-seg b:first-of-type{color:var(--bg);animation:dmTxA 3.4s infinite}
+.dm-seg b:last-of-type{animation:dmTxB 3.4s infinite}
+.dm-seg .dm-finger{top:20px;left:112px;animation:dmTapSeg 3.4s var(--ease) infinite}
+.dm-add{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;padding:18px 26px;align-content:center}
+.dm-add u{text-decoration:none;font-weight:800;font-size:.8rem;padding:8px 13px;border-radius:99px;background:var(--soft2);animation:dmChip 3.6s var(--ease) infinite;animation-delay:calc(var(--i) * 260ms);transform-origin:center}
+.dm-add u.hot{background:var(--t);color:var(--bg)}
+.dm-card{position:absolute;left:0;right:0;top:26px;height:66px;border-radius:26px;background:color-mix(in srgb,#6ec6ff 28%,var(--bg));box-shadow:inset 0 0 0 1px color-mix(in srgb,#6ec6ff 40%,transparent);display:flex;align-items:center;gap:10px;padding:0 10px}
+.dm-card .av{width:38px;height:38px;border-radius:50%;background:#6ec6ff;display:grid;place-items:center;font-weight:800;color:#0b3a5a}
+.dm-card .nm{flex:1;font-weight:800;font-size:.95rem}
+.dm-card .st{display:flex;align-items:center;gap:6px;padding:4px 4px 4px 12px;border-radius:99px;background:color-mix(in srgb,var(--bg) 66%,transparent)}
+.dm-card .ct{position:relative;width:26px;height:24px;font-weight:800;font-size:1.15rem;text-align:center}
+.dm-card .ct span{position:absolute;inset:0;display:grid;place-items:center}
+.dm-card .pl{width:32px;height:32px;border-radius:50%;background:var(--t);color:var(--bg);display:grid;place-items:center;font-weight:800;font-size:1.1rem;animation:dmPress 3s var(--ease) infinite}
+.dm-tap .ct .n1{animation:dmN1 3s infinite}.dm-tap .ct .n2{animation:dmN2 3s infinite}
+.dm-tap .dm-finger{top:36px;left:208px;animation:dmTapF 3s var(--ease) infinite}
+.dm-pop{position:absolute;top:8px;left:206px;font-weight:800;font-size:1rem;opacity:0;animation:dmPop 3s var(--ease) infinite;z-index:4}
+.dm-hold .dm-card{animation:dmCardHold 3.6s var(--ease) infinite}
+.dm-hold .dm-finger{top:36px;left:110px;animation:dmHoldF 3.6s var(--ease) infinite}
+.dm-sheet{position:absolute;left:30px;right:30px;bottom:-4px;height:52px;border-radius:22px 22px 0 0;background:var(--bg);box-shadow:0 -8px 24px -8px rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;gap:7px;transform:translateY(110%);animation:dmSheet 3.6s var(--ease) infinite;z-index:3}
+.dm-sheet u{text-decoration:none;font-size:.7rem;font-weight:800;padding:6px 10px;border-radius:99px;background:var(--soft2)}
+.dm-bars{position:absolute;left:30px;right:30px;top:16px;bottom:16px;display:flex;align-items:flex-end;gap:9px}
+.dm-bars i{flex:1;border-radius:99px;background:var(--t);transform-origin:bottom;animation:dmBar 3.4s var(--ease) infinite;animation-delay:calc(var(--i) * 110ms)}
+.dm-ok{position:absolute;left:50%;top:50%;width:76px;height:76px;margin:-38px 0 0 -38px;border-radius:50%;background:#59c97b;display:grid;place-items:center;animation:dmOk 3.2s var(--ease) infinite}
+.dm-ok svg{width:38px;height:38px;fill:none;stroke:#fff;stroke-width:3.2;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:40;animation:dmCheck 3.2s var(--ease) infinite}
+@keyframes q9Ring{0%,100%{opacity:.25;transform:scale(1)}50%{opacity:1;transform:scale(1.015)}}
+@keyframes dmPill{0%,12%{transform:translateX(calc(100% * 4))}38%,62%{transform:translateX(calc(100% * 2))}88%,100%{transform:translateX(calc(100% * 4))}}
+@keyframes dmSwipe{0%{opacity:0;transform:translateX(30px) scale(.8)}12%{opacity:1;transform:translateX(30px) scale(1)}40%{opacity:1;transform:translateX(200px)}52%{opacity:0;transform:translateX(200px) scale(.8)}100%{opacity:0}}
+@keyframes dmFill{0%{stroke-dashoffset:226;stroke:var(--t)}55%{stroke-dashoffset:0;stroke:var(--t)}65%,90%{stroke-dashoffset:0;stroke:#59c97b}100%{stroke-dashoffset:226;stroke:#59c97b}}
+@keyframes dmSeg{0%,35%{transform:translateX(0)}50%,85%{transform:translateX(100%)}100%{transform:translateX(0)}}
+@keyframes dmTxA{0%,35%{color:var(--bg)}50%,85%{color:var(--t)}100%{color:var(--bg)}}
+@keyframes dmTxB{0%,35%{color:var(--t)}50%,85%{color:var(--bg)}100%{color:var(--t)}}
+@keyframes dmTapSeg{0%,25%{opacity:0;transform:scale(1.4)}35%{opacity:1;transform:scale(1)}48%{opacity:1;transform:scale(.8)}60%,100%{opacity:0;transform:scale(1.2)}}
+@keyframes dmChip{0%{opacity:0;transform:scale(.6)}18%,80%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(.9)}}
+@keyframes dmPress{0%,28%,44%,100%{transform:scale(1)}34%{transform:scale(.82)}}
+@keyframes dmN1{0%,33%{opacity:1}36%,100%{opacity:0}}
+@keyframes dmN2{0%,33%{opacity:0}36%,100%{opacity:1}}
+@keyframes dmTapF{0%,20%{opacity:0;transform:translate(14px,14px) scale(1.4)}30%{opacity:1;transform:none}36%{transform:scale(.8)}46%{opacity:1;transform:scale(1)}60%,100%{opacity:0}}
+@keyframes dmPop{0%,34%{opacity:0;transform:translateY(8px)}40%{opacity:1;transform:none}70%,100%{opacity:0;transform:translateY(-22px)}}
+@keyframes dmHoldF{0%,10%{opacity:0;transform:translate(10px,10px) scale(1.4)}20%{opacity:1;transform:none}55%{opacity:1;transform:scale(.85)}62%,100%{opacity:0}}
+@keyframes dmCardHold{0%,20%{transform:scale(1)}30%,56%{transform:scale(.97)}66%,100%{transform:scale(1)}}
+@keyframes dmSheet{0%,55%{transform:translateY(110%)}68%,90%{transform:translateY(0)}100%{transform:translateY(110%)}}
+@keyframes dmBar{0%{transform:scaleY(0)}30%,80%{transform:scaleY(1)}100%{transform:scaleY(0)}}
+@keyframes dmOk{0%{transform:scale(.4);opacity:0}25%,85%{transform:scale(1);opacity:1}100%{transform:scale(1);opacity:0}}
+@keyframes dmCheck{0%,15%{stroke-dashoffset:40}45%,100%{stroke-dashoffset:0}}
+
 /* ---------- ÖZET SAYFASI (ayrı tam ekran sayfa) ---------- */
 .q9-sp{position:fixed;inset:0;z-index:6000;background:var(--bg);transform:translateX(104%);visibility:hidden;box-shadow:-30px 0 60px -30px rgba(0,0,0,.35);transition:transform .7s var(--ease),visibility 0s linear .7s}
 .q9-sp.is-open{transform:none;visibility:visible;transition:transform .7s var(--ease),visibility 0s}
@@ -41745,7 +41838,7 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
 @keyframes q9Dash{from{stroke-dasharray:0 400}}
 @keyframes q9Sw{0%{opacity:0;transform:translateY(5px)}100%{opacity:1;transform:none}}
 @keyframes q9Shake{0%,100%{transform:none}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
-@media (prefers-reduced-motion:reduce){.q9m *,.q9-ov *,.q9-sp *{animation:none !important;transition-duration:.01s !important}}
+@media (prefers-reduced-motion:reduce){.q9m *,.q9-ov *,.q9-sp *,.q9-tour *{animation:none !important;transition-duration:.01s !important}}
 </style>
 
   <!-- Sayfa 10: İstatistiklerim. Sayfa 5'teki kronometre her gün 00:00'da
@@ -58391,7 +58484,8 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
   root.innerHTML =
     '<header class="q9-head" id="q9Head">' +
       '<div class="q9-top"><button type="button" class="q9-date" id="q9Date"><b></b><span></span></button>' +
-      '<button type="button" class="q9-sumbtn" id="q9SumBtn" aria-label="Özet sayfasını aç">' + SVG_CHART + '<span>Özet</span></button></div>' +
+      '<div class="q9-act"><button type="button" class="q9-help" id="q9Help" aria-label="Nasıl kullanılır? Rehberi aç">?</button>' +
+      '<button type="button" class="q9-sumbtn" id="q9SumBtn" aria-label="Özet sayfasını aç">' + SVG_CHART + '<span>Özet</span></button></div></div>' +
       '<div class="q9-week" id="q9Week"></div>' +
     '</header>' +
     '<div class="q9-body" id="q9Body">' +
@@ -58948,15 +59042,120 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
     rd.textContent = bar.getAttribute('aria-label').replace(':', ' ·'); vib(4);
   });
 
+
+  // =====================================================================
+  //  KULLANIM REHBERİ — animasyonlu, adım adım tur
+  // =====================================================================
+  const TOUR_KEY = 'q9TourV1';
+  const wk7 = '<b>P</b><b>S</b><b>Ç</b><b>P</b><b>C</b><b>C</b><b>P</b>';
+  const DEMOS = {
+    hello: '<div class="dm-ring"><svg viewBox="0 0 92 92"><circle class="a" cx="46" cy="46" r="36"/><circle class="b" cx="46" cy="46" r="36" transform="rotate(-90 46 46)"/></svg><span>42</span></div>',
+    swipe: '<div class="dm dm-sw"><div class="dm-week"><i class="dm-pill"></i>' + wk7 + '</div><span class="dm-finger"></span></div>',
+    ring: '<div class="dm-ring"><svg viewBox="0 0 92 92"><circle class="a" cx="46" cy="46" r="36"/><circle class="b" cx="46" cy="46" r="36" transform="rotate(-90 46 46)"/></svg><span>80</span></div>',
+    seg: '<div class="dm"><div class="dm-seg"><i></i><b>TYT</b><b>AYT</b><span class="dm-finger"></span></div></div>',
+    add: '<div class="dm-add"><u class="hot" style="--i:0">+ Ders ekle</u><u style="--i:1">Matematik</u><u style="--i:2">Fizik</u><u style="--i:3">Kimya</u><u style="--i:4">Kendi dersini yaz…</u></div>',
+    tap: '<div class="dm dm-tap"><div class="dm-card"><span class="av">M</span><span class="nm">Matematik</span><span class="st"><span class="ct"><span class="n1">12</span><span class="n2">13</span></span><span class="pl">+</span></span></div><span class="dm-pop">+1</span><span class="dm-finger"></span></div>',
+    hold: '<div class="dm dm-hold"><div class="dm-card"><span class="av">M</span><span class="nm">Matematik</span><span class="st"><span class="ct"><span class="n1">12</span></span><span class="pl">+</span></span></div><span class="dm-finger"></span><div class="dm-sheet"><u>+5</u><u>+10</u><u>Renk</u><u>Sil</u></div></div>',
+    chart: '<div class="dm-bars"><i style="--i:0;height:40%"></i><i style="--i:1;height:62%"></i><i style="--i:2;height:35%"></i><i style="--i:3;height:84%"></i><i style="--i:4;height:55%"></i><i style="--i:5;height:100%"></i><i style="--i:6;height:70%"></i></div>',
+    done: '<div class="dm-ok"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div>'
+  };
+  const STEPS = [
+    { t: "Soru Takibi'ne hoş geldin", d: 'Her gün çözdüğün soruları ders ders kaydet, hedefini ve ilerlemeni tek yerden takip et. Kısa bir turla nasıl kullanıldığına bakalım.', demo: 'hello' },
+    { t: 'Günü takvimden seç', d: 'Üstteki şeritte haftanın günleri var. Bir güne dokunarak o günün kaydına geç. Şeridi sağa kaydırırsan önceki haftalara gidersin; sola kaydırınca geri dönersin. Soldaki başlığa dokunmak seni bugüne getirir.', demo: 'swipe', target: '#q9Week', top: true },
+    { t: 'Günlük hedef halkası', d: 'Halka o gün çözdüğün toplam soruyu gösterir. Üzerine dokunup günlük hedef belirlersen halka hedefe doğru dolar ve hedefe ulaşınca yeşile döner.', demo: 'ring', target: '#q9Hero' },
+    { t: 'TYT ve AYT sekmeleri', d: 'Dersler iki sekmede toplanır. Sekmeyi değiştirerek TYT veya AYT derslerini görürsün. Sağdaki sayı o gün listende kaç ders olduğunu söyler.', demo: 'seg', target: '.q9-listhead' },
+    { t: 'Ders ekle', d: 'Bugün çalıştığın dersleri bu düğmeyle listene ekle. Hazır branşlardan seçebilir ya da kendi dersini yazıp ekleyebilirsin. Seçili dersler tikle işaretlenir; tekrar dokunursan listeden çıkar.', demo: 'add', target: '.q9-add' },
+    { t: 'Soru sayısını gir', d: 'Bir karta dokunmak +1 ekler. Artı ve eksi düğmelerine basılı tutarsan sayı hızla artar veya azalır. Kartın altındaki çizgi, dersin o günkü toplam içindeki payını gösterir.', demo: 'tap' },
+    { t: 'Ayrıntılar için basılı tut', d: 'Karta basılı tutunca ayrıntı penceresi açılır: sayıyı doğrudan yazma, +5 / +10 / +20, renk seçme, dersi her gün listede gösterme, bugünden çıkarma ve silme.', demo: 'hold' },
+    { t: 'Özet sayfası', d: 'Bu düğme ayrı bir Özet sayfası açar. Gün, hafta veya ay bazında toplam sorunu, önceki dönemle karşılaştırmayı, günlük grafiği ve branş dağılımını görürsün.', demo: 'chart', target: '#q9SumBtn', top: true },
+    { t: 'Hazırsın!', d: 'Bu turu istediğin zaman üstteki ? düğmesine dokunarak yeniden açabilirsin. Bol çözümlü günler!', demo: 'done' }
+  ];
+  const tour = mk('<div class="q9-tour q9m" aria-hidden="true"><div class="q9-spot"></div><div class="q9-tip at-bot" role="dialog" aria-label="Kullanım rehberi">' +
+    '<div class="q9-tt"><span class="cnt"></span><button type="button" class="skip">Turu atla</button></div>' +
+    '<div class="q9-demo"></div><h3></h3><p></p><div class="q9-tdots"></div>' +
+    '<div class="q9-tb"><button type="button" class="prev">Geri</button><button type="button" class="next">İleri</button></div></div></div>');
+  document.body.appendChild(tour);
+  const tSpot = tour.querySelector('.q9-spot'), tTip = tour.querySelector('.q9-tip'), tDemo = tour.querySelector('.q9-demo');
+  const tH = tour.querySelector('h3'), tP = tour.querySelector('p'), tCnt = tour.querySelector('.cnt');
+  const tDots = tour.querySelector('.q9-tdots'), tPrev = tour.querySelector('.prev'), tNext = tour.querySelector('.next');
+  STEPS.forEach(() => tDots.appendChild(document.createElement('i')));
+  let tIdx = 0, tOpen = false, tTimer = 0;
+  const tourDone = () => { try { localStorage.setItem(TOUR_KEY, '1'); } catch (e) { /* yok say */ } };
+  const tourSeen = () => { try { return localStorage.getItem(TOUR_KEY) === '1'; } catch (e) { return false; } };
+  const placeSpot = (st) => {
+    const el = st.target ? root.querySelector(st.target) : null;
+    if (!el) {
+      tSpot.classList.remove('has-t');
+      Object.assign(tSpot.style, { top: '50%', left: '50%', width: '0px', height: '0px' });
+      tTip.classList.add('at-bot'); tTip.classList.remove('at-top');
+      return;
+    }
+    const r = el.getBoundingClientRect(), pad = st.target === '#q9Hero' ? 10 : 8;
+    tSpot.classList.add('has-t');
+    const isRound = el.id === 'q9Hero' || el.id === 'q9SumBtn';
+    tSpot.style.borderRadius = isRound ? (el.id === 'q9Hero' ? '50%' : '999px') : '28px';
+    Object.assign(tSpot.style, { top: (r.top - pad) + 'px', left: (r.left - pad) + 'px', width: (r.width + pad * 2) + 'px', height: (r.height + pad * 2) + 'px' });
+    const mid = r.top + r.height / 2;
+    const onTop = mid > window.innerHeight * 0.5;
+    tTip.classList.toggle('at-top', onTop); tTip.classList.toggle('at-bot', !onTop);
+  };
+  const showStep = (i, instant) => {
+    tIdx = Math.max(0, Math.min(STEPS.length - 1, i));
+    const st = STEPS[tIdx];
+    clearTimeout(tTimer);
+    const apply = () => {
+      const el = st.target ? root.querySelector(st.target) : null;
+      if (el) {
+        if (st.top) pageEl.scrollTop = 0;
+        else { const r = el.getBoundingClientRect(); if (r.top < 150 || r.bottom > window.innerHeight - 120) el.scrollIntoView({ block: 'center' }); }
+      }
+      tH.textContent = st.t; tP.textContent = st.d; tDemo.innerHTML = DEMOS[st.demo];
+      tCnt.textContent = (tIdx + 1) + ' / ' + STEPS.length;
+      [...tDots.children].forEach((d, k) => d.classList.toggle('on', k === tIdx));
+      tPrev.classList.toggle('is-hide', tIdx === 0);
+      tNext.textContent = tIdx === STEPS.length - 1 ? 'Başla' : tIdx === 0 ? 'Turu başlat' : 'İleri';
+      tour.querySelector('.skip').style.visibility = tIdx === STEPS.length - 1 ? 'hidden' : '';
+      requestAnimationFrame(() => placeSpot(st));
+      tTip.classList.remove('is-swap');
+    };
+    if (instant || reduce) apply();
+    else { tTip.classList.add('is-swap'); tTimer = setTimeout(apply, 170); }
+  };
+  const tourStart = () => {
+    if (tOpen) return;
+    spClose(); closeSheet();
+    pageEl.scrollTop = 0;
+    tOpen = true; tour.setAttribute('aria-hidden', 'false');
+    tTip.classList.add('is-swap');
+    tour.classList.add('is-open');
+    setTimeout(() => showStep(0, true), 60);
+    vib(6);
+  };
+  const tourEnd = () => {
+    if (!tOpen) return;
+    tOpen = false; clearTimeout(tTimer); tourDone();
+    tour.classList.remove('is-open'); tour.setAttribute('aria-hidden', 'true');
+    tSpot.classList.remove('has-t'); Object.assign(tSpot.style, { top: '50%', left: '50%', width: '0px', height: '0px' });
+    pageEl.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' });
+  };
+  tNext.addEventListener('click', () => { if (tIdx >= STEPS.length - 1) tourEnd(); else showStep(tIdx + 1); });
+  tPrev.addEventListener('click', () => showStep(tIdx - 1));
+  tour.querySelector('.skip').addEventListener('click', tourEnd);
+  document.addEventListener('keydown', (e) => { if (!tOpen) return; if (e.key === 'Escape') tourEnd(); else if (e.key === 'ArrowRight') tNext.click(); else if (e.key === 'ArrowLeft') tPrev.click(); });
+  window.addEventListener('resize', () => { if (tOpen) placeSpot(STEPS[tIdx]); });
+  $('#q9Help').addEventListener('click', tourStart);
+  const maybeAutoTour = () => { if (tourSeen()) return; setTimeout(() => { if (pageEl.classList.contains('is-active') && !tourSeen() && !tOpen) tourStart(); }, 900); };
+
   // ---------- Sayfa açılınca tazele / terk edilince Özet'i kapat ----------
   let wasActive = pageEl.classList.contains('is-active');
   new MutationObserver(() => {
     const a = pageEl.classList.contains('is-active');
-    if (a && !wasActive) { syncOld(); render(0, false); }
-    if (!a && wasActive) spClose();
+    if (a && !wasActive) { syncOld(); render(0, false); maybeAutoTour(); }
+    if (!a && wasActive) { spClose(); if (tOpen) tourEnd(); }
     wasActive = a;
   }).observe(pageEl, { attributes: true, attributeFilter: ['class'] });
   render(0, true);
+  if (pageEl.classList.contains('is-active')) maybeAutoTour();
 })();
 </script>
 
