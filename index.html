@@ -36817,6 +36817,22 @@ body.is-countdown-fs.is-countdown-paused .countdown-fullscreen-time-row .stopwat
 .tsh-card.is-confirm .tsh-msg { display: block; }
 .tsh-sw { display: none; flex-wrap: wrap; gap: .65rem; margin: 0 0 1rem; }
 .tsh-card.has-sw .tsh-sw { display: flex; }
+/* Görev penceresi: bölüm (alt başlık) seçici */
+.tsh-subwrap { display: none; margin: 0 0 1rem; }
+.tsh-card.has-subs .tsh-subwrap { display: block; animation: tshSubWrapIn .5s cubic-bezier(.22, 1, .36, 1) backwards; }
+.tsh-subcap { margin: 0 0 .5rem .1rem; font-size: .78rem; font-weight: 800; letter-spacing: .02em; color: var(--tsh-mute); }
+.tsh-subs { position: relative; display: flex; gap: .45rem; overflow-x: auto; padding: .1rem .05rem .35rem; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+.tsh-subs::-webkit-scrollbar { display: none; }
+.tsh-subs-pill { position: absolute; left: 0; top: .1rem; bottom: .35rem; width: 0; border-radius: 99px; background: var(--tsh-gc, var(--accent-color, #ff90e8)); pointer-events: none; z-index: 0; transition: transform .5s cubic-bezier(.34, 1.35, .64, 1), width .5s cubic-bezier(.34, 1.35, .64, 1); }
+.tsh-subs-pill.no-anim { transition: none; }
+.tsh-chip { position: relative; z-index: 1; flex: 0 0 auto; max-width: 16rem; padding: .5rem 1rem; border: 2px solid color-mix(in srgb, var(--tsh-gc, #ff90e8) 38%, transparent); border-radius: 99px; background: transparent; font: inherit; font-weight: 800; font-size: .95rem; line-height: 1.2; color: var(--tsh-ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; -webkit-tap-highlight-color: transparent; transition: color .25s ease, border-color .3s ease, transform .2s ease; }
+.tsh-chip:active { transform: scale(.94); }
+.tsh-chip.is-sel { color: var(--tsh-gt, #121212); border-color: transparent; }
+.tsh-card.has-subs .tsh-chip { animation: tshChipIn .5s cubic-bezier(.34, 1.5, .64, 1) backwards; animation-delay: calc(var(--i, 0) * 45ms + 200ms); }
+@keyframes tshChipIn { from { opacity: 0; transform: translateY(8px) scale(.9); } to { opacity: 1; transform: none; } }
+@keyframes tshSubWrapIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .tsh-subs-pill, .tsh-chip, .tsh-subwrap { animation: none !important; transition: none !important; } }
+
 .tsh-sw button { width: 2.2rem; height: 2.2rem; padding: 0; border-radius: 50%; cursor: pointer; border: 3px solid transparent; box-shadow: inset 0 0 0 2px var(--theme-bg, #121212); transition: transform .15s ease, border-color .2s ease; }
 .tsh-sw button:active { transform: scale(.9); }
 .tsh-sw button.is-sel { border-color: var(--tsh-ink); }
@@ -72077,7 +72093,7 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
   // ---------- Görev ekleme sayfası: yukarıdan aşağıya açılan kart ----------
   window.gundelikTaskSheet = window.gundelikTaskSheet || (() => {
     let bd = null, card, ta, proxy, focusT = 0, goBtn, moreBtn, labelEl, listMode = false, onSubmit = null, curId = null, opened = false;
-    let confirmMode = false, noDraft = false, onDismiss = null, curCol = null, swEl, msgEl;
+    let confirmMode = false, noDraft = false, onDismiss = null, curCol = null, swEl, msgEl, subWrap, subsEl, pillEl, selSub;
     const drafts = new Map();
     const mk = (t, c, x) => { const e = document.createElement(t); if (c) e.className = c; if (x != null) e.textContent = x; return e; };
     const vv = () => { const h = (window.visualViewport && window.visualViewport.height) || window.innerHeight; if (bd) bd.style.setProperty('--tsh-vh', h + 'px'); };
@@ -72093,7 +72109,7 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
     };
     const submit = (more) => {
       const v = ta.value.trim(); if ((!v && !confirmMode) || !onSubmit) return;
-      onSubmit(v, curCol); drafts.delete(curId); ta.value = '';
+      onSubmit(v, curCol, selSub); drafts.delete(curId); ta.value = '';
       if (more) { grow(); try { ta.focus(); } catch (e) { /* yok say */ } } else close(false);
     };
     const build = () => {
@@ -72109,7 +72125,11 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
       // oturduktan sonra asıl alana taşınır (kayarken imleç yanlış yerde görünmesin).
       proxy = mk('input'); proxy.type = 'text'; proxy.tabIndex = -1; proxy.setAttribute('aria-hidden', 'true'); proxy.setAttribute('autocomplete', 'off');
       proxy.style.cssText = 'position:fixed;top:0;left:0;width:1px;height:1px;opacity:0;border:0;padding:0;pointer-events:none;font-size:16px;';
-      msgEl = mk('p', 'tsh-msg'); swEl = mk('div', 'tsh-sw'); card.append(top, msgEl, ta, swEl, bar, grab); bd.append(card, proxy); document.body.appendChild(bd);
+      msgEl = mk('p', 'tsh-msg'); swEl = mk('div', 'tsh-sw');
+      // Bölüm seçici (alt başlıklı listelerde): kaydırılabilir hap sırası + kayan seçim hapı
+      subWrap = mk('div', 'tsh-subwrap'); subsEl = mk('div', 'tsh-subs'); pillEl = mk('span', 'tsh-subs-pill');
+      subsEl.appendChild(pillEl); subWrap.append(mk('div', 'tsh-subcap', 'Hangi bölüme?'), subsEl);
+      card.append(top, msgEl, ta, subWrap, swEl, bar, grab); bd.append(card, proxy); document.body.appendChild(bd);
       ta.addEventListener('input', grow);
       ta.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); else if (e.key === 'Enter' && (listMode ? !e.shiftKey : (e.ctrlKey || e.metaKey))) { e.preventDefault(); submit(false); } });
       x.addEventListener('click', () => close());
@@ -72170,6 +72190,29 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
           b.addEventListener('click', () => { curCol = c; card.style.setProperty('--tsh-gc', c); swEl.querySelectorAll('button').forEach((x) => x.classList.toggle('is-sel', x === b)); });
           swEl.appendChild(b);
         });
+        // Bölüm seçici: opts.subs = [{id,text}], opts.sub = seçili bölüm ('' = başlıksız), opts.subInk = seçili yazı rengi
+        selSub = undefined;
+        const hasSubs = !!(opts.subs && opts.subs.length && !confirmMode);
+        card.classList.toggle('has-subs', hasSubs);
+        Array.from(subsEl.querySelectorAll('.tsh-chip')).forEach((n) => n.remove());
+        let chipsArr = [];
+        const movePill = (b, anim) => {
+          pillEl.style.width = b.offsetWidth + 'px'; pillEl.style.transform = 'translateX(' + b.offsetLeft + 'px)';
+          try { subsEl.scrollTo({ left: Math.max(0, b.offsetLeft - (subsEl.clientWidth - b.offsetWidth) / 2), behavior: anim ? 'smooth' : 'auto' }); } catch (e) { /* yok say */ }
+        };
+        if (hasSubs) {
+          card.style.setProperty('--tsh-gt', opts.subInk || '#121212');
+          selSub = opts.sub != null ? opts.sub : opts.subs[opts.subs.length - 1].id;
+          chipsArr = [{ id: '', text: 'Başlıksız' }].concat(opts.subs).map((sd, i) => {
+            const b = mk('button', 'tsh-chip' + (sd.id === selSub ? ' is-sel' : ''), sd.text); b.type = 'button'; b.style.setProperty('--i', i);
+            b.addEventListener('pointerdown', (e) => e.preventDefault());
+            b.addEventListener('click', () => { selSub = sd.id; chipsArr.forEach((c) => c.classList.toggle('is-sel', c === b)); movePill(b, true); if (navigator.vibrate) navigator.vibrate(8); });
+            subsEl.appendChild(b); return b;
+          });
+          pillEl.classList.add('no-anim');
+          const place = () => { const cur = chipsArr.find((c) => c.classList.contains('is-sel')); if (cur) movePill(cur, false); };
+          setTimeout(() => { place(); requestAnimationFrame(() => pillEl.classList.remove('no-anim')); }, 60);
+        }
         ta.value = opts.text != null ? opts.text : (noDraft ? '' : (drafts.get(g.id) || '')); vv(); grow();
         bd.classList.add('is-open');
         try { proxy.focus({ preventScroll: true }); } catch (e) { /* yok say */ }
@@ -72338,20 +72381,42 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
       return f;
     };
     // Görev ekleme: yukarıdan açılan sayfa. Eklenince liste baştan çizilir, yeni görev görünür alana kaydırılır.
-    const openTaskSheet = (g) => window.gundelikTaskSheet.open(g, (v) => {
-      const it = { id: gid(), text: v, done: false };
-      g.items.push(it); save();
-      const box = list.querySelector('[data-fk="hg:' + g.id + '"]');
-      if (!box || !box._upd) { render(); return; }
-      // Liste baştan çizilmez, kaydırma yapılmaz: görev kendi yerine eklenir, yalnızca yumuşakça belirir.
-      emitProg(false);
-      const row = mkRow(g, it, box, box._upd);
-      { const shs = box.querySelectorAll('.hl-sh'), ls = shs[shs.length - 1]; if (ls && ls.classList.contains('is-collapsed')) ls.click(); }   // kapalı bölüme görev eklenirse açılır
-      tailOf(box).appendChild(row); box._upd();
-      if (row.animate && !(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches)) {
-        row.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 320, delay: 160, easing: 'ease-out', fill: 'backwards' });
-      }
-    });
+    // preSub: açılışta seçili bölüm (alt başlık id'si; '' = başlıksız). Verilmezse listenin SON bölümü (eski davranış: sona ekle).
+    const openTaskSheet = (g, preSub) => {
+      const subs = SUB ? g.items.filter((i) => i.sub).map((i) => ({ id: i.id, text: i.text })) : [];
+      const opts = subs.length ? { subs, sub: preSub !== undefined ? preSub : subs[subs.length - 1].id, subInk: tickColor(g.color) } : undefined;
+      window.gundelikTaskSheet.open(g, (v, c, sid) => {
+        const it = { id: gid(), text: v, done: false };
+        const si = sid ? g.items.findIndex((x) => x.id === sid) : -1;
+        let at = g.items.length;
+        if (sid && si >= 0) { at = si + 1; while (at < g.items.length && !g.items[at].sub) at++; }   // seçili bölümün sonu
+        else if (sid === '') { const f = g.items.findIndex((x) => x.sub); if (f >= 0) at = f; }     // başlıksız: ilk alt başlıktan önce
+        g.items.splice(at, 0, it); save();
+        const box = list.querySelector('[data-fk="hg:' + g.id + '"]');
+        if (!box || !box._upd) { render(); return; }
+        // Liste baştan çizilmez, kaydırma yapılmaz: görev kendi yerine eklenir, yalnızca yumuşakça belirir.
+        let parent = null, before = null;
+        if (sid && si >= 0) {
+          const sh = box.querySelector('[data-fk="hs:' + sid + '"]');
+          if (!sh || !sh._inn) { render(); return; }
+          if (sh.classList.contains('is-collapsed')) sh.querySelector('.hl-sh-ch').click();       // kapalı bölüm açılsın
+          parent = sh._inn;
+        } else if (sid === '') {
+          before = box.querySelector(':scope > .hl-sh'); parent = box;
+        } else {
+          const shs = box.querySelectorAll('.hl-sh'), ls = shs[shs.length - 1];
+          if (ls && ls.classList.contains('is-collapsed')) ls.querySelector('.hl-sh-ch').click();
+          parent = tailOf(box);
+        }
+        emitProg(false);
+        const row = mkRow(g, it, box, box._upd);
+        if (before) parent.insertBefore(row, before); else parent.appendChild(row);
+        box._upd();
+        if (row.animate && !(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches)) {
+          row.animate([{ opacity: 0, transform: 'translateY(-6px)' }, { opacity: 1, transform: 'none' }], { duration: 380, delay: 120, easing: 'cubic-bezier(.16,1,.3,1)', fill: 'backwards' });
+        }
+      }, opts);
+    };
     const focusIn = () => { const i = page.querySelector('.hl-in'); if (i) window.gkAnim.focus(i); };
     // Madde ekleme formu: yalnızca odaklar. Kaydırma/hizalama YOK (yeni biçime geçilecek; eski davranış taşınmıyor).
     const focusForm = () => { const i = page.querySelector('.hl-form .hl-in'); if (i) { try { i.focus(); } catch (e) { /* yoksay */ } } };
@@ -72430,17 +72495,22 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
       save(); render();
     }, { list: true, label: 'Alt başlık ekle', go: 'Ekle', ph: 'Alt başlık (örn. Sebze & Meyve)' });
     const mkSub = (g, it, box) => {
-      const row = el('div', 'hl-sh' + (it.c ? ' is-collapsed' : '')), t = el('span', 'hl-sh-t', it.text), n = el('span', 'hl-sh-n'), ch = el('span', 'hl-sh-ch');
+      const row = el('div', 'hl-sh' + (it.c ? ' is-collapsed' : '')), t = el('span', 'hl-sh-t', it.text), n = el('span', 'hl-sh-n'), ch = el('button', 'hl-sh-ch'); ch.type = 'button'; ch.setAttribute('aria-label', 'Bölümü aç/kapat');
       ch.innerHTML = CHEV; row.append(t, n, ch);
-      row.dataset.fk = 'hs:' + it.id; row.setAttribute('role', 'button'); row.setAttribute('aria-expanded', it.c ? 'false' : 'true');
+      row.dataset.fk = 'hs:' + it.id; row.setAttribute('role', 'group'); row.setAttribute('aria-expanded', it.c ? 'false' : 'true');
       if (firstPaint || it.id === newSubId) row.classList.add('is-new');
       if (it.id === newSubId) newSubId = null;
       const sec = el('div', 'hl-sec' + (it.c ? ' is-collapsed' : '')), inn = el('div', 'hl-sec-in'); sec.appendChild(inn);
       row._sec = sec; row._inn = inn; (box._subs = box._subs || []).push({ cnt: n, sec });
+      // Dokun = bu bölüme görev ekle (pencerede bölüm seçili gelir). Ok = bölümü aç/kapat.
       row.addEventListener('click', (e) => {
         if (e.target.closest && e.target.closest('input, textarea, .hl-editwrap')) return;
-        it.c = it.c ? 0 : 1; if (!it.c) delete it.c;
-        row.classList.toggle('is-collapsed', !!it.c); sec.classList.toggle('is-collapsed', !!it.c); row.setAttribute('aria-expanded', it.c ? 'false' : 'true'); save();
+        if (e.target.closest && e.target.closest('.hl-sh-ch')) {
+          it.c = it.c ? 0 : 1; if (!it.c) delete it.c;
+          row.classList.toggle('is-collapsed', !!it.c); sec.classList.toggle('is-collapsed', !!it.c); row.setAttribute('aria-expanded', it.c ? 'false' : 'true'); save();
+          return;
+        }
+        openTaskSheet(g, it.id);
       });
       hold(row, (x, y) => openMenu(row, [
         { ic: IC.edit, title: 'Alt Başlığı Düzenle', sub: 'Adını değiştir', fn: () => window.gundelikTaskSheet.open({ id: 'e:' + it.id, name: g.name, color: g.color }, (v) => { it.text = v; save(); render(); }, { edit: true, list: true, text: it.text, label: 'Alt başlığı düzenle', go: 'Kaydet', ph: 'Alt başlık' }) },
@@ -72464,7 +72534,7 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
       closeMenu(); list.innerHTML = '';
       const nf = $(P + 'NewForm'); nf.innerHTML = '';
       if (newOpen) { const f = mkForm('Yeni liste adı (örn. Market)', (v) => { newOpen = false; st.groups.push({ id: gid(), name: v, color: pal[st.groups.length % pal.length], items: [] }); const ng = st.groups[st.groups.length - 1]; save(); render(); openTaskSheet(ng); }, () => softCloseNew()); f.classList.add('hl-newform'); const sw = el('div', 'soft-wrap'); sw.appendChild(f); nf.appendChild(sw); if (newAnim) { newAnim = false; window.softOpen(sw); } }
-      $(P + 'Tip').textContent = st.groups.length ? 'İpucu: Başlığa dokun, görev ekle. Bir listeye ya da göreve basılı tut, seçenekler açılsın.' : '';
+      $(P + 'Tip').textContent = st.groups.length ? (SUB ? 'İpucu: Başlığa ya da alt başlığa dokun, görev ekle. Ok bölümü kapatır. Basılı tut, seçenekler açılsın.' : 'İpucu: Başlığa dokun, görev ekle. Bir listeye ya da göreve basılı tut, seçenekler açılsın.') : '';
       if (!st.groups.length) { list.appendChild(el('p', 'hl-empty', 'Henüz listen yok. Sağ alttaki + ile ekle.')); return; }
       st.groups.forEach((g, gi) => {
         const box = el('section', 'hl-g'); box.dataset.fk = 'hg:' + g.id; box.style.setProperty('--gc', g.color); box.style.setProperty('--gt', tickColor(g.color));
@@ -72548,7 +72618,7 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
       page, hold, openMenu,
       groups: () => st.groups,
       newList: newListPopup,
-      addItem: (g) => { openTaskSheet(g); }
+      addItem: (g, sid) => { openTaskSheet(g, sid); }
     };
   };
 
@@ -74185,7 +74255,8 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
     transition: opacity .3s ease, transform .45s cubic-bezier(.22, 1, .36, 1);
   }
   #page-8 .hl-sh.is-collapsed::after { opacity: .55; transform: scaleX(.6); }
-  #page-8 .hl-sh-ch { order: 3; flex: 0 0 auto; display: grid; place-items: center; width: 1.3rem; height: 1.3rem; color: var(--hl-mute); transition: transform .45s cubic-bezier(.34, 1.4, .64, 1), color .25s ease; }
+  #page-8 .hl-sh-ch { order: 3; flex: 0 0 auto; display: grid; place-items: center; width: 2.1rem; height: 2.1rem; margin: -.4rem -.2rem -.4rem 0; padding: 0; border: 0; border-radius: 50%; background: transparent; cursor: pointer; color: var(--hl-mute); -webkit-tap-highlight-color: transparent; transition: transform .45s cubic-bezier(.34, 1.4, .64, 1), color .25s ease, background-color .2s ease; }
+  #page-8 .hl-sh-ch:active { background: color-mix(in srgb, var(--gc) 18%, transparent); }
   #page-8 .hl-sh-ch svg { width: 1.05rem; height: 1.05rem; fill: none; stroke: currentColor; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; }
   #page-8 .hl-sh.is-collapsed .hl-sh-ch { transform: rotate(-90deg); color: var(--gc); }
   /* Bölüm: yüksekliği 0'a yumuşakça iner (grid satırı animasyonu) */
