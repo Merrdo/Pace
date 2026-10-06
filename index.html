@@ -39060,21 +39060,29 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
   // eklenirse buraya da eklenmelidir).
   (function () {
     var SPLASH_THEME_COLORS = [
-      '#272727', // 0: Orijinal (antrasit)
-      '#121212', // 1: Koyu
-      '#000000', // 2: Saf Siyah
-      '#f2e8d5', // 3: Krem
-      '#F6F4EF', // 4: Fildişi
-      '#A8D8FF', // 5: Bebek Mavisi
-      '#2B2F4A'  // 6: Lacivert
+      '#F6F1EA', // 0: Ivory
+      '#0B0B0C', // 1: Black
+      '#121212', // 2: Koyu
+      '#000000', // 3: Saf Siyah
+      '#f2e8d5', // 4: Krem
+      '#F6F4EF', // 5: Fildişi
+      '#A8D8FF', // 6: Bebek Mavisi
+      '#2B2F4A'  // 7: Lacivert
     ];
     try {
       var raw = localStorage.getItem('takvimim_app_state_v1');
       var saved = raw ? JSON.parse(raw) : null;
+      // Tema listesinden "Orijinal" çıkarılıp başa Ivory + Black eklendi (themeVer 2): eski
+      // kayıtlı tema numaraları bir kez yeni sıraya taşınır (Orijinal -> Black, diğerleri +1).
+      if (saved && saved.themeVer !== 2) {
+        if (typeof saved.theme === 'number') saved.theme = saved.theme === 0 ? 1 : saved.theme + 1;
+        saved.themeVer = 2;
+        localStorage.setItem('takvimim_app_state_v1', JSON.stringify(saved));
+      }
       // Kayıtlı bir tema tercihi yoksa (ilk açılış), varsayılan olarak
-      // Fildişi (index 4) kullanılır.
-      var themeIndex = saved && typeof saved.theme === 'number' ? saved.theme : 4;
-      var color = SPLASH_THEME_COLORS[themeIndex] || SPLASH_THEME_COLORS[4];
+      // Ivory (index 0) kullanılır.
+      var themeIndex = saved && typeof saved.theme === 'number' ? saved.theme : 0;
+      var color = SPLASH_THEME_COLORS[themeIndex] || SPLASH_THEME_COLORS[0];
       var splashEl = document.getElementById('app-splash');
       if (splashEl) splashEl.style.background = color;
       var meta = document.querySelector('meta[name="theme-color"]');
@@ -45256,7 +45264,7 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
 <script>
   // Ayarlar/Desenler sayfasındaki renk paleti kartından (.theme-swatch-card)
   // seçilince tema (arka plan + yazı rengi) değişir; applyTheme() bu geçişi
-  // uygular. Toplam 7 tema: orijinal (antresit gri), koyu, saf siyah, krem,
+  // uygular. Toplam 8 tema: Ivory, Black, koyu, saf siyah, krem,
   // fildişi, bebek mavisi ve lacivert.
   // "Orijinal" referans görseldeki antresit (#272727) tonu; ancak uygulama
   // ilk açılışta (daha önce kaydedilmiş bir tema tercihi yoksa) artık
@@ -45264,10 +45272,17 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
   // varsayılanı ve splash ekranı script'i).
   const themes = [
     {
-      name: 'Orijinal',
-      gradient: 'linear-gradient(135deg, #272727 0%, #272727 50%, #272727 100%)',
-      color: '#272727',
-      text: '#f2f2f7',
+      name: 'Ivory',
+      gradient: 'linear-gradient(135deg, #F6F1EA 0%, #F6F1EA 50%, #F6F1EA 100%)',
+      color: '#F6F1EA',
+      text: '#0B0B0C',
+      weekend: '#d61f3c'
+    },
+    {
+      name: 'Black',
+      gradient: 'linear-gradient(135deg, #0B0B0C 0%, #0B0B0C 50%, #0B0B0C 100%)',
+      color: '#0B0B0C',
+      text: '#F6F1EA',
       weekend: '#ff6b81'
     },
     {
@@ -45488,7 +45503,7 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
   // Daha önce seçilmiş bir tema kaydedilmişse (localStorage), uygulama onunla açılır.
   // Kaydedilmiş bir tercih yoksa (ilk açılış), varsayılan olarak Fildişi (index 4) kullanılır.
   const savedThemeIndex = APP_STATE.theme;
-  let themeIndex = (typeof savedThemeIndex === 'number' && themes[savedThemeIndex]) ? savedThemeIndex : 4;
+  let themeIndex = (typeof savedThemeIndex === 'number' && themes[savedThemeIndex]) ? savedThemeIndex : 0;
   let visibleLayer = layerA;
   let hiddenLayer = layerB;
 
@@ -45528,7 +45543,7 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
       window.syncSwatchSelection(themeIndex);
     }
 
-    saveAppState({ theme: themeIndex });
+    saveAppState({ theme: themeIndex, themeVer: 2 });
   };
 
   // Belirli bir tema index'ini doğrudan uygular (Sayfa 3'teki gradyana
@@ -45554,7 +45569,7 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
     visibleLayer = hiddenLayer;
     hiddenLayer = temp;
 
-    saveAppState({ theme: themeIndex });
+    saveAppState({ theme: themeIndex, themeVer: 2 });
   };
 </script>
 
