@@ -19051,21 +19051,6 @@
     transition: border-color 0.4s ease;
   }
 
-  /* ---------- "Kart rengi" satırı: Kart Renkleri anahtarı açıldığında
-     Renk teması ile aynı satır kalıbında beliren bir satır. Önceki
-     display:contents çözümü bazı mobil tarayıcılarda flex ile birlikte
-     güvenilir çalışmadığı için (daireleri hafif kaydırıyordu), sarmalayıcıyı
-     düz bir blok yapıyoruz: kendi padding/margin'i olmadığından, içindeki
-     satır ve ayırıcı diğer satırlarla birebir aynı hizada kalır. ---------- */
-  .settings-cardcolor-wrap {
-    display: none;
-  }
-
-  .settings-cardcolor-wrap.is-open {
-    display: block;
-    width: 100%;
-  }
-
   /* ---------- "Desenler" satırı: Ayarlar'dan alt sayfaya geçiş ----------
      Sayfa 7 (Turlarım) ile aynı fikir: dokunulabilir bir satır,
      seçili deseni gösteren küçük bir rozet ve yön oku ile bir alt sayfaya
@@ -39492,38 +39477,6 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
 
           <div class="settings-divider" id="settingsFullscreenDivider"></div>
 
-          <div class="settings-row">
-            <div class="settings-row-text">
-              <span class="settings-row-title">Kart Renkleri</span>
-              <span class="settings-row-desc">Kartlar ve butonlar seçtiğiniz renge döner</span>
-            </div>
-            <!-- From Uiverse.io by corentinchene (Sayfa 1'deki anahtarla aynı) -->
-            <label class="toggle brutal-toggle settings-toggle" id="settingsDarkToggleWrap">
-              <input type="checkbox" id="settingsDarkToggle" />
-              <span class="track">
-                <span class="thumb"></span>
-              </span>
-            </label>
-          </div>
-
-          <div class="settings-cardcolor-wrap" id="settingsCardColorWrap">
-            <div class="settings-divider"></div>
-            <button type="button" class="settings-row settings-row-link" id="settingsCardColorLink">
-              <div class="settings-row-text">
-                <span class="settings-row-title">Kart rengi</span>
-                <span class="settings-row-desc">Koyu moddaki kart yüzeyinin rengi</span>
-              </div>
-              <div class="settings-row-link-right">
-                <span class="settings-color-chip" id="settingsCardColorChip" aria-hidden="true"></span>
-                <svg class="settings-row-chevron" viewBox="0 0 24 24" width="16" height="16">
-                  <path d="M9 4l8 8-8 8" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-              </div>
-            </button>
-          </div>
-
-          <div class="settings-divider"></div>
-
           <button type="button" class="settings-row settings-row-link" id="settingsThemeLink">
             <div class="settings-row-text">
               <span class="settings-row-title">Renk teması</span>
@@ -42221,13 +42174,13 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
   <div class="wheel-color-card" id="wheelColorCard" role="dialog" aria-modal="true" aria-labelledby="wheelColorTitle">
     <span class="wheel-color-grip" aria-hidden="true"></span>
     <div class="wheel-color-header">
-      <span class="wheel-color-orb" id="wheelColorOrb" aria-hidden="true"></span>
       <div class="wheel-color-heading">
         <span class="wheel-color-title" id="wheelColorTitle">Renk seç</span>
         <span class="wheel-color-subtitle" id="wheelColorSubtitle"></span>
       </div>
       <button type="button" class="delete-btn wheel-color-close" id="wheelColorClose" aria-label="Kapat">×</button>
     </div>
+    <span class="wheel-color-orb" id="wheelColorOrb" aria-hidden="true"></span>
     <div class="wheel-color-grid" id="wheelColorGrid"></div>
   </div>
 </div>
@@ -43983,27 +43936,10 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
 </script>
 
 <script>
-  // Ayarlar sayfasındaki "Karanlık mod" anahtarı aktif edildiğinde
-  // button_top butonları antresit tonuna geçer (body.is-anthracite class'ı
-  // üzerinden CSS tetiklenir). Anahtarın durumu (açık/kapalı) APP_STATE
-  // üzerinden localStorage'a kaydedilir; böylece en son açık bırakıldıysa
-  // bir sonraki girişte de anahtar açık olarak yüklenir.
-  const darkModeToggle = document.getElementById('settingsDarkToggle');
-  if (darkModeToggle) {
-    // Sayfa açılırken daha önce kaydedilmiş bir durum varsa uygula.
-    if (typeof APP_STATE.anthracite === 'boolean') {
-      darkModeToggle.checked = APP_STATE.anthracite;
-    }
-
-    const syncAnthracite = () => {
-      document.body.classList.toggle('is-anthracite', darkModeToggle.checked);
-    };
-    darkModeToggle.addEventListener('change', () => {
-      syncAnthracite();
-      saveAppState({ anthracite: darkModeToggle.checked });
-    });
-    syncAnthracite();
-  }
+  // "Kart Renkleri" özelliği kaldırıldı: eski kayıtlı durum (APP_STATE.anthracite / cardColor) artık
+  // uygulanmaz; renkler yalnızca seçili temadan gelir.
+  document.body.classList.remove('is-anthracite');
+  document.body.style.removeProperty('--dark-card-color');
 </script>
 
 <script>
@@ -44960,6 +44896,16 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
     wheelColorSubtitle.textContent = subtitle;
 
     wheelColorGrid.innerHTML = '';
+    const pcRing = document.createElement('span');
+    pcRing.className = 'pc-ring';
+    wheelColorGrid.appendChild(pcRing);
+    const pcMoveRing = (sw, animate) => {
+      pcRing.style.transition = animate ? '' : 'none';
+      pcRing.style.width = sw.offsetWidth + 'px';
+      pcRing.style.height = sw.offsetHeight + 'px';
+      pcRing.style.transform = `translate(${sw.offsetLeft}px, ${sw.offsetTop}px)`;
+      pcRing.classList.add('is-on');
+    };
     (palette || WHEEL_PALETTE).forEach((color, swatchIndex) => {
       const swatch = document.createElement('button');
       swatch.style.setProperty('--i', swatchIndex);
@@ -44985,14 +44931,19 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
         wheelColorGrid.querySelectorAll('.is-selected').forEach((el) => el.classList.remove('is-selected'));
         swatch.classList.add('is-selected', 'is-picked');
         if (wheelColorOrb) wheelColorOrb.style.background = color;
+        pcMoveRing(swatch, true);
         if (cb) cb(color);
         clearTimeout(colorPickerCloseTimer);
-        colorPickerCloseTimer = setTimeout(closeColorPicker, 300);
+        colorPickerCloseTimer = setTimeout(closeColorPicker, 480);
       });
 
       wheelColorGrid.appendChild(swatch);
     });
 
+    // Seçili renk varsa halka animasyonsuz oraya oturur (açılış sırasında zıplamasın).
+    const pcSel = wheelColorGrid.querySelector('.wheel-color-swatch.is-selected');
+    pcRing.classList.remove('is-on');
+    if (pcSel) requestAnimationFrame(() => pcMoveRing(pcSel, false));
     wheelColorBackdrop.classList.add('is-open');
   };
 
@@ -54484,61 +54435,6 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
       );
     });
   }
-
-  // ---- Kart rengi: "Kart Renkleri" (eski "Karanlık mod") anahtarı
-  // açıkken beliren satır. Seçilen renk --dark-card-color CSS değişkenine
-  // yazılır; kartların koyu moddaki antresit tonu (#1c1c22) bu
-  // değişkenden okunur, böylece kullanıcı istediği rengi seçebilir. ----
-  const CARD_COLOR_PALETTE = [
-    { name: 'Antresit', color: '#1c1c22' },
-    { name: 'Siyah', color: '#1f2123' }
-  ];
-
-  const settingsCardColorChip = document.getElementById('settingsCardColorChip');
-  const settingsCardColorLink = document.getElementById('settingsCardColorLink');
-  const settingsCardColorWrap = document.getElementById('settingsCardColorWrap');
-
-  const savedCardColor = APP_STATE.cardColor;
-  const savedCardColorIndex = CARD_COLOR_PALETTE.findIndex((item) => item.color === savedCardColor);
-  let cardColorIndex = savedCardColorIndex >= 0 ? savedCardColorIndex : 0;
-
-  if (typeof savedCardColor === 'string') {
-    document.body.style.setProperty('--dark-card-color', savedCardColor);
-  }
-
-  const applyCardColor = (index) => {
-    cardColorIndex = index;
-    const color = CARD_COLOR_PALETTE[index].color;
-    document.body.style.setProperty('--dark-card-color', color);
-    if (settingsCardColorChip) settingsCardColorChip.style.background = color;
-    saveAppState({ cardColor: color });
-  };
-  if (settingsCardColorChip) settingsCardColorChip.style.background = CARD_COLOR_PALETTE[cardColorIndex].color;
-
-  if (settingsCardColorLink) {
-    settingsCardColorLink.addEventListener('click', () => {
-      openColorPicker(
-        CARD_COLOR_PALETTE[cardColorIndex].name,
-        CARD_COLOR_PALETTE[cardColorIndex].color,
-        (color) => {
-          const i = CARD_COLOR_PALETTE.findIndex((item) => item.color.toLowerCase() === color.toLowerCase());
-          applyCardColor(i >= 0 ? i : 0);
-        },
-        CARD_COLOR_PALETTE.map((item) => item.color),
-        'Kart rengi'
-      );
-    });
-  }
-
-  // Anahtar açık/kapalıyken "Kart rengi" satırının görünürlüğünü senkronlar;
-  // hem sayfa yüklenirken hem her değişiklikte çağrılır.
-  const syncCardColorVisibility = () => {
-    if (settingsCardColorWrap) {
-      settingsCardColorWrap.classList.toggle('is-open', !!(darkModeToggle && darkModeToggle.checked));
-    }
-  };
-  syncCardColorVisibility();
-  if (darkModeToggle) darkModeToggle.addEventListener('change', syncCardColorVisibility);
 
   // ---- Vurgu rengi: butonlarda basılı tutma/basma/aktif durumunda beliren
   // pembe rengi (--accent-color, varsayılan #ff90e8) değiştirir. Kart
@@ -75008,6 +74904,39 @@ body .wheel-color-backdrop.is-open .wheel-color-card{transform:none;opacity:1}
 .wheel-color-grip{display:none}
 }
 @media (prefers-reduced-motion:reduce){body .wheel-color-backdrop *{transition-duration:.01s !important;transition-delay:0s !important;animation:none !important}}
+</style>
+<style id="colorMinimalStyle">
+/* ===== Renk seçici + Ayarlar renk satırları: minimalist ===== */
+body .wheel-color-backdrop{--pc-ease:cubic-bezier(.22,1,.36,1);background:rgba(10,10,14,0);-webkit-backdrop-filter:blur(0);backdrop-filter:blur(0);transition:opacity .35s ease,background .5s ease,-webkit-backdrop-filter .5s ease,backdrop-filter .5s ease}
+body .wheel-color-backdrop.is-open{background:rgba(10,10,14,.32);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+body .wheel-color-backdrop .wheel-color-card{max-width:400px;padding:12px 22px 26px;border-radius:30px;box-shadow:0 40px 80px -30px rgba(0,0,0,.5);transition:transform .7s var(--pc-ease)}
+body .wheel-color-backdrop .wheel-color-grip{width:30px;height:4px;margin-bottom:18px;opacity:.7}
+body .wheel-color-backdrop .wheel-color-header{align-items:flex-start;justify-content:space-between}
+body .wheel-color-backdrop .wheel-color-title{font-size:1.05rem;font-weight:700;letter-spacing:0}
+body .wheel-color-backdrop .wheel-color-subtitle{font-size:.8rem;font-weight:600;opacity:.45}
+body .wheel-color-backdrop .wheel-color-close{width:32px;height:32px;font-size:1.1rem;background:transparent;transition:background .25s ease,transform .3s var(--pc-ease)}
+body .wheel-color-backdrop .wheel-color-close:hover{background:color-mix(in srgb,var(--pc-t) 8%,transparent)}
+/* Canlı önizleme: seçilen renk burada akarak değişir */
+body .wheel-color-backdrop .wheel-color-orb{display:block;width:100%;height:58px;margin-top:18px;border-radius:20px;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--pc-t) 10%,transparent);transform:scaleX(.88);opacity:0;transform-origin:center;transition:background .6s var(--pc-ease),transform .8s var(--pc-ease) .1s,opacity .4s ease .1s}
+body .wheel-color-backdrop.is-open .wheel-color-orb{transform:none;opacity:1}
+body .wheel-color-backdrop .wheel-color-grid{position:relative;margin-top:22px;grid-template-columns:repeat(5,1fr);gap:18px 12px;justify-items:center}
+body .wheel-color-backdrop .wheel-color-swatch{width:84%;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--pc-t) 10%,transparent);opacity:0;transform:scale(.6);transition:opacity .2s ease,transform .3s var(--pc-ease)}
+body .wheel-color-backdrop.is-open .wheel-color-swatch{opacity:1;transform:none;transition:opacity .4s ease calc(var(--i,0) * 18ms + 180ms),transform .7s var(--pc-ease) calc(var(--i,0) * 18ms + 180ms)}
+body .wheel-color-backdrop.is-open .wheel-color-swatch:hover{transform:scale(1.08);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--pc-t) 10%,transparent);transition-delay:0s;transition-duration:.3s}
+body .wheel-color-backdrop.is-open .wheel-color-swatch:active{transform:scale(.9)}
+body .wheel-color-backdrop .wheel-color-swatch.is-selected{box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--pc-t) 10%,transparent)}
+body .wheel-color-backdrop .wheel-color-swatch.is-picked{animation:none}
+body .wheel-color-backdrop .wheel-color-swatch-check{display:none}
+/* Tek halka: seçimin üstünde süzülür */
+.pc-ring{position:absolute;left:0;top:0;margin:0;pointer-events:none;box-sizing:content-box;border-radius:50%;border:1.5px solid var(--pc-t);padding:4px;margin:-5.5px 0 0 -5.5px;opacity:0;transition:transform .55s var(--pc-ease),width .3s ease,height .3s ease,opacity .25s ease}
+.pc-ring.is-on{opacity:.9}
+/* Ayarlar: renk satırları sadeleşti */
+body .settings-row-link .settings-color-chip{width:1.5rem;height:1.5rem;border:0;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--theme-text,#121212) 14%,transparent),0 0 0 3px var(--theme-bg,transparent),0 0 0 4px color-mix(in srgb,var(--theme-text,#121212) 16%,transparent);transition:transform .45s var(--pc-ease,cubic-bezier(.22,1,.36,1)),background .5s ease}
+body .settings-row-link:active .settings-color-chip{transform:scale(.82)}
+body .settings-row-link .settings-row-chevron{opacity:.3;transition:transform .4s cubic-bezier(.22,1,.36,1),opacity .3s ease}
+body .settings-row-link .settings-row-chevron path{stroke-width:1.8}
+body .settings-row-link:hover .settings-row-chevron{transform:translateX(3px);opacity:.55}
+@media (prefers-reduced-motion:reduce){body .wheel-color-backdrop *,.pc-ring{transition-duration:.01s !important;transition-delay:0s !important}}
 </style>
 <style id="analyticsRedesignStyle">
 /* ===== Analizlerim (telefon): Denemelerim diliyle — tek tonlu, yumuşak kartlar, kademeli giriş ===== */
