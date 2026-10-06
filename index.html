@@ -72093,7 +72093,7 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
   // ---------- Görev ekleme sayfası: yukarıdan aşağıya açılan kart ----------
   window.gundelikTaskSheet = window.gundelikTaskSheet || (() => {
     let bd = null, card, ta, proxy, focusT = 0, goBtn, moreBtn, labelEl, listMode = false, onSubmit = null, curId = null, opened = false;
-    let confirmMode = false, noDraft = false, onDismiss = null, curCol = null, swEl, msgEl, subWrap, subsEl, pillEl, selSub;
+    let confirmMode = false, noDraft = false, onDismiss = null, curCol = null, swEl, msgEl, subWrap, subsEl, pillEl, selSub; let pasteBtn;
     const drafts = new Map();
     const mk = (t, c, x) => { const e = document.createElement(t); if (c) e.className = c; if (x != null) e.textContent = x; return e; };
     const vv = () => { const h = (window.visualViewport && window.visualViewport.height) || window.innerHeight; if (bd) bd.style.setProperty('--tsh-vh', h + 'px'); };
@@ -72116,7 +72116,11 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
       bd = mk('div', 'tsh-backdrop'); card = mk('div', 'tsh-card'); card.setAttribute('role', 'dialog'); card.setAttribute('aria-modal', 'true'); card.setAttribute('aria-label', 'Görev ekle');
       const top = mk('div', 'tsh-top'), x = mk('button', 'tsh-x', '×'); x.type = 'button'; x.setAttribute('aria-label', 'Kapat');
       const hd = mk('div', 'tsh-head'), tile = mk('span', 'tsh-tile'); tile.innerHTML = '<svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>';
-      labelEl = mk('span', 'tsh-label', 'Yeni görev'); hd.append(tile, labelEl); top.append(hd, x);
+      labelEl = mk('span', 'tsh-label', 'Yeni görev'); hd.append(tile, labelEl);
+      // Yapıştır düğmesi: uygulama dışından kopyalanan metni panodan okuyup yazı alanına ekler.
+      pasteBtn = mk('button', 'tsh-paste'); pasteBtn.type = 'button'; pasteBtn.setAttribute('aria-label', 'Panodaki metni yapıştır');
+      pasteBtn.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="4.5" width="14" height="16.5" rx="2.5"/><path d="M9 4.5V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v.5"/><path d="M9 11h6M9 15h4"/></svg><span>Yapıştır</span>';
+      const rt = mk('div', 'tsh-rt'); rt.append(pasteBtn, x); top.append(hd, rt);
       ta = mk('textarea', 'tsh-ta'); ta.placeholder = 'Görevi buraya yaz…'; ta.rows = 5; ta.enterKeyHint = 'enter'; ta.setAttribute('autocomplete', 'off');
       const bar = mk('div', 'tsh-bar'); moreBtn = mk('button', 'tsh-btn tsh-more', 'Ekle ve yeni yaz'); goBtn = mk('button', 'tsh-btn tsh-go', 'Görevi ekle');
       moreBtn.type = goBtn.type = 'button'; bar.append(moreBtn, goBtn);
@@ -72131,6 +72135,43 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
       subsEl.appendChild(pillEl); subWrap.append(mk('div', 'tsh-subcap', 'Hangi bölüme?'), subsEl);
       card.append(top, msgEl, ta, subWrap, swEl, bar, grab); bd.append(card, proxy); document.body.appendChild(bd);
       ta.addEventListener('input', grow);
+      // ---- Yapıştırma ----
+      // Metin, seçili aralığın yerine eklenir; liste/başlık adında satır sonları boşluğa çevrilir ve uzunluk sınırına uyulur.
+      const insertText = (raw) => {
+        let t = String(raw == null ? '' : raw).replace(/\r\n?/g, '\n');
+        if (listMode) t = t.replace(/\s*\n+\s*/g, ' ').replace(/[ \t]{2,}/g, ' ').trim();
+        if (!t) return false;
+        const s0 = ta.selectionStart == null ? ta.value.length : ta.selectionStart, e0 = ta.selectionEnd == null ? s0 : ta.selectionEnd;
+        const room = ta.maxLength > 0 ? ta.maxLength - (ta.value.length - (e0 - s0)) : Infinity;
+        if (room <= 0) return false;
+        if (t.length > room) t = t.slice(0, room);
+        try { ta.focus({ preventScroll: true }); } catch (err) { /* yok say */ }
+        if (ta.setRangeText) ta.setRangeText(t, s0, e0, 'end'); else { ta.value = ta.value.slice(0, s0) + t + ta.value.slice(e0); }
+        ta.dispatchEvent(new Event('input', { bubbles: true }));
+        return true;
+      };
+      ta.addEventListener('paste', (e) => {
+        const cd = e.clipboardData, txt = cd && cd.getData ? cd.getData('text/plain') : '';
+        if (!txt) return;                       // metin yoksa (ör. görsel) tarayıcının varsayılanı çalışsın
+        e.preventDefault(); insertText(txt);
+      });
+      // Gövdedeki oncopy/oncut/onselectstart="return false" yazı alanındaki seçme/kopyalama/yapıştırma menüsünü bozmasın.
+      ['selectstart', 'copy', 'cut', 'paste'].forEach((ev) => ta.addEventListener(ev, (e) => e.stopPropagation()));
+      pasteBtn.addEventListener('pointerdown', (e) => e.preventDefault());
+      pasteBtn.addEventListener('click', async () => {
+        let txt = '';
+        try { if (navigator.clipboard && navigator.clipboard.readText) txt = await navigator.clipboard.readText(); }
+        catch (err) {
+          try { ta.focus(); } catch (e2) { /* yok say */ }
+          if (window.paceNToast) window.paceNToast('Panoya erişilemedi. Alana uzun basıp "Yapıştır"ı seç.', null, 4200);
+          return;
+        }
+        if (!txt || !txt.trim()) { if (window.paceNToast) window.paceNToast('Panoda yapıştırılacak metin yok', null, 2600); return; }
+        if (insertText(txt)) {
+          pasteBtn.classList.add('is-done'); if (navigator.vibrate) navigator.vibrate(8);
+          setTimeout(() => pasteBtn.classList.remove('is-done'), 900);
+        }
+      });
       ta.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); else if (e.key === 'Enter' && (listMode ? !e.shiftKey : (e.ctrlKey || e.metaKey))) { e.preventDefault(); submit(false); } });
       x.addEventListener('click', () => close());
       goBtn.addEventListener('click', () => submit(false)); moreBtn.addEventListener('click', () => (confirmMode ? close(false) : submit(true)));
@@ -72550,6 +72591,7 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
           { ic: IC.edit, title: 'Adı Değiştir', sub: 'Listenin ismini düzenle', fn: () => editList(g) },
           { ic: IC.color, title: 'Rengi Değiştir', sub: 'Listenin vurgu rengi', fn: () => editList(g) },
           ...(SUB ? [{ ic: IC.sub, title: 'Alt Başlık Ekle', sub: 'Listeye bir bölüm başlığı koy', fn: () => addSub(g) }] : []),
+          ...(st.groups.length > 1 ? [{ ic: SORT_IC, title: 'Başlıkları Sırala', sub: 'Sürükleyerek yeniden diz', fn: () => openSort() }] : []),
           ...(g.items.some((i) => i.done) ? [{ ic: IC.clean, title: 'Tamamlananları Temizle', sub: 'İşaretli görevleri kaldır', fn: () => window.gkAnim.leave(Array.from(box.querySelectorAll('.hl-r.is-done')), () => { const old = g.items.slice(); g.items = g.items.filter((i) => !i.done); save(); render(); toast('Tamamlananlar temizlendi', () => { g.items = old; save(); render(); }); }) }] : []),
           { ic: IC.trash, title: 'Listeyi Sil', sub: 'İçindeki görevlerle birlikte', danger: true, fn: async () => {
             if (!(await confirmDel(`"${g.name}" listesi silinsin mi?`, g.items.some((i) => !i.sub) ? `İçindeki ${g.items.filter((i) => !i.sub).length} görev de silinecek. Hemen ardından geri alabilirsin.` : 'Bu liste silinecek. Hemen ardından geri alabilirsin.'))) return;
@@ -72607,6 +72649,228 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
       rollover();
     }
 
+    // ================== Başlıkları sırala (sürükle-bırak) + seçilen başlığa git ==================
+    // Başlıktaki ⇅ düğmesi (ya da başlığa basılı tutunca çıkan menü) bir pencere açar. Pencerede başlıklar
+    // tutamaçtan (ya da basılı tutarak) sürüklenip sıralanır; bir başlığa dokunulursa pencere kapanır ve sayfa
+    // o başlığa yumuşakça kayar. Sıra st.groups dizisine yazılır (kaydedilir / eşitlenir).
+    const SORT_IC = '<svg viewBox="0 0 24 24"><path d="M7 4v16M7 20l-3-3M7 20l3-3"/><path d="M17 20V4M17 4l-3 3M17 4l3 3"/></svg>';
+    const GRIP_IC = '<svg viewBox="0 0 24 24"><circle cx="9" cy="6.5" r="1.6"/><circle cx="15" cy="6.5" r="1.6"/><circle cx="9" cy="12" r="1.6"/><circle cx="15" cy="12" r="1.6"/><circle cx="9" cy="17.5" r="1.6"/><circle cx="15" cy="17.5" r="1.6"/></svg>';
+    const reduceMo = () => !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+    const clampN = (v, a, b) => Math.max(a, Math.min(b, v));
+    let lastCommit = 0, gksOpen = false;
+
+    // Kaydırma alanını (sc) hedef konuma yavaşlayıp hızlanan bir eğriyle kaydırır. Kullanıcı tekerlek/dokunuşla
+    // araya girerse animasyon hemen bırakılır.
+    const glide = (sc, target, done) => {
+      const from = sc.scrollTop, max = Math.max(0, sc.scrollHeight - sc.clientHeight);
+      target = clampN(target, 0, max);
+      const dist = target - from;
+      if (reduceMo() || Math.abs(dist) < 3) { sc.scrollTop = target; if (done) done(); return; }
+      const dur = clampN(420 + Math.sqrt(Math.abs(dist)) * 24, 560, 1150);
+      const ease = (t) => (t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+      let t0 = null, stopped = false;
+      const stop = () => { stopped = true; off(); };
+      const off = () => { ['wheel', 'touchstart', 'pointerdown'].forEach((ev) => sc.removeEventListener(ev, stop)); };
+      ['wheel', 'touchstart', 'pointerdown'].forEach((ev) => sc.addEventListener(ev, stop, { passive: true }));
+      const step = (ts) => {
+        if (stopped) return;
+        if (t0 === null) t0 = ts;
+        const p = Math.min(1, (ts - t0) / dur);
+        sc.scrollTop = from + dist * ease(p);
+        if (p < 1) requestAnimationFrame(step); else { off(); if (done) done(); }
+      };
+      requestAnimationFrame(step);
+    };
+    // Varılan başlık: renkli bir ışıma + noktası "pop" yapar.
+    const flashGroup = (box) => {
+      const head = box && box.querySelector('.hl-head'); if (!head) return;
+      head.classList.remove('gks-flash'); void head.offsetWidth; head.classList.add('gks-flash');
+      setTimeout(() => head.classList.remove('gks-flash'), 1500);
+    };
+    // Sayfayı başlığın bulunduğu alana götürür. waitMs: pencerenin kapanışıyla çakışacak şekilde kısa bekleme.
+    const scrollToGroup = (id, waitMs) => {
+      const sc = $(P + 'Scroll'); if (!sc) return;
+      const run = () => {
+        const box = list.querySelector('[data-fk="hg:' + id + '"]'); if (!box) return;
+        const r = box.getBoundingClientRect(), s2 = sc.getBoundingClientRect();
+        glide(sc, sc.scrollTop + (r.top - s2.top) - 10, () => flashGroup(box));
+      };
+      // Sıralama az önce kaydedildiyse sayfadaki yer değiştirme (FLIP) animasyonu bitsin, sonra ölç.
+      const settle = Math.max(0, 600 - (performance.now() - lastCommit));
+      setTimeout(run, Math.max(waitMs || 0, settle));
+    };
+
+    const openSort = () => {
+      if (gksOpen) return;
+      if (!st.groups.length) { toast('Henüz başlık yok'); return; }
+      closeMenu(); gksOpen = true;
+      const bd = el('div', 'gks-bd'), card = el('div', 'gks-card');
+      card.setAttribute('role', 'dialog'); card.setAttribute('aria-modal', 'true'); card.setAttribute('aria-label', 'Başlıkları sırala'); card.tabIndex = -1;
+      const top = el('div', 'gks-top'), ttl = el('div', 'gks-ttl', 'Başlıkları sırala'), xb = el('button', 'gks-x');
+      xb.type = 'button'; xb.setAttribute('aria-label', 'Kapat'); xb.innerHTML = '<svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>';
+      top.append(ttl, xb);
+      const hint = el('p', 'gks-hint', 'Sağdaki tutamaçtan tutup sürükle. Bir başlığa dokun, sayfada oraya git.');
+      const ls = el('div', 'gks-list'); ls.setAttribute('role', 'list');
+      card.append(top, hint, ls); bd.appendChild(card); document.body.appendChild(bd);
+
+      st.groups.forEach((g, i) => {
+        const it = el('div', 'gks-it'), dot = el('span', 'gks-dot'), nm = el('span', 'gks-name', g.name || 'Liste'), cn = el('span', 'gks-cnt'), hd = el('span', 'gks-h');
+        const rl = g.items.filter((x) => !x.sub), dn = rl.filter((x) => x.done).length;
+        cn.textContent = rl.length ? dn + '/' + rl.length : '';
+        hd.innerHTML = GRIP_IC; hd.setAttribute('aria-hidden', 'true');
+        it.dataset.id = g.id; it.style.setProperty('--gc', g.color); it.style.setProperty('--gt', tickColor(g.color)); it.style.setProperty('--i', i);
+        it.tabIndex = 0; it.setAttribute('role', 'listitem');
+        it.setAttribute('aria-label', (g.name || 'Liste') + '. Enter: başlığa git. Alt + ok tuşları: sırayı değiştir.');
+        it.append(dot, nm, cn, hd); ls.appendChild(it);
+      });
+
+      const items = () => Array.from(ls.children);
+      const persist = () => {
+        const byId = new Map(st.groups.map((g) => [g.id, g]));
+        const next = items().map((n) => byId.get(n.dataset.id)).filter(Boolean);
+        st.groups.forEach((g) => { if (next.indexOf(g) < 0) next.push(g); });
+        if (next.every((g, i) => g === st.groups[i])) return;
+        st.groups = next; save(); lastCommit = performance.now(); render();
+      };
+
+      // ---- Kapanış ----
+      let closed = false, onKey = null;
+      const close = () => {
+        if (closed) return; closed = true; gksOpen = false;
+        if (drag) { drag.cancelled = true; finishDrag(true, true); }
+        bd.classList.remove('is-open');
+        document.removeEventListener('keydown', onKey, true);
+        setTimeout(() => bd.remove(), 560);
+      };
+      onKey = (e) => { if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); close(); } };
+      document.addEventListener('keydown', onKey, true);
+      xb.addEventListener('click', close);
+      bd.addEventListener('click', (e) => { if (e.target === bd) close(); });
+
+      // ---- Başlığa git ----
+      let picking = false;
+      const pick = (it) => {
+        if (picking || closed) return; picking = true;
+        it.classList.add('is-pick'); if (navigator.vibrate) navigator.vibrate(10);
+        setTimeout(close, 200);
+        scrollToGroup(it.dataset.id, 330);
+      };
+
+      // ---- Sürükle-bırak ----
+      let drag = null, suppressClick = false, lpTimer = 0, pend = null;
+      const dragLoop = () => {
+        const d = drag; if (!d) return;
+        const n = d.arr.length, lr = ls.getBoundingClientRect(), edge = 56;
+        let v = 0;
+        if (d.py < lr.top + edge) v = -(1 - (d.py - lr.top) / edge);
+        else if (d.py > lr.bottom - edge) v = 1 - (lr.bottom - d.py) / edge;
+        v = clampN(v, -1, 1); if (v) ls.scrollTop += v * 13;
+        const minY = d.tops[0], maxY = d.tops[n - 1];
+        const y = clampN(d.py - lr.top + ls.scrollTop - d.grabY, minY - 10, maxY + 10);
+        d.it.style.translate = '0 ' + (y - d.startTop) + 'px';
+        const to = clampN(Math.round((y - minY) / d.step), 0, n - 1);
+        if (to !== d.to) {
+          d.to = to; if (navigator.vibrate) navigator.vibrate(6);
+          d.arr.forEach((nd, j) => {
+            if (j === d.from) return;
+            const sh = (j > d.from && j <= to) ? -d.step : ((j < d.from && j >= to) ? d.step : 0);
+            nd.style.translate = sh ? '0 ' + sh + 'px' : '';
+          });
+        }
+        d.raf = requestAnimationFrame(dragLoop);
+      };
+      const beginDrag = (it, e) => {
+        if (drag || closed) return;
+        const arr = items(), n = arr.length, from = arr.indexOf(it);
+        const tops = arr.map((nd) => nd.offsetTop);
+        const step = n > 1 ? (tops[n - 1] - tops[0]) / (n - 1) : it.offsetHeight;
+        const r = it.getBoundingClientRect();
+        drag = { it, arr, from, to: from, tops, step, startTop: tops[from], grabY: e.clientY - r.top, py: e.clientY, pid: e.pointerId, raf: 0, src: e.target, cancelled: false };
+        suppressClick = true;
+        ls.classList.add('is-sorting'); it.classList.add('is-lift');
+        if (navigator.vibrate) navigator.vibrate(12);
+        try { ls.setPointerCapture(e.pointerId); } catch (err) { /* yok say */ }
+        dragLoop();
+      };
+      function finishDrag(cancel, instant) {
+        const d = drag; if (!d) return; drag = null;
+        cancelAnimationFrame(d.raf);
+        try { ls.releasePointerCapture(d.pid); } catch (err) { /* yok say */ }
+        const to = cancel ? d.from : d.to;
+        const commit = () => {
+          ls.classList.add('no-tr');
+          const arr = d.arr.slice(), mv = arr.splice(d.from, 1)[0]; arr.splice(to, 0, mv);
+          arr.forEach((nd) => { nd.style.translate = ''; ls.appendChild(nd); });
+          void ls.offsetHeight; ls.classList.remove('no-tr');
+          ls.classList.remove('is-sorting');
+          if (to !== d.from) persist();
+        };
+        d.it.classList.remove('is-lift');
+        if (instant) { commit(); return; }
+        // Bırakılan satır kendi yerine oturur (yay gibi), sonra sıra gerçekten uygulanır.
+        d.it.classList.add('is-settle');
+        d.it.style.translate = '0 ' + (d.tops[to] - d.startTop) + 'px';
+        setTimeout(() => { d.it.classList.remove('is-settle'); commit(); }, 360);
+        setTimeout(() => { suppressClick = false; }, 380);
+      }
+      const cancelPending = () => { clearTimeout(lpTimer); lpTimer = 0; pend = null; };
+      ls.addEventListener('pointerdown', (e) => {
+        if (drag || e.button > 0) return;
+        const it = e.target.closest && e.target.closest('.gks-it'); if (!it || !ls.contains(it)) return;
+        suppressClick = false;
+        if (e.target.closest('.gks-h')) { e.preventDefault(); beginDrag(it, e); return; }       // tutamaç: hemen sürükle
+        if (e.pointerType === 'mouse') { pend = { it, x: e.clientX, y: e.clientY, e }; return; }  // fare: biraz hareket edince
+        pend = { it, x: e.clientX, y: e.clientY, e };                                             // dokunmatik: basılı tutunca
+        clearTimeout(lpTimer);
+        lpTimer = setTimeout(() => { if (!pend) return; const p = pend; pend = null; beginDrag(p.it, { clientY: p.y, pointerId: p.e.pointerId, target: p.e.target }); }, 260);
+      });
+      ls.addEventListener('pointermove', (e) => {
+        if (drag) { if (e.pointerId === drag.pid) { drag.py = e.clientY; e.preventDefault(); } return; }
+        if (!pend) return;
+        if (e.pointerType === 'mouse' && !(e.buttons & 1)) { cancelPending(); return; }   // düğme listenin dışında bırakıldıysa
+        const dist = Math.hypot(e.clientX - pend.x, e.clientY - pend.y);
+        if (e.pointerType === 'mouse') { if (dist > 4) { const p = pend; pend = null; beginDrag(p.it, { clientY: p.y, pointerId: e.pointerId, target: p.e.target }); drag && (drag.py = e.clientY); } }
+        else if (dist > 9) cancelPending();                                                       // kaydırma niyeti: sürükleme değil
+      });
+      const up = (e) => { cancelPending(); if (drag && e.pointerId === drag.pid) finishDrag(e.type === 'pointercancel'); };
+      ls.addEventListener('pointerup', up); ls.addEventListener('pointercancel', up);
+      // Basılı tutup sürüklerken liste kaymasın (dokunmatik).
+      ls.addEventListener('touchmove', (e) => { if (drag) e.preventDefault(); }, { passive: false });
+      ls.addEventListener('contextmenu', (e) => e.preventDefault());
+      ls.addEventListener('click', (e) => {
+        if (suppressClick) { suppressClick = false; e.preventDefault(); return; }
+        const it = e.target.closest && e.target.closest('.gks-it'); if (it) pick(it);
+      });
+      // Klavye: Enter = başlığa git, Alt + ↑/↓ = sırayı değiştir.
+      ls.addEventListener('keydown', (e) => {
+        const it = e.target.closest && e.target.closest('.gks-it'); if (!it || e.target !== it) return;
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pick(it); return; }
+        if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+          e.preventDefault(); const arr = items(), i = arr.indexOf(it), dir = e.key === 'ArrowUp' ? -1 : 1, j = i + dir;
+          if (j < 0 || j >= arr.length) return;
+          if (!e.altKey) { arr[j].focus(); return; }
+          const before = new Map(arr.map((nd) => [nd, nd.getBoundingClientRect().top]));
+          ls.insertBefore(it, dir < 0 ? arr[j] : arr[j].nextSibling);
+          items().forEach((nd) => { const dy = before.get(nd) - nd.getBoundingClientRect().top; if (dy && nd.animate && !reduceMo()) nd.animate([{ transform: 'translateY(' + dy + 'px)' }, { transform: 'none' }], { duration: 320, easing: 'cubic-bezier(.2,.9,.25,1)' }); });
+          it.focus(); persist();
+        }
+      });
+
+      // Aç (iki karede: geçişler tetiklensin)
+      requestAnimationFrame(() => requestAnimationFrame(() => { if (!closed) { bd.classList.add('is-open'); try { card.focus({ preventScroll: true }); } catch (err) { /* yok say */ } } }));
+    };
+
+    // Başlıktaki ⇅ düğmesi
+    {
+      const topBar = page.querySelector('.hl-top');
+      if (topBar && !topBar.querySelector('.gk-sort')) {
+        const b = el('button', 'gk-sort'); b.type = 'button'; b.id = P + 'Sort';
+        b.setAttribute('aria-label', 'Başlıkları sırala'); b.title = 'Başlıkları sırala'; b.innerHTML = SORT_IC;
+        b.addEventListener('click', openSort);
+        topBar.insertBefore(b, $(P + 'Switch') || null);
+      }
+    }
+
     // Alt çubuk (#gundelikFabAddBtn) köprüsü için dışarıya açılan işlevler.
     const newListPopup = () => window.gundelikTaskSheet.open({ id: '__new:' + P, name: '', color: null }, (v) => {
       st.groups.push({ id: gid(), name: v, color: pal[st.groups.length % pal.length], items: [] });
@@ -72618,7 +72882,9 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
       page, hold, openMenu,
       groups: () => st.groups,
       newList: newListPopup,
-      addItem: (g, sid) => { openTaskSheet(g, sid); }
+      addItem: (g, sid) => { openTaskSheet(g, sid); },
+      sort: openSort,
+      goTo: (id) => scrollToGroup(id, 0)
     };
   };
 
@@ -74989,6 +75255,109 @@ body .wheel-color-backdrop.is-open .wheel-color-card{transform:none;opacity:1}
 }
 @media (prefers-reduced-motion:reduce){#page-11.page *{animation:none !important}}
 </style>
+<style id="gk-sort-paste-css">
+  /* ===== Yapıştırma: görev / başlık penceresi + satır içi alanlar =====
+     Genel "* { user-select:none }" kuralı yüzünden yazı alanı metin seçimi ve "Yapıştır" menüsünü vermiyordu. */
+  .tsh-ta, input.hl-in, input.hl-edit, :is(#page-hatirla, #page-8) input.hl-in, :is(#page-hatirla, #page-8) input.hl-edit {
+    -webkit-user-select: text; user-select: text; -webkit-touch-callout: default;
+  }
+  .tsh-rt { display: flex; align-items: center; gap: .5rem; flex: none; }
+  .tsh-paste { flex: none; display: inline-flex; align-items: center; gap: .4rem; height: 2.4rem; padding: 0 .95rem 0 .8rem; border: 0; border-radius: 999px; cursor: pointer; font: inherit; font-weight: 800; font-size: .85rem; line-height: 1; color: var(--tsh-ink); background: var(--tsh-soft); -webkit-tap-highlight-color: transparent; transition: transform .15s ease, background-color .3s ease, color .3s ease; }
+  .tsh-paste:active { transform: scale(.93); }
+  .tsh-paste svg { width: 1.05rem; height: 1.05rem; fill: none; stroke: currentColor; stroke-width: 2.3; stroke-linecap: round; stroke-linejoin: round; transition: transform .45s cubic-bezier(.34, 1.56, .64, 1); }
+  .tsh-paste.is-done { background: var(--tsh-gc); color: #16171b; }
+  .tsh-paste.is-done svg { transform: scale(1.18) rotate(-8deg); }
+  .tsh-card.is-confirm .tsh-paste { display: none; }
+
+  /* ===== Başlıkları sırala: üst çubuktaki ⇅ düğmesi ===== */
+  .gk-sort { order: 4; flex: 0 0 auto; width: 2.6rem; height: 2.6rem; padding: 0; border: 0; border-radius: 50%; display: grid; place-items: center; cursor: pointer; color: inherit; background: transparent; -webkit-tap-highlight-color: transparent; transition: transform .15s ease, background-color .3s ease; }
+  .gk-sort:active { transform: scale(.9); background: color-mix(in srgb, var(--theme-text, #121212) 9%, transparent); }
+  .gk-sort svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; transition: transform .5s cubic-bezier(.34, 1.56, .64, 1); }
+  .gk-sort:active svg { transform: scale(1.15); }
+  #page-hatirla .hl-auto { margin-left: auto; }
+  @media (min-width: 768px) and (min-height: 600px) {
+    .gk-sort { width: 2.7rem; height: 2.7rem; }
+    #page-8 .gk-sort { margin-left: auto; }
+    #page-8 .gk-sort + .gk-switch { margin-left: .9rem; }
+    #page-hatirla .gk-sort { margin-left: .2rem; }
+  }
+
+  /* ===== Başlıkları sırala: pencere ===== */
+  .gks-bd { position: fixed; inset: 0; z-index: 85; display: flex; align-items: flex-end; justify-content: center; visibility: hidden; pointer-events: none; touch-action: none; transition: visibility 0s linear .5s; }
+  .gks-bd.is-open { visibility: visible; pointer-events: auto; transition: visibility 0s; }
+  .gks-bd::before { content: ""; position: absolute; inset: 0; background: rgba(0, 0, 0, .5); opacity: 0; transition: opacity .42s ease; }
+  .gks-bd.is-open::before { opacity: 1; }
+  .gks-card {
+    --k-ink: var(--theme-text, #f2f2f7); --k-soft: color-mix(in srgb, var(--k-ink) 7%, transparent); --k-line: color-mix(in srgb, var(--k-ink) 13%, transparent); --k-mute: color-mix(in srgb, var(--k-ink) 55%, transparent);
+    position: relative; display: flex; flex-direction: column; box-sizing: border-box; width: min(100%, 460px); max-height: min(82dvh, 700px);
+    padding: .7rem 1.1rem calc(1rem + env(safe-area-inset-bottom, 0px)); color: var(--k-ink); background: var(--theme-bg, #121212);
+    border-radius: 1.75rem 1.75rem 0 0; box-shadow: 0 -18px 50px rgba(0, 0, 0, .35); outline: 0;
+    transform: translateY(104%); transition: transform .5s cubic-bezier(.16, 1, .3, 1);
+  }
+  .gks-bd.is-open .gks-card { transform: none; }
+  .gks-card::before { content: ""; display: block; flex: none; width: 2.8rem; height: .3rem; margin: 0 auto .75rem; border-radius: 9px; background: var(--k-line); }
+  .gks-top { display: flex; align-items: center; justify-content: space-between; gap: .6rem; flex: none; }
+  .gks-ttl { min-width: 0; font-weight: 800; font-size: 1.4rem; line-height: 1.2; }
+  .gks-x { flex: none; width: 2.4rem; height: 2.4rem; padding: 0; border: 0; border-radius: 50%; display: grid; place-items: center; cursor: pointer; color: var(--k-ink); background: var(--k-soft); -webkit-tap-highlight-color: transparent; transition: transform .15s ease; }
+  .gks-x:active { transform: scale(.9); }
+  .gks-x svg { width: 1.05rem; height: 1.05rem; fill: none; stroke: currentColor; stroke-width: 2.6; stroke-linecap: round; }
+  .gks-hint { flex: none; margin: .5rem 0 .7rem; font-size: .85rem; font-weight: 600; line-height: 1.4; color: var(--k-mute); }
+  .gks-list { position: relative; flex: 1 1 auto; min-height: 0; margin: 0 -.35rem; padding: .3rem .35rem .5rem; overflow-y: auto; overscroll-behavior: contain; touch-action: pan-y; }
+  .gks-it {
+    position: relative; display: flex; align-items: center; gap: .8rem; height: 3.6rem; margin: 0 0 .5rem; padding: 0 .45rem 0 1rem; box-sizing: border-box; border-radius: 1.15rem;
+    color: var(--k-ink); background: var(--k-soft); cursor: pointer; -webkit-tap-highlight-color: transparent; touch-action: pan-y;
+    transition: translate .34s cubic-bezier(.2, .9, .25, 1), scale .26s cubic-bezier(.34, 1.56, .64, 1), box-shadow .26s ease, background-color .26s ease, color .26s ease;
+  }
+  .gks-it:last-child { margin-bottom: 0; }
+  .gks-it:focus-visible { box-shadow: 0 0 0 2px var(--gc); }
+  .gks-bd.is-open .gks-it { animation: gksIn .55s cubic-bezier(.22, 1, .36, 1) backwards; animation-delay: calc(var(--i, 0) * 38ms + 140ms); }
+  @keyframes gksIn { from { opacity: 0; transform: translateY(16px) scale(.97); } to { opacity: 1; transform: none; } }
+  .gks-dot { flex: none; width: .8rem; height: .8rem; border-radius: 50%; background: var(--gc); box-shadow: 0 0 0 4px color-mix(in srgb, var(--gc) 22%, transparent); }
+  .gks-name { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 800; font-size: 1.1rem; }
+  .gks-cnt { flex: none; font-size: .85rem; font-weight: 700; color: var(--k-mute); font-variant-numeric: tabular-nums; transition: color .26s ease; }
+  .gks-h { flex: none; width: 2.7rem; height: 2.7rem; display: grid; place-items: center; border-radius: 50%; color: var(--k-mute); cursor: grab; touch-action: none; transition: color .2s ease; }
+  .gks-h svg { width: 1.3rem; height: 1.3rem; fill: currentColor; }
+  .gks-list.is-sorting { touch-action: none; overflow-y: hidden; }
+  .gks-list.is-sorting .gks-it { cursor: grabbing; }
+  .gks-it.is-lift { z-index: 3; scale: 1.035; transition: scale .26s cubic-bezier(.34, 1.56, .64, 1), box-shadow .26s ease, background-color .26s ease; background: color-mix(in srgb, var(--gc) 24%, var(--theme-bg, #121212)); box-shadow: 0 16px 34px -10px rgba(0, 0, 0, .5), 0 0 0 2px var(--gc); }
+  .gks-it.is-lift .gks-h { color: var(--k-ink); }
+  .gks-it.is-settle { z-index: 3; transition: translate .36s cubic-bezier(.2, .9, .25, 1.08), scale .3s ease, box-shadow .36s ease, background-color .3s ease; }
+  .gks-list.no-tr .gks-it { transition: none !important; }
+  .gks-it.is-pick { z-index: 2; animation: gksPick .42s cubic-bezier(.34, 1.4, .64, 1) forwards !important; }
+  @keyframes gksPick { 0% { transform: none; } 40% { transform: scale(.965); } 100% { transform: scale(1.025); background: var(--gc); color: var(--gt); box-shadow: 0 10px 26px -8px color-mix(in srgb, var(--gc) 70%, transparent); } }
+  .gks-it.is-pick .gks-cnt, .gks-it.is-pick .gks-h { color: var(--gt); }
+  .gks-it.is-pick .gks-dot { background: var(--gt); box-shadow: none; }
+  @media (min-width: 768px) and (min-height: 600px) {
+    .gks-bd { align-items: center; }
+    .gks-card { max-height: min(78dvh, 680px); padding-bottom: 1.2rem; border-radius: 1.9rem; box-shadow: 0 24px 70px rgba(0, 0, 0, .4); transform: translateY(26px) scale(.95); opacity: 0; transition: transform .5s cubic-bezier(.16, 1, .3, 1), opacity .3s ease; }
+    .gks-bd.is-open .gks-card { opacity: 1; }
+    .gks-card::before { display: none; }
+  }
+
+  /* Varılan başlık: renkli ışıma + nokta "pop" */
+  .hl-head.gks-flash { border-radius: 1rem; transform-origin: 0 50%; animation: gksFlash 1.3s cubic-bezier(.22, 1, .36, 1); }
+  .hl-head.gks-flash .hl-name::before { animation: gksDot 1.3s cubic-bezier(.34, 1.56, .64, 1); }
+  @keyframes gksFlash { 0% { background: transparent; transform: none; } 28% { background: color-mix(in srgb, var(--gc, #ff90e8) 30%, transparent); transform: scale(1.04); } 100% { background: transparent; transform: none; } }
+  @keyframes gksDot { 0%, 100% { transform: scale(1); } 30% { transform: scale(2.1); } 55% { transform: scale(.85); } 75% { transform: scale(1.2); } }
+  @media (prefers-reduced-motion: reduce) {
+    .gks-card, .gks-it, .gks-bd::before { transition-duration: .01ms !important; }
+    .gks-bd.is-open .gks-it, .gks-it.is-pick, .hl-head.gks-flash, .hl-head.gks-flash .hl-name::before { animation-duration: .01ms !important; }
+  }
+</style>
+<script id="gk-paste-guard">
+  /* <body oncopy/oncut/onselectstart="return false"> uygulamada metin seçmeyi kapatır; ama Gündelik / Hatırlanacaklar
+     yazı alanlarında ve görev penceresinde seçme, kopyalama ve yapıştırma çalışmalı. Yakalama aşamasında olay gövdeye
+     ulaşmadan durdurulur (yalnızca bu alanlarda). */
+  (function () {
+    var SEL = '.tsh-card textarea, .tsh-card input, #page-8 textarea, #page-8 input, #page-hatirla textarea, #page-hatirla input';
+    ['selectstart', 'copy', 'cut', 'paste'].forEach(function (ev) {
+      document.addEventListener(ev, function (e) {
+        var n = e.target; if (n && n.nodeType === 3) n = n.parentElement;
+        if (n && n.closest && n.closest(SEL)) e.stopPropagation();
+      }, true);
+    });
+  })();
+</script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" crossorigin="anonymous"></script>
 <script src="sync.js?v=40"></script>
 </body>
