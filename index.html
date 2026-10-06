@@ -41407,6 +41407,7 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
        çözülen soru sayısı girilir; alttaki özet kartı gün/hafta/ay
        bazında hem genel toplamı hem branş dağılımını gösterir. -->
   <section class="page" id="page-9">
+    <div id="q9m"></div>
     <div class="page9-wrap">
       <!-- Planlayıcı ile aynı üst çubuk mantığı: başlık ortada, sayfayla
            birlikte yukarı kayıp kaybolur; en yukarı kaydırınca geri gelir.
@@ -41499,6 +41500,136 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
       </div>
     </div>
   </section>
+
+<style id="q9mCss">
+/* ===== Soru Takibi · mobil yeniden tasarım (büyük ekrana dokunmaz) ===== */
+#q9m{display:none}
+.q9m,.q9-ov{--t:var(--theme-text,#121212);--bg:var(--theme-bg,#f6f4ef);--soft:color-mix(in srgb,var(--t) 7%,transparent);--soft2:color-mix(in srgb,var(--t) 13%,transparent);--mute:color-mix(in srgb,var(--t) 52%,transparent);--ease:cubic-bezier(.16,1,.3,1);--spring:cubic-bezier(.34,1.56,.64,1);font-family:"Baloo 2","Space Grotesk",sans-serif;color:var(--t)}
+.q9-ov{display:none}
+@media not all and (min-width:768px) and (min-height:600px){
+#page-9 .page9-wrap{display:none !important}
+#page-9.page{padding:calc(16px + env(safe-area-inset-top)) 18px calc(120px + env(safe-area-inset-bottom))}
+#page-9 #q9m{display:block;width:100%;max-width:440px;margin:0 auto}
+.q9-ov{display:block}
+:where(.q9m,.q9-ov) button{font-family:inherit;color:inherit;border:0;background:none;padding:0;margin:0;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.q9-top{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.q9-date{text-align:left;display:flex;flex-direction:column;line-height:1.05}
+.q9-date b{font-size:1.9rem;font-weight:800;letter-spacing:-.02em}
+.q9-date span{font-size:.82rem;font-weight:700;color:var(--mute);margin-top:3px}
+.q9-date.is-swap{animation:q9Sw .45s var(--ease)}
+.q9-seg{--n:2;--k:0;position:relative;display:grid;grid-auto-flow:column;grid-auto-columns:1fr;background:var(--soft);border-radius:999px;padding:3px}
+.q9-seg i{position:absolute;top:3px;bottom:3px;left:3px;width:calc((100% - 6px)/var(--n));border-radius:999px;background:var(--t);transform:translateX(calc(var(--k)*100%));transition:transform .45s var(--spring)}
+.q9-seg button{position:relative;z-index:1;font-weight:800;font-size:.8rem;line-height:1;padding:9px 15px;color:var(--mute);transition:color .3s}
+.q9-seg button.is-on{color:var(--bg)}
+.q9-seg3{--n:3}.q9-seg3 button{padding:7px 12px;font-size:.74rem}
+.q9-week{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin:18px 0 6px}
+.q9-wd{position:relative;display:flex;flex-direction:column;align-items:center;gap:5px;padding:9px 0 12px;border-radius:999px;transition:background .35s,color .35s,transform .3s var(--spring)}
+.q9-wd i{font-style:normal;font-size:.7rem;font-weight:700;color:var(--mute)}
+.q9-wd b{font-size:1.02rem;font-weight:800;font-variant-numeric:tabular-nums}
+.q9-wd u{position:absolute;bottom:5px;width:4px;height:4px;border-radius:50%;background:currentColor;opacity:0;transform:scale(0);transition:opacity .3s,transform .3s var(--spring)}
+.q9-wd.has u{opacity:.45;transform:none}
+.q9-wd.is-sel{background:var(--t);color:var(--bg);transform:translateY(-2px)}
+.q9-wd.is-sel i{color:color-mix(in srgb,var(--bg) 62%,transparent)}
+.q9-wd.is-fut{opacity:.28;pointer-events:none}
+.q9-wd:active{transform:scale(.92)}
+.q9-body.q9-in-l{animation:q9SlL .45s var(--ease)}.q9-body.q9-in-r{animation:q9SlR .45s var(--ease)}
+.q9-hero{position:relative;display:block;width:156px;height:156px;margin:10px auto 0}
+.q9-hero svg{width:100%;height:100%}
+.q9-tr{fill:none;stroke:var(--soft2);stroke-width:9}
+.q9-hero.no-goal .q9-tr{stroke-dasharray:1.5 11;stroke-linecap:round}
+.q9-pg{fill:none;stroke:var(--t);stroke-width:9;stroke-linecap:round;stroke-dasharray:377;stroke-dashoffset:377;transition:stroke-dashoffset .9s var(--ease),stroke .4s,opacity .3s}
+.q9-hero.is-zero .q9-pg{opacity:0}
+.q9-hero.is-done .q9-pg{stroke:#59c97b}
+.q9-hero.is-pulse{animation:q9Pulse .7s var(--spring)}
+.q9-hn{position:absolute;inset:0;display:grid;place-content:center;text-align:center;pointer-events:none}
+.q9-hn b{font-size:3rem;font-weight:800;line-height:.95;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.q9-hn b.is-bump{animation:q9Bump .34s var(--spring)}
+.q9-hn em{font-style:normal;font-size:.8rem;font-weight:700;color:var(--mute)}
+.q9-goalnote{text-align:center;font-size:.86rem;font-weight:700;color:var(--mute);margin:8px 0 20px;transition:color .3s}
+.q9-list{display:flex;flex-direction:column;gap:10px}
+.q9-card{--c:#6ec6ff;position:relative;display:grid;grid-template-columns:minmax(0,1fr) auto auto auto;align-items:center;gap:10px;padding:14px 14px 14px 18px;border-radius:26px;background:color-mix(in srgb,var(--c) 30%,transparent);cursor:pointer;overflow:hidden;touch-action:pan-y;animation:q9In .55s var(--ease) both;animation-delay:calc(var(--i)*55ms);transition:transform .28s var(--spring),background .35s}
+.q9-quiet .q9-card{animation:none}
+.q9-card.is-press{transform:scale(.97)}
+.q9-cn{min-width:0}
+.q9-cn b{display:block;font-weight:800;font-size:1.08rem;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.q9-cn span{display:block;font-size:.74rem;font-weight:700;color:var(--mute);min-height:1em;margin-top:2px}
+.q9-ct{min-width:2ch;text-align:right;font-weight:800;font-size:2rem;line-height:1;font-variant-numeric:tabular-nums}
+.q9-ct.is-bump{animation:q9Bump .34s var(--spring)}
+.q9-mi,.q9-pl{display:grid;place-items:center;border-radius:50%;touch-action:manipulation;transition:transform .2s var(--spring),opacity .25s}
+.q9-mi{width:34px;height:34px;background:color-mix(in srgb,var(--t) 10%,transparent)}
+.q9-pl{width:46px;height:46px;background:var(--t) !important;color:var(--bg) !important}
+.q9-mi.is-off{opacity:0;pointer-events:none;transform:scale(.6)}
+.q9-mi.is-press,.q9-pl.is-press{transform:scale(.86)}
+.q9-pop{position:absolute;top:8px;font-weight:800;font-size:1.05rem;pointer-events:none;animation:q9Pop .7s var(--ease) forwards}
+.q9-add{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin-top:2px;padding:15px;border-radius:26px;border:1.6px dashed color-mix(in srgb,var(--t) 28%,transparent) !important;font-weight:800;font-size:.95rem;color:var(--mute) !important;transition:transform .25s var(--spring),border-color .3s,color .3s}
+.q9-add:active{transform:scale(.98);color:var(--t) !important}
+.q9-add.is-empty{padding:30px 15px;font-size:1.05rem;color:var(--t) !important}
+.q9-hint{text-align:center;font-size:.74rem;font-weight:700;color:var(--mute);margin:12px 0 0;opacity:.8}
+.q9-sum{margin-top:30px;padding-top:22px;border-top:1.5px solid var(--soft2)}
+.q9-sumhead{display:flex;align-items:center;justify-content:space-between}
+.q9-sumhead>span{font-weight:800;font-size:1.25rem}
+.q9-sumtot{display:flex;align-items:baseline;gap:8px;margin:14px 0 12px}
+.q9-sumtot b{font-size:2.2rem;font-weight:800;line-height:1;font-variant-numeric:tabular-nums}
+.q9-sumtot span{font-size:.82rem;font-weight:700;color:var(--mute)}
+.q9-stack{display:flex;gap:3px;height:12px;border-radius:999px;overflow:hidden}
+.q9-stack i{display:block;min-width:6px;border-radius:3px;transform-origin:left;animation:q9Grow .8s var(--ease) both}
+.q9-rows{display:flex;flex-direction:column;gap:14px;margin-top:18px}
+.q9-row2 .t{display:flex;align-items:center;gap:8px;font-weight:700;font-size:.92rem}
+.q9-row2 .t i{width:9px;height:9px;border-radius:50%;flex:none}
+.q9-row2 .t em{font-style:normal;font-size:.68rem;color:var(--mute);font-weight:800}
+.q9-row2 .t b{margin-left:auto;font-weight:800;font-variant-numeric:tabular-nums}
+.q9-row2 .bar{height:5px;border-radius:99px;background:var(--soft);margin-top:7px;overflow:hidden}
+.q9-row2 .bar i{display:block;height:100%;border-radius:99px;transform-origin:left;animation:q9Grow .8s var(--ease) both}
+.q9-empty{text-align:center;font-weight:700;font-size:.88rem;color:var(--mute);padding:14px 0}
+/* alt sayfa (bottom sheet) */
+.q9-ov{position:fixed;inset:0;z-index:5000;background:rgba(0,0,0,.38);-webkit-backdrop-filter:blur(5px);backdrop-filter:blur(5px);opacity:0;pointer-events:none;transition:opacity .3s}
+.q9-ov.is-open{opacity:1;pointer-events:auto}
+.q9-sh{position:absolute;left:0;right:0;bottom:0;max-height:88dvh;overflow-y:auto;background:var(--bg);border-radius:30px 30px 0 0;padding:0 22px calc(24px + env(safe-area-inset-bottom));transform:translateY(105%);transition:transform .55s var(--ease);max-width:520px;margin:0 auto}
+.q9-ov.is-open .q9-sh{transform:none}
+.q9-grab{display:flex;justify-content:center;padding:12px 0 14px;touch-action:none}
+.q9-grab i{width:40px;height:5px;border-radius:9px;background:var(--soft2)}
+.q9-st{display:flex;align-items:center;gap:10px;font-size:1.35rem;font-weight:800;margin-bottom:16px}
+.q9-st .tag{margin-left:auto;font-size:.72rem;font-weight:800;padding:5px 10px;border-radius:99px;background:var(--soft2)}
+.q9-st .dl{width:16px;height:16px;border-radius:50%;flex:none;transition:background .3s}
+.q9-name{flex:1;min-width:0;font:inherit;font-weight:800;color:inherit;background:none;border:0;outline:0;padding:0;-webkit-user-select:text;user-select:text}
+.q9-step{display:flex;align-items:center;justify-content:center;gap:18px;margin:4px 0 14px}
+.q9-step button{width:52px;height:52px;border-radius:50%;background:var(--soft2) !important;font-size:1.6rem;font-weight:800;line-height:1;display:grid;place-items:center;touch-action:manipulation;transition:transform .2s var(--spring)}
+.q9-step button.is-press{transform:scale(.88)}
+.q9-step input{width:4.2ch;text-align:center;font:800 2.6rem/1 "Baloo 2",sans-serif;color:inherit;background:none;border:0;outline:0;-moz-appearance:textfield;-webkit-user-select:text;user-select:text}
+.q9-step input::-webkit-outer-spin-button,.q9-step input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.q9-chips{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-bottom:18px}
+.q9-chips button{padding:10px 16px;border-radius:99px;background:var(--soft) !important;font-weight:800;font-size:.9rem;transition:transform .2s var(--spring),background .25s}
+.q9-chips button:active{transform:scale(.92);background:var(--soft2) !important}
+.q9-sw{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-bottom:16px}
+.q9-sw button{width:30px;height:30px;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(0,0,0,.08);transition:transform .25s var(--spring)}
+.q9-sw button.is-on{transform:scale(1.18);box-shadow:0 0 0 2.5px var(--bg),0 0 0 4.5px var(--t)}
+.q9-line{border-radius:0;display:flex;align-items:center;justify-content:space-between;width:100%;padding:14px 0;border-top:1.5px solid var(--soft2);font-weight:700;font-size:.95rem}
+.q9-tg{position:relative;width:46px;height:28px;border-radius:99px;background:var(--soft2);transition:background .3s;flex:none}
+.q9-tg::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:var(--bg);transition:transform .35s var(--spring)}
+.q9-line.is-on .q9-tg{background:var(--t)}.q9-line.is-on .q9-tg::after{transform:translateX(18px)}
+.q9-acts{display:flex;gap:10px;margin-top:6px}
+.q9-acts button{flex:1;padding:14px;border-radius:18px;background:var(--soft) !important;font-weight:800;font-size:.9rem}
+.q9-acts .del{color:#e5484d !important}
+.q9-grid{display:flex;flex-wrap:wrap;gap:9px;margin-bottom:16px}
+.q9-grid button{padding:12px 17px;border-radius:99px;background:var(--soft) !important;font-weight:800;font-size:.95rem;transition:transform .25s var(--spring),background .3s,color .3s}
+.q9-grid button.is-on{background:var(--t) !important;color:var(--bg) !important}
+.q9-grid button.is-shake{animation:q9Shake .4s}
+.q9-grid button:active{transform:scale(.92)}
+.q9-cust{display:flex;gap:8px}
+.q9-cust input{flex:1;min-width:0;font:700 .95rem "Baloo 2",sans-serif;color:inherit;background:var(--soft);border:0;outline:0;border-radius:99px;padding:13px 18px;-webkit-user-select:text;user-select:text}
+.q9-cust button{width:48px;border-radius:50%;background:var(--t) !important;color:var(--bg) !important;font-size:1.5rem;font-weight:800}
+}
+@keyframes q9In{from{opacity:0;transform:translateY(16px) scale(.97)}to{opacity:1;transform:none}}
+@keyframes q9Bump{0%{transform:scale(1)}40%{transform:scale(1.22)}100%{transform:scale(1)}}
+@keyframes q9Pop{from{opacity:1;transform:translateY(0)}to{opacity:0;transform:translateY(-34px)}}
+@keyframes q9Pulse{0%,100%{transform:scale(1)}40%{transform:scale(1.08)}}
+@keyframes q9Grow{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+@keyframes q9SlL{from{opacity:0;transform:translateX(30px)}to{opacity:1;transform:none}}
+@keyframes q9SlR{from{opacity:0;transform:translateX(-30px)}to{opacity:1;transform:none}}
+@keyframes q9Sw{0%{opacity:.2;transform:translateY(6px)}100%{opacity:1;transform:none}}
+@keyframes q9Shake{0%,100%{transform:none}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+@media (prefers-reduced-motion:reduce){.q9m *,.q9-ov *{animation:none !important;transition-duration:.01s !important}}
+</style>
 
   <!-- Sayfa 10: İstatistiklerim. Sayfa 5'teki kronometre her gün 00:00'da
        otomatik olarak arşivlenir; burada geçmiş günlerin süreleri Gün/Hafta/Ay
@@ -58108,6 +58239,347 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
     }, { passive: true });
     update();
   })();
+</script>
+
+<script id="q9mJs">
+/* Soru Takibi · mobil arayüz. Veri ve mutator'lar (page9State, page9SetCount, ...) eski sayfayla ortaktır;
+   bu yalnızca yeni bir görünüm + jest katmanıdır (dokun +1 · basılı tut ayrıntı · kaydır gün değiştir). */
+(() => {
+  const root = document.getElementById('q9m');
+  if (!root || typeof page9State === 'undefined') return;
+  const mk = (h) => { const t = document.createElement('template'); t.innerHTML = h.trim(); return t.content.firstChild; };
+  const WD = ['P', 'P', 'S', 'Ç', 'P', 'C', 'C'];
+  const SVG_P = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>';
+  const SVG_M = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"><path d="M5 12h14"/></svg>';
+  const RC = 2 * Math.PI * 60;
+  const vib = (n) => { try { navigator.vibrate && navigator.vibrate(n); } catch (e) { /* yok say */ } };
+  const today0 = () => page9StartOfDay(new Date());
+  const dayTotal = (key) => page9State.logs.reduce((s, l) => s + (l.date === key ? (l.count || 0) : 0), 0);
+  const allSubjects = () => page9State.subjects.tyt.concat(page9State.subjects.ayt);
+  const syncOld = () => { try { page9RenderDateRow(); renderPage9SubjectList(); renderPage9Summary(); } catch (e) { /* yok say */ } };
+
+  root.innerHTML =
+    '<div class="q9-top"><button type="button" class="q9-date" id="q9Date"><b></b><span></span></button>' +
+    '<div class="q9-seg" id="q9Track"><i></i><button type="button" data-v="tyt">TYT</button><button type="button" data-v="ayt">AYT</button></div></div>' +
+    '<div class="q9-week" id="q9Week"></div>' +
+    '<div class="q9-body" id="q9Body">' +
+    '<button type="button" class="q9-hero" id="q9Hero" aria-label="Günlük hedef"><svg viewBox="0 0 140 140" aria-hidden="true"><circle class="q9-tr" cx="70" cy="70" r="60"/><circle class="q9-pg" cx="70" cy="70" r="60" transform="rotate(-90 70 70)"/></svg><span class="q9-hn"><b>0</b><em>soru</em></span></button>' +
+    '<div class="q9-goalnote" id="q9Note"></div><div class="q9-list" id="q9List"></div><p class="q9-hint" id="q9Hint">Dokun: +1 · Basılı tut: ayrıntılar · Kaydır: gün değiştir</p>' +
+    '<section class="q9-sum"><div class="q9-sumhead"><span>Özet</span><div class="q9-seg q9-seg3" id="q9Range"><i></i><button type="button" data-v="day">Gün</button><button type="button" data-v="week">Hafta</button><button type="button" data-v="month">Ay</button></div></div>' +
+    '<div class="q9-sumtot"><b id="q9SumN">0</b><span id="q9SumL"></span></div><div class="q9-stack" id="q9Stack"></div><div class="q9-rows" id="q9Rows"></div></section></div>';
+  root.classList.add('q9m');
+
+  const $ = (s) => root.querySelector(s);
+  const elDate = $('#q9Date'), elWeek = $('#q9Week'), elBody = $('#q9Body'), elHero = $('#q9Hero'), elNote = $('#q9Note');
+  const elList = $('#q9List'), elHint = $('#q9Hint'), elTrack = $('#q9Track'), elRange = $('#q9Range');
+  const hN = elHero.querySelector('.q9-hn b'), hPg = elHero.querySelector('.q9-pg');
+  hPg.style.strokeDasharray = RC; hPg.style.strokeDashoffset = RC;
+  const cards = new Map();   // subjectId -> {el, ct, mi, sub, s}
+
+  const setSeg = (seg, v) => {
+    const bs = [...seg.querySelectorAll('button')];
+    seg.style.setProperty('--k', Math.max(0, bs.findIndex((b) => b.dataset.v === v)));
+    bs.forEach((b) => b.classList.toggle('is-on', b.dataset.v === v));
+  };
+
+  // ---------- Hero (halka + toplam + hedef) ----------
+  let lastTot = null, wasDone = false;
+  const renderHero = () => {
+    const tot = dayTotal(page9DateKey(page9SelectedDate));
+    const goal = page9ClampGoal(page9State.dailyGoal);
+    hN.textContent = String(tot);
+    if (lastTot !== null && lastTot !== tot) { hN.classList.remove('is-bump'); void hN.offsetWidth; hN.classList.add('is-bump'); }
+    lastTot = tot;
+    const r = goal > 0 ? Math.min(1, tot / goal) : 0;
+    hPg.style.strokeDashoffset = RC * (1 - r);
+    elHero.classList.toggle('no-goal', goal <= 0);
+    elHero.classList.toggle('is-zero', r <= 0);
+    const done = goal > 0 && tot >= goal;
+    elHero.classList.toggle('is-done', done);
+    if (done && !wasDone) { elHero.classList.remove('is-pulse'); void elHero.offsetWidth; elHero.classList.add('is-pulse'); vib([10, 40, 18]); }
+    wasDone = done;
+    elNote.textContent = goal <= 0 ? 'Hedef koymak için halkaya dokun'
+      : tot > goal ? `Hedef aşıldı · +${tot - goal} soru` : tot === goal ? 'Hedef tamamlandı' : `Hedef ${goal} · ${goal - tot} soru kaldı`;
+  };
+
+  // ---------- Hafta şeridi ----------
+  const renderWeek = () => {
+    const sel = page9SelectedDate, td = today0(), start = page9GetWeekStart(sel);
+    const has = new Set(page9State.logs.filter((l) => l.count > 0).map((l) => l.date));
+    elWeek.innerHTML = '';
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(start); d.setDate(start.getDate() + i);
+      const key = page9DateKey(d);
+      const b = mk(`<button type="button" class="q9-wd"><i>${WD[d.getDay()]}</i><b>${d.getDate()}</b><u></u></button>`);
+      b.classList.toggle('is-sel', key === page9DateKey(sel));
+      b.classList.toggle('is-fut', d > td);
+      b.classList.toggle('has', has.has(key));
+      b.addEventListener('click', () => gotoDate(d));
+      elWeek.appendChild(b);
+    }
+  };
+
+  // ---------- Ders kartları ----------
+  const subText = (s, n, tot) => (s.pinned ? 'Her gün' : '') + (n > 0 && tot > 0 ? (s.pinned ? ' · ' : '') + '%' + Math.round(n / tot * 100) : '');
+  const refreshCounts = () => {
+    const tot = dayTotal(page9DateKey(page9SelectedDate));
+    cards.forEach((c) => {
+      const n = page9SelectedCountFor(c.s.id);
+      if (c.ct.textContent !== String(n)) { c.ct.textContent = String(n); c.ct.classList.remove('is-bump'); void c.ct.offsetWidth; c.ct.classList.add('is-bump'); }
+      c.mi.classList.toggle('is-off', n <= 0);
+      c.sub.textContent = subText(c.s, n, tot);
+    });
+    renderHero(); renderSum(); renderWeekDots();
+  };
+  const renderWeekDots = () => {
+    const has = new Set(page9State.logs.filter((l) => l.count > 0).map((l) => l.date));
+    const start = page9GetWeekStart(page9SelectedDate);
+    [...elWeek.children].forEach((b, i) => { const d = new Date(start); d.setDate(start.getDate() + i); b.classList.toggle('has', has.has(page9DateKey(d))); });
+  };
+  const change = (c, delta, x) => {
+    const cur = page9SelectedCountFor(c.s.id), n = Math.max(0, Math.min(999, cur + delta));
+    if (n === cur) return;
+    page9SetCount(c.s.id, n); refreshCounts(); vib(6);
+    if (x != null) {
+      const p = mk(`<span class="q9-pop">${delta > 0 ? '+' : ''}${delta}</span>`);
+      p.style.left = Math.max(10, Math.min(c.el.clientWidth - 40, x - c.el.getBoundingClientRect().left)) + 'px';
+      c.el.appendChild(p); p.addEventListener('animationend', () => p.remove());
+    }
+  };
+  const hold = (btn, c, step) => {
+    let to = 0, n = 0;
+    const stop = () => { clearTimeout(to); btn.classList.remove('is-press'); };
+    const tick = () => { change(c, step, null); n++; to = setTimeout(tick, Math.max(45, 130 - n * 5)); };
+    btn.addEventListener('pointerdown', (e) => { e.stopPropagation(); btn.classList.add('is-press'); change(c, step, e.clientX); n = 0; clearTimeout(to); to = setTimeout(tick, 420); });
+    ['pointerup', 'pointercancel', 'pointerleave'].forEach((ev) => btn.addEventListener(ev, stop));
+    btn.addEventListener('click', (e) => { if (e.detail === 0) change(c, step, null); });
+    btn.addEventListener('contextmenu', (e) => e.preventDefault());
+  };
+  const makeCard = (s, i) => {
+    const el = mk('<div class="q9-card" role="button" tabindex="0"><div class="q9-cn"><b></b><span></span></div><button type="button" class="q9-mi" aria-label="Azalt">' + SVG_M + '</button><div class="q9-ct">0</div><button type="button" class="q9-pl" aria-label="Arttır">' + SVG_P + '</button></div>');
+    el.style.setProperty('--c', s.color); el.style.setProperty('--i', i);
+    el.querySelector('b').textContent = s.name;
+    const c = { el, s, ct: el.querySelector('.q9-ct'), mi: el.querySelector('.q9-mi'), sub: el.querySelector('.q9-cn span') };
+    hold(c.mi, c, -1); hold(el.querySelector('.q9-pl'), c, 1);
+    let down = false, moved = false, long = false, lp = 0, x0 = 0, y0 = 0;
+    el.addEventListener('pointerdown', (e) => {
+      if (e.target.closest('.q9-pl,.q9-mi')) return;
+      down = true; moved = false; long = false; x0 = e.clientX; y0 = e.clientY; el.classList.add('is-press');
+      lp = setTimeout(() => { if (down && !moved) { long = true; el.classList.remove('is-press'); vib(14); subjectSheet(s); } }, 480);
+    });
+    el.addEventListener('pointermove', (e) => { if (down && (Math.abs(e.clientX - x0) > 8 || Math.abs(e.clientY - y0) > 8)) { moved = true; clearTimeout(lp); el.classList.remove('is-press'); } });
+    const end = (e, cancel) => { if (!down) return; down = false; clearTimeout(lp); el.classList.remove('is-press'); if (!cancel && !moved && !long) change(c, 1, e.clientX); };
+    el.addEventListener('pointerup', (e) => end(e, false));
+    el.addEventListener('pointercancel', (e) => end(e, true));
+    el.addEventListener('pointerleave', (e) => end(e, true));
+    el.addEventListener('contextmenu', (e) => e.preventDefault());
+    el.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); change(c, 1, null); } });
+    cards.set(s.id, c);
+    return el;
+  };
+  const renderList = () => {
+    cards.clear(); elList.innerHTML = '';
+    const subs = page9VisibleSubjects();
+    subs.forEach((s, i) => elList.appendChild(makeCard(s, i)));
+    const add = mk('<button type="button" class="q9-add' + (subs.length ? '' : ' is-empty') + '">' + SVG_P.replace('width="20" height="20"', 'width="18" height="18"') + '<span>' + (subs.length ? 'Ders ekle' : 'Bugün için ders seç') + '</span></button>');
+    add.style.animation = 'q9In .55s var(--ease) both'; add.style.animationDelay = (subs.length * 55) + 'ms';
+    add.addEventListener('click', addSheet);
+    elList.appendChild(add);
+    elHint.style.display = subs.length ? '' : 'none';
+    refreshCounts();
+  };
+
+  // ---------- Özet ----------
+  const renderSum = () => {
+    const { start, end } = page9GetRangeBounds();
+    const a = page9DateKey(start), b = page9DateKey(end);
+    const logs = page9State.logs.filter((l) => l.date >= a && l.date <= b);
+    const rows = [];
+    ['tyt', 'ayt'].forEach((tr) => page9State.subjects[tr].forEach((s) => {
+      const c = logs.reduce((sum, l) => sum + (l.subjectId === s.id ? l.count : 0), 0);
+      if (c > 0) rows.push({ s, tr, c });
+    }));
+    rows.sort((x, y) => y.c - x.c);
+    const total = rows.reduce((s, r) => s + r.c, 0), max = rows.length ? rows[0].c : 1;
+    $('#q9SumN').textContent = String(total);
+    $('#q9SumL').textContent = 'soru · ' + page9RangeLabelText();
+    const st = $('#q9Stack'), rw = $('#q9Rows'); st.innerHTML = ''; rw.innerHTML = '';
+    st.style.display = rows.length ? '' : 'none';
+    if (!rows.length) { rw.innerHTML = '<div class="q9-empty">Bu aralıkta henüz kayıt yok.</div>'; return; }
+    rows.forEach((r, i) => {
+      const seg = document.createElement('i'); seg.style.flex = r.c + ' 0 0'; seg.style.background = r.s.color; seg.style.animationDelay = (i * 60) + 'ms'; seg.title = r.s.name; st.appendChild(seg);
+      const row = mk('<div class="q9-row2"><div class="t"><i></i><span></span><em></em><b></b></div><div class="bar"><i></i></div></div>');
+      row.querySelector('.t i').style.background = r.s.color;
+      row.querySelector('.t span').textContent = r.s.name;
+      row.querySelector('em').textContent = r.tr.toUpperCase();
+      row.querySelector('b').textContent = r.c;
+      const f = row.querySelector('.bar i'); f.style.background = r.s.color; f.style.width = Math.max(6, Math.round(r.c / max * 100)) + '%'; f.style.animationDelay = (i * 60) + 'ms';
+      rw.appendChild(row);
+    });
+  };
+
+  // ---------- Ana render + gezinme ----------
+  const render = (dir, quiet) => {
+    const d = page9SelectedDate, diff = Math.round((d - today0()) / 864e5);
+    const rel = diff === 0 ? 'Bugün' : diff === -1 ? 'Dün' : diff === 1 ? 'Yarın' : diff < 0 ? `${-diff} gün önce` : `${diff} gün sonra`;
+    const nb = rel, ns = `${d.getDate()} ${MONTHS_TR[d.getMonth()]} ${d.getFullYear()}`;
+    if (elDate.querySelector('b').textContent !== nb || elDate.querySelector('span').textContent !== ns) {
+      elDate.querySelector('b').textContent = nb; elDate.querySelector('span').textContent = ns;
+      elDate.classList.remove('is-swap'); void elDate.offsetWidth; elDate.classList.add('is-swap');
+    }
+    setSeg(elTrack, page9Track); setSeg(elRange, page9Range);
+    root.classList.toggle('q9-quiet', !!quiet);
+    renderWeek(); renderList(); lastTot = null;
+    if (dir) { elBody.classList.remove('q9-in-l', 'q9-in-r'); void elBody.offsetWidth; elBody.classList.add(dir > 0 ? 'q9-in-l' : 'q9-in-r'); }
+  };
+  const gotoDate = (d) => {
+    const nd = page9StartOfDay(d); if (nd > today0()) return;
+    const dir = Math.sign(nd - page9SelectedDate); if (!dir) return;
+    page9SelectedDate = nd; syncOld(); render(dir); vib(5);
+  };
+  const shift = (n) => { const d = new Date(page9SelectedDate); d.setDate(d.getDate() + n); gotoDate(d); };
+  elDate.addEventListener('click', () => { const t = today0(); if (+t !== +page9SelectedDate) gotoDate(t); });
+  elTrack.addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b || b.dataset.v === page9Track) return; try { setPage9Track(b.dataset.v); } catch (x) { page9Track = b.dataset.v; } render(b.dataset.v === 'ayt' ? 1 : -1); });
+  elRange.addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b) return; try { setPage9Range(b.dataset.v); } catch (x) { page9Range = b.dataset.v; } setSeg(elRange, page9Range); renderSum(); });
+  let tx = 0, ty = 0, tok = false;
+  root.addEventListener('touchstart', (e) => { tok = e.touches.length === 1; if (tok) { tx = e.touches[0].clientX; ty = e.touches[0].clientY; } }, { passive: true });
+  root.addEventListener('touchend', (e) => {
+    if (!tok) return; tok = false; const t = e.changedTouches[0], dx = t.clientX - tx, dy = t.clientY - ty;
+    if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.6) shift(dx > 0 ? -1 : 1);
+  }, { passive: true });
+
+  // ---------- Alt sayfa (bottom sheet) ----------
+  const ov = mk('<div class="q9-ov"><div class="q9-sh"><div class="q9-grab"><i></i></div><div class="q9-sc"></div></div></div>');
+  document.body.appendChild(ov);
+  const sh = ov.querySelector('.q9-sh'), sc = ov.querySelector('.q9-sc'), grab = ov.querySelector('.q9-grab');
+  let onClose = null;
+  const openSheet = (build, cb) => { sc.innerHTML = ''; build(sc); onClose = cb || null; ov.classList.add('is-open'); document.body.classList.add('has-modal-open'); };
+  const closeSheet = () => {
+    if (!ov.classList.contains('is-open')) return;
+    if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
+    ov.classList.remove('is-open'); document.body.classList.remove('has-modal-open'); sh.style.transform = '';
+    const cb = onClose; onClose = null; if (cb) cb();
+  };
+  ov.addEventListener('pointerdown', (e) => { if (e.target === ov) closeSheet(); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeSheet(); });
+  let sy = null, sdy = 0;
+  grab.addEventListener('pointerdown', (e) => { sy = e.clientY; sdy = 0; sh.style.transition = 'none'; try { grab.setPointerCapture(e.pointerId); } catch (x) { /* yok say */ } });
+  grab.addEventListener('pointermove', (e) => { if (sy == null) return; sdy = Math.max(0, e.clientY - sy); sh.style.transform = `translateY(${sdy}px)`; });
+  const gEnd = () => { if (sy == null) return; sy = null; sh.style.transition = ''; if (sdy > 90) closeSheet(); else sh.style.transform = ''; };
+  grab.addEventListener('pointerup', gEnd); grab.addEventListener('pointercancel', gEnd);
+  const holdStep = (btn, fn) => {
+    let to = 0, n = 0; const stop = () => { clearTimeout(to); btn.classList.remove('is-press'); };
+    const tick = () => { fn(); n++; to = setTimeout(tick, Math.max(45, 130 - n * 5)); };
+    btn.addEventListener('pointerdown', () => { btn.classList.add('is-press'); fn(); n = 0; clearTimeout(to); to = setTimeout(tick, 420); });
+    ['pointerup', 'pointercancel', 'pointerleave'].forEach((ev) => btn.addEventListener(ev, stop));
+  };
+
+  function subjectSheet(s) {
+    openSheet((box) => {
+      box.innerHTML = '<div class="q9-st"><span class="dl"></span><input class="q9-name" maxlength="28" aria-label="Ders adı"></div>' +
+        '<div class="q9-step"><button type="button" aria-label="Azalt">−</button><input type="number" inputmode="numeric" min="0" max="999" aria-label="Bu günkü soru sayısı"><button type="button" aria-label="Arttır">+</button></div>' +
+        '<div class="q9-chips"><button type="button" data-d="5">+5</button><button type="button" data-d="10">+10</button><button type="button" data-d="20">+20</button><button type="button" data-d="0">Sıfırla</button></div>' +
+        '<div class="q9-sw"></div><button type="button" class="q9-line q9-pin"><span>Her gün listede göster</span><i class="q9-tg"></i></button>' +
+        '<div class="q9-acts"><button type="button" class="rm">Bugünden çıkar</button><button type="button" class="del">Dersi sil</button></div>';
+      const nameIn = box.querySelector('.q9-name'), dl = box.querySelector('.dl'), num = box.querySelector('.q9-step input');
+      const [bm, bp] = box.querySelectorAll('.q9-step button');
+      nameIn.value = s.name; dl.style.background = s.color;
+      const cur = () => page9SelectedCountFor(s.id);
+      const setTo = (n) => { n = Math.max(0, Math.min(999, n | 0)); page9SetCount(s.id, n); num.value = n; refreshCounts(); };
+      num.value = cur();
+      holdStep(bm, () => setTo(cur() - 1)); holdStep(bp, () => setTo(cur() + 1));
+      num.addEventListener('change', () => setTo(parseInt(num.value, 10) || 0));
+      box.querySelectorAll('.q9-chips button').forEach((b) => b.addEventListener('click', () => setTo(b.dataset.d === '0' ? 0 : cur() + parseInt(b.dataset.d, 10))));
+      const sw = box.querySelector('.q9-sw');
+      WHEEL_PALETTE.forEach((col) => {
+        const b = document.createElement('button'); b.type = 'button'; b.style.background = col; b.setAttribute('aria-label', 'Renk ' + col);
+        b.classList.toggle('is-on', col === s.color);
+        b.addEventListener('click', () => {
+          s.color = col; savePage9State(); dl.style.background = col;
+          sw.querySelectorAll('button').forEach((x) => x.classList.toggle('is-on', x === b));
+          const c = cards.get(s.id); if (c) c.el.style.setProperty('--c', col); renderSum();
+        });
+        sw.appendChild(b);
+      });
+      const pin = box.querySelector('.q9-pin'); pin.classList.toggle('is-on', !!s.pinned);
+      pin.addEventListener('click', () => { s.pinned = !s.pinned; savePage9State(); pin.classList.toggle('is-on', s.pinned); refreshCounts(); });
+      const commitName = () => {
+        const v = nameIn.value.trim(); if (!v || v === s.name) { nameIn.value = s.name; return; }
+        s.name = v; savePage9State(); const c = cards.get(s.id); if (c) c.el.querySelector('b').textContent = v; renderSum();
+      };
+      nameIn.addEventListener('blur', commitName);
+      nameIn.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); nameIn.blur(); } });
+      box.querySelector('.rm').addEventListener('click', () => {
+        if (cur() > 0) { if (window.paceNToast) window.paceNToast('Önce sayıyı sıfırla'); return; }
+        s.pinned = false; page9RemoveSubjectFromDay(s.name); closeSheet(); syncOld(); render(0, true);
+      });
+      box.querySelector('.del').addEventListener('click', () => {
+        const name = s.name; closeSheet();
+        setTimeout(() => openPage8Confirm(name, () => { page9DeleteSubjectCompletely(name); syncOld(); render(0, true); }), 280);
+      });
+    }, () => render(0, true));
+  }
+
+  function addSheet() {
+    openSheet((box) => {
+      box.innerHTML = '<div class="q9-st"><span>Ders ekle</span><span class="tag"></span></div><div class="q9-grid"></div>' +
+        '<div class="q9-cust"><input type="text" maxlength="28" placeholder="Kendi dersini yaz…"><button type="button" aria-label="Ekle">+</button></div>';
+      box.querySelector('.tag').textContent = PAGE9_TRACK_LABELS[page9Track];
+      const grid = box.querySelector('.q9-grid'), inp = box.querySelector('.q9-cust input');
+      const build = () => {
+        grid.innerHTML = '';
+        const seen = new Set(), names = [];
+        (PAGE9_PRESET_SUBJECTS[page9Track] || []).concat(page9State.customSubjectPool[page9Track] || []).forEach((n) => { const k = n.trim().toLowerCase(); if (!seen.has(k)) { seen.add(k); names.push(n); } });
+        const vis = page9VisibleSubjects().map((s) => s.name.trim().toLowerCase());
+        names.forEach((n) => {
+          const b = document.createElement('button'); b.type = 'button'; b.textContent = n;
+          const on = vis.indexOf(n.trim().toLowerCase()) >= 0; b.classList.toggle('is-on', on);
+          b.addEventListener('click', () => {
+            if (on) {
+              const s = page9State.subjects[page9Track].find((x) => x.name.trim().toLowerCase() === n.trim().toLowerCase());
+              if (s && page9SelectedCountFor(s.id) > 0) { b.classList.remove('is-shake'); void b.offsetWidth; b.classList.add('is-shake'); if (window.paceNToast) window.paceNToast('Bu derse soru girilmiş, önce sıfırla'); return; }
+              if (s) { s.pinned = false; page9RemoveSubjectFromDay(s.name); }
+            } else page9CommitSubjectByName(n);
+            vib(6); build(); syncOld(); render(0, true);
+          });
+          grid.appendChild(b);
+        });
+      };
+      build();
+      const addCustom = () => { const v = inp.value.trim(); if (!v) return; page9CommitSubjectByName(v); inp.value = ''; vib(8); build(); syncOld(); render(0, true); };
+      box.querySelector('.q9-cust button').addEventListener('click', addCustom);
+      inp.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); addCustom(); } });
+    }, () => { syncOld(); render(0, true); });
+  }
+
+  function goalSheet() {
+    openSheet((box) => {
+      box.innerHTML = '<div class="q9-st"><span>Günlük hedef</span></div>' +
+        '<div class="q9-step"><button type="button" aria-label="Azalt">−</button><input type="number" inputmode="numeric" min="0" max="999" aria-label="Günlük hedef"><button type="button" aria-label="Arttır">+</button></div>' +
+        '<div class="q9-chips"><button type="button" data-g="25">25</button><button type="button" data-g="50">50</button><button type="button" data-g="75">75</button><button type="button" data-g="100">100</button><button type="button" data-g="150">150</button></div>' +
+        '<button type="button" class="q9-line q9-clr"><span>Hedefi kaldır</span></button>';
+      const num = box.querySelector('input'), [bm, bp] = box.querySelectorAll('.q9-step button');
+      const goal = () => page9ClampGoal(page9State.dailyGoal);
+      const setG = (n) => { page9State.dailyGoal = page9ClampGoal(n); savePage9State(); try { renderPage9GoalBtn(); } catch (e) { /* yok say */ } num.value = goal(); renderHero(); };
+      num.value = goal();
+      holdStep(bm, () => setG(goal() - 5)); holdStep(bp, () => setG(goal() + 5));
+      num.addEventListener('change', () => setG(parseInt(num.value, 10) || 0));
+      box.querySelectorAll('[data-g]').forEach((b) => b.addEventListener('click', () => { setG(parseInt(b.dataset.g, 10)); vib(6); }));
+      box.querySelector('.q9-clr').addEventListener('click', () => { setG(0); closeSheet(); });
+    });
+  }
+  elHero.addEventListener('click', goalSheet);
+
+  // ---------- Sayfa açılınca tazele ----------
+  const pageEl = document.getElementById('page-9');
+  let wasActive = pageEl.classList.contains('is-active');
+  new MutationObserver(() => {
+    const a = pageEl.classList.contains('is-active');
+    if (a && !wasActive) { syncOld(); render(0, false); }
+    wasActive = a;
+  }).observe(pageEl, { attributes: true, attributeFilter: ['class'] });
+  render(0, true);
+})();
 </script>
 
 <script>
