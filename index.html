@@ -72582,7 +72582,7 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
       st.groups.forEach((g, gi) => {
         const box = el('section', 'hl-g'); box.dataset.fk = 'hg:' + g.id; box.style.setProperty('--gc', g.color); box.style.setProperty('--gt', tickColor(g.color));
         if (firstPaint) box.style.animationDelay = `${gi * 70}ms`;
-        if (!firstPaint && seenGroups.has(g.id)) box.style.animation = 'none'; seenGroups.add(g.id);
+        if (!firstPaint) box.style.animation = 'none'; seenGroups.add(g.id); // ilk açılış dışında giriş animasyonunu yalnızca flip yönetir (çift animasyon titreme yapıyordu)
         const head = el('div', 'hl-head'), cnt = el('span', 'hl-count');
         head.append(el('span', 'hl-name', g.name), cnt);
         const upd = () => { const rl = g.items.filter((i) => !i.sub), d = rl.filter((i) => i.done).length; cnt.textContent = rl.length ? `${d}/${rl.length}` : ''; head.style.setProperty('--pr', rl.length ? (d / rl.length).toFixed(3) : 0); if (box._subs) box._subs.forEach((sb) => { const tot = sb.sec.querySelectorAll('.hl-r').length, dn = sb.sec.querySelectorAll('.hl-r.is-done').length; sb.cnt.textContent = tot ? `${dn}/${tot}` : ''; }); };
@@ -72931,7 +72931,7 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
     const newListPopup = () => window.gundelikTaskSheet.open({ id: '__new:' + P, name: '', color: null }, (v) => {
       st.groups.push({ id: gid(), name: v, color: pal[st.groups.length % pal.length], items: [] });
       save(); render();
-      setTimeout(() => { const b = list.lastElementChild; if (b && b.scrollIntoView) b.scrollIntoView({ block: 'center', behavior: 'smooth' }); }, 420);
+      setTimeout(() => { const b = list.lastElementChild; if (b && b.scrollIntoView) b.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); }, 720);
     }, { list: true });
     render();
     return {
@@ -73377,8 +73377,12 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
     if (Math.abs(d) > 1) sc.scrollBy({ top: d, behavior: smooth ? 'smooth' : 'auto' });
   };
   const sync = () => {
-    root.style.setProperty('--gk', kb() + 'px');
-    requestAnimationFrame(() => reveal(false));
+    // Ekleme sayfası (gundelikTaskSheet) gibi kaydırma alanı DIŞINDAKİ bir alanda klavye açılıp kapanırken
+    // --gk değişirse liste altındaki boşluk adım adım oynar ve sayfa titrer; o yüzden yalnızca odak içerideyse uygula.
+    const a = document.activeElement;
+    const inSc = !!(a && a.closest && a.closest(SC));
+    root.style.setProperty('--gk', inSc ? kb() + 'px' : '0px');
+    if (inSc) requestAnimationFrame(() => reveal(false));
   };
   vv.addEventListener('resize', sync);
   vv.addEventListener('scroll', sync);
