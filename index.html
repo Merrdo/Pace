@@ -73740,8 +73740,14 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
 <style id="safeAreaSyncCss">
   /* Giriş/Kayıt tam sayfası: üst güvenli alan şeridi düz tema rengi olsun (arkadaki bulanık renk
      toplarının tonu, düz theme-color ile uyuşmuyordu). */
-  #paAuth .pa-bg::after { content: ""; position: absolute; left: 0; right: 0; top: 0; z-index: 1; pointer-events: none;
-    height: env(safe-area-inset-top, 0px); background: var(--theme-bg, #0b0b0b); }
+  #paAuth .pa-bg::after { content: ""; position: absolute; left: 0; right: 0; top: 0; bottom: 0; z-index: 1; pointer-events: none;
+    background:
+      linear-gradient(var(--theme-bg, #0b0b0b), var(--theme-bg, #0b0b0b)) top / 100% env(safe-area-inset-top, 0px) no-repeat,
+      linear-gradient(var(--theme-bg, #0b0b0b), var(--theme-bg, #0b0b0b)) bottom / 100% env(safe-area-inset-bottom, 0px) no-repeat; }
+  /* Tam ekran: sağ/sol güvenli alan, aşırı kaydırma (rubber-band) ve alt çubuk de aynı düz tema rengini göstersin;
+     tema değişince arka plan geçişiyle (480ms) eş zamanlı boyanır. */
+  html:has(#paAuth), body:has(#paAuth) { background-color: var(--theme-bg, #0b0b0b);
+    transition: background-color var(--theme-transition-duration, 480ms) var(--theme-transition-easing, ease); }
 </style>
 <script id="safeAreaSync">
   /* Üst güvenli alan (saat/pil şeridi) eşlemesi: sync.js'in açtığı katmanlar (Profil, Profil resmi,
