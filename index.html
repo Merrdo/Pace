@@ -43911,128 +43911,8 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
   </div>
 </div>
 
-<style id="nav-glass">
-.navbar { padding: 0 14px calc(10px + env(safe-area-inset-bottom)); pointer-events: none; }
-.navbar::before { content: ''; position: absolute; left: 0; right: 0; bottom: 0; top: -20px; z-index: 0; pointer-events: none;
-  background: linear-gradient(to top, color-mix(in srgb, var(--theme-bg, #F6F4EF) 88%, transparent) 30%, transparent);
-  -webkit-backdrop-filter: none; backdrop-filter: none; }
-.navbar::after { content: none; }
-.nav-scrim { position: fixed; inset: 0; z-index: 0; opacity: 0; pointer-events: none; transition: opacity .35s ease;
-  background: color-mix(in srgb, var(--theme-bg, #F6F4EF) 40%, transparent); -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px); }
-.navbar:has(.nav-dock.is-open) .nav-scrim { opacity: 1; pointer-events: auto; }
-.nav-dock {
-  --nv-glass: color-mix(in srgb, var(--theme-text, #1a1a1a) 5%, color-mix(in srgb, var(--theme-bg, #F6F4EF) 72%, transparent));
-  --nv-line: color-mix(in srgb, var(--theme-text, #1a1a1a) 11%, transparent);
-  --nv-ink: color-mix(in srgb, var(--theme-text, #1a1a1a) 55%, transparent);
-  --nv-acc: var(--accent-color, #ff90e8);
-  --nv-spring: cubic-bezier(.32,1.35,.45,1);
-  position: relative; z-index: 1; display: flex; gap: 10px; width: min(100%, 372px); height: 60px;
-  animation: navRise .7s cubic-bezier(.2,.9,.25,1.05) both;
-}
-@keyframes navRise { from { opacity: 0; transform: translateY(24px) scale(.94); } }
-.nav-dock > * { pointer-events: auto; }
-body:is(.is-stopwatch-fs,.is-countdown-fs,.is-laps-open,.is-patterns-open,.is-exam-detail-open,.is-wheel-open,.is-calendar-open,.is-qhavuz-test-open,.is-page10-open,.is-analytics-open,.is-zero-error-open,.is-page8-typing) .navbar .nav-dock > * { pointer-events: none; }
-.nav-dock .wrapper, .nav-plus, .nav-panel {
-  background: var(--nv-glass); border: 1px solid var(--nv-line);
-  -webkit-backdrop-filter: blur(30px) saturate(170%); backdrop-filter: blur(30px) saturate(170%);
-  box-shadow: 0 10px 30px -14px rgba(0,0,0,.35), inset 0 .5px 0 rgba(255,255,255,.16);
-}
-.nav-dock .wrapper { position: relative; flex: 1 1 0; min-width: 0; width: auto; max-width: none; height: 60px; padding: 4px; box-sizing: border-box;
-  border-radius: 999px; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent;
-  transition: opacity .28s ease, transform .45s var(--nv-spring), filter .3s ease; }
-.nav-dock.is-open .wrapper { opacity: 0; transform: scale(.93); filter: blur(5px); pointer-events: none; }
-.nav-dock .wrapper .option { flex: 1 1 0; width: auto; height: 50px; top: 0; }
-.nav-dock .wrapper .option.nav-menu-only { display: none; }
-.nav-dock .wrapper .nav-slider { top: 4px; left: 0; height: 50px; z-index: 0; border-radius: 999px; pointer-events: none;
-  background: color-mix(in srgb, var(--nv-acc) 15%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--nv-acc) 30%, transparent);
-  -webkit-backdrop-filter: blur(10px) saturate(170%); backdrop-filter: blur(10px) saturate(170%);
-  transition: transform .6s var(--nv-spring), width .4s ease, scale .4s cubic-bezier(.3,1.7,.5,1), opacity .3s ease, background .3s ease, box-shadow .3s ease;
-  will-change: transform, scale; }
-.nav-dock .wrapper .nav-slider::before { content: none; }
-.nav-dock .wrapper .nav-slider.is-offtab { opacity: 0; scale: .8; }
-.nav-dock .wrapper .nav-slider.is-pressed { scale: 1.14 1.1; background: color-mix(in srgb, var(--nv-acc) 24%, transparent);
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--nv-acc) 45%, transparent), 0 8px 20px -10px var(--nv-acc); }
-.nav-dock .wrapper .nav-slider.is-dragging { transition: width .4s ease, scale .12s linear, opacity .3s ease, background .3s ease, box-shadow .3s ease; }
-.nav-dock .wrapper .nav-btn { width: 100%; height: 50px; border-radius: 999px; color: var(--nv-ink);
-  transition: color .3s ease, transform .4s cubic-bezier(.3,1.6,.5,1); transition-delay: 0s; }
-.nav-dock .wrapper .nav-btn::before { display: none; }
-.nav-dock .wrapper .nav-input:focus-visible + .nav-btn { outline: 2px solid var(--nv-acc); outline-offset: -3px; }
-.nav-dock .wrapper:not(.is-scrubbing) .nav-input:checked + .nav-btn,
-.nav-dock .wrapper.is-scrubbing .option.is-hot .nav-btn { color: var(--nv-acc); }
-.nav-dock .wrapper .nav-icon { width: 22px; height: 22px; stroke-width: 1.6; transition: transform .4s cubic-bezier(.3,1.6,.5,1), filter .3s ease; }
-.nav-dock .wrapper .nav-input:checked + .nav-btn .nav-icon { filter: drop-shadow(0 0 8px color-mix(in srgb, var(--nv-acc) 40%, transparent)); animation: navIconPop .6s cubic-bezier(.34,1.56,.64,1); }
-@keyframes navIconPop { 0% { transform: scale(.76); } 55% { transform: scale(1.18); } 100% { transform: scale(1); } }
-.nav-dock .wrapper.is-scrubbing .option.is-hot .nav-icon { transform: scale(1.15); }
-.nav-dock .wrapper:not(.is-scrubbing) .nav-input:active + .nav-btn { transform: scale(.88); }
-
-.nav-plus { flex: none; position: relative; width: 60px; height: 60px; padding: 0; border-radius: 50%; color: var(--theme-text, #1a1a1a); cursor: pointer;
-  display: grid; place-items: center; -webkit-tap-highlight-color: transparent; touch-action: none;
-  transition: transform .4s cubic-bezier(.3,1.6,.5,1), background .3s ease, color .3s ease; }
-.nav-plus svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; transition: transform .6s var(--nv-spring); }
-.nav-plus.is-pressed { transform: scale(.9); }
-.nav-dock.is-open .nav-plus { background: color-mix(in srgb, var(--theme-text, #1a1a1a) 16%, var(--nv-glass)); }
-.nav-dock.is-open .nav-plus svg { transform: rotate(135deg); }
-.nav-panel { position: absolute; left: 0; bottom: 0; width: calc(100% - 70px); height: 60px; box-sizing: border-box; overflow: hidden;
-  display: flex; align-items: flex-end; border-radius: 30px; opacity: 0; visibility: hidden; pointer-events: none; touch-action: none;
-  background: color-mix(in srgb, var(--theme-text, #1a1a1a) 5%, color-mix(in srgb, var(--theme-bg, #F6F4EF) 84%, transparent));
-  transition: height .6s var(--nv-spring), border-radius .5s ease, opacity .2s ease, visibility 0s linear .55s; }
-.nav-dock.is-open .nav-panel { height: var(--ph, 200px); border-radius: 28px; opacity: 1; visibility: visible; pointer-events: auto; transition: height .6s var(--nv-spring), border-radius .5s ease, opacity .25s ease, visibility 0s; }
-.nav-grid { width: 100%; box-sizing: border-box; padding: 12px 10px 10px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px 4px; }
-.nav-tile { appearance: none; border: 0; background: none; padding: 0; margin: 0; font: inherit; color: var(--theme-text, #1a1a1a); cursor: pointer;
-  display: flex; flex-direction: column; align-items: center; gap: 5px; -webkit-tap-highlight-color: transparent;
-  opacity: 0; transform: translateY(14px) scale(.88); filter: blur(6px); transition: opacity .18s ease, transform .2s ease, filter .2s ease; }
-.nav-dock.is-open .nav-tile { opacity: 1; transform: none; filter: none; transition: opacity .35s ease, transform .55s var(--nv-spring), filter .35s ease; transition-delay: calc(.07s + var(--k) * 34ms); }
-.nav-tile-ico { width: 100%; max-width: 54px; height: 50px; border-radius: 17px; display: grid; place-items: center;
-  background: color-mix(in srgb, var(--theme-text, #1a1a1a) 7%, transparent); color: var(--theme-text, #1a1a1a);
-  transition: background .25s ease, color .25s ease, transform .35s cubic-bezier(.3,1.6,.5,1), box-shadow .25s ease; }
-.nav-tile-ico svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
-.nav-tile-lbl { font-size: 10.5px; line-height: 1; font-weight: 600; color: var(--nv-ink); transition: color .25s ease; white-space: nowrap; }
-.nav-tile.is-hot .nav-tile-ico { background: color-mix(in srgb, var(--nv-acc) 24%, transparent); color: var(--nv-acc); transform: scale(1.12);
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--nv-acc) 50%, transparent), 0 8px 18px -8px var(--nv-acc); }
-.nav-tile.is-hot .nav-tile-lbl { color: var(--theme-text, #1a1a1a); }
-@media (prefers-reduced-motion: reduce) { .nav-dock, .nav-dock * { animation: none !important; transition-duration: .01s !important; transition-delay: 0s !important; } }
-</style>
-<style id="nav-fab-look">
-/* Soru Havuzu alt çubuğu (.qhavuz-fab) ile aynı dil: mat nötr zemin, içe gömülü gölge, vurgu renginde degrade seçili hap */
-.navbar { padding: 0 12px calc(16px + env(safe-area-inset-bottom)); }
-.navbar::before { top: -14px; background: linear-gradient(to top, color-mix(in srgb, var(--theme-bg, #F6F4EF) 80%, transparent) 40%, transparent); }
-.nav-scrim { -webkit-backdrop-filter: none; backdrop-filter: none; background: color-mix(in srgb, var(--theme-bg, #F6F4EF) 55%, transparent); }
-.nav-dock { --nv-glass: color-mix(in srgb, var(--theme-text, #121212) 8%, transparent); --nv-line: transparent;
-  --nv-ink: color-mix(in srgb, var(--theme-text, #121212) 94%, transparent);
-  --nv-inset: inset 0 1px 3px 0 color-mix(in srgb, var(--theme-text, #121212) 10%, transparent);
-  --nv-glow: 0 3px 12px 0 color-mix(in srgb, var(--nv-acc) 50%, transparent), inset 0 1px 0 0 rgba(255,255,255,.35);
-  --nv-grad: linear-gradient(180deg, color-mix(in srgb, var(--nv-acc) 100%, white 12%), var(--nv-acc));
-  width: min(100%, 388px); height: 54px; font-family: "Baloo 2", "Space Grotesk", sans-serif; animation: none; }
-.nav-dock .wrapper, .nav-plus, .nav-panel { border: 0; -webkit-backdrop-filter: none; backdrop-filter: none; box-shadow: var(--nv-inset); }
-.nav-dock .wrapper, .nav-plus { background: var(--nv-glass); animation: navFabIn .4s cubic-bezier(.65,0,.35,1) backwards; }
-.nav-dock .wrapper { height: 54px; padding: 4px; animation-delay: .06s; }
-.nav-plus { width: 54px; height: 54px; animation-delay: .12s; }
-@keyframes navFabIn { from { opacity: 0; transform: translateY(10px); } }
-.nav-dock .wrapper .option, .nav-dock .wrapper .nav-btn { height: 46px; }
-.nav-dock .wrapper .nav-slider { top: 4px; height: 46px; background: var(--nv-grad); -webkit-backdrop-filter: none; backdrop-filter: none; box-shadow: var(--nv-glow); }
-.nav-dock .wrapper .nav-slider.is-pressed { background: var(--nv-grad); box-shadow: 0 6px 18px 0 color-mix(in srgb, var(--nv-acc) 62%, transparent), inset 0 1px 0 0 rgba(255,255,255,.4); }
-.nav-dock .wrapper .nav-icon { stroke-width: 2; }
-.nav-dock .wrapper:not(.is-scrubbing) .nav-input:checked + .nav-btn,
-.nav-dock .wrapper.is-scrubbing .option.is-hot .nav-btn { color: #fff; }
-.nav-dock .wrapper .nav-input:checked + .nav-btn .nav-icon { filter: drop-shadow(0 1px 2px rgba(0,0,0,.18)); }
-.nav-plus svg { stroke-width: 2.4; }
-.nav-plus.is-pressed { transform: scale(.94); background: color-mix(in srgb, var(--theme-text, #121212) 13%, transparent); }
-.nav-dock.is-open .nav-plus { background: color-mix(in srgb, var(--theme-text, #121212) 13%, transparent); }
-.nav-panel { height: 54px; border-radius: 27px; width: calc(100% - 64px);
-  background: color-mix(in srgb, var(--theme-text, #121212) 8%, var(--theme-bg, #F6F4EF));
-  box-shadow: var(--nv-inset), 0 14px 32px -16px rgba(0,0,0,.3); }
-.nav-dock.is-open .nav-panel { border-radius: 26px; }
-.nav-grid { padding: 14px 8px 12px; gap: 12px 2px; }
-.nav-tile-ico { width: 46px; height: 46px; max-width: none; border-radius: 50%; background: var(--nv-glass); box-shadow: var(--nv-inset); }
-.nav-tile-ico svg { stroke-width: 2; }
-.nav-tile-lbl { font-size: .68rem; font-weight: 700; color: var(--nv-ink); }
-.nav-tile.is-hot .nav-tile-ico { background: var(--nv-grad); color: #fff; transform: scale(1.1); box-shadow: var(--nv-glow); }
-.nav-tile.is-hot .nav-tile-ico svg { filter: drop-shadow(0 1px 2px rgba(0,0,0,.18)); }
-</style>
 <!-- From Uiverse.io by andrew-demchenk0 (uyarlandı) -->
 <nav class="navbar">
- <div class="nav-scrim" id="navScrim"></div>
- <div class="nav-dock" id="navDock">
   <div class="wrapper">
     <div class="nav-slider"></div>
     <div class="option">
@@ -44102,7 +43982,7 @@ body:is(.is-stopwatch-fs,.is-countdown-fs,.is-laps-open,.is-patterns-open,.is-ex
         </svg>
       </div>
     </div>
-    <div class="option nav-menu-only">
+    <div class="option">
       <input class="nav-input" type="radio" name="nav" value="page-11">
       <div class="nav-btn">
         <span class="nav-tooltip">Denemelerim</span>
@@ -44114,7 +43994,7 @@ body:is(.is-stopwatch-fs,.is-countdown-fs,.is-laps-open,.is-patterns-open,.is-ex
         </svg>
       </div>
     </div>
-    <div class="option nav-menu-only">
+    <div class="option">
       <input class="nav-input" type="radio" name="nav" value="page-settings">
       <div class="nav-btn">
         <span class="nav-tooltip">Ayarlar</span>
@@ -44125,9 +44005,6 @@ body:is(.is-stopwatch-fs,.is-countdown-fs,.is-laps-open,.is-patterns-open,.is-ex
       </div>
     </div>
   </div>
-  <button type="button" class="nav-plus" id="navPlus" aria-label="Hızlı menü" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button>
-  <div class="nav-panel" id="navPanel" role="menu" aria-label="Hızlı menü"><div class="nav-grid" id="navGrid"><button type="button" class="nav-tile" role="menuitem" data-page="page-11" style="--k:0"><span class="nav-tile-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg></span><span class="nav-tile-lbl">Denemeler</span></button><button type="button" class="nav-tile" role="menuitem" data-page="page-6" style="--k:1"><span class="nav-tile-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.5" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg></span><span class="nav-tile-lbl">Takvim</span></button><button type="button" class="nav-tile" role="menuitem" data-page="page-relax" style="--k:2"><span class="nav-tile-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="7" height="7" rx="2"/><rect x="13" y="4" width="7" height="7" rx="2"/><rect x="4" y="13" width="7" height="7" rx="2"/><rect x="13" y="13" width="7" height="7" rx="2"/></svg></span><span class="nav-tile-lbl">Planlayıcı</span></button><button type="button" class="nav-tile" role="menuitem" data-page="page-analytics" style="--k:3"><span class="nav-tile-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 19V10M12 19V5M19 19v-7"/></svg></span><span class="nav-tile-lbl">Analiz</span></button><button type="button" class="nav-tile" role="menuitem" data-page="page-hatirla" style="--k:4"><span class="nav-tile-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4h10a1 1 0 0 1 1 1v15l-6-4-6 4V5a1 1 0 0 1 1-1z"/></svg></span><span class="nav-tile-lbl">Hatırla</span></button><button type="button" class="nav-tile" role="menuitem" data-page="page-mini-games-hub" style="--k:5"><span class="nav-tile-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="4.5"/><circle cx="9" cy="9" r=".6"/><circle cx="15" cy="9" r=".6"/><circle cx="9" cy="15" r=".6"/><circle cx="15" cy="15" r=".6"/></svg></span><span class="nav-tile-lbl">Oyunlar</span></button><button type="button" class="nav-tile" role="menuitem" data-page="page-settings" style="--k:6"><span class="nav-tile-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/></svg></span><span class="nav-tile-lbl">Ayarlar</span></button></div></div>
- </div>
 </nav>
 
 <!-- Soru Havuzu (telefon): Geri / Soru Ekle / Seç. Alt navbar'dan tamamen
@@ -44345,30 +44222,13 @@ body:is(.is-stopwatch-fs,.is-countdown-fs,.is-laps-open,.is-patterns-open,.is-ex
     }, PAGE_TRANSITION_MS);
   };
 
-  const navDock = document.getElementById('navDock');
-  const navWrapper = document.querySelector('.navbar .wrapper');
-  const tabOpts = navOptions.filter((o) => !o.classList.contains('nav-menu-only'));
-  let navIdx = -2;
-  const placeSlider = (o) => {
-    navSlider.style.width = o.offsetWidth + 'px';
-    navSlider.style.transform = `translate3d(${o.offsetLeft}px,0,0)`;
-  };
   const moveSlider = (input) => {
-    const o = input.closest('.option');
-    navIdx = tabOpts.indexOf(o);
-    navSlider.classList.toggle('is-offtab', navIdx < 0);
-    if (navIdx >= 0) placeSlider(o);
+    const option = input.closest('.option');
+    const baseLeft = navOptions[0].offsetLeft;
+    const offset = option.offsetLeft - baseLeft;
+    navSlider.style.transform = `translateX(${offset}px)`;
   };
-  const syncSlider = (instant) => {
-    const c = document.querySelector('.nav-input:checked');
-    if (!c) return;
-    if (instant) {
-      navSlider.style.transition = 'none';
-      moveSlider(c);
-      void navSlider.offsetWidth;
-      navSlider.style.transition = '';
-    } else moveSlider(c);
-  };
+
   navInputs.forEach((input) => {
     input.addEventListener('change', () => {
       if (!input.checked) return;
@@ -44376,149 +44236,6 @@ body:is(.is-stopwatch-fs,.is-countdown-fs,.is-laps-open,.is-patterns-open,.is-ex
       moveSlider(input);
     });
   });
-
-  // ---- Kayan gösterge: basılı tutup sürükle, bırakınca yaylanarak oturur ----
-  if (navWrapper && navSlider) {
-    let d = null;
-    const last = tabOpts.length - 1;
-    const idxAt = (x) => {
-      const r = navWrapper.getBoundingClientRect(), f = tabOpts[0];
-      return Math.max(0, Math.min(last, Math.floor((x - r.left - navWrapper.clientLeft - f.offsetLeft) / f.offsetWidth)));
-    };
-    const setHot = (i) => tabOpts.forEach((o, k) => o.classList.toggle('is-hot', k === i));
-    navWrapper.addEventListener('pointerdown', (e) => {
-      if (e.pointerType === 'mouse' && e.button !== 0) return;
-      const i = idxAt(e.clientX);
-      d = { id: e.pointerId, x0: e.clientX, lx: e.clientX, i, moved: false };
-      try { navWrapper.setPointerCapture(e.pointerId); } catch (_) {}
-      navSlider.classList.remove('is-offtab');
-      navSlider.classList.add('is-pressed');
-      navWrapper.classList.add('is-scrubbing');
-      setHot(i);
-      placeSlider(tabOpts[i]);
-    });
-    navWrapper.addEventListener('pointermove', (e) => {
-      if (!d || e.pointerId !== d.id) return;
-      if (!d.moved) {
-        if (Math.abs(e.clientX - d.x0) < 4) return;
-        d.moved = true;
-        navSlider.classList.add('is-dragging');
-      }
-      const r = navWrapper.getBoundingClientRect(), w = tabOpts[0].offsetWidth;
-      const x = Math.max(tabOpts[0].offsetLeft, Math.min(tabOpts[last].offsetLeft, e.clientX - r.left - navWrapper.clientLeft - w / 2));
-      navSlider.style.transform = `translate3d(${x}px,0,0)`;
-      // Hıza göre hafif uzama (sıvı cam hissi)
-      const v = Math.min(Math.abs(e.clientX - d.lx) / 40, 0.22);
-      navSlider.style.scale = `${1.12 + v} ${1.1 - v * 0.25}`;
-      d.lx = e.clientX;
-      const i = idxAt(e.clientX);
-      if (i !== d.i) { d.i = i; setHot(i); if (navigator.vibrate) navigator.vibrate(6); }
-    });
-    const endDrag = (e, cancel) => {
-      if (!d || e.pointerId !== d.id) return;
-      const i = d.i;
-      d = null;
-      navSlider.classList.remove('is-pressed', 'is-dragging');
-      navSlider.style.scale = '';
-      navWrapper.classList.remove('is-scrubbing');
-      setHot(-1);
-      if (cancel) { syncSlider(false); return; }
-      placeSlider(tabOpts[i]);
-      tabOpts[i].querySelector('.nav-input').click();
-    };
-    navWrapper.addEventListener('pointerup', (e) => endDrag(e, false));
-    navWrapper.addEventListener('pointercancel', (e) => endDrag(e, true));
-    setInterval(() => {
-      if (d) return;
-      const c = document.querySelector('.nav-input:checked');
-      if (c && tabOpts.indexOf(c.closest('.option')) !== navIdx) moveSlider(c);
-    }, 300);
-  }
-
-  // ---- "+" hızlı menü: pill panele dönüşür; basılı tutup kaydırarak veya dokunarak seçilir ----
-  const navPlus = document.getElementById('navPlus');
-  const navPanel = document.getElementById('navPanel');
-  const navGrid = document.getElementById('navGrid');
-  if (navDock && navPlus && navPanel && navGrid) {
-    const tiles = Array.from(navGrid.querySelectorAll('.nav-tile'));
-    let hotTile = null;
-    const measure = () => navDock.style.setProperty('--ph', navGrid.offsetHeight + 'px');
-    const setOpen = (on) => {
-      if (navDock.classList.contains('is-open') === on) return;
-      if (on) measure();
-      navDock.classList.toggle('is-open', on);
-      navPlus.setAttribute('aria-expanded', on ? 'true' : 'false');
-      if (!on) setHotTile(null);
-      if (navigator.vibrate) navigator.vibrate(on ? 10 : 5);
-    };
-    const setHotTile = (t) => {
-      if (t === hotTile) return;
-      hotTile = t;
-      tiles.forEach((x) => x.classList.toggle('is-hot', x === t));
-      if (t && navigator.vibrate) navigator.vibrate(5);
-    };
-    const tileAt = (x, y) => { const el = document.elementFromPoint(x, y); return el && el.closest ? el.closest('.nav-tile') : null; };
-    const activate = (t) => {
-      const id = t.dataset.page;
-      setOpen(false);
-      setTimeout(() => {
-        const input = document.querySelector(`.nav-input[value="${id}"]`);
-        if (input) { if (!input.checked) input.click(); else goToPage(id); }
-        else goToPage(id);
-      }, 180);
-    };
-    let pd = null;
-    navPlus.addEventListener('pointerdown', (e) => {
-      if (e.pointerType === 'mouse' && e.button !== 0) return;
-      pd = { id: e.pointerId, t: Date.now(), wasOpen: navDock.classList.contains('is-open'), moved: false, x: e.clientX, y: e.clientY };
-      try { navPlus.setPointerCapture(e.pointerId); } catch (_) {}
-      navPlus.classList.add('is-pressed');
-      if (!pd.wasOpen) setOpen(true);
-    });
-    navPlus.addEventListener('pointermove', (e) => {
-      if (!pd || e.pointerId !== pd.id || !navDock.classList.contains('is-open')) return;
-      if (Math.hypot(e.clientX - pd.x, e.clientY - pd.y) > 8) pd.moved = true;
-      if (pd.moved) setHotTile(tileAt(e.clientX, e.clientY));
-    });
-    const plusEnd = (e, cancel) => {
-      if (!pd || e.pointerId !== pd.id) return;
-      const held = Date.now() - pd.t > 380, t = hotTile, p = pd;
-      pd = null;
-      navPlus.classList.remove('is-pressed');
-      if (cancel) { setHotTile(null); return; }
-      if (t && (p.moved || held)) activate(t);
-      else if (p.wasOpen || (held && p.moved)) setOpen(false);
-      else setHotTile(null);
-    };
-    navPlus.addEventListener('pointerup', (e) => plusEnd(e, false));
-    navPlus.addEventListener('pointercancel', (e) => plusEnd(e, true));
-
-    // Panel içinde: basınca vurgula, parmağı kaydır, bırakınca seç.
-    let pp = null;
-    navPanel.addEventListener('pointerdown', (e) => {
-      pp = e.pointerId;
-      try { navPanel.setPointerCapture(e.pointerId); } catch (_) {}
-      setHotTile(tileAt(e.clientX, e.clientY));
-    });
-    navPanel.addEventListener('pointermove', (e) => { if (pp === e.pointerId) setHotTile(tileAt(e.clientX, e.clientY)); });
-    navPanel.addEventListener('pointerup', (e) => {
-      if (pp !== e.pointerId) return;
-      pp = null;
-      const t = tileAt(e.clientX, e.clientY);
-      if (t) activate(t); else setHotTile(null);
-    });
-    navPanel.addEventListener('pointercancel', () => { pp = null; setHotTile(null); });
-
-    document.addEventListener('pointerdown', (e) => {
-      if (navDock.classList.contains('is-open') && !navDock.contains(e.target)) setOpen(false);
-    }, true);
-    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') setOpen(false); });
-    if (window.ResizeObserver) new ResizeObserver(measure).observe(navGrid);
-    measure();
-  }
-  if (window.ResizeObserver && navWrapper) new ResizeObserver(() => syncSlider(true)).observe(navWrapper);
-  window.addEventListener('load', () => syncSlider(true));
-  syncSlider(true);
 
 </script>
 
