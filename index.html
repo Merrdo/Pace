@@ -41637,7 +41637,18 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
 .q9-line.is-on .q9-tg{background:var(--t)}.q9-line.is-on .q9-tg::after{transform:translateX(18px)}
 .q9-acts{display:flex;gap:10px;margin-top:6px}
 .q9-acts button{flex:1;padding:14px;border-radius:18px;background:var(--soft) !important;font-weight:800;font-size:.9rem}
-.q9-acts .del{color:#e5484d !important}
+.q9-acts .del{color:#e5484d !important;transition:background .35s var(--ease)}
+.q9-acts .del.is-armed{background:color-mix(in srgb,#e5484d 14%,transparent) !important}
+/* Dersi sil: pop-up yerine sayfanın içinde aşağı doğru kayarak açılan onay alanı */
+.q9-del{display:grid;grid-template-rows:0fr;opacity:0;margin-top:0;visibility:hidden;transition:grid-template-rows .55s var(--ease),opacity .35s ease,margin-top .55s var(--ease),visibility 0s linear .55s}
+.q9-del.is-open{grid-template-rows:1fr;opacity:1;margin-top:12px;visibility:visible;transition-delay:0s}
+.q9-del>div{overflow:hidden;min-height:0}
+.q9-del-in{padding:16px;border-radius:20px;background:color-mix(in srgb,#e5484d 10%,transparent);transform:translateY(-10px);transition:transform .55s var(--ease)}
+.q9-del.is-open .q9-del-in{transform:none}
+.q9-del p{margin:0 0 14px;font-weight:700;font-size:.9rem;line-height:1.45}
+.q9-del-btns{display:flex;gap:10px}
+.q9-del-btns button{flex:1;padding:14px;border-radius:16px;font-weight:800;font-size:.9rem;background:var(--soft) !important}
+.q9-del-btns .go{background:#e5484d !important;color:#fff !important}
 .q9-grid{display:flex;flex-wrap:wrap;gap:9px;margin-bottom:16px}
 .q9-grid button{display:inline-flex;align-items:center;gap:6px;padding:12px 17px;border-radius:99px;background:var(--soft) !important;font-weight:800;font-size:.95rem;transition:transform .35s var(--ease),background .4s,color .4s}
 .q9-grid button.is-on{background:var(--t) !important;color:var(--bg) !important}
@@ -58739,6 +58750,9 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
   // ---------- Alt sayfa (bottom sheet) ----------
   const ov = mk('<div class="q9-ov"><div class="q9-sh"><div class="q9-grab"><i></i></div><div class="q9-sc"></div></div></div>');
   document.body.appendChild(ov);
+  // Üst güvenli alan (theme-color): sayfa açılırken/kapanırken karartmayla eş zamanlı olarak aynı tona çekilir.
+  ov._themeTint = { r: 0, g: 0, b: 0, alpha: 0.38 };
+  if (typeof window.watchBackdropForThemeColor === 'function') window.watchBackdropForThemeColor(ov);
   const sh = ov.querySelector('.q9-sh'), sc = ov.querySelector('.q9-sc'), grab = ov.querySelector('.q9-grab');
   let onClose = null;
   const openSheet = (build, cb) => { sc.innerHTML = ''; build(sc); onClose = cb || null; ov.classList.add('is-open'); document.body.classList.add('has-modal-open'); };
@@ -58767,7 +58781,8 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
         '<div class="q9-step"><button type="button" aria-label="Azalt">−</button><input type="number" inputmode="numeric" min="0" max="999" aria-label="Bu günkü soru sayısı"><button type="button" aria-label="Arttır">+</button></div>' +
         '<div class="q9-chips"><button type="button" data-d="5">+5</button><button type="button" data-d="10">+10</button><button type="button" data-d="20">+20</button><button type="button" data-d="0">Sıfırla</button></div>' +
         '<div class="q9-sw"></div><button type="button" class="q9-line q9-pin"><span>Her gün listede göster</span><i class="q9-tg"></i></button>' +
-        '<div class="q9-acts"><button type="button" class="rm">Bugünden çıkar</button><button type="button" class="del">Dersi sil</button></div>';
+        '<div class="q9-acts"><button type="button" class="rm">Bugünden çıkar</button><button type="button" class="del">Dersi sil</button></div>' +
+        '<div class="q9-del" aria-hidden="true"><div><div class="q9-del-in"><p></p><div class="q9-del-btns"><button type="button" class="no">Vazgeç</button><button type="button" class="go">Evet, sil</button></div></div></div></div>';
       const nameIn = box.querySelector('.q9-name'), dl = box.querySelector('.dl'), num = box.querySelector('.q9-step input');
       const [bm, bp] = box.querySelectorAll('.q9-step button');
       nameIn.value = s.name; dl.style.background = s.color;
@@ -58799,12 +58814,30 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
       nameIn.addEventListener('blur', commitName);
       nameIn.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); nameIn.blur(); } });
       box.querySelector('.rm').addEventListener('click', () => {
-        if (cur() > 0) { if (window.paceNToast) window.paceNToast('Önce sayıyı sıfırla'); return; }
-        s.pinned = false; page9RemoveSubjectFromDay(s.name); closeSheet(); syncOld(); render(0, true);
+        const n = cur(), wasPinned = !!s.pinned, name = s.name, key = page9DateKey(page9SelectedDate), trk = page9Track;
+        s.pinned = false;
+        if (n > 0) page9SetCount(s.id, 0);
+        page9RemoveSubjectFromDay(name); closeSheet(); syncOld(); render(0, true);
+        if (window.paceNToast) window.paceNToast('"' + name + '" bugünden çıkarıldı', () => {
+          if (page9DateKey(page9SelectedDate) !== key || page9Track !== trk) return;
+          page9CommitSubjectByName(name);
+          const sub = page9State.subjects[page9Track].find((x) => x.id === s.id);
+          if (sub) { sub.pinned = wasPinned; if (n > 0) page9SetCount(sub.id, n); savePage9State(); }
+          syncOld(); render(0, true);
+        });
       });
-      box.querySelector('.del').addEventListener('click', () => {
-        const name = s.name; closeSheet();
-        setTimeout(() => openPage8Confirm(name, () => { page9DeleteSubjectCompletely(name); syncOld(); render(0, true); }), 280);
+      const delBox = box.querySelector('.q9-del'), delBtn = box.querySelector('.del');
+      const setDel = (on) => {
+        if (on) delBox.querySelector('p').textContent = '"' + s.name + '" dersi ve tüm soru kayıtları kalıcı olarak silinecek. Bu işlem geri alınamaz.';
+        delBox.classList.toggle('is-open', on); delBtn.classList.toggle('is-armed', on);
+        delBox.setAttribute('aria-hidden', on ? 'false' : 'true');
+        if (on) { vib(6); setTimeout(() => { try { delBox.scrollIntoView({ block: 'end', behavior: reduce ? 'auto' : 'smooth' }); } catch (x) { /* yok say */ } }, reduce ? 0 : 280); }
+      };
+      delBtn.addEventListener('click', () => setDel(!delBox.classList.contains('is-open')));
+      delBox.querySelector('.no').addEventListener('click', () => setDel(false));
+      delBox.querySelector('.go').addEventListener('click', () => {
+        const name = s.name; vib(10);
+        page9DeleteSubjectCompletely(name); closeSheet(); syncOld(); render(0, true);
       });
     }, () => render(0, true));
   }
@@ -59075,6 +59108,9 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
     '<div class="q9-demo"></div><h3></h3><p></p><div class="q9-tdots"></div>' +
     '<div class="q9-tb"><button type="button" class="prev">Geri</button><button type="button" class="next">İleri</button></div></div></div>');
   document.body.appendChild(tour);
+  // Üst güvenli alan (theme-color): turun karartmasıyla (rgba(8,8,10,.62)) eş zamanlı aynı tona çekilir.
+  tour._themeTint = { r: 8, g: 8, b: 10, alpha: 0.62 };
+  if (typeof window.watchBackdropForThemeColor === 'function') window.watchBackdropForThemeColor(tour);
   const tSpot = tour.querySelector('.q9-spot'), tTip = tour.querySelector('.q9-tip'), tDemo = tour.querySelector('.q9-demo');
   const tH = tour.querySelector('h3'), tP = tour.querySelector('p'), tCnt = tour.querySelector('.cnt');
   const tDots = tour.querySelector('.q9-tdots'), tPrev = tour.querySelector('.prev'), tNext = tour.querySelector('.next');
