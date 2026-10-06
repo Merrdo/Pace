@@ -39483,6 +39483,7 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
               <span class="settings-row-desc">Ana ekranın arka plan rengi</span>
             </div>
             <div class="settings-row-link-right">
+              <span class="settings-color-name" id="settingsThemeName"></span>
               <span class="settings-color-chip" id="settingsThemeChip" aria-hidden="true"></span>
               <svg class="settings-row-chevron" viewBox="0 0 24 24" width="16" height="16">
                 <path d="M9 4l8 8-8 8" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
@@ -39498,6 +39499,7 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
               <span class="settings-row-desc">Butonlara basınca, basılı tutunca veya aktif olunca çıkan renk</span>
             </div>
             <div class="settings-row-link-right">
+              <span class="settings-color-name" id="settingsAccentName"></span>
               <span class="settings-color-chip" id="settingsAccentChip" aria-hidden="true"></span>
               <svg class="settings-row-chevron" viewBox="0 0 24 24" width="16" height="16">
                 <path d="M9 4l8 8-8 8" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
@@ -42180,7 +42182,6 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
       </div>
       <button type="button" class="delete-btn wheel-color-close" id="wheelColorClose" aria-label="Kapat">×</button>
     </div>
-    <span class="wheel-color-orb" id="wheelColorOrb" aria-hidden="true"></span>
     <div class="wheel-color-grid" id="wheelColorGrid"></div>
   </div>
 </div>
@@ -44896,16 +44897,6 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
     wheelColorSubtitle.textContent = subtitle;
 
     wheelColorGrid.innerHTML = '';
-    const pcRing = document.createElement('span');
-    pcRing.className = 'pc-ring';
-    wheelColorGrid.appendChild(pcRing);
-    const pcMoveRing = (sw, animate) => {
-      pcRing.style.transition = animate ? '' : 'none';
-      pcRing.style.width = sw.offsetWidth + 'px';
-      pcRing.style.height = sw.offsetHeight + 'px';
-      pcRing.style.transform = `translate(${sw.offsetLeft}px, ${sw.offsetTop}px)`;
-      pcRing.classList.add('is-on');
-    };
     (palette || WHEEL_PALETTE).forEach((color, swatchIndex) => {
       const swatch = document.createElement('button');
       swatch.style.setProperty('--i', swatchIndex);
@@ -44931,19 +44922,14 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
         wheelColorGrid.querySelectorAll('.is-selected').forEach((el) => el.classList.remove('is-selected'));
         swatch.classList.add('is-selected', 'is-picked');
         if (wheelColorOrb) wheelColorOrb.style.background = color;
-        pcMoveRing(swatch, true);
         if (cb) cb(color);
         clearTimeout(colorPickerCloseTimer);
-        colorPickerCloseTimer = setTimeout(closeColorPicker, 480);
+        colorPickerCloseTimer = setTimeout(closeColorPicker, 340);
       });
 
       wheelColorGrid.appendChild(swatch);
     });
 
-    // Seçili renk varsa halka animasyonsuz oraya oturur (açılış sırasında zıplamasın).
-    const pcSel = wheelColorGrid.querySelector('.wheel-color-swatch.is-selected');
-    pcRing.classList.remove('is-on');
-    if (pcSel) requestAnimationFrame(() => pcMoveRing(pcSel, false));
     wheelColorBackdrop.classList.add('is-open');
   };
 
@@ -54418,6 +54404,7 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
 
   const syncSettingsThemeChip = (index) => {
     if (settingsThemeChip) settingsThemeChip.style.background = themes[index].gradient;
+    const tn = document.getElementById('settingsThemeName'); if (tn) tn.textContent = themes[index].name;
   };
   syncSettingsThemeChip(themeIndex);
 
@@ -54465,9 +54452,11 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
     const color = ACCENT_COLOR_PALETTE[index].color;
     document.documentElement.style.setProperty('--accent-color', color);
     if (settingsAccentChip) settingsAccentChip.style.background = color;
+    const an = document.getElementById('settingsAccentName'); if (an) an.textContent = ACCENT_COLOR_PALETTE[index].name;
     saveAppState({ accentColor: color });
   };
   if (settingsAccentChip) settingsAccentChip.style.background = ACCENT_COLOR_PALETTE[accentColorIndex].color;
+  { const an = document.getElementById('settingsAccentName'); if (an) an.textContent = ACCENT_COLOR_PALETTE[accentColorIndex].name; }
 
   if (settingsAccentLink) {
     settingsAccentLink.addEventListener('click', () => {
@@ -74906,37 +74895,34 @@ body .wheel-color-backdrop.is-open .wheel-color-card{transform:none;opacity:1}
 @media (prefers-reduced-motion:reduce){body .wheel-color-backdrop *{transition-duration:.01s !important;transition-delay:0s !important;animation:none !important}}
 </style>
 <style id="colorMinimalStyle">
-/* ===== Renk seçici + Ayarlar renk satırları: minimalist ===== */
-body .wheel-color-backdrop{--pc-ease:cubic-bezier(.22,1,.36,1);background:rgba(10,10,14,0);-webkit-backdrop-filter:blur(0);backdrop-filter:blur(0);transition:opacity .35s ease,background .5s ease,-webkit-backdrop-filter .5s ease,backdrop-filter .5s ease}
-body .wheel-color-backdrop.is-open{background:rgba(10,10,14,.32);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
-body .wheel-color-backdrop .wheel-color-card{max-width:400px;padding:12px 22px 26px;border-radius:30px;box-shadow:0 40px 80px -30px rgba(0,0,0,.5);transition:transform .7s var(--pc-ease)}
-body .wheel-color-backdrop .wheel-color-grip{width:30px;height:4px;margin-bottom:18px;opacity:.7}
-body .wheel-color-backdrop .wheel-color-header{align-items:flex-start;justify-content:space-between}
-body .wheel-color-backdrop .wheel-color-title{font-size:1.05rem;font-weight:700;letter-spacing:0}
-body .wheel-color-backdrop .wheel-color-subtitle{font-size:.8rem;font-weight:600;opacity:.45}
-body .wheel-color-backdrop .wheel-color-close{width:32px;height:32px;font-size:1.1rem;background:transparent;transition:background .25s ease,transform .3s var(--pc-ease)}
-body .wheel-color-backdrop .wheel-color-close:hover{background:color-mix(in srgb,var(--pc-t) 8%,transparent)}
-/* Canlı önizleme: seçilen renk burada akarak değişir */
-body .wheel-color-backdrop .wheel-color-orb{display:block;width:100%;height:58px;margin-top:18px;border-radius:20px;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--pc-t) 10%,transparent);transform:scaleX(.88);opacity:0;transform-origin:center;transition:background .6s var(--pc-ease),transform .8s var(--pc-ease) .1s,opacity .4s ease .1s}
-body .wheel-color-backdrop.is-open .wheel-color-orb{transform:none;opacity:1}
-body .wheel-color-backdrop .wheel-color-grid{position:relative;margin-top:22px;grid-template-columns:repeat(5,1fr);gap:18px 12px;justify-items:center}
-body .wheel-color-backdrop .wheel-color-swatch{width:84%;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--pc-t) 10%,transparent);opacity:0;transform:scale(.6);transition:opacity .2s ease,transform .3s var(--pc-ease)}
-body .wheel-color-backdrop.is-open .wheel-color-swatch{opacity:1;transform:none;transition:opacity .4s ease calc(var(--i,0) * 18ms + 180ms),transform .7s var(--pc-ease) calc(var(--i,0) * 18ms + 180ms)}
-body .wheel-color-backdrop.is-open .wheel-color-swatch:hover{transform:scale(1.08);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--pc-t) 10%,transparent);transition-delay:0s;transition-duration:.3s}
-body .wheel-color-backdrop.is-open .wheel-color-swatch:active{transform:scale(.9)}
-body .wheel-color-backdrop .wheel-color-swatch.is-selected{box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--pc-t) 10%,transparent)}
+/* ===== Renk seçici + Ayarlar renk satırları: sade, premium, sakin hareket ===== */
+body .wheel-color-backdrop{--pc-ease:cubic-bezier(.32,.72,0,1);align-items:center;justify-content:center;padding:24px;background:rgba(0,0,0,0);-webkit-backdrop-filter:none;backdrop-filter:none;transition:opacity .3s ease,background .3s ease}
+body .wheel-color-backdrop.is-open{background:rgba(0,0,0,.36);-webkit-backdrop-filter:none;backdrop-filter:none}
+body .wheel-color-backdrop .wheel-color-card{width:100%;max-width:340px;margin:0;padding:22px 22px 26px;border:0;border-radius:22px;background:var(--pc-bg);box-shadow:0 0 0 1px color-mix(in srgb,var(--pc-t) 8%,transparent),0 2px 6px rgba(0,0,0,.06),0 28px 60px -18px rgba(0,0,0,.38);opacity:0;transform:translateY(10px) scale(.985);transition:transform .45s var(--pc-ease),opacity .3s ease}
+body .wheel-color-backdrop.is-open .wheel-color-card{opacity:1;transform:none}
+body .wheel-color-backdrop .wheel-color-grip,body .wheel-color-backdrop .wheel-color-orb{display:none}
+body .wheel-color-backdrop .wheel-color-header{align-items:flex-start;justify-content:space-between;gap:12px;margin:0}
+body .wheel-color-backdrop .wheel-color-heading{gap:3px}
+body .wheel-color-backdrop .wheel-color-title{font-size:.98rem;font-weight:600;letter-spacing:.005em;line-height:1.2}
+body .wheel-color-backdrop .wheel-color-subtitle{font-size:.78rem;font-weight:500;opacity:.5}
+body .wheel-color-backdrop .wheel-color-close{width:28px;height:28px;margin:-4px -6px 0 0;font-size:1.05rem;opacity:.5;background:transparent;transition:opacity .25s ease,background .25s ease}
+body .wheel-color-backdrop .wheel-color-close:hover{opacity:.9;background:color-mix(in srgb,var(--pc-t) 7%,transparent)}
+body .wheel-color-backdrop .wheel-color-close:active{transform:none;background:color-mix(in srgb,var(--pc-t) 12%,transparent)}
+body .wheel-color-backdrop .wheel-color-grid{margin-top:22px;grid-template-columns:repeat(5,1fr);gap:18px 0;justify-items:center;opacity:0;transform:translateY(6px);transition:opacity .3s ease,transform .3s var(--pc-ease)}
+body .wheel-color-backdrop.is-open .wheel-color-grid{opacity:1;transform:none;transition:opacity .4s ease .1s,transform .5s var(--pc-ease) .1s}
+body .wheel-color-backdrop .wheel-color-swatch,body .wheel-color-backdrop.is-open .wheel-color-swatch{width:2.4rem;height:2.4rem;aspect-ratio:1;opacity:1;transform:none;box-shadow:inset 0 0 0 1px rgba(0,0,0,.1);transition:box-shadow .3s ease,transform .25s var(--pc-ease)}
+body .wheel-color-backdrop.is-open .wheel-color-swatch:hover{transform:scale(1.07);box-shadow:inset 0 0 0 1px rgba(0,0,0,.1)}
+body .wheel-color-backdrop.is-open .wheel-color-swatch:active{transform:scale(.96);transition-delay:0s}
+body .wheel-color-backdrop .wheel-color-swatch.is-selected,body .wheel-color-backdrop.is-open .wheel-color-swatch.is-selected:hover{box-shadow:inset 0 0 0 1px rgba(0,0,0,.1),0 0 0 3px var(--pc-bg),0 0 0 4.5px var(--pc-t)}
 body .wheel-color-backdrop .wheel-color-swatch.is-picked{animation:none}
 body .wheel-color-backdrop .wheel-color-swatch-check{display:none}
-/* Tek halka: seçimin üstünde süzülür */
-.pc-ring{position:absolute;left:0;top:0;margin:0;pointer-events:none;box-sizing:content-box;border-radius:50%;border:1.5px solid var(--pc-t);padding:4px;margin:-5.5px 0 0 -5.5px;opacity:0;transition:transform .55s var(--pc-ease),width .3s ease,height .3s ease,opacity .25s ease}
-.pc-ring.is-on{opacity:.9}
-/* Ayarlar: renk satırları sadeleşti */
-body .settings-row-link .settings-color-chip{width:1.5rem;height:1.5rem;border:0;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--theme-text,#121212) 14%,transparent),0 0 0 3px var(--theme-bg,transparent),0 0 0 4px color-mix(in srgb,var(--theme-text,#121212) 16%,transparent);transition:transform .45s var(--pc-ease,cubic-bezier(.22,1,.36,1)),background .5s ease}
-body .settings-row-link:active .settings-color-chip{transform:scale(.82)}
-body .settings-row-link .settings-row-chevron{opacity:.3;transition:transform .4s cubic-bezier(.22,1,.36,1),opacity .3s ease}
-body .settings-row-link .settings-row-chevron path{stroke-width:1.8}
-body .settings-row-link:hover .settings-row-chevron{transform:translateX(3px);opacity:.55}
-@media (prefers-reduced-motion:reduce){body .wheel-color-backdrop *,.pc-ring{transition-duration:.01s !important;transition-delay:0s !important}}
+.wheel-color-grid.is-locked .wheel-color-swatch:not(.is-picked){opacity:.4}
+/* Ayarlar: rengin adı + sade rozet, ok yok */
+body #settingsThemeLink .settings-row-chevron,body #settingsAccentLink .settings-row-chevron{display:none}
+body .settings-row-link .settings-row-link-right{gap:.65rem;align-items:center}
+body .settings-color-name{font-size:.82rem;font-weight:500;opacity:.5;white-space:nowrap}
+body .settings-row-link .settings-color-chip{width:1.4rem;height:1.4rem;border:0;box-shadow:inset 0 0 0 1px rgba(128,128,128,.32);transition:background .4s ease}
+@media (prefers-reduced-motion:reduce){body .wheel-color-backdrop *{transition-duration:.01s !important;transition-delay:0s !important}}
 </style>
 <style id="analyticsRedesignStyle">
 /* ===== Analizlerim (telefon): Denemelerim diliyle — tek tonlu, yumuşak kartlar, kademeli giriş ===== */
