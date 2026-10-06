@@ -39483,7 +39483,6 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
               <span class="settings-row-desc">Ana ekranın arka plan rengi</span>
             </div>
             <div class="settings-row-link-right">
-              <span class="settings-color-name" id="settingsThemeName"></span>
               <span class="settings-color-chip" id="settingsThemeChip" aria-hidden="true"></span>
               <svg class="settings-row-chevron" viewBox="0 0 24 24" width="16" height="16">
                 <path d="M9 4l8 8-8 8" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
@@ -39499,7 +39498,6 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
               <span class="settings-row-desc">Butonlara basınca, basılı tutunca veya aktif olunca çıkan renk</span>
             </div>
             <div class="settings-row-link-right">
-              <span class="settings-color-name" id="settingsAccentName"></span>
               <span class="settings-color-chip" id="settingsAccentChip" aria-hidden="true"></span>
               <svg class="settings-row-chevron" viewBox="0 0 24 24" width="16" height="16">
                 <path d="M9 4l8 8-8 8" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
@@ -42176,6 +42174,7 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
   <div class="wheel-color-card" id="wheelColorCard" role="dialog" aria-modal="true" aria-labelledby="wheelColorTitle">
     <span class="wheel-color-grip" aria-hidden="true"></span>
     <div class="wheel-color-header">
+      <span class="wheel-color-orb" id="wheelColorOrb" aria-hidden="true"></span>
       <div class="wheel-color-heading">
         <span class="wheel-color-title" id="wheelColorTitle">Renk seç</span>
         <span class="wheel-color-subtitle" id="wheelColorSubtitle"></span>
@@ -44924,7 +44923,7 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
         if (wheelColorOrb) wheelColorOrb.style.background = color;
         if (cb) cb(color);
         clearTimeout(colorPickerCloseTimer);
-        colorPickerCloseTimer = setTimeout(closeColorPicker, 340);
+        colorPickerCloseTimer = setTimeout(closeColorPicker, 300);
       });
 
       wheelColorGrid.appendChild(swatch);
@@ -54404,7 +54403,6 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
 
   const syncSettingsThemeChip = (index) => {
     if (settingsThemeChip) settingsThemeChip.style.background = themes[index].gradient;
-    const tn = document.getElementById('settingsThemeName'); if (tn) tn.textContent = themes[index].name;
   };
   syncSettingsThemeChip(themeIndex);
 
@@ -54452,11 +54450,9 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
     const color = ACCENT_COLOR_PALETTE[index].color;
     document.documentElement.style.setProperty('--accent-color', color);
     if (settingsAccentChip) settingsAccentChip.style.background = color;
-    const an = document.getElementById('settingsAccentName'); if (an) an.textContent = ACCENT_COLOR_PALETTE[index].name;
     saveAppState({ accentColor: color });
   };
   if (settingsAccentChip) settingsAccentChip.style.background = ACCENT_COLOR_PALETTE[accentColorIndex].color;
-  { const an = document.getElementById('settingsAccentName'); if (an) an.textContent = ACCENT_COLOR_PALETTE[accentColorIndex].name; }
 
   if (settingsAccentLink) {
     settingsAccentLink.addEventListener('click', () => {
@@ -74893,36 +74889,6 @@ body .wheel-color-backdrop.is-open .wheel-color-card{transform:none;opacity:1}
 .wheel-color-grip{display:none}
 }
 @media (prefers-reduced-motion:reduce){body .wheel-color-backdrop *{transition-duration:.01s !important;transition-delay:0s !important;animation:none !important}}
-</style>
-<style id="colorMinimalStyle">
-/* ===== Renk seçici + Ayarlar renk satırları: sade, premium, sakin hareket ===== */
-body .wheel-color-backdrop{--pc-ease:cubic-bezier(.32,.72,0,1);align-items:center;justify-content:center;padding:24px;background:rgba(0,0,0,0);-webkit-backdrop-filter:none;backdrop-filter:none;transition:opacity .3s ease,background .3s ease}
-body .wheel-color-backdrop.is-open{background:rgba(0,0,0,.36);-webkit-backdrop-filter:none;backdrop-filter:none}
-body .wheel-color-backdrop .wheel-color-card{width:100%;max-width:340px;margin:0;padding:22px 22px 26px;border:0;border-radius:22px;background:var(--pc-bg);box-shadow:0 0 0 1px color-mix(in srgb,var(--pc-t) 8%,transparent),0 2px 6px rgba(0,0,0,.06),0 28px 60px -18px rgba(0,0,0,.38);opacity:0;transform:translateY(10px) scale(.985);transition:transform .45s var(--pc-ease),opacity .3s ease}
-body .wheel-color-backdrop.is-open .wheel-color-card{opacity:1;transform:none}
-body .wheel-color-backdrop .wheel-color-grip,body .wheel-color-backdrop .wheel-color-orb{display:none}
-body .wheel-color-backdrop .wheel-color-header{align-items:flex-start;justify-content:space-between;gap:12px;margin:0}
-body .wheel-color-backdrop .wheel-color-heading{gap:3px}
-body .wheel-color-backdrop .wheel-color-title{font-size:.98rem;font-weight:600;letter-spacing:.005em;line-height:1.2}
-body .wheel-color-backdrop .wheel-color-subtitle{font-size:.78rem;font-weight:500;opacity:.5}
-body .wheel-color-backdrop .wheel-color-close{width:28px;height:28px;margin:-4px -6px 0 0;font-size:1.05rem;opacity:.5;background:transparent;transition:opacity .25s ease,background .25s ease}
-body .wheel-color-backdrop .wheel-color-close:hover{opacity:.9;background:color-mix(in srgb,var(--pc-t) 7%,transparent)}
-body .wheel-color-backdrop .wheel-color-close:active{transform:none;background:color-mix(in srgb,var(--pc-t) 12%,transparent)}
-body .wheel-color-backdrop .wheel-color-grid{margin-top:22px;grid-template-columns:repeat(5,1fr);gap:18px 0;justify-items:center;opacity:0;transform:translateY(6px);transition:opacity .3s ease,transform .3s var(--pc-ease)}
-body .wheel-color-backdrop.is-open .wheel-color-grid{opacity:1;transform:none;transition:opacity .4s ease .1s,transform .5s var(--pc-ease) .1s}
-body .wheel-color-backdrop .wheel-color-swatch,body .wheel-color-backdrop.is-open .wheel-color-swatch{width:2.4rem;height:2.4rem;aspect-ratio:1;opacity:1;transform:none;box-shadow:inset 0 0 0 1px rgba(0,0,0,.1);transition:box-shadow .3s ease,transform .25s var(--pc-ease)}
-body .wheel-color-backdrop.is-open .wheel-color-swatch:hover{transform:scale(1.07);box-shadow:inset 0 0 0 1px rgba(0,0,0,.1)}
-body .wheel-color-backdrop.is-open .wheel-color-swatch:active{transform:scale(.96);transition-delay:0s}
-body .wheel-color-backdrop .wheel-color-swatch.is-selected,body .wheel-color-backdrop.is-open .wheel-color-swatch.is-selected:hover{box-shadow:inset 0 0 0 1px rgba(0,0,0,.1),0 0 0 3px var(--pc-bg),0 0 0 4.5px var(--pc-t)}
-body .wheel-color-backdrop .wheel-color-swatch.is-picked{animation:none}
-body .wheel-color-backdrop .wheel-color-swatch-check{display:none}
-.wheel-color-grid.is-locked .wheel-color-swatch:not(.is-picked){opacity:.4}
-/* Ayarlar: rengin adı + sade rozet, ok yok */
-body #settingsThemeLink .settings-row-chevron,body #settingsAccentLink .settings-row-chevron{display:none}
-body .settings-row-link .settings-row-link-right{gap:.65rem;align-items:center}
-body .settings-color-name{font-size:.82rem;font-weight:500;opacity:.5;white-space:nowrap}
-body .settings-row-link .settings-color-chip{width:1.4rem;height:1.4rem;border:0;box-shadow:inset 0 0 0 1px rgba(128,128,128,.32);transition:background .4s ease}
-@media (prefers-reduced-motion:reduce){body .wheel-color-backdrop *{transition-duration:.01s !important;transition-delay:0s !important}}
 </style>
 <style id="analyticsRedesignStyle">
 /* ===== Analizlerim (telefon): Denemelerim diliyle — tek tonlu, yumuşak kartlar, kademeli giriş ===== */
