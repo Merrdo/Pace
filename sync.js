@@ -18,7 +18,7 @@
   var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, { auth: { persistSession: true, autoRefreshToken: true }, global: { fetch: function (u, o) { o = o || {}; o.cache = 'no-store'; return fetch(u, o); } } });
   function nc() { return '_nc' + Date.now() + Math.random().toString(36).slice(2, 6); }   // her okuma isteği benzersiz: eski önbellek yanıtı dönmesin
   var authState = 'unknown', email = '', syncState = 'idle', lastOk = 0;
-  var uid = null, busy = false, again = false, pushT = null, channel = null;
+  var uid = null, busy = false, again = false, pushT = null, channel = null, wiping = false;   // wiping: sıfırlama/hesap silme sürerken eşitleme durur
   var status = 'Giriş yapılmadı', statusErr = false, modalOpen = false;
   // E-postadaki şifre sıfırlama bağlantısıyla mı açıldık? (Supabase adres çubuğundaki #...type=recovery'yi okur)
   var recMode = /type=recovery/.test(location.hash), holdSync = false, recKnown = false, linkErr = /error_code=|error=access_denied/.test(location.hash), emailLink = /type=email_change/.test(location.hash), pendingEmail = '', isAdmin = false;
@@ -198,8 +198,57 @@
     return got > 0;
   }
 
+  // ---------- buluttaki veriyi silme (Tüm verileri sıfırla + Hesabı sil) ----------
+  // Depodaki fotoğrafları siler: images/<uid>/ altındaki tüm dosyalar.
+  async function delCloudImages(id) {
+    for (var n = 0; n < 30; n++) {
+      var l = await sb.storage.from('images').list(id, { limit: 100 });
+      if (l.error) throw l.error;
+      var files = (l.data || []).filter(function (f) { return f && f.name && f.name.charAt(0) !== '.'; }).map(function (f) { return id + '/' + f.name; });
+      if (!files.length) break;
+      var d = await sb.storage.from('images').remove(files);
+      if (d.error) throw d.error;
+    }
+  }
+  // sync_records satırlarını siler. Silme izni (RLS) yoksa hata vermeden 0 satır siler; bu yüzden kalan satır
+  // varsa "silindi" işaretiyle (mezar taşı) boşaltılır, böylece veri başka cihaza/yeniden girişe geri dönmez.
+  async function delCloudRows(id) {
+    var d = await sb.from('sync_records').delete().eq('user_id', id);
+    if (d.error) throw d.error;
+    var left = await sb.from('sync_records').select('kind,id').eq('user_id', id).neq('id', nc());
+    if (left.error) throw left.error;
+    if ((left.data || []).length) {
+      var now = new Date().toISOString(), dev = getOrCreateDeviceId();
+      var rows = left.data.map(function (x) { return { user_id: id, kind: x.kind, id: x.id, data: { v: null }, updated_at: now, deleted: true, device_id: dev }; });
+      var u = await sb.from('sync_records').upsert(rows, { onConflict: 'user_id,kind,id' });
+      if (u.error) throw u.error;
+    }
+  }
+  // Ayarlar > "Tüm verileri sıfırla" bunu çağırır. Başarılıysa { ok:true } döner ve index.html yerel veriyi siler.
+  // Başarısızsa YEREL VERİ SİLİNMEZ ({ ok:false, msg }): aksi halde bulut veriyi geri yüklerdi.
+  async function wipeCloud() {
+    if (!uid) {
+      if (meta.uid) return { ok: false, msg: 'Buluttaki verin de silinsin diye önce hesabına giriş yap.' };
+      return { ok: true };   // hesapsız cihaz: yalnızca yerel veri var
+    }
+    var id = uid;
+    wiping = true; clearTimeout(pushT); pushT = null; clearTimeout(scanT); scanT = 0;
+    try {
+      for (var w = 0; busy && w < 100; w++) await new Promise(function (r) { setTimeout(r, 100); });   // süren eşitleme bitsin
+      await delCloudImages(id);
+      await delCloudRows(id);
+    } catch (e) {
+      console.warn('Bulut verisi silinemedi:', e);
+      wiping = false; schedule(1500);
+      return { ok: false, msg: 'Buluttaki veri silinemedi, hiçbir şey silinmedi. İnternet bağlantını kontrol edip tekrar dene.' };
+    }
+    meta = newMeta(id); meta.imgUp = {}; saveMeta();   // eşitleme kaydı sıfırlanır; cihaz hesaba bağlı kalır
+    try { sessionStorage.removeItem('pace_sync_rl'); } catch (e2) {}
+    return { ok: true };   // wiping açık kalır: sayfa hemen yenilenecek
+  }
+
   async function syncNow(startup) {
-    if (!uid) return;
+    if (!uid || wiping) return;
     if (busy) { again = true; return; }
     busy = true; syncState = 'busy'; stat = { down: 0, up: 0 }; setStatus('Eşitleniyor…');
     try {
@@ -1236,33 +1285,35 @@ body.is-qhavuz-test-open .pf-side{opacity:.35;pointer-events:none}}
   // sonra hesap silinir; kayıtlar (sync_records) hesapla birlikte zincirleme gider.
   async function delFinish() {
     var P = pwSt, id = uid; if (!P || !id) return;
-    if (!(await pcConfirm({ tone: 'danger', icon: 'warn', title: 'Hesap silinsin mi?', msg: 'Hesabın ve buluttaki tüm verilerin kalıcı olarak silinecek. Bu işlem geri alınamaz.', ok: 'Hesabı sil', cancel: 'Vazgeç' }))) return;
+    if (!(await pcConfirm({ tone: 'danger', icon: 'warn', title: 'Hesap silinsin mi?', msg: 'Hesabın, buluttaki tüm verilerin ve bu cihazdaki uygulama verisi kalıcı olarak silinecek. Bu işlem geri alınamaz.', ok: 'Hesabı sil', cancel: 'Vazgeç' }))) return;
     pwBusy(true); pwMsg('Hesap siliniyor…', 'info');
+    wiping = true; clearTimeout(pushT); pushT = null; clearTimeout(scanT); scanT = 0;
     try {
-      for (var n = 0; n < 30; n++) {
-        var l = await sb.storage.from('images').list(id, { limit: 100 });
-        if (l.error) throw l.error;
-        var files = (l.data || []).filter(function (f) { return f && f.name && f.name.charAt(0) !== '.'; }).map(function (f) { return id + '/' + f.name; });
-        if (!files.length) break;
-        var d = await sb.storage.from('images').remove(files);
-        if (d.error) throw d.error;
-      }
+      for (var w = 0; busy && w < 100; w++) await new Promise(function (r) { setTimeout(r, 100); });
+      await delCloudImages(id);
+      try { await delCloudRows(id); } catch (eRows) { console.warn('Kayıtlar istemciden silinemedi (sunucu işlevi silecek):', eRows); }
       var r = await sb.rpc('delete_my_account');
       if (r.error) throw r.error;
     } catch (err) {
+      wiping = false;
       pwBusy(false);
       var low = ((err && (err.message || '')) + ' ' + ((err && err.code) || '')).toLowerCase();
       if (pwAlive()) pwErr(low.indexOf('delete_my_account') > -1 || low.indexOf('pgrst202') > -1 ? 'Sunucu tarafı hazır değil (silme işlevi kurulmamış).' : trErr(err));
       return;
     }
-    clearTimeout(pushT); pushT = null;
-    uid = null; isAdmin = false; if (channel) { sb.removeChannel(channel); channel = null; }
-    try { localStorage.removeItem(META_KEY); } catch (e) {}
+    // Hesap sunucuda silindi. Cihazdaki veri de silinir; aksi halde aynı e-postayla yeniden kayıt olunca
+    // bu yerel veri yeni hesaba yüklenir ("silinen veri geri geldi").
+    if (channel) { sb.removeChannel(channel); channel = null; }
+    uid = null; isAdmin = false;
     try { var dl = savedList().filter(function (x) { return x.email !== email; }); putSaved(dl); } catch (e3) {}
-    meta = newMeta(null);   // bu cihaz hiçbir hesaba bağlı değil; cihazdaki uygulama verisi yerinde kalır
+    try { if (window.wipeLocalAppData) await window.wipeLocalAppData(); else { localStorage.removeItem(APP_STORAGE_KEY); localStorage.removeItem(BACKUP_KEY); localStorage.removeItem(BACKUP_KEY + '_son'); } } catch (e4) {}
+    try { localStorage.removeItem(META_KEY); } catch (e) {}
+    meta = newMeta(null);   // saveMeta ÇAĞRILMAZ: eşitleme kaydı geri yazılmasın
     try { await sb.auth.signOut({ scope: 'local' }); } catch (e2) {}
+    try { localStorage.removeItem(META_KEY); sessionStorage.removeItem('pace_sync_rl'); } catch (e5) {}
     authState = 'out'; setStatus('Giriş yapılmadı', false);
-    closeProfile(); ui(); pcToast('Hesabın silindi.');
+    closeProfile(); ui(); pcToast('Hesabın ve verilerin silindi.');
+    setTimeout(function () { location.reload(); }, 900);
   }
 
   // ---------- Ayarlar > Hesabım ----------
@@ -1943,7 +1994,7 @@ img.pa-mark{display:block;object-fit:cover;border-radius:23%;background:none;box
   mountSide();
   mountUpdate();
 
-  window.PaceSync = { syncNow: function () { return syncNow(false); } };
+  window.PaceSync = { syncNow: function () { return syncNow(false); }, wipeCloud: wipeCloud };
 })();
 
 /* Bağlantı bildirimi (sürüm 29): internet kesilince kırmızı, gelince yeşil Wi-Fi simgeli animasyonlu bildirim.

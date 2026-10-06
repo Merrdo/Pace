@@ -40838,7 +40838,7 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
           <div class="settings-row">
             <div class="settings-row-text">
               <span class="settings-row-title">Tüm verileri sıfırla</span>
-              <span class="settings-row-desc">Görevler, tema ve kayıtlar silinir. Önce yedek almanı öneririz.</span>
+              <span class="settings-row-desc">Görevler, tema ve kayıtlar bu cihazdan ve (giriş yaptıysan) buluttan silinir. Önce yedek almanı öneririz.</span>
             </div>
             <button type="button" class="settings-danger-btn" id="settingsResetBtn">Sıfırla</button>
           </div>
@@ -40855,7 +40855,7 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
   <div class="settings-confirm-backdrop" id="settingsConfirmBackdrop">
     <div class="settings-confirm-card">
       <span class="settings-confirm-title">Emin misin?</span>
-      <span class="settings-confirm-desc">Görevler, seçili tema, çark seçenekleri ve kronometre kayıtları kalıcı olarak silinecek.</span>
+      <span class="settings-confirm-desc">Görevler, seçili tema, çark seçenekleri ve kronometre kayıtları kalıcı olarak silinecek. Hesabına giriş yaptıysan buluttaki verilerin de silinir.</span>
       <div class="settings-confirm-actions">
         <button type="button" class="settings-confirm-cancel" id="settingsConfirmCancel">Vazgeç</button>
         <button type="button" class="settings-confirm-confirm" id="settingsConfirmConfirm">Evet, sıfırla</button>
@@ -45064,6 +45064,10 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
   // sessizce kaybolabiliyordu; artık kullanıcı görünür bir uyarı alıyor
   // ve fonksiyon başarı/başarısızlık bilgisini döndürüyor.
   const saveAppState = (patch) => {
+    // Sıfırlama / hesap silme sürerken hiçbir kayıt yazılmaz: sayfa kapanırken çalışan
+    // "pagehide" kayıtları (kronometre, soru havuzu vb.) bellekteki eski veriyi geri yazıp
+    // silinen veriyi diriltiyordu.
+    if (window.__appWiping) return false;
     try {
       Object.assign(APP_STATE, patch);
       APP_STATE.updatedAt = new Date().toISOString();
@@ -45076,6 +45080,30 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
       showAppToast('Kaydedilemedi: depolama alanı dolu olabilir. Yer açmak için bir yedek alıp bazı görselleri silmeyi deneyin.', 'error');
       return false;
     }
+  };
+
+  // Bu cihazdaki TÜM uygulama verisini siler (Ayarlar > Tüm verileri sıfırla ve Hesabı sil kullanır).
+  // Bellekteki APP_STATE de boşaltılır ve kayıt kilitlenir; sayfa yenilenene kadar hiçbir şey geri yazılmaz.
+  // Bulut eşitleme kaydı (pace_sync_meta_v1) burada DEĞİL, sync.js tarafında yönetilir.
+  window.wipeLocalAppData = () => {
+    window.__appWiping = true;
+    try { Object.keys(APP_STATE).forEach((k) => { delete APP_STATE[k]; }); } catch (e) { /* yok say */ }
+    ['nt_focus', 'pace_pre_sync_backup_v1', 'pace_pre_sync_backup_v1_son', APP_STORAGE_KEY].forEach((k) => {
+      try { localStorage.removeItem(k); } catch (e) { /* yok say */ }
+    });
+    try { sessionStorage.removeItem('pace_sync_rl'); } catch (e) { /* yok say */ }
+    // IndexedDB: Notlarım (gundelik-notes) ve görseller (takvimim_images_v1)
+    const dropDb = (name) => new Promise((resolve) => {
+      let done = false;
+      const fin = () => { if (!done) { done = true; resolve(); } };
+      try {
+        const req = indexedDB.deleteDatabase(name);
+        req.onsuccess = fin; req.onerror = fin;
+        req.onblocked = fin;   // açık bağlantılar sayfa yenilenince kapanır, silme o zaman tamamlanır
+        setTimeout(fin, 1500);
+      } catch (e) { fin(); }
+    });
+    return Promise.all([dropDb('gundelik-notes'), dropDb('takvimim_images_v1')]);
   };
 </script>
 
@@ -55739,23 +55767,31 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
     });
   }
   if (settingsConfirmConfirm) {
-    settingsConfirmConfirm.addEventListener('click', () => {
+    settingsConfirmConfirm.addEventListener('click', async () => {
+      if (settingsConfirmConfirm.disabled) return;
+      const label = settingsConfirmConfirm.textContent;
+      settingsConfirmConfirm.disabled = true;
+      settingsConfirmConfirm.textContent = 'Siliniyor…';
       try {
-        localStorage.removeItem(APP_STORAGE_KEY);
-        localStorage.removeItem('nt_focus');
+        // 1) Hesaba bağlıysa önce buluttaki veri silinir. Başarısız olursa yerel veriye DOKUNULMAZ:
+        //    aksi halde eşitleme bulut kopyasını geri yüklerdi ("silmiyor" hatası).
+        const sync = window.PaceSync;
+        if (sync && typeof sync.wipeCloud === 'function') {
+          const r = await sync.wipeCloud();
+          if (!r || !r.ok) {
+            showAppToast((r && r.msg) || 'Buluttaki veri silinemedi, hiçbir şey silinmedi.', 'error');
+            settingsConfirmConfirm.disabled = false;
+            settingsConfirmConfirm.textContent = label;
+            closeSettingsConfirm();
+            return;
+          }
+        }
+        // 2) Bu cihazdaki veri (APP_STATE, Notlarım, görseller, yedekler) silinir.
+        await window.wipeLocalAppData();
       } catch (err) {
         console.warn('Uygulama verisi silinemedi:', err);
       }
-      // Notlarım verisi (IndexedDB: notlar, klasörler, ekler) de silinir.
-      let reloaded = false;
-      const finish = () => { if (reloaded) return; reloaded = true; location.reload(); };
-      try {
-        const req = indexedDB.deleteDatabase('gundelik-notes');
-        req.onsuccess = finish; req.onerror = finish; req.onblocked = finish;
-        setTimeout(finish, 1500);
-      } catch (err) {
-        finish();
-      }
+      location.reload();
     });
   }
 
@@ -75452,6 +75488,6 @@ body .wheel-color-backdrop.is-open .wheel-color-card{transform:none;opacity:1}
 }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" crossorigin="anonymous"></script>
-<script src="sync.js?v=38"></script>
+<script src="sync.js?v=39"></script>
 </body>
 </html>
