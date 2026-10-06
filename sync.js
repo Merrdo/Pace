@@ -198,6 +198,48 @@
     return got > 0;
   }
 
+  // ---------- kullanılmayan görselleri depodan temizleme ----------
+  // Uygulamadan silinen (APP_STATE'te artık hiçbir yerde referansı kalmayan) görseller images/<uid>/ altında birikmesin.
+  // Güvenlik: bir dosya ilk kez "kullanılmıyor" görüldüğünde yalnızca işaretlenir; IMG_GRACE süre sonra hâlâ kullanılmıyorsa
+  // silinir. Böylece "geri al" ve başka cihazın henüz kaydı gelmemiş yeni görseli yanlışlıkla silinmez.
+  var IMG_GRACE = 10 * 60 * 1000, gcLast = 0, gcTimer = 0;
+  async function cleanCloudImages() {
+    if (!uid || wiping || !meta.linked) return;
+    if (Date.now() - gcLast < 60000) return;                 // art arda eşitlemelerde depoyu sürekli listeleme
+    gcLast = Date.now();
+    var used = {}; imageRefs().forEach(function (id) { used[id] = 1; });
+    var names = [], off = 0;
+    for (var n = 0; n < 50; n++) {                           // en fazla 5000 dosya
+      var l = await sb.storage.from('images').list(uid, { limit: 100, offset: off });
+      if (l.error) throw l.error;
+      var page = (l.data || []).filter(function (f) { return f && f.name && f.name.charAt(0) !== '.'; });
+      page.forEach(function (f) { names.push(f.name); });
+      if ((l.data || []).length < 100) break;
+      off += 100;
+    }
+    meta.imgGone = meta.imgGone || {};
+    var now = Date.now(), del = [], waiting = false, dirty = false;
+    names.forEach(function (name) {
+      if (used[name]) { if (meta.imgGone[name]) { delete meta.imgGone[name]; dirty = true; } return; }   // tekrar kullanılıyor
+      if (!meta.imgGone[name]) { meta.imgGone[name] = now; dirty = true; waiting = true; return; }       // ilk kez görüldü
+      if (now - meta.imgGone[name] >= IMG_GRACE) del.push(name); else waiting = true;
+    });
+    Object.keys(meta.imgGone).forEach(function (k) { if (names.indexOf(k) < 0) { delete meta.imgGone[k]; dirty = true; } });
+    if (del.length) {
+      for (var i = 0; i < del.length; i += 100) {
+        var d = await sb.storage.from('images').remove(del.slice(i, i + 100).map(function (x) { return uid + '/' + x; }));
+        if (d.error) throw d.error;
+      }
+      del.forEach(function (x) { delete meta.imgGone[x]; delete meta.imgUp[x]; });
+      dirty = true;
+    }
+    if (dirty) saveMeta();
+    if (waiting) {                                           // bekleme süresi dolunca bir kez daha dene
+      clearTimeout(gcTimer);
+      gcTimer = setTimeout(function () { gcLast = 0; schedule(500); }, IMG_GRACE + 5000);
+    }
+  }
+
   // ---------- buluttaki veriyi silme (Tüm verileri sıfırla + Hesabı sil) ----------
   // Depodaki fotoğrafları siler: images/<uid>/ altındaki tüm dosyalar.
   async function delCloudImages(id) {
@@ -258,6 +300,7 @@
       await push();
       meta.linked = true; saveMeta();
       var imgs = await downloadImages();
+      try { await cleanCloudImages(); } catch (ge) { console.warn('Görsel temizliği atlandı:', ge); }   // hata eşitlemeyi bozmaz
       if ((ch && chKeys.some(function (k) { return k !== 'profile'; })) || imgs) {
         if (startup && !sessionStorage.getItem('pace_sync_rl')) { sessionStorage.setItem('pace_sync_rl', '1'); location.reload(); return; }
         showBanner();
