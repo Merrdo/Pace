@@ -47640,109 +47640,99 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
       paint();
     };
 
-    // ---- Arayüz (yeni tasarım) ----
-    // Çerçevesiz: sayacın altındaki çizgi, ses çalarken sese tepki veren titreşim çubuklarına dönüşür.
-    //  • Sol yarıya dokun/kaydır  → ekranı boydan boya kaplayan çubuklar belirir; sağa kaydırdıkça ses artar
-    //    (çubuklar kırmızıdan sarıya, sarıdan yeşile boyanır).
-    //  • Sağ yarıya dokun        → altan fırlayıp zikzak (üst, alt-çapraz, üst-çapraz …) yerleşen yuvarlak "Müzikler";
-    //    sığmayanlar yatay kaydırınca yeni animasyonla gelir. Her baloncuğun altında adı yazar.
+    // ---- Arayüz (v2): minimal titreşim çubukları; aynı alanda ses ayarı ve baloncuk menüsü ----
+    //  • Çubuklar: ses çalarken sese tepki verir. Soluk nokta çizgisi = ses yok.
+    //  • Sol yarıya dokun ya da herhangi bir yerden yatay kaydır → aynı çubuklar ses çubuğuna dönüşür
+    //    (kırmızı → sarı → yeşil). Çubuğun neresinden tutarsan tut, kaydırdığın kadar değişir; çubuğa dokunmak o noktaya götürür.
+    //  • Sağ yarıya dokun → çubuklar kaybolur, aynı alana saydam, nefes alan baloncuklar süzülerek gelir. Seçilince gider, ses başlar.
+    //  • Aynı anda tek ses çalar.
+    { const ks = Object.keys(S.mix); if (ks.length > 1) { const k = ks[ks.length - 1]; S.mix = { [k]: S.mix[k] }; save(); } }
     const st = document.createElement('style');
     st.textContent = `
-.wn2,.wn2-vol,.wn2-menu{font-family:"Baloo 2","Space Grotesk",sans-serif;-webkit-tap-highlight-color:transparent;}
-.wn2{position:fixed;z-index:62;left:50%;top:67.5%;width:min(86vw,360px);height:96px;color:var(--theme-text,#f2f2f7);transform:translate(-50%,-50%) scale(.92);
-  opacity:0;visibility:hidden;pointer-events:none;touch-action:none;transition:opacity .3s ease,transform .4s cubic-bezier(.16,1,.3,1),visibility 0s linear .3s,color .5s ease;}
+.wn2,.wn2-menu{font-family:"Baloo 2","Space Grotesk",sans-serif;-webkit-tap-highlight-color:transparent;color:var(--theme-text,#f2f2f7);}
+.wn2{position:fixed;z-index:62;left:50%;top:var(--wn2y,67.5%);width:min(90vw,340px);height:84px;transform:translate(-50%,-50%) scale(.94);
+  opacity:0;visibility:hidden;pointer-events:none;touch-action:none;cursor:pointer;transition:opacity .3s ease,transform .4s cubic-bezier(.16,1,.3,1),visibility 0s linear .3s,color .5s ease;}
 body.is-stopwatch-fs .wn2,body.is-countdown-fs .wn2{opacity:1;visibility:visible;pointer-events:auto;transform:translate(-50%,-50%);
-  transition:opacity .45s ease .12s,transform .55s cubic-bezier(.34,1.56,.64,1) .12s,visibility 0s,color .5s ease;}
-body.wn2-menu-open .wn2{opacity:0 !important;pointer-events:none !important;}
-.wn2-bars{position:absolute;left:0;right:0;top:50%;height:46px;margin-top:-30px;display:flex;align-items:center;justify-content:space-between;gap:3px;opacity:.3;transition:opacity .5s ease,transform .35s cubic-bezier(.34,1.56,.64,1);}
-.wn2-bars i{display:block;flex:1;max-width:5px;min-width:2px;height:3px;border-radius:3px;background:currentColor;}
-.wn2.is-live .wn2-bars{opacity:.92;}.wn2.is-paused .wn2-bars{opacity:.5;}
-.wn2.is-pl .wn2-bars{transform:scaleX(.95) translateX(-6px);}.wn2.is-pr .wn2-bars{transform:scaleX(.95) translateX(6px);}
-.wn2-name{position:absolute;left:0;right:0;top:50%;margin-top:22px;text-align:center;font-weight:700;font-size:.78rem;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;opacity:0;transition:opacity .4s ease;pointer-events:none;}
-.wn2.is-live .wn2-name{opacity:.55;}
-.wn2-l,.wn2-r{position:absolute;top:0;bottom:0;width:50%;margin:0;padding:0;border:0;background:none;cursor:pointer;touch-action:none;}
-.wn2-l{left:0;}.wn2-r{right:0;}
-.wn2-vol{position:fixed;inset:0;z-index:80;pointer-events:none;opacity:0;visibility:hidden;color:#f2f2f7;background:rgba(0,0,0,.62);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);
-  transition:opacity .3s ease,visibility 0s linear .3s;}
-.wn2-vol.is-on{opacity:1;visibility:visible;transition:opacity .2s ease,visibility 0s;}
-.wn2-vbars{position:absolute;left:14px;right:14px;height:0;display:flex;align-items:center;justify-content:space-between;gap:4px;}
-.wn2-vbars i{display:block;flex:1;height:6px;border-radius:99px;background:rgba(255,255,255,.17);transition:background-color .2s ease;}
-.wn2-vbars i.on{background:var(--c);}
-.wn2-pct{position:absolute;left:0;right:0;text-align:center;font-weight:800;font-size:2.7rem;line-height:1;font-variant-numeric:tabular-nums;}
-.wn2-pct small{font-size:1rem;opacity:.55;margin-left:3px;font-weight:700;}
-.wn2-menu{position:fixed;inset:0;z-index:99980;display:flex;flex-direction:column;justify-content:center;color:#f2f2f7;--D:clamp(76px,21vw,104px);
-  background:rgba(0,0,0,0);-webkit-backdrop-filter:blur(0);backdrop-filter:blur(0);visibility:hidden;pointer-events:none;
-  transition:background .45s ease,backdrop-filter .45s ease,-webkit-backdrop-filter .45s ease,visibility 0s linear .6s;}
-.wn2-menu.is-on{visibility:visible;pointer-events:auto;background:rgba(0,0,0,.66);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);transition:background .4s ease,backdrop-filter .4s ease,-webkit-backdrop-filter .4s ease;}
-.wn2-title{position:absolute;left:22px;top:calc(env(safe-area-inset-top,0px) + 1.1rem);font-weight:800;font-size:1.35rem;opacity:0;transform:translateY(-6px);transition:opacity .3s ease,transform .4s ease;}
-.wn2-menu.is-on .wn2-title{opacity:.9;transform:none;transition-delay:.15s;}
-.wn2-scroll{width:100%;padding:18px 0;overflow-x:auto;overflow-y:hidden;touch-action:pan-x;overscroll-behavior-x:contain;}
+  transition:opacity .4s ease .3s,transform .5s cubic-bezier(.16,1,.3,1) .3s,visibility 0s,color .5s ease;}
+body.wn2-menu-open .wn2{opacity:0 !important;pointer-events:none !important;transition:opacity .25s ease !important;}
+body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-hint,body.wn2-menu-open .countdown-fullscreen-hint{opacity:0 !important;pointer-events:none !important;}
+.wn2-bars{position:absolute;left:50%;top:50%;width:min(58vw,210px);height:20px;margin-top:-14px;transform:translateX(-50%);display:flex;align-items:center;justify-content:space-between;opacity:.3;transition:opacity .5s ease;}
+.wn2-bars i{display:block;flex:none;width:2.5px;height:2px;border-radius:2px;background:currentColor;transition:background-color .3s ease;}
+.wn2.is-live .wn2-bars{opacity:.85;}.wn2.is-paused .wn2-bars{opacity:.45;}
+.wn2.is-vol .wn2-bars{opacity:1;}
+.wn2.is-vol .wn2-bars i{background:color-mix(in srgb,currentColor 20%,transparent);}.wn2.is-vol .wn2-bars i.on{background:var(--c);}
+.wn2-name{position:absolute;left:0;right:0;top:50%;margin-top:14px;text-align:center;font-weight:700;font-size:.72rem;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;opacity:0;transition:opacity .4s ease;pointer-events:none;font-variant-numeric:tabular-nums;}
+.wn2.is-live .wn2-name{opacity:.5;}.wn2.is-vol .wn2-name{opacity:.65;}
+.wn2.is-pl .wn2-bars{transform:translateX(-50%) scaleX(.97);}.wn2.is-pr .wn2-bars{transform:translateX(-50%) scaleX(.97);}
+.wn2-menu{--D:clamp(58px,15vw,72px);position:fixed;inset:0;z-index:63;visibility:hidden;pointer-events:none;touch-action:none;transition:visibility 0s linear .9s;}
+.wn2-menu.is-on{visibility:visible;pointer-events:auto;transition:visibility 0s;}
+.wn2-wrap{position:absolute;left:0;right:0;top:var(--wn2y,67.5%);transform:translateY(-50%);}
+.wn2-scroll{padding:16px 0;overflow-x:auto;overflow-y:hidden;touch-action:pan-x;overscroll-behavior-x:contain;
+  -webkit-mask-image:linear-gradient(to right,transparent,#000 7%,#000 93%,transparent);mask-image:linear-gradient(to right,transparent,#000 7%,#000 93%,transparent);}
 .wn2-track{position:relative;}
 .wn2-slot{position:absolute;width:var(--D);}
-.wn2-b{--dl:0ms;--rise:100vh;--dx:0px;transform:translate(var(--dx),var(--rise)) scale(.3);opacity:0;transition:transform .85s cubic-bezier(.3,1.5,.5,1) var(--dl),opacity .3s ease var(--dl);}
+.wn2-b{--dl:0ms;--rise:60vh;--dx:0px;transform:translate(var(--dx),var(--rise)) scale(.5);opacity:0;transition:transform 1s cubic-bezier(.22,1,.36,1) var(--dl),opacity .5s ease var(--dl);}
 .wn2-b.is-shown{transform:none;opacity:1;}
-.wn2-bi{display:flex;flex-direction:column;align-items:center;animation:wn2Fl 3.8s ease-in-out infinite alternate;animation-delay:calc(var(--i) * -.7s);}
-@keyframes wn2Fl{from{transform:translateY(0);}to{transform:translateY(-6px);}}
-.wn2-c{position:relative;flex:none;width:var(--D);height:var(--D);margin:0;padding:0;border:0;border-radius:50%;cursor:pointer;display:grid;place-items:center;color:#f2f2f7;
-  background:radial-gradient(circle at 30% 24%,rgba(255,255,255,.26),rgba(255,255,255,.09) 55%,rgba(255,255,255,.05));box-shadow:inset 0 0 0 1px rgba(255,255,255,.1),0 10px 26px -12px rgba(0,0,0,.7);
-  transition:transform .3s cubic-bezier(.34,1.56,.64,1),background .35s ease,color .3s ease;}
-.wn2-c:active{transform:scale(.88);}
-.wn2-c svg{width:38%;height:38%;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;}
-.wn2-ring{position:absolute;inset:0;border-radius:50%;border:2px solid #f2f2f7;opacity:0;pointer-events:none;}
-.wn2-slot.is-sel .wn2-c{background:#f2f2f7;color:#111;}
-.wn2-slot.is-sel.is-live .wn2-ring{animation:wn2Ring 1.8s ease-out infinite;}
-@keyframes wn2Ring{0%{opacity:.6;transform:scale(1);}100%{opacity:0;transform:scale(1.45);}}
-.wn2-slot.is-na{opacity:.35;pointer-events:none;}
-.wn2-n{display:block;width:calc(var(--D) * 1.3);margin-top:7px;text-align:center;font-weight:700;font-size:.8rem;line-height:1.15;opacity:.82;
-  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.wn2-slot.is-pick .wn2-b{transform:scale(1.45);opacity:0;transition:transform .5s cubic-bezier(.22,1,.36,1),opacity .4s ease;}
+.wn2-bi{display:flex;flex-direction:column;align-items:center;animation:wn2Fl 5.5s ease-in-out infinite;animation-delay:calc(var(--i) * -1.1s);}
+@keyframes wn2Fl{0%,100%{transform:translate(0,0);}33%{transform:translate(4px,-5px);}66%{transform:translate(-4px,-2px);}}
+.wn2-c{position:relative;flex:none;width:var(--D);height:var(--D);margin:0;padding:0;border:0;cursor:pointer;display:grid;place-items:center;color:inherit;
+  border-radius:58% 42% 52% 48% / 48% 56% 44% 52%;
+  background:radial-gradient(circle at 30% 24%,color-mix(in srgb,currentColor 24%,transparent),color-mix(in srgb,currentColor 6%,transparent) 60%,color-mix(in srgb,currentColor 3%,transparent));
+  box-shadow:inset 0 0 0 1.2px color-mix(in srgb,currentColor 26%,transparent),inset -4px -6px 12px color-mix(in srgb,currentColor 9%,transparent);
+  animation:wn2Blob 5s ease-in-out infinite;animation-delay:calc(var(--i) * -.8s);transition:background .4s ease,box-shadow .4s ease,scale .3s cubic-bezier(.34,1.56,.64,1);}
+@keyframes wn2Blob{0%,100%{border-radius:58% 42% 52% 48% / 48% 56% 44% 52%;transform:rotate(0);}
+  25%{border-radius:46% 54% 44% 56% / 56% 44% 56% 44%;transform:rotate(5deg);}
+  50%{border-radius:52% 48% 60% 40% / 42% 58% 42% 58%;transform:rotate(-3deg);}
+  75%{border-radius:42% 58% 48% 52% / 54% 46% 58% 42%;transform:rotate(4deg);}}
+.wn2-c:active{scale:.88;}
+.wn2-c svg{width:36%;height:36%;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;opacity:.85;}
+.wn2-slot.is-sel .wn2-c{background:radial-gradient(circle at 30% 24%,color-mix(in srgb,currentColor 38%,transparent),color-mix(in srgb,currentColor 16%,transparent) 65%);box-shadow:inset 0 0 0 1.5px color-mix(in srgb,currentColor 60%,transparent);}
+.wn2-slot.is-na{opacity:.3;pointer-events:none;}
+.wn2-n{display:block;width:calc(var(--D) * 1.55);margin-top:6px;text-align:center;font-weight:700;font-size:.7rem;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;opacity:.75;}
 .wn2-slot.is-sel .wn2-n{opacity:1;}
-.wn2-foot{position:absolute;left:0;right:0;bottom:calc(env(safe-area-inset-bottom,0px) + 1.6rem);display:flex;justify-content:center;gap:26px;opacity:0;transition:opacity .35s ease .3s;}
-.wn2-menu.is-on .wn2-foot{opacity:1;}
-.wn2-foot button{display:flex;align-items:center;gap:7px;margin:0;padding:.55rem .3rem;border:0;background:none;cursor:pointer;color:rgba(255,255,255,.72);font:700 .88rem "Baloo 2","Space Grotesk",sans-serif;-webkit-tap-highlight-color:transparent;transition:opacity .3s ease,transform .25s cubic-bezier(.34,1.56,.64,1);}
-.wn2-foot button:active{transform:scale(.92);}
-.wn2-foot svg{width:1rem;height:1rem;fill:currentColor;}.wn2-pp.is-off{opacity:0;pointer-events:none;}
-.wn2-pp .wn2-ia{display:none;}.wn2-pp.is-on .wn2-ip{display:none;}.wn2-pp.is-on .wn2-ia{display:block;}
-@media (prefers-reduced-motion:reduce){.wn2-bi,.wn2-ring{animation:none !important;}.wn2-b{transition-duration:.01s !important;}}`;
+.wn2-opt{display:block;margin:2px auto 0;padding:.5rem .8rem;border:0;background:none;cursor:pointer;color:inherit;font:700 .8rem/1.2 "Baloo 2","Space Grotesk",sans-serif;opacity:0;transition:opacity .4s ease;-webkit-tap-highlight-color:transparent;}
+.wn2-menu.is-on .wn2-opt{opacity:.6;transition-delay:.35s;}
+.wn2-opt-v{display:inline-block;min-width:3.2ch;text-align:left;font-weight:800;}
+.wn2-opt-v.is-sw{animation:wn2Sw .38s ease;}
+@keyframes wn2Sw{0%{opacity:1;transform:none;filter:none;}42%{opacity:0;transform:translateY(-5px);filter:blur(2px);}58%{opacity:0;transform:translateY(5px);filter:blur(2px);}100%{opacity:1;transform:none;filter:none;}}
+.stopwatch-fullscreen-time-row,.countdown-fullscreen-time-row{transition:translate .6s cubic-bezier(.22,1,.36,1);}
+@media (max-height:700px) and (orientation:portrait){.wn2,.wn2-menu{--wn2y:76%;}body.wn2-menu-open .stopwatch-fullscreen-time-row,body.wn2-menu-open .countdown-fullscreen-time-row{translate:0 -8vh;}}
+@media (max-height:520px) and (orientation:landscape){
+  .wn2{top:calc(100% - env(safe-area-inset-bottom,0px) - 30px);height:44px;}
+  .wn2-bars{margin-top:-12px;}.wn2-name{margin-top:11px;font-size:.66rem;}
+  .wn2-menu{--D:clamp(42px,13vh,52px);}
+  .wn2-wrap{top:auto;bottom:calc(env(safe-area-inset-bottom,0px) + 2px);transform:none;}
+  .wn2-scroll{padding:8px 0;}.wn2-n{font-size:.62rem;margin-top:4px;}.wn2-opt{padding:.3rem .8rem;font-size:.74rem;}
+  body.wn2-menu-open .stopwatch-fullscreen-time-row,body.wn2-menu-open .countdown-fullscreen-time-row{translate:0 -14vh;}
+}
+@media (prefers-reduced-motion:reduce){.wn2-bi,.wn2-c,.wn2-opt-v{animation:none !important;}.wn2-b{transition-duration:.01s !important;}}`;
     document.head.appendChild(st);
 
-    const NB = 30, NV = innerWidth < 520 ? 32 : 52;
-    const strip = document.createElement('div'); strip.className = 'wn2'; strip.setAttribute('role', 'group'); strip.setAttribute('aria-label', 'Sesler');
-    strip.innerHTML = '<div class="wn2-bars" aria-hidden="true">' + '<i></i>'.repeat(NB) + '</div><div class="wn2-name"></div>'
-      + '<div class="wn2-l" role="button" tabindex="0" aria-label="Ses seviyesi"></div><div class="wn2-r" role="button" tabindex="0" aria-label="Müzikler"></div>';
-    const vol = document.createElement('div'); vol.className = 'wn2-vol'; vol.setAttribute('aria-hidden', 'true');
-    vol.innerHTML = '<div class="wn2-vbars"></div><div class="wn2-pct"></div>';
+    const NB = 24;
+    const strip = document.createElement('div'); strip.className = 'wn2'; strip.tabIndex = 0; strip.setAttribute('role', 'slider'); strip.setAttribute('aria-label', 'Ses seviyesi / müzikler');
+    strip.innerHTML = '<div class="wn2-bars" aria-hidden="true">' + '<i></i>'.repeat(NB) + '</div><div class="wn2-name"></div>';
     const menu = document.createElement('div'); menu.className = 'wn2-menu';
-    menu.innerHTML = '<div class="wn2-title">Müzikler</div><div class="wn2-scroll"><div class="wn2-track"></div></div>'
-      + '<div class="wn2-foot"><button type="button" class="wn2-pp"><svg class="wn2-ip" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg><svg class="wn2-ia" viewBox="0 0 24 24"><path d="M7 5h4v14H7zM13 5h4v14h-4z"/></svg><span></span></button><button type="button" class="wn2-sy"></button></div>';
-    document.body.appendChild(strip); document.body.appendChild(vol); document.body.appendChild(menu);
-    // Üst güvenli alan (theme-color): karartma tonuyla harmanlanır
-    menu._themeTint = { r: 0, g: 0, b: 0, alpha: 0.66 };
-    if (window.watchBackdropForThemeColor) window.watchBackdropForThemeColor(menu);
+    menu.innerHTML = '<div class="wn2-wrap"><div class="wn2-scroll"><div class="wn2-track"></div></div><button type="button" class="wn2-opt"><span>Sayaçla birlikte çalsın: </span><span class="wn2-opt-v"></span></button></div>';
+    document.body.appendChild(strip); document.body.appendChild(menu);
 
-    const sBars = [...strip.querySelectorAll('.wn2-bars i')], sName = strip.querySelector('.wn2-name');
-    const vBars = vol.querySelector('.wn2-vbars'), vPct = vol.querySelector('.wn2-pct');
-    const scroll = menu.querySelector('.wn2-scroll'), track = menu.querySelector('.wn2-track');
-    const ppBtn = menu.querySelector('.wn2-pp'), syBtn = menu.querySelector('.wn2-sy');
+    const barsEl = strip.querySelector('.wn2-bars'), sBars = [...barsEl.children], sName = strip.querySelector('.wn2-name');
+    sBars.forEach((e, i) => e.style.setProperty('--c', 'hsl(' + Math.round(120 * i / (NB - 1)) + ' 90% 54%)'));
+    const scroll = menu.querySelector('.wn2-scroll'), track = menu.querySelector('.wn2-track'), optV = menu.querySelector('.wn2-opt-v');
+    optV.addEventListener('animationend', () => optV.classList.remove('is-sw'));
     const slots = WN_SOUNDS.map((s, i) => {
       const d = document.createElement('div'); d.className = 'wn2-slot'; d.dataset.id = s.id; d.dataset.i = i; d.style.setProperty('--i', i);
-      d.innerHTML = '<div class="wn2-b"><div class="wn2-bi"><button type="button" class="wn2-c" aria-label="' + s.name + '"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="' + s.ic + '"/></svg><span class="wn2-ring"></span></button><span class="wn2-n">' + s.name + '</span></div></div>';
+      d.innerHTML = '<div class="wn2-b"><div class="wn2-bi"><button type="button" class="wn2-c" aria-label="' + s.name + '"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="' + s.ic + '"/></svg></button><span class="wn2-n">' + s.name + '</span></div></div>';
       track.appendChild(d); return d;
     });
-    let vb = [];
-    const buildVol = () => {
-      vBars.innerHTML = ''; vb = [];
-      for (let i = 0; i < NV; i++) { const e = document.createElement('i'); e.style.setProperty('--c', 'hsl(' + Math.round(120 * i / (NV - 1)) + ' 92% 54%)'); vBars.appendChild(e); vb.push(e); }
-    };
-    buildVol();
 
     // ---- Çubukların hareketi: gerçek ses analizi (varsa) + hafif dalgalanma ----
-    const freq = () => (an ? new Uint8Array(an.frequencyBinCount) : null);
-    let fbuf = null, raf = 0, volOpen = false, menuOpen = false;
+    let fbuf = null, raf = 0, volMode = false, menuOpen = false;
     const cur = new Float32Array(NB);
     const fsVisible = () => document.body.classList.contains('is-stopwatch-fs') || document.body.classList.contains('is-countdown-fs');
     const spectrum = () => {
       if (!an || S.paused || !mixIds().length) return null;
-      if (!fbuf || fbuf.length !== an.frequencyBinCount) fbuf = freq();
+      if (!fbuf || fbuf.length !== an.frequencyBinCount) fbuf = new Uint8Array(an.frequencyBinCount);
       an.getByteFrequencyData(fbuf); let sum = 0; for (let i = 0; i < fbuf.length; i++) sum += fbuf[i];
       return sum > 12 ? fbuf : null;
     };
@@ -47755,85 +47745,87 @@ body.wn2-menu-open .wn2{opacity:0 !important;pointer-events:none !important;}
     };
     function frame(now) {
       raf = 0;
-      if (document.hidden || !(fsVisible() || volOpen)) return;
-      const ids = mixIds(), live = ids.length > 0, playing = live && !S.paused, spec = playing ? spectrum() : null;
+      if (document.hidden || !fsVisible() || menuOpen) return;
+      const live = mixIds().length > 0, playing = live && !S.paused, spec = playing ? spectrum() : null;
       let moving = playing;
-      if (fsVisible() && !menuOpen) {
-        for (let j = 0; j < NB; j++) {
-          const env = Math.pow(Math.sin(Math.PI * (j + 0.5) / NB), 0.9);
-          const t = playing ? 3 + env * 40 * ampAt(j, NB, now, spec) : live ? 3 + env * 5 : 3;
-          const d = t - cur[j]; if (Math.abs(d) > 0.2) moving = true;
-          cur[j] += d * 0.3; sBars[j].style.height = cur[j].toFixed(1) + 'px';
-        }
-      }
-      if (volOpen) {
-        const half = Math.min(innerHeight * 0.13, 120), wob = playing ? spec : null;
-        for (let i = 0; i < NV; i++) {
-          const e = 0.2 + 0.8 * i / (NV - 1), a = ampAt(i, NV, now, wob);
-          vb[i].style.height = Math.max(6, e * half * 2 * (0.3 + 0.7 * a)).toFixed(1) + 'px';
-        }
-        moving = true;
+      for (let j = 0; j < NB; j++) {
+        const env = Math.pow(Math.sin(Math.PI * (j + 0.5) / NB), 0.9);
+        const t = volMode ? 3 + 15 * j / (NB - 1) : playing ? 2 + env * 16 * ampAt(j, NB, now, spec) : live ? 2 + env * 2 : 2;
+        const d = t - cur[j]; if (Math.abs(d) > 0.15) moving = true;
+        cur[j] += d * 0.28; sBars[j].style.height = cur[j].toFixed(1) + 'px';
       }
       if (moving) raf = requestAnimationFrame(frame);
     }
     const kick = () => { if (!raf) raf = requestAnimationFrame(frame); };
 
+    const paintName = () => {
+      if (volMode) { sName.textContent = S.master <= 0 ? 'sessiz' : Math.round(S.master * 100) + '%'; return; }
+      const id = mixIds()[0]; sName.textContent = id ? byId(id).name : '';
+    };
     function paint() {
-      const ids = mixIds(), live = ids.length > 0;
+      const live = mixIds().length > 0;
       strip.classList.toggle('is-live', live && !S.paused); strip.classList.toggle('is-paused', live && S.paused);
-      const nm = ids.map((id) => byId(id).name); sName.textContent = nm.length <= 2 ? nm.join(' · ') : nm.slice(0, 2).join(' · ') + ' +' + (nm.length - 2);
+      paintName(); if (!optV.classList.contains('is-sw')) optV.textContent = S.sync ? 'Açık' : 'Kapalı';
       slots.forEach((d) => {
-        const s = byId(d.dataset.id), on = ids.indexOf(s.id) >= 0;
-        d.classList.toggle('is-sel', on); d.classList.toggle('is-live', on && !S.paused); d.classList.toggle('is-na', !s.src || !!s.err);
+        const s = byId(d.dataset.id), on = !!(S.mix[s.id] != null && mixIds().indexOf(s.id) >= 0);
+        d.classList.toggle('is-sel', on); d.classList.toggle('is-na', !s.src || !!s.err);
       });
-      ppBtn.classList.toggle('is-off', !live); ppBtn.classList.toggle('is-on', live && !S.paused); ppBtn.lastChild.textContent = S.paused ? 'Devam' : 'Duraklat';
-      syBtn.textContent = 'Sayaçla birlikte: ' + (S.sync ? 'Açık' : 'Kapalı');
       kick();
     }
     let autoPaused = false;
-    const togglePlay = () => { if (!mixIds().length) return; autoPaused = false; S.paused = !S.paused; apply(); };
 
-    // ---- Ses seviyesi: sol yarıdan dokun + sağa kaydır ----
-    let vHide = 0, vActive = false, vPid = null, vX0 = 0, vV0 = 0;
-    const paintVol = () => {
-      const v = S.master; vb.forEach((e, i) => e.classList.toggle('on', (i + 0.5) / NV <= v + 1e-6 && v > 0));
-      vPct.innerHTML = v <= 0 ? 'Sessiz' : Math.round(v * 100) + '<small>%</small>';
-    };
-    const showVol = () => {
-      clearTimeout(vHide);
-      if (!volOpen) {
-        const r = strip.getBoundingClientRect(), y = r.top + r.height / 2, half = Math.min(innerHeight * 0.13, 120);
-        vBars.style.top = y + 'px'; vPct.style.top = (y + half + 22) + 'px';
-        volOpen = true; vol.classList.add('is-on'); document.body.classList.add('wn2-vol-open');
-      }
-      paintVol(); kick();
-    };
-    const hideVolSoon = (ms) => { clearTimeout(vHide); vHide = setTimeout(() => { volOpen = false; vol.classList.remove('is-on'); document.body.classList.remove('wn2-vol-open'); }, ms); };
+    // ---- Ses seviyesi: aynı çubuk alanı ses çubuğuna dönüşür ----
+    let volT = 0, pid = null, x0 = 0, v0 = 0, moved = false, wasVol = false, side = 'l';
+    const paintVol = () => { const v = S.master; sBars.forEach((e, i) => e.classList.toggle('on', v > 0 && (i + 0.5) / NB <= v + 1e-6)); paintName(); };
+    const enterVol = () => { clearTimeout(volT); if (!volMode) { volMode = true; strip.classList.add('is-vol'); } paintVol(); kick(); };
+    const exitVolSoon = (ms) => { clearTimeout(volT); volT = setTimeout(() => { volMode = false; strip.classList.remove('is-vol'); sBars.forEach((e) => e.classList.remove('on')); paintName(); kick(); }, ms); };
     const setVol = (v) => {
       v = Math.max(0, Math.min(1, v)); if (v === S.master) return; S.master = v;
       if (ctx && !S.paused) ramp(master.gain, v, 0.05);
       save(); paintVol();
     };
-    const zl = strip.querySelector('.wn2-l'), zr = strip.querySelector('.wn2-r');
-    zl.addEventListener('pointerdown', (e) => {
-      if (vActive) return; vActive = true; vPid = e.pointerId; vX0 = e.clientX; vV0 = S.master;
-      try { zl.setPointerCapture(vPid); } catch (x) { /* yok say */ }
-      strip.classList.add('is-pl'); showVol();
+    const barsW = () => barsEl.getBoundingClientRect().width || 200;
+    strip.addEventListener('pointerdown', (e) => {
+      if (pid != null) return; pid = e.pointerId; x0 = e.clientX; v0 = S.master; moved = false; wasVol = volMode;
+      const r = strip.getBoundingClientRect(); side = e.clientX < r.left + r.width / 2 ? 'l' : 'r';
+      try { strip.setPointerCapture(pid); } catch (x) { /* yok say */ }
+      clearTimeout(volT); strip.classList.add(side === 'l' ? 'is-pl' : 'is-pr');
+      if (side === 'l') enterVol();
     });
-    zl.addEventListener('pointermove', (e) => { if (vActive && e.pointerId === vPid) setVol(vV0 + (e.clientX - vX0) / (innerWidth * 0.8)); });
-    const vEnd = (e) => { if (!vActive || (e && e.pointerId !== vPid)) return; vActive = false; strip.classList.remove('is-pl'); hideVolSoon(900); };
-    zl.addEventListener('pointerup', vEnd); zl.addEventListener('pointercancel', vEnd);
-    zl.addEventListener('keydown', (e) => {
+    strip.addEventListener('pointermove', (e) => {
+      if (e.pointerId !== pid) return; const dx = e.clientX - x0;
+      if (!moved && Math.abs(dx) > 6) { moved = true; enterVol(); }
+      if (moved) setVol(v0 + dx / barsW());
+    });
+    const pEnd = (e, cancel) => {
+      if (e.pointerId !== pid) return; pid = null; strip.classList.remove('is-pl', 'is-pr');
+      if (!cancel && !moved) {
+        if (wasVol) { const br = barsEl.getBoundingClientRect(); let v = (e.clientX - br.left) / br.width; if (v < 0.03) v = 0; if (v > 0.97) v = 1; setVol(v); }
+        else if (side === 'r') { openMenu(); return; }
+      }
+      exitVolSoon(1700);
+    };
+    strip.addEventListener('pointerup', (e) => pEnd(e, false)); strip.addEventListener('pointercancel', (e) => pEnd(e, true));
+    strip.addEventListener('click', (e) => e.stopPropagation());
+    strip.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openMenu(); return; }
       if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight' && e.key !== 'ArrowUp' && e.key !== 'ArrowDown') return; e.preventDefault();
-      showVol(); setVol(S.master + ((e.key === 'ArrowRight' || e.key === 'ArrowUp') ? 0.05 : -0.05)); hideVolSoon(1200);
+      enterVol(); setVol(S.master + ((e.key === 'ArrowRight' || e.key === 'ArrowUp') ? 0.05 : -0.05)); exitVolSoon(1500);
     });
-    zl.addEventListener('click', (e) => e.stopPropagation());
 
-    // ---- Menü: sağ yarıya dokun → baloncuklar altan fırlar, zikzak yerleşir ----
+    // Ses ayarı açıkken boş alana basılırsa ayar kapanır (basış başka bir şeyi tetiklemez)
+    let swallow = 0;
+    document.addEventListener('pointerdown', (e) => {
+      if (!volMode || strip.contains(e.target)) return;
+      e.stopPropagation(); e.preventDefault(); swallow = 1; setTimeout(() => { swallow = 0; }, 700); exitVolSoon(0);
+    }, true);
+    document.addEventListener('click', (e) => { if (!swallow) return; swallow = 0; e.stopPropagation(); e.preventDefault(); }, true);
+
+    // ---- Menü: aynı alanda, saydam titreşimli baloncuklar altan süzülür; zikzak yerleşir ----
     let io = null, closeT = 0;
     const layout = () => {
-      const D = parseFloat(getComputedStyle(slots[0]).width) || 84;
-      const step = D * 0.72, LH = 38, rowOff = D + LH + 4, W = menu.clientWidth, total = (slots.length - 1) * step + D, pad = 20;
+      const D = parseFloat(getComputedStyle(slots[0]).width) || 64;
+      const step = D * 0.8, LH = innerHeight < 520 ? 18 : 22, rowOff = D + LH + 2, W = menu.clientWidth, total = (slots.length - 1) * step + D, pad = 22;
       const off = total + pad * 2 < W ? (W - total) / 2 : pad;
       track.style.width = Math.max(W, total + pad * 2) + 'px'; track.style.height = (rowOff + D + LH) + 'px';
       slots.forEach((d, i) => { d.style.left = (off + i * step) + 'px'; d.style.top = (i % 2 ? rowOff : 0) + 'px'; });
@@ -47843,48 +47835,53 @@ body.wn2-menu-open .wn2{opacity:0 !important;pointer-events:none !important;}
       io = new IntersectionObserver((ents) => {
         ents.filter((e) => e.isIntersecting && !e.target._shown).sort((a, b) => a.target.dataset.i - b.target.dataset.i).forEach((e, k) => {
           const sl = e.target, b = sl.firstChild; sl._shown = true;
-          b.style.setProperty('--dl', (k * 75) + 'ms'); b.style.setProperty('--rise', (innerHeight - sl.getBoundingClientRect().top + 80) + 'px');
-          b.style.setProperty('--dx', ((Math.random() * 2 - 1) * 26).toFixed(0) + 'px');
+          b.style.setProperty('--dl', (k * 80) + 'ms'); b.style.setProperty('--rise', (innerHeight - sl.getBoundingClientRect().top + 40) * 0.6 + 'px');
+          b.style.setProperty('--dx', ((Math.random() * 2 - 1) * 22).toFixed(0) + 'px');
           requestAnimationFrame(() => b.classList.add('is-shown')); io.unobserve(sl);
         });
       }, { root: scroll, threshold: 0.4 });
       slots.forEach((d) => io.observe(d));
     };
-    const openMenu = () => {
-      if (menuOpen) return; menuOpen = true; clearTimeout(closeT);
-      hideVolSoon(0); layout(); scroll.scrollLeft = 0; menu.classList.add('is-on'); document.body.classList.add('wn2-menu-open');
+    function openMenu() {
+      if (menuOpen) return; menuOpen = true; clearTimeout(closeT); clearTimeout(volT);
+      volMode = false; strip.classList.remove('is-vol'); paintName();
+      slots.forEach((d) => d.classList.remove('is-pick'));
+      layout(); scroll.scrollLeft = 0; menu.classList.add('is-on'); document.body.classList.add('wn2-menu-open');
       requestAnimationFrame(startIO);
-    };
-    const closeMenu = () => {
+    }
+    function closeMenu(pick) {
       if (!menuOpen) return; menuOpen = false;
       menu.classList.remove('is-on'); document.body.classList.remove('wn2-menu-open');
-      slots.forEach((d) => { const b = d.firstChild; b.style.setProperty('--dl', '0ms'); b.classList.remove('is-shown'); d._shown = false; });
+      slots.forEach((d, i) => { const b = d.firstChild; if (pick && d === pick) d.classList.add('is-pick'); b.style.setProperty('--dl', (i * 25) + 'ms'); b.classList.remove('is-shown'); d._shown = false; });
       if (io) { io.disconnect(); io = null; }
-      closeT = setTimeout(() => { scroll.scrollLeft = 0; }, 650); kick();
+      closeT = setTimeout(() => { scroll.scrollLeft = 0; slots.forEach((d) => d.classList.remove('is-pick')); }, 1000); kick();
+    }
+    const toggleSync = () => {
+      S.sync = !S.sync; save();
+      const running = !!(swRunning || (cdRunning && !cdFinished));
+      if (mixIds().length) {
+        if (!S.sync && autoPaused) { autoPaused = false; S.paused = false; apply(); }
+        else if (S.sync && !running && !S.paused) { autoPaused = true; S.paused = true; apply(); }
+      }
+      optV.classList.remove('is-sw'); void optV.offsetWidth; optV.classList.add('is-sw');
+      setTimeout(() => { optV.textContent = S.sync ? 'Açık' : 'Kapalı'; }, 160);
     };
-    zr.addEventListener('click', (e) => { e.stopPropagation(); openMenu(); });
-    zr.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openMenu(); } });
-    zr.addEventListener('pointerdown', () => strip.classList.add('is-pr'));
-    ['pointerup', 'pointercancel', 'pointerleave'].forEach((ev) => zr.addEventListener(ev, () => strip.classList.remove('is-pr')));
     menu.addEventListener('click', (e) => {
+      if (e.target.closest('.wn2-opt')) { toggleSync(); return; }
       const sl = e.target.closest('.wn2-slot');
       if (sl) {
         const s = byId(sl.dataset.id); if (!s || !s.src) return;
-        if (S.mix[s.id] != null) delete S.mix[s.id]; else { S.mix[s.id] = 0.7; autoPaused = false; S.paused = false; }
-        save(); apply(); return;
+        if (S.mix[s.id] != null) { S.mix = {}; S.paused = true; } else { S.mix = { [s.id]: 0.7 }; autoPaused = false; S.paused = false; }
+        save(); apply(); closeMenu(sl); return;
       }
-      if (e.target.closest('.wn2-pp')) { togglePlay(); return; }
-      if (e.target.closest('.wn2-sy')) { S.sync = !S.sync; save(); paint(); return; }
       closeMenu();
     });
     document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeMenu(); });
     window.addEventListener('resize', () => { if (menuOpen) layout(); });
     document.addEventListener('visibilitychange', kick);
 
-    // Tam ekran görünmüyorsa (çıkıldı) menü ve ses paneli kapanır; görününce çubuklar tekrar canlanır
-    new MutationObserver(() => {
-      if (!fsVisible()) { closeMenu(); clearTimeout(vHide); volOpen = false; vol.classList.remove('is-on'); } else kick();
-    }).observe(document.body, { attributes: true, attributeFilter: ['class'] });
+    // Tam ekran görünmüyorsa (çıkıldı) menü kapanır; görününce çubuklar tekrar canlanır
+    new MutationObserver(() => { if (!fsVisible()) closeMenu(); else kick(); }).observe(document.body, { attributes: true, attributeFilter: ['class'] });
 
     // Sayaç / kronometre ile birlikte duraklat-devam et
     let was = false;
