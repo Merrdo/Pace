@@ -43911,6 +43911,68 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
   </div>
 </div>
 
+<style id="nav-glass">
+/* ===== Alt nav: iOS tarzı cam pill + sürüklenebilir gösterge (vurgu rengine bağlı) ===== */
+.navbar { padding: 0 14px calc(10px + env(safe-area-inset-bottom)); pointer-events: none; }
+.navbar::before {
+  content: ''; position: absolute; left: 0; right: 0; bottom: 0; top: -22px; z-index: 0; pointer-events: none;
+  background: linear-gradient(to top, color-mix(in srgb, var(--theme-bg, #F6F4EF) 90%, transparent) 35%, transparent);
+  -webkit-backdrop-filter: none; backdrop-filter: none;
+}
+.navbar::after { content: none; }
+.navbar .wrapper {
+  position: relative; z-index: 1; pointer-events: auto;
+  width: min(100%, 372px); max-width: none; height: 62px; padding: 6px; box-sizing: border-box;
+  border-radius: 999px; overflow: visible;
+  background: color-mix(in srgb, var(--theme-bg, #F6F4EF) 58%, transparent);
+  -webkit-backdrop-filter: blur(26px) saturate(180%); backdrop-filter: blur(26px) saturate(180%);
+  border: 1px solid color-mix(in srgb, var(--theme-text, #1a1a1a) 10%, transparent);
+  box-shadow: 0 14px 32px -12px rgba(0,0,0,.35), 0 2px 6px rgba(0,0,0,.06), inset 0 1px 0 rgba(255,255,255,.4);
+  touch-action: none; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent;
+  animation: navRise .6s cubic-bezier(.2,.9,.25,1.1) both;
+}
+@keyframes navRise { from { opacity: 0; transform: translateY(22px) scale(.92); } }
+.navbar .wrapper .option { flex: 1 1 0; width: auto; height: 50px; top: 0; }
+.navbar .wrapper .nav-slider {
+  top: 6px; left: 0; height: 50px; z-index: 0; border-radius: 999px; pointer-events: none;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--accent-color, #ff90e8) 30%, transparent), color-mix(in srgb, var(--accent-color, #ff90e8) 15%, transparent));
+  -webkit-backdrop-filter: blur(8px) saturate(160%); backdrop-filter: blur(8px) saturate(160%);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent-color, #ff90e8) 40%, transparent), inset 0 1px 0 rgba(255,255,255,.5), 0 6px 16px -6px color-mix(in srgb, var(--accent-color, #ff90e8) 60%, transparent);
+  transition: transform .55s cubic-bezier(.34,1.45,.5,1), width .4s cubic-bezier(.3,1,.4,1), scale .38s cubic-bezier(.3,1.7,.5,1), box-shadow .3s ease, background .3s ease;
+  will-change: transform, scale;
+}
+.navbar .wrapper .nav-slider::before {
+  content: ''; position: absolute; inset: 1px 8px auto; height: 45%; margin: 0; width: auto; border-radius: 999px; box-shadow: none;
+  background: linear-gradient(180deg, rgba(255,255,255,.35), transparent);
+}
+.navbar .wrapper .nav-slider.is-pressed {
+  scale: 1.16 1.1;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--accent-color, #ff90e8) 42%, transparent), color-mix(in srgb, var(--accent-color, #ff90e8) 22%, transparent));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent-color, #ff90e8) 55%, transparent), inset 0 1px 0 rgba(255,255,255,.6), 0 12px 24px -8px color-mix(in srgb, var(--accent-color, #ff90e8) 70%, transparent);
+}
+.navbar .wrapper .nav-slider.is-dragging { transition: width .4s ease, scale .38s cubic-bezier(.3,1.7,.5,1), box-shadow .3s ease, background .3s ease; }
+.navbar .wrapper .nav-btn {
+  width: 100%; height: 50px; border-radius: 999px;
+  color: color-mix(in srgb, var(--theme-text, #1a1a1a) 52%, transparent);
+  transition: color .3s ease, transform .35s cubic-bezier(.3,1.6,.5,1); transition-delay: 0s;
+}
+.navbar .wrapper .nav-btn::before { display: none; }
+.navbar .wrapper .nav-input:focus-visible + .nav-btn { outline: 2px solid var(--accent-color, #ff90e8); outline-offset: -3px; }
+.navbar .wrapper:not(.is-scrubbing) .nav-input:checked + .nav-btn,
+.navbar .wrapper.is-scrubbing .option.is-hot .nav-btn { color: var(--accent-color, #ff90e8); }
+.navbar .wrapper .nav-icon { width: 22px; height: 22px; stroke-width: 1.7; transition: transform .35s cubic-bezier(.3,1.6,.5,1), filter .3s ease; }
+.navbar .wrapper .nav-input:checked + .nav-btn .nav-icon {
+  filter: drop-shadow(0 2px 7px color-mix(in srgb, var(--accent-color, #ff90e8) 45%, transparent));
+  animation: navIconPop .55s cubic-bezier(.34,1.56,.64,1);
+}
+@keyframes navIconPop { 0% { transform: scale(.78); } 55% { transform: scale(1.18); } 100% { transform: scale(1); } }
+.navbar .wrapper.is-scrubbing .option.is-hot .nav-icon { transform: scale(1.14); }
+.navbar .wrapper:not(.is-scrubbing) .nav-input:active + .nav-btn { transform: scale(.88); }
+@media (prefers-reduced-motion: reduce) {
+  .navbar .wrapper, .navbar .wrapper .nav-icon { animation: none !important; }
+  .navbar .wrapper .nav-slider { transition-duration: .01s !important; }
+}
+</style>
 <!-- From Uiverse.io by andrew-demchenk0 (uyarlandı) -->
 <nav class="navbar">
   <div class="wrapper">
@@ -44222,11 +44284,26 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
     }, PAGE_TRANSITION_MS);
   };
 
+  const navWrapper = document.querySelector('.navbar .wrapper');
+  let navIdx = -1;
+  const placeSlider = (o) => {
+    navSlider.style.width = o.offsetWidth + 'px';
+    navSlider.style.transform = `translate3d(${o.offsetLeft}px,0,0)`;
+  };
   const moveSlider = (input) => {
-    const option = input.closest('.option');
-    const baseLeft = navOptions[0].offsetLeft;
-    const offset = option.offsetLeft - baseLeft;
-    navSlider.style.transform = `translateX(${offset}px)`;
+    const o = input.closest('.option');
+    navIdx = navOptions.indexOf(o);
+    placeSlider(o);
+  };
+  const syncSlider = (instant) => {
+    const c = document.querySelector('.nav-input:checked');
+    if (!c) return;
+    if (instant) {
+      navSlider.style.transition = 'none';
+      moveSlider(c);
+      void navSlider.offsetWidth;
+      navSlider.style.transition = '';
+    } else moveSlider(c);
   };
 
   navInputs.forEach((input) => {
@@ -44236,6 +44313,67 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
       moveSlider(input);
     });
   });
+
+  // Kayan gösterge: basılı tutulup sürüklenebilir; bırakılınca en yakın sekmeye
+  // yaylanarak oturur ve o sekme seçilir. Dokunmatik + fare (Pointer Events).
+  if (navWrapper && navSlider) {
+    let d = null;
+    const last = navOptions.length - 1;
+    const idxAt = (x) => {
+      const r = navWrapper.getBoundingClientRect(), f = navOptions[0];
+      const i = Math.floor((x - r.left - navWrapper.clientLeft - f.offsetLeft) / f.offsetWidth);
+      return Math.max(0, Math.min(last, i));
+    };
+    const setHot = (i) => navOptions.forEach((o, k) => o.classList.toggle('is-hot', k === i));
+
+    navWrapper.addEventListener('pointerdown', (e) => {
+      if (e.pointerType === 'mouse' && e.button !== 0) return;
+      const i = idxAt(e.clientX);
+      d = { id: e.pointerId, x0: e.clientX, i, moved: false };
+      try { navWrapper.setPointerCapture(e.pointerId); } catch (_) {}
+      navSlider.classList.add('is-pressed');
+      navWrapper.classList.add('is-scrubbing');
+      setHot(i);
+      placeSlider(navOptions[i]);
+    });
+    navWrapper.addEventListener('pointermove', (e) => {
+      if (!d || e.pointerId !== d.id) return;
+      if (!d.moved) {
+        if (Math.abs(e.clientX - d.x0) < 4) return;
+        d.moved = true;
+        navSlider.classList.add('is-dragging');
+      }
+      const r = navWrapper.getBoundingClientRect(), w = navOptions[0].offsetWidth;
+      const min = navOptions[0].offsetLeft, max = navOptions[last].offsetLeft;
+      const x = Math.max(min, Math.min(max, e.clientX - r.left - navWrapper.clientLeft - w / 2));
+      navSlider.style.transform = `translate3d(${x}px,0,0)`;
+      const i = idxAt(e.clientX);
+      if (i !== d.i) { d.i = i; setHot(i); if (navigator.vibrate) navigator.vibrate(6); }
+    });
+    const endDrag = (e, cancel) => {
+      if (!d || e.pointerId !== d.id) return;
+      const i = d.i;
+      d = null;
+      navSlider.classList.remove('is-pressed', 'is-dragging');
+      navWrapper.classList.remove('is-scrubbing');
+      setHot(-1);
+      if (cancel) { syncSlider(false); return; }
+      placeSlider(navOptions[i]);
+      navOptions[i].querySelector('.nav-input').click();
+    };
+    navWrapper.addEventListener('pointerup', (e) => endDrag(e, false));
+    navWrapper.addEventListener('pointercancel', (e) => endDrag(e, true));
+
+    if (window.ResizeObserver) new ResizeObserver(() => { if (!d) syncSlider(true); }).observe(navWrapper);
+    window.addEventListener('load', () => syncSlider(true));
+    // Radio başka koddan (yan panel vb.) değiştirilirse gösterge de takip eder.
+    setInterval(() => {
+      if (d) return;
+      const c = document.querySelector('.nav-input:checked');
+      if (c && navOptions.indexOf(c.closest('.option')) !== navIdx) moveSlider(c);
+    }, 300);
+  }
+  syncSlider(true);
 
 </script>
 
@@ -47570,16 +47708,16 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
   (() => {
     // DEMO sesler (üretilmiş, 8 sn kesintisiz döngü). Gerçek dosyalarla değiştirmek için 'src'yi değiştir.
     const WN_SOUNDS = [
-      { id: 'birds-forest', name: 'Orman kuşları', src: 'noice/birds-forest.m4a', ic: 'M3 11c3 0 5 2 6 5 1-3 3-5 6-5M11 6c2 0 4 1 5 4 1-3 3-4 5-4' },
-      { id: 'birds-morning', name: 'Sabah kuşları', src: 'noice/birds-morning.m4a', ic: 'M3 11c3 0 5 2 6 5 1-3 3-5 6-5M11 6c2 0 4 1 5 4 1-3 3-4 5-4' },
-      { id: 'birds-river', name: 'Nehir kuşları', src: 'noice/birds-river.m4a', ic: 'M3 11c3 0 5 2 6 5 1-3 3-5 6-5M11 6c2 0 4 1 5 4 1-3 3-4 5-4' },
+      { id: 'birds-forest', name: 'Orman kuşları', src: 'noice/birds-forest.m4a', ic: 'M12 3l5 7h-3l4 6H6l4-6H7l5-7zM12 16v5' },
+      { id: 'birds-morning', name: 'Sabah kuşları', src: 'noice/birds-morning.m4a', ic: 'M3 18h18M7 18a5 5 0 0 1 10 0M12 7v2.5M5.2 11l1.8 1.8M18.8 11L17 12.8' },
+      { id: 'birds-river', name: 'Nehir kuşları', src: 'noice/birds-river.m4a', ic: 'M3 9c2.5-3 5-3 7 0 2-3 4.5-3 7 0M3 17c2-2 4-2 6 0s4 2 6 0 3-1.5 6-.5' },
       { id: 'campfire-warm', name: 'Sıcak ateş', src: 'noice/campfire-warm.m4a', ic: 'M12 3c1 3 5 5 5 10a5 5 0 0 1-10 0c0-2 1-3 2-4 0 2 1 3 2 3 0-3-1-5 1-9z' },
-      { id: 'campfire-woods', name: 'Ormanda ateş', src: 'noice/campfire-woods.m4a', ic: 'M12 3c1 3 5 5 5 10a5 5 0 0 1-10 0c0-2 1-3 2-4 0 2 1 3 2 3 0-3-1-5 1-9z' },
-      { id: 'rain-forest', name: 'Orman yağmuru', src: 'noice/rain-forest.m4a', ic: 'M7 15a4 4 0 1 1 1-7.9A5 5 0 0 1 17.5 9 3.5 3.5 0 0 1 17 16H7zM8 19l-1 2M12 19l-1 2M16 19l-1 2' },
-      { id: 'rain-light', name: 'Hafif yağmur', src: 'noice/rain-light.m4a', ic: 'M7 15a4 4 0 1 1 1-7.9A5 5 0 0 1 17.5 9 3.5 3.5 0 0 1 17 16H7zM8 19l-1 2M12 19l-1 2M16 19l-1 2' },
-      { id: 'rain-long', name: 'Uzun yağmur', src: 'noice/rain-long.m4a', ic: 'M7 15a4 4 0 1 1 1-7.9A5 5 0 0 1 17.5 9 3.5 3.5 0 0 1 17 16H7zM8 19l-1 2M12 19l-1 2M16 19l-1 2' },
+      { id: 'campfire-woods', name: 'Ormanda ateş', src: 'noice/campfire-woods.m4a', ic: 'M12 3c.8 2.2 3.5 3.6 3.5 6.5a3.5 3.5 0 0 1-7 0c0-1.3.7-2.2 1.5-3 0 1.3.7 2 1.5 2 0-2-.7-3.6.5-5.5zM5 20l14-4M5 16l14 4' },
+      { id: 'rain-forest', name: 'Orman yağmuru', src: 'noice/rain-forest.m4a', ic: 'M7 10a3.5 3.5 0 1 1 .8-6.9A4.5 4.5 0 0 1 16.5 4 3 3 0 0 1 16 10H7zM12 12l4 5h-2.5l3.5 4H7l3.5-4H8l4-5z' },
+      { id: 'rain-light', name: 'Hafif yağmur', src: 'noice/rain-light.m4a', ic: 'M7 14a4 4 0 1 1 1-7.9A5 5 0 0 1 17.5 8 3.5 3.5 0 0 1 17 14H7zM9 18v1.5M15 18v1.5' },
+      { id: 'rain-long', name: 'Uzun yağmur', src: 'noice/rain-long.m4a', ic: 'M7 11a3.5 3.5 0 1 1 .8-6.9A4.5 4.5 0 0 1 16.5 5 3 3 0 0 1 16 11H7zM8 14l-2 7M12 14l-2 7M16 14l-2 7' },
       { id: 'water-sea', name: 'Deniz', src: 'noice/water-sea.m4a', ic: 'M2 9c2.5-3 5-3 7.5 0s5 3 7.5 0 3-2 5-1M2 15c2.5-3 5-3 7.5 0s5 3 7.5 0 3-2 5-1' },
-      { id: 'water-harbor', name: 'Liman', src: 'noice/water-harbor.m4a', ic: 'M2 9c2.5-3 5-3 7.5 0s5 3 7.5 0 3-2 5-1M2 15c2.5-3 5-3 7.5 0s5 3 7.5 0 3-2 5-1' },
+      { id: 'water-harbor', name: 'Liman', src: 'noice/water-harbor.m4a', ic: 'M12 2.5a2 2 0 1 1 0 4 2 2 0 0 1 0-4zM12 8.5V21M7.5 12h9M5 15c0 3 3 6 7 6s7-3 7-6' },
     ];
     const KEY = 'wnState';
     let S = { mix: {}, master: 0.8, sync: true, paused: true };
