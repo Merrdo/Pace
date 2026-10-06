@@ -43939,7 +43939,7 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
         </svg>
       </div>
     </div>
-    <div class="option">
+    <div class="option is-more">
       <input class="nav-input" type="radio" name="nav" value="page-8">
       <div class="nav-btn">
         <span class="nav-tooltip">Gündelik</span>
@@ -43951,7 +43951,7 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
         </svg>
       </div>
     </div>
-    <div class="option">
+    <div class="option is-more">
       <input class="nav-input" type="radio" name="nav" value="page-camera">
       <div class="nav-btn">
         <span class="nav-tooltip">Soru Havuzu</span>
@@ -43984,7 +43984,7 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
         </svg>
       </div>
     </div>
-    <div class="option">
+    <div class="option is-more">
       <input class="nav-input" type="radio" name="nav" value="page-11">
       <div class="nav-btn">
         <span class="nav-tooltip">Denemelerim</span>
@@ -44007,6 +44007,18 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
       </div>
     </div>
   </div>
+  <div class="nav-scrim" id="navMoreScrim" aria-hidden="true"></div>
+  <div class="nav-more-sheet" id="navMoreSheet" role="menu" aria-label="Daha fazla">
+    <button type="button" class="nav-more-item" data-go="page-8" role="menuitem"><span class="nav-more-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 17 2 2 4-4"/><path d="m3 7 2 2 4-4"/><line x1="13" y1="6" x2="21" y2="6"/><line x1="13" y1="18" x2="21" y2="18"/></svg></span><span class="nav-more-lbl">Gündelik</span></button>
+    <button type="button" class="nav-more-item" data-go="page-camera" role="menuitem"><span class="nav-more-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 8.5a1.5 1.5 0 0 1 1.5-1.5h2.4l1.3-1.8a1.5 1.5 0 0 1 1.2-.6h5.2a1.5 1.5 0 0 1 1.2.6l1.3 1.8h2.4A1.5 1.5 0 0 1 21 8.5v9A1.5 1.5 0 0 1 19.5 19h-15A1.5 1.5 0 0 1 3 17.5z"/><circle cx="12" cy="13" r="3.4"/></svg></span><span class="nav-more-lbl">Soru Havuzu</span></button>
+    <button type="button" class="nav-more-item" data-go="page-11" role="menuitem"><span class="nav-more-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2"/><line x1="8" y1="8" x2="16" y2="8"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="8" y1="16" x2="13" y2="16"/></svg></span><span class="nav-more-lbl">Denemelerim</span></button>
+    <button type="button" class="nav-more-item is-add" data-go="page-8" data-click="gundelikFabAddBtn" role="menuitem"><span class="nav-more-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg></span><span class="nav-more-lbl">Gündelik Ekle</span></button>
+    <button type="button" class="nav-more-item is-add" data-go="page-camera" data-click="navQhavuzAddBtn" role="menuitem"><span class="nav-more-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg></span><span class="nav-more-lbl">Soru Ekle</span></button>
+    <button type="button" class="nav-more-item is-add" data-go="page-11" data-click="page11FabAddBtn" role="menuitem"><span class="nav-more-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg></span><span class="nav-more-lbl">Deneme Ekle</span></button>
+  </div>
+  <button type="button" class="nav-plus" id="navPlusBtn" aria-label="Daha fazla" aria-haspopup="menu" aria-expanded="false" aria-controls="navMoreSheet">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+  </button>
 </nav>
 
 <!-- Soru Havuzu (telefon): Geri / Soru Ekle / Seç. Alt navbar'dan tamamen
@@ -73413,5 +73425,222 @@ body.is-fs-pressing.is-stopwatch-fs:not(.is-stopwatch-running) .wn-fs,body.is-fs
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" crossorigin="anonymous"></script>
 <script src="sync.js?v=38"></script>
+
+<style id="nav-pill-plus-css">
+/* ===== Alt nav: 4 sekmeli hap + ayrı "+" (hızlı erişim) — YALNIZCA telefon =====
+   Büyük ekranda .navbar zaten display:none (yan panel kullanılır). */
+@media not all and (min-width: 768px) and (min-height: 600px) {
+  .navbar {
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 0 16px calc(14px + env(safe-area-inset-bottom));
+    pointer-events: none;
+    --pill-h: 56px;
+    --pill-bg: color-mix(in srgb, var(--theme-bg, #F6F4EF) 72%, transparent);
+    --pill-line: color-mix(in srgb, var(--theme-text, #1a1a1a) 12%, transparent);
+    --pill-shadow: 0 8px 28px -6px color-mix(in srgb, var(--theme-text, #1a1a1a) 28%, transparent);
+  }
+  .navbar::before, .navbar::after { display: none; }
+
+  .navbar .wrapper {
+    flex: 1 1 auto;
+    width: auto;
+    max-width: 300px;
+    height: var(--pill-h);
+    padding: 4px;
+    border-radius: 999px;
+    background: var(--pill-bg);
+    -webkit-backdrop-filter: blur(18px) saturate(1.4);
+    backdrop-filter: blur(18px) saturate(1.4);
+    border: 1px solid var(--pill-line);
+    box-shadow: var(--pill-shadow);
+    pointer-events: auto;
+  }
+
+  /* Sekme dışına alınan sayfalar (artık "+" ızgarasında) */
+  .navbar .option.is-more { display: none; }
+  .navbar .option { flex: 1 1 0; width: auto; height: 100%; top: 0; }
+  .navbar .nav-btn { width: 100%; height: 100%; border-radius: 999px; }
+  .navbar .nav-btn::before { border-radius: 999px; }
+  .navbar .nav-icon { width: 22px; height: 22px; }
+
+  /* Seçili sekmeyi taşıyan yumuşak hap (üstteki çentik yerine) */
+  .navbar .nav-slider {
+    top: 4px; left: 4px;
+    width: calc((100% - 8px) / 4);
+    height: calc(100% - 8px);
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--theme-text, #1a1a1a) 10%, transparent);
+    transition: transform 0.45s cubic-bezier(0.34, 1.3, 0.64, 1);
+  }
+  .navbar .nav-slider::before { display: none; }
+  /* Seçili sayfa "+" ızgarasındansa (Gündelik vb.) gösterge saklanır */
+  .navbar:has(.option.is-more .nav-input:checked) .nav-slider { opacity: 0; }
+
+  /* "+" düğmesi */
+  .navbar .nav-plus {
+    flex: none;
+    position: relative;
+    width: var(--pill-h); height: var(--pill-h);
+    padding: 0; border-radius: 50%;
+    display: grid; place-items: center;
+    color: var(--theme-text, #1a1a1a);
+    background: var(--pill-bg);
+    -webkit-backdrop-filter: blur(18px) saturate(1.4);
+    backdrop-filter: blur(18px) saturate(1.4);
+    border: 1px solid var(--pill-line);
+    box-shadow: var(--pill-shadow);
+    pointer-events: auto;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: background-color .25s ease, color .25s ease, transform .2s ease;
+  }
+  .navbar .nav-plus:active { transform: scale(0.93); }
+  .navbar .nav-plus svg {
+    width: 22px; height: 22px; fill: none; stroke: currentColor;
+    stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round;
+    transition: transform .4s cubic-bezier(0.34, 1.4, 0.64, 1);
+  }
+  .navbar.is-more-open .nav-plus {
+    background: var(--accent-color, #ff90e8);
+    color: #fff;
+  }
+  .navbar.is-more-open .nav-plus svg { transform: rotate(135deg); }
+  .navbar .nav-plus:focus-visible { outline: 2px solid var(--accent-color, #ff90e8); outline-offset: 2px; }
+
+  /* Izgara: sağ alttan, "+" düğmesinden açılır */
+  .navbar .nav-more-sheet {
+    position: fixed;
+    right: 16px;
+    bottom: calc(14px + var(--pill-h) + 12px + env(safe-area-inset-bottom));
+    width: min(300px, calc(100vw - 32px));
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+    padding: 10px;
+    border-radius: 26px;
+    background: color-mix(in srgb, var(--theme-bg, #F6F4EF) 86%, transparent);
+    -webkit-backdrop-filter: blur(22px) saturate(1.4);
+    backdrop-filter: blur(22px) saturate(1.4);
+    border: 1px solid var(--pill-line);
+    box-shadow: var(--pill-shadow);
+    transform-origin: 100% 100%;
+    transform: scale(0.82) translateY(10px);
+    opacity: 0; visibility: hidden; pointer-events: none;
+    transition: transform .38s cubic-bezier(0.34, 1.3, 0.64, 1), opacity .2s ease, visibility 0s linear .38s;
+  }
+  .navbar.is-more-open .nav-more-sheet {
+    transform: none; opacity: 1; visibility: visible; pointer-events: auto;
+    transition-delay: 0s;
+  }
+  .nav-more-item {
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
+    padding: 6px 2px 4px; border: 0; background: none; cursor: pointer;
+    color: var(--theme-text, #1a1a1a); font: inherit; font-size: 0.7rem; font-weight: 600;
+    -webkit-tap-highlight-color: transparent;
+    opacity: 0; transform: translateY(8px) scale(.9);
+    transition: opacity .25s ease, transform .35s cubic-bezier(0.34, 1.4, 0.64, 1);
+  }
+  .navbar.is-more-open .nav-more-item { opacity: 1; transform: none; }
+  .navbar.is-more-open .nav-more-item:nth-child(1) { transition-delay: .04s; }
+  .navbar.is-more-open .nav-more-item:nth-child(2) { transition-delay: .07s; }
+  .navbar.is-more-open .nav-more-item:nth-child(3) { transition-delay: .10s; }
+  .navbar.is-more-open .nav-more-item:nth-child(4) { transition-delay: .13s; }
+  .navbar.is-more-open .nav-more-item:nth-child(5) { transition-delay: .16s; }
+  .navbar.is-more-open .nav-more-item:nth-child(6) { transition-delay: .19s; }
+  .nav-more-ico {
+    width: 100%; max-width: 74px; height: 54px; border-radius: 18px;
+    display: grid; place-items: center;
+    background: color-mix(in srgb, var(--theme-text, #1a1a1a) 7%, transparent);
+    transition: background-color .2s ease, transform .15s ease;
+  }
+  .nav-more-item:active .nav-more-ico { transform: scale(0.94); background: color-mix(in srgb, var(--theme-text, #1a1a1a) 14%, transparent); }
+  .nav-more-item.is-add .nav-more-ico {
+    color: var(--accent-color, #ff90e8);
+    background: color-mix(in srgb, var(--accent-color, #ff90e8) 14%, transparent);
+  }
+  .nav-more-ico svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  .nav-more-lbl { line-height: 1.1; }
+
+  /* Sayfa dışına dokununca kapatmak için görünmez örtü */
+  .navbar .nav-scrim { position: fixed; inset: 0; z-index: -1; display: none; pointer-events: auto; }
+  .navbar.is-more-open .nav-scrim { display: block; }
+
+  /* Navbar'ı gizleyen tüm durumlarda "+" da tıklanamaz olsun */
+  body.is-stopwatch-fs .navbar .nav-plus,
+  body.is-countdown-fs .navbar .nav-plus,
+  body.is-laps-open .navbar .nav-plus,
+  body.is-patterns-open .navbar .nav-plus,
+  body.is-exam-detail-open .navbar .nav-plus,
+  body.is-wheel-open .navbar .nav-plus,
+  body.is-calendar-open .navbar .nav-plus,
+  body.is-qhavuz-test-open .navbar .nav-plus,
+  body.is-page10-open .navbar .nav-plus,
+  body.is-analytics-open .navbar .nav-plus,
+  body.is-zero-error-open .navbar .nav-plus,
+  body.is-page8-typing .navbar .nav-plus,
+  body.is-ztakvim-open .navbar .nav-plus,
+  body.is-stopwatch-fs .navbar .nav-more-sheet,
+  body.is-countdown-fs .navbar .nav-more-sheet,
+  body.is-laps-open .navbar .nav-more-sheet,
+  body.is-patterns-open .navbar .nav-more-sheet,
+  body.is-exam-detail-open .navbar .nav-more-sheet,
+  body.is-wheel-open .navbar .nav-more-sheet,
+  body.is-calendar-open .navbar .nav-more-sheet,
+  body.is-qhavuz-test-open .navbar .nav-more-sheet,
+  body.is-page10-open .navbar .nav-more-sheet,
+  body.is-analytics-open .navbar .nav-more-sheet,
+  body.is-zero-error-open .navbar .nav-more-sheet,
+  body.is-page8-typing .navbar .nav-more-sheet,
+  body.is-ztakvim-open .navbar .nav-more-sheet { pointer-events: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .navbar .nav-more-sheet, .nav-more-item, .navbar .nav-plus svg, .navbar .nav-slider { transition-duration: .01s !important; transition-delay: 0s !important; }
+}
+</style>
+
+<script>
+  // "+" hızlı erişim ızgarası: radio'lar tek doğruluk kaynağı olarak kalır;
+  // ızgara yalnızca ilgili .nav-input'u işaretleyip mevcut 'change' akışını tetikler.
+  (function () {
+    const nav = document.querySelector('.navbar');
+    const plus = document.getElementById('navPlusBtn');
+    const sheet = document.getElementById('navMoreSheet');
+    const scrim = document.getElementById('navMoreScrim');
+    if (!nav || !plus || !sheet) return;
+
+    const setOpen = (on) => {
+      nav.classList.toggle('is-more-open', on);
+      plus.setAttribute('aria-expanded', on ? 'true' : 'false');
+    };
+    plus.addEventListener('click', () => setOpen(!nav.classList.contains('is-more-open')));
+    scrim.addEventListener('click', () => setOpen(false));
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') setOpen(false); });
+    document.querySelectorAll('.nav-input').forEach((i) => i.addEventListener('change', () => setOpen(false)));
+
+    const goTo = (pageId) => {
+      const input = document.querySelector('.nav-input[value="' + pageId + '"]');
+      if (!input) return false;
+      if (!input.checked) {
+        input.checked = true;
+        input.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+      return true;
+    };
+
+    sheet.addEventListener('click', (e) => {
+      const btn = e.target.closest('.nav-more-item');
+      if (!btn) return;
+      setOpen(false);
+      const wasOn = document.querySelector('.nav-input:checked');
+      const alreadyThere = wasOn && wasOn.value === btn.dataset.go;
+      goTo(btn.dataset.go);
+      const clickId = btn.dataset.click;
+      if (clickId) {
+        // Sayfa geçişi (≈200ms) + bar değişimi bittikten sonra sayfanın kendi "ekle" düğmesine bas.
+        setTimeout(() => { const t = document.getElementById(clickId); if (t) t.click(); }, alreadyThere ? 0 : 420);
+      }
+    });
+  })();
+</script>
 </body>
 </html>
