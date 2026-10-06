@@ -57648,21 +57648,23 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
   };
 
   // ---------- Ders kartları ----------
-  const subText = (s, n, tot) => {
+  const subText = (s, n, goal) => {
     const parts = [];
     if (s.pinned) parts.push('Her gün');
-    if (n > 0 && tot > 0) parts.push('%' + Math.round(n / tot * 100));
+    if (n > 0 && goal > 0) parts.push('%' + Math.round(n / goal * 100));
     return parts.join(' · ');
   };
   const refreshCounts = () => {
     const tot = dayTotal(page9DateKey(page9SelectedDate));
+    const goal = page9ClampGoal(page9State.dailyGoal);
     cards.forEach((c) => {
       const n = page9SelectedCountFor(c.s.id);
       if (c.ct.textContent !== String(n)) { c.ct.textContent = String(n); c.ct.classList.remove('is-bump'); void c.ct.offsetWidth; c.ct.classList.add('is-bump'); }
       c.mi.classList.toggle('is-off', n <= 0);
       c.mi.tabIndex = n <= 0 ? -1 : 0;
-      c.sub.replaceChildren(); if (c.s.pinned) c.sub.insertAdjacentHTML('beforeend', SVG_PIN); c.sub.append(subText(c.s, n, tot));
-      c.share.style.setProperty('--w', (tot > 0 ? (n / tot * 100).toFixed(1) : 0) + '%');
+      c.sub.replaceChildren(); if (c.s.pinned) c.sub.insertAdjacentHTML('beforeend', SVG_PIN); c.sub.append(subText(c.s, n, goal));
+      c.share.style.display = goal > 0 ? '' : 'none';
+      c.share.style.setProperty('--w', (goal > 0 ? Math.min(100, n / goal * 100).toFixed(1) : 0) + '%');
     });
     renderHero(false); renderSum(); renderWeekDots();
   };
@@ -57953,7 +57955,7 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
         '<button type="button" class="q9-line q9-clr"><span>Hedefi kaldır</span></button>';
       const num = box.querySelector('input'), [bm, bp] = box.querySelectorAll('.q9-step button');
       const goal = () => page9ClampGoal(page9State.dailyGoal);
-      const setG = (n) => { page9State.dailyGoal = page9ClampGoal(n); savePage9State(); try { renderPage9GoalBtn(); } catch (e) { /* yok say */ } num.value = goal(); renderHero(false); };
+      const setG = (n) => { page9State.dailyGoal = page9ClampGoal(n); savePage9State(); try { renderPage9GoalBtn(); } catch (e) { /* yok say */ } num.value = goal(); refreshCounts(); };
       num.value = goal();
       holdStep(bm, () => setG(goal() - 5)); holdStep(bp, () => setG(goal() + 5));
       num.addEventListener('change', () => setG(parseInt(num.value, 10) || 0));
