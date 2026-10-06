@@ -43330,8 +43330,10 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
 
 <!-- Sayfa 4: seçenek rengini değiştirmek için açılan pop-up. -->
 <div class="wheel-color-backdrop" id="wheelColorBackdrop">
-  <div class="wheel-color-card" id="wheelColorCard">
+  <div class="wheel-color-card" id="wheelColorCard" role="dialog" aria-modal="true" aria-labelledby="wheelColorTitle">
+    <span class="wheel-color-grip" aria-hidden="true"></span>
     <div class="wheel-color-header">
+      <span class="wheel-color-orb" id="wheelColorOrb" aria-hidden="true"></span>
       <div class="wheel-color-heading">
         <span class="wheel-color-title" id="wheelColorTitle">Renk seç</span>
         <span class="wheel-color-subtitle" id="wheelColorSubtitle"></span>
@@ -45992,8 +45994,11 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
   const wheelColorClose = document.getElementById('wheelColorClose');
 
   let colorPickerOnSelect = null;
+  let colorPickerCloseTimer = null;
+  const wheelColorOrb = document.getElementById('wheelColorOrb');
 
   const closeColorPicker = () => {
+    clearTimeout(colorPickerCloseTimer);
     wheelColorBackdrop.classList.remove('is-open');
     colorPickerOnSelect = null;
   };
@@ -46007,13 +46012,17 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
   //          bu pop-up'ı kendi paletleriyle çağırarak yeniden kullanır.
   // title: (opsiyonel) pop-up başlığı — verilmezse "Renk seç" kalır.
   const openColorPicker = (subtitle, currentColor, onSelect, palette, title) => {
+    clearTimeout(colorPickerCloseTimer);
     colorPickerOnSelect = onSelect;
+    wheelColorGrid.classList.remove('is-locked');
+    if (wheelColorOrb) wheelColorOrb.style.background = currentColor || 'color-mix(in srgb, var(--pc-t) 14%, transparent)';
     if (wheelColorTitle) wheelColorTitle.textContent = title || 'Renk seç';
     wheelColorSubtitle.textContent = subtitle;
 
     wheelColorGrid.innerHTML = '';
-    (palette || WHEEL_PALETTE).forEach((color) => {
+    (palette || WHEEL_PALETTE).forEach((color, swatchIndex) => {
       const swatch = document.createElement('button');
+      swatch.style.setProperty('--i', swatchIndex);
       swatch.type = 'button';
       swatch.className = 'wheel-color-swatch';
       swatch.style.background = color;
@@ -46029,8 +46038,16 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
       swatch.appendChild(check);
 
       swatch.addEventListener('click', () => {
-        if (colorPickerOnSelect) colorPickerOnSelect(color);
-        closeColorPicker();
+        if (wheelColorGrid.classList.contains('is-locked')) return;
+        wheelColorGrid.classList.add('is-locked');
+        const cb = colorPickerOnSelect;
+        // Seçilen renk önce önizleme küresine akar, kısa bir vurgudan sonra pencere kapanır.
+        wheelColorGrid.querySelectorAll('.is-selected').forEach((el) => el.classList.remove('is-selected'));
+        swatch.classList.add('is-selected', 'is-picked');
+        if (wheelColorOrb) wheelColorOrb.style.background = color;
+        if (cb) cb(color);
+        clearTimeout(colorPickerCloseTimer);
+        colorPickerCloseTimer = setTimeout(closeColorPicker, 300);
       });
 
       wheelColorGrid.appendChild(swatch);
@@ -61263,7 +61280,7 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
         page11State.colors[exam.type] = color;
         savePage11State();
         renderPage11List();
-      });
+      }, [...WHEEL_PALETTE, '#000000']);
     });
 
     const main = document.createElement('div');
@@ -61436,7 +61453,7 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
         page11State.colors[exam.type] = color;
         savePage11State();
         renderPage11List();
-      });
+      }, [...WHEEL_PALETTE, '#000000']);
     });
 
     const main = document.createElement('div');
@@ -62060,7 +62077,7 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
       svg += `<text class="page11-nettrend-axis-label" x="${(padL - 6).toFixed(1)}" y="${(gy + 2.4).toFixed(1)}" text-anchor="end">${page11FormatNetTrendAxis(gv)}</text>`;
     }
     svg += `<line class="page11-nettrend-cursor-line" x1="0" y1="${padT}" x2="0" y2="${(h - padB).toFixed(1)}"/>`;
-    svg += `<path class="page11-nettrend-line" d="${page11NetTrendPathD(points)}"/>`;
+    svg += `<path class="page11-nettrend-line" pathLength="1" d="${page11NetTrendPathD(points)}"/>`;
     points.forEach((pt) => {
       svg += `<circle class="page11-nettrend-dot" cx="${pt.x.toFixed(1)}" cy="${pt.y.toFixed(1)}" r="3"/>`;
     });
@@ -74962,6 +74979,113 @@ body .page11-fab-bar .page11-fab-analytics{justify-self:end}
 body .page11-fab-bar .qhavuz-fab-add{justify-self:center;height:46px;min-width:0;padding:0 1.5rem;gap:8px;font-size:.95rem}
 body .page11-fab-bar .qhavuz-fab-add .qhavuz-fab-icon{width:17px;height:17px}
 }
+</style>
+<style id="colorPickerRedesignStyle">
+/* ===== Renk seçici: alttan yükselen cam sayfa + yaylanarak beliren daireler ===== */
+.wheel-color-backdrop{--pc-t:var(--theme-text,#121212);--pc-bg:var(--theme-bg,#f6f4ef);--pc-ease:cubic-bezier(.22,1,.36,1);--pc-spring:cubic-bezier(.34,1.56,.64,1)}
+body.is-anthracite .wheel-color-backdrop{--pc-t:#f2f2f4;--pc-bg:var(--dark-card-color,#1c1c22)}
+body .wheel-color-backdrop{align-items:flex-end;justify-content:center;padding:0;background:rgba(10,10,14,0);-webkit-backdrop-filter:blur(0);backdrop-filter:blur(0);transition:opacity .3s ease,background-color .45s ease,backdrop-filter .45s ease,-webkit-backdrop-filter .45s ease}
+body .wheel-color-backdrop.is-open{background:rgba(10,10,14,.42);-webkit-backdrop-filter:blur(7px);backdrop-filter:blur(7px)}
+body .wheel-color-backdrop .wheel-color-card{position:relative;box-sizing:border-box;width:100%;max-width:440px;margin:0 8px calc(8px + env(safe-area-inset-bottom));padding:10px 20px 22px;border:0;border-radius:34px;
+  background:var(--pc-bg);color:var(--pc-t);box-shadow:0 30px 70px -20px rgba(0,0,0,.45),inset 0 0 0 1px color-mix(in srgb,var(--pc-t) 7%,transparent);
+  opacity:1;transform:translateY(calc(100% + 40px));transition:transform .6s var(--pc-ease)}
+body .wheel-color-backdrop.is-open .wheel-color-card{transform:none}
+.wheel-color-grip{display:block;width:38px;height:5px;margin:0 auto 14px;border-radius:99px;background:color-mix(in srgb,var(--pc-t) 16%,transparent)}
+body .wheel-color-backdrop .wheel-color-header{align-items:center;justify-content:flex-start;gap:14px;margin:0}
+.wheel-color-orb{flex:none;width:46px;height:46px;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(0,0,0,.1),0 10px 22px -10px rgba(0,0,0,.45);transform:scale(.4);opacity:0;transition:background .45s var(--pc-ease),transform .7s var(--pc-spring) .15s,opacity .3s ease .15s}
+.wheel-color-backdrop.is-open .wheel-color-orb{transform:none;opacity:1}
+body .wheel-color-backdrop .wheel-color-heading{flex:1;min-width:0;gap:2px}
+body .wheel-color-backdrop .wheel-color-title{font-family:"Baloo 2","Space Grotesk",sans-serif;font-weight:800;font-size:1.3rem;line-height:1.1;letter-spacing:-.01em;color:var(--pc-t)}
+body .wheel-color-backdrop .wheel-color-subtitle{font-family:"Baloo 2","Space Grotesk",sans-serif;font-weight:700;font-size:.84rem;color:var(--pc-t);opacity:.5}
+body .wheel-color-backdrop .wheel-color-close{flex:none;width:38px;height:38px;min-width:0;padding:0;margin:0;border:0;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font:700 1.3rem/1 "Baloo 2",sans-serif;color:var(--pc-t);background:color-mix(in srgb,var(--pc-t) 8%,transparent);box-shadow:none;transform:none;-webkit-tap-highlight-color:transparent;transition:transform .35s var(--pc-ease),background-color .25s}
+body .wheel-color-backdrop .wheel-color-close:hover{background:color-mix(in srgb,var(--pc-t) 8%,transparent);transform:none;box-shadow:none}
+body .wheel-color-backdrop .wheel-color-close:active{background:color-mix(in srgb,var(--pc-t) 14%,transparent);transform:scale(.88);box-shadow:none}
+body .wheel-color-backdrop .wheel-color-grid{margin-top:22px;grid-template-columns:repeat(4,1fr);gap:16px 14px}
+body .wheel-color-backdrop .wheel-color-swatch{width:100%;aspect-ratio:1;padding:0;border:0;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(0,0,0,.09),0 8px 16px -10px rgba(0,0,0,.5);-webkit-tap-highlight-color:transparent;
+  opacity:0;transform:scale(.3) translateY(14px);transition:opacity .2s ease,transform .25s var(--pc-ease),box-shadow .3s var(--pc-ease)}
+body .wheel-color-backdrop.is-open .wheel-color-swatch{opacity:1;transform:none;transition:opacity .35s ease calc(var(--i,0) * 24ms + 150ms),transform .7s var(--pc-spring) calc(var(--i,0) * 24ms + 150ms),box-shadow .3s var(--pc-ease)}
+body .wheel-color-backdrop.is-open .wheel-color-swatch:hover{transform:none;box-shadow:inset 0 0 0 1px rgba(0,0,0,.09),0 8px 16px -10px rgba(0,0,0,.5)}
+body .wheel-color-backdrop.is-open .wheel-color-swatch:active{transform:scale(.86);transition-delay:0s;transition-duration:.15s}
+body .wheel-color-backdrop .wheel-color-swatch.is-selected{box-shadow:0 0 0 3px var(--pc-bg),0 0 0 5.5px var(--pc-t),0 8px 16px -10px rgba(0,0,0,.5)}
+body .wheel-color-backdrop .wheel-color-swatch.is-picked{animation:pcPick .5s var(--pc-spring)}
+body .wheel-color-backdrop .wheel-color-swatch-check{font-size:1.2rem;transition:opacity .2s ease,transform .45s var(--pc-spring)}
+.wheel-color-grid.is-locked .wheel-color-swatch:not(.is-picked){opacity:.45;transition:opacity .25s ease}
+@keyframes pcPick{0%{transform:scale(1)}40%{transform:scale(1.18)}100%{transform:scale(1)}}
+@media (min-width:768px) and (min-height:600px){
+body .wheel-color-backdrop{align-items:center}
+body .wheel-color-backdrop .wheel-color-card{max-width:380px;margin:0;padding-top:22px;transform:translateY(24px) scale(.9);opacity:0;transition:transform .55s var(--pc-spring),opacity .25s ease}
+body .wheel-color-backdrop.is-open .wheel-color-card{transform:none;opacity:1}
+.wheel-color-grip{display:none}
+}
+@media (prefers-reduced-motion:reduce){body .wheel-color-backdrop *{transition-duration:.01s !important;transition-delay:0s !important;animation:none !important}}
+</style>
+<style id="analyticsRedesignStyle">
+/* ===== Analizlerim (telefon): Denemelerim diliyle — tek tonlu, yumuşak kartlar, kademeli giriş ===== */
+@keyframes anRise{from{opacity:0;transform:translateY(22px) scale(.985)}to{opacity:1;transform:none}}
+@keyframes anBar{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+@keyframes anDonut{from{stroke-dashoffset:402.13}}
+@keyframes anPop{0%{opacity:0;transform:scale(.7)}60%{opacity:1;transform:scale(1.06)}100%{transform:scale(1)}}
+@keyframes anDraw{from{stroke-dashoffset:1}to{stroke-dashoffset:0}}
+@media not all and (min-width:768px) and (min-height:600px){
+#page-analytics{--m-t:var(--theme-text,#121212);--m-bg:var(--theme-bg,#f6f4ef);--m-soft:color-mix(in srgb,var(--m-t) 6%,transparent);--m-soft2:color-mix(in srgb,var(--m-t) 12%,transparent);--m-mute:color-mix(in srgb,var(--m-t) 52%,transparent);--m-ease:cubic-bezier(.22,1,.36,1)}
+
+/* Üst çubuk */
+#page-analytics .calendar-back-btn{width:46px;height:46px;border:0 !important;border-radius:50% !important;background:var(--m-soft) !important;color:var(--m-t) !important;box-shadow:none !important;transition:transform .4s var(--m-ease),background-color .3s}
+#page-analytics .calendar-back-btn:active{transform:scale(.9);background:var(--m-soft2) !important}
+#page-analytics .calendar-topbar-title{font-size:1.5rem;font-weight:800;letter-spacing:-.02em;color:var(--m-t)}
+#page-analytics.is-active .calendar-topbar{animation:anRise .6s var(--m-ease) backwards}
+
+/* Tümü / TYT / AYT */
+#page-analytics #analyticsPerfTypeSegmented.settings-segmented{background:var(--m-soft) !important;box-shadow:none !important;height:46px}
+#page-analytics #analyticsPerfTypeSegmented .settings-segmented-slider{background:var(--m-t) !important;box-shadow:none !important;transition:transform .6s var(--m-ease) !important}
+#page-analytics #analyticsPerfTypeSegmented .settings-segmented-option{color:var(--m-mute);font-weight:800;font-size:.86rem;transition:color .4s var(--m-ease)}
+#page-analytics #analyticsPerfTypeSegmented .settings-segmented-option.is-active{color:var(--m-bg);text-shadow:none}
+#page-analytics.is-active #analyticsPerfTypeSegmented{animation:anRise .6s var(--m-ease) 70ms backwards}
+
+/* Kartlar */
+#page-analytics .analytics-mobile-panel{gap:14px}
+#page-analytics .page11-canvas-side{gap:14px}
+#page-analytics .page11-canvas-side-divider{display:none}
+#page-analytics .page11-perf-section,#page-analytics .page11-mistake-section,#page-analytics .page11-nettrend-section{box-sizing:border-box;padding:20px 20px 22px;border-radius:30px;background:var(--m-soft);min-height:0;flex:none}
+#page-analytics.is-active .page11-perf-section{animation:anRise .7s var(--m-ease) 140ms backwards}
+#page-analytics.is-active .page11-mistake-section{animation:anRise .7s var(--m-ease) 230ms backwards}
+#page-analytics.is-active .page11-nettrend-section{animation:anRise .7s var(--m-ease) 320ms backwards}
+#page-analytics .page11-perf-heading{font-size:1.05rem;font-weight:800;letter-spacing:-.01em}
+
+/* Genel performans */
+#page-analytics .page11-perf-donut-wrap{width:132px;height:132px}
+#page-analytics .page11-perf-donut-track{opacity:.09}
+#page-analytics.is-active .page11-perf-donut-progress{animation:anDonut 1.3s var(--m-ease) 330ms backwards}
+#page-analytics .page11-perf-donut-value{font-size:1.75rem;font-weight:800;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+#page-analytics.is-active .page11-perf-donut-center{animation:anPop .8s var(--m-ease) 450ms backwards}
+#page-analytics .page11-perf-donut-label{font-weight:700;opacity:.5}
+#page-analytics .page11-perf-side-value{font-size:1.35rem;font-weight:800;font-variant-numeric:tabular-nums}
+#page-analytics .page11-perf-side-label{font-weight:700;opacity:.5}
+#page-analytics.is-active .page11-perf-side-stat{animation:anRise .6s var(--m-ease) backwards}
+#page-analytics.is-active .page11-perf-side-stat:nth-child(1){animation-delay:380ms}
+#page-analytics.is-active .page11-perf-side-stat:nth-child(2){animation-delay:440ms}
+#page-analytics.is-active .page11-perf-side-stat:nth-child(3){animation-delay:500ms}
+
+/* Hata analizi */
+#page-analytics .page11-mistake-bar-track{height:12px}
+#page-analytics .page11-mistake-bar-bg{opacity:.08}
+#page-analytics.is-active .page11-mistake-bar-fill{transform-origin:0 50%;animation:anBar 1.1s var(--m-ease) 520ms backwards}
+#page-analytics.is-active .page11-mistake-bar-row:nth-child(2) .page11-mistake-bar-fill{animation-delay:620ms}
+#page-analytics .page11-mistake-bar-value{font-weight:800}
+#page-analytics .page11-mistake-bar-label{font-weight:700}
+#page-analytics .page11-mistake-cta{box-sizing:border-box;height:48px;margin-top:4px;padding:0 20px;border-radius:999px;background:var(--m-t);color:var(--m-bg);font-weight:800;font-size:.95rem;-webkit-tap-highlight-color:transparent;transition:transform .4s var(--m-ease)}
+#page-analytics .page11-mistake-cta:active{transform:scale(.97)}
+#page-analytics .page11-mistake-cta svg{stroke:currentColor}
+
+/* Net trend */
+#page-analytics .page11-nettrend-badge{font-weight:800;background:var(--m-soft2)}
+#page-analytics .page11-nettrend-line{stroke:var(--m-t);stroke-width:2.4px;stroke-dasharray:1;stroke-dashoffset:0}
+#page-analytics.is-active .page11-nettrend-line{animation:anDraw 1.4s var(--m-ease) 600ms backwards}
+#page-analytics .page11-nettrend-dot{fill:var(--m-t);stroke:var(--m-bg)}
+#page-analytics.is-active .page11-nettrend-dot{animation:anPop .6s var(--m-ease) 1.2s backwards}
+}
+@media (prefers-reduced-motion:reduce){#page-analytics *{animation:none !important}}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" crossorigin="anonymous"></script>
 <script src="sync.js?v=38"></script>
