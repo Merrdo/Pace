@@ -20381,14 +20381,16 @@
     .sidebar-nav-slider {
       position: absolute;
       top: 0;
-      right: -14px;
-      width: 3px;
-      height: 26px;
-      margin-top: 12px;
-      border-radius: 3px;
-      background-color: var(--accent-color, #ff90e8);
-      box-shadow: 0 0 10px 0 color-mix(in srgb, var(--accent-color, #ff90e8) 65%, transparent);
-      transition: transform 0.55s cubic-bezier(0.34, 1.4, 0.64, 1);
+      left: 50%;
+      width: 50px;
+      height: 50px;
+      margin-left: -25px;
+      border-radius: 20px;
+      /* Mobil dock ile aynı: tema yazı renginde dolu hap, vurgu rengi yok;
+         sekmeler arasında yumuşakça (sıçramadan) kayar. */
+      background-color: var(--theme-text, #1a1a1a);
+      box-shadow: none;
+      transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1), background-color 0.5s ease;
       will-change: transform;
       z-index: 0;
       pointer-events: none;
@@ -20412,20 +20414,21 @@
          Mavisi" gibi açık temalarda siyaha döner, okunabilirlik her
          kombinasyonda korunur. */
       color: var(--theme-text, #ffffff);
+      /* Kamera flaşı seçili (dolu) hapın üstünde okunsun diye mobildeki gibi zemin rengi */
+      --font-color-light: var(--theme-bg, #F6F4EF);
       -webkit-tap-highlight-color: transparent;
-      transition: color 0.25s ease, background-color 0.25s ease, transform 0.15s ease;
+      transition: color 0.35s cubic-bezier(0.22, 1, 0.36, 1), background-color 0.25s ease, transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
     }
 
     .sidebar-nav-icon {
       flex: 0 0 auto;
-      width: 21px;
-      height: 21px;
+      width: 23px;
+      height: 23px;
       fill: none;
       stroke: currentColor;
-      stroke-width: 1.8;
+      stroke-width: 1.9;
       stroke-linecap: round;
       stroke-linejoin: round;
-      transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.3s ease;
     }
 
     @media (hover: hover) and (pointer: fine) {
@@ -20433,21 +20436,20 @@
         background-color: color-mix(in srgb, var(--theme-text, #1a1a1a) 6%, transparent);
       }
 
-      .sidebar-nav-item:not(.is-active):hover .sidebar-nav-icon {
-        transform: translateY(-1px) scale(1.08);
-      }
     }
 
     .sidebar-nav-item:active {
-      transform: scale(0.9);
+      transform: scale(0.86);
     }
 
+    /* Seçili sekme: dolu hapın üstünde zemin rengi (mobil dock ile aynı) */
     .sidebar-nav-item.is-active {
-      color: var(--accent-color, #ff90e8);
+      color: var(--theme-bg, #F6F4EF);
     }
 
-    .sidebar-nav-item.is-active .sidebar-nav-icon {
-      filter: drop-shadow(0 2px 6px color-mix(in srgb, var(--accent-color, #ff90e8) 35%, transparent));
+    .sidebar-nav-item:focus-visible {
+      outline: 2px solid color-mix(in srgb, var(--theme-text, #1a1a1a) 45%, transparent);
+      outline-offset: -3px;
     }
 
     /* Seçim anındaki kısa, zarif "pop": ikon hafifçe küçülüp yaylanarak
@@ -20459,8 +20461,9 @@
       100% { transform: scale(1); }
     }
 
+    /* Mobilde seçimde ikon "pop" yapmıyor; masaüstünde de kapalı. */
     .sidebar-nav-item.is-just-selected .sidebar-nav-icon {
-      animation: sidebarNavPop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+      animation: none;
     }
 
     /* Yanal paneldeki bir sekme seçildiğinde, alttaki mobil nav bar'da
@@ -20557,7 +20560,7 @@
     }
 
     .sidebar-nav-item.is-active .nav-icon-gear {
-      animation: navGearSpin 0.55s cubic-bezier(0.34, 1.56, 0.64, 1);
+      animation: none;
     }
 
     /* Yanal panel her zaman görünür olduğundan alttaki pill navbar'a
@@ -22312,266 +22315,6 @@
     }
   }
 
-  /* ==========================================================================
-     TABLET / GENİŞ EKRAN: Sayfa 9 (Soru Takibi) Yeniden Tasarımı
-     ==========================================================================
-     Telefonda tek sütun, alt alta iki kart (branş listesi + özet) olarak
-     kalır. 768px ve üzerinde ise sayfa artık dar bir şerit değil: başlık
-     tam genişlikte üstte büyük bir satır olarak durur, tarih gezinme
-     kendi küçük aracı olarak başlığın sağına yaslanır, ve asıl içerik
-     (branşlar / özet) yan yana iki geniş kart halinde, ekranın verdiği
-     alanı dolduracak şekilde bir grid'e yerleşir. Branş listesi kendi
-     içinde de ikinci bir sütuna bölünerek çok sayıda ders tek ekranda,
-     kaydırmadan görülebilir. Kart dili (kalın çerçeve/gölge) ve JS akışı
-     (goToPage, drag&drop sıralama, düzenleme modu vb.) hiç değişmez —
-     sadece boyut/yerleşim/tipografi ölçekleri büyür. */
-  @media (min-width: 768px) and (min-height: 600px) {
-    #page-9.page {
-      align-items: flex-start;
-      padding-top: calc(48px + env(safe-area-inset-top));
-    }
-
-    .page9-wrap {
-      max-width: 1180px;
-      width: 100%;
-      gap: 1.6rem;
-    }
-
-    /* Başlık artık dar kartla değil, sayfanın tam genişliğiyle "bütün":
-       sol tarafta dev başlık + alt yazı, sağ tarafta düzenle düğmesi ve
-       hemen altında tarih gezinme aracı aynı sütunda alt alta durur. */
-    .page9-header {
-      flex-direction: row;
-      align-items: flex-start;
-      justify-content: space-between;
-      gap: 1.5rem;
-    }
-
-    .page9-header-top {
-      width: auto;
-      gap: 1rem;
-    }
-
-    .page9-subtitle {
-      font-size: 1rem;
-      opacity: 0.65;
-    }
-
-    .page9-header-top .edit-task-btn {
-      width: 2.5rem;
-      height: 2.5rem;
-      flex-shrink: 0;
-    }
-
-    /* Tarih gezinme artık ortalanmış tam genişlikli bir satır değil,
-       başlığın sağına yaslanan, kendi doğal genişliğinde kompakt bir
-       araç. */
-    .page9-date-row {
-      justify-content: flex-end;
-      gap: 0.6rem;
-      flex-shrink: 0;
-      align-self: flex-start;
-      margin-top: 0.3rem;
-    }
-
-    .page9-date-label {
-      flex: 0 0 auto;
-      min-width: 11rem;
-      padding: 0.6rem 1.1rem;
-      font-size: 0.95rem;
-      border-width: 3px;
-      box-shadow: 4px 4px 0px 0px #000;
-    }
-
-    .page9-date-btn {
-      width: 2.4rem;
-      height: 2.4rem;
-      border-radius: 50%;
-    }
-
-    /* Asıl içerik: branş kartı solda (daha geniş), özet kartı sağda
-       (sabit/daha dar bir bant) — ekranın verdiği tüm genişliği,
-       Sayfa 5'teki gibi 1180px'e kadar kullanır. */
-    .page9-columns {
-      display: grid;
-      grid-template-columns: minmax(0, 1.5fr) minmax(320px, 1fr);
-      align-items: start;
-      gap: 1.6rem;
-    }
-
-    .page9-card {
-      padding: 1.5rem 1.5rem 1.7rem;
-      border-width: 5px;
-      border-radius: 1.5em;
-      box-shadow: 8px 8px 0px 0px #000;
-      gap: 1.1rem;
-      transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.18s ease;
-    }
-
-    @media (hover: hover) and (pointer: fine) {
-      .page9-card:hover {
-        transform: translate(-2px, -2px);
-        box-shadow: 10px 10px 0px 0px #000;
-      }
-    }
-
-    /* .page9-segmented sınıfı Ayarlar'daki "Hafta başlangıcı", Kronometre'nin
-       "Branşlarım" pop-up'ı ve Soru Havuzu'nun cevap tipi seçicisi
-       tarafından da paylaşılıyor; büyütmeyi yalnızca Soru Takibi'nin
-       kendi TYT/AYT ve Gün/Hafta/Ay seçicilerine uygulamak için #page-9
-       ile sınırlandırıyoruz. */
-    #page-9 .page9-segmented {
-      font-size: 0.95rem;
-    }
-
-    #page-9 .settings-segmented.page9-segmented {
-      height: 2.7rem;
-    }
-
-    /* Branş listesi: kart yeterince genişse (auto-fit) kendini iki
-       sütuna böler; az sayıda ders varsa tek sütunda kalır. Satırlar
-       artık ince bir üst çizgiyle değil, kendi başlarına duran hafif
-       çerçeveli birer "fiş" olarak ayrışır — iki sütunlu ızgarada satır
-       sınırları anlamsızlaşacağından bu daha okunaklı. */
-    .page9-subject-list {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(238px, 1fr));
-      gap: 0.6rem 0.9rem;
-    }
-
-    .page9-subject-row {
-      border: 2px solid rgba(0, 0, 0, 0.1);
-      border-radius: 1rem;
-      padding: 0.7rem 0.85rem;
-      gap: 0.7rem;
-      transition: border-color 0.15s ease, background-color 0.15s ease, transform 0.15s ease;
-    }
-
-    .page9-subject-row + .page9-subject-row {
-      border-top: 2px solid rgba(0, 0, 0, 0.1);
-    }
-
-    @media (hover: hover) and (pointer: fine) {
-      .page9-subject-list:not(.is-edit-mode) .page9-subject-row:hover {
-        border-color: rgba(0, 0, 0, 0.28);
-        background-color: rgba(0, 0, 0, 0.025);
-      }
-    }
-
-    body.is-anthracite .page9-subject-row {
-      border-color: rgba(255, 255, 255, 0.12);
-    }
-
-    body.is-anthracite .page9-subject-row + .page9-subject-row {
-      border-top-color: rgba(255, 255, 255, 0.12);
-    }
-
-    @media (hover: hover) and (pointer: fine) {
-      body.is-anthracite .page9-subject-list:not(.is-edit-mode) .page9-subject-row:hover {
-        border-color: rgba(255, 255, 255, 0.3);
-        background-color: rgba(255, 255, 255, 0.04);
-      }
-    }
-
-    .page9-subject-dot {
-      width: 1.3rem;
-      height: 1.3rem;
-    }
-
-    .page9-subject-name {
-      font-size: 0.95rem;
-    }
-
-    .page9-stepper-btn {
-      width: 1.9rem;
-      height: 2.15rem;
-      font-size: 1.05rem;
-    }
-
-    .page9-count-input {
-      width: 2.4rem;
-      height: 2.15rem;
-      font-size: 0.95rem;
-    }
-
-    .page9-add-subject-btn {
-      padding-top: 0.85rem;
-      padding-bottom: 0.85rem;
-      font-size: 0.95rem;
-    }
-
-    /* Özet kartı: daha iri toplam sayı ve daha okunaklı, biraz daha
-       kalın çubuk grafikler. */
-    .page9-summary-total {
-      font-size: 2.6rem;
-    }
-
-    .page9-summary-total span {
-      font-size: 1.05rem;
-    }
-
-    /* .page9-summary-title, Ayarlar'daki "Hafta başlangıcı" etiketiyle de
-       paylaşılıyor; büyütmeyi yalnızca Soru Takibi'nin "Özet" başlığına
-       uygulamak için #page-9 ile sınırlandırıyoruz. */
-    #page-9 .page9-summary-title {
-      font-size: 0.8rem;
-    }
-
-    .page9-summary-range-label {
-      font-size: 0.85rem;
-    }
-
-    .page9-summary-list {
-      gap: 1.1rem;
-    }
-
-    .page9-summary-row-name {
-      font-size: 0.92rem;
-    }
-
-    .page9-summary-row-count {
-      font-size: 0.92rem;
-    }
-
-    .page9-summary-bar-track {
-      height: 11px;
-      border-width: 2.5px;
-    }
-
-    /* "Ders Ekle" pop-up'ı (Soru Takibi'ne özel #page9AddBackdrop):
-       telefondaki dar/tek sütun kart yerine geniş ve iki sütunlu bir
-       ızgara — çok sayıda hazır branş arasında kaydırmadan gezinmeyi
-       kolaylaştırır. Aynı ".page9-add-card/.page9-add-grid" sınıfları
-       başka sayfalardaki (Kronometre "Branşlarım", Soru Havuzu, 0 Hata
-       vb.) pop-up'larda da kullanıldığından, kapsam bilhassa
-       #page9AddBackdrop ile sınırlı tutulur ki o sayfalar etkilenmesin. */
-    #page9AddBackdrop .page9-add-card {
-      max-width: 640px;
-      max-height: 78vh;
-      padding: 1.6rem 1.7rem 1.9rem;
-      border-width: 5px;
-      border-radius: 1.5em;
-      box-shadow: 8px 8px 0px 0px #000;
-    }
-
-    #page9AddBackdrop .page9-add-title {
-      font-size: 1.2rem;
-    }
-
-    #page9AddBackdrop .page9-add-subtitle {
-      font-size: 0.9rem;
-    }
-
-    #page9AddBackdrop .page9-add-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 0.55rem 0.7rem;
-    }
-
-    #page9AddBackdrop .page9-add-custom-row {
-      margin-top: 1.1rem;
-    }
-  }
 
   /* ==========================================================================
      TABLET / GENİŞ EKRAN: Sayfa 10 (İstatistiklerim) Yeniden Tasarımı
@@ -22883,990 +22626,6 @@
     }
   }
 
-  /* ==========================================================================
-     Sayfa 9 (Soru Takibi): SADE YENİDEN TASARIM — Planlayıcı dili
-     ==========================================================================
-     Eski kalın çerçeve + katı gölgeli kart yığını kalktı. Sayfa artık
-     Planlayıcı ve Takvim gibi düz: içerik doğrudan tema zemininde durur,
-     yüzeyler yalnızca yumuşak gri (rgba) ve beyaz "hap" (pill) olarak
-     belirir. Tüm yazılar Baloo 2; metin rengi tema metni, vurgu rengi
-     (accent) sadece asıl eylemde (artı butonu, ilerleme çubuğu, yıl).
-     Akış: başlık → gün seçici → günün toplamı + hedef → TYT/AYT ve ders
-     satırları (büyük eksi/artı) → özet.
-     Bu kurallar #page-9 (ve #page9AddBackdrop / #page9GoalBackdrop)
-     ile kapsamlandığından ortak sınıfları (.page9-*, .settings-segmented,
-     .add-task-btn vb.) kullanan Ayarlar, İstatistik, 0 Hata gibi diğer
-     sayfalar etkilenmez. Bilerek eski kuralların ARDINA konmuştur. */
-  #page-9 {
-    --p9-ease: cubic-bezier(0.16, 1, 0.3, 1);
-    --p9-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
-    --p9-soft: rgba(127, 127, 127, 0.14);
-    --p9-soft-press: rgba(127, 127, 127, 0.24);
-    --p9-shadow: 0 10px 24px -12px rgba(0, 0, 0, 0.32), 0 2px 6px rgba(0, 0, 0, 0.06);
-    --p9-font: "Baloo 2", "Space Grotesk", sans-serif;
-  }
-
-  #page-9.page {
-    padding-top: calc(20px + env(safe-area-inset-top));
-  }
-
-  #page-9 .page9-wrap {
-    max-width: 420px;
-    gap: 1.5rem;
-  }
-
-  /* --- Üst çubuk (Planlayıcı gibi): başlık tam ortada. Sol ve sağ hücre
-     eşit (1fr) olduğundan sağdaki düğmenin genişliği başlığı kaydırmaz.
-     Sayfa kaydırılınca çubuk yukarı kayıp kaybolur; en tepede geri görünür. --- */
-  #page-9 .page9-topbar {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
-    align-items: center;
-    gap: 0.5rem;
-    width: 100%;
-    max-width: none;
-    min-height: 2.6rem;
-  }
-
-  #page-9 .page9-topbar-title {
-    grid-column: 2;
-    margin: 0;
-    font-family: var(--p9-font);
-    font-weight: 800;
-    font-size: 1.25rem;
-    line-height: 1.3;
-    text-align: center;
-    white-space: nowrap;
-  }
-
-  /* Düzenle / Bitti hapı: Planlayıcı'daki "Görev Ekle" ile aynı dil (beyaz,
-     yumuşak gölge, tam yuvarlak). Düzenleme açıkken vurgu rengine dolar,
-     ikon ve metin "Bitti"ye döner. */
-  #page-9 .page9-edit-btn {
-    grid-column: 3;
-    justify-self: end;
-    height: 2.3rem;
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-    padding: 0 0.95rem 0 0.8rem;
-    background-color: #fff;
-    border: none;
-    border-radius: 999px;
-    box-shadow: var(--p9-shadow);
-    color: #121212;
-    font-family: var(--p9-font);
-    font-weight: 700;
-    font-size: 0.85rem;
-    white-space: nowrap;
-    cursor: pointer;
-    touch-action: manipulation;
-    transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.25s ease, color 0.25s ease;
-  }
-
-  #page-9 .page9-edit-icon-done,
-  #page-9 .page9-edit-label-done {
-    display: none;
-  }
-
-  #page-9 .page9-edit-btn.is-active {
-    background-color: var(--accent-color, #ff90e8);
-    color: #16171b;
-  }
-
-  #page-9 .page9-edit-btn.is-active .page9-edit-icon,
-  #page-9 .page9-edit-btn.is-active .page9-edit-label {
-    display: none;
-  }
-
-  #page-9 .page9-edit-btn.is-active .page9-edit-icon-done {
-    display: block;
-  }
-
-  #page-9 .page9-edit-btn.is-active .page9-edit-label-done {
-    display: inline;
-  }
-
-  @media (hover: hover) and (pointer: fine) {
-    #page-9 .page9-edit-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 14px 28px -12px rgba(0, 0, 0, 0.36), 0 2px 6px rgba(0, 0, 0, 0.07);
-    }
-  }
-
-  #page-9 .page9-edit-btn:active {
-    transform: scale(0.96);
-    box-shadow: 0 6px 14px -10px rgba(0, 0, 0, 0.28), 0 1px 4px rgba(0, 0, 0, 0.05);
-  }
-
-  body.is-anthracite #page-9 .page9-edit-btn:not(.is-active) {
-    background-color: var(--dark-card-color, #1c1c22);
-    color: #f2f2f4;
-  }
-
-  /* Çok dar ekranlarda (≤350px) başlıkla çakışmasın diye düğme sadece ikon olur
-     (aria-label yine "Branşları düzenle / Düzenlemeyi bitir" der). */
-  @media (max-width: 350px) {
-    #page-9 .page9-edit-btn {
-      padding: 0 0.8rem;
-    }
-
-    #page-9 .page9-edit-label,
-    #page-9 .page9-edit-btn.is-active .page9-edit-label-done {
-      display: none;
-    }
-  }
-
-  /* --- Gün seçici: solda "19 Eylül 2026" (yıl vurgu renginde) ve altında
-     "Bugün / Dün / N gün önce"; sağda iki ok. --- */
-  /* Planlayıcı'nın hafta şeridi gibi: sayfa aşağı kaydırılınca başlık
-     yukarı kayıp gider, bu satır ise üstte (güvenli alanın hemen altında)
-     sabit kalır. Arkasındaki zemin (::before) kaydırmayla 0→1 belirir
-     (JS: --p9-stick), böylece altından kayan içerik satırla üst üste binip
-     okunmaz. #page-9 kaydırma kutusu olduğundan position:sticky doğrudan çalışır. */
-  #page-9 .page9-date-row {
-    position: sticky;
-    top: 0;
-    z-index: 40;
-    flex-shrink: 0;
-    justify-content: space-between;
-    gap: 0.35rem;
-    --p9-stick: 0;
-  }
-
-  #page-9 .page9-date-row::before {
-    content: '';
-    position: absolute;
-    left: -24px;
-    right: -24px;
-    top: calc(-1 * (20px + env(safe-area-inset-top)));
-    bottom: -16px;
-    z-index: -1;
-    pointer-events: none;
-    opacity: var(--p9-stick, 0);
-    /* Mat (tam opak) zemin: altından kayan içerik artık hiç sezilmesin diye
-       yarı saydam color-mix yerine düz --theme-bg rengi kullanılır. */
-    background-color: var(--theme-bg, #F6F4EF);
-    -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 16px), transparent);
-    mask-image: linear-gradient(to bottom, #000 calc(100% - 16px), transparent);
-    transition: background-color var(--theme-transition-duration, 480ms) var(--theme-transition-easing, ease);
-  }
-
-  #page-9 .page9-date-label {
-    order: 0;
-    flex: 1 1 auto;
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0;
-    padding: 0;
-    text-align: left;
-    background: none;
-    border: none;
-    border-radius: 0;
-    box-shadow: none;
-    font-family: var(--p9-font);
-    font-weight: 700;
-    font-size: 1.4rem;
-    color: var(--theme-text, #f2f2f7);
-    cursor: pointer;
-    transition: color 0.5s ease;
-  }
-
-  #page-9 .page9-date-line {
-    display: flex;
-    align-items: baseline;
-    gap: 0.4rem;
-    letter-spacing: -0.01em;
-  }
-
-  #page-9 .page9-date-year {
-    color: var(--accent-color, #ff90e8);
-  }
-
-  #page-9 .page9-date-rel {
-    font-weight: 600;
-    font-size: 0.88rem;
-    opacity: 0.5;
-  }
-
-  #page-9 .page9-date-label.is-swap .page9-date-line,
-  #page-9 .page9-date-label.is-swap .page9-date-rel {
-    animation: p9SlideIn 0.42s var(--p9-ease) backwards;
-  }
-
-  #page-9 .calendar-nav-btn.page9-date-btn {
-    order: 1;
-    flex-shrink: 0;
-    width: 2.4rem;
-    height: 2.4rem;
-    background-color: transparent;
-    border: none;
-    box-shadow: none;
-    color: var(--accent-color, #ff90e8);
-    transition: color 0.5s ease, background-color 0.15s ease, transform 0.15s ease, opacity 0.2s ease;
-  }
-
-  #page-9 #page9NextDayBtn {
-    order: 2;
-    margin-right: -0.5rem;
-  }
-
-  #page-9 .calendar-nav-btn.page9-date-btn:hover {
-    transform: none;
-    box-shadow: none;
-  }
-
-  @media (hover: hover) {
-    #page-9 .calendar-nav-btn.page9-date-btn:not(:disabled):hover {
-      background-color: var(--p9-soft);
-    }
-  }
-
-  #page-9 .calendar-nav-btn.page9-date-btn:not(:disabled):active {
-    transform: scale(0.9);
-    box-shadow: none;
-    background-color: var(--p9-soft-press);
-  }
-
-  #page-9 .calendar-nav-btn.page9-date-btn:disabled {
-    opacity: 0.3;
-    box-shadow: none;
-    transform: none;
-  }
-
-  /* --- Günün toplamı + hedef --- */
-  #page-9 .page9-hero {
-    display: flex;
-    flex-direction: column;
-    gap: 0.9rem;
-  }
-
-  #page-9 .page9-hero-top {
-    display: flex;
-    align-items: flex-end;
-    justify-content: space-between;
-    gap: 0.8rem;
-  }
-
-  #page-9 .page9-hero-count {
-    display: flex;
-    align-items: baseline;
-    gap: 0.45rem;
-    min-width: 0;
-  }
-
-  #page-9 .page9-hero-total {
-    font-family: var(--p9-font);
-    font-weight: 800;
-    font-size: 3.2rem;
-    line-height: 1;
-    letter-spacing: -0.02em;
-    font-variant-numeric: tabular-nums;
-    color: var(--theme-text, #f2f2f7);
-    transition: color 0.5s ease;
-  }
-
-  #page-9 .page9-hero-total.is-bump {
-    animation: p9Bump 0.32s var(--p9-spring);
-  }
-
-  #page-9 .page9-hero-unit {
-    font-family: var(--p9-font);
-    font-weight: 600;
-    font-size: 0.88rem;
-    color: var(--theme-text, #f2f2f7);
-    opacity: 0.5;
-  }
-
-  /* "Hedef Belirle" / "Hedef 150 soru": Planlayıcı'daki "Görev Ekle" hapı. */
-  #page-9 .page9-goal-btn {
-    flex-shrink: 0;
-    width: auto;
-    height: 2.5rem;
-    gap: 0.45rem;
-    padding: 0 1rem 0 0.8rem;
-    background-color: #fff;
-    border: none;
-    border-radius: 999px;
-    box-shadow: var(--p9-shadow);
-    color: #121212;
-    font-family: var(--p9-font);
-    font-weight: 700;
-    font-size: 0.92rem;
-    white-space: nowrap;
-    transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease, color 0.2s ease;
-  }
-
-  @media (hover: hover) and (pointer: fine) {
-    #page-9 .page9-goal-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 14px 28px -12px rgba(0, 0, 0, 0.36), 0 2px 6px rgba(0, 0, 0, 0.07);
-    }
-  }
-
-  #page-9 .page9-goal-btn:active {
-    transform: scale(0.97);
-    box-shadow: 0 6px 14px -10px rgba(0, 0, 0, 0.28), 0 1px 4px rgba(0, 0, 0, 0.05);
-    background-color: var(--accent-color, #ff90e8);
-    color: #16171b;
-  }
-
-  #page-9 .page9-goal-btn-icon {
-    width: auto;
-    height: auto;
-    background: none;
-    border: none;
-    border-radius: 0;
-    color: inherit;
-  }
-
-  #page-9 .page9-goal-btn-label {
-    flex: 0 1 auto;
-  }
-
-  /* Hedef varsa etiket gizlenir, yerine "Hedef 150 soru" görünür. */
-  #page-9 .page9-goal-btn.has-goal .page9-goal-btn-label {
-    display: none;
-  }
-
-  #page-9 .page9-goal-btn-value {
-    padding: 0;
-    font-size: inherit;
-    color: inherit;
-    background: none;
-    border: none;
-    border-radius: 0;
-  }
-
-  #page-9 .page9-goal-btn-value::before {
-    content: "Hedef ";
-  }
-
-  #page-9 .page9-hero-progress {
-    display: none;
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-
-  #page-9 .page9-hero.has-goal .page9-hero-progress {
-    display: flex;
-  }
-
-  #page-9 .page9-hero-bar {
-    height: 0.6rem;
-    border-radius: 999px;
-    background-color: var(--p9-soft);
-    overflow: hidden;
-  }
-
-  #page-9 .page9-hero-bar-fill {
-    display: block;
-    height: 100%;
-    width: 0;
-    border-radius: 999px;
-    background-color: var(--accent-color, #ff90e8);
-    transition: width 0.6s var(--p9-ease), background-color 0.5s ease;
-  }
-
-  #page-9 .page9-hero-note {
-    font-family: var(--p9-font);
-    font-weight: 600;
-    font-size: 0.88rem;
-    color: var(--theme-text, #f2f2f7);
-    opacity: 0.5;
-  }
-
-  #page-9 .page9-hero.is-complete .page9-hero-note {
-    opacity: 0.85;
-  }
-
-  /* --- Bölümler: kart yok, sadece boşluk --- */
-  #page-9 .page9-card {
-    background: none;
-    border: none;
-    border-radius: 0;
-    box-shadow: none;
-    padding: 0;
-    gap: 0.9rem;
-    transform: none;
-  }
-
-  /* TYT/AYT ve Gün/Hafta/Ay: yumuşak gri hap + beyaz kayan seçim. */
-  #page-9 .settings-segmented.page9-segmented {
-    height: 2.6rem;
-    padding: 3px;
-    background: var(--p9-soft);
-    border: none;
-    border-radius: 999px;
-    box-shadow: none;
-    font-size: 0.92rem;
-  }
-
-  #page-9 .page9-segmented .settings-segmented-slider {
-    width: calc((100% - 6px) / 2);
-    border-radius: 999px;
-    background: #fff;
-    box-shadow: 0 4px 10px -4px rgba(0, 0, 0, 0.25), 0 1px 3px rgba(0, 0, 0, 0.08);
-    transition: transform 0.42s var(--p9-spring);
-  }
-
-  #page-9 #page9RangeSegmented .settings-segmented-slider {
-    width: calc((100% - 6px) / 3);
-  }
-
-  #page-9 .page9-segmented .settings-segmented-option {
-    font-family: var(--p9-font);
-    font-weight: 700;
-    font-size: 0.92rem;
-    color: var(--theme-text, #f2f2f7);
-    opacity: 0.6;
-    border-radius: 999px;
-    transition: color 0.25s ease, opacity 0.25s ease;
-  }
-
-  #page-9 .page9-segmented .settings-segmented-option.is-active {
-    color: #121212;
-    opacity: 1;
-  }
-
-  /* --- Ders satırları --- */
-  #page-9 .page9-subject-list {
-    gap: 0.1rem;
-  }
-
-  #page-9 .page9-subject-row {
-    gap: 0.75rem;
-    min-height: 3.4rem;
-    padding: 0.4rem 0;
-    border: none;
-    border-radius: 0.9rem;
-  }
-
-  #page-9 .page9-subject-row + .page9-subject-row {
-    border-top: none;
-  }
-
-  #page-9 .page9-subject-row.is-dragging {
-    background-color: var(--theme-bg, #272727);
-    border-radius: 0.9rem;
-    box-shadow: var(--p9-shadow);
-  }
-
-  #page-9 .page9-subject-row-placeholder {
-    border: 2px dashed var(--p9-soft-press);
-    border-radius: 0.9rem;
-  }
-
-  /* Renk noktası: çerçevesiz, altında yumuşak gölge; dokunma alanı büyütülmüş. */
-  #page-9 .page9-subject-dot {
-    position: relative;
-    width: 0.95rem;
-    height: 0.95rem;
-    border: none;
-    box-shadow: 0 4px 8px -3px rgba(0, 0, 0, 0.35);
-  }
-
-  #page-9 .page9-subject-dot::after {
-    content: "";
-    position: absolute;
-    inset: -0.7rem;
-  }
-
-  #page-9 .page9-subject-name,
-  #page-9 .page9-subject-name-input {
-    font-family: var(--p9-font);
-    font-weight: 700;
-    font-size: 1.1rem;
-    color: var(--theme-text, #f2f2f7);
-    transition: color 0.5s ease;
-  }
-
-  #page-9 .page9-subject-name-input {
-    border-bottom: 2px solid var(--accent-color, #ff90e8);
-  }
-
-  /* Eksi / sayı / artı: büyük dokunma alanları. Eksi sessiz, artı asıl
-     eylem olduğu için vurgu renginde dolu daire. */
-  #page-9 .page9-stepper {
-    align-items: center;
-    gap: 0.1rem;
-    padding: 0.2rem;
-    background-color: var(--p9-soft);
-    border: none;
-    border-radius: 999px;
-    box-shadow: none;
-    overflow: visible;
-  }
-
-  #page-9 .page9-stepper-btn {
-    width: 2.3rem;
-    height: 2.3rem;
-    border-radius: 50%;
-    font-family: var(--p9-font);
-    font-weight: 700;
-    font-size: 1.3rem;
-    color: var(--theme-text, #f2f2f7);
-    background-color: transparent;
-    transition: background-color 0.15s ease, transform 0.15s ease, color 0.5s ease;
-  }
-
-  #page-9 .page9-stepper-btn:first-child,
-  #page-9 .page9-stepper-btn:last-child {
-    border-radius: 50%;
-  }
-
-  #page-9 .page9-stepper-btn:active,
-  #page-9 .page9-stepper-btn.is-pressed {
-    background-color: var(--p9-soft-press);
-    transform: scale(0.92);
-  }
-
-  #page-9 .page9-stepper-plus {
-    background-color: var(--accent-color, #ff90e8);
-    color: #16171b;
-    box-shadow: 0 6px 12px -6px rgba(0, 0, 0, 0.4);
-  }
-
-  #page-9 .page9-stepper-plus:active,
-  #page-9 .page9-stepper-plus.is-pressed {
-    background-color: var(--accent-color, #ff90e8);
-    filter: brightness(0.94);
-  }
-
-  #page-9 .page9-count-input {
-    width: 2.6rem;
-    height: 2.3rem;
-    font-family: var(--p9-font);
-    font-weight: 700;
-    font-size: 1.18rem;
-    color: var(--theme-text, #f2f2f7);
-    border: none;
-    border-radius: 0.6rem;
-    transition: color 0.5s ease;
-  }
-
-  #page-9 .page9-count-input:focus {
-    outline: none;
-    background-color: var(--p9-soft);
-  }
-
-  #page-9 .page9-count-input.is-bump {
-    animation: p9Bump 0.28s var(--p9-spring);
-  }
-
-  /* Düzenleme modundaki sabitle / sil butonları: sessiz gri daireler. */
-  #page-9 .page9-subject-pin,
-  #page-9 .page9-subject-delete {
-    width: 2rem;
-    height: 2rem;
-    margin-right: calc(-2rem - 0.75rem);
-    border: none;
-    border-radius: 50%;
-    box-shadow: none;
-    background-color: var(--p9-soft);
-    color: var(--theme-text, #f2f2f7);
-  }
-
-  #page-9 .page9-subject-delete {
-    font-family: var(--p9-font);
-    font-size: 1.25rem;
-    color: #e5484d;
-    background-color: rgba(229, 72, 77, 0.14);
-  }
-
-  #page-9 .page9-subject-list.is-edit-mode .page9-subject-pin,
-  #page-9 .page9-subject-list.is-edit-mode .page9-subject-delete {
-    margin-right: 0;
-  }
-
-  #page-9 .page9-subject-pin.is-active {
-    background-color: var(--accent-color, #ff90e8);
-    color: #16171b;
-  }
-
-  #page-9 .page9-subject-pin:active,
-  #page-9 .page9-subject-delete:active {
-    transform: scale(0.9);
-    box-shadow: none;
-  }
-
-  /* "Ders Ekle": Planlayıcı'daki "Görev Ekle" hapı. */
-  #page-9 .page9-add-subject-btn {
-    align-self: flex-start;
-    width: auto;
-    height: 2.9rem;
-    display: flex;
-    align-items: center;
-    gap: 0.45rem;
-    margin-top: 0.3rem;
-    padding: 0 1.2rem 0 1rem;
-    background-color: #fff;
-    border: none;
-    border-radius: 999px;
-    box-shadow: var(--p9-shadow);
-    color: #121212;
-    font-family: var(--p9-font);
-    font-weight: 700;
-    font-size: 0.92rem;
-    transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease, color 0.2s ease;
-  }
-
-  @media (hover: hover) and (pointer: fine) {
-    #page-9 .page9-add-subject-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 14px 28px -12px rgba(0, 0, 0, 0.36), 0 2px 6px rgba(0, 0, 0, 0.07);
-    }
-  }
-
-  #page-9 .page9-add-subject-btn:active {
-    transform: scale(0.97);
-    box-shadow: 0 6px 14px -10px rgba(0, 0, 0, 0.28), 0 1px 4px rgba(0, 0, 0, 0.05);
-    background-color: var(--accent-color, #ff90e8);
-    color: #16171b;
-  }
-
-  /* --- Özet --- */
-  #page-9 .page9-summary-card {
-    gap: 1.1rem;
-  }
-
-  #page-9 .page9-summary-header {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
-    align-items: baseline;
-    gap: 0.8rem 0.6rem;
-  }
-
-  #page-9 .page9-summary-title {
-    grid-area: 1 / 1;
-    font-family: var(--p9-font);
-    font-weight: 800;
-    font-size: 1.25rem;
-    letter-spacing: 0;
-    text-transform: none;
-    color: var(--theme-text, #f2f2f7);
-    opacity: 1;
-    transition: color 0.5s ease;
-  }
-
-  #page-9 .page9-summary-range-label {
-    grid-area: 1 / 2;
-    text-align: right;
-    font-family: var(--p9-font);
-    font-weight: 600;
-    font-size: 0.88rem;
-    color: var(--theme-text, #f2f2f7);
-    opacity: 0.5;
-  }
-
-  #page-9 .page9-summary-header .page9-segmented {
-    grid-area: 2 / 1 / 3 / 3;
-  }
-
-  #page-9 .page9-summary-total {
-    font-family: var(--p9-font);
-    font-weight: 800;
-    font-size: 2.6rem;
-    line-height: 1;
-    letter-spacing: -0.02em;
-    color: var(--theme-text, #f2f2f7);
-  }
-
-  #page-9 .page9-summary-total span {
-    font-weight: 600;
-    font-size: 0.92rem;
-    letter-spacing: 0;
-    opacity: 0.5;
-  }
-
-  #page-9 .page9-summary-list {
-    gap: 1.2rem;
-  }
-
-  #page-9 .page9-summary-card.is-day .page9-summary-total,
-  #page-9 .page9-summary-card.is-day .page9-summary-range-label {
-    display: none;
-  }
-
-  #page-9 .page9-summary-group {
-    gap: 0.7rem;
-  }
-
-  #page-9 .page9-summary-group-label {
-    font-family: var(--p9-font);
-    font-weight: 600;
-    font-size: 0.72rem;
-    letter-spacing: 0;
-    text-transform: none;
-    color: var(--theme-text, #f2f2f7);
-    opacity: 0.5;
-  }
-
-  #page-9 .page9-summary-row {
-    gap: 0.4rem;
-  }
-
-  #page-9 .page9-summary-row-name,
-  #page-9 .page9-summary-row-count {
-    font-family: var(--p9-font);
-    font-weight: 700;
-    font-size: 0.98rem;
-    color: var(--theme-text, #f2f2f7);
-  }
-
-  #page-9 .page9-summary-row-dot {
-    width: 0.65rem;
-    height: 0.65rem;
-    border: none;
-  }
-
-  #page-9 .page9-summary-bar-track {
-    height: 0.5rem;
-    border: none;
-    border-radius: 999px;
-    background-color: var(--p9-soft);
-  }
-
-  #page-9 .page9-summary-bar-fill {
-    border-radius: 999px;
-  }
-
-  #page-9 .page9-summary-empty {
-    font-family: var(--p9-font);
-    font-weight: 600;
-    font-size: 0.92rem;
-    color: var(--theme-text, #f2f2f7);
-    opacity: 0.5;
-    padding: 0.4rem 0;
-  }
-
-  /* --- Anthracite: beyaz hap yüzeyler kart rengine geçer (Planlayıcı gibi). --- */
-  body.is-anthracite #page-9 .page9-goal-btn,
-  body.is-anthracite #page-9 .page9-add-subject-btn {
-    background-color: var(--dark-card-color, #1c1c22);
-    color: #f2f2f4;
-  }
-
-  body.is-anthracite #page-9 .page9-goal-btn:active,
-  body.is-anthracite #page-9 .page9-add-subject-btn:active {
-    background-color: var(--accent-color, #ff90e8);
-    color: #16171b;
-  }
-
-  /* Işık modunda hap (track) rengi olan --p9-soft, yarı saydam gri
-     (rgba(127,127,127,0.14)) olduğu için koyu bir zemin üzerinde de
-     -id seçici (yüksek özgüllük) yüzünden- aynı şekilde uygulanmaya
-     devam ediyordu. Karanlık modda bu, arkadaki #272727 tonuyla
-     karışınca kayan seçim (slider) için kullanılan kart rengiyle
-     (--dark-card-color, #1c1c22) neredeyse birebir aynı parlaklığa
-     geliyor ve "TYT/AYT" ile "Gün/Hafta/Ay" seçicilerinde seçili
-     seçeneğin arka planı görünmez oluyordu. Karanlık modda hapı daha
-     koyu bir zemine çekip kayan seçimle aradaki kontrastı geri
-     kazandırıyoruz. */
-  body.is-anthracite #page-9 .settings-segmented.page9-segmented {
-    background: rgba(0, 0, 0, 0.32);
-  }
-
-  body.is-anthracite #page-9 .page9-segmented .settings-segmented-slider {
-    background: var(--dark-card-color, #1c1c22);
-    box-shadow: 0 4px 10px -4px rgba(0, 0, 0, 0.5), 0 1px 3px rgba(0, 0, 0, 0.35);
-  }
-
-  body.is-anthracite #page-9 .page9-segmented .settings-segmented-option.is-active {
-    color: #f2f2f4;
-  }
-
-  /* --- Animasyonlar: sayfa açılınca bölümler sırayla yerine oturur; gün
-     ya da sekme değişince satırlar tazelenir; sayı değişince küçük bir
-     "pop". Hepsi #page-9.is-active altında: sayfa geçişi bitince başlar. --- */
-  @keyframes p9Settle {
-    from { opacity: 0; transform: translateY(10px); }
-  }
-
-  @keyframes p9RowIn {
-    from { opacity: 0; transform: translateY(8px); }
-  }
-
-  @keyframes p9SlideIn {
-    from { opacity: 0; transform: translateX(calc(var(--dir, 0) * 16px)); }
-  }
-
-  @keyframes p9Bump {
-    0% { transform: scale(1); }
-    45% { transform: scale(1.18); }
-    100% { transform: scale(1); }
-  }
-
-  @keyframes p9BarGrow {
-    from { width: 0; }
-  }
-
-  #page-9.is-active .page9-topbar,
-  #page-9.is-active .page9-date-row,
-  #page-9.is-active .page9-hero,
-  #page-9.is-active .page9-card {
-    animation: p9Settle 0.5s var(--p9-ease) backwards;
-  }
-
-  #page-9.is-active .page9-date-row { animation-delay: 40ms; }
-  #page-9.is-active .page9-hero { animation-delay: 80ms; }
-  #page-9.is-active .page9-card { animation-delay: 130ms; }
-  #page-9.is-active .page9-summary-card { animation-delay: 200ms; }
-
-  #page-9.is-active .page9-hero-bar-fill {
-    animation: p9BarGrow 0.8s var(--p9-ease) 250ms backwards;
-  }
-
-  /* Satır girişi: düzenleme modunda titreme animasyonu (page9Jiggle) devrede
-     olduğundan sadece normal modda. Satırlara inline negatif animation-delay
-     (titreme için) atandığından gecikme !important ile ezilir. */
-  #page-9.is-active .page9-subject-list:not(.is-edit-mode) .page9-subject-row {
-    animation: p9RowIn 0.4s var(--p9-ease) backwards;
-    animation-delay: calc(var(--i, 0) * 40ms + 160ms) !important;
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    #page-9 *,
-    #page-9 *::before,
-    #page-9 *::after {
-      animation: none !important;
-      transition-duration: 0.01s !important;
-    }
-  }
-
-  /* --- Tablet / geniş ekran: iki sütun korunur; sütunlar yumuşak yüzey. --- */
-  @media (min-width: 768px) and (min-height: 600px) {
-    #page-9 .page9-wrap {
-      max-width: 1040px;
-      gap: 1.8rem;
-    }
-
-    /* "Özet" kartının solundaki tarih/hero/branş sütunuyla üstten hizalı
-       başlaması için sayfanın tamamı iki sütunlu bir grid'e alınır: sol
-       sütunda üst çubuk + tarih + hero + branş kartı üst üste akar, sağ
-       sütunda ise SADECE Özet kartı en baştan (tarihle aynı satırdan)
-       başlayıp aşağı doğru uzanır. .page9-columns artık ayrı bir grid
-       değil, bu üst grid'in doğrudan bir parçası: page9-card (branşlar)
-       sol sütunda kalırken page9-summary-card sağ sütuna, ilk satırdan
-       itibaren yerleşir. */
-    #page-9 .page9-wrap {
-      display: grid;
-      grid-template-columns: minmax(0, 1.5fr) minmax(320px, 1fr);
-      grid-template-areas:
-        "topbar  summary"
-        "date    summary"
-        "hero    summary"
-        "subjects summary";
-      column-gap: 1.8rem;
-      row-gap: 1.2rem;
-      align-items: start;
-    }
-
-    #page-9 .page9-topbar { grid-area: topbar; }
-    #page-9 .page9-columns {
-      display: contents;
-    }
-
-    #page-9 .page9-columns > .page9-card:not(.page9-summary-card) {
-      grid-area: subjects;
-    }
-
-    /* Sağ sütun (Özet) sol sütundan daha kısa içerik taşıyabiliyor;
-       eskiden height:100% ile kart gövdesi uzatılıyor ama içi dolmuyordu,
-       bu da aşağı kaydırınca sol taraf sürerken sağ tarafın "bitip yarım
-       kalmış" görünmesine yol açıyordu. #page-11-detail'deki özet
-       panelinde kullanılan aynı çözüm: kart kaydırma sırasında üstte
-       sabit (sticky) kalır, kendi boyu kadar yer kaplar, altında boşluk
-       bırakmaz. */
-    #page-9 .page9-columns > .page9-summary-card {
-      grid-area: summary;
-      position: sticky;
-      top: 20px;
-      align-self: start;
-      max-height: calc(100vh - 40px);
-      overflow-y: auto;
-      scrollbar-width: none;
-      -ms-overflow-style: none;
-    }
-
-    #page-9 .page9-columns > .page9-summary-card::-webkit-scrollbar {
-      display: none;
-    }
-
-    #page-9.page {
-      padding-top: calc(20px + env(safe-area-inset-top));
-    }
-
-    #page-9 .page9-date-row {
-      grid-area: date;
-      justify-content: flex-start;
-      align-self: stretch;
-      margin-top: 0;
-      gap: 0.3rem;
-    }
-
-    #page-9 .page9-date-label {
-      flex: 0 0 auto;
-      min-width: 0;
-      margin-right: 0.6rem;
-    }
-
-    #page-9 #page9NextDayBtn {
-      margin-right: 0;
-    }
-
-    #page-9 .page9-hero {
-      grid-area: hero;
-      /* Sol sütunun tamamını kaplar: ilerleme çubuğu Özet paneline kadar
-         uzanır, "Hedef" butonu da sütunun sağ ucuna oturur. */
-      width: 100%;
-      max-width: none;
-      box-sizing: border-box;
-    }
-
-    /* Eski tablet kuralı hedef butonuna min-width: 17rem veriyordu. */
-    #page-9 .page9-goal-btn {
-      min-width: 0;
-      padding: 0 1rem 0 0.8rem;
-      font-size: 0.95rem;
-    }
-
-    #page-9 .page9-card {
-      padding: 1.6rem;
-      border-radius: 1.8rem;
-      background: rgba(127, 127, 127, 0.08);
-    }
-
-    #page-9 .page9-subject-list {
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 0.3rem 1rem;
-    }
-
-    #page-9 .page9-subject-row {
-      padding: 0.45rem 0.7rem;
-    }
-
-    @media (hover: hover) and (pointer: fine) {
-      #page-9 .page9-subject-list:not(.is-edit-mode) .page9-subject-row:hover {
-        background-color: var(--p9-soft);
-        border: none;
-      }
-    }
-
-    #page-9 .settings-segmented.page9-segmented {
-      height: 2.8rem;
-    }
-
-    #page-9 .page9-summary-total {
-      font-size: 3rem;
-    }
-
-    #page-9 .page9-summary-title {
-      font-size: 1.4rem;
-    }
-  }
 
   /* ---------- Sayfa 9 pop-up'ları (Ders Ekle + Günlük Hedef) ----------
      Sayfa düzleşince pop-up'lar da aynı dile geçti: kalın çerçeve ve katı
@@ -41408,7 +40167,7 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
        bazında hem genel toplamı hem branş dağılımını gösterir. -->
   <section class="page" id="page-9">
     <div id="q9m"></div>
-    <div class="page9-wrap">
+    <div class="page9-wrap" hidden aria-hidden="true">
       <!-- Planlayıcı ile aynı üst çubuk mantığı: başlık ortada, sayfayla
            birlikte yukarı kayıp kaybolur; en yukarı kaydırınca geri gelir.
            Sağdaki hap düğme düzenleme modunu açar/kapatır (Düzenle ↔ Bitti). -->
@@ -41502,11 +40261,8 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
   </section>
 
 <style id="q9mCss">
-/* ===== Soru Takibi · mobil yeniden tasarım v2 (büyük ekrana dokunmaz) ===== */
-#q9m{display:none}
+/* ===== Soru Takibi · mobil yeniden tasarım v2 (telefon + masaüstü) ===== */
 .q9m,.q9-ov,.q9-sp,.q9-tour{--t:var(--theme-text,#121212);--bg:var(--theme-bg,#f6f4ef);--soft:color-mix(in srgb,var(--t) 6%,transparent);--soft2:color-mix(in srgb,var(--t) 12%,transparent);--mute:color-mix(in srgb,var(--t) 52%,transparent);--ease:cubic-bezier(.22,1,.36,1);--glide:cubic-bezier(.33,.9,.4,1);--spring:cubic-bezier(.34,1.45,.64,1);font-family:"Baloo 2","Space Grotesk",sans-serif;color:var(--t)}
-.q9-ov,.q9-sp,.q9-tour{display:none}
-@media not all and (min-width:768px) and (min-height:600px){
 #page-9 .page9-wrap{display:none !important}
 #page-9.page{padding:0 18px calc(120px + env(safe-area-inset-bottom))}
 #page-9 #q9m{display:block;width:100%;max-width:440px;margin:0 auto}
@@ -41837,7 +40593,6 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
 .q9-void .ic{width:56px;height:56px;border-radius:50%;background:var(--soft);display:grid;place-items:center;color:var(--mute)}
 .q9-void b{font-size:1.1rem;font-weight:800}
 .q9-void span{font-size:.84rem;font-weight:700;color:var(--mute);max-width:26ch}
-}
 @keyframes q9In{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
 @keyframes q9InL{from{opacity:0;transform:translateX(16px)}to{opacity:1;transform:none}}
 @keyframes q9InR{from{opacity:0;transform:translateX(-16px)}to{opacity:1;transform:none}}
@@ -41850,6 +40605,68 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
 @keyframes q9Sw{0%{opacity:0;transform:translateY(5px)}100%{opacity:1;transform:none}}
 @keyframes q9Shake{0%,100%{transform:none}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
 @media (prefers-reduced-motion:reduce){.q9m *,.q9-ov *,.q9-sp *,.q9-tour *{animation:none !important;transition-duration:.01s !important}}
+
+/* ---------- Masaüstü uyarlaması ---------- */
+.q9-wk{display:none}
+@media (hover:hover) and (pointer:fine){
+.q9-wk{display:grid;place-items:center;width:40px;height:40px;border-radius:50%;background:var(--soft) !important;transition:transform .4s var(--ease),background .3s,opacity .3s}
+.q9-wk:hover{background:var(--soft2) !important}
+.q9-wk:active{transform:scale(.92)}
+.q9-wk:disabled{opacity:.25;pointer-events:none}
+.q9-help:hover,.q9-sumbtn:hover,.q9-sp-back:hover{background:var(--soft2) !important}
+.q9-card,.q9-add{cursor:pointer}
+}
+@media (min-width:768px) and (min-height:600px){
+/* ===== MASAÜSTÜ DÜZENİ (yalnızca geniş ekran; telefon etkilenmez) =====
+   Üst şerit tek satır: tarih | hafta şeridi | eylemler.
+   Gövde iki sütun: solda hedef halkası (sabit), sağda TYT/AYT + ders ızgarası. */
+#page-9.page{padding:0 40px 56px}
+#page-9 #q9m{max-width:1180px}
+.q9-head{display:grid;grid-template-columns:minmax(190px,1fr) minmax(0,560px) minmax(190px,1fr);align-items:center;column-gap:28px;padding:26px 0 18px}
+.q9-head .q9-top{display:contents}
+.q9-head .q9-date{grid-column:1;grid-row:1}
+.q9-head .q9-week{grid-column:2;grid-row:1;margin-top:0}
+.q9-head .q9-act{grid-column:3;grid-row:1;justify-self:end}
+.q9-date b{font-size:2.2rem}
+.q9-body{display:grid;grid-template-columns:340px minmax(0,1fr);column-gap:48px;align-items:start;padding-top:18px}
+.q9-body>.q9-hero{grid-column:1;grid-row:1 / span 3;width:220px;height:220px;margin:8px auto 0;position:sticky;top:150px}
+.q9-body>.q9-hero .q9-hn b{font-size:4rem}
+.q9-body>.q9-hero .q9-hn em{font-size:.95rem}
+.q9-body>.q9-goalnote{grid-column:1;grid-row:1 / span 3;align-self:start;margin:0;padding-top:0;position:sticky;top:392px;font-size:.95rem}
+.q9-body>.q9-listhead{grid-column:2;grid-row:1;margin:8px 2px 18px}
+.q9-body>.q9-listhead .q9-seg{width:200px}
+.q9-body>.q9-listhead .q9-seg button{padding:11px 18px;font-size:.88rem}
+.q9-body>.q9-listhead small{font-size:.9rem}
+.q9-body>.q9-list{grid-column:2;grid-row:2;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;align-items:stretch}
+.q9-body>.q9-list .q9-add{grid-column:1 / -1;margin-top:0}
+.q9-body>.q9-list .q9-add.is-empty{padding:56px 20px 50px}
+.q9-body>.q9-hint{grid-column:2;grid-row:3;text-align:left;margin:18px 4px 0}
+.q9-card{padding:14px 14px 19px 14px}
+.q9-ava{width:54px;height:54px;font-size:1.3rem}
+.q9-cn b{font-size:1.12rem}
+.q9-ct{font-size:1.55rem}
+.q9-card:hover{transform:translateY(-2px);transition:transform .35s var(--ease)}
+.q9-card.is-press{transform:scale(.985)}
+/* Özet sayfası: dar şerit yerine iki sütun */
+.q9-sp-bar,.q9-sp-pad{max-width:1080px}
+.q9-sp-bar{padding-left:40px;padding-right:40px}
+.q9-sp-pad{padding-left:40px;padding-right:40px}
+.q9-sp-rng{max-width:420px}
+.q9-sp-c{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);column-gap:28px;align-items:start}
+.q9-sp-c>.q9-big{grid-column:1;grid-row:1;align-self:center}
+.q9-sp-c>.q9-tiles{grid-column:2;grid-row:1}
+.q9-sp-c>.q9-sec{grid-column:auto}
+.q9-sp-c>.q9-void{grid-column:1 / -1}
+.q9-sh{max-width:560px;left:50%;right:auto;width:100%;margin-left:-280px;border-radius:30px 30px 0 0}
+}
+@media (min-width:768px) and (max-width:1279px) and (min-height:600px){
+.q9-head{grid-template-columns:auto minmax(0,1fr) auto;column-gap:18px}
+.q9-body{grid-template-columns:260px minmax(0,1fr);column-gap:32px}
+.q9-body>.q9-hero{width:190px;height:190px}
+.q9-body>.q9-hero .q9-hn b{font-size:3.4rem}
+.q9-body>.q9-goalnote{top:362px;font-size:.85rem}
+.q9-body>.q9-list{grid-template-columns:minmax(0,1fr)}
+}
 </style>
 
   <!-- Sayfa 10: İstatistiklerim. Sayfa 5'teki kronometre her gün 00:00'da
@@ -58668,7 +57485,7 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
   root.innerHTML =
     '<header class="q9-head" id="q9Head">' +
       '<div class="q9-top"><button type="button" class="q9-date" id="q9Date"><b></b><span></span></button>' +
-      '<div class="q9-act"><button type="button" class="q9-help" id="q9Help" aria-label="Nasıl kullanılır? Rehberi aç">?</button>' +
+      '<div class="q9-act"><button type="button" class="q9-wk" id="q9WkPrev" aria-label="Önceki hafta">' + SVG_PREV + '</button><button type="button" class="q9-wk" id="q9WkNext" aria-label="Sonraki hafta">' + SVG_NEXT + '</button><button type="button" class="q9-help" id="q9Help" aria-label="Nasıl kullanılır? Rehberi aç">?</button>' +
       '<button type="button" class="q9-sumbtn" id="q9SumBtn" aria-label="Özet sayfasını aç">' + SVG_CHART + '<span>Özet</span></button></div></div>' +
       '<div class="q9-week" id="q9Week"></div>' +
     '</header>' +
@@ -58920,6 +57737,16 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
     elWeek.addEventListener('touchcancel', (e) => finish(e, true), { passive: true });
   })();
 
+  // Masaüstü: fare ile hafta değiştirme (oklar + klavye ←/→)
+  $('#q9WkPrev').addEventListener('click', () => shiftWeek(-1));
+  $('#q9WkNext').addEventListener('click', () => shiftWeek(1));
+  document.addEventListener('keydown', (e) => {
+    if (!pageEl.classList.contains('is-active') || (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight')) return;
+    const t = e.target; if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable)) return;
+    if (document.querySelector('.q9-ov.is-open, .q9-sp.is-open, .q9-tour.is-open')) return;
+    shiftWeek(e.key === 'ArrowLeft' ? -1 : 1);
+  });
+
   // ---------- Alt sayfa (bottom sheet) ----------
   const ov = mk('<div class="q9-ov"><div class="q9-sh"><div class="q9-grab"><i></i></div><div class="q9-sc"></div></div></div>');
   document.body.appendChild(ov);
@@ -58935,11 +57762,24 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
     ov.classList.remove('is-open'); document.body.classList.remove('has-modal-open'); sh.style.transform = '';
     const cb = onClose; onClose = null; if (cb) cb();
   };
-  ov.addEventListener('pointerdown', (e) => { if (e.target === ov) closeSheet(); });
+  // Pencere dışına (boş alana) dokunup kapatırken aynı dokunuş alttaki butona (Ders ekle, +/−, gün...)
+  // "tıklama" olarak geçmesin: kapanış önceliklidir. Pencere kapandıktan SONRAKİ dokunuşlar normal çalışır.
+  const shieldNextClick = (released) => {
+    let t = 0;
+    const h = (e) => { e.stopPropagation(); e.preventDefault(); };
+    const off = () => { clearTimeout(t); window.removeEventListener('click', h, true); };
+    const arm = () => { window.removeEventListener('pointerup', arm, true); window.removeEventListener('pointercancel', arm, true); clearTimeout(t); t = setTimeout(off, 450); };
+    window.addEventListener('click', h, true);
+    window.addEventListener('pointerup', arm, true);
+    window.addEventListener('pointercancel', arm, true);
+    t = setTimeout(off, 4000); // güvenlik: pointerup hiç gelmezse
+    if (released) arm(); // parmak zaten kalktıysa (sürükleyip kapatma) süreyi hemen başlat
+  };
+  ov.addEventListener('pointerdown', (e) => { if (e.target === ov && ov.classList.contains('is-open')) { shieldNextClick(); closeSheet(); } });
   let sy = null, sdy = 0;
   grab.addEventListener('pointerdown', (e) => { sy = e.clientY; sdy = 0; sh.style.transition = 'none'; try { grab.setPointerCapture(e.pointerId); } catch (x) { /* yok say */ } });
   grab.addEventListener('pointermove', (e) => { if (sy == null) return; sdy = Math.max(0, e.clientY - sy); sh.style.transform = `translateY(${sdy}px)`; });
-  const gEnd = () => { if (sy == null) return; sy = null; sh.style.transition = ''; if (sdy > 90) closeSheet(); else sh.style.transform = ''; };
+  const gEnd = () => { if (sy == null) return; sy = null; sh.style.transition = ''; if (sdy > 90) { shieldNextClick(true); closeSheet(); } else sh.style.transform = ''; };
   grab.addEventListener('pointerup', gEnd); grab.addEventListener('pointercancel', gEnd);
   const holdStep = (btn, fn) => {
     let to = 0, n = 0; const stop = () => { clearTimeout(to); btn.classList.remove('is-press'); };
@@ -75486,6 +74326,125 @@ body .wheel-color-backdrop.is-open .wheel-color-card{transform:none;opacity:1}
   #page-zero-error .ze-all:hover{transform:translateY(-2px)}
   #page-zero-error .ze-card:hover:active{transform:scale(.982)}
 }
+</style>
+<style id="desktopMonoStyle">
+/* =====================================================================
+   Denemelerim + Analizlerim (MASAÜSTÜ) · telefondaki sade/yumuşak görünüm
+   Telefondaki p11MonoStyle + analyticsRedesignStyle bloklarının renk, yüzey ve
+   şekil kuralları masaüstüne uyarlandı: vurgu rengi yok, tema yazı rengi +
+   yumuşak yüzeyler, 30px köşeli kartlar, yuvarlak/yumuşak hap düğmeler.
+   YALNIZCA görsel katman: yerleşim (grid/flex düzeni, konumlar, sütun
+   genişlikleri) değişmez. Telefon kuralları bu bloktan etkilenmez.
+   GERİ ALMAK İÇİN: bu <style> bloğunu silmek yeterli.
+   ===================================================================== */
+@media (min-width:768px) and (min-height:600px){
+#page-11{--m-t:var(--theme-text,#121212);--m-bg:var(--theme-bg,#f6f4ef);--m-soft:color-mix(in srgb,var(--m-t) 6%,transparent);--m-soft2:color-mix(in srgb,var(--m-t) 12%,transparent);--m-mute:color-mix(in srgb,var(--m-t) 52%,transparent);--m-ease:cubic-bezier(.22,1,.36,1)}
+
+/* ---------- Başlık ---------- */
+#page-11.page .page11-canvas-title{font-weight:800;letter-spacing:-.02em;line-height:1.05}
+#page-11.p11-enter.is-active .page11-canvas-headrow{animation:p11Soft .6s var(--m-ease) backwards}
+#page-11.p11-enter.is-active .page11-canvas-toolbar{animation:p11Soft .6s var(--m-ease) 60ms backwards}
+
+/* ---------- Segment (Tümü / TYT / AYT) ---------- */
+#page-11.page #page11CanvasTypeSegmented{background:var(--m-soft) !important;box-shadow:none !important}
+#page-11.page #page11CanvasTypeSlider{background:var(--m-t) !important;box-shadow:none !important;transition:transform .6s var(--m-ease) !important}
+#page-11.page #page11CanvasTypeSegmented .settings-segmented-option{color:var(--m-mute);font-weight:800;text-shadow:none;transition:color .4s var(--m-ease)}
+#page-11.page #page11CanvasTypeSegmented .settings-segmented-option.is-active{color:var(--m-bg);text-shadow:none}
+
+/* ---------- Sırala / Ara / Yedekle ---------- */
+#page-11.page .page11-canvas-sort-btn,#page-11.page .page11-canvas-icon-btn,#page-11.page .page11-canvas-search{background:var(--m-soft) !important;box-shadow:none !important}
+#page-11.page .page11-canvas-sort-btn,#page-11.page .page11-canvas-icon-btn{color:var(--m-t);font-weight:800;transition:transform .4s var(--m-ease),background-color .3s}
+#page-11.page .page11-canvas-sort-btn:active,#page-11.page .page11-canvas-icon-btn:active{transform:scale(.95);background:var(--m-soft2) !important}
+#page-11.page .page11-canvas-search{transition:background-color .35s,box-shadow .35s var(--m-ease)}
+#page-11.page .page11-canvas-search:focus-within{background:var(--m-soft2) !important;box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--m-t) 22%,transparent) !important}
+#page-11.page .page11-canvas-search-icon{color:var(--m-mute)}
+#page-11.page .page11-canvas-search-input{font-weight:700}
+#page-11.page .page11-canvas-search-input::placeholder{color:var(--m-mute);opacity:1}
+@media (hover:hover) and (pointer:fine){
+#page-11.page .page11-canvas-sort-btn:hover,#page-11.page .page11-canvas-icon-btn:hover{background:var(--m-soft2) !important}
+}
+
+/* ---------- Deneme Ekle: dolu tek koyu hap (telefondaki alt çubuk düğmesi gibi) ---------- */
+#page-11.page .page11-canvas-add-btn{background:var(--m-t);color:var(--m-bg);font-weight:800;text-shadow:none;box-shadow:0 10px 22px -14px color-mix(in srgb,var(--m-t) 45%,transparent);transition:transform .4s var(--m-ease),box-shadow .3s}
+#page-11.page .page11-canvas-add-btn:active{transform:scale(.95)}
+@media (hover:hover) and (pointer:fine){
+#page-11.page .page11-canvas-add-btn:hover{background:var(--m-t);box-shadow:0 12px 26px -12px color-mix(in srgb,var(--m-t) 55%,transparent)}
+}
+
+/* ---------- Deneme kartları ---------- */
+#page-11.page .page11-wide-card{--ta:var(--wide-accent,var(--m-t));border-radius:30px;background:var(--m-soft) !important;box-shadow:none !important;-webkit-tap-highlight-color:transparent;transition:transform .5s var(--m-ease),background-color .3s,box-shadow .4s var(--m-ease)}
+#page-11.page .page11-wide-card:hover{background:var(--m-soft2) !important;box-shadow:none !important}
+#page-11.page .page11-wide-card:active{transform:scale(.99);background:var(--m-soft2) !important;box-shadow:none !important}
+
+/* TYT: yuvarlak · AYT: yuvarlatılmış kare — ikisi de kendi tür rengiyle dolu */
+#page-11.page .page11-wide-emblem{border-radius:50%;background:var(--ta) !important;color:var(--ta-ink,#fff);box-shadow:0 10px 20px -12px var(--ta) !important;font-family:"Baloo 2","Space Grotesk",sans-serif;font-weight:800;text-shadow:none !important;filter:none;transition:transform .4s var(--m-ease),border-radius .5s var(--m-ease)}
+#page-11.page .page11-wide-emblem:hover{filter:none}
+#page-11.page .page11-wide-emblem:active{transform:scale(.92)}
+#page-11.page .page11-wide-emblem[aria-label^="AYT"]{border-radius:19px}
+#page-11.page .page11-wide-emblem-letter,#page-11.page .page11-wide-emblem-cycle .page11-wide-emblem-lock{color:var(--ta-ink,#fff);text-shadow:none !important;font-weight:800}
+
+#page-11.page .page11-wide-name{font-weight:800;letter-spacing:-.005em}
+#page-11.page .page11-wide-date{color:var(--m-mute);font-weight:700}
+#page-11.page .page11-wide-net{color:var(--m-t) !important;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+#page-11.page .page11-wide-net span{color:var(--m-mute);font-weight:800;letter-spacing:.02em}
+
+/* Artış: dolu koyu hap · düşüş: yumuşak hap */
+#page-11.page .page11-wide-trend{font-weight:800;font-variant-numeric:tabular-nums}
+#page-11.page .page11-wide-trend.is-up{background:var(--m-t);color:var(--m-bg)}
+#page-11.page .page11-wide-trend.is-down{background:var(--m-soft2);color:var(--m-t)}
+
+/* ---------- Seç ve Yedekle ---------- */
+#page-11.page .page11-canvas-select-bar{border-radius:999px;padding:.55rem .55rem .55rem 1.25rem;background:color-mix(in srgb,var(--m-bg) 90%,var(--m-t));color:var(--m-t);box-shadow:inset 0 0 0 1px var(--m-soft2),0 18px 40px -20px color-mix(in srgb,var(--m-t) 55%,transparent);-webkit-backdrop-filter:blur(18px) saturate(1.4);backdrop-filter:blur(18px) saturate(1.4)}
+#page-11.page .page11-canvas-select-count{font-weight:800;color:var(--m-t);font-variant-numeric:tabular-nums}
+#page-11.page .page11-canvas-select-cancel,#page-11.page .page11-canvas-select-confirm{border-radius:999px;padding:.7rem 1.1rem;font-weight:800;line-height:1;box-shadow:none;-webkit-tap-highlight-color:transparent;transition:transform .4s var(--m-ease),opacity .3s,background-color .3s}
+#page-11.page .page11-canvas-select-cancel{background:var(--m-soft2);color:var(--m-t)}
+#page-11.page .page11-canvas-select-confirm{background:var(--m-t);color:var(--m-bg)}
+#page-11.page .page11-canvas-select-confirm:disabled{opacity:.3}
+
+/* Seçim modu: vurgu rengi yerine tema yazı rengi */
+#page-11.page .page11-wide-select{background:var(--m-bg) !important;color:var(--m-t) !important;border:0 !important;box-shadow:inset 0 0 0 2px var(--m-mute) !important;transition:transform .45s var(--m-ease),opacity .3s,background-color .3s,box-shadow .3s}
+#page-11.page .page11-wide-card.is-selected .page11-wide-select{background:var(--m-t) !important;color:var(--m-bg) !important;box-shadow:none !important}
+#page-11.page .page11-canvas-results.is-select-mode .page11-wide-card.is-selected{background:var(--m-soft2) !important;box-shadow:inset 0 0 0 2px var(--m-t) !important}
+
+/* ---------- Boş durum ---------- */
+#page-11.page .page11-canvas-results-empty{display:flex;flex-direction:column;align-items:center;gap:14px;box-sizing:border-box;width:100%;max-width:900px;padding:38px 20px 34px;border-radius:30px;background:none;box-shadow:inset 0 0 0 1.5px var(--m-soft2);color:var(--m-mute);opacity:1;font-weight:800;font-size:1rem;text-align:center}
+#page-11.page .page11-canvas-results-empty::before{content:"+";display:grid;place-items:center;width:54px;height:54px;border-radius:50%;background:var(--m-t);color:var(--m-bg);font-size:1.8rem;font-weight:800;line-height:1}
+
+/* ---------- Analizlerim (sağ sütun): yumuşak 30px kartlar ---------- */
+#page-11.page .page11-canvas-side{gap:.9rem}
+#page-11.page .page11-canvas-side-divider{display:none}
+#page-11.page .page11-perf-section,#page-11.page .page11-mistake-section,#page-11.page .page11-nettrend-section{box-sizing:border-box;padding:18px 16px 20px;border-radius:30px;background:var(--m-soft)}
+#page-11.p11-enter.is-active .page11-perf-section{animation:p11Soft .6s var(--m-ease) 120ms backwards}
+#page-11.p11-enter.is-active .page11-mistake-section{animation:p11Soft .6s var(--m-ease) 190ms backwards}
+#page-11.p11-enter.is-active .page11-nettrend-section{animation:p11Soft .6s var(--m-ease) 260ms backwards}
+#page-11.page .page11-perf-heading{font-size:1.05rem;font-weight:800;letter-spacing:-.01em}
+
+/* Genel performans */
+#page-11.page .page11-perf-body{gap:1rem}
+#page-11.page .page11-perf-donut-track{opacity:.09}
+#page-11.page .page11-perf-donut-value{font-size:1.65rem;font-weight:800;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+#page-11.page .page11-perf-donut-label{font-weight:700;opacity:.5}
+#page-11.page .page11-perf-side-value{font-size:1.35rem;font-weight:800;font-variant-numeric:tabular-nums}
+#page-11.page .page11-perf-side-label{font-weight:700;opacity:.5;white-space:normal;min-width:0;line-height:1.15}
+
+/* Hata analizi */
+#page-11.page .page11-mistake-bar-track{height:12px}
+#page-11.page .page11-mistake-bar-bg{opacity:.08}
+#page-11.page .page11-mistake-bar-value{font-weight:800}
+#page-11.page .page11-mistake-bar-label{font-weight:700}
+#page-11.page .page11-mistake-cta{box-sizing:border-box;height:48px;margin-top:4px;padding:0 20px;border-radius:999px;background:var(--m-t);color:var(--m-bg);font-weight:800;font-size:.95rem;-webkit-tap-highlight-color:transparent;transition:transform .4s var(--m-ease)}
+#page-11.page .page11-mistake-cta:active{transform:scale(.97)}
+#page-11.page .page11-mistake-cta svg{stroke:currentColor}
+
+/* Net trend */
+#page-11.page .page11-nettrend-badge{font-weight:800;background:var(--m-soft2)}
+#page-11.page .page11-nettrend-badge.is-up{background:color-mix(in srgb,#00e6a0 24%,transparent)}
+#page-11.page .page11-nettrend-badge.is-down{background:color-mix(in srgb,#ff3d68 20%,transparent)}
+#page-11.page .page11-nettrend-line{stroke:var(--m-t);stroke-width:2.4px}
+#page-11.page .page11-nettrend-dot{fill:var(--m-t);stroke:var(--m-bg)}
+#page-11.page .page11-nettrend-cursor-line{stroke:var(--m-t)}
+}
+@media (prefers-reduced-motion:reduce){#page-11.page *{animation:none !important}}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" crossorigin="anonymous"></script>
 <script src="sync.js?v=39"></script>
