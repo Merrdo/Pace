@@ -42467,15 +42467,9 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
 
       <div class="exam-detail-sidebar">
         <div class="exam-detail-summary-card">
-          <div class="exam-detail-summary-head">
-            <span class="exam-detail-summary-label">Toplam Net</span>
-            <span class="exam-detail-summary-meta" id="examDetailMeta"></span>
-          </div>
+          <span class="exam-detail-summary-label">Toplam Net</span>
           <div class="exam-detail-summary-total" id="examDetailTotalNet">0<span>net</span></div>
-          <div class="exam-detail-acc">
-            <div class="exam-detail-acc-head"><span>Doğru Oranı</span><b id="examDetailAccPct">0%</b></div>
-            <div class="exam-detail-dots" id="examDetailDots" aria-hidden="true"></div>
-          </div>
+          <span class="exam-detail-summary-meta" id="examDetailMeta"></span>
           <div class="exam-detail-summary-stats">
             <div class="exam-detail-stat is-correct">
               <span class="exam-detail-stat-value" id="examDetailCorrectCount">0</span>
@@ -44362,6 +44356,9 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
         </svg>
       </div>
     </div>
+    <button type="button" class="nav-add-btn" id="navAddBtn" aria-label="Ekle">
+      <svg class="nav-add-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+    </button>
   </div>
 </nav>
 
@@ -74803,22 +74800,23 @@ body.p11-return .page11-fab-bar,body.p11-return .page11-fab-bar .qhavuz-fab{tran
    DOM/JS aynı (radyo girdileri + .nav-slider); yalnızca görünüm katmanı.
    ===================================================================== */
 @media not all and (min-width:768px) and (min-height:600px){
-.navbar{--n-t:var(--theme-text,#121212);--n-bg:var(--theme-bg,#f6f4ef);--n-ease:cubic-bezier(.22,1,.36,1);padding:0 14px calc(16px + env(safe-area-inset-bottom));pointer-events:none}
-/* Kayan içerik dock'un altında yumuşakça solar (sert çizgi / bulanık şerit yok) */
-.navbar::before{content:'';position:absolute;left:0;right:0;bottom:0;top:-22px;z-index:0;pointer-events:none;background:linear-gradient(to top,color-mix(in srgb,var(--n-bg) 96%,transparent) 0,color-mix(in srgb,var(--n-bg) 86%,transparent) 55%,transparent 100%);-webkit-backdrop-filter:none;backdrop-filter:none}
+.navbar{--n-t:var(--theme-text,#121212);--n-bg:var(--theme-bg,#f6f4ef);--n-ease:cubic-bezier(.22,1,.36,1);padding:0 10px calc(16px + env(safe-area-inset-bottom));pointer-events:none}
+/* Temiz görünüm: arkada şerit/gradyan yok, dock tek başına yüzer */
+.navbar::before{display:none}
 .navbar::after{display:none}
 
-.navbar .wrapper{--nav-pad:5px;--font-color-light:var(--n-bg);z-index:1;box-sizing:border-box;width:100%;max-width:392px;height:60px;padding:var(--nav-pad);border:0;border-radius:28px;
-  background:color-mix(in srgb,var(--n-bg) 91%,var(--n-t));
-  box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--n-t) 8%,transparent),0 18px 32px -20px color-mix(in srgb,var(--n-t) 60%,transparent);
+.navbar .wrapper{--nav-pad:5px;--font-color-light:var(--n-bg);z-index:1;box-sizing:border-box;width:100%;max-width:332px;height:58px;margin-right:66px;padding:var(--nav-pad);border:0;border-radius:29px;
+  background:none;box-shadow:none;
   pointer-events:auto;animation:navDockIn .7s var(--n-ease) backwards}
 
+/* Cam yüzey pseudo katmanda: wrapper "backdrop root" olmaz, içindeki + düğmesi de sayfayı bulanıklaştırabilir */
+.navbar .wrapper::before{content:'';position:absolute;inset:0;z-index:-1;border-radius:inherit;pointer-events:none;background:color-mix(in srgb,var(--n-bg) 74%,transparent);-webkit-backdrop-filter:blur(24px) saturate(1.8);backdrop-filter:blur(24px) saturate(1.8);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--n-t) 9%,transparent),0 12px 30px -14px color-mix(in srgb,var(--n-t) 38%,transparent)}
 /* Seçili hap: tema yazı renginde dolu, sekmeler arasında yumuşakça kayar (sıçrama yok) */
 .navbar .nav-slider{top:var(--nav-pad);left:var(--nav-pad);width:calc((100% - 2 * var(--nav-pad)) / 7);height:calc(100% - 2 * var(--nav-pad));background:none;border-radius:0;transition:transform .6s var(--n-ease);pointer-events:none}
-.navbar .nav-slider::before{content:'';position:absolute;top:0;bottom:0;left:3px;right:3px;width:auto;height:auto;margin:0;border-radius:22px;background:var(--n-t);box-shadow:0 8px 16px -9px color-mix(in srgb,var(--n-t) 65%,transparent);transition:background-color .5s ease}
+.navbar .nav-slider::before{content:'';position:absolute;top:0;bottom:0;left:3px;right:3px;width:auto;height:auto;margin:0;border-radius:22px;background:var(--n-t);box-shadow:none;transition:background-color .5s ease}
 
 .navbar .option{top:0;height:100%}
-.navbar .nav-btn{width:100%;height:100%;border-radius:22px;color:color-mix(in srgb,var(--n-t) 56%,transparent);transition:color .35s var(--n-ease),transform .45s var(--n-ease);transition-delay:0s}
+.navbar .nav-btn{width:100%;height:100%;border-radius:22px;color:var(--n-t);transition:color .35s var(--n-ease),transform .45s var(--n-ease);transition-delay:0s}
 .navbar .nav-btn::before{display:none}
 .navbar .nav-input:checked + .nav-btn{color:var(--n-bg)}
 .navbar .nav-input:active + .nav-btn{transform:scale(.86);transition-duration:.2s,.2s}
@@ -74829,158 +74827,19 @@ body.p11-return .page11-fab-bar,body.p11-return .page11-fab-bar .qhavuz-fab{tran
 .navbar .nav-input:not(:checked):hover + .nav-btn{color:var(--n-t)}
 }
 .navbar .nav-tooltip{display:none}
+
+/* Sağdaki + düğmesi: dock'un parçası, aynı cam yüzey (işlevi sonra eklenecek) */
+.navbar .nav-add-btn{position:absolute;top:50%;left:calc(100% + 8px);box-sizing:border-box;width:58px;height:58px;margin:-29px 0 0;padding:0;display:flex;align-items:center;justify-content:center;border:0;border-radius:50%;cursor:pointer;-webkit-tap-highlight-color:transparent;color:var(--n-t);
+  background:color-mix(in srgb,var(--n-bg) 74%,transparent);-webkit-backdrop-filter:blur(24px) saturate(1.8);backdrop-filter:blur(24px) saturate(1.8);
+  box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--n-t) 9%,transparent),0 12px 30px -14px color-mix(in srgb,var(--n-t) 38%,transparent);
+  transition:transform .45s var(--n-ease)}
+.navbar .nav-add-btn:active{transform:scale(.88);transition-duration:.2s}
+.navbar .nav-add-btn:focus-visible{outline:2px solid color-mix(in srgb,var(--n-t) 45%,transparent);outline-offset:2px}
+.navbar .nav-add-icon{width:25px;height:25px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;pointer-events:none}
 }
 @keyframes navDockIn{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
 @media (prefers-reduced-motion:reduce){.navbar .wrapper{animation:none !important}.navbar .nav-slider,.navbar .nav-btn{transition-duration:.01s !important}}
 </style>
-<style id="examDetailRedesign">
-/* =====================================================================
-   Deneme detayı (#page-11-detail) · baştan tasarım
-   Dil: siyah "ada" kartlar, beyaz tipografi, yuvarlak noktalar, yuvarlak ikon düğmeleri.
-   Brutalist çerçeve / sert gölge yok. Yalnızca bu sayfaya uygulanır
-   (Analizlerim / 0 Hata gibi .exam-detail-* paylaşan sayfalar etkilenmez).
-   ===================================================================== */
-#page-11-detail{
-  --dt-card:#0b0b0c;--dt-ink:#fff;--dt-mute:rgba(255,255,255,.52);--dt-dim:rgba(255,255,255,.11);--dt-line:rgba(255,255,255,.1);
-  --dt-red:#ff6b6b;--dt-amber:#ffd23f;--dt-green:#5cd68a;--dt-ease:cubic-bezier(.22,1,.36,1);
-  --dt-font:"Baloo 2","Space Grotesk",sans-serif;
-  padding-left:18px;padding-right:18px;gap:14px;
-}
-body.is-anthracite #page-11-detail{--dt-card:var(--dark-card-color,#1c1c22)}
-/* Sayfanın kendi 10px yükselme geçişi kapalı: içerik kendi yumuşak girişini yapıyor (çift hareket yok) */
-#page-11-detail.page,#page-11-detail.page.is-leaving{transform:translateY(0)}
-#page-11-detail .exam-detail-wrap{max-width:460px;gap:14px}
-
-/* ---------- Üst çubuk: yuvarlak ikon düğmeleri ---------- */
-#page-11-detail .calendar-back-btn{width:44px;height:44px;border:0;border-radius:50%;background:var(--dt-card);color:var(--dt-ink);box-shadow:inset 0 0 0 1px rgba(255,255,255,.07),0 12px 22px -14px rgba(0,0,0,.65);-webkit-tap-highlight-color:transparent;transition:transform .4s var(--dt-ease),background-color .3s,color .3s,box-shadow .3s}
-#page-11-detail .calendar-back-btn:hover{transform:none;box-shadow:inset 0 0 0 1px rgba(255,255,255,.07),0 12px 22px -14px rgba(0,0,0,.65)}
-#page-11-detail .calendar-back-btn:active,#page-11-detail .calendar-back-btn.is-pressed{transform:scale(.9);background:var(--dt-card);box-shadow:inset 0 0 0 1px rgba(255,255,255,.07),0 12px 22px -14px rgba(0,0,0,.65)}
-#page-11-detail .calendar-back-btn svg{width:19px;height:19px}
-#examDetailLockBtn.is-active,#examDetailMenuBtn.is-open{background:#fff !important;color:#0b0b0c !important;box-shadow:inset 0 0 0 2px var(--dt-card) !important}
-#page-11-detail .calendar-topbar-right-group{gap:10px}
-#page-11-detail .exam-detail-resources-dot{top:1px;right:1px;width:11px;height:11px;background:#fff;border:2px solid var(--dt-card);box-shadow:none}
-#examDetailMenuBtn.is-open .exam-detail-resources-dot{background:var(--dt-card);border-color:#fff}
-
-/* ---------- Açılır menü: koyu yuvarlak balon ---------- */
-#page-11-detail .exam-detail-menu{top:calc(100% + 10px);min-width:15.75rem;padding:8px;gap:2px;background:var(--dt-card);border:0;border-radius:26px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.07),0 28px 50px -18px rgba(0,0,0,.6);animation:dtMenuIn .26s var(--dt-ease)}
-@keyframes dtMenuIn{from{opacity:0;transform:translateY(-6px) scale(.97)}to{opacity:1;transform:none}}
-#page-11-detail .exam-detail-menu-item{padding:12px 14px;gap:12px;border-radius:18px;font-family:var(--dt-font);font-size:.9rem;font-weight:700;color:#fff;-webkit-tap-highlight-color:transparent;transition:background-color .25s,transform .35s var(--dt-ease)}
-#page-11-detail .exam-detail-menu-item svg{width:19px;height:19px;opacity:.9}
-#page-11-detail .exam-detail-menu-item:active{background:rgba(255,255,255,.12);color:#fff;transform:scale(.98)}
-#page-11-detail .exam-detail-menu-item.is-correct svg{color:var(--dt-green)}
-#page-11-detail .exam-detail-menu-item.is-danger,#page-11-detail .exam-detail-menu-item.is-danger svg{color:#ff8080}
-#page-11-detail .exam-detail-menu-sep{height:1px;margin:6px 10px;background:#fff;opacity:.12}
-@media (hover:hover) and (pointer:fine){#page-11-detail .exam-detail-menu-item:hover{background:rgba(255,255,255,.09)}}
-
-/* ---------- Başlık ---------- */
-#page-11-detail .exam-detail-titlebar{justify-content:flex-start}
-#page-11-detail .exam-detail-title{font-family:var(--dt-font);font-size:1.75rem;font-weight:800;letter-spacing:-.02em;line-height:1.1;text-align:left;color:var(--theme-text,#121212)}
-
-/* ---------- Özet "adası" ---------- */
-#page-11-detail .exam-detail-summary-card{box-sizing:border-box;padding:20px 20px 18px;border:0;border-radius:32px;background:var(--dt-card);color:#fff;text-align:left;align-items:stretch;gap:0;box-shadow:inset 0 0 0 1px rgba(255,255,255,.06),0 26px 40px -30px rgba(0,0,0,.7)}
-#page-11-detail .exam-detail-summary-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
-#page-11-detail .exam-detail-summary-label{font-family:var(--dt-font);font-size:.86rem;font-weight:700;letter-spacing:0;text-transform:none;color:var(--dt-mute)}
-#page-11-detail .exam-detail-summary-meta{font-family:var(--dt-font);font-size:.82rem;font-weight:700;color:var(--dt-mute);text-align:right}
-#page-11-detail .exam-detail-summary-total{margin:8px 0 20px;font-family:var(--dt-font);font-size:3.5rem;font-weight:800;letter-spacing:-.035em;line-height:1;color:#fff;font-variant-numeric:tabular-nums}
-#page-11-detail .exam-detail-summary-total span{font-size:1.05rem;font-weight:700;letter-spacing:0;opacity:.45;margin-left:.4rem}
-#page-11-detail .exam-detail-acc-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:12px;font-family:var(--dt-font);font-size:.98rem;font-weight:800;color:#fff}
-#page-11-detail .exam-detail-acc-head b{font-weight:800;font-variant-numeric:tabular-nums}
-#page-11-detail .exam-detail-dots{display:grid;grid-template-columns:repeat(12,1fr);gap:10px 0}
-#page-11-detail .exam-detail-dots i{justify-self:center;width:100%;max-width:19px;aspect-ratio:1;border-radius:50%;background:var(--dt-dim);transition:background-color .45s ease;transition-delay:calc(var(--k,0) * 14ms)}
-#page-11-detail .exam-detail-dots i.c{background:#fff}
-#page-11-detail .exam-detail-dots i.w{background:var(--dt-red)}
-#page-11-detail .exam-detail-summary-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:0;margin-top:20px;padding-top:16px;border-top:1px solid var(--dt-line)}
-#page-11-detail .exam-detail-stat{flex-direction:column;align-items:center;gap:3px;padding:0 4px;border:0;border-radius:0;background:none;box-shadow:none}
-#page-11-detail .exam-detail-stat + .exam-detail-stat{border-left:1px solid var(--dt-line)}
-#page-11-detail .exam-detail-stat-value{font-family:var(--dt-font);font-size:1.55rem;font-weight:800;line-height:1.1;color:#fff;font-variant-numeric:tabular-nums}
-#page-11-detail .exam-detail-stat-label{display:flex;align-items:center;gap:6px;font-family:var(--dt-font);font-size:.76rem;font-weight:700;letter-spacing:0;text-transform:none;color:var(--dt-mute);opacity:1}
-#page-11-detail .exam-detail-stat-label::before{content:'';width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.3)}
-#page-11-detail .exam-detail-stat.is-correct .exam-detail-stat-value,#page-11-detail .exam-detail-stat.is-wrong .exam-detail-stat-value,#page-11-detail .exam-detail-stat.is-blank .exam-detail-stat-value{color:#fff}
-#page-11-detail .exam-detail-stat.is-correct .exam-detail-stat-label,#page-11-detail .exam-detail-stat.is-wrong .exam-detail-stat-label,#page-11-detail .exam-detail-stat.is-blank .exam-detail-stat-label{color:var(--dt-mute)}
-#page-11-detail .exam-detail-stat.is-correct .exam-detail-stat-label::before{background:#fff}
-#page-11-detail .exam-detail-stat.is-wrong .exam-detail-stat-label::before{background:var(--dt-red)}
-
-/* ---------- Sonradan Çözüldü: yumuşak hap anahtar ---------- */
-#page-11-detail .exam-detail-bulk-btn.is-later{flex:1 1 100%;gap:9px;padding:14px 18px;border:0;border-radius:999px;background:color-mix(in srgb,var(--theme-bg,#f6f4ef) 93%,var(--theme-text,#121212));color:var(--theme-text,#121212);box-shadow:none;font-family:var(--dt-font);font-size:.92rem;font-weight:800;-webkit-tap-highlight-color:transparent;transition:transform .4s var(--dt-ease),background-color .3s,color .3s}
-#page-11-detail .exam-detail-bulk-btn.is-later svg{width:17px;height:17px;color:currentColor}
-#page-11-detail .exam-detail-bulk-btn.is-later:hover{transform:none;box-shadow:none}
-#page-11-detail .exam-detail-bulk-btn.is-later:active{transform:scale(.97);box-shadow:none;background:color-mix(in srgb,var(--theme-bg,#f6f4ef) 87%,var(--theme-text,#121212))}
-#page-11-detail .exam-detail-bulk-btn.is-later[aria-pressed="true"]{background:var(--dt-amber);color:#3b2a00;transform:none;box-shadow:none}
-#page-11-detail .exam-detail-bulk-btn.is-later[aria-pressed="true"] svg{color:#3b2a00}
-
-/* ---------- Branş adaları ---------- */
-#page-11-detail .exam-detail-subject-list{gap:14px}
-#page-11-detail .exam-detail-subject-card{position:relative;overflow:visible;border:0;border-radius:30px;background:var(--dt-card);box-shadow:inset 0 0 0 1px rgba(255,255,255,.06),0 24px 36px -28px rgba(0,0,0,.65)}
-#page-11-detail .exam-detail-subject-accent{position:absolute;top:22px;left:20px;width:9px;height:9px;border:0;border-radius:50%;box-shadow:0 0 0 2px rgba(255,255,255,.16)}
-#page-11-detail .exam-detail-subject-body{padding:16px 16px 18px;gap:14px}
-#page-11-detail .exam-detail-subject-top{align-items:center;padding-left:22px}
-#page-11-detail .exam-detail-subject-name{font-family:var(--dt-font);font-size:1.02rem;font-weight:800;letter-spacing:-.005em;color:#fff}
-#page-11-detail .exam-detail-subject-net{font-family:var(--dt-font);font-size:1rem;font-weight:800;color:#fff;font-variant-numeric:tabular-nums}
-#page-11-detail .exam-detail-subject-net span{font-size:.72rem;font-weight:700;opacity:.45}
-#page-11-detail .exam-detail-bubble-grid{grid-template-columns:repeat(auto-fill,minmax(2.15rem,1fr));gap:9px 7px}
-#page-11-detail .exam-detail-bubble{border:0;border-radius:50%;background:var(--dt-dim);color:rgba(255,255,255,.62);box-shadow:none;font-family:var(--dt-font);font-size:.76rem;font-weight:700;font-variant-numeric:tabular-nums;-webkit-tap-highlight-color:transparent;transition:transform .35s var(--dt-ease),background-color .25s,color .25s}
-#page-11-detail .exam-detail-bubble:active{transform:scale(.86);box-shadow:none}
-#page-11-detail .exam-detail-bubble.is-blank{background:var(--dt-dim);color:rgba(255,255,255,.62)}
-#page-11-detail .exam-detail-bubble.is-correct{background:#fff;color:#0b0b0c}
-#page-11-detail .exam-detail-bubble.is-wrong{background:var(--dt-red);color:#fff}
-#page-11-detail .exam-detail-bubble.is-later{background:var(--dt-amber);color:#3b2a00}
-#page-11-detail .exam-detail-bubble-photo-btn{top:-5px;right:-5px;width:17px;height:17px;border:0;background:#3a3a40;color:#fff;box-shadow:0 0 0 2px var(--dt-card)}
-#page-11-detail .exam-detail-bubble-photo-btn svg{width:9px;height:9px}
-#page-11-detail .exam-detail-bubble-photo-btn.has-photo{background:var(--dt-green);color:#0d3d20}
-@media (hover:hover) and (pointer:fine){#page-11-detail .exam-detail-bubble:hover{transform:scale(1.08);box-shadow:none}}
-
-/* ---------- Geniş ekran: aynı iki sütunlu düzen, yalnızca yüzey ölçüleri ---------- */
-@media (min-width:768px) and (min-height:600px){
-#page-11-detail .exam-detail-wrap{max-width:1180px}
-#page-11-detail .exam-detail-summary-card{padding:24px 24px 22px;border:0;border-radius:34px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.06),0 26px 40px -30px rgba(0,0,0,.7)}
-#page-11-detail .exam-detail-summary-total{font-size:3.9rem}
-#page-11-detail .exam-detail-bulk-btn.is-later{font-size:.92rem;padding:14px 18px}
-#page-11-detail .exam-detail-subject-card{border:0;border-radius:30px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.06),0 24px 36px -28px rgba(0,0,0,.65)}
-#page-11-detail .exam-detail-subject-body{padding:18px 18px 20px;gap:14px}
-#page-11-detail .exam-detail-subject-name{font-size:1.05rem}
-#page-11-detail .exam-detail-bubble-grid{grid-template-columns:repeat(auto-fill,minmax(2.3rem,1fr));gap:10px 8px}
-#page-11-detail .exam-detail-bubble{font-size:.8rem}
-}
-
-/* ---------- Giriş: tek seferlik, yumuşak (yalnızca sayfa ilk açılırken) ---------- */
-@keyframes dtIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
-#page-11-detail.dtl-enter.is-active .calendar-topbar{animation:dtIn .55s var(--dt-ease) backwards}
-#page-11-detail.dtl-enter.is-active .exam-detail-titlebar .exam-detail-title{animation:dtIn .55s var(--dt-ease) 40ms backwards}
-#page-11-detail.dtl-enter.is-active .exam-detail-summary-card{animation:dtIn .6s var(--dt-ease) 90ms backwards}
-#page-11-detail.dtl-enter.is-active .exam-detail-bulk-actions{animation:dtIn .6s var(--dt-ease) 140ms backwards}
-#page-11-detail.dtl-enter.is-active .exam-detail-subject-card{animation:dtIn .6s var(--dt-ease) calc(var(--k,0) * 45ms + 180ms) backwards}
-#page-11-detail .exam-detail-subject-card:nth-child(1){--k:0}#page-11-detail .exam-detail-subject-card:nth-child(2){--k:1}#page-11-detail .exam-detail-subject-card:nth-child(3){--k:2}
-#page-11-detail .exam-detail-subject-card:nth-child(4){--k:3}#page-11-detail .exam-detail-subject-card:nth-child(5){--k:4}#page-11-detail .exam-detail-subject-card:nth-child(n+6){--k:5}
-@media (prefers-reduced-motion:reduce){#page-11-detail *{animation:none !important;transition-duration:.01s !important}}
-</style>
-<script id="examDetailRedesignJs">
-(function () {
-  var sec = document.getElementById('page-11-detail');
-  var dots = document.getElementById('examDetailDots'), pct = document.getElementById('examDetailAccPct');
-  var C = document.getElementById('examDetailCorrectCount'), W = document.getElementById('examDetailWrongCount'), B = document.getElementById('examDetailBlankCount');
-  if (!sec || !dots || !pct || !C || !W || !B) return;
-  var N = 24, els = [];
-  for (var i = 0; i < N; i++) { var d = document.createElement('i'); d.style.setProperty('--k', i); dots.appendChild(d); els.push(d); }
-  var num = function (el) { return parseInt(el.textContent, 10) || 0; };
-  function update() {
-    var c = num(C), w = num(W), b = num(B), t = c + w + b;
-    var nc = t ? Math.round(c / t * N) : 0, nw = t ? Math.min(N - nc, Math.round(w / t * N)) : 0;
-    pct.textContent = (t ? Math.round(c / t * 100) : 0) + '%';
-    els.forEach(function (el, k) { el.className = k < nc ? 'c' : (k < nc + nw ? 'w' : ''); });
-  }
-  var mo = new MutationObserver(update), opt = { childList: true, characterData: true, subtree: true };
-  [C, W, B].forEach(function (el) { mo.observe(el, opt); });
-  update();
-  /* Giriş animasyonu sadece sayfa açılırken (1.4 sn); sonrasında yeniden çizimler animasyon oynatmaz */
-  var was = sec.classList.contains('is-active'), t = null;
-  new MutationObserver(function () {
-    var a = sec.classList.contains('is-active');
-    if (a && !was) { clearTimeout(t); sec.classList.add('dtl-enter'); t = setTimeout(function () { sec.classList.remove('dtl-enter'); }, 1400); }
-    else if (!a && was) { clearTimeout(t); sec.classList.remove('dtl-enter'); }
-    was = a;
-  }).observe(sec, { attributes: true, attributeFilter: ['class'] });
-})();
-</script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" crossorigin="anonymous"></script>
 <script src="sync.js?v=38"></script>
 </body>
