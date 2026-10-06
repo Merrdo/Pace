@@ -42678,8 +42678,8 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
                değerlendirir (açık uçlu cevaplarda birebir metin
                eşleşmesi her zaman anlamlı olmayabileceği için). -->
           <div class="qhavuz-test-open-answer-selfgrade is-hidden" id="qhavuzTestOpenAnswerSelfGrade">
-            <button type="button" class="add-task-btn qhavuz-test-selfgrade-btn is-correct" id="qhavuzTestSelfGradeCorrectBtn">✓ Bildim</button>
-            <button type="button" class="add-task-btn qhavuz-test-selfgrade-btn is-wrong" id="qhavuzTestSelfGradeWrongBtn">✗ Bilemedim</button>
+            <button type="button" class="add-task-btn qhavuz-test-selfgrade-btn is-correct" id="qhavuzTestSelfGradeCorrectBtn"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px;margin-right:.35rem"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Bildim</button>
+            <button type="button" class="add-task-btn qhavuz-test-selfgrade-btn is-wrong" id="qhavuzTestSelfGradeWrongBtn"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px;margin-right:.35rem"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/></svg>Bilemedim</button>
           </div>
         </div>
 
@@ -65651,56 +65651,136 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
     return bySubject;
   };
 
-  const buildZeroErrorChip = (name, note, color, onClick) => {
-    const chip = document.createElement('div');
-    chip.className = 'page9-add-chip';
-    const dot = document.createElement('span');
-    dot.className = 'page9-summary-row-dot';
-    dot.style.background = color;
-    const nameEl = document.createElement('span');
-    nameEl.className = 'page9-add-chip-name';
-    nameEl.textContent = name;
-    const noteEl = document.createElement('span');
-    noteEl.className = 'page9-add-chip-note';
-    noteEl.textContent = note;
-    chip.appendChild(dot);
-    chip.appendChild(nameEl);
-    chip.appendChild(noteEl);
-    chip.addEventListener('click', onClick);
-    return chip;
-  };
-
-  const startZeroErrorTest = (questions, label) => {
+  // ---- 0 Hata Testlerim: Denemelerim diliyle yeniden tasarım ----
+  const zeCanvas = document.getElementById('zeroErrorCanvas');
+  const zeStartTest = (questions, label) => {
     if (!questions.length) return;
     startQhavuzTest(questions, label, 'page-zero-error', renderZeroErrorList);
+  };
+  const zeNorm = (v) => String(v).toLocaleLowerCase('tr-TR');
+  const ZE_CHEVRON = '<svg class="ze-chev" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>';
+
+  const zeCard = (opts) => {
+    const card = document.createElement('button');
+    card.type = 'button';
+    card.className = 'ze-card' + (opts.featured ? ' is-all' : '');
+    card.style.setProperty('--ze-accent', opts.color);
+    card.style.setProperty('--ze-fill', String(opts.fill));
+    card.style.setProperty('--i', String(opts.index));
+    const emblem = document.createElement('span');
+    emblem.className = 'ze-emblem';
+    if (opts.featured) {
+      emblem.innerHTML = '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+    } else {
+      emblem.textContent = zeNorm(opts.name).charAt(0).toLocaleUpperCase('tr-TR');
+    }
+    const main = document.createElement('span');
+    main.className = 'ze-main';
+    const name = document.createElement('span');
+    name.className = 'ze-name';
+    name.textContent = opts.name;
+    const meta = document.createElement('span');
+    meta.className = 'ze-meta';
+    meta.textContent = opts.meta;
+    main.append(name, meta);
+    if (!opts.featured) {
+      const bar = document.createElement('span');
+      bar.className = 'ze-bar';
+      bar.appendChild(document.createElement('i'));
+      main.appendChild(bar);
+    }
+    card.append(emblem, main);
+    card.insertAdjacentHTML('beforeend', ZE_CHEVRON);
+    card.addEventListener('click', opts.onClick);
+    return card;
   };
 
   const renderZeroErrorList = () => {
     const bySubject = collectZeroErrorBySubject();
     const names = Object.keys(bySubject).sort((a, b) => bySubject[b].length - bySubject[a].length);
+    const total = names.reduce((sum, n) => sum + bySubject[n].length, 0);
+    const max = names.length ? bySubject[names[0]].length : 1;
     zeroErrorList.innerHTML = '';
+    zeCanvas.innerHTML = '';
+
+    const head = document.createElement('div');
+    head.className = 'ze-head';
+    const back = document.createElement('button');
+    back.type = 'button';
+    back.className = 'ze-back';
+    back.setAttribute('aria-label', 'Geri dön');
+    back.innerHTML = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 4l-8 8 8 8"/></svg>';
+    back.addEventListener('click', closeZeroErrorPage);
+    const title = document.createElement('h1');
+    title.className = 'ze-title';
+    title.textContent = '0 Hata Testlerim';
+    head.append(back, title);
+    if (total) {
+      const count = document.createElement('div');
+      count.className = 'ze-count';
+      count.innerHTML = '<b></b><span>soru</span>';
+      count.firstChild.textContent = String(total);
+      head.appendChild(count);
+    }
+    zeCanvas.appendChild(head);
 
     if (!names.length) {
       const empty = document.createElement('div');
-      empty.className = 'page11-empty';
-      empty.textContent = 'Henüz biriken soru yok. Denemelerinde yanlış/boş sorulara görsel ekledikçe burada branşına göre birikecek.';
-      zeroErrorList.appendChild(empty);
+      empty.className = 'ze-empty';
+      empty.innerHTML = '<svg viewBox="0 0 64 64" width="64" height="64" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle class="ze-empty-ring" pathLength="1" cx="32" cy="32" r="26"/><path class="ze-empty-tick" pathLength="1" d="M21 33l8 8 14-17"/></svg><b>Biriken soru yok</b><span></span>';
+      empty.lastChild.textContent = 'Denemelerinde yanlış veya boş bıraktığın sorulara görsel ekledikçe branşına göre burada birikir.';
+      zeCanvas.appendChild(empty);
       return;
     }
 
-    const totalCount = names.reduce((sum, name) => sum + bySubject[name].length, 0);
-    zeroErrorList.appendChild(buildZeroErrorChip('Tüm Branşlar', `${totalCount} soru`, '#121212', () => {
-      startZeroErrorTest(names.flatMap((name) => bySubject[name]), 'Tüm Branşlar');
-    }));
+    const search = document.createElement('div');
+    search.className = 'ze-search';
+    search.innerHTML = '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg><input type="text" placeholder="Branş ara..." autocomplete="off" spellcheck="false" aria-label="Branş ara">';
+    const input = search.querySelector('input');
+    zeCanvas.appendChild(search);
 
-    names.forEach((name) => {
-      zeroErrorList.appendChild(buildZeroErrorChip(
-        name,
-        `${bySubject[name].length} soru`,
-        zeroErrorSubjectColor(name),
-        () => startZeroErrorTest(bySubject[name], name)
-      ));
+    const sub = document.createElement('p');
+    sub.className = 'ze-sub';
+    sub.textContent = 'Yanlış veya boş bıraktığın sorulardan branşına göre biriken testler';
+    zeCanvas.appendChild(sub);
+
+    const grid = document.createElement('div');
+    grid.className = 'ze-grid';
+    zeCanvas.appendChild(grid);
+
+    const fillGrid = () => {
+      const q = zeNorm(input.value.trim());
+      grid.innerHTML = '';
+      let idx = 0;
+      if (!q) {
+        grid.appendChild(zeCard({
+          featured: true, name: 'Tüm Branşlar', meta: total + ' soru, karışık test',
+          color: 'var(--accent-color, #ff90e8)', fill: 1, index: idx++,
+          onClick: () => zeStartTest(names.flatMap((n) => bySubject[n]), 'Tüm Branşlar')
+        }));
+      }
+      const shown = names.filter((n) => !q || zeNorm(n).includes(q));
+      shown.forEach((n) => {
+        grid.appendChild(zeCard({
+          name: n, meta: bySubject[n].length + ' soru', color: zeroErrorSubjectColor(n),
+          fill: Math.max(0.1, bySubject[n].length / max), index: Math.min(idx++, 10),
+          onClick: () => zeStartTest(bySubject[n], n)
+        }));
+      });
+      if (q && !shown.length) {
+        const none = document.createElement('div');
+        none.className = 'ze-none';
+        none.textContent = 'Bu aramayla eşleşen branş yok.';
+        grid.appendChild(none);
+      }
+    };
+    let zeTimer = 0;
+    input.addEventListener('input', () => {
+      grid.classList.add('is-static');
+      clearTimeout(zeTimer);
+      fillGrid();
     });
+    fillGrid();
   };
 
   // "0 Hata Testlerim"e hem Analizlerim'den hem de artık Denemelerim'in
@@ -69336,6 +69416,32 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
   const qhavuzTestSelfGradeCorrectBtn = document.getElementById('qhavuzTestSelfGradeCorrectBtn');
   const qhavuzTestSelfGradeWrongBtn = document.getElementById('qhavuzTestSelfGradeWrongBtn');
   const qhavuzTestFeedback = document.getElementById('qhavuzTestFeedback');
+
+  // Doğru / Yanlış / Boş geri bildirimi: emoji yok; çizilerek beliren
+  // ikon rozeti + iki satırlı yumuşak metin (bkz. .qtv-* CSS).
+  const qtShowVerdict = (kind, correctText) => {
+    const fb = qhavuzTestFeedback;
+    const paths = { correct: 'M6 12.5l4 4 8-9', wrong: 'M7 7l10 10M17 7L7 17', blank: 'M7 12h10' };
+    const titles = { correct: 'Doğru', wrong: 'Yanlış', blank: 'Boş bıraktın' };
+    fb.textContent = '';
+    const badge = document.createElement('span');
+    badge.className = 'qtv-badge';
+    badge.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path pathLength="1" d="' + paths[kind] + '"/></svg>';
+    const text = document.createElement('span');
+    text.className = 'qtv-text';
+    const b = document.createElement('b');
+    b.textContent = titles[kind];
+    text.appendChild(b);
+    if (kind !== 'correct' && correctText != null && correctText !== '') {
+      const em = document.createElement('em');
+      em.textContent = 'Doğru cevap: ' + correctText;
+      text.appendChild(em);
+    }
+    fb.append(badge, text);
+    fb.classList.remove('qtv-correct', 'qtv-wrong', 'qtv-blank');
+    void fb.offsetWidth;
+    fb.classList.add('qtv-' + kind);
+  };
   const qhavuzTestNextBtn = document.getElementById('qhavuzTestNextBtn');
   const qhavuzTestBackBtn = document.getElementById('qhavuzTestBackBtn');
   const qhavuzTestResultScore = document.getElementById('qhavuzTestResultScore');
@@ -69538,7 +69644,7 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
       else if (btn === btnEl) btn.classList.add('is-wrong');
     });
 
-    qhavuzTestFeedback.textContent = isCorrect ? 'Doğru! 🎉' : `Yanlış! Doğru cevap: ${item.answer}`;
+    qtShowVerdict(isCorrect ? 'correct' : 'wrong', item.answer);
     qhavuzTestFeedback.classList.add('is-visible', isCorrect ? 'is-correct' : 'is-wrong');
 
     qhavuzTestNextBtn.classList.add('is-visible');
@@ -69576,7 +69682,7 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
     qhavuzTestOpenAnswerCheckBtn.disabled = true;
     qhavuzTestOpenAnswerActions.classList.add('is-hidden');
 
-    qhavuzTestFeedback.textContent = isCorrect ? 'Doğru! 🎉' : `Yanlış! Doğru cevap: ${item.answerText}`;
+    qtShowVerdict(isCorrect ? 'correct' : 'wrong', item.answerText);
     qhavuzTestFeedback.classList.add('is-visible', isCorrect ? 'is-correct' : 'is-wrong');
 
     qhavuzTestNextBtn.classList.add('is-visible');
@@ -69617,6 +69723,7 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
     }
 
     qhavuzTestOpenAnswerSelfGrade.classList.add('is-hidden');
+    qtShowVerdict(isCorrect ? 'correct' : 'wrong', item.answerText);
     qhavuzTestFeedback.classList.add(isCorrect ? 'is-correct' : 'is-wrong');
     qhavuzTestNextBtn.classList.add('is-visible');
   };
@@ -70472,9 +70579,7 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
 
     if (qtReview) {
       const correctText = open ? item.answerText : item.answer;
-      if (res === 'correct') qhavuzTestFeedback.textContent = 'Doğru! 🎉';
-      else if (res === 'wrong') qhavuzTestFeedback.textContent = `Yanlış! Doğru cevap: ${correctText}`;
-      else qhavuzTestFeedback.textContent = `Boş bıraktın. Doğru cevap: ${correctText}`;
+      qtShowVerdict(res === 'correct' ? 'correct' : (res === 'wrong' ? 'wrong' : 'blank'), correctText);
       qhavuzTestFeedback.classList.add('is-visible');
       if (res === 'correct') qhavuzTestFeedback.classList.add('is-correct');
       else if (res === 'wrong') qhavuzTestFeedback.classList.add('is-wrong');
@@ -75086,6 +75191,99 @@ body .wheel-color-backdrop.is-open .wheel-color-card{transform:none;opacity:1}
 #page-analytics.is-active .page11-nettrend-dot{animation:anPop .6s var(--m-ease) 1.2s backwards}
 }
 @media (prefers-reduced-motion:reduce){#page-analytics *{animation:none !important}}
+</style>
+
+<style id="zeroErrorRedesign">
+/* ===== 0 Hata Testlerim: Denemelerim diliyle yeniden tasarım ===== */
+#page-zero-error{align-items:stretch;padding:calc(44px + env(safe-area-inset-top)) 20px calc(40px + env(safe-area-inset-bottom))}
+#page-zero-error .calendar-topbar,#page-zero-error .page11-subtitle,#page-zero-error .page9-add-grid{display:none !important}
+#page-zero-error .exam-detail-wrap{width:100%;max-width:640px;margin:0 auto;gap:0}
+#page-zero-error .zero-error-canvas{display:block;width:100%;min-height:0}
+@media (min-width:768px) and (min-height:600px){
+  #page-zero-error{align-items:flex-start;padding:calc(48px + env(safe-area-inset-top)) 24px calc(96px + env(safe-area-inset-bottom))}
+  #page-zero-error .exam-detail-wrap{max-width:1180px;margin:0}
+}
+#page-zero-error{--ze-surface:color-mix(in srgb,var(--theme-text,#121212) 8%,transparent);--ze-surface-hi:color-mix(in srgb,var(--theme-text,#121212) 13%,transparent);--ze-inset:inset 0 1px 3px 0 color-mix(in srgb,var(--theme-text,#121212) 10%,transparent);--ze-ease:cubic-bezier(.22,1,.36,1)}
+.ze-head{display:flex;align-items:center;gap:.8rem}
+.ze-back{flex:0 0 auto;width:2.7rem;height:2.7rem;display:grid;place-items:center;border:none;border-radius:50%;cursor:pointer;color:var(--theme-text,#121212);background:var(--ze-surface);box-shadow:var(--ze-inset);transition:background-color .2s ease,transform .25s var(--ze-ease)}
+.ze-back:active{transform:scale(.92)}
+@media (hover:hover) and (pointer:fine){.ze-back:hover{background:var(--ze-surface-hi);transform:translateX(-2px)}}
+.ze-title{flex:1 1 auto;min-width:0;margin:0;font-family:"Baloo 2","Space Grotesk",sans-serif;font-weight:700;font-size:clamp(1.55rem,1.36vw + 1.4rem,2.55rem);letter-spacing:-.01em;color:var(--theme-text,#121212);transition:color .5s ease}
+.ze-count{flex:0 0 auto;display:flex;align-items:baseline;gap:.35rem;font-family:"Baloo 2",sans-serif;color:var(--theme-text,#121212)}
+.ze-count b{font-weight:800;font-size:1.35rem}
+.ze-count span{font-weight:600;font-size:.85rem;opacity:.6}
+.ze-search{display:flex;align-items:center;gap:.55rem;height:2.7rem;margin-top:1.15rem;padding:0 1rem;max-width:300px;border-radius:999px;background:var(--ze-surface);box-shadow:var(--ze-inset);color:color-mix(in srgb,var(--theme-text,#121212) 55%,transparent);transition:background-color .2s ease,box-shadow .3s ease}
+.ze-search:focus-within{background:var(--ze-surface-hi);box-shadow:var(--ze-inset),0 0 0 2px color-mix(in srgb,var(--accent-color,#ff90e8) 55%,transparent)}
+.ze-search input{flex:1 1 auto;min-width:0;border:none;background:none;outline:none;padding:0;font-family:"Baloo 2","Space Grotesk",sans-serif;font-weight:600;font-size:.85rem;color:var(--theme-text,#121212)}
+.ze-search input::placeholder{color:color-mix(in srgb,var(--theme-text,#121212) 45%,transparent)}
+.ze-sub{margin:.95rem 0 0;font-family:"Space Grotesk",sans-serif;font-weight:600;font-size:.85rem;color:var(--theme-text,#121212);opacity:.65}
+.ze-grid{display:grid;grid-template-columns:1fr;gap:.8rem;margin-top:1.2rem}
+@media (min-width:768px) and (min-height:600px){.ze-grid{grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:.95rem}}
+.ze-card{position:relative;isolation:isolate;overflow:hidden;display:flex;align-items:center;gap:1rem;width:100%;box-sizing:border-box;padding:1.1rem 1.2rem;border:none;border-radius:1.15em;text-align:left;font-family:"Baloo 2","Space Grotesk",sans-serif;color:var(--theme-text,#121212);background:var(--ze-surface);box-shadow:var(--ze-inset);cursor:pointer;-webkit-tap-highlight-color:transparent;transition:background-color .25s ease,transform .35s var(--ze-ease),box-shadow .35s ease}
+.ze-card.is-all{grid-column:1/-1;padding:1.3rem 1.3rem}
+.ze-card::before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(120% 140% at 0% 50%,color-mix(in srgb,var(--ze-accent) 20%,transparent),transparent 62%);opacity:.55;transition:opacity .4s ease}
+.ze-card.is-all::before{opacity:1}
+@media (any-hover:hover){.ze-card:hover{background:var(--ze-surface-hi);transform:translateY(-2px);box-shadow:var(--ze-inset),0 0 0 1.5px color-mix(in srgb,var(--ze-accent) 40%,transparent),0 14px 30px -14px color-mix(in srgb,var(--ze-accent) 60%,transparent)}.ze-card:hover::before{opacity:1}.ze-card:hover .ze-chev{transform:translateX(3px);opacity:.9}}
+.ze-card:active{transform:scale(.985);background:var(--ze-surface-hi)}
+.ze-emblem{flex:0 0 auto;width:3rem;height:3rem;border-radius:.85em;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1.2rem;line-height:1;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.25);background:linear-gradient(155deg,color-mix(in srgb,var(--ze-accent) 100%,white 22%),var(--ze-accent) 65%,color-mix(in srgb,var(--ze-accent) 100%,black 12%));box-shadow:0 4px 12px -3px color-mix(in srgb,var(--ze-accent) 65%,transparent),inset 0 1px 0 0 rgba(255,255,255,.32),inset 0 -1px 2px 0 rgba(0,0,0,.18)}
+.ze-card.is-all .ze-emblem{width:3.3rem;height:3.3rem}
+.ze-main{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:.2rem}
+.ze-name{font-weight:700;font-size:1.15rem;line-height:1.15;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ze-card.is-all .ze-name{font-size:1.3rem}
+.ze-meta{font-weight:600;font-size:.85rem;opacity:.6}
+.ze-bar{display:block;height:5px;margin-top:.45rem;border-radius:99px;overflow:hidden;background:color-mix(in srgb,var(--theme-text,#121212) 10%,transparent)}
+.ze-bar i{display:block;height:100%;width:calc(var(--ze-fill,0) * 100%);border-radius:inherit;background:var(--ze-accent);transform-origin:left center}
+.ze-chev{flex:0 0 auto;opacity:.4;transition:transform .35s var(--ze-ease),opacity .3s ease}
+.ze-none{grid-column:1/-1;padding:2.4rem 0;text-align:center;font-family:"Baloo 2",sans-serif;font-weight:600;opacity:.55;color:var(--theme-text,#121212)}
+.ze-empty{display:flex;flex-direction:column;align-items:center;gap:.5rem;padding:4.5rem 1rem;text-align:center;font-family:"Baloo 2","Space Grotesk",sans-serif;color:var(--theme-text,#121212)}
+.ze-empty svg{color:var(--accent-color,#ff90e8);margin-bottom:.4rem}
+.ze-empty b{font-size:1.25rem;font-weight:700}
+.ze-empty span{max-width:30ch;font-size:.95rem;font-weight:600;opacity:.6;line-height:1.35}
+.ze-empty-ring,.ze-empty-tick{stroke-dasharray:1;stroke-dashoffset:0}
+/* Tek orkestre edilmiş giriş: başlık + kartlar sırayla belirir */
+@keyframes zeRise{from{opacity:0;transform:translateY(16px) scale(.985);filter:blur(3px)}to{opacity:1;transform:none;filter:none}}
+@keyframes zeHeadIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
+@keyframes zeBar{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+@keyframes zeDraw{from{stroke-dashoffset:1}to{stroke-dashoffset:0}}
+#page-zero-error.is-active .ze-head{animation:zeHeadIn .5s var(--ze-ease) both}
+#page-zero-error.is-active .ze-search,#page-zero-error.is-active .ze-sub{animation:zeHeadIn .55s var(--ze-ease) .08s both}
+#page-zero-error.is-active .ze-grid:not(.is-static) .ze-card{animation:zeRise .6s var(--ze-ease) calc(120ms + var(--i,0) * 60ms) both}
+#page-zero-error.is-active .ze-grid:not(.is-static) .ze-bar i{animation:zeBar 1s var(--ze-ease) calc(380ms + var(--i,0) * 60ms) both}
+#page-zero-error.is-active .ze-empty-ring{animation:zeDraw 1.1s cubic-bezier(.65,0,.35,1) .1s both}
+#page-zero-error.is-active .ze-empty-tick{animation:zeDraw .6s cubic-bezier(.65,0,.35,1) .8s both}
+#page-zero-error.is-active .ze-empty b,#page-zero-error.is-active .ze-empty span{animation:zeHeadIn .6s var(--ze-ease) 1s both}
+
+/* ===== Soru çözme: doğru / yanlış geri bildirimi (emoji yok) ===== */
+#page-camera-test:not(.qt-exam) .qhavuz-test-answer-grid .qhavuz-add-answer-btn{position:relative}
+#page-camera-test:not(.qt-exam) .qhavuz-test-answer-grid .qhavuz-add-answer-btn.is-correct{color:#0b4a28;background:linear-gradient(180deg,#8ff0b4,#43d98a);box-shadow:0 12px 26px -12px rgba(61,220,132,.8),inset 0 1px 0 rgba(255,255,255,.5);transform:scale(1.05);animation:qtCorrect .75s cubic-bezier(.22,1,.36,1) both}
+#page-camera-test:not(.qt-exam) .qhavuz-test-answer-grid .qhavuz-add-answer-btn.is-correct::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;animation:qtRing 1.1s cubic-bezier(.22,1,.36,1) .08s both}
+#page-camera-test:not(.qt-exam) .qhavuz-test-answer-grid .qhavuz-add-answer-btn.is-wrong{color:#6b0f1c;background:linear-gradient(180deg,#ff9a9a,#f2646a);box-shadow:0 12px 26px -12px rgba(242,100,106,.75),inset 0 1px 0 rgba(255,255,255,.4);transform:scale(1.03);animation:qtWrong .7s cubic-bezier(.36,.07,.19,.97) both}
+#page-camera-test:not(.qt-exam) .qhavuz-test-answer-grid:has(.is-wrong) .qhavuz-add-answer-btn.is-correct{animation-delay:.34s}
+#page-camera-test:not(.qt-exam) .qhavuz-test-answer-grid:has(.is-wrong) .qhavuz-add-answer-btn.is-correct::after{animation-delay:.42s}
+@keyframes qtCorrect{0%{transform:scale(.92);opacity:.4}45%{transform:scale(1.09);opacity:1}100%{transform:scale(1.05);opacity:1}}
+@keyframes qtRing{0%{box-shadow:0 0 0 0 rgba(61,220,132,.5)}100%{box-shadow:0 0 0 16px rgba(61,220,132,0)}}
+@keyframes qtWrong{0%{transform:scale(.97)}20%{transform:translateX(-4px) scale(1.03)}40%{transform:translateX(3px) scale(1.03)}60%{transform:translateX(-2px) scale(1.03)}80%{transform:translateX(1px) scale(1.03)}100%{transform:translateX(0) scale(1.03)}}
+
+#page-camera-test #qhavuzTestFeedback[class*="qtv-"]{--qtv-c:#2fbf71;--qtv-ink:#16804b;position:relative;display:flex;align-items:center;justify-content:center;gap:.75rem;overflow:hidden;text-align:left;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--qtv-c) 28%,transparent);background:linear-gradient(100deg,color-mix(in srgb,var(--qtv-c) 22%,var(--qt-bg,transparent)),color-mix(in srgb,var(--qtv-c) 8%,var(--qt-bg,transparent)));animation:qtvPill .55s cubic-bezier(.22,1,.36,1) both}
+#page-camera-test #qhavuzTestFeedback.qtv-wrong{--qtv-c:#ee5a5f;--qtv-ink:#c9353b}
+#page-camera-test #qhavuzTestFeedback.qtv-blank{--qtv-c:#8a8f9c;--qtv-ink:color-mix(in srgb,var(--theme-text,#121212) 70%,transparent)}
+#page-camera-test #qhavuzTestFeedback[class*="qtv-"]::after{content:"";position:absolute;top:0;bottom:0;left:-40%;width:40%;pointer-events:none;background:linear-gradient(100deg,transparent,rgba(255,255,255,.35),transparent);transform:skewX(-18deg);animation:qtvSweep 1s cubic-bezier(.4,0,.2,1) .15s both}
+body.is-anthracite #page-camera-test #qhavuzTestFeedback.qtv-correct{--qtv-ink:#5cd68a}
+body.is-anthracite #page-camera-test #qhavuzTestFeedback.qtv-wrong{--qtv-ink:#ff7a7a}
+.qtv-badge{flex:0 0 auto;width:1.9rem;height:1.9rem;display:grid;place-items:center;border-radius:50%;color:#fff;background:var(--qtv-c);box-shadow:0 6px 14px -6px var(--qtv-c);animation:qtvBadge .65s cubic-bezier(.34,1.56,.64,1) both}
+.qtv-badge svg{width:1.05rem;height:1.05rem}
+.qtv-badge path{stroke-dasharray:1;stroke-dashoffset:1;animation:zeDraw .5s cubic-bezier(.65,0,.35,1) .22s forwards}
+.qtv-text{display:flex;flex-direction:column;gap:.1rem;line-height:1.1;animation:qtvText .55s cubic-bezier(.22,1,.36,1) .12s both}
+.qtv-text b{font-weight:800;font-size:1rem;color:var(--qtv-ink)}
+.qtv-text em{font-style:normal;font-weight:600;font-size:.78rem;color:var(--qtv-ink);opacity:.8}
+@keyframes qtvPill{from{opacity:0;transform:translateY(8px) scale(.98)}to{opacity:1;transform:none}}
+@keyframes qtvBadge{0%{transform:scale(.3);opacity:0}100%{transform:scale(1);opacity:1}}
+@keyframes qtvText{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:none}}
+@keyframes qtvSweep{from{left:-40%}to{left:120%}}
+@media (prefers-reduced-motion:reduce){
+  #page-zero-error *,#page-camera-test .qhavuz-add-answer-btn,#page-camera-test .qhavuz-add-answer-btn::after,#page-camera-test #qhavuzTestFeedback,#page-camera-test #qhavuzTestFeedback *{animation:none !important}
+  .qtv-badge path{stroke-dashoffset:0}
+}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" crossorigin="anonymous"></script>
 <script src="sync.js?v=38"></script>
