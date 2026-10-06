@@ -72681,7 +72681,7 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
       };
       requestAnimationFrame(step);
     };
-    // Varılan liste: aynı vurgu art arda 3 kez tekrarlanır. Her turda diğer listeler bir an soluklaşıp geri gelir,
+    // Varılan liste: aynı vurgu art arda 3 kez tekrarlanır. Diğer listeler başta bir kez soluklaşır, vurgular bitene kadar soluk kalır,
     // seçilen listenin noktası halka yayar ve adı hafifçe kayar. Satırlara dokunulmaz (sıçrama yok).
     const FLASH_N = 3, FLASH_MS = 780;
     const flashGroup = (box) => {
@@ -72697,7 +72697,8 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
       if (!reduceMo()) {
         Array.from(lst.children).forEach((o) => {
           if (o === box || !o.animate) return;
-          lst._gksA.push(o.animate([{ opacity: 1 }, { opacity: .22, offset: .3 }, { opacity: .22, offset: .55 }, { opacity: 1 }], { duration: FLASH_MS, iterations: FLASH_N, easing: 'ease-in-out' }));
+          const T = FLASH_MS * FLASH_N;   // bir kez karar, 3 vurgu boyunca karanlık kalır, en sonda geri açılır
+          lst._gksA.push(o.animate([{ opacity: 1, offset: 0 }, { opacity: .22, offset: 280 / T }, { opacity: .22, offset: 1 - 420 / T }, { opacity: 1, offset: 1 }], { duration: T, easing: 'ease-in-out' }));
         });
       }
       lst._gksT = setTimeout(() => { if (head) head.classList.remove('gks-flash'); lst._gksA = []; }, FLASH_MS * FLASH_N + 200);
