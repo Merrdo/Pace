@@ -40802,6 +40802,48 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
     </div>
   </section>
 
+  <!-- Zaman Takvimi > Süre ekle: kronometre tutulmayan/başka cihazda çalışılan süreyi elle ekleme sayfası (JS: Zaman Takvimi script'i). -->
+  <div class="zta-page" id="ztAddPage" role="dialog" aria-modal="true" aria-labelledby="ztaTitle" aria-hidden="true">
+    <div class="zta-scroll" id="ztaScroll">
+      <div class="zta-inner">
+        <div class="zta-top" style="--i:0">
+          <button type="button" class="zta-back" id="ztaBack" aria-label="Geri dön"><svg viewBox="0 0 24 24" width="18" height="18"><path d="M15 4l-8 8 8 8" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <span class="zta-title" id="ztaTitle">Süre ekle</span>
+        </div>
+        <div class="zta-head" style="--i:1"><div class="zta-marker" id="ztaMarker">1</div><div class="zta-head-txt"><span class="zta-date" id="ztaDate"></span><span class="zta-rel" id="ztaRel"></span></div></div>
+        <div class="zta-card" style="--i:2">
+          <div class="zta-lbl">Eklenecek süre</div>
+          <div class="zta-big is-zero" id="ztaBig">0 dk</div>
+          <div class="zta-sum" id="ztaSum"></div>
+          <div class="zta-steps">
+            <div class="zta-step"><div class="zta-stepbox"><button type="button" class="zta-stepbtn" id="ztaHM" aria-label="1 saat azalt">−</button><input class="zta-input" id="ztaH" type="text" inputmode="numeric" maxlength="2" value="0" aria-label="Saat" autocomplete="off"><button type="button" class="zta-stepbtn" id="ztaHP" aria-label="1 saat artır">+</button></div><small>saat</small></div>
+            <div class="zta-step"><div class="zta-stepbox"><button type="button" class="zta-stepbtn" id="ztaMM" aria-label="5 dakika azalt">−</button><input class="zta-input" id="ztaM" type="text" inputmode="numeric" maxlength="2" value="0" aria-label="Dakika" autocomplete="off"><button type="button" class="zta-stepbtn" id="ztaMP" aria-label="5 dakika artır">+</button></div><small>dakika</small></div>
+          </div>
+          <div class="zta-quick" id="ztaQuick">
+            <button type="button" class="zta-q" data-add="15">+15 dk</button>
+            <button type="button" class="zta-q" data-add="30">+30 dk</button>
+            <button type="button" class="zta-q" data-add="60">+1 sa</button>
+            <button type="button" class="zta-q" data-add="120">+2 sa</button>
+            <button type="button" class="zta-q is-reset" data-add="0">Sıfırla</button>
+          </div>
+          <div class="zta-note" id="ztaNote" hidden></div>
+        </div>
+        <div class="zta-card" style="--i:3">
+          <div class="zta-subj-head"><span class="zta-lbl">Branş (isteğe bağlı)</span>
+            <div class="zta-seg" id="ztaSeg" role="tablist"><button type="button" data-track="tyt" class="is-on">TYT</button><button type="button" data-track="ayt">AYT</button></div>
+          </div>
+          <div class="zta-chips" id="ztaChips"></div>
+          <div class="zta-hint" id="ztaSubjHint" style="margin-top:.7rem">Branş seçmezsen süre yalnızca günün toplamına eklenir.</div>
+        </div>
+        <div id="ztaEntriesWrap" style="--i:4" hidden>
+          <div class="zta-lbl" style="margin-bottom:.6rem">Bu güne elle eklenenler</div>
+          <div class="zta-list" id="ztaEntries"></div>
+        </div>
+      </div>
+    </div>
+    <div class="zta-foot"><button type="button" class="zta-save" id="ztaSave" disabled>Ekle</button></div>
+  </div>
+
   <!-- Sayfa 11: Denemelerim. Eklenen TYT/AYT denemeleri büyük, yatay
        kartlar halinde listelenir; bir karta dokununca Sayfa 6/7 ile aynı
        dilde tam ekran bir detay sayfası (#page-11-detail) açılır. -->
@@ -70287,7 +70329,7 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
     },
     {
       label: 'Kronometre kayıtları',
-      pick: (st) => ({ logs: st.stopwatchLogs, subjectLogs: st.stopwatchSubjectLogs }),
+      pick: (st) => ({ logs: st.stopwatchLogs, subjectLogs: st.stopwatchSubjectLogs, manualLogs: st.stopwatchManualLogs }),
       count: (st) => importEntryCount(st.stopwatchLogs) + importEntryCount(st.stopwatchSubjectLogs)
     }
   ];
@@ -70299,7 +70341,7 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
   // anahtarlar (tema, çark, renkler, geri sayım ön ayarı vb.) "ayar"dır.
   const IMPORT_CONTENT_KEYS = new Set([
     'page8', 'relaxTasks', 'dayCountdowns', 'page9', 'page11', 'questionPool',
-    'stopwatchLogs', 'stopwatchSubjectLogs'
+    'stopwatchLogs', 'stopwatchSubjectLogs', 'stopwatchManualLogs'
   ]);
 
   const analyzeBackupDiff = (deviceState, fileState) => {
@@ -73150,6 +73192,7 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
       `<div class="zt-d-titles"><span class="zt-d-name">${WD_FULL[date.getDay()]}, ${D} ${MONTHS[M - 1]}</span><span class="zt-d-rel">${esc(rel)}</span></div>` +
       `<button type="button" class="zt-off-btn zt-off-head${offRule ? ' is-on' : ''}" data-offday="1" aria-label="${offRule ? 'Off day düzenle' : 'Off day ekle'}">${offRule ? 'Off day ✓' : 'Off day'}</button></div>`;
     html += `<div class="zt-d-total" style="--i:${idx++}"><span class="zt-d-total-v" id="ztTotalV">0 dk</span><span class="zt-d-total-l">toplam çalışma</span></div>`;
+    html += `<button type="button" class="zt-add-btn" data-addtime style="--i:${idx++}">+ Süre ekle</button>`;
     if (isBest) html += `<span class="zt-d-best" style="--i:${idx++}">Ayın en uzun günü</span>`;
     if (ms < MIN_MS) {
       html += `<div class="zt-empty" style="--i:${idx++}">Bu gün için çalışma kaydı yok.</div>`;
@@ -73212,6 +73255,8 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
   // ---- Olaylar ----
   grid.addEventListener('click', (e) => {
     const b = e.target.closest('.zt-day'); if (!b || b.disabled || b.classList.contains('is-empty')) return;
+    // Zaten seçili olan güne bir kez daha dokunmak "Süre ekle" sayfasını açar.
+    if (b.dataset.key === sel) { openAdd(sel); return; }
     selectDay(b.dataset.key);
   });
   prevBtn.addEventListener('click', () => changeMonth(-1));
@@ -73245,6 +73290,7 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
     renderAll(true);
   }
   function closeZt() {
+    try { if (addPg && addPg.classList.contains('is-open')) closeAdd(); } catch (e) { /* yok say */ }
     document.body.classList.remove('is-ztakvim-open');
     if (typeof goToPage === 'function') goToPage('page-5');
   }
@@ -73611,6 +73657,187 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
   });
   window.addEventListener('offdays-changed', () => { renderMonth(0, false); renderDetail(false); moveBubble(true, false); prepareShare(); });
 
+  // ---------- Süre ekle: kronometre tutulmayan günlere elle süre ekleme (geçmiş günler dahil) ----------
+  // Yazılan veri kronometrenin kullandığı depolarla aynıdır (stopwatchLogs: gün -> ms,
+  // stopwatchSubjectLogs: gün -> branş -> ms); böylece İstatistikler ve takvim hemen güncellenir.
+  // Silebilmek için elle eklenenler ayrıca stopwatchManualLogs altında (gün -> [{id, ms, track, name, at}]) tutulur.
+  const addPg = $('ztAddPage'), aBig = $('ztaBig'), aSum = $('ztaSum'), aH = $('ztaH'), aM = $('ztaM');
+  const aSave = $('ztaSave'), aNote = $('ztaNote'), aChips = $('ztaChips'), aSeg = $('ztaSeg');
+  const aEntriesWrap = $('ztaEntriesWrap'), aEntries = $('ztaEntries');
+  const MAX_DAY_MIN = 24 * 60;
+  const AD = { key: '', mins: 0, subj: null, track: 'tyt' };
+  const manualAll = () => (typeof APP_STATE !== 'undefined' && APP_STATE.stopwatchManualLogs && typeof APP_STATE.stopwatchManualLogs === 'object') ? APP_STATE.stopwatchManualLogs : {};
+  const subjLogsAll = () => (typeof APP_STATE !== 'undefined' && APP_STATE.stopwatchSubjectLogs && typeof APP_STATE.stopwatchSubjectLogs === 'object') ? APP_STATE.stopwatchSubjectLogs : {};
+  const subjColor = (track, name) => { try { return typeof page10ColorForSubject === 'function' ? page10ColorForSubject(track, name) : '#ff5da2'; } catch (e) { return '#ff5da2'; } };
+  const onColor = (c) => { try { return typeof getReadableTextColor === 'function' ? getReadableTextColor(c) : '#16171b'; } catch (e) { return '#16171b'; } };
+  const toast = (msg, kind) => { try { if (typeof showAppToast === 'function') showAppToast(msg, kind); } catch (e) { /* yok say */ } };
+  const capMins = () => Math.max(0, MAX_DAY_MIN - Math.floor(dayMs(AD.key) / 60000));
+  const clampMins = (v) => Math.max(0, Math.min(capMins(), Math.round(v) || 0));
+  const dateOfKey = (k) => { const [Y, M, D] = k.split('-').map(Number); return new Date(Y, M - 1, D); };
+  let armedDel = null, armedTimer = null;
+
+  function renderAddChips() {
+    aChips.innerHTML = '';
+    let list = [];
+    try { list = (typeof stopwatchSubjectsBuildList === 'function') ? stopwatchSubjectsBuildList(AD.track) : []; } catch (e) { list = []; }
+    $('ztaSubjHint').hidden = !!AD.subj ? true : false;
+    if (!list.length) { const h = document.createElement('span'); h.className = 'zta-hint'; h.textContent = 'Bu sekmede henüz branş yok.'; aChips.appendChild(h); return; }
+    list.forEach((it) => {
+      const color = subjColor(AD.track, it.name);
+      const on = !!AD.subj && AD.subj.track === AD.track && AD.subj.name === it.name;
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'zta-chip' + (on ? ' is-on' : '');
+      b.style.setProperty('--c', color); b.style.setProperty('--on', onColor(color));
+      b.dataset.name = it.name;
+      b.innerHTML = `<i></i><span>${esc(it.name)}</span>`;
+      aChips.appendChild(b);
+    });
+  }
+
+  function renderAddEntries() {
+    const arr = Array.isArray(manualAll()[AD.key]) ? manualAll()[AD.key] : [];
+    aEntriesWrap.hidden = !arr.length;
+    aEntries.innerHTML = '';
+    arr.slice().reverse().forEach((en) => {
+      const row = document.createElement('div'); row.className = 'zta-row';
+      const c = en.name ? subjColor(en.track, en.name) : '';
+      if (c) row.style.setProperty('--c', c);
+      row.innerHTML = `<i></i><span class="zta-row-name">${esc(en.name || 'Branşsız')}</span><span class="zta-row-time">${fmtLong(en.ms)}</span>` +
+        `<button type="button" class="zta-del" data-id="${esc(en.id)}" aria-label="Sil">✕</button>`;
+      aEntries.appendChild(row);
+    });
+  }
+
+  function renderAddSummary() {
+    const cur = Math.floor(dayMs(AD.key) / 60000), cap = capMins();
+    aBig.textContent = AD.mins > 0 ? fmtLong(AD.mins * 60000) : '0 dk';
+    aBig.classList.toggle('is-zero', AD.mins <= 0);
+    aSum.textContent = AD.mins > 0
+      ? `Günün toplamı: ${cur >= 1 ? fmtLong(cur * 60000) : '0 dk'} → ${fmtLong((cur + AD.mins) * 60000)}`
+      : (cur >= 1 ? `Bu günün şu anki toplamı: ${fmtLong(cur * 60000)}` : 'Bu gün için henüz kayıt yok.');
+    aSave.disabled = AD.mins < 1;
+    aSave.textContent = AD.mins > 0 ? `${fmtLong(AD.mins * 60000)} ekle` : 'Ekle';
+    aNote.hidden = cap > 0;
+    if (cap <= 0) aNote.textContent = 'Bu gün zaten 24 saate ulaştı; daha fazla süre eklenemez.';
+    $('ztaHM').disabled = AD.mins < 60; $('ztaHP').disabled = AD.mins + 60 > cap;
+    $('ztaMM').disabled = AD.mins < 1; $('ztaMP').disabled = AD.mins + 1 > cap;
+  }
+  function syncAddInputs() { aH.value = String(Math.floor(AD.mins / 60)); aM.value = String(AD.mins % 60); }
+  function setMins(v, syncInputs) { AD.mins = clampMins(v); if (syncInputs !== false) syncAddInputs(); renderAddSummary(); }
+
+  function renderAddHead() {
+    const date = dateOfKey(AD.key);
+    const diff = Math.round((startOfDay(new Date()) - date) / 86400000);
+    $('ztaMarker').textContent = String(date.getDate());
+    $('ztaDate').textContent = `${WD_FULL[date.getDay()]}, ${date.getDate()} ${MONTHS[date.getMonth()]} ${date.getFullYear()}`;
+    $('ztaRel').textContent = diff === 0 ? 'Bugün' : diff === 1 ? 'Dün' : diff > 1 ? `${diff} gün önce` : '';
+  }
+
+  function openAdd(key) {
+    const date = dateOfKey(key);
+    if (date.getTime() > startOfDay(new Date()).getTime()) { toast('Gelecek bir güne süre eklenemez.'); return; }
+    AD.key = key; AD.mins = 0; AD.subj = null; armedDel = null;
+    renderAddHead(); renderAddChips(); renderAddEntries(); syncAddInputs(); renderAddSummary();
+    $('ztaScroll').scrollTop = 0;
+    addPg.classList.add('is-open'); addPg.setAttribute('aria-hidden', 'false');
+  }
+  function closeAdd() {
+    addPg.classList.remove('is-open'); addPg.setAttribute('aria-hidden', 'true');
+    if (document.activeElement && addPg.contains(document.activeElement)) document.activeElement.blur();
+  }
+  function saveAdd() {
+    const ms = AD.mins * 60000, key = AD.key;
+    if (ms < MIN_MS || typeof saveAppState !== 'function') return;
+    if (AD.mins > capMins()) { setMins(AD.mins); return; }
+    const L = Object.assign({}, logs());
+    L[key] = (Number(L[key]) || 0) + ms;
+    const patch = { stopwatchLogs: L };
+    const subj = AD.subj ? { track: AD.subj.track, name: AD.subj.name } : null;
+    if (subj) {
+      const S = Object.assign({}, subjLogsAll()), day = Object.assign({}, S[key] || {}), k = `${subj.track}::${subj.name}`;
+      const prev = (day[k] && typeof day[k].ms === 'number') ? day[k].ms : 0;
+      day[k] = { track: subj.track, name: subj.name, ms: prev + ms }; S[key] = day; patch.stopwatchSubjectLogs = S;
+    }
+    const M = Object.assign({}, manualAll()), arr = Array.isArray(M[key]) ? M[key].slice() : [];
+    arr.push({ id: 'm' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), ms, track: subj ? subj.track : null, name: subj ? subj.name : null, at: Date.now() });
+    M[key] = arr; patch.stopwatchManualLogs = M;
+    if (saveAppState(patch) === false) return;
+    toast(`${fmtLong(ms)} eklendi`);
+    closeAdd();
+    sel = key;
+    const d = dateOfKey(key);
+    if (d.getFullYear() !== view.y || d.getMonth() !== view.m) { view = { y: d.getFullYear(), m: d.getMonth() }; setMonthLabel(0); }
+    renderMonth(0, false); renderDetail(false);
+  }
+
+  function deleteManual(id) {
+    const key = AD.key, M = Object.assign({}, manualAll()), arr = Array.isArray(M[key]) ? M[key].slice() : [];
+    const i = arr.findIndex((x) => x.id === id); if (i < 0 || typeof saveAppState !== 'function') return;
+    const en = arr.splice(i, 1)[0];
+    const L = Object.assign({}, logs()), left = (Number(L[key]) || 0) - en.ms;
+    if (left >= MIN_MS / 2) L[key] = left; else delete L[key];
+    const patch = { stopwatchLogs: L };
+    if (en.name) {
+      const S = Object.assign({}, subjLogsAll()), day = Object.assign({}, S[key] || {}), k = `${en.track}::${en.name}`;
+      if (day[k] && typeof day[k].ms === 'number') {
+        const r = day[k].ms - en.ms;
+        if (r > 0) day[k] = { track: day[k].track, name: day[k].name, ms: r }; else delete day[k];
+        if (Object.keys(day).length) S[key] = day; else delete S[key];
+        patch.stopwatchSubjectLogs = S;
+      }
+    }
+    if (arr.length) M[key] = arr; else delete M[key];
+    patch.stopwatchManualLogs = M;
+    if (saveAppState(patch) === false) return;
+    toast('Süre silindi');
+    armedDel = null; AD.mins = clampMins(AD.mins);
+    renderAddEntries(); syncAddInputs(); renderAddSummary(); renderMonth(0, false); renderDetail(false);
+  }
+
+  $('ztaBack').addEventListener('click', closeAdd);
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && addPg.classList.contains('is-open')) closeAdd(); });
+  $('ztaHM').addEventListener('click', () => setMins(AD.mins - 60));
+  $('ztaHP').addEventListener('click', () => setMins(AD.mins + 60));
+  $('ztaMM').addEventListener('click', () => setMins(AD.mins - 5));
+  $('ztaMP').addEventListener('click', () => setMins(AD.mins + 5));
+  const readInputs = () => {
+    const h = parseInt(aH.value.replace(/\D/g, ''), 10) || 0, m = Math.min(59, parseInt(aM.value.replace(/\D/g, ''), 10) || 0);
+    setMins(h * 60 + m, false);
+  };
+  [aH, aM].forEach((inp) => {
+    inp.addEventListener('input', readInputs);
+    inp.addEventListener('focus', () => { try { inp.select(); } catch (e) { /* yok say */ } });
+    inp.addEventListener('blur', () => { readInputs(); syncAddInputs(); });
+    inp.addEventListener('keydown', (e) => { if (e.key === 'Enter') inp.blur(); });
+  });
+  $('ztaQuick').addEventListener('click', (e) => {
+    const b = e.target.closest('[data-add]'); if (!b) return;
+    const v = Number(b.dataset.add);
+    if (v === 0) setMins(0); else setMins(AD.mins + v);
+  });
+  aSeg.addEventListener('click', (e) => {
+    const b = e.target.closest('[data-track]'); if (!b) return;
+    AD.track = b.dataset.track;
+    aSeg.querySelectorAll('button').forEach((x) => x.classList.toggle('is-on', x === b));
+    renderAddChips();
+  });
+  aChips.addEventListener('click', (e) => {
+    const b = e.target.closest('.zta-chip'); if (!b) return;
+    const same = AD.subj && AD.subj.track === AD.track && AD.subj.name === b.dataset.name;
+    AD.subj = same ? null : { track: AD.track, name: b.dataset.name };
+    renderAddChips();
+  });
+  aEntries.addEventListener('click', (e) => {
+    const b = e.target.closest('.zta-del'); if (!b) return;
+    if (armedDel === b.dataset.id) { clearTimeout(armedTimer); deleteManual(b.dataset.id); return; }
+    aEntries.querySelectorAll('.zta-del').forEach((x) => { x.classList.remove('is-armed'); x.textContent = '✕'; });
+    armedDel = b.dataset.id; b.classList.add('is-armed'); b.textContent = 'Sil?';
+    clearTimeout(armedTimer);
+    armedTimer = setTimeout(() => { armedDel = null; b.classList.remove('is-armed'); b.textContent = '✕'; }, 2600);
+  });
+  aSave.addEventListener('click', saveAdd);
+  detailEl.addEventListener('click', (e) => { if (e.target.closest('[data-addtime]')) openAdd(sel); });
+
   // Sayfa başka yolla (yan panel vb.) terk edilirse alt navbar geri gelsin
   new MutationObserver(() => {
     if (!page.classList.contains('is-active') && !page.classList.contains('is-leaving')) document.body.classList.remove('is-ztakvim-open');
@@ -73623,6 +73850,150 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
   updateLink();
 })();
 </script>
+
+<style id="ztAddCss">
+/* ===== Zaman Takvimi: "Süre ekle" sayfası =====
+   Kronometre tutulmayan/başka cihazda çalışılan süreyi elle eklemek için uygulama içi tam ekran sayfa. */
+.zt-add-btn {
+  align-self: flex-start; display: inline-flex; align-items: center; gap: .4rem; height: 2.5rem; padding: 0 1.15rem;
+  border-radius: 999px; cursor: pointer; -webkit-tap-highlight-color: transparent;
+  border: 1.5px solid color-mix(in srgb, var(--accent-color, #ff90e8) 70%, transparent);
+  background: color-mix(in srgb, var(--accent-color, #ff90e8) 16%, transparent);
+  color: var(--theme-text, #f2f2f7); font: 800 .92rem "Baloo 2", "Space Grotesk", sans-serif;
+  transition: transform .2s cubic-bezier(.34, 1.56, .64, 1), background-color .25s;
+}
+.zt-add-btn:active { transform: scale(.94); }
+.zt-d-manual { font-weight: 600; font-size: .8rem; opacity: .5; }
+
+.zta-page {
+  position: fixed; inset: 0; z-index: 320; display: flex; flex-direction: column;
+  background: var(--theme-bg, #1c1c22); color: var(--theme-text, #f2f2f7);
+  font-family: "Baloo 2", "Space Grotesk", sans-serif;
+  opacity: 0; visibility: hidden; pointer-events: none; transform: translateY(28px);
+  transition: opacity .3s ease, transform .5s cubic-bezier(.22, 1, .36, 1), visibility 0s linear .5s;
+}
+.zta-page.is-open {
+  opacity: 1; visibility: visible; pointer-events: auto; transform: none;
+  transition: opacity .3s ease, transform .5s cubic-bezier(.22, 1, .36, 1), visibility 0s;
+}
+.zta-page [hidden] { display: none !important; }
+.zta-scroll {
+  flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: none;
+  padding: calc(20px + env(safe-area-inset-top, 0px)) 22px 18px;
+}
+.zta-scroll::-webkit-scrollbar { display: none; }
+.zta-inner { width: 100%; max-width: 560px; margin: 0 auto; display: flex; flex-direction: column; gap: 1.35rem; }
+.zta-top { display: flex; align-items: center; gap: .5rem; min-height: 2.6rem; }
+.zta-back {
+  flex: none; width: 2.6rem; height: 2.6rem; margin-left: -10px; display: grid; place-items: center; padding: 0;
+  border: none; border-radius: 50%; background: transparent; color: inherit; cursor: pointer;
+  -webkit-tap-highlight-color: transparent; transition: transform .15s ease, background-color .2s ease;
+}
+.zta-back:active { transform: scale(.92); background: rgba(127, 127, 127, .22); }
+@media (hover: hover) { .zta-back:hover { background: rgba(127, 127, 127, .14); } }
+.zta-title { font-weight: 800; font-size: 1.15rem; letter-spacing: -.01em; }
+
+.zta-head { display: flex; align-items: center; gap: .85rem; }
+.zta-marker {
+  flex: none; width: 3rem; height: 3rem; border-radius: 50%; display: grid; place-items: center;
+  border: 2.5px solid var(--accent-color, #ff90e8); font-weight: 800; font-size: 1.1rem;
+}
+.zta-head-txt { display: flex; flex-direction: column; min-width: 0; }
+.zta-date { font-weight: 800; font-size: 1.2rem; line-height: 1.15; }
+.zta-rel { font-weight: 600; font-size: .88rem; opacity: .55; }
+
+.zta-card {
+  border-radius: 1.6rem; padding: 1.15rem 1.1rem 1.1rem;
+  background: color-mix(in srgb, var(--theme-text, #f2f2f7) 8%, transparent);
+}
+.zta-lbl { font-weight: 700; font-size: .78rem; letter-spacing: .06em; text-transform: uppercase; opacity: .5; }
+.zta-big {
+  margin: .2rem 0 .1rem; font-weight: 800; font-size: 2.7rem; line-height: 1.05; letter-spacing: -.02em;
+  font-variant-numeric: tabular-nums;
+}
+.zta-big.is-zero { opacity: .3; }
+.zta-sum { font-weight: 600; font-size: .88rem; opacity: .6; min-height: 1.2em; }
+.zta-steps { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; margin-top: 1.1rem; }
+.zta-step { display: flex; flex-direction: column; align-items: center; gap: .4rem; }
+.zta-stepbox {
+  display: flex; align-items: center; justify-content: space-between; width: 100%; box-sizing: border-box;
+  padding: .3rem; border-radius: 1.2rem; background: color-mix(in srgb, var(--theme-text, #f2f2f7) 9%, transparent);
+}
+.zta-stepbtn {
+  flex: none; width: 2.7rem; height: 2.7rem; display: grid; place-items: center; padding: 0; border: none;
+  border-radius: 50%; cursor: pointer; color: inherit; font: 800 1.35rem/1 "Baloo 2", sans-serif;
+  background: color-mix(in srgb, var(--theme-text, #f2f2f7) 10%, transparent); -webkit-tap-highlight-color: transparent;
+  transition: transform .15s ease, background-color .2s ease; touch-action: manipulation;
+}
+.zta-stepbtn:active { transform: scale(.88); background: color-mix(in srgb, var(--accent-color, #ff90e8) 35%, transparent); }
+.zta-stepbtn:disabled { opacity: .25; pointer-events: none; }
+.zta-input {
+  width: 100%; min-width: 0; text-align: center; border: none; outline: none; background: transparent; color: inherit;
+  font: 800 1.7rem "Baloo 2", "Space Grotesk", sans-serif; font-variant-numeric: tabular-nums; padding: 0;
+}
+.zta-step small { font-weight: 700; font-size: .8rem; opacity: .5; }
+.zta-quick { display: flex; flex-wrap: wrap; gap: .45rem; margin-top: 1rem; }
+.zta-q {
+  height: 2.2rem; padding: 0 .95rem; border: none; border-radius: 999px; cursor: pointer; color: inherit;
+  font: 700 .86rem "Baloo 2", "Space Grotesk", sans-serif; -webkit-tap-highlight-color: transparent;
+  background: color-mix(in srgb, var(--theme-text, #f2f2f7) 10%, transparent);
+  transition: transform .15s ease, background-color .2s ease;
+}
+.zta-q:active { transform: scale(.93); }
+.zta-q.is-reset { background: transparent; box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--theme-text, #f2f2f7) 22%, transparent); }
+.zta-note { margin-top: .8rem; font-weight: 600; font-size: .85rem; color: var(--off-red, #ff3b3b); }
+
+.zta-seg { display: inline-flex; padding: .22rem; border-radius: 999px; background: color-mix(in srgb, var(--theme-text, #f2f2f7) 9%, transparent); }
+.zta-seg button {
+  height: 2rem; min-width: 3.6rem; padding: 0 1rem; border: none; border-radius: 999px; cursor: pointer; color: inherit;
+  background: transparent; font: 800 .86rem "Baloo 2", sans-serif; -webkit-tap-highlight-color: transparent;
+  transition: background-color .25s ease, color .25s ease;
+}
+.zta-seg button.is-on { background: var(--accent-color, #ff90e8); color: #16171b; }
+.zta-subj-head { display: flex; align-items: center; justify-content: space-between; gap: .6rem; flex-wrap: wrap; margin-bottom: .8rem; }
+.zta-chips { display: flex; flex-wrap: wrap; gap: .45rem; }
+.zta-chip {
+  display: inline-flex; align-items: center; gap: .45rem; max-width: 100%; height: 2.35rem; padding: 0 .95rem 0 .8rem;
+  border: none; border-radius: 999px; cursor: pointer; color: inherit; -webkit-tap-highlight-color: transparent;
+  font: 700 .9rem "Baloo 2", "Space Grotesk", sans-serif;
+  background: color-mix(in srgb, var(--theme-text, #f2f2f7) 9%, transparent);
+  transition: transform .15s ease, background-color .25s ease, color .25s ease;
+}
+.zta-chip:active { transform: scale(.94); }
+.zta-chip i { flex: none; width: .65rem; height: .65rem; border-radius: 50%; background: var(--c, var(--accent-color, #ff90e8)); }
+.zta-chip span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.zta-chip.is-on { background: var(--c, var(--accent-color, #ff90e8)); color: var(--on, #16171b); }
+.zta-chip.is-on i { background: var(--on, #16171b); }
+.zta-hint { font-weight: 600; font-size: .85rem; opacity: .5; }
+
+.zta-list { display: flex; flex-direction: column; gap: .5rem; }
+.zta-row { display: flex; align-items: center; gap: .65rem; padding: .55rem .6rem .55rem .9rem; border-radius: 1.1rem; background: color-mix(in srgb, var(--theme-text, #f2f2f7) 8%, transparent); }
+.zta-row i { flex: none; width: .65rem; height: .65rem; border-radius: 50%; background: var(--c, rgba(127, 127, 127, .7)); }
+.zta-row-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 700; font-size: .95rem; }
+.zta-row-time { flex: none; font-weight: 800; font-size: .95rem; font-variant-numeric: tabular-nums; }
+.zta-del {
+  flex: none; min-width: 2.2rem; height: 2.2rem; padding: 0 .6rem; border: none; border-radius: 999px; cursor: pointer;
+  color: inherit; font: 800 .8rem "Baloo 2", sans-serif; background: color-mix(in srgb, var(--theme-text, #f2f2f7) 9%, transparent);
+  display: grid; place-items: center; -webkit-tap-highlight-color: transparent; transition: background-color .2s ease, color .2s ease, transform .15s ease;
+}
+.zta-del:active { transform: scale(.9); }
+.zta-del.is-armed { background: var(--off-red, #ff3b3b); color: #fff; }
+
+.zta-foot {
+  flex: none; padding: .8rem 22px calc(.9rem + env(safe-area-inset-bottom, 0px));
+  background: linear-gradient(to top, var(--theme-bg, #1c1c22) 70%, transparent);
+}
+.zta-save {
+  display: block; width: 100%; max-width: 560px; height: 3.4rem; margin: 0 auto; border: none; border-radius: 1.2rem; cursor: pointer;
+  background: var(--accent-color, #ff90e8); color: #16171b; font: 800 1.1rem "Baloo 2", "Space Grotesk", sans-serif;
+  -webkit-tap-highlight-color: transparent; transition: transform .2s cubic-bezier(.34, 1.56, .64, 1), opacity .25s ease;
+}
+.zta-save:active { transform: scale(.97); }
+.zta-save:disabled { opacity: .3; pointer-events: none; }
+.zta-page.is-open .zta-inner > * { animation: ztaIn .5s cubic-bezier(.16, 1, .3, 1) calc(var(--i, 0) * 55ms + 120ms) backwards; }
+@keyframes ztaIn { from { opacity: 0; transform: translateY(10px); } }
+@media (prefers-reduced-motion: reduce) { .zta-page, .zta-page.is-open .zta-inner > * { transition-duration: .01s !important; animation: none !important; } }
+</style>
 
 <style id="toastMobileCss">
   /* ===== Bildirimler (toast): mobil uyumlu + yumuşak giriş/çıkış =====
