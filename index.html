@@ -44537,10 +44537,34 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
   // hızlıca farklı butonlara basılabilir.
   let pageTransitionTimer = null;
 
+  // Navbar'ı gizleyen "alt sayfa açık" sınıfları (is-analytics-open vb.) her sayfanın kendi
+  // aç/kapa fonksiyonunda elle ekleniyor/kaldırılıyordu; bir sayfadan başka bir yoldan çıkılınca
+  // (ör. Analizlerim > 0 Hata Testlerim > geri) sınıf takılı kalıp navbar'ı kalıcı gizliyordu.
+  // Artık her geçişte merkezi olarak eşitlenir: sınıf yalnızca kendi sayfaları açıkken vardır.
+  // Test sayfası muaf: testten çıkınca dönülen sayfanın sınıfı zaten korunuyor olmalı.
+  const NAV_HIDE_OWNERS = {
+    'is-analytics-open': ['page-analytics'],
+    'is-zero-error-open': ['page-zero-error', 'page-camera-packages', 'page-camera-package-detail'],
+    'is-exam-detail-open': ['page-11-detail'],
+    'is-page10-open': ['page-10'],
+    'is-calendar-open': ['page-6', 'page-relax'],
+    'is-laps-open': ['page-7'],
+    'is-wheel-open': ['page-4', 'page-mini-games-hub'],
+    'is-patterns-open': ['page-patterns'],
+    'is-ztakvim-open': ['page-ztakvim'],
+  };
+  const syncNavHideClasses = (targetId) => {
+    if (targetId === 'page-camera-test') return;
+    Object.keys(NAV_HIDE_OWNERS).forEach((cls) => {
+      document.body.classList.toggle(cls, NAV_HIDE_OWNERS[cls].indexOf(targetId) !== -1);
+    });
+  };
+
   const goToPage = (id) => {
     const nextPage = document.getElementById(id);
     if (!nextPage || nextPage === activePage) return;
 
+    syncNavHideClasses(id);
     setQhavuzPageMode(QHAVUZ_NAV_PAGES.has(id));
     setPage11PageMode(id === 'page-11');
     setGundelikPageMode(GUNDELIK_NAV_PAGES.has(id));
@@ -65940,7 +65964,11 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
 
   const page11MistakeZeroErrorBtn = document.getElementById('page11MistakeZeroErrorBtn');
   if (page11MistakeZeroErrorBtn) {
-    page11MistakeZeroErrorBtn.addEventListener('click', () => openZeroErrorPage('page-11'));
+    page11MistakeZeroErrorBtn.addEventListener('click', () => {
+      // Telefonda bu buton Analizlerim sayfasının içinde de duruyor; oradan açıldıysa geri yine oraya dönmeli.
+      const cur = document.querySelector('.page.is-active');
+      openZeroErrorPage(cur && cur.id === 'page-analytics' ? 'page-analytics' : 'page-11');
+    });
   }
 </script>
 
@@ -75175,7 +75203,8 @@ body.p11-return .page11-fab-bar,body.p11-return .page11-fab-bar .qhavuz-fab{tran
 .navbar .nav-add-icon{transition:transform .45s var(--n-ease)}
 .navbar .nav-add-btn[aria-expanded="true"] .nav-add-icon{transform:rotate(45deg)}
 .navbar .nav-add-btn{transition:transform .45s var(--n-ease),background-color .35s ease,color .35s ease}
-.navbar.is-extra-active .nav-add-btn{background:var(--n-t);color:var(--n-bg)}
+/* Soru Takibi açıkken + düğmesi dolu siyah olmaz; diğer sayfalardaki gibi navbar'ın cam yüzeyi + tema yazı rengi (dinamik) */
+.navbar.is-extra-active .nav-add-btn{background:color-mix(in srgb,var(--n-bg) 74%,transparent);color:var(--n-t)}
 .navbar .nav-slider{transition:transform .6s var(--n-ease),opacity .3s ease}
 .navbar.is-extra-active .nav-slider{opacity:0}
 }
