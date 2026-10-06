@@ -72786,7 +72786,12 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
         const next = items().map((n) => byId.get(n.dataset.id)).filter(Boolean);
         st.groups.forEach((g) => { if (next.indexOf(g) < 0) next.push(g); });
         if (next.every((g, i) => g === st.groups[i])) return;
-        st.groups = next; save(); lastCommit = performance.now(); render();
+        st.groups = next; save(); lastCommit = performance.now();
+        // Kartlar silinip baştan çizilmesin: mevcut kartlar yerinde yeniden dizilir (FLIP ile süzülür).
+        // Herhangi bir kart bulunamazsa eski yönteme (tam çizim) dönülür.
+        const boxes = st.groups.map((g) => list.querySelector(':scope > [data-fk="hg:' + g.id + '"]'));
+        if (boxes.some((b) => !b)) { render(); return; }
+        window.gkAnim.flip(list, () => { boxes.forEach((b) => list.appendChild(b)); });
       };
 
       // ---- Kapanış ----
