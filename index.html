@@ -41502,89 +41502,117 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
   </section>
 
 <style id="q9mCss">
-/* ===== Soru Takibi · mobil yeniden tasarım (büyük ekrana dokunmaz) ===== */
+/* ===== Soru Takibi · mobil yeniden tasarım v2 (büyük ekrana dokunmaz) ===== */
 #q9m{display:none}
-.q9m,.q9-ov{--t:var(--theme-text,#121212);--bg:var(--theme-bg,#f6f4ef);--soft:color-mix(in srgb,var(--t) 7%,transparent);--soft2:color-mix(in srgb,var(--t) 13%,transparent);--mute:color-mix(in srgb,var(--t) 52%,transparent);--ease:cubic-bezier(.16,1,.3,1);--spring:cubic-bezier(.34,1.56,.64,1);font-family:"Baloo 2","Space Grotesk",sans-serif;color:var(--t)}
-.q9-ov{display:none}
+.q9m,.q9-ov,.q9-sp{--t:var(--theme-text,#121212);--bg:var(--theme-bg,#f6f4ef);--soft:color-mix(in srgb,var(--t) 6%,transparent);--soft2:color-mix(in srgb,var(--t) 12%,transparent);--mute:color-mix(in srgb,var(--t) 52%,transparent);--ease:cubic-bezier(.22,1,.36,1);--glide:cubic-bezier(.33,.9,.4,1);--spring:cubic-bezier(.34,1.45,.64,1);font-family:"Baloo 2","Space Grotesk",sans-serif;color:var(--t)}
+.q9-ov,.q9-sp{display:none}
 @media not all and (min-width:768px) and (min-height:600px){
 #page-9 .page9-wrap{display:none !important}
-#page-9.page{padding:calc(16px + env(safe-area-inset-top)) 18px calc(120px + env(safe-area-inset-bottom))}
+#page-9.page{padding:0 18px calc(120px + env(safe-area-inset-bottom))}
 #page-9 #q9m{display:block;width:100%;max-width:440px;margin:0 auto}
-.q9-ov{display:block}
-:where(.q9m,.q9-ov) button{font-family:inherit;color:inherit;border:0;background:none;padding:0;margin:0;cursor:pointer;-webkit-tap-highlight-color:transparent}
-.q9-top{display:flex;align-items:center;justify-content:space-between;gap:12px}
-.q9-date{text-align:left;display:flex;flex-direction:column;line-height:1.05}
+.q9-ov,.q9-sp{display:block}
+:where(.q9m,.q9-ov,.q9-sp) button{font-family:inherit;color:inherit;border:0;background:none;padding:0;margin:0;cursor:pointer;-webkit-tap-highlight-color:transparent}
+
+/* ---------- Sabit üst alan: tarih + takvim şeridi ---------- */
+.q9-head{--k:0;position:sticky;top:0;z-index:30;padding:calc(14px + env(safe-area-inset-top)) 0 12px}
+.q9-head::before{content:"";position:absolute;z-index:-1;top:0;bottom:0;left:50%;width:100vw;transform:translateX(-50%);background:color-mix(in srgb,var(--bg) 93%,transparent);-webkit-backdrop-filter:blur(22px) saturate(1.5);backdrop-filter:blur(22px) saturate(1.5);box-shadow:0 1px 0 var(--soft2);opacity:var(--k);pointer-events:none}
+.q9-top{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:52px}
+.q9-date{text-align:left;display:flex;flex-direction:column;line-height:1.05;transform-origin:left center;transform:scale(calc(1 - .2 * var(--k)));will-change:transform}
 .q9-date b{font-size:1.9rem;font-weight:800;letter-spacing:-.02em}
 .q9-date span{font-size:.82rem;font-weight:700;color:var(--mute);margin-top:3px}
-.q9-date.is-swap{animation:q9Sw .45s var(--ease)}
-.q9-seg{--n:2;--k:0;position:relative;display:grid;grid-auto-flow:column;grid-auto-columns:1fr;background:var(--soft);border-radius:999px;padding:3px}
-.q9-seg i{position:absolute;top:3px;bottom:3px;left:3px;width:calc((100% - 6px)/var(--n));border-radius:999px;background:var(--t);transform:translateX(calc(var(--k)*100%));transition:transform .45s var(--spring)}
-.q9-seg button{position:relative;z-index:1;font-weight:800;font-size:.8rem;line-height:1;padding:9px 15px;color:var(--mute);transition:color .3s}
-.q9-seg button.is-on{color:var(--bg)}
-.q9-seg3{--n:3}.q9-seg3 button{padding:7px 12px;font-size:.74rem}
-.q9-week{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin:18px 0 6px}
-.q9-wd{position:relative;display:flex;flex-direction:column;align-items:center;gap:5px;padding:9px 0 12px;border-radius:999px;transition:background .35s,color .35s,transform .3s var(--spring)}
-.q9-wd i{font-style:normal;font-size:.7rem;font-weight:700;color:var(--mute)}
-.q9-wd b{font-size:1.02rem;font-weight:800;font-variant-numeric:tabular-nums}
-.q9-wd u{position:absolute;bottom:5px;width:4px;height:4px;border-radius:50%;background:currentColor;opacity:0;transform:scale(0);transition:opacity .3s,transform .3s var(--spring)}
+.q9-date.is-swap b,.q9-date.is-swap span{animation:q9Sw .6s var(--ease) both}
+.q9-date.is-swap span{animation-delay:40ms}
+.q9-sumbtn{display:flex;align-items:center;gap:7px;padding:10px 16px 10px 13px;border-radius:999px;background:var(--soft);font-weight:800;font-size:.86rem;line-height:1;transition:transform .4s var(--ease),background .3s}
+.q9-sumbtn:active{transform:scale(.95);background:var(--soft2)}
+
+/* takvim şeridi (yalnızca burada kaydırınca hafta değişir) */
+.q9-week{position:relative;display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-top:12px;touch-action:pan-y;transition:opacity .16s ease-out,transform .16s ease-out}
+.q9-week.wk-out{opacity:0;transform:translateX(var(--dx,0px))}
+.q9-week.wk-in-l{animation:q9InL .6s var(--ease) both}
+.q9-week.wk-in-r{animation:q9InR .6s var(--ease) both}
+.q9-week.is-drag{transition:none}
+.q9-ind{position:absolute;top:0;bottom:0;left:0;width:calc((100% - 24px)/7);border-radius:999px;background:var(--t);transform:translateX(calc(var(--s,0) * (100% + 4px)));transition:transform .7s var(--ease);pointer-events:none}
+.q9-wd{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:5px;padding:9px 0 13px;border-radius:999px;color:var(--t);transition:color .5s var(--ease),opacity .4s}
+.q9-wd i{font-style:normal;font-size:.7rem;font-weight:700;color:var(--mute);transition:color .5s var(--ease)}
+.q9-wd b{font-size:1.02rem;font-weight:800;font-variant-numeric:tabular-nums;transition:transform .4s var(--ease)}
+.q9-wd u{position:absolute;bottom:5px;width:4px;height:4px;border-radius:50%;background:currentColor;opacity:0;transform:scale(0);transition:opacity .4s,transform .4s var(--ease)}
 .q9-wd.has u{opacity:.45;transform:none}
-.q9-wd.is-sel{background:var(--t);color:var(--bg);transform:translateY(-2px)}
+.q9-wd.is-sel{color:var(--bg)}
 .q9-wd.is-sel i{color:color-mix(in srgb,var(--bg) 62%,transparent)}
 .q9-wd.is-fut{opacity:.28;pointer-events:none}
-.q9-wd:active{transform:scale(.92)}
-.q9-body.q9-in-l{animation:q9SlL .45s var(--ease)}.q9-body.q9-in-r{animation:q9SlR .45s var(--ease)}
-.q9-hero{position:relative;display:block;width:156px;height:156px;margin:10px auto 0}
+.q9-wd:active b{transform:scale(.9)}
+
+/* ---------- Gövde (gün değişince yumuşakça yenilenir) ---------- */
+.q9-body{padding-top:10px;transition:opacity .16s ease-out,transform .16s ease-out}
+.q9-body.q9-out{opacity:0;transform:translateX(var(--dx,0px))}
+.q9-body.q9-in-l{animation:q9InL .65s var(--ease) both}
+.q9-body.q9-in-r{animation:q9InR .65s var(--ease) both}
+.q9-hero{position:relative;display:block;width:156px;height:156px;margin:6px auto 0}
 .q9-hero svg{width:100%;height:100%}
 .q9-tr{fill:none;stroke:var(--soft2);stroke-width:9}
 .q9-hero.no-goal .q9-tr{stroke-dasharray:1.5 11;stroke-linecap:round}
-.q9-pg{fill:none;stroke:var(--t);stroke-width:9;stroke-linecap:round;stroke-dasharray:377;stroke-dashoffset:377;transition:stroke-dashoffset .9s var(--ease),stroke .4s,opacity .3s}
+.q9-pg{fill:none;stroke:var(--t);stroke-width:9;stroke-linecap:round;stroke-dasharray:377;stroke-dashoffset:377;transition:stroke-dashoffset 1s var(--ease),stroke .5s,opacity .4s}
 .q9-hero.is-zero .q9-pg{opacity:0}
 .q9-hero.is-done .q9-pg{stroke:#59c97b}
-.q9-hero.is-pulse{animation:q9Pulse .7s var(--spring)}
+.q9-hero.is-pulse{animation:q9Pulse .8s var(--ease)}
 .q9-hn{position:absolute;inset:0;display:grid;place-content:center;text-align:center;pointer-events:none}
 .q9-hn b{font-size:3rem;font-weight:800;line-height:.95;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
-.q9-hn b.is-bump{animation:q9Bump .34s var(--spring)}
+.q9-hn b.is-bump{animation:q9Bump .45s var(--ease)}
 .q9-hn em{font-style:normal;font-size:.8rem;font-weight:700;color:var(--mute)}
-.q9-goalnote{text-align:center;font-size:.86rem;font-weight:700;color:var(--mute);margin:8px 0 20px;transition:color .3s}
-.q9-list{display:flex;flex-direction:column;gap:10px}
-.q9-card{--c:#6ec6ff;position:relative;display:grid;grid-template-columns:minmax(0,1fr) auto auto auto;align-items:center;gap:10px;padding:14px 14px 14px 18px;border-radius:26px;background:color-mix(in srgb,var(--c) 30%,transparent);cursor:pointer;overflow:hidden;touch-action:pan-y;animation:q9In .55s var(--ease) both;animation-delay:calc(var(--i)*55ms);transition:transform .28s var(--spring),background .35s}
-.q9-quiet .q9-card{animation:none}
-.q9-card.is-press{transform:scale(.97)}
+.q9-goalnote{text-align:center;font-size:.86rem;font-weight:700;color:var(--mute);margin:8px 0 22px;transition:color .4s}
+
+.q9-listhead{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 2px 14px}
+.q9-listhead .q9-seg{width:156px}
+.q9-listhead small{font-size:.8rem;font-weight:800;color:var(--mute)}
+.q9-seg{--n:2;--k:0;position:relative;display:grid;grid-auto-flow:column;grid-auto-columns:1fr;background:var(--soft);border-radius:999px;padding:3px}
+.q9-seg i{position:absolute;top:3px;bottom:3px;left:3px;width:calc((100% - 6px)/var(--n));border-radius:999px;background:var(--t);transform:translateX(calc(var(--k) * 100%));transition:transform .6s var(--ease)}
+.q9-seg button{position:relative;z-index:1;font-weight:800;font-size:.8rem;line-height:1;padding:9px 15px;color:var(--mute);transition:color .4s var(--ease)}
+.q9-seg button.is-on{color:var(--bg)}
+.q9-seg3{--n:3}.q9-seg3 button{padding:9px 12px;font-size:.78rem}
+
+/* ---------- Ders kartları ---------- */
+.q9-list{display:flex;flex-direction:column;gap:11px;transition:opacity .16s ease-out,transform .16s ease-out}
+.q9-list.q9-out{opacity:0;transform:translateX(var(--dx,0px))}
+.q9-list.q9-in-l{animation:q9InL .6s var(--ease) both}
+.q9-list.q9-in-r{animation:q9InR .6s var(--ease) both}
+.q9-card{--c:#6ec6ff;position:relative;display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:13px;padding:12px 12px 17px 12px;border-radius:30px;background:color-mix(in srgb,var(--c) 22%,var(--bg));box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--c) 34%,transparent);cursor:pointer;overflow:hidden;touch-action:pan-y;animation:q9In .65s var(--ease) both;animation-delay:calc(var(--i) * 45ms);transition:transform .4s var(--ease),background .5s}
+.q9-quiet .q9-card,.q9-quiet .q9-add{animation:none}
+.q9-card.is-press{transform:scale(.982)}
+.q9-ava{width:48px;height:48px;border-radius:50%;background:var(--c);display:grid;place-items:center;font-weight:800;font-size:1.2rem;line-height:1;color:color-mix(in srgb,#000 70%,var(--c));transition:background .4s}
 .q9-cn{min-width:0}
-.q9-cn b{display:block;font-weight:800;font-size:1.08rem;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.q9-cn span{display:block;font-size:.74rem;font-weight:700;color:var(--mute);min-height:1em;margin-top:2px}
-.q9-ct{min-width:2ch;text-align:right;font-weight:800;font-size:2rem;line-height:1;font-variant-numeric:tabular-nums}
-.q9-ct.is-bump{animation:q9Bump .34s var(--spring)}
-.q9-mi,.q9-pl{display:grid;place-items:center;border-radius:50%;touch-action:manipulation;transition:transform .2s var(--spring),opacity .25s}
-.q9-mi{width:34px;height:34px;background:color-mix(in srgb,var(--t) 10%,transparent)}
-.q9-pl{width:46px;height:46px;background:var(--t) !important;color:var(--bg) !important}
-.q9-mi.is-off{opacity:0;pointer-events:none;transform:scale(.6)}
-.q9-mi.is-press,.q9-pl.is-press{transform:scale(.86)}
-.q9-pop{position:absolute;top:8px;font-weight:800;font-size:1.05rem;pointer-events:none;animation:q9Pop .7s var(--ease) forwards}
-.q9-add{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin-top:2px;padding:15px;border-radius:26px;border:1.6px dashed color-mix(in srgb,var(--t) 28%,transparent) !important;font-weight:800;font-size:.95rem;color:var(--mute) !important;transition:transform .25s var(--spring),border-color .3s,color .3s}
-.q9-add:active{transform:scale(.98);color:var(--t) !important}
-.q9-add.is-empty{padding:30px 15px;font-size:1.05rem;color:var(--t) !important}
-.q9-hint{text-align:center;font-size:.74rem;font-weight:700;color:var(--mute);margin:12px 0 0;opacity:.8}
-.q9-sum{margin-top:30px;padding-top:22px;border-top:1.5px solid var(--soft2)}
-.q9-sumhead{display:flex;align-items:center;justify-content:space-between}
-.q9-sumhead>span{font-weight:800;font-size:1.25rem}
-.q9-sumtot{display:flex;align-items:baseline;gap:8px;margin:14px 0 12px}
-.q9-sumtot b{font-size:2.2rem;font-weight:800;line-height:1;font-variant-numeric:tabular-nums}
-.q9-sumtot span{font-size:.82rem;font-weight:700;color:var(--mute)}
-.q9-stack{display:flex;gap:3px;height:12px;border-radius:999px;overflow:hidden}
-.q9-stack i{display:block;min-width:6px;border-radius:3px;transform-origin:left;animation:q9Grow .8s var(--ease) both}
-.q9-rows{display:flex;flex-direction:column;gap:14px;margin-top:18px}
-.q9-row2 .t{display:flex;align-items:center;gap:8px;font-weight:700;font-size:.92rem}
-.q9-row2 .t i{width:9px;height:9px;border-radius:50%;flex:none}
-.q9-row2 .t em{font-style:normal;font-size:.68rem;color:var(--mute);font-weight:800}
-.q9-row2 .t b{margin-left:auto;font-weight:800;font-variant-numeric:tabular-nums}
-.q9-row2 .bar{height:5px;border-radius:99px;background:var(--soft);margin-top:7px;overflow:hidden}
-.q9-row2 .bar i{display:block;height:100%;border-radius:99px;transform-origin:left;animation:q9Grow .8s var(--ease) both}
-.q9-empty{text-align:center;font-weight:700;font-size:.88rem;color:var(--mute);padding:14px 0}
-/* alt sayfa (bottom sheet) */
-.q9-ov{position:fixed;inset:0;z-index:5000;background:rgba(0,0,0,.38);-webkit-backdrop-filter:blur(5px);backdrop-filter:blur(5px);opacity:0;pointer-events:none;transition:opacity .3s}
+.q9-cn b{display:block;font-weight:800;font-size:1.06rem;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.q9-cn span{display:flex;align-items:center;gap:5px;font-size:.74rem;font-weight:700;color:var(--mute);min-height:1em;margin-top:3px}
+.q9-cn span svg{flex:none;opacity:.8}
+.q9-stp{display:flex;align-items:center;padding:4px;border-radius:999px;background:color-mix(in srgb,var(--bg) 66%,transparent)}
+.q9-mi,.q9-pl{display:grid;place-items:center;border-radius:50%;flex:none;touch-action:manipulation}
+.q9-mi{width:34px;height:34px;transition:transform .3s var(--ease),opacity .35s,width .45s var(--ease),margin .45s var(--ease)}
+.q9-pl{width:40px;height:40px;background:var(--t) !important;color:var(--bg) !important;transition:transform .3s var(--ease)}
+.q9-mi.is-off{width:0;margin-right:-4px;opacity:0;pointer-events:none;transform:scale(.5)}
+.q9-mi.is-press,.q9-pl.is-press{transform:scale(.88)}
+.q9-ct{min-width:2.3ch;padding:0 4px;text-align:center;font-weight:800;font-size:1.4rem;line-height:1;font-variant-numeric:tabular-nums}
+.q9-ct.is-bump{animation:q9Bump .45s var(--ease)}
+.q9-share{position:absolute;left:18px;right:18px;bottom:7px;height:3px;border-radius:3px;background:color-mix(in srgb,var(--c) 28%,transparent);overflow:hidden;pointer-events:none}
+.q9-share i{display:block;height:100%;width:var(--w,0%);border-radius:inherit;background:color-mix(in srgb,var(--c) 72%,var(--t));transition:width .9s var(--ease)}
+.q9-pop{position:absolute;top:10px;font-weight:800;font-size:1.05rem;pointer-events:none;animation:q9Pop .8s var(--ease) forwards}
+
+/* Ders ekle */
+.q9-add{display:flex;align-items:center;gap:14px;width:100%;margin-top:2px;padding:12px 18px 12px 12px;border-radius:30px;background:var(--soft);text-align:left;animation:q9In .65s var(--ease) both;animation-delay:calc(var(--i,0) * 45ms);transition:transform .4s var(--ease),background .3s}
+.q9-add .ic{width:48px;height:48px;border-radius:50%;background:var(--t);color:var(--bg);display:grid;place-items:center;flex:none;transition:transform .6s var(--ease)}
+.q9-add .tx{min-width:0;display:flex;flex-direction:column;gap:2px}
+.q9-add .tx b{font-weight:800;font-size:1.04rem;line-height:1.1}
+.q9-add .tx span{font-size:.76rem;font-weight:700;color:var(--mute)}
+.q9-add:active{transform:scale(.982);background:var(--soft2)}
+.q9-add:active .ic{transform:rotate(90deg)}
+.q9-add.is-empty{flex-direction:column;justify-content:center;gap:10px;padding:34px 20px 30px;text-align:center;box-shadow:inset 0 0 0 1.5px var(--soft2);background:none}
+.q9-add.is-empty .ic{width:58px;height:58px}
+.q9-add.is-empty .tx{align-items:center;gap:4px}
+.q9-add.is-empty .tx b{font-size:1.15rem}
+.q9-hint{text-align:center;font-size:.74rem;font-weight:700;color:var(--mute);margin:14px 0 0;opacity:.8}
+
+/* ---------- Alt sayfa (bottom sheet) ---------- */
+.q9-ov{position:fixed;inset:0;z-index:5000;background:rgba(0,0,0,.38);-webkit-backdrop-filter:blur(5px);backdrop-filter:blur(5px);opacity:0;pointer-events:none;transition:opacity .4s var(--ease)}
 .q9-ov.is-open{opacity:1;pointer-events:auto}
-.q9-sh{position:absolute;left:0;right:0;bottom:0;max-height:88dvh;overflow-y:auto;background:var(--bg);border-radius:30px 30px 0 0;padding:0 22px calc(24px + env(safe-area-inset-bottom));transform:translateY(105%);transition:transform .55s var(--ease);max-width:520px;margin:0 auto}
+.q9-sh{position:absolute;left:0;right:0;bottom:0;max-height:88dvh;overflow-y:auto;background:var(--bg);border-radius:30px 30px 0 0;padding:0 22px calc(24px + env(safe-area-inset-bottom));transform:translateY(105%);transition:transform .65s var(--ease);max-width:520px;margin:0 auto}
 .q9-ov.is-open .q9-sh{transform:none}
 .q9-grab{display:flex;justify-content:center;padding:12px 0 14px;touch-action:none}
 .q9-grab i{width:40px;height:5px;border-radius:9px;background:var(--soft2)}
@@ -41593,42 +41621,131 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
 .q9-st .dl{width:16px;height:16px;border-radius:50%;flex:none;transition:background .3s}
 .q9-name{flex:1;min-width:0;font:inherit;font-weight:800;color:inherit;background:none;border:0;outline:0;padding:0;-webkit-user-select:text;user-select:text}
 .q9-step{display:flex;align-items:center;justify-content:center;gap:18px;margin:4px 0 14px}
-.q9-step button{width:52px;height:52px;border-radius:50%;background:var(--soft2) !important;font-size:1.6rem;font-weight:800;line-height:1;display:grid;place-items:center;touch-action:manipulation;transition:transform .2s var(--spring)}
-.q9-step button.is-press{transform:scale(.88)}
+.q9-step button{width:52px;height:52px;border-radius:50%;background:var(--soft2) !important;font-size:1.6rem;font-weight:800;line-height:1;display:grid;place-items:center;touch-action:manipulation;transition:transform .3s var(--ease)}
+.q9-step button.is-press{transform:scale(.9)}
 .q9-step input{width:4.2ch;text-align:center;font:800 2.6rem/1 "Baloo 2",sans-serif;color:inherit;background:none;border:0;outline:0;-moz-appearance:textfield;-webkit-user-select:text;user-select:text}
 .q9-step input::-webkit-outer-spin-button,.q9-step input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
 .q9-chips{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-bottom:18px}
-.q9-chips button{padding:10px 16px;border-radius:99px;background:var(--soft) !important;font-weight:800;font-size:.9rem;transition:transform .2s var(--spring),background .25s}
-.q9-chips button:active{transform:scale(.92);background:var(--soft2) !important}
+.q9-chips button{padding:10px 16px;border-radius:99px;background:var(--soft) !important;font-weight:800;font-size:.9rem;transition:transform .3s var(--ease),background .25s}
+.q9-chips button:active{transform:scale(.94);background:var(--soft2) !important}
 .q9-sw{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-bottom:16px}
-.q9-sw button{width:30px;height:30px;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(0,0,0,.08);transition:transform .25s var(--spring)}
-.q9-sw button.is-on{transform:scale(1.18);box-shadow:0 0 0 2.5px var(--bg),0 0 0 4.5px var(--t)}
+.q9-sw button{width:30px;height:30px;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(0,0,0,.08);transition:transform .4s var(--ease),box-shadow .3s}
+.q9-sw button.is-on{transform:scale(1.15);box-shadow:0 0 0 2.5px var(--bg),0 0 0 4.5px var(--t)}
 .q9-line{border-radius:0;display:flex;align-items:center;justify-content:space-between;width:100%;padding:14px 0;border-top:1.5px solid var(--soft2);font-weight:700;font-size:.95rem}
-.q9-tg{position:relative;width:46px;height:28px;border-radius:99px;background:var(--soft2);transition:background .3s;flex:none}
-.q9-tg::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:var(--bg);transition:transform .35s var(--spring)}
+.q9-tg{position:relative;width:46px;height:28px;border-radius:99px;background:var(--soft2);transition:background .35s;flex:none}
+.q9-tg::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:var(--bg);transition:transform .5s var(--ease)}
 .q9-line.is-on .q9-tg{background:var(--t)}.q9-line.is-on .q9-tg::after{transform:translateX(18px)}
 .q9-acts{display:flex;gap:10px;margin-top:6px}
 .q9-acts button{flex:1;padding:14px;border-radius:18px;background:var(--soft) !important;font-weight:800;font-size:.9rem}
 .q9-acts .del{color:#e5484d !important}
 .q9-grid{display:flex;flex-wrap:wrap;gap:9px;margin-bottom:16px}
-.q9-grid button{padding:12px 17px;border-radius:99px;background:var(--soft) !important;font-weight:800;font-size:.95rem;transition:transform .25s var(--spring),background .3s,color .3s}
+.q9-grid button{display:inline-flex;align-items:center;gap:6px;padding:12px 17px;border-radius:99px;background:var(--soft) !important;font-weight:800;font-size:.95rem;transition:transform .35s var(--ease),background .4s,color .4s}
 .q9-grid button.is-on{background:var(--t) !important;color:var(--bg) !important}
+.q9-grid button.is-on::before{content:"";width:6px;height:10px;margin:-2px 2px 0 0;border:solid currentColor;border-width:0 2.4px 2.4px 0;transform:rotate(45deg) scale(.85)}
 .q9-grid button.is-shake{animation:q9Shake .4s}
-.q9-grid button:active{transform:scale(.92)}
+.q9-grid button:active{transform:scale(.94)}
 .q9-cust{display:flex;gap:8px}
 .q9-cust input{flex:1;min-width:0;font:700 .95rem "Baloo 2",sans-serif;color:inherit;background:var(--soft);border:0;outline:0;border-radius:99px;padding:13px 18px;-webkit-user-select:text;user-select:text}
 .q9-cust button{width:48px;border-radius:50%;background:var(--t) !important;color:var(--bg) !important;font-size:1.5rem;font-weight:800}
+
+/* ---------- ÖZET SAYFASI (ayrı tam ekran sayfa) ---------- */
+.q9-sp{position:fixed;inset:0;z-index:6000;background:var(--bg);transform:translateX(104%);visibility:hidden;box-shadow:-30px 0 60px -30px rgba(0,0,0,.35);transition:transform .7s var(--ease),visibility 0s linear .7s}
+.q9-sp.is-open{transform:none;visibility:visible;transition:transform .7s var(--ease),visibility 0s}
+.q9-sp-in{position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;touch-action:pan-y}
+.q9-sp-bar{position:sticky;top:0;z-index:5;display:grid;grid-template-columns:44px 1fr 44px;align-items:center;max-width:520px;margin:0 auto;padding:calc(12px + env(safe-area-inset-top)) 18px 10px}
+.q9-sp-bar::before{content:"";position:absolute;z-index:-1;top:0;bottom:0;left:50%;width:100vw;transform:translateX(-50%);background:color-mix(in srgb,var(--bg) 93%,transparent);-webkit-backdrop-filter:blur(22px) saturate(1.5);backdrop-filter:blur(22px) saturate(1.5)}
+.q9-sp-bar h2{text-align:center;font-size:1.25rem;font-weight:800;margin:0}
+.q9-sp-back{width:44px;height:44px;border-radius:50%;background:var(--soft) !important;display:grid;place-items:center;transition:transform .4s var(--ease),background .3s}
+.q9-sp-back:active{transform:scale(.92);background:var(--soft2) !important}
+.q9-sp-pad{max-width:520px;margin:0 auto;padding:6px 18px calc(48px + env(safe-area-inset-bottom))}
+.q9-sp-rng{margin-bottom:14px}
+.q9-sp-rng button{padding:11px 12px;font-size:.84rem}
+.q9-sp-nav{display:grid;grid-template-columns:44px 1fr 44px;align-items:center;margin-bottom:6px}
+.q9-sp-nav>button{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;transition:transform .4s var(--ease),opacity .4s}
+.q9-sp-nav>button:active{transform:scale(.88)}
+.q9-sp-nav>button:disabled{opacity:.22;pointer-events:none}
+.q9-sp-lb{font-weight:800;font-size:1.02rem;text-align:center;padding:10px 0}
+.q9-sp-c{transition:opacity .16s ease-out,transform .16s ease-out}
+.q9-sp-c.q9-out{opacity:0;transform:translateY(6px)}
+.q9-rise{animation:q9In .7s var(--ease) both;animation-delay:calc(var(--i,0) * 55ms)}
+.q9-sp-c.q9-still .q9-rise,.q9-sp-c.q9-still .q9-bar i,.q9-sp-c.q9-still .sg,.q9-sp-c.q9-still .q9-row2 .bar i,.q9-sp-c.q9-still .q9-split .bar i{animation:none}
+.q9-big{padding:14px 2px 22px;text-align:left}
+.q9-big .n{display:flex;align-items:baseline;gap:10px}
+.q9-big .n b{font-size:4.6rem;font-weight:800;line-height:.9;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.q9-big .n span{font-size:1.05rem;font-weight:700;color:var(--mute)}
+.q9-chip{display:inline-flex;align-items:center;gap:6px;margin-top:14px;padding:7px 13px 7px 10px;border-radius:99px;background:var(--soft);font-weight:800;font-size:.8rem}
+.q9-chip svg{flex:none}
+.q9-chip.up{background:color-mix(in srgb,#59c97b 22%,transparent)}
+.q9-chip.up svg{color:#2f9a52}
+.q9-chip.down{background:color-mix(in srgb,#ff7a59 20%,transparent)}
+.q9-chip.down svg{color:#d9573a}
+.q9-tiles{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.q9-tile{display:flex;flex-direction:column;gap:3px;padding:16px 16px 15px;border-radius:26px;background:var(--soft);min-width:0}
+.q9-tile .l{font-size:.76rem;font-weight:700;color:var(--mute)}
+.q9-tile b{font-size:1.75rem;font-weight:800;line-height:1.05;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:4px}
+.q9-tile em{font-style:normal;font-size:.74rem;font-weight:700;color:var(--mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.q9-sec{padding:18px 16px 16px;border-radius:30px;background:var(--soft);margin-bottom:12px}
+.q9-sec-h{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:16px}
+.q9-sec-h h3{font-size:1.06rem;font-weight:800;margin:0}
+.q9-read{font-size:.78rem;font-weight:800;color:var(--mute);text-align:right;transition:color .3s}
+.q9-read.on{color:var(--t)}
+.q9-plot{position:relative;height:132px}
+.q9-goal{position:absolute;left:0;right:0;border-top:1.5px dashed color-mix(in srgb,#59c97b 80%,transparent);pointer-events:none;z-index:0}
+.q9-goal::after{content:"hedef";position:absolute;right:0;top:-17px;font-size:.66rem;font-weight:800;color:#2f9a52}
+.q9-bars{position:absolute;inset:0;display:grid;grid-template-columns:repeat(var(--n),1fr);gap:var(--gap,8px);z-index:1}
+.q9-bar{position:relative;display:flex;align-items:flex-end;justify-content:center;height:100%;touch-action:manipulation}
+.q9-bar i{display:block;width:100%;height:var(--h);min-height:4px;border-radius:99px;background:var(--t);opacity:.88;transform-origin:bottom;animation:q9Rise .8s var(--ease) both;animation-delay:calc(var(--d,0) * 1ms);transition:opacity .35s,background .35s}
+.q9-bar.is-zero i{opacity:.14}
+.q9-bar.is-met i{background:#59c97b;opacity:1}
+.q9-bar.is-fut i{opacity:.07}
+.q9-bar.dim i{opacity:.26}
+.q9-bar.dim.is-zero i{opacity:.1}
+.q9-bar.is-pick i{opacity:1;box-shadow:0 0 0 2px var(--bg),0 0 0 3.5px var(--t)}
+.q9-bar u{position:absolute;bottom:calc(var(--h) + 5px);text-decoration:none;font-size:.68rem;font-weight:800;font-variant-numeric:tabular-nums;color:var(--mute)}
+.q9-lbls{display:grid;grid-template-columns:repeat(var(--n),1fr);gap:var(--gap,8px);margin-top:9px}
+.q9-lbls span{text-align:center;font-size:.7rem;font-weight:700;color:var(--mute);white-space:nowrap}
+.q9-lbls span.on{color:var(--t);font-weight:800}
+.q9-dist{display:flex;align-items:center;gap:18px;margin-bottom:18px}
+.q9-donut{position:relative;width:138px;height:138px;flex:none}
+.q9-donut svg{width:100%;height:100%}
+.q9-donut circle{fill:none;stroke-width:15}
+.q9-donut .bg{stroke:var(--soft2)}
+.q9-donut .sg{animation:q9Dash 1s var(--ease) both;animation-delay:calc(var(--d,0) * 1ms)}
+.q9-donut .ct{position:absolute;inset:0;display:grid;place-content:center;text-align:center}
+.q9-donut .ct b{font-size:1.9rem;font-weight:800;line-height:1;font-variant-numeric:tabular-nums}
+.q9-donut .ct span{font-size:.72rem;font-weight:700;color:var(--mute)}
+.q9-split{flex:1;min-width:0;display:flex;flex-direction:column;gap:14px}
+.q9-split>div .t{display:flex;align-items:baseline;justify-content:space-between;font-weight:800;font-size:.9rem}
+.q9-split>div .t b{font-variant-numeric:tabular-nums}
+.q9-split>div .t em{font-style:normal;font-size:.72rem;color:var(--mute);margin-left:6px}
+.q9-split .bar{height:6px;border-radius:99px;background:var(--soft2);margin-top:7px;overflow:hidden}
+.q9-split .bar i{display:block;height:100%;width:var(--w);border-radius:99px;background:var(--t);transform-origin:left;animation:q9Grow .9s var(--ease) both}
+.q9-rows{display:flex;flex-direction:column;gap:15px}
+.q9-row2 .t{display:flex;align-items:center;gap:9px;font-weight:700;font-size:.92rem}
+.q9-row2 .t i{width:10px;height:10px;border-radius:50%;flex:none}
+.q9-row2 .t span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.q9-row2 .t em{font-style:normal;font-size:.66rem;color:var(--mute);font-weight:800;padding:2px 7px;border-radius:99px;background:var(--soft2)}
+.q9-row2 .t b{margin-left:auto;font-weight:800;font-variant-numeric:tabular-nums}
+.q9-row2 .t small{font-size:.72rem;font-weight:700;color:var(--mute);min-width:3.2ch;text-align:right}
+.q9-row2 .bar{height:6px;border-radius:99px;background:var(--soft2);margin-top:8px;overflow:hidden}
+.q9-row2 .bar i{display:block;height:100%;border-radius:99px;transform-origin:left;animation:q9Grow .9s var(--ease) both;animation-delay:calc(var(--d,0) * 1ms)}
+.q9-void{display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;padding:38px 20px 34px;border-radius:30px;box-shadow:inset 0 0 0 1.5px var(--soft2)}
+.q9-void .ic{width:56px;height:56px;border-radius:50%;background:var(--soft);display:grid;place-items:center;color:var(--mute)}
+.q9-void b{font-size:1.1rem;font-weight:800}
+.q9-void span{font-size:.84rem;font-weight:700;color:var(--mute);max-width:26ch}
 }
-@keyframes q9In{from{opacity:0;transform:translateY(16px) scale(.97)}to{opacity:1;transform:none}}
-@keyframes q9Bump{0%{transform:scale(1)}40%{transform:scale(1.22)}100%{transform:scale(1)}}
+@keyframes q9In{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes q9InL{from{opacity:0;transform:translateX(16px)}to{opacity:1;transform:none}}
+@keyframes q9InR{from{opacity:0;transform:translateX(-16px)}to{opacity:1;transform:none}}
+@keyframes q9Bump{0%{transform:scale(1)}40%{transform:scale(1.14)}100%{transform:scale(1)}}
 @keyframes q9Pop{from{opacity:1;transform:translateY(0)}to{opacity:0;transform:translateY(-34px)}}
-@keyframes q9Pulse{0%,100%{transform:scale(1)}40%{transform:scale(1.08)}}
+@keyframes q9Pulse{0%,100%{transform:scale(1)}40%{transform:scale(1.05)}}
 @keyframes q9Grow{from{transform:scaleX(0)}to{transform:scaleX(1)}}
-@keyframes q9SlL{from{opacity:0;transform:translateX(30px)}to{opacity:1;transform:none}}
-@keyframes q9SlR{from{opacity:0;transform:translateX(-30px)}to{opacity:1;transform:none}}
-@keyframes q9Sw{0%{opacity:.2;transform:translateY(6px)}100%{opacity:1;transform:none}}
+@keyframes q9Rise{from{transform:scaleY(0)}to{transform:scaleY(1)}}
+@keyframes q9Dash{from{stroke-dasharray:0 400}}
+@keyframes q9Sw{0%{opacity:0;transform:translateY(5px)}100%{opacity:1;transform:none}}
 @keyframes q9Shake{0%,100%{transform:none}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
-@media (prefers-reduced-motion:reduce){.q9m *,.q9-ov *{animation:none !important;transition-duration:.01s !important}}
+@media (prefers-reduced-motion:reduce){.q9m *,.q9-ov *,.q9-sp *{animation:none !important;transition-duration:.01s !important}}
 </style>
 
   <!-- Sayfa 10: İstatistiklerim. Sayfa 5'teki kronometre her gün 00:00'da
@@ -58242,39 +58359,57 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
 </script>
 
 <script id="q9mJs">
-/* Soru Takibi · mobil arayüz. Veri ve mutator'lar (page9State, page9SetCount, ...) eski sayfayla ortaktır;
-   bu yalnızca yeni bir görünüm + jest katmanıdır (dokun +1 · basılı tut ayrıntı · kaydır gün değiştir). */
+/* Soru Takibi · mobil arayüz v2. Veri ve mutator'lar (page9State, page9SetCount, ...) eski sayfayla ortaktır;
+   bu yalnızca görünüm + jest katmanıdır.
+   - Üst alan (tarih + takvim şeridi) sticky; kaydırınca bulanık zeminle sabitlenir.
+   - Gün/hafta değişimi sadece takvim şeridinde kaydırılarak yapılır (şerit = hafta).
+   - Özet artık ayrı tam ekran sayfadır (sağ üstteki "Özet" düğmesi). */
 (() => {
   const root = document.getElementById('q9m');
   if (!root || typeof page9State === 'undefined') return;
   const mk = (h) => { const t = document.createElement('template'); t.innerHTML = h.trim(); return t.content.firstChild; };
+  const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const reduce = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
   const WD = ['P', 'P', 'S', 'Ç', 'P', 'C', 'C'];
   const SVG_P = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>';
   const SVG_M = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"><path d="M5 12h14"/></svg>';
+  const SVG_CHART = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"><path d="M5 20v-8M12 20V5M19 20v-5"/></svg>';
+  const SVG_PIN = '<svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v3M8 6h8l-1 6 3 3H6l3-3-1-6zM12 15v6"/></svg>';
+  const SVG_BACK = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 4l-8 8 8 8"/></svg>';
+  const SVG_NEXT = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4l8 8-8 8"/></svg>';
+  const SVG_PREV = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 4l-8 8 8 8"/></svg>';
+  const SVG_UP = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M6 11l6-6 6 6"/></svg>';
+  const SVG_DOWN = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M6 13l6 6 6-6"/></svg>';
+  const SVG_FLAT = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M5 12h14"/></svg>';
   const RC = 2 * Math.PI * 60;
   const vib = (n) => { try { navigator.vibrate && navigator.vibrate(n); } catch (e) { /* yok say */ } };
   const today0 = () => page9StartOfDay(new Date());
   const dayTotal = (key) => page9State.logs.reduce((s, l) => s + (l.date === key ? (l.count || 0) : 0), 0);
-  const allSubjects = () => page9State.subjects.tyt.concat(page9State.subjects.ayt);
   const syncOld = () => { try { page9RenderDateRow(); renderPage9SubjectList(); renderPage9Summary(); } catch (e) { /* yok say */ } };
+  const sameDay = (a, b) => a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
 
   root.innerHTML =
-    '<div class="q9-top"><button type="button" class="q9-date" id="q9Date"><b></b><span></span></button>' +
-    '<div class="q9-seg" id="q9Track"><i></i><button type="button" data-v="tyt">TYT</button><button type="button" data-v="ayt">AYT</button></div></div>' +
-    '<div class="q9-week" id="q9Week"></div>' +
+    '<header class="q9-head" id="q9Head">' +
+      '<div class="q9-top"><button type="button" class="q9-date" id="q9Date"><b></b><span></span></button>' +
+      '<button type="button" class="q9-sumbtn" id="q9SumBtn" aria-label="Özet sayfasını aç">' + SVG_CHART + '<span>Özet</span></button></div>' +
+      '<div class="q9-week" id="q9Week"></div>' +
+    '</header>' +
     '<div class="q9-body" id="q9Body">' +
-    '<button type="button" class="q9-hero" id="q9Hero" aria-label="Günlük hedef"><svg viewBox="0 0 140 140" aria-hidden="true"><circle class="q9-tr" cx="70" cy="70" r="60"/><circle class="q9-pg" cx="70" cy="70" r="60" transform="rotate(-90 70 70)"/></svg><span class="q9-hn"><b>0</b><em>soru</em></span></button>' +
-    '<div class="q9-goalnote" id="q9Note"></div><div class="q9-list" id="q9List"></div><p class="q9-hint" id="q9Hint">Dokun: +1 · Basılı tut: ayrıntılar · Kaydır: gün değiştir</p>' +
-    '<section class="q9-sum"><div class="q9-sumhead"><span>Özet</span><div class="q9-seg q9-seg3" id="q9Range"><i></i><button type="button" data-v="day">Gün</button><button type="button" data-v="week">Hafta</button><button type="button" data-v="month">Ay</button></div></div>' +
-    '<div class="q9-sumtot"><b id="q9SumN">0</b><span id="q9SumL"></span></div><div class="q9-stack" id="q9Stack"></div><div class="q9-rows" id="q9Rows"></div></section></div>';
+      '<button type="button" class="q9-hero" id="q9Hero" aria-label="Günlük hedef"><svg viewBox="0 0 140 140" aria-hidden="true"><circle class="q9-tr" cx="70" cy="70" r="60"/><circle class="q9-pg" cx="70" cy="70" r="60" transform="rotate(-90 70 70)"/></svg><span class="q9-hn"><b>0</b><em>soru</em></span></button>' +
+      '<div class="q9-goalnote" id="q9Note"></div>' +
+      '<div class="q9-listhead"><div class="q9-seg" id="q9Track"><i></i><button type="button" data-v="tyt">TYT</button><button type="button" data-v="ayt">AYT</button></div><small id="q9Cnt"></small></div>' +
+      '<div class="q9-list" id="q9List"></div>' +
+      '<p class="q9-hint" id="q9Hint">Karta dokun: +1 · Basılı tut: ayrıntılar</p>' +
+    '</div>';
   root.classList.add('q9m');
 
   const $ = (s) => root.querySelector(s);
-  const elDate = $('#q9Date'), elWeek = $('#q9Week'), elBody = $('#q9Body'), elHero = $('#q9Hero'), elNote = $('#q9Note');
-  const elList = $('#q9List'), elHint = $('#q9Hint'), elTrack = $('#q9Track'), elRange = $('#q9Range');
+  const pageEl = document.getElementById('page-9');
+  const elHead = $('#q9Head'), elDate = $('#q9Date'), elWeek = $('#q9Week'), elBody = $('#q9Body'), elHero = $('#q9Hero'), elNote = $('#q9Note');
+  const elList = $('#q9List'), elHint = $('#q9Hint'), elTrack = $('#q9Track'), elCnt = $('#q9Cnt');
   const hN = elHero.querySelector('.q9-hn b'), hPg = elHero.querySelector('.q9-pg');
   hPg.style.strokeDasharray = RC; hPg.style.strokeDashoffset = RC;
-  const cards = new Map();   // subjectId -> {el, ct, mi, sub, s}
+  const cards = new Map();   // subjectId -> {el, ct, mi, sub, share, s}
 
   const setSeg = (seg, v) => {
     const bs = [...seg.querySelectorAll('button')];
@@ -58282,13 +58417,32 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
     bs.forEach((b) => b.classList.toggle('is-on', b.dataset.v === v));
   };
 
+  // ---------- Üst alan: kaydırınca sabitlenme (0→1 ilerleme) ----------
+  (() => {
+    let queued = false;
+    const upd = () => { queued = false; const k = Math.max(0, Math.min(1, pageEl.scrollTop / 56)); elHead.style.setProperty('--k', k.toFixed(3)); };
+    pageEl.addEventListener('scroll', () => { if (queued) return; queued = true; requestAnimationFrame(upd); }, { passive: true });
+    upd();
+  })();
+
   // ---------- Hero (halka + toplam + hedef) ----------
-  let lastTot = null, wasDone = false;
-  const renderHero = () => {
+  let lastTot = null, wasDone = false, shown = 0, numRaf = 0;
+  const showNum = (to, tween) => {
+    cancelAnimationFrame(numRaf);
+    if (!tween || reduce || shown === to) { shown = to; hN.textContent = String(to); return; }
+    const from = shown, t0 = performance.now(), D = 600;
+    const step = (now) => {
+      const p = Math.min(1, (now - t0) / D), e = 1 - Math.pow(1 - p, 3);
+      shown = Math.round(from + (to - from) * e); hN.textContent = String(shown);
+      if (p < 1) numRaf = requestAnimationFrame(step); else shown = to;
+    };
+    numRaf = requestAnimationFrame(step);
+  };
+  const renderHero = (tween) => {
     const tot = dayTotal(page9DateKey(page9SelectedDate));
     const goal = page9ClampGoal(page9State.dailyGoal);
-    hN.textContent = String(tot);
-    if (lastTot !== null && lastTot !== tot) { hN.classList.remove('is-bump'); void hN.offsetWidth; hN.classList.add('is-bump'); }
+    showNum(tot, tween);
+    if (!tween && lastTot !== null && lastTot !== tot) { hN.classList.remove('is-bump'); void hN.offsetWidth; hN.classList.add('is-bump'); }
     lastTot = tot;
     const r = goal > 0 ? Math.min(1, tot / goal) : 0;
     hPg.style.strokeDashoffset = RC * (1 - r);
@@ -58296,21 +58450,26 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
     elHero.classList.toggle('is-zero', r <= 0);
     const done = goal > 0 && tot >= goal;
     elHero.classList.toggle('is-done', done);
-    if (done && !wasDone) { elHero.classList.remove('is-pulse'); void elHero.offsetWidth; elHero.classList.add('is-pulse'); vib([10, 40, 18]); }
+    if (done && !wasDone && !tween) { elHero.classList.remove('is-pulse'); void elHero.offsetWidth; elHero.classList.add('is-pulse'); vib([10, 40, 18]); }
     wasDone = done;
     elNote.textContent = goal <= 0 ? 'Hedef koymak için halkaya dokun'
       : tot > goal ? `Hedef aşıldı · +${tot - goal} soru` : tot === goal ? 'Hedef tamamlandı' : `Hedef ${goal} · ${goal - tot} soru kaldı`;
   };
 
-  // ---------- Hafta şeridi ----------
+  // ---------- Takvim şeridi (hafta) ----------
+  let curWeekKey = '', weekT = 0;
+  const weekKeyOf = (d) => page9DateKey(page9GetWeekStart(d));
+  const hasSet = () => new Set(page9State.logs.filter((l) => l.count > 0).map((l) => l.date));
+  const selIndex = () => { const st = page9GetWeekStart(page9SelectedDate); return Math.round((page9StartOfDay(page9SelectedDate) - st) / 864e5); };
   const renderWeek = () => {
-    const sel = page9SelectedDate, td = today0(), start = page9GetWeekStart(sel);
-    const has = new Set(page9State.logs.filter((l) => l.count > 0).map((l) => l.date));
+    const sel = page9SelectedDate, td = today0(), start = page9GetWeekStart(sel), has = hasSet();
+    curWeekKey = page9DateKey(start);
     elWeek.innerHTML = '';
+    const ind = document.createElement('i'); ind.className = 'q9-ind'; ind.style.setProperty('--s', selIndex()); elWeek.appendChild(ind);
     for (let i = 0; i < 7; i++) {
       const d = new Date(start); d.setDate(start.getDate() + i);
       const key = page9DateKey(d);
-      const b = mk(`<button type="button" class="q9-wd"><i>${WD[d.getDay()]}</i><b>${d.getDate()}</b><u></u></button>`);
+      const b = mk(`<button type="button" class="q9-wd" aria-label="${d.getDate()} ${MONTHS_TR[d.getMonth()]}"><i>${WD[d.getDay()]}</i><b>${d.getDate()}</b><u></u></button>`);
       b.classList.toggle('is-sel', key === page9DateKey(sel));
       b.classList.toggle('is-fut', d > td);
       b.classList.toggle('has', has.has(key));
@@ -58318,23 +58477,41 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
       elWeek.appendChild(b);
     }
   };
+  const updateWeekSel = () => {
+    const key = page9DateKey(page9SelectedDate);
+    const ind = elWeek.querySelector('.q9-ind'); if (ind) ind.style.setProperty('--s', selIndex());
+    const start = page9GetWeekStart(page9SelectedDate);
+    [...elWeek.querySelectorAll('.q9-wd')].forEach((b, i) => { const d = new Date(start); d.setDate(start.getDate() + i); b.classList.toggle('is-sel', page9DateKey(d) === key); });
+  };
+  const renderWeekDots = () => {
+    const has = hasSet(), start = page9GetWeekStart(page9SelectedDate);
+    [...elWeek.querySelectorAll('.q9-wd')].forEach((b, i) => { const d = new Date(start); d.setDate(start.getDate() + i); b.classList.toggle('has', has.has(page9DateKey(d))); });
+  };
+  const softOut = (el, dir) => { el.classList.remove('q9-in-l', 'q9-in-r', 'wk-in-l', 'wk-in-r'); el.style.setProperty('--dx', (dir > 0 ? -14 : 14) + 'px'); el.classList.add(el === elWeek ? 'wk-out' : 'q9-out'); };
+  const softIn = (el, dir) => { el.classList.remove('q9-out', 'wk-out'); void el.offsetWidth; el.classList.add(el === elWeek ? (dir > 0 ? 'wk-in-l' : 'wk-in-r') : (dir > 0 ? 'q9-in-l' : 'q9-in-r')); };
+  const weekSwap = (dir) => {
+    clearTimeout(weekT); softOut(elWeek, dir);
+    weekT = setTimeout(() => { renderWeek(); softIn(elWeek, dir); }, reduce ? 0 : 150);
+  };
 
   // ---------- Ders kartları ----------
-  const subText = (s, n, tot) => (s.pinned ? 'Her gün' : '') + (n > 0 && tot > 0 ? (s.pinned ? ' · ' : '') + '%' + Math.round(n / tot * 100) : '');
+  const subText = (s, n, tot) => {
+    const parts = [];
+    if (s.pinned) parts.push('Her gün');
+    if (n > 0 && tot > 0) parts.push('%' + Math.round(n / tot * 100));
+    return parts.join(' · ');
+  };
   const refreshCounts = () => {
     const tot = dayTotal(page9DateKey(page9SelectedDate));
     cards.forEach((c) => {
       const n = page9SelectedCountFor(c.s.id);
       if (c.ct.textContent !== String(n)) { c.ct.textContent = String(n); c.ct.classList.remove('is-bump'); void c.ct.offsetWidth; c.ct.classList.add('is-bump'); }
       c.mi.classList.toggle('is-off', n <= 0);
-      c.sub.textContent = subText(c.s, n, tot);
+      c.mi.tabIndex = n <= 0 ? -1 : 0;
+      c.sub.replaceChildren(); if (c.s.pinned) c.sub.insertAdjacentHTML('beforeend', SVG_PIN); c.sub.append(subText(c.s, n, tot));
+      c.share.style.setProperty('--w', (tot > 0 ? (n / tot * 100).toFixed(1) : 0) + '%');
     });
-    renderHero(); renderSum(); renderWeekDots();
-  };
-  const renderWeekDots = () => {
-    const has = new Set(page9State.logs.filter((l) => l.count > 0).map((l) => l.date));
-    const start = page9GetWeekStart(page9SelectedDate);
-    [...elWeek.children].forEach((b, i) => { const d = new Date(start); d.setDate(start.getDate() + i); b.classList.toggle('has', has.has(page9DateKey(d))); });
+    renderHero(false); renderSum(); renderWeekDots();
   };
   const change = (c, delta, x) => {
     const cur = page9SelectedCountFor(c.s.id), n = Math.max(0, Math.min(999, cur + delta));
@@ -58356,10 +58533,11 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
     btn.addEventListener('contextmenu', (e) => e.preventDefault());
   };
   const makeCard = (s, i) => {
-    const el = mk('<div class="q9-card" role="button" tabindex="0"><div class="q9-cn"><b></b><span></span></div><button type="button" class="q9-mi" aria-label="Azalt">' + SVG_M + '</button><div class="q9-ct">0</div><button type="button" class="q9-pl" aria-label="Arttır">' + SVG_P + '</button></div>');
+    const el = mk('<div class="q9-card" role="button" tabindex="0"><div class="q9-ava"></div><div class="q9-cn"><b></b><span></span></div><div class="q9-stp"><button type="button" class="q9-mi" aria-label="Azalt">' + SVG_M + '</button><div class="q9-ct">0</div><button type="button" class="q9-pl" aria-label="Arttır">' + SVG_P + '</button></div><div class="q9-share"><i></i></div></div>');
     el.style.setProperty('--c', s.color); el.style.setProperty('--i', i);
     el.querySelector('b').textContent = s.name;
-    const c = { el, s, ct: el.querySelector('.q9-ct'), mi: el.querySelector('.q9-mi'), sub: el.querySelector('.q9-cn span') };
+    el.querySelector('.q9-ava').textContent = (s.name.trim().charAt(0) || '?').toLocaleUpperCase('tr');
+    const c = { el, s, ct: el.querySelector('.q9-ct'), mi: el.querySelector('.q9-mi'), sub: el.querySelector('.q9-cn span'), share: el.querySelector('.q9-share') };
     hold(c.mi, c, -1); hold(el.querySelector('.q9-pl'), c, 1);
     let down = false, moved = false, long = false, lp = 0, x0 = 0, y0 = 0;
     el.addEventListener('pointerdown', (e) => {
@@ -58381,72 +58559,88 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
     cards.clear(); elList.innerHTML = '';
     const subs = page9VisibleSubjects();
     subs.forEach((s, i) => elList.appendChild(makeCard(s, i)));
-    const add = mk('<button type="button" class="q9-add' + (subs.length ? '' : ' is-empty') + '">' + SVG_P.replace('width="20" height="20"', 'width="18" height="18"') + '<span>' + (subs.length ? 'Ders ekle' : 'Bugün için ders seç') + '</span></button>');
-    add.style.animation = 'q9In .55s var(--ease) both'; add.style.animationDelay = (subs.length * 55) + 'ms';
+    const lbl = PAGE9_TRACK_LABELS[page9Track] || '';
+    const add = mk('<button type="button" class="q9-add' + (subs.length ? '' : ' is-empty') + '"><span class="ic">' + SVG_P + '</span><span class="tx"><b>' + (subs.length ? 'Ders ekle' : 'Bugün için ders seç') + '</b><span>' + (subs.length ? lbl + ' branşından seç veya kendin yaz' : lbl + ' branşlarından seç veya kendi dersini yaz') + '</span></span></button>');
+    add.style.setProperty('--i', subs.length);
     add.addEventListener('click', addSheet);
     elList.appendChild(add);
     elHint.style.display = subs.length ? '' : 'none';
+    elCnt.textContent = subs.length ? subs.length + ' ders' : '';
     refreshCounts();
   };
 
-  // ---------- Özet ----------
-  const renderSum = () => {
-    const { start, end } = page9GetRangeBounds();
-    const a = page9DateKey(start), b = page9DateKey(end);
-    const logs = page9State.logs.filter((l) => l.date >= a && l.date <= b);
-    const rows = [];
-    ['tyt', 'ayt'].forEach((tr) => page9State.subjects[tr].forEach((s) => {
-      const c = logs.reduce((sum, l) => sum + (l.subjectId === s.id ? l.count : 0), 0);
-      if (c > 0) rows.push({ s, tr, c });
-    }));
-    rows.sort((x, y) => y.c - x.c);
-    const total = rows.reduce((s, r) => s + r.c, 0), max = rows.length ? rows[0].c : 1;
-    $('#q9SumN').textContent = String(total);
-    $('#q9SumL').textContent = 'soru · ' + page9RangeLabelText();
-    const st = $('#q9Stack'), rw = $('#q9Rows'); st.innerHTML = ''; rw.innerHTML = '';
-    st.style.display = rows.length ? '' : 'none';
-    if (!rows.length) { rw.innerHTML = '<div class="q9-empty">Bu aralıkta henüz kayıt yok.</div>'; return; }
-    rows.forEach((r, i) => {
-      const seg = document.createElement('i'); seg.style.flex = r.c + ' 0 0'; seg.style.background = r.s.color; seg.style.animationDelay = (i * 60) + 'ms'; seg.title = r.s.name; st.appendChild(seg);
-      const row = mk('<div class="q9-row2"><div class="t"><i></i><span></span><em></em><b></b></div><div class="bar"><i></i></div></div>');
-      row.querySelector('.t i').style.background = r.s.color;
-      row.querySelector('.t span').textContent = r.s.name;
-      row.querySelector('em').textContent = r.tr.toUpperCase();
-      row.querySelector('b').textContent = r.c;
-      const f = row.querySelector('.bar i'); f.style.background = r.s.color; f.style.width = Math.max(6, Math.round(r.c / max * 100)) + '%'; f.style.animationDelay = (i * 60) + 'ms';
-      rw.appendChild(row);
-    });
-  };
-
-  // ---------- Ana render + gezinme ----------
-  const render = (dir, quiet) => {
+  // ---------- Başlık + ana render ----------
+  const updateTitle = () => {
     const d = page9SelectedDate, diff = Math.round((d - today0()) / 864e5);
     const rel = diff === 0 ? 'Bugün' : diff === -1 ? 'Dün' : diff === 1 ? 'Yarın' : diff < 0 ? `${-diff} gün önce` : `${diff} gün sonra`;
-    const nb = rel, ns = `${d.getDate()} ${MONTHS_TR[d.getMonth()]} ${d.getFullYear()}`;
-    if (elDate.querySelector('b').textContent !== nb || elDate.querySelector('span').textContent !== ns) {
-      elDate.querySelector('b').textContent = nb; elDate.querySelector('span').textContent = ns;
+    const ns = `${d.getDate()} ${MONTHS_TR[d.getMonth()]} ${d.getFullYear()}`;
+    const b = elDate.querySelector('b'), s = elDate.querySelector('span');
+    if (b.textContent !== rel || s.textContent !== ns) {
+      b.textContent = rel; s.textContent = ns;
       elDate.classList.remove('is-swap'); void elDate.offsetWidth; elDate.classList.add('is-swap');
     }
-    setSeg(elTrack, page9Track); setSeg(elRange, page9Range);
+  };
+  // Anında tam yenileme (sayfa açılışı, alt sayfa kapanışı). quiet=false → kartlar yumuşakça sırayla belirir.
+  const render = (dir, quiet) => {
+    updateTitle();
+    setSeg(elTrack, page9Track);
     root.classList.toggle('q9-quiet', !!quiet);
-    renderWeek(); renderList(); lastTot = null;
-    if (dir) { elBody.classList.remove('q9-in-l', 'q9-in-r'); void elBody.offsetWidth; elBody.classList.add(dir > 0 ? 'q9-in-l' : 'q9-in-r'); }
+    renderWeek(); lastTot = null; renderList();
+  };
+
+  // ---------- Gün değişimi (yumuşak geçiş) ----------
+  let bodyT = 0;
+  const bodySwap = (dir) => {
+    clearTimeout(bodyT); softOut(elBody, dir);
+    bodyT = setTimeout(() => {
+      root.classList.add('q9-quiet'); lastTot = null; renderList(); renderHero(true);
+      softIn(elBody, dir);
+    }, reduce ? 0 : 150);
   };
   const gotoDate = (d) => {
     const nd = page9StartOfDay(d); if (nd > today0()) return;
     const dir = Math.sign(nd - page9SelectedDate); if (!dir) return;
-    page9SelectedDate = nd; syncOld(); render(dir); vib(5);
+    page9SelectedDate = nd; syncOld(); vib(5);
+    updateTitle();
+    if (weekKeyOf(nd) !== curWeekKey) weekSwap(dir); else updateWeekSel();
+    bodySwap(dir);
   };
-  const shift = (n) => { const d = new Date(page9SelectedDate); d.setDate(d.getDate() + n); gotoDate(d); };
+  const shiftWeek = (n) => {
+    const t = new Date(page9SelectedDate); t.setDate(t.getDate() + 7 * n);
+    const td = today0();
+    if (page9GetWeekStart(t) > td) return;          // gelecek haftaya geçilmez
+    gotoDate(t > td ? td : t);
+  };
   elDate.addEventListener('click', () => { const t = today0(); if (+t !== +page9SelectedDate) gotoDate(t); });
-  elTrack.addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b || b.dataset.v === page9Track) return; try { setPage9Track(b.dataset.v); } catch (x) { page9Track = b.dataset.v; } render(b.dataset.v === 'ayt' ? 1 : -1); });
-  elRange.addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b) return; try { setPage9Range(b.dataset.v); } catch (x) { page9Range = b.dataset.v; } setSeg(elRange, page9Range); renderSum(); });
-  let tx = 0, ty = 0, tok = false;
-  root.addEventListener('touchstart', (e) => { tok = e.touches.length === 1; if (tok) { tx = e.touches[0].clientX; ty = e.touches[0].clientY; } }, { passive: true });
-  root.addEventListener('touchend', (e) => {
-    if (!tok) return; tok = false; const t = e.changedTouches[0], dx = t.clientX - tx, dy = t.clientY - ty;
-    if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.6) shift(dx > 0 ? -1 : 1);
-  }, { passive: true });
+  elTrack.addEventListener('click', (e) => {
+    const b = e.target.closest('button'); if (!b || b.dataset.v === page9Track) return;
+    const dir = b.dataset.v === 'ayt' ? 1 : -1;
+    try { setPage9Track(b.dataset.v); } catch (x) { page9Track = b.dataset.v; }
+    setSeg(elTrack, page9Track);
+    clearTimeout(bodyT); softOut(elList, dir);
+    bodyT = setTimeout(() => { root.classList.add('q9-quiet'); lastTot = null; renderList(); softIn(elList, dir); }, reduce ? 0 : 150);
+  });
+
+  // Takvim şeridinde yatay kaydırma = hafta değiştir (sayfanın geri kalanında jest yok)
+  (() => {
+    let sx = 0, sy = 0, on = false, horiz = false;
+    elWeek.addEventListener('touchstart', (e) => { on = e.touches.length === 1; horiz = false; if (on) { sx = e.touches[0].clientX; sy = e.touches[0].clientY; } }, { passive: true });
+    elWeek.addEventListener('touchmove', (e) => {
+      if (!on) return;
+      const dx = e.touches[0].clientX - sx, dy = e.touches[0].clientY - sy;
+      if (!horiz && Math.abs(dx) > 10 && Math.abs(dx) > Math.abs(dy) * 1.2) horiz = true;
+      if (horiz) { elWeek.classList.add('is-drag'); elWeek.style.transform = `translateX(${Math.max(-36, Math.min(36, dx * .3))}px)`; }
+    }, { passive: true });
+    const finish = (e, cancel) => {
+      if (!on) return; on = false;
+      const t = e.changedTouches && e.changedTouches[0];
+      const dx = t ? t.clientX - sx : 0, dy = t ? t.clientY - sy : 0;
+      elWeek.classList.remove('is-drag'); elWeek.style.transform = '';
+      if (!cancel && Math.abs(dx) > 48 && Math.abs(dx) > Math.abs(dy) * 1.4) shiftWeek(dx > 0 ? -1 : 1);
+    };
+    elWeek.addEventListener('touchend', (e) => finish(e, false), { passive: true });
+    elWeek.addEventListener('touchcancel', (e) => finish(e, true), { passive: true });
+  })();
 
   // ---------- Alt sayfa (bottom sheet) ----------
   const ov = mk('<div class="q9-ov"><div class="q9-sh"><div class="q9-grab"><i></i></div><div class="q9-sc"></div></div></div>');
@@ -58461,7 +58655,6 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
     const cb = onClose; onClose = null; if (cb) cb();
   };
   ov.addEventListener('pointerdown', (e) => { if (e.target === ov) closeSheet(); });
-  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeSheet(); });
   let sy = null, sdy = 0;
   grab.addEventListener('pointerdown', (e) => { sy = e.clientY; sdy = 0; sh.style.transition = 'none'; try { grab.setPointerCapture(e.pointerId); } catch (x) { /* yok say */ } });
   grab.addEventListener('pointermove', (e) => { if (sy == null) return; sdy = Math.max(0, e.clientY - sy); sh.style.transform = `translateY(${sdy}px)`; });
@@ -58505,7 +58698,9 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
       pin.addEventListener('click', () => { s.pinned = !s.pinned; savePage9State(); pin.classList.toggle('is-on', s.pinned); refreshCounts(); });
       const commitName = () => {
         const v = nameIn.value.trim(); if (!v || v === s.name) { nameIn.value = s.name; return; }
-        s.name = v; savePage9State(); const c = cards.get(s.id); if (c) c.el.querySelector('b').textContent = v; renderSum();
+        s.name = v; savePage9State(); const c = cards.get(s.id);
+        if (c) { c.el.querySelector('b').textContent = v; c.el.querySelector('.q9-ava').textContent = (v.charAt(0) || '?').toLocaleUpperCase('tr'); }
+        renderSum();
       };
       nameIn.addEventListener('blur', commitName);
       nameIn.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); nameIn.blur(); } });
@@ -58540,13 +58735,13 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
               if (s && page9SelectedCountFor(s.id) > 0) { b.classList.remove('is-shake'); void b.offsetWidth; b.classList.add('is-shake'); if (window.paceNToast) window.paceNToast('Bu derse soru girilmiş, önce sıfırla'); return; }
               if (s) { s.pinned = false; page9RemoveSubjectFromDay(s.name); }
             } else page9CommitSubjectByName(n);
-            vib(6); build(); syncOld(); render(0, true);
+            vib(6); build(); syncOld(); root.classList.add('q9-quiet'); lastTot = null; renderList();
           });
           grid.appendChild(b);
         });
       };
       build();
-      const addCustom = () => { const v = inp.value.trim(); if (!v) return; page9CommitSubjectByName(v); inp.value = ''; vib(8); build(); syncOld(); render(0, true); };
+      const addCustom = () => { const v = inp.value.trim(); if (!v) return; page9CommitSubjectByName(v); inp.value = ''; vib(8); build(); syncOld(); root.classList.add('q9-quiet'); lastTot = null; renderList(); };
       box.querySelector('.q9-cust button').addEventListener('click', addCustom);
       inp.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); addCustom(); } });
     }, () => { syncOld(); render(0, true); });
@@ -58560,7 +58755,7 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
         '<button type="button" class="q9-line q9-clr"><span>Hedefi kaldır</span></button>';
       const num = box.querySelector('input'), [bm, bp] = box.querySelectorAll('.q9-step button');
       const goal = () => page9ClampGoal(page9State.dailyGoal);
-      const setG = (n) => { page9State.dailyGoal = page9ClampGoal(n); savePage9State(); try { renderPage9GoalBtn(); } catch (e) { /* yok say */ } num.value = goal(); renderHero(); };
+      const setG = (n) => { page9State.dailyGoal = page9ClampGoal(n); savePage9State(); try { renderPage9GoalBtn(); } catch (e) { /* yok say */ } num.value = goal(); renderHero(false); };
       num.value = goal();
       holdStep(bm, () => setG(goal() - 5)); holdStep(bp, () => setG(goal() + 5));
       num.addEventListener('change', () => setG(parseInt(num.value, 10) || 0));
@@ -58570,12 +58765,195 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
   }
   elHero.addEventListener('click', goalSheet);
 
-  // ---------- Sayfa açılınca tazele ----------
-  const pageEl = document.getElementById('page-9');
+  // =====================================================================
+  //  ÖZET SAYFASI — ayrı tam ekran sayfa
+  // =====================================================================
+  const sp = mk('<div class="q9-sp q9m" id="q9Sp" aria-hidden="true" role="dialog" aria-label="Özet"><div class="q9-sp-in" id="q9SpIn">' +
+    '<div class="q9-sp-bar"><button type="button" class="q9-sp-back" aria-label="Geri">' + SVG_BACK + '</button><h2>Özet</h2><span></span></div>' +
+    '<div class="q9-sp-pad">' +
+      '<div class="q9-seg q9-seg3 q9-sp-rng" id="q9SpRange"><i></i><button type="button" data-v="day">Gün</button><button type="button" data-v="week">Hafta</button><button type="button" data-v="month">Ay</button></div>' +
+      '<div class="q9-sp-nav"><button type="button" class="pv" aria-label="Önceki dönem">' + SVG_PREV + '</button><div class="q9-sp-lb" id="q9SpLabel"></div><button type="button" class="nx" aria-label="Sonraki dönem">' + SVG_NEXT + '</button></div>' +
+      '<div class="q9-sp-c" id="q9SpC"></div>' +
+    '</div></div></div>');
+  document.body.appendChild(sp);
+  const spIn = sp.querySelector('#q9SpIn'), spRange = sp.querySelector('#q9SpRange'), spLabel = sp.querySelector('#q9SpLabel'), spC = sp.querySelector('#q9SpC');
+  const spPv = sp.querySelector('.pv'), spNx = sp.querySelector('.nx');
+  let spOpen = false, spAnchor = today0(), spT = 0;
+
+  const boundsOf = (a, r) => {
+    if (r === 'day') return { s: page9StartOfDay(a), e: page9StartOfDay(a) };
+    if (r === 'week') { const s = page9GetWeekStart(a), e = new Date(s); e.setDate(e.getDate() + 6); return { s, e }; }
+    return { s: new Date(a.getFullYear(), a.getMonth(), 1), e: new Date(a.getFullYear(), a.getMonth() + 1, 0) };
+  };
+  const shiftA = (a, r, n) => {
+    const d = new Date(a);
+    if (r === 'day') d.setDate(d.getDate() + n);
+    else if (r === 'week') d.setDate(d.getDate() + 7 * n);
+    else { d.setDate(1); d.setMonth(d.getMonth() + n); }
+    return d;
+  };
+  const labelOf = (r, s, e) => {
+    const yr = new Date().getFullYear();
+    if (r === 'day') {
+      const diff = Math.round((s - today0()) / 864e5);
+      const base = `${s.getDate()} ${MONTHS_TR[s.getMonth()]}` + (s.getFullYear() !== yr ? ' ' + s.getFullYear() : '');
+      return diff === 0 ? 'Bugün · ' + base : diff === -1 ? 'Dün · ' + base : base;
+    }
+    if (r === 'week') {
+      const same = s.getMonth() === e.getMonth();
+      return `${s.getDate()}${same ? '' : ' ' + MONTHS_TR[s.getMonth()]} – ${e.getDate()} ${MONTHS_TR[e.getMonth()]}` + (e.getFullYear() !== yr ? ' ' + e.getFullYear() : '');
+    }
+    return `${MONTHS_TR[s.getMonth()]} ${s.getFullYear()}`;
+  };
+  const dayShort = ['Paz', 'Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt'];
+  const dayInit = ['P', 'P', 'S', 'Ç', 'P', 'C', 'C'];
+  const lowerTR = (s) => s.toLocaleLowerCase('tr');
+
+  const spBuild = () => {
+    const r = page9Range, td = today0();
+    const { s, e } = boundsOf(spAnchor, r);
+    const a = page9DateKey(s), b = page9DateKey(e);
+    const subs = [];
+    ['tyt', 'ayt'].forEach((tr) => page9State.subjects[tr].forEach((x) => subs.push({ x, tr })));
+    const valid = new Set(subs.map((o) => o.x.id));
+    const byDay = {}, bySub = {};
+    page9State.logs.forEach((l) => {
+      if (!(l.count > 0) || !valid.has(l.subjectId)) return;
+      byDay[l.date] = (byDay[l.date] || 0) + l.count;
+      if (l.date >= a && l.date <= b) bySub[l.subjectId] = (bySub[l.subjectId] || 0) + l.count;
+    });
+    const rows = subs.map((o) => ({ s: o.x, tr: o.tr, c: bySub[o.x.id] || 0 })).filter((o) => o.c > 0).sort((p, q) => q.c - p.c);
+    const total = rows.reduce((n, o) => n + o.c, 0);
+    const goal = page9ClampGoal(page9State.dailyGoal);
+    const elapsed = s > td ? 0 : Math.floor((Math.min(e, td) - s) / 864e5) + 1;
+    // önceki dönem (aynı gün sayısı kadar)
+    const ps = boundsOf(shiftA(spAnchor, r, -1), r);
+    let prev = 0;
+    for (let i = 0; i < elapsed; i++) { const d = new Date(ps.s); d.setDate(d.getDate() + i); if (d > ps.e) break; prev += byDay[page9DateKey(d)] || 0; }
+    // gün listesi (grafik)
+    const dates = [];
+    if (r === 'day') { for (let i = 6; i >= 0; i--) { const d = new Date(s); d.setDate(d.getDate() - i); dates.push(d); } }
+    else { for (const d = new Date(s); d <= e; d.setDate(d.getDate() + 1)) dates.push(new Date(d)); }
+    const vals = dates.map((d) => byDay[page9DateKey(d)] || 0);
+    // seri
+    let streak = 0; { const d = new Date(td); if (!(byDay[page9DateKey(d)] > 0)) d.setDate(d.getDate() - 1); while (byDay[page9DateKey(d)] > 0) { streak++; d.setDate(d.getDate() - 1); } }
+
+    // --- büyük sayı + kıyas
+    const ref = r === 'day' ? 'Dünden' : r === 'week' ? 'Geçen haftadan' : 'Geçen aydan';
+    let chip = '';
+    if (total === 0 && prev === 0) chip = '<span class="q9-chip">' + SVG_FLAT + 'Henüz kayıt yok</span>';
+    else if (prev === 0) chip = '<span class="q9-chip up">' + SVG_UP + 'Önceki dönemde kayıt yoktu</span>';
+    else {
+      const pct = Math.round((total - prev) / prev * 100);
+      chip = pct === 0 ? '<span class="q9-chip">' + SVG_FLAT + 'Önceki dönemle aynı</span>'
+        : `<span class="q9-chip ${pct > 0 ? 'up' : 'down'}">${pct > 0 ? SVG_UP : SVG_DOWN}${ref} %${Math.abs(pct)} ${pct > 0 ? 'fazla' : 'az'}</span>`;
+    }
+    let h = `<section class="q9-big q9-rise" style="--i:0"><div class="n"><b>${total}</b><span>soru</span></div>${chip}</section>`;
+    if (total === 0) {
+      h += `<div class="q9-void q9-rise" style="--i:1"><span class="ic">${SVG_CHART}</span><b>Bu aralıkta kayıt yok</b><span>Soru Takibi'nde çözdüğün soruları girdikçe burada görünecek.</span></div>`;
+      return h;
+    }
+    // --- kutucuklar
+    const tiles = [];
+    const top = rows[0];
+    if (r === 'day') {
+      tiles.push(['Ders sayısı', String(rows.length), 'ders çalışıldı']);
+      tiles.push(['En çok çözülen', esc(top.s.name), top.c + ' soru']);
+      tiles.push(['Hedefe oran', goal > 0 ? '%' + Math.round(total / goal * 100) : '—', goal > 0 ? goal + ' soru hedef' : 'Hedef belirlenmedi']);
+      tiles.push(['Seri', String(streak), 'gün üst üste']);
+    } else {
+      const avg = elapsed > 0 ? Math.round(total / elapsed) : 0;
+      let bi = 0; vals.forEach((v, i) => { if (v > vals[bi]) bi = i; });
+      const bd = dates[bi];
+      const act = vals.filter((v) => v > 0).length;
+      tiles.push(['Günlük ortalama', String(avg), 'soru / gün']);
+      tiles.push(['En verimli gün', String(vals[bi]), `${bd.getDate()} ${MONTHS_TR[bd.getMonth()]}`]);
+      tiles.push(['Aktif gün', `${act}/${elapsed}`, 'gün çalışıldı']);
+      if (goal > 0) tiles.push(['Hedef günü', String(vals.filter((v) => v >= goal).length), goal + '+ soru çözülen gün']);
+      else tiles.push(['Seri', String(streak), 'gün üst üste']);
+    }
+    h += '<div class="q9-tiles">' + tiles.map((t, i) => `<div class="q9-tile q9-rise" style="--i:${i + 1}"><span class="l">${t[0]}</span><b>${t[1]}</b><em>${t[2]}</em></div>`).join('') + '</div>';
+    // --- grafik
+    const mx = Math.max(goal, ...vals, 1), K = 86;
+    const n = dates.length, many = n > 10;
+    const title = r === 'day' ? 'Son 7 gün' : r === 'week' ? 'Günlük dağılım' : 'Gün gün';
+    let bars = '', lbls = '';
+    dates.forEach((d, i) => {
+      const v = vals[i], fut = d > td, met = goal > 0 && v >= goal;
+      const cls = ['q9-bar', v === 0 ? 'is-zero' : '', met ? 'is-met' : '', fut ? 'is-fut' : '', r === 'day' && sameDay(d, s) ? '' : (r === 'day' ? 'dim' : '')].filter(Boolean).join(' ');
+      const hh = v > 0 ? (v / mx * K).toFixed(1) + '%' : '0%';
+      const lab = many ? ((d.getDate() === 1 || d.getDate() % 5 === 0) ? d.getDate() : '') : dayInit[d.getDay()];
+      bars += `<button type="button" class="${cls}" data-i="${i}" style="--h:${hh};--d:${i * (many ? 14 : 45)}" aria-label="${d.getDate()} ${MONTHS_TR[d.getMonth()]}: ${v} soru">${!many && v > 0 ? `<u>${v}</u>` : ''}<i></i></button>`;
+      lbls += `<span class="${(r === 'day' && sameDay(d, s)) || (!many && sameDay(d, td)) ? 'on' : ''}">${lab}</span>`;
+    });
+    const goalLine = goal > 0 ? `<div class="q9-goal" style="bottom:${(goal / mx * K).toFixed(1)}%"></div>` : '';
+    h += `<section class="q9-sec q9-rise" style="--i:5"><div class="q9-sec-h"><h3>${title}</h3><span class="q9-read" id="q9Read">Çubuğa dokun</span></div>` +
+      `<div class="q9-plot">${goalLine}<div class="q9-bars" style="--n:${n};--gap:${many ? 2 : 8}px">${bars}</div></div>` +
+      `<div class="q9-lbls" style="--n:${n};--gap:${many ? 2 : 8}px">${lbls}</div></section>`;
+    // --- dağılım
+    const C = 2 * Math.PI * 54;
+    let off = 0, segs = '';
+    rows.forEach((o, i) => {
+      const len = o.c / total * C, gap = rows.length > 1 ? Math.min(3, len * .4) : 0;
+      segs += `<circle class="sg" cx="69" cy="69" r="54" stroke="${esc(o.s.color)}" stroke-dasharray="${Math.max(0, len - gap).toFixed(2)} ${(C - Math.max(0, len - gap)).toFixed(2)}" stroke-dashoffset="${(-off).toFixed(2)}" transform="rotate(-90 69 69)" style="--d:${i * 90}"/>`;
+      off += len;
+    });
+    const tytN = rows.filter((o) => o.tr === 'tyt').reduce((m, o) => m + o.c, 0), aytN = total - tytN;
+    const split = (name, v) => `<div><div class="t"><span>${name}</span><b>${v}<em>%${Math.round(v / total * 100)}</em></b></div><div class="bar"><i style="--w:${(v / total * 100).toFixed(1)}%"></i></div></div>`;
+    const maxC = rows[0].c;
+    const rowsH = rows.map((o, i) => `<div class="q9-row2"><div class="t"><i style="background:${esc(o.s.color)}"></i><span>${esc(o.s.name)}</span><em>${o.tr.toUpperCase()}</em><b>${o.c}</b><small>%${Math.round(o.c / total * 100)}</small></div><div class="bar"><i style="background:${esc(o.s.color)};width:${Math.max(4, Math.round(o.c / maxC * 100))}%;--d:${i * 70}"></i></div></div>`).join('');
+    h += `<section class="q9-sec q9-rise" style="--i:6"><div class="q9-sec-h"><h3>Branş dağılımı</h3></div>` +
+      `<div class="q9-dist"><div class="q9-donut"><svg viewBox="0 0 138 138"><circle class="bg" cx="69" cy="69" r="54"/>${segs}</svg><div class="ct"><b>${rows.length}</b><span>branş</span></div></div>` +
+      `<div class="q9-split">${split('TYT', tytN)}${split('AYT', aytN)}</div></div>` +
+      `<div class="q9-rows">${rowsH}</div></section>`;
+    return h;
+  };
+
+  const spRender = (still) => {
+    const r = page9Range, { s, e } = boundsOf(spAnchor, r);
+    setSeg(spRange, r);
+    spLabel.textContent = labelOf(r, s, e);
+    spNx.disabled = boundsOf(shiftA(spAnchor, r, 1), r).s > today0();
+    spC.classList.toggle('q9-still', !!still);
+    spC.innerHTML = spBuild();
+  };
+  const spSwap = () => {
+    clearTimeout(spT);
+    spC.classList.add('q9-out');
+    spT = setTimeout(() => { spRender(false); spC.classList.remove('q9-out'); }, reduce ? 0 : 150);
+  };
+  const clampAnchor = () => { const td = today0(); if (spAnchor > td) spAnchor = td; };
+  const spOpenFn = () => {
+    spAnchor = page9StartOfDay(page9SelectedDate);
+    spRender(false); spIn.scrollTop = 0;
+    sp.classList.add('is-open'); sp.setAttribute('aria-hidden', 'false'); spOpen = true; vib(6);
+  };
+  const spClose = () => { if (!spOpen) return; sp.classList.remove('is-open'); sp.setAttribute('aria-hidden', 'true'); spOpen = false; };
+  function renderSum() { if (spOpen) { spRender(true); } }
+  $('#q9SumBtn').addEventListener('click', spOpenFn);
+  sp.querySelector('.q9-sp-back').addEventListener('click', spClose);
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') spClose(); });
+  spRange.addEventListener('click', (e) => {
+    const b = e.target.closest('button'); if (!b || b.dataset.v === page9Range) return;
+    try { setPage9Range(b.dataset.v); } catch (x) { page9Range = b.dataset.v; }
+    setSeg(spRange, page9Range); spSwap(); vib(4);
+  });
+  spPv.addEventListener('click', () => { spAnchor = shiftA(spAnchor, page9Range, -1); clampAnchor(); spSwap(); vib(4); });
+  spNx.addEventListener('click', () => { spAnchor = shiftA(spAnchor, page9Range, 1); clampAnchor(); spSwap(); vib(4); });
+  spC.addEventListener('click', (e) => {
+    const bar = e.target.closest('.q9-bar'); if (!bar) return;
+    const rd = spC.querySelector('#q9Read'); if (!rd) return;
+    spC.querySelectorAll('.q9-bar.is-pick').forEach((x) => x.classList.remove('is-pick'));
+    bar.classList.add('is-pick'); rd.classList.add('on');
+    rd.textContent = bar.getAttribute('aria-label').replace(':', ' ·'); vib(4);
+  });
+
+  // ---------- Sayfa açılınca tazele / terk edilince Özet'i kapat ----------
   let wasActive = pageEl.classList.contains('is-active');
   new MutationObserver(() => {
     const a = pageEl.classList.contains('is-active');
     if (a && !wasActive) { syncOld(); render(0, false); }
+    if (!a && wasActive) spClose();
     wasActive = a;
   }).observe(pageEl, { attributes: true, attributeFilter: ['class'] });
   render(0, true);
