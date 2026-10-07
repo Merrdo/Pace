@@ -37821,21 +37821,23 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
   (function () {
     var SPLASH_THEME_COLORS = [
       '#000000', // 0: Saf Siyah
-      '#f2e8d5', // 1: Krem
-      '#F6F4EF', // 2: Fildişi
-      '#FFF3E5'  // 3: Milk ve Plum
+      '#F6F4EF', // 1: Fildişi
+      '#FFF3E5', // 2: Milk ve Plum
+      '#000000', // 3: Black ve Blanched Almond
+      '#E4DBCA'  // 4: Crispy Ivory ve Authentic Black
     ];
     // Eski kayıtlar 7 temalı listeye göre indekslenmişti (themeV2 işareti yok): yeni listeye çevrilir.
-    var OLD_THEME_TO_NEW = [0, 0, 0, 1, 2, 2, 0];
+    var OLD_THEME_TO_NEW = [0, 0, 0, 1, 1, 1, 0]; // 7 temalı eski liste -> güncel liste
+    var V2_THEME_TO_NEW = [0, 1, 1, 2];            // Krem'li liste -> güncel liste
     try {
       var raw = localStorage.getItem('takvimim_app_state_v1');
       var saved = raw ? JSON.parse(raw) : null;
       // Kayıtlı bir tema tercihi yoksa (ilk açılış), varsayılan olarak
-      // Fildişi (index 2) kullanılır.
+      // Fildişi (index 1) kullanılır.
       var themeIndex = saved && typeof saved.theme === 'number'
-        ? (saved.themeV2 ? saved.theme : OLD_THEME_TO_NEW[saved.theme])
-        : 2;
-      var color = SPLASH_THEME_COLORS[themeIndex] || SPLASH_THEME_COLORS[2];
+        ? (saved.themeV3 ? saved.theme : (saved.themeV2 ? V2_THEME_TO_NEW[saved.theme] : OLD_THEME_TO_NEW[saved.theme]))
+        : 1;
+      var color = SPLASH_THEME_COLORS[themeIndex] || SPLASH_THEME_COLORS[1];
       var splashEl = document.getElementById('app-splash');
       if (splashEl) splashEl.style.background = color;
       var meta = document.querySelector('meta[name="theme-color"]');
@@ -44124,15 +44126,6 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
       weekend: '#ff6b81'
     },
     {
-      name: 'Krem',
-      gradient: 'linear-gradient(135deg, #f2e8d5 0%, #f2e8d5 50%, #f2e8d5 100%)',
-      color: '#f2e8d5',
-      text: '#000000',
-      /* Açık temalarda pastel kırmızı zor okunduğundan, koyu/doygun
-         bir kırmızıya geçiliyor. */
-      weekend: '#d61f3c'
-    },
-    {
       name: 'Fildişi',
       gradient: 'linear-gradient(135deg, #F6F4EF 0%, #F6F4EF 50%, #F6F4EF 100%)',
       color: '#F6F4EF',
@@ -44150,6 +44143,25 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
       /* Açık zeminde pastel kırmızı zor okunduğundan koyu/doygun kırmızı. */
       weekend: '#d61f3c',
       colors: { c1: '#FFF3E5', c2: '#3B153A' }
+    },
+    {
+      /* c1 = zemin (Black), c2 = yazı/ikinci renk (Blanched Almond). */
+      name: 'Black ve Blanched Almond',
+      gradient: 'linear-gradient(135deg, #000000 0%, #000000 50%, #000000 100%)',
+      color: '#000000',
+      text: '#F6E9C7',
+      weekend: '#ff6b81',
+      colors: { c1: '#000000', c2: '#F6E9C7' }
+    },
+    {
+      /* c1 = zemin (Crispy Ivory), c2 = yazı/ikinci renk (Authentic Black). */
+      name: 'Crispy Ivory ve Authentic Black',
+      gradient: 'linear-gradient(135deg, #E4DBCA 0%, #E4DBCA 50%, #E4DBCA 100%)',
+      color: '#E4DBCA',
+      text: '#070809',
+      /* Açık zeminde pastel kırmızı zor okunduğundan koyu/doygun kırmızı. */
+      weekend: '#d61f3c',
+      colors: { c1: '#E4DBCA', c2: '#070809' }
     }
   ];
 
@@ -44341,13 +44353,16 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
   const layerB = document.getElementById('themeLayerB');
   // Daha önce seçilmiş bir tema kaydedilmişse (localStorage), uygulama onunla açılır.
   // Kaydedilmiş bir tercih yoksa (ilk açılış), varsayılan olarak Fildişi (index 4) kullanılır.
-  // Eski kayıtlar 7 temalı listeye göre indekslenmişti (themeV2 işareti yok): yeni listeye çevrilir.
-  const OLD_THEME_TO_NEW = [0, 0, 0, 1, 2, 2, 0];
-  const savedThemeIndex = APP_STATE.themeV2
+  // Eski kayıtlar önceki tema listelerine göre indekslenmişti: işaret yoksa güncel listeye çevrilir.
+  const OLD_THEME_TO_NEW = [0, 0, 0, 1, 1, 1, 0]; // 7 temalı ilk liste
+  const V2_THEME_TO_NEW = [0, 1, 1, 2];            // Krem'li ikinci liste
+  const savedThemeIndex = APP_STATE.themeV3
     ? APP_STATE.theme
-    : (typeof APP_STATE.theme === 'number' ? OLD_THEME_TO_NEW[APP_STATE.theme] : undefined);
-  let themeIndex = (typeof savedThemeIndex === 'number' && themes[savedThemeIndex]) ? savedThemeIndex : 2;
-  if (!APP_STATE.themeV2) saveAppState({ theme: themeIndex, themeV2: true });
+    : (typeof APP_STATE.theme === 'number'
+        ? (APP_STATE.themeV2 ? V2_THEME_TO_NEW[APP_STATE.theme] : OLD_THEME_TO_NEW[APP_STATE.theme])
+        : undefined);
+  let themeIndex = (typeof savedThemeIndex === 'number' && themes[savedThemeIndex]) ? savedThemeIndex : 1;
+  if (!APP_STATE.themeV3) saveAppState({ theme: themeIndex, themeV3: true });
   let visibleLayer = layerA;
   let hiddenLayer = layerB;
 
@@ -44389,7 +44404,7 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
       window.syncSwatchSelection(themeIndex);
     }
 
-    saveAppState({ theme: themeIndex, themeV2: true });
+    saveAppState({ theme: themeIndex, themeV3: true });
   };
 
   // Belirli bir tema index'ini doğrudan uygular (Sayfa 3'teki gradyana
@@ -44416,7 +44431,7 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
     visibleLayer = hiddenLayer;
     hiddenLayer = temp;
 
-    saveAppState({ theme: themeIndex, themeV2: true });
+    saveAppState({ theme: themeIndex, themeV3: true });
   };
 </script>
 
