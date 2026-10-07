@@ -498,7 +498,7 @@
 #paceSyncBanner.out .psb-i::after{animation:none;opacity:0}
 #paceSyncBanner.drag{animation:none;transition:none}
 #paceSyncBanner.back{animation:none;transition:transform .45s cubic-bezier(.34,1.5,.5,1),opacity .2s}
-#paceSyncBanner .psb-i{position:relative;flex:none;display:grid;place-items:center;width:40px;height:40px;border-radius:50%;color:#fff;background:linear-gradient(145deg,color-mix(in srgb,var(--ac) 100%,#fff 18%),color-mix(in srgb,var(--ac) 80%,#6a3cff))}
+#paceSyncBanner .psb-i{position:relative;flex:none;display:grid;place-items:center;width:40px;height:40px;border-radius:50%;color:var(--on-accent,#fff);background:linear-gradient(145deg,color-mix(in srgb,var(--ac) 100%,#fff 18%),color-mix(in srgb,var(--ac) 80%,#6a3cff))}
 #paceSyncBanner .psb-i::after{content:"";position:absolute;inset:0;border-radius:50%;border:2px solid var(--ac);pointer-events:none;animation:psbRing 1.8s ease-out .5s 3 both;will-change:transform,opacity}
 #paceSyncBanner .psb-i svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:2.3;stroke-linecap:round;stroke-linejoin:round;overflow:visible}
 #paceSyncBanner .psb-ar{animation:psbArrow 1.4s ease-in-out infinite}
@@ -1942,7 +1942,7 @@ img.pa-mark{display:block;object-fit:cover;border-radius:23%;background:none;box
   RFS.textContent = `
 .rf-card{margin-top:14px;padding-top:14px;border-top:1px solid rgba(128,128,128,.22)}
 .rf-card .upd-row[data-s=new] .upd-dot{animation:pcDot 1.5s ease-out infinite}
-.rf-card .rf-b.is-hot{background:linear-gradient(180deg,color-mix(in srgb,var(--accent-color,#ff90e8) 100%,#fff 12%),var(--accent-color,#ff90e8));color:#fff;border-color:transparent;box-shadow:0 8px 22px color-mix(in srgb,var(--accent-color,#ff90e8) 40%,transparent);text-shadow:0 1px 2px rgba(0,0,0,.18)}
+.rf-card .rf-b.is-hot{background:linear-gradient(180deg,color-mix(in srgb,var(--accent-color,#ff90e8) 100%,#fff 12%),var(--accent-color,#ff90e8));color:var(--on-accent,#fff);border-color:transparent;box-shadow:0 8px 22px color-mix(in srgb,var(--accent-color,#ff90e8) 40%,transparent);text-shadow:0 1px 2px rgba(0,0,0,.18)}
 .rf-card .rf-b.is-busy svg{animation:acSpin .8s linear infinite}
 @keyframes acSpin{to{transform:rotate(360deg)}}`;
   document.head.appendChild(RFS);
