@@ -44261,24 +44261,20 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
     applyPopupSurface(t, accent, bg);
   };
 
-  // ---------- Pop-up / dock yüzeyleri temadan türetilir ----------
-  // Pop-up kartları (Soru Havuzu, sınav, kronometre vb.) artık sabit saf siyah
-  // değil: temanın ikincil rengi koyulaştırılarak (açık renkse siyaha karıştırılarak)
-  // koyu bir yüzey elde edilir; iç yüzeyler (--pop-raise*) bundan bir tık açıktır.
-  // Pop-up içinde vurgu rengi, kendi yüzeyiyle kontrastı yetmezse (ör. Milk ve
-  // Plum'da mor üstüne mor) temanın zemin rengine döner; böylece düğmeler,
-  // halkalar ve yazılar her temada okunur kalır.
+  // ---------- Pop-up / dock yüzeyleri ----------
+  // Pop-up kartlarının zemini tüm temalarda sabit koyu #0B0B0C'dir. Üzerindeki
+  // detaylar (vurgulu düğmeler, halkalar, "Tümü" vb.) ise temanın ASIL (zemin)
+  // rengini alır. Tema zemini bu koyu yüzeyde okunmuyorsa (ör. Saf Siyah,
+  // Black ve Blanched Almond) temanın vurgu rengine, o da yetmezse beyaza döner.
+  const POPUP_SURFACE = '#0B0B0C';
   const mixHex = (a, b, k) => {
     const A = hexToRgb(a), B = hexToRgb(b);
     return rgbToHex(A[0] * (1 - k) + B[0] * k, A[1] * (1 - k) + B[1] * k, A[2] * (1 - k) + B[2] * k);
   };
   const applyPopupSurface = (t, accent, bg) => {
-    const c = t.colors || {};
-    const base = c.c2 || t.text;
-    let pop = relLuminance(base) < 0.2 ? base : mixHex('#000000', base, 0.16);
-    if (!t.colors) pop = mixHex(pop, accent, 0.06); // tek renkli temalarda hafif vurgu tonu
-    let popAccent = accent;
-    if (contrastRatio(popAccent, pop) < 3) popAccent = bg;
+    const pop = POPUP_SURFACE;
+    let popAccent = bg;
+    if (contrastRatio(popAccent, pop) < 3) popAccent = accent;
     if (contrastRatio(popAccent, pop) < 3) popAccent = '#ffffff';
     const root = document.documentElement.style;
     root.setProperty('--pop-bg', pop);
@@ -75876,11 +75872,6 @@ html #page-camera .qhavuz-wide-card.is-selected .qhavuz-wide-select {
 @keyframes qhavuzTickPop { 0% { transform: scale(0.55); } 100% { transform: scale(1); } }
 html #page-camera .qhavuz-canvas-grid.is-select-mode .qhavuz-wide-thumb {
   transition: opacity 0.2s ease, filter 0.2s ease, transform 0.25s cubic-bezier(0.22, 1, 0.36, 1);
-}
-/* Seçim yapıldıysa seçilmeyenler hafifçe söner, seçili olan öne çıkar. */
-html #page-camera .qhavuz-canvas-grid.is-select-mode:has(.qhavuz-wide-card.is-selected) .qhavuz-wide-card:not(.is-selected) .qhavuz-wide-thumb {
-  opacity: 0.6;
-  filter: saturate(0.75);
 }
 html #page-camera .qhavuz-canvas-grid.is-select-mode .qhavuz-wide-card.is-selected .qhavuz-wide-thumb { transform: scale(0.97); }
 </style>
