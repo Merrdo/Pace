@@ -45499,12 +45499,19 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
     };
   };
 
+  let fmtLastTime = null, fmtLastCentis = null;
   const formatAndRenderTime = (ms) => {
     const { timeText, centisText } = formatTime(ms);
-    stopwatchTimeEl.textContent = timeText;
-    stopwatchCentisEl.textContent = centisText;
-    stopwatchTimeFullEl.textContent = timeText;
-    stopwatchCentisFullEl.textContent = centisText;
+    if (timeText !== fmtLastTime) {
+      fmtLastTime = timeText;
+      stopwatchTimeEl.textContent = timeText;
+      stopwatchTimeFullEl.textContent = timeText;
+    }
+    if (centisText !== fmtLastCentis) {
+      fmtLastCentis = centisText;
+      stopwatchCentisEl.textContent = centisText;
+      stopwatchCentisFullEl.textContent = centisText;
+    }
   };
 
   // Az önce yeni bir tur eklendiğinde true yapılır; yalnızca bu durumda,
@@ -47013,22 +47020,24 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
 .wn2-wrap{position:absolute;left:0;right:0;top:var(--wn2y,67.5%);transform:translateY(-50%);}
 .wn2-scroll{padding:16px 0;overflow-x:auto;overflow-y:hidden;touch-action:pan-x;overscroll-behavior-x:contain;
   -webkit-mask-image:linear-gradient(to right,transparent,#000 7%,#000 93%,transparent);mask-image:linear-gradient(to right,transparent,#000 7%,#000 93%,transparent);}
+.wn2-scroll.is-fit{-webkit-mask-image:none;mask-image:none;overflow-x:hidden;}
+.wn2-menu{contain:layout style;}
 .wn2-track{position:relative;}
 .wn2-slot{position:absolute;width:var(--D);}
 .wn2-b{--dl:0ms;--rise:60vh;--dx:0px;transform:translate(var(--dx),var(--rise)) scale(.5);opacity:0;transition:transform 1s cubic-bezier(.22,1,.36,1) var(--dl),opacity .5s ease var(--dl);}
 .wn2-b.is-shown{transform:none;opacity:1;}
 .wn2-slot.is-pick .wn2-b{transform:scale(1.45);opacity:0;transition:transform .5s cubic-bezier(.22,1,.36,1),opacity .4s ease;}
-.wn2-bi{display:flex;flex-direction:column;align-items:center;animation:wn2Fl 5.5s ease-in-out infinite;animation-delay:calc(var(--i) * -1.1s);}
+.wn2-bi{display:flex;flex-direction:column;align-items:center;will-change:transform;animation:wn2Fl 5.5s ease-in-out infinite;animation-delay:calc(var(--i) * -1.1s);}
 @keyframes wn2Fl{0%,100%{transform:translate(0,0);}33%{transform:translate(4px,-5px);}66%{transform:translate(-4px,-2px);}}
 .wn2-c{position:relative;flex:none;width:var(--D);height:var(--D);margin:0;padding:0;border:0;cursor:pointer;display:grid;place-items:center;color:inherit;
-  border-radius:58% 42% 52% 48% / 48% 56% 44% 52%;
+  border-radius:58% 42% 52% 48% / 48% 56% 44% 52%;will-change:transform;
   background:radial-gradient(circle at 30% 24%,color-mix(in srgb,currentColor 24%,transparent),color-mix(in srgb,currentColor 6%,transparent) 60%,color-mix(in srgb,currentColor 3%,transparent));
   box-shadow:inset 0 0 0 1.2px color-mix(in srgb,currentColor 26%,transparent),inset -4px -6px 12px color-mix(in srgb,currentColor 9%,transparent);
   animation:wn2Blob 5s ease-in-out infinite;animation-delay:calc(var(--i) * -.8s);transition:background .4s ease,box-shadow .4s ease,scale .3s cubic-bezier(.34,1.56,.64,1);}
-@keyframes wn2Blob{0%,100%{border-radius:58% 42% 52% 48% / 48% 56% 44% 52%;transform:rotate(0);}
-  25%{border-radius:46% 54% 44% 56% / 56% 44% 56% 44%;transform:rotate(5deg);}
-  50%{border-radius:52% 48% 60% 40% / 42% 58% 42% 58%;transform:rotate(-3deg);}
-  75%{border-radius:42% 58% 48% 52% / 54% 46% 58% 42%;transform:rotate(4deg);}}
+@keyframes wn2Blob{0%,100%{transform:rotate(0) scale(1,1);}
+  25%{transform:rotate(5deg) scale(1.04,.97);}
+  50%{transform:rotate(-3deg) scale(.97,1.04);}
+  75%{transform:rotate(4deg) scale(1.03,.98);}}
 .wn2-c:active{scale:.88;}
 .wn2-c svg{width:36%;height:36%;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;opacity:.85;}
 .wn2-slot.is-sel .wn2-c{background:radial-gradient(circle at 30% 24%,color-mix(in srgb,currentColor 38%,transparent),color-mix(in srgb,currentColor 16%,transparent) 65%);box-shadow:inset 0 0 0 1.5px color-mix(in srgb,currentColor 60%,transparent);}
@@ -47151,7 +47160,7 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
     });
     strip.addEventListener('pointermove', (e) => {
       if (e.pointerId !== pid) return; const dx = e.clientX - x0;
-      if (!moved && Math.abs(dx) > 6) { moved = true; enterVol(); }
+      if (!moved && Math.abs(dx) > Math.max(8, Math.round(Math.min(innerWidth, innerHeight) * 0.015))) { moved = true; enterVol(); }
       if (moved) setVol(v0 + dx / barsW());
     });
     const pEnd = (e, cancel) => {
@@ -47180,11 +47189,12 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
     document.addEventListener('click', (e) => { if (!swallow) return; swallow = 0; e.stopPropagation(); e.preventDefault(); }, true);
 
     // ---- Menü: aynı alanda, saydam titreşimli baloncuklar altan süzülür; zikzak yerleşir ----
-    let io = null, closeT = 0;
+    let io = null, closeT = 0, openedAt = 0;
     const layout = () => {
       const D = parseFloat(getComputedStyle(slots[0]).width) || 64;
       const step = D * 0.8, LH = innerHeight < 520 ? 18 : 22, rowOff = D + LH + 2, W = menu.clientWidth, total = (slots.length - 1) * step + D, pad = 22;
       const off = total + pad * 2 < W ? (W - total) / 2 : pad;
+      scroll.classList.toggle('is-fit', total + pad * 2 <= W);
       track.style.width = Math.max(W, total + pad * 2) + 'px'; track.style.height = (rowOff + D + LH) + 'px';
       slots.forEach((d, i) => { d.style.left = (off + i * step) + 'px'; d.style.top = (i % 2 ? rowOff : 0) + 'px'; });
     };
@@ -47201,7 +47211,7 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
       slots.forEach((d) => io.observe(d));
     };
     function openMenu() {
-      if (menuOpen) return; menuOpen = true; hintStop(true); clearTimeout(closeT); clearTimeout(volT);
+      if (menuOpen) return; menuOpen = true; openedAt = performance.now(); hintStop(true); clearTimeout(closeT); clearTimeout(volT);
       volMode = false; strip.classList.remove('is-vol'); paintName();
       slots.forEach((d) => d.classList.remove('is-pick'));
       layout(); scroll.scrollLeft = 0; menu.classList.add('is-on'); document.body.classList.add('wn2-menu-open');
@@ -47225,6 +47235,7 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
       setTimeout(() => { optV.textContent = S.sync ? 'Açık' : 'Kapalı'; }, 160);
     };
     menu.addEventListener('click', (e) => {
+      if (performance.now() - openedAt < 450) return; // açılışı izleyen hayalet tıklamayı yoksay
       if (e.target.closest('.wn2-help')) { closeMenu(); maybeHint(true); return; }
       if (e.target.closest('.wn2-opt')) { toggleSync(); return; }
       const sl = e.target.closest('.wn2-slot');
