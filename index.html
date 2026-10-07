@@ -43675,6 +43675,7 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
     'page-mini-games-hub': 'page-1',
     'page-4': 'page-1',
     'page-6': 'page-1',
+    'page-relax': 'page-1',
     'page-day-cd': 'page-1',
     'page-7': 'page-1',
     'page-10': 'page-5',
@@ -44315,7 +44316,9 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
     // zemini üstündeki okunabilirliği HER TEMA İÇİN otomatik hesaplanır.
     const bg = c.c1 || t.color;
     const rawAccent = c.c3 || c.c2 || LEGACY_BLUE_ACCENT;
-    const accent = ensureContrastAgainst(rawAccent, bg, 3);
+    // Tek renkli temalarda (Saf Siyah, Fildişi) mavi her iki temada da AYNI kalır:
+    // Fildişi'nde de kontrast için koyulaştırılmaz (Saf Siyah'taki #6ec6ff).
+    const accent = (c.c3 || c.c2) ? ensureContrastAgainst(rawAccent, bg, 3) : rawAccent;
     document.documentElement.style.setProperty('--accent-color', accent);
     document.documentElement.style.setProperty('--on-accent', pickOnColor(accent, bg));
     // Vurgu renginin üstünde okunur ikon/yazı rengi: koyu vurguda beyaz, açıkta koyu.
@@ -75793,6 +75796,44 @@ body .wheel-color-backdrop.is-open .wheel-color-card{transform:none;opacity:1}
 }
 @media (prefers-reduced-motion:reduce){#page-11.page *{animation:none !important}}
 </style>
+<style id="qhavuzDesktopBtnStyle">
+/* =====================================================================
+   Soru Havuzu (BÜYÜK EKRAN) · Kaynaklarım, Test Oluştur, Paketlerim, Soru Ekle
+   Soru Takibi (q9m) buton dili: Baloo 2 / 800, gölgesiz yumuşak hap,
+   dolu koyu hap, dokununca küçülme. Mavi (vurgu rengi) dolgular tema
+   yazı rengine (siyah) çevrildi. Yalnızca görsel katman; ölçüler ve
+   yerleşim aynı. Telefon etkilenmez.
+   GERİ ALMAK İÇİN: bu <style> bloğunu silmek yeterli.
+   ===================================================================== */
+@media (min-width:768px) and (min-height:600px){
+#page-camera{--m-t:var(--theme-text,#121212);--m-bg:var(--theme-bg,#f6f4ef);--m-soft:color-mix(in srgb,var(--m-t) 6%,transparent);--m-soft2:color-mix(in srgb,var(--m-t) 12%,transparent);--m-ease:cubic-bezier(.22,1,.36,1)}
+
+/* ortak: hap şekli, yazı, geçişler */
+body #page-camera #qhavuzCanvasSide .qhavuz-canvas-side-btn,
+body #page-camera #qhavuzCanvasAddBtn{font-family:"Baloo 2","Space Grotesk",sans-serif;font-weight:800;text-shadow:none;border:0;border-radius:999px;transition:transform .4s var(--m-ease),background-color .3s,box-shadow .3s}
+body #page-camera #qhavuzCanvasSide .qhavuz-canvas-side-btn:active,
+body #page-camera #qhavuzCanvasAddBtn:active{transform:scale(.95)}
+
+/* dolu koyu hap: Kaynaklarım + Soru Ekle (eski mavi dolgu → siyah) */
+body #page-camera #qhavuzCanvasSide .qhavuz-canvas-side-btn:not(.qhavuz-canvas-side-btn--soft),
+body #page-camera #qhavuzCanvasAddBtn{background:var(--m-t);color:var(--m-bg);box-shadow:0 10px 22px -14px color-mix(in srgb,var(--m-t) 45%,transparent)}
+
+/* yumuşak hap: Test Oluştur + Paketlerim */
+body #page-camera #qhavuzCanvasSide .qhavuz-canvas-side-btn--soft{background:var(--m-soft);color:var(--m-t);box-shadow:none}
+
+@media (hover:hover) and (pointer:fine){
+body #page-camera #qhavuzCanvasSide .qhavuz-canvas-side-btn:not(.qhavuz-canvas-side-btn--soft):hover,
+body #page-camera #qhavuzCanvasAddBtn:hover{background:var(--m-t);box-shadow:0 12px 26px -12px color-mix(in srgb,var(--m-t) 55%,transparent)}
+body #page-camera #qhavuzCanvasSide .qhavuz-canvas-side-btn--soft:hover{background:var(--m-soft2);box-shadow:none}
+}
+body #page-camera #qhavuzCanvasSide .qhavuz-canvas-side-btn--soft:active{background:var(--m-soft2)}
+
+/* Seç: seçim modu açıkken mavi yerine dolu siyah hap */
+body #page-camera #qhavuzCanvasSelectBtn{font-weight:800;transition:transform .4s var(--m-ease),background-color .3s,color .3s}
+body #page-camera #qhavuzCanvasSelectBtn:active{transform:scale(.95)}
+body #page-camera #qhavuzCanvasSelectBtn.is-active{background:var(--m-t);color:var(--m-bg);text-shadow:none;box-shadow:0 10px 22px -14px color-mix(in srgb,var(--m-t) 45%,transparent)}
+}
+</style>
 <style id="gk-sort-paste-css">
   /* ===== Yapıştırma: görev / başlık penceresi + satır içi alanlar =====
      Genel "* { user-select:none }" kuralı yüzünden yazı alanı metin seçimi ve "Yapıştır" menüsünü vermiyordu. */
@@ -76019,6 +76060,22 @@ html #page-camera .qhavuz-canvas-grid.is-select-mode .qhavuz-wide-thumb {
   transition: opacity 0.2s ease, filter 0.2s ease, transform 0.25s cubic-bezier(0.22, 1, 0.36, 1);
 }
 html #page-camera .qhavuz-canvas-grid.is-select-mode .qhavuz-wide-card.is-selected .qhavuz-wide-thumb { transform: scale(0.97); }
+</style>
+<style id="qhavuzSelectBlackStyle">
+/* Soru Havuzu "Seç" butonu: seçim modu açıkken (tüm ekran boyutlarında) mavi/vurgu rengi yerine dolu siyah (tema yazı rengi) hap. */
+html body #page-camera #qhavuzCanvasSelectBtn.is-active,
+html body #qhavuzFabBar .qhavuz-fab-select.is-active{
+  background:var(--theme-text,#121212) !important;
+  background-color:var(--theme-text,#121212) !important;
+  color:var(--theme-bg,#f6f4ef) !important;
+  text-shadow:none !important;
+  box-shadow:0 10px 22px -14px color-mix(in srgb,var(--theme-text,#121212) 45%,transparent) !important;
+}
+</style>
+<style id="relaxBackBtnFixStyle">
+/* Planlayıcı geri butonu: üst çubuktaki overflow:hidden, butonun -10px kaydırılmış yuvarlak basma efektini soldan kesiyordu. Normalde taşmaya izin ver; sheet arkadayken (çubuk gizlenirken) eski davranış korunur. */
+html body #page-relax .calendar-topbar{overflow:visible}
+html body #page-relax.is-behind-sheet .calendar-topbar{overflow:hidden}
 </style>
 </body>
 </html>

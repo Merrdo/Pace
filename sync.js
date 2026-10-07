@@ -649,7 +649,9 @@ ${stag}
 .ac-hero:hover{border-color:color-mix(in srgb,var(--pc) 55%,rgba(128,128,128,.2))}.ac-hero:active{transform:scale(.99)}.ac-hero:focus-visible{outline:2px solid var(--pc);outline-offset:2px}
 .ac-hero.static{cursor:default;padding:18px}.ac-hero.static:active{transform:none}
 .ac-who{position:relative;flex:1;min-width:0;display:flex;flex-direction:column;gap:1px;text-align:left}
-.ac-top{display:flex;justify-content:flex-end;margin:0 6px 9px;min-height:22px}
+.ac-lr{position:relative;display:flex;align-items:center}
+#acctChip{position:absolute;right:6px;top:50%;transform:translateY(-50%);display:flex}
+.settings-scroll .settings-page #acctSection>.settings-card,.settings-scroll .settings-page #updSection>.settings-card{padding-top:0;padding-bottom:0}
 .ac-chip{--sc:#8a8a8a;display:inline-flex;align-items:center;gap:7px;font-size:13.5px;font-weight:600;white-space:nowrap}
 .ac-chip[data-s=err]{color:#e5484d}
 .ac-ci{display:grid;place-items:center;width:20px;height:20px;border-radius:50%}
@@ -1365,7 +1367,7 @@ body.is-qhavuz-test-open .pf-side{opacity:.35;pointer-events:none}}
     var host = document.querySelector('#page-settings .settings-col-left') || document.querySelector('#page-settings .settings-page');
     if (!host) return;
     var sec = document.createElement('div'); sec.className = 'settings-section'; sec.id = 'acctSection';
-    sec.innerHTML = '<span class="settings-section-label">Hesabım</span><div class="settings-card"><div id="acctCard" class="ac"></div></div>';
+    sec.innerHTML = '<div class="ac-lr"><span class="settings-section-label">Hesabım</span><div id="acctChip"></div></div><div class="settings-card"><div id="acctCard" class="ac"></div></div>';
     host.insertBefore(sec, host.firstChild);
     sec.addEventListener('click', function (e) {
       var b = e.target.closest && e.target.closest('[data-acct]'); if (!b || b.disabled) return;
@@ -1408,14 +1410,14 @@ body.is-qhavuz-test-open .pf-side{opacity:.35;pointer-events:none}}
     else if (n) { yd = 'busy'; yt = n + ' değişiklik bekliyor'; }
     else { yd = 'ok'; yt = 'Yedeklendi' + (lastOk ? ' · ' + new Date(lastOk).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }) : ''); }
     var SC = { ok: '#2ecc71', busy: '#f5b301', err: '#e74c3c', off: '#8a8a8a' };
-    var html;
+    var html, chipHTML = '';
     if (signedIn()) {
       var pc = pickColor(prof()), syncing = yd === 'busy' && authState === 'in';
       if (authState === 'in') { if (prevYd === 'busy' && yd === 'ok') okAt = Date.now(); prevYd = yd; }
       var fresh = yd === 'ok' && authState === 'in' && Date.now() - okAt < 2200, cx = IC.cloud;
       cx += yd === 'busy' ? '<g class="up"><path d="M12 16.6v-5.2M9.8 13.5l2.2-2.2 2.2 2.2"/></g>' : (yd === 'err' ? '<path d="M12 10.6v3M12 16v.1"/>' : '<path class="ck" d="M9.2 13.2l2.1 2.1 3.7-4"/>');
-      var chipHTML = '<div class="ac-top"><span class="ac-chip' + (fresh ? ' fresh' : '') + '" data-s="' + yd + '" style="--sc:' + SC[yd] + (fresh ? ';--ad:-' + ((Date.now() - okAt) / 1000).toFixed(2) + 's' : '') + '"><span class="ac-ci">' + ic(cx, 18) + '</span><span class="ac-ct">' + esc(yt) + '</span></span></div>';
-      html = chipHTML + '<div class="ac-hero' + (authState === 'in' ? ' hasout' : '') + '" data-acct="profile" role="button" tabindex="0" aria-label="Profili düzenle" style="--pc:' + pc + '">' +
+      chipHTML = '<span class="ac-chip' + (fresh ? ' fresh' : '') + '" data-s="' + yd + '" style="--sc:' + SC[yd] + (fresh ? ';--ad:-' + ((Date.now() - okAt) / 1000).toFixed(2) + 's' : '') + '"><span class="ac-ci">' + ic(cx, 18) + '</span><span class="ac-ct">' + esc(yt) + '</span></span>';
+      html = '<div class="ac-hero' + (authState === 'in' ? ' hasout' : '') + '" data-acct="profile" role="button" tabindex="0" aria-label="Profili düzenle" style="--pc:' + pc + '">' +
         '<button type="button" class="ac-av" data-acct="view" aria-label="Profil resmini büyüt" style="--sc:' + SC[sd] + '">' + avatarHTML(68) + '<span class="ac-st" title="Oturum: ' + st + '"></span></button>' +
         '<div class="ac-who"><b>' + esc(dispName()) + '</b><span>' + esc(email || '') + '</span></div>' +
         (authState === 'in' ? '<button type="button" class="ac-out" data-acct="out" aria-label="Çıkış yap" title="Çıkış yap">' + ic(IC.out, 18) + '</button>' : '') +
@@ -1433,6 +1435,7 @@ body.is-qhavuz-test-open .pf-side{opacity:.35;pointer-events:none}}
     }
     var first = !card.getAttribute('data-d') && authState !== 'unknown';
     if (first) { card.setAttribute('data-d', '1'); card.classList.add('ac-first'); clearTimeout(card._t); card._t = setTimeout(function () { card.classList.remove('ac-first'); }, 1100); }
+    var chipEl = document.getElementById('acctChip'); if (chipEl) chipEl.innerHTML = chipHTML;
     card.innerHTML = html;
   }
 
@@ -1937,35 +1940,125 @@ img.pa-mark{display:block;object-fit:cover;border-radius:23%;background:none;box
 `;
   document.head.appendChild(UST);
 
-  // Ayarlar > Hesabım: uygulamayı kapatmadan sayfayı yenile (bildirim kaçırılırsa buradan yenilenir)
+  // Ayarlar > Uygulama sürümü: tek satırlık giriş + pop-up (güncellemeleri denetle / sayfayı yenile)
   var RFS = document.createElement('style'); RFS.id = 'paceRfCss';
   RFS.textContent = `
-.rf-card{margin-top:14px;padding-top:14px;border-top:1px solid rgba(128,128,128,.22)}
-.rf-card .upd-row[data-s=new] .upd-dot{animation:pcDot 1.5s ease-out infinite}
-.rf-card .rf-b.is-hot{background:linear-gradient(180deg,color-mix(in srgb,var(--accent-color,#ff90e8) 100%,#fff 12%),var(--accent-color,#ff90e8));color:var(--on-accent,#fff);border-color:transparent;box-shadow:0 8px 22px color-mix(in srgb,var(--accent-color,#ff90e8) 40%,transparent);text-shadow:0 1px 2px rgba(0,0,0,.18)}
-.rf-card .rf-b.is-busy svg{animation:acSpin .8s linear infinite}
-@keyframes acSpin{to{transform:rotate(360deg)}}`;
+@keyframes ueBadge{0%{box-shadow:0 0 0 0 rgba(229,72,77,.55)}100%{box-shadow:0 0 0 10px rgba(229,72,77,0)}}
+@keyframes ueBadgeB{0%{box-shadow:0 0 0 0 rgba(245,179,1,.55)}100%{box-shadow:0 0 0 10px rgba(245,179,1,0)}}
+@keyframes ueBadgeIn{0%{transform:scale(0)}60%{transform:scale(1.25)}100%{transform:scale(1)}}
+.ue{position:relative;display:flex;align-items:center;gap:14px;width:100%;box-sizing:border-box;padding:14px 16px;border-radius:26px;border:1px solid rgba(128,128,128,.2);background:rgba(128,128,128,.07);color:var(--theme-text,#121212);cursor:pointer;text-align:left;font:inherit;-webkit-tap-highlight-color:transparent;transition:transform .4s cubic-bezier(.34,1.56,.64,1),border-color .25s,background .25s}
+.ue:hover{border-color:rgba(128,128,128,.38)}.ue:active{transform:scale(.985)}.ue:focus-visible{outline:2px solid var(--theme-text,#121212);outline-offset:2px}
+.ue.hot{border-color:color-mix(in srgb,#e5484d 48%,transparent);background:color-mix(in srgb,#e5484d 8%,transparent)}
+.ue-i{position:relative;flex:none;display:grid;place-items:center;width:46px;height:46px;border-radius:50%;background:rgba(128,128,128,.15)}
+.ue.hot .ue-i{background:color-mix(in srgb,#e5484d 16%,transparent);color:#e5484d}
+.ue-badge{position:absolute;top:-4px;right:-4px;display:grid;place-items:center;box-sizing:content-box;min-width:15px;height:15px;padding:0 1px;border-radius:999px;border:2.5px solid var(--theme-bg,#fff);background:#e5484d;color:#fff;font-size:11px;font-weight:800;line-height:1;animation:ueBadgeIn .5s cubic-bezier(.34,1.56,.64,1) both,ueBadge 1.7s ease-out .5s infinite}
+.ue-badge.busy{background:#f5b301;min-width:9px;height:9px;animation:ueBadgeIn .5s cubic-bezier(.34,1.56,.64,1) both,ueBadgeB 1.7s ease-out .5s infinite}
+.ue-badge.dot{min-width:9px;height:9px}
+.ue-t{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
+.ue-t b{font-size:17px;font-weight:700;line-height:1.2}
+.ue-t span{font-size:13px;opacity:.65;line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ue.hot .ue-t span{color:#e5484d;opacity:1;font-weight:600}
+.ue-c{flex:none;display:grid;place-items:center;opacity:.5;transition:transform .45s cubic-bezier(.34,1.56,.64,1),opacity .25s}
+.ue:hover .ue-c{transform:translateX(3px);opacity:.9}
+
+#updSheet{position:fixed;inset:0;z-index:2147483004;display:flex;align-items:center;justify-content:center;box-sizing:border-box;padding:calc(16px + env(safe-area-inset-top,0px)) 16px calc(16px + env(safe-area-inset-bottom,0px));overflow-y:auto;overscroll-behavior:contain}
+.us-bg{position:fixed;inset:0;background:rgba(0,0,0,.52);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);animation:pfFade .3s ease both}
+.us-card{position:relative;width:100%;max-width:440px;margin:auto;box-sizing:border-box;padding:22px 18px 18px;border-radius:34px;background:var(--theme-bg,#fff);color:var(--theme-text,#121212);border:1px solid rgba(128,128,128,.26);box-shadow:0 30px 80px rgba(0,0,0,.4);animation:pfCardIn .6s cubic-bezier(.22,1,.36,1) both}
+#updSheet.out .us-card{animation:pfCardOut .28s cubic-bezier(.5,0,.75,0) both}
+#updSheet.out .us-bg{animation:pfFadeOut .28s ease both}
+.us-hd{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 4px 16px}
+.us-hd h2{margin:0;font-size:24px;font-weight:800;letter-spacing:-.01em;line-height:1.1}
+.us-x{flex:none;display:grid;place-items:center;width:38px;height:38px;padding:0;border:0;border-radius:50%;background:rgba(128,128,128,.16);color:inherit;font-size:15px;cursor:pointer;transition:transform .25s,background .25s}
+.us-x:hover{background:rgba(128,128,128,.26)}.us-x:active{transform:scale(.9)}
+.us-st{display:flex;align-items:center;gap:14px;padding:14px 16px;margin-bottom:12px;border-radius:24px;background:color-mix(in srgb,var(--c) 11%,transparent);border:1px solid color-mix(in srgb,var(--c) 34%,transparent)}
+.us-si{flex:none;display:grid;place-items:center;width:42px;height:42px;border-radius:50%;background:var(--c);color:#fff}
+.us-stt{display:flex;flex-direction:column;gap:1px;min-width:0;text-align:left}
+.us-stt b{font-size:17px;font-weight:700;line-height:1.2}.us-stt span{font-size:13px;opacity:.7;line-height:1.3}
+.us-acts{display:flex;flex-direction:column;gap:10px}
+.us-act{position:relative;display:flex;align-items:center;gap:14px;width:100%;box-sizing:border-box;padding:14px 16px;border-radius:24px;border:1px solid rgba(128,128,128,.24);background:rgba(128,128,128,.07);color:inherit;font:inherit;text-align:left;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:transform .35s cubic-bezier(.34,1.56,.64,1),background .25s,border-color .25s,opacity .25s}
+.us-act:hover:not(:disabled){border-color:rgba(128,128,128,.45)}.us-act:active:not(:disabled){transform:scale(.98)}.us-act:disabled{opacity:.6;cursor:default}
+.us-ai{position:relative;flex:none;display:grid;place-items:center;width:46px;height:46px;border-radius:16px;background:rgba(128,128,128,.16)}
+.us-at{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
+.us-at b{font-size:16.5px;font-weight:700;line-height:1.2}.us-at span{font-size:13px;opacity:.65;line-height:1.3}
+.us-ac{flex:none;display:grid;place-items:center;opacity:.5}
+.us-act.hot{border-color:transparent;background:#e5484d;color:#fff;box-shadow:0 10px 26px rgba(229,72,77,.34)}
+.us-act.hot .us-ai{background:rgba(255,255,255,.2)}.us-act.hot .us-at span{opacity:.88}.us-act.hot .us-ac{opacity:.85}
+.us-act.hot .ue-badge{border-color:#e5484d;background:#fff}
+@media (prefers-reduced-motion:reduce){.ue-badge,.us-card,.us-bg{animation:none!important}}`;
   document.head.appendChild(RFS);
-  function rfUi(busy) {
-    var c = document.getElementById('rfCard'); if (!c) return;
-    var hot = syncPending;
-    c.innerHTML = '<div class="upd-row" data-s="' + (hot ? 'new' : 'ok') + '" style="--c:' + (hot ? '#e5484d' : '#8a8a8a') + '"><span class="upd-dot"></span><div class="upd-tx"><b>' + (hot ? 'Yeni veriler hazır' : 'Sayfayı yenile') + '</b><span>' + (hot ? 'Başka cihazdan değişiklik geldi. Yenileyince görünür.' : 'Uygulamayı kapatmadan yeniden yükler. Verilerin korunur.') + '</span></div></div>' +
-      '<div class="ac-actions"><button type="button" class="ac-btn rf-b' + (hot ? ' is-hot' : '') + (busy ? ' is-busy' : '') + '" data-rf="1"' + (busy ? ' disabled' : '') + '>' + ic(IC.sync, 18) + (busy ? 'Yenileniyor…' : 'Sayfayı yenile') + '</button></div>';
+
+  var rfBusy = false;
+  var CHV = '<path d="M9 5l7 7-7 7"/>';
+  function pendingCount() { return (upd.state === 'new' ? 1 : 0) + (syncPending ? 1 : 0); }
+  function rfUi(busy) { if (typeof busy === 'boolean') rfBusy = busy; renderUpdate(); }
+  function updUi() { renderUpdate(); }
+  function renderUpdate() { renderEntry(); renderSheet(); }
+
+  function renderEntry() {
+    var e = document.getElementById('updEntry'); if (!e) return;
+    var v = APP_VER ? 'Sürüm ' + APP_VER : 'Sürüm bilinmiyor';
+    var s = upd.applying ? 'busy' : upd.state, n = pendingCount(), working = s === 'checking' || s === 'busy' || rfBusy, sub;
+    if (n === 2) sub = 'Yeni sürüm ve yeni veriler seni bekliyor';
+    else if (s === 'new') sub = 'Yeni sürüm hazır · ' + v + ' → ' + upd.latest;
+    else if (syncPending) sub = 'Yeni veriler hazır · sayfayı yenile';
+    else if (s === 'checking') sub = 'Denetleniyor…';
+    else if (s === 'busy') sub = 'Güncelleniyor…';
+    else if (s === 'ok') sub = v + ' · güncel';
+    else if (s === 'err') sub = v + ' · denetlenemedi';
+    else sub = v;
+    var badge = n ? '<span class="ue-badge">' + n + '</span>' : (working ? '<span class="ue-badge busy"></span>' : '');
+    var html = '<span class="ue-i">' + ic(IC.sync, 22, working ? 'ac-spin' : '') + badge + '</span><span class="ue-t"><b>Uygulama sürümü</b><span>' + esc(sub) + '</span></span><span class="ue-c">' + ic(CHV, 16) + '</span>';
+    e.className = 'ue' + (n ? ' hot' : '');
+    e.setAttribute('aria-label', 'Uygulama sürümü' + (n ? ', ' + n + ' bildirim' : ''));
+    if (e._h !== html) { e.innerHTML = html; e._h = html; }
   }
-  function updUi() {
-    var card = document.getElementById('updCard'); if (!card) return;
+
+  function usTile(o) {
+    return '<button type="button" class="us-act' + (o.hot ? ' hot' : '') + '" data-us="' + o.act + '"' + (o.dis ? ' disabled' : '') + '><span class="us-ai">' + ic(o.icon, 22, o.spin ? 'ac-spin' : '') + (o.hot ? '<span class="ue-badge dot"></span>' : '') + '</span><span class="us-at"><b>' + o.t + '</b><span>' + esc(o.d) + '</span></span>' + (o.dis ? '' : '<span class="us-ac">' + ic(CHV, 16) + '</span>') + '</button>';
+  }
+  function renderSheet() {
+    var body = document.getElementById('usBody'); if (!body) return;
     var s = upd.applying ? 'busy' : upd.state;
     var C = { 'new': '#e5484d', ok: '#2ecc71', err: '#8a8a8a', unknown: '#8a8a8a', checking: '#f5b301', busy: '#f5b301' };
     var v = APP_VER ? 'Sürüm ' + APP_VER : 'Sürüm bilinmiyor';
-    var t, sub, label, icon = IC.sync, act = 'check', spin = false;
-    if (s === 'new') { t = 'Yeni sürüm mevcut'; sub = v + ' → ' + upd.latest + ' · verilerin korunur'; label = 'Şimdi güncelle'; icon = UPI.dl; act = 'apply'; }
-    else if (s === 'ok') { t = 'Uygulama güncel'; sub = v + ' · son denetim ' + new Date(upd.ok).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }); label = 'Güncellemeleri denetle'; }
-    else if (s === 'checking') { t = 'Denetleniyor…'; sub = v; label = 'Denetleniyor…'; spin = true; }
-    else if (s === 'busy') { t = 'Güncelleniyor…'; sub = 'Verilerin korunuyor, sayfa yenilenecek.'; label = 'Güncelleniyor…'; spin = true; act = 'none'; }
-    else if (s === 'err') { t = 'Denetlenemedi'; sub = 'Bağlantını kontrol edip tekrar dene.'; label = 'Tekrar dene'; }
-    else { t = 'Güncelleme'; sub = v; label = 'Güncellemeleri denetle'; }
-    card.innerHTML = '<div class="upd-row" data-s="' + s + '" style="--c:' + C[s] + '"><span class="upd-dot"></span><div class="upd-tx"><b>' + t + '</b><span>' + esc(sub) + '</span></div></div>' +
-      '<div class="ac-actions"><button type="button" class="ac-btn upd-b" data-s="' + s + '" data-upd="' + act + '"' + (spin ? ' disabled' : '') + '>' + ic(icon, 18, spin ? 'ac-spin' : '') + label + '</button></div>';
+    var at = upd.ok ? new Date(upd.ok).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }) : '';
+    var t, sub, sIcon = IC.sync, sSpin = false, t1;
+    if (s === 'new') { t = 'Yeni sürüm mevcut'; sub = v + ' → ' + upd.latest + ' · verilerin korunur'; sIcon = UPI.dl; t1 = { t: 'Şimdi güncelle', d: 'Sürüm ' + upd.latest + ' yüklenir, verilerin korunur', icon: UPI.dl, act: 'apply', hot: true }; }
+    else if (s === 'ok') { t = 'Uygulama güncel'; sub = v + (at ? ' · son denetim ' + at : ''); sIcon = IC.ok; t1 = { t: 'Güncellemeleri denetle', d: at ? 'Son denetim ' + at : 'Yeni sürüm var mı bak', icon: IC.sync, act: 'check' }; }
+    else if (s === 'checking') { t = 'Denetleniyor…'; sub = v; sSpin = true; t1 = { t: 'Denetleniyor…', d: 'Sunucuya bakılıyor', icon: IC.sync, act: 'none', dis: true, spin: true }; }
+    else if (s === 'busy') { t = 'Güncelleniyor…'; sub = 'Verilerin korunuyor, sayfa yenilenecek.'; sSpin = true; t1 = { t: 'Güncelleniyor…', d: 'Sayfa birazdan yenilenecek', icon: IC.sync, act: 'none', dis: true, spin: true }; }
+    else if (s === 'err') { t = 'Denetlenemedi'; sub = 'Bağlantını kontrol edip tekrar dene.'; sIcon = '<path d="M12 7v6.2M12 17v.1"/>'; t1 = { t: 'Tekrar dene', d: 'Bağlantını kontrol edip tekrar dene', icon: IC.sync, act: 'check' }; }
+    else { t = 'Güncelleme'; sub = v; t1 = { t: 'Güncellemeleri denetle', d: 'Henüz denetlenmedi', icon: IC.sync, act: 'check' }; }
+    var t2 = rfBusy ? { t: 'Yenileniyor…', d: 'Sayfa yeniden yükleniyor', icon: IC.sync, act: 'none', dis: true, spin: true }
+      : syncPending ? { t: 'Sayfayı yenile', d: 'Yeni veriler hazır · başka cihazdan değişiklik geldi', icon: IC.sync, act: 'refresh', hot: true }
+      : { t: 'Sayfayı yenile', d: 'Uygulamayı kapatmadan yeniden yükler. Verilerin korunur.', icon: IC.sync, act: 'refresh' };
+    var html = '<div class="us-st" style="--c:' + C[s] + '"><span class="us-si">' + ic(sIcon, 22, sSpin ? 'ac-spin' : '') + '</span><div class="us-stt"><b>' + t + '</b><span>' + esc(sub) + '</span></div></div>' +
+      '<div class="us-acts">' + usTile(t1) + usTile(t2) + '</div>';
+    if (body._h !== html) { body.innerHTML = html; body._h = html; }
+  }
+
+  var usKey = function (e) { if (e.key === 'Escape') closeUpd(); };
+  function openUpd() {
+    if (document.getElementById('updSheet')) return;
+    var sh = document.createElement('div'); sh.id = 'updSheet'; sh.setAttribute('role', 'dialog'); sh.setAttribute('aria-modal', 'true'); sh.setAttribute('aria-labelledby', 'usTitle');
+    sh.innerHTML = '<div class="us-bg"></div><div class="us-card"><div class="us-hd"><h2 id="usTitle">Uygulama sürümü</h2><button type="button" class="us-x" data-us-x="1" aria-label="Kapat">✕</button></div><div id="usBody"></div></div>';
+    document.body.appendChild(sh);
+    sh.addEventListener('click', function (e) {
+      if (e.target === sh || (e.target.classList && e.target.classList.contains('us-bg')) || (e.target.closest && e.target.closest('[data-us-x]'))) { closeUpd(); return; }
+      var b = e.target.closest && e.target.closest('[data-us]'); if (!b || b.disabled) return;
+      var a = b.getAttribute('data-us');
+      if (a === 'apply') applyUpdate();
+      else if (a === 'check') checkUpdate(true);
+      else if (a === 'refresh') { rfBusy = true; renderUpdate(); doRefresh(null); }
+    });
+    document.addEventListener('keydown', usKey);
+    renderSheet();
+    checkUpdate(false);   // açılınca durumu tazele (20 sn içinde tekrar sormaz)
+  }
+  function closeUpd() {
+    var sh = document.getElementById('updSheet'); if (!sh || sh.classList.contains('out')) return;
+    document.removeEventListener('keydown', usKey);
+    sh.classList.add('out'); setTimeout(function () { sh.remove(); }, 300);
   }
   function showUpdBanner() {
     if (document.getElementById('pcUpd') || upd.applying) return;
@@ -2015,16 +2108,10 @@ img.pa-mark{display:block;object-fit:cover;border-radius:23%;background:none;box
     var host = acct ? acct.parentNode : (document.querySelector('#page-settings .settings-col-left') || document.querySelector('#page-settings .settings-page'));
     if (!host) return;
     var sec = document.createElement('div'); sec.className = 'settings-section'; sec.id = 'updSection';
-    sec.innerHTML = '<span class="settings-section-label">Uygulama sürümü</span><div class="settings-card"><div id="updCard" class="ac"></div><div id="rfCard" class="ac rf-card"></div></div>';
+    sec.innerHTML = '<div class="settings-card"><button type="button" class="ue" id="updEntry" aria-haspopup="dialog"></button></div>';
     host.insertBefore(sec, acct ? acct.nextSibling : host.firstChild);
-    sec.addEventListener('click', function (e) {
-      var rb = e.target.closest && e.target.closest('[data-rf]');
-      if (rb && !rb.disabled) { rb.disabled = true; rb.classList.add('is-busy'); rfUi(true); doRefresh(null); return; }
-      var b = e.target.closest && e.target.closest('[data-upd]'); if (!b || b.disabled) return;
-      var a = b.getAttribute('data-upd');
-      if (a === 'apply') applyUpdate(); else if (a === 'check') checkUpdate(true);
-    });
-    updUi(); rfUi();
+    sec.querySelector('#updEntry').addEventListener('click', openUpd);
+    renderUpdate();
   }
   if (APP_VER) {
     setTimeout(function () { checkUpdate(false); }, 2500);
