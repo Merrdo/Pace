@@ -372,15 +372,6 @@
     opacity: 0.55;
   }
 
-  .home-datetime-widget-date {
-    font-weight: 600;
-    font-size: 0.72rem;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-    color: var(--theme-text, #1a1a1a);
-    opacity: 0.45;
-  }
-
   .home-datetime-widget-time {
     font-weight: 800;
     font-size: 2.15rem;
@@ -1670,6 +1661,12 @@
      bölümü (TABLET / GENİŞ EKRAN). */
   .home-tile {
     display: contents;
+  }
+
+  /* Mini ay takvimi kutusu yalnızca büyük ekranda görünür (bkz. "MİNİ AY
+     TAKVİMİ" bloğu); telefonda hiç yer kaplamaz. */
+  .home-tile.home-tile-cal {
+    display: none;
   }
 
   /* Minimalist takvim widget'ı: bugünün tarihini gösteren sade, yuvarlak
@@ -20700,7 +20697,7 @@
       grid-template-columns: repeat(2, minmax(0, 1fr));
       grid-template-rows:
         minmax(6.5rem, 0.8fr)
-        minmax(7rem, 0.9fr)
+        minmax(min-content, 0.9fr)
         minmax(8rem, 1.2fr);
       grid-template-areas:
         "relax relax"
@@ -21048,8 +21045,8 @@
        yukarıdan aşağı). Görev sayısı 2'ye çıkınca (satırlar arası bağlantı
        çizgileri alanı zaten belirginleştirdiği için) çubuk geri toplanır.
        JS (updateHomeDivider) .has-divider / .divider-out sınıflarını yönetir.
-       Düzen: Rahatla üst satırdayken (< 900px) çubuk widget'ın ALTINDA yatay;
-       sağ sütundayken (≥ 900px, bento) widget'ın SOLUNDA dikey durur. */
+       Düzen: Rahatla üst satırdayken (< 900px) çubuk widget'ın ALTINDA yatay.
+       Sağ sütundayken (≥ 900px, bento) çubuk artık YOK: widget kart içinde. */
     #page-1 .home-tile-relax::after {
       content: "";
       position: absolute;
@@ -21093,30 +21090,23 @@
     }
 
     @container home (min-width: 900px) {
-      /* Rahatla sağ sütunda: "Bugün Çözülen" ile dip dibe kalmasın diye widget
-         (ve onunla birlikte ayırıcı çubuk) soldan daraltılıp biraz sağa itilir. */
+      /* Rahatla sağ sütunda: dikey ayırıcı çubuk KALDIRILDI; yerine widget,
+         sayfanın sağ tarafında derli toplu duran bir KART içine alınır.
+         Widget'ın kendi içeriği/düzeni aynen korunur; kart yalnızca tile'ın
+         zemini + ince kenarlığıdır. Renkler sabit değil, aktif temanın
+         --theme-text değişkeninden türetilir (açık/koyu/özel temalarda
+         okunabilir kalır). Widget'ın iç düzeni ve davranışı değişmedi. */
       #page-1 .home-tile-relax {
-        margin-left: clamp(1.5rem, 4cqi, 4.5rem);
+        margin-left: 0;
+        padding: clamp(0.75rem, 1.4cqi, 1.6rem);
+        background: color-mix(in srgb, var(--theme-text, #121212) 5%, transparent);
+        border: 1px solid color-mix(in srgb, var(--theme-text, #121212) 14%, transparent);
+        border-radius: var(--tile-r);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
       }
 
       #page-1 .home-tile-relax::after {
-        left: -0.55rem;
-        right: auto;
-        top: 5%;
-        bottom: 5%;
-        width: 3px;
-        height: auto;
-        background: linear-gradient(to bottom, transparent, var(--accent-color, #ff90e8) 16%, var(--accent-color, #ff90e8) 84%, transparent);
-        transform: scaleY(0);
-        transform-origin: center top;
-      }
-
-      #page-1 .home-tile-relax.has-divider::after {
-        animation-name: homeDividerDrawY;
-      }
-
-      #page-1 .home-tile-relax.divider-out::after {
-        animation-name: homeDividerEraseY;
+        content: none;
       }
     }
 
@@ -21128,6 +21118,124 @@
 
       #page-1 .home-tile-relax.has-divider::after {
         transform: none;
+      }
+    }
+
+    /* ==========================================================================
+       GEÇİCİ: SOL TARAF BOŞALTILDI (büyük ekran) — SİLİNMEDİ, sadece gizli.
+       ==========================================================================
+       Tasarım için sol taraf boş bırakıldı: Kronometre yazısı (sol üst),
+       "Bugün Çözülen" ve Geri Sayım (kartsız) büyük ekranda gizlenir. HTML/JS
+       aynen duruyor; geri getirmek için bu bloğu silmek yeterli. Kalıcı olarak
+       kaldırma kararı verilince (kullanıcı "sil" deyince) ilgili HTML/CSS/JS
+       ayrıca temizlenecek. */
+    @media (min-width: 768px) and (min-height: 600px) {
+      #page-1 .home-kronometre-ring-widget,
+      #page-1 .home-tile-count,
+      #page-1 .home-cd-flat-tile {
+        display: none !important;
+      }
+    }
+
+    /* ==========================================================================
+       MİNİ AY TAKVİMİ (büyük ekran)
+       ==========================================================================
+       Bu ayın küçük ızgarası, Planlayıcı kartıyla aynı kart diliyle: bugün
+       vurgu renginde daire, etkinliği olan günlerde renkli noktalar (en fazla
+       3), geri sayımı olan günde geri sayım renginde halka, off day'de kırmızı
+       rakam. Sol üst hücrede ("count" alanı) durur. Renkler temadan gelir. */
+    @media (min-width: 768px) and (min-height: 600px) {
+      #page-1 .home-tile.home-tile-cal {
+        grid-area: count;
+        container-type: inline-size;
+        align-self: start;
+        justify-self: start;
+        width: clamp(18rem, 26cqi, 30rem);
+        max-width: 100%;
+      }
+
+      .home-cal-widget {
+        box-sizing: border-box;
+        padding: clamp(0.9rem, 6cqi, 1.5rem);
+        background: color-mix(in srgb, var(--theme-text, #121212) 5%, transparent);
+        border: 1px solid color-mix(in srgb, var(--theme-text, #121212) 14%, transparent);
+        border-radius: var(--tile-r, 1.75rem);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        color: var(--theme-text, #1a1a1a);
+        font-family: "Baloo 2", "Space Grotesk", sans-serif;
+        cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
+        transition: opacity 0.2s ease;
+      }
+
+      .home-cal-widget:active { opacity: 0.7; }
+
+      .home-cal-head {
+        margin-bottom: 0.7rem;
+        font-weight: 800;
+        font-size: clamp(1.15rem, 7cqi, 1.7rem);
+        letter-spacing: -0.01em;
+        line-height: 1.1;
+      }
+
+      .home-cal-head .home-cal-year {
+        margin-left: 0.3em;
+        color: var(--accent-color, #6ec6ff);
+      }
+
+      .home-cal-wd,
+      .home-cal-grid {
+        display: grid;
+        grid-template-columns: repeat(7, minmax(0, 1fr));
+        gap: 2px;
+      }
+
+      .home-cal-wd span {
+        text-align: center;
+        padding-bottom: 0.2rem;
+        font-weight: 700;
+        font-size: clamp(0.62rem, 3.4cqi, 0.8rem);
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        opacity: 0.45;
+      }
+
+      .home-cal-day {
+        position: relative;
+        display: grid;
+        place-items: center;
+        aspect-ratio: 1;
+        border-radius: 50%;
+        font-weight: 700;
+        font-size: clamp(0.78rem, 4.4cqi, 1.1rem);
+        font-variant-numeric: tabular-nums;
+      }
+
+      .home-cal-day.is-weekend { opacity: 0.6; }
+      .home-cal-day.is-off { color: #ff4d4d; opacity: 1; }
+      .home-cal-day.has-cd { box-shadow: inset 0 0 0 2px var(--cd-color); }
+
+      .home-cal-day.is-today {
+        background: var(--accent-color, #6ec6ff);
+        color: var(--on-accent, #16171b);
+        opacity: 1;
+      }
+
+      .home-cal-dots {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 11%;
+        display: flex;
+        justify-content: center;
+        gap: 2px;
+      }
+
+      .home-cal-dots i {
+        width: 4px;
+        height: 4px;
+        border-radius: 50%;
+        background: var(--dot-c, currentColor);
       }
     }
 
@@ -21467,7 +21575,7 @@
     @container home (min-width: 900px) {
       #page-1 .home-widgets-stack {
         grid-template-columns: minmax(0, 1.55fr) repeat(2, minmax(0, 0.5fr));
-        grid-template-rows: minmax(8rem, 0.85fr) minmax(9rem, 1.15fr);
+        grid-template-rows: minmax(min-content, 0.85fr) minmax(9rem, 1.15fr);
         grid-template-areas:
           "count relax relax"
           "cd    relax relax";
@@ -36923,30 +37031,23 @@ body.is-fs-idle .stopwatch-fullscreen-time-row .stopwatch-centis{animation:none 
 }
 </style>
 <style id="calNextCss">
-.cal-next{display:none;}
 @media (min-width:768px) and (min-height:600px){
+  /* Büyük ekran: Off day gün bilgisine yapışık; kalan boşlukta seçili günün etkinlik kartları (aşağıdakinin küçük hali) yan yana. */
+  #page-6 .calendar-info-content{flex:0 1 auto;max-width:15rem;}
   #page-6 .calendar-info-top{justify-content:flex-start;gap:.9rem;}
-  .cal-next{display:flex;align-items:center;gap:1rem;margin-top:auto;flex-shrink:0;width:100%;box-sizing:border-box;padding:.95rem 1.25rem;
-    border:none;border-radius:1.5rem;cursor:pointer;text-align:left;font-family:"Baloo 2","Space Grotesk",sans-serif;color:var(--theme-text,#f2f2f7);
-    background:color-mix(in srgb,var(--theme-text,#f2f2f7) 8%,transparent);-webkit-tap-highlight-color:transparent;
-    transition:transform .25s cubic-bezier(.34,1.56,.64,1),background-color .25s;}
-  .cal-next:hover{background:color-mix(in srgb,var(--theme-text,#f2f2f7) 12%,transparent);}
-  .cal-next:active{transform:scale(.985);}
-  .cal-next-bar{flex:none;width:.32rem;align-self:stretch;min-height:2.6rem;border-radius:999px;background:var(--c,var(--accent-color,#ff90e8));}
-  .cal-next-txt{flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.2;}
-  .cal-next-lbl{font-weight:800;font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;opacity:.5;}
-  .cal-next-name{font-weight:800;font-size:1.2rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-  .cal-next-sub{font-weight:600;font-size:.86rem;opacity:.55;}
-  .cal-next-sub:empty{display:none;}
-  .cal-next-when{flex:none;font-weight:800;font-size:.92rem;padding:.35rem .95rem;border-radius:999px;background:var(--c,var(--accent-color,#ff90e8));color:#16171b;}
-  .cal-next.is-empty{cursor:default;}
-  .cal-next.is-empty .cal-next-when{display:none;}
-  .cal-next.is-empty .cal-next-bar{opacity:.22;}
-  .cal-next.is-empty .cal-next-name{opacity:.55;font-weight:700;font-size:1.05rem;}
-  .cal-next.is-in{animation:calNextIn .6s cubic-bezier(.16,1,.3,1) both;}
+  #page-6 .cal-off-btn{margin-left:0;}
+  #page-6 .calendar-selected-info > .calendar-events{display:block;flex:1;min-width:0;margin:0 0 0 1.1rem;transition:none;}
+  #page-6 .calendar-selected-info > .calendar-events:not(.has-items){display:none;}
+  #page-6 .calendar-selected-info .cal-evc-clip{margin:0 -.2rem;padding:.35rem .2rem;}
+  #page-6 .calendar-selected-info .cal-evc-list{flex-direction:row;align-items:center;gap:.7rem;padding:0;}
+  #page-6 .calendar-selected-info .cal-evc{flex:1 1 0;width:auto;min-width:0;max-width:19rem;gap:.6rem;padding:.45rem .55rem .45rem .5rem;border-radius:1.3rem;}
+  #page-6 .calendar-selected-info .cal-evc-ic{width:2.2rem;height:2.2rem;}
+  #page-6 .calendar-selected-info .cal-evc-ic svg{width:18px;height:18px;}
+  #page-6 .calendar-selected-info .cal-evc-txt b{font-size:1rem;}
+  #page-6 .calendar-selected-info .cal-evc-txt em{font-size:.74rem;margin-top:.1rem;}
+  #page-6 .calendar-selected-info .cal-evc-go{width:1.6rem;height:1.6rem;}
+  #page-6 .calendar-selected-info .cal-evc-more{flex:none;align-self:center;margin:0;white-space:nowrap;}
 }
-@keyframes calNextIn{from{opacity:0;transform:translateY(10px);}}
-@media (prefers-reduced-motion:reduce){.cal-next.is-in{animation:none;}}
 </style>
 <style id="ztCss">
 /* ===== Zaman Takvimi (kronometre günlük çalışma takvimi) =====
@@ -38108,7 +38209,6 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
     </button>
 
     <button type="button" class="home-datetime-widget" id="homeDateTimeWidget" aria-label="Takvim'e git">
-      <span class="home-datetime-widget-date" id="homeDateTimeWidgetDate">24 Eylül Perşembe</span>
       <span class="home-datetime-widget-time" id="homeDateTimeWidgetTime">19:09</span>
     </button>
 
@@ -38160,6 +38260,16 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
           </span>
         </button>
       </div>
+      </div>
+
+      <!-- MİNİ AY TAKVİMİ (yalnızca büyük ekran): içeriği JS çizer (bkz.
+           "Ana sayfa: mini ay takvimi" script'i). Dokununca Takvim sayfası açılır. -->
+      <div class="home-tile home-tile-cal">
+        <div class="home-cal-widget" id="homeCalWidget" role="button" tabindex="0" aria-label="Takvim'e git">
+          <div class="home-cal-head" id="homeCalHead"></div>
+          <div class="home-cal-wd" id="homeCalWd" aria-hidden="true"></div>
+          <div class="home-cal-grid" id="homeCalGrid"></div>
+        </div>
       </div>
 
       <!-- BUGÜN ÇÖZÜLEN + GERİ SAYIM KARTI: küçük ekranlarda eski yerinde
@@ -39308,12 +39418,6 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
          dokunmak ya da "Etkinlik ekle" düğmesi pencereyi açar. -->
     <div class="calendar-events" id="calendarEvents"></div>
 
-    <!-- Yaklaşan en yakın etkinlik (yalnızca büyük ekran; JS: ce_renderNext) -->
-    <button type="button" class="cal-next is-empty" id="calNext" aria-label="Yaklaşan etkinlik">
-      <span class="cal-next-bar"></span>
-      <span class="cal-next-txt"><span class="cal-next-lbl">Yaklaşan etkinlik</span><span class="cal-next-name" id="calNextName">Yaklaşan etkinlik yok</span><span class="cal-next-sub" id="calNextSub"></span></span>
-      <span class="cal-next-when" id="calNextWhen"></span>
-    </button>
   </section>
 
   <div class="cal-ev-backdrop" id="calEvBackdrop" aria-hidden="true">
@@ -43847,15 +43951,11 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
   // ---------- Ana sayfa: sağ üst köşedeki "Tarih + Saat" widget'ı ----------
   // Aynı HOME_MONTHS_TR/HOME_WEEKDAYS_TR dizilerini kullanır; saat kısmı
   // dakikayı kaçırmasın diye 15 saniyede bir tazelenir.
-  const homeDateTimeWidgetDateEl = document.getElementById('homeDateTimeWidgetDate');
   const homeDateTimeWidgetTimeEl = document.getElementById('homeDateTimeWidgetTime');
 
   const updateHomeDateTimeWidget = () => {
     const now = new Date();
     const pad = (n) => String(n).padStart(2, '0');
-    if (homeDateTimeWidgetDateEl) {
-      homeDateTimeWidgetDateEl.textContent = `${now.getDate()} ${HOME_MONTHS_TR[now.getMonth()]} ${HOME_WEEKDAYS_TR[now.getDay()]}`;
-    }
     if (homeDateTimeWidgetTimeEl) {
       homeDateTimeWidgetTimeEl.textContent = `${pad(now.getHours())}:${pad(now.getMinutes())}`;
     }
@@ -48488,6 +48588,8 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
       }
     });
     syncCalendarBubbleColor();
+    // Ana sayfadaki mini ay takvimi de güncellensin.
+    window.dispatchEvent(new Event('home-cal-refresh'));
   };
 
   const selectCalendarCell = (cell, date) => {
@@ -50229,7 +50331,6 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
   const CE_ICON_CHEV = '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>';
   let ce_evHideTok = 0;
   const renderCalendarEvents = () => {
-    try { ce_renderNext(); } catch (err) { /* yok say */ }
     if (!calendarEventsEl) return;
     const day = new Date(calendarSelectedDate.getFullYear(), calendarSelectedDate.getMonth(), calendarSelectedDate.getDate());
     const list = getDayEvents(day);
@@ -50546,56 +50647,100 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
   calEvName.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); saveCalEvent(); } });
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && calEvBackdrop.classList.contains('is-open')) closeCalEventSheet(); });
 
-  // ---- Yaklaşan en yakın etkinlik (büyük ekranda takvim sayfasının altında) ----
-  let ce_nextKey = '', ce_nextDay = null;
-  function ce_renderNext() {
-    const el = document.getElementById('calNext'); if (!el) return;
-    const all = getAllDayEvents() || {};
-    const now = new Date(), nowMs = now.getTime();
-    const todayMs = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
-    let best = null;
-    Object.keys(all).forEach((key) => {
-      const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(key); if (!m || !Array.isArray(all[key])) return;
-      const dayMs = new Date(+m[1], +m[2] - 1, +m[3]).getTime();
-      if (dayMs < todayMs) return;
-      all[key].forEach((ev) => {
-        if (!ev || typeof ev !== 'object') return;
-        const tm = /^(\d{2}):(\d{2})$/.exec(ev.time || '');
-        const startMs = tm ? new Date(+m[1], +m[2] - 1, +m[3], +tm[1], +tm[2]).getTime() : dayMs;
-        if (tm && startMs < nowMs) return;
-        const c = ev.createdAt || 0;
-        if (!best || startMs < best.startMs || (startMs === best.startMs && c < best.c)) {
-          best = { startMs, c, dayMs, time: tm ? ev.time : '', name: String(ev.name || '').trim() || 'Etkinlik', color: ce_evColor(ev) };
-        }
-      });
-    });
-    const key = best ? [best.startMs, best.name, best.color].join('|') : '';
-    if (key === ce_nextKey && el.dataset.ready) return;
-    const first = !el.dataset.ready; el.dataset.ready = '1'; ce_nextKey = key;
-    if (!best) {
-      ce_nextDay = null; el.classList.add('is-empty'); el.style.removeProperty('--c');
-      $ce('calNextName').textContent = 'Yaklaşan etkinlik yok'; $ce('calNextSub').textContent = ''; $ce('calNextWhen').textContent = '';
-      el.setAttribute('aria-label', 'Yaklaşan etkinlik yok');
-    } else {
-      const d = new Date(best.dayMs), diff = Math.round((best.dayMs - todayMs) / 86400000);
-      const rel = diff === 0 ? 'Bugün' : diff === 1 ? 'Yarın' : `${diff} gün sonra`;
-      const dateTxt = `${d.getDate()} ${CALENDAR_MONTHS[d.getMonth()]}`;
-      ce_nextDay = d; el.classList.remove('is-empty'); el.style.setProperty('--c', best.color);
-      $ce('calNextName').textContent = best.name;
-      $ce('calNextSub').textContent = best.time ? `${dateTxt} · ${best.time}` : dateTxt;
-      $ce('calNextWhen').textContent = rel;
-      el.setAttribute('aria-label', `Yaklaşan etkinlik: ${best.name}, ${rel}`);
-    }
-    if (!first) { el.classList.remove('is-in'); void el.offsetWidth; el.classList.add('is-in'); }
-  }
-  $ce('calNext').addEventListener('click', () => { if (ce_nextDay) openCalEventList(ce_nextDay); });
-  window.addEventListener('app-state-saved', () => { try { ce_renderNext(); } catch (err) { /* yok say */ } });
-  document.addEventListener('visibilitychange', () => { if (!document.hidden) { try { ce_renderNext(); } catch (err) { /* yok say */ } } });
-  setInterval(() => { try { ce_renderNext(); } catch (err) { /* yok say */ } }, 30000);
-  ce_renderNext();
+  // ---- Büyük ekranda etkinlik kartları seçili gün satırının sağına taşınır; küçük ekranda eski yerine (satırın altına) döner ----
+  const ce_bigMQ = window.matchMedia('(min-width:768px) and (min-height:600px)');
+  const ce_placeEvents = () => {
+    const info = document.getElementById('calendarSelectedInfo'), evs = document.getElementById('calendarEvents');
+    if (!info || !evs) return;
+    if (ce_bigMQ.matches) { if (evs.parentNode !== info) info.appendChild(evs); }
+    else if (evs.parentNode === info) info.after(evs);
+  };
+  if (ce_bigMQ.addEventListener) ce_bigMQ.addEventListener('change', ce_placeEvents); else ce_bigMQ.addListener(ce_placeEvents);
+  ce_placeEvents();
 
   renderCalendarGrid();
   updateCalendarSelectedInfo();
+</script>
+
+<script>
+  // ---------- Ana sayfa: mini ay takvimi (büyük ekran) ----------
+  // Bu ayın küçük ızgarasını çizer. Veri, Takvim sayfasının kendi
+  // fonksiyonlarından okunur (getDayEvents, getDayCountdown, OffDay,
+  // calendarWeekStart); Takvim'de bir şey değişince 'home-cal-refresh'
+  // olayıyla yeniden çizilir. Dokununca Takvim sayfası (#page-6) açılır.
+  (function () {
+    const root = document.getElementById('homeCalWidget');
+    const headEl = document.getElementById('homeCalHead');
+    const wdEl = document.getElementById('homeCalWd');
+    const gridEl = document.getElementById('homeCalGrid');
+    if (!root || !headEl || !wdEl || !gridEl) return;
+
+    const safe = (fn, fallback) => { try { return fn(); } catch (e) { return fallback; } };
+
+    const render = () => {
+      const now = new Date();
+      const y = now.getFullYear(), m = now.getMonth(), todayNum = now.getDate();
+      const ws = safe(() => calendarWeekStart, 1);
+      const months = safe(() => CALENDAR_MONTHS, ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık']);
+      const wds = safe(() => CALENDAR_WEEKDAYS_SHORT_DOW, ['Pz', 'Pt', 'Sa', 'Ça', 'Pe', 'Cu', 'Ct']);
+
+      headEl.innerHTML = `${months[m]}<span class="home-cal-year">${y}</span>`;
+      root.setAttribute('aria-label', `Takvim'e git, ${months[m]} ${y}`);
+
+      let wdHtml = '';
+      for (let c = 0; c < 7; c++) wdHtml += `<span>${wds[(c + ws) % 7]}</span>`;
+      wdEl.innerHTML = wdHtml;
+
+      const lead = (new Date(y, m, 1).getDay() - ws + 7) % 7;
+      const dim = new Date(y, m + 1, 0).getDate();
+      const cells = Math.ceil((lead + dim) / 7) * 7;
+      let html = '';
+      for (let i = 0; i < cells; i++) {
+        const day = i - lead + 1;
+        if (day < 1 || day > dim) { html += '<span class="home-cal-day is-blank"></span>'; continue; }
+        const date = new Date(y, m, day);
+        const dow = (i % 7 + ws) % 7;
+        const cls = ['home-cal-day'];
+        let style = '';
+        let dots = '';
+        if (dow === 0 || dow === 6) cls.push('is-weekend');
+        if (day === todayNum) cls.push('is-today');
+        if (safe(() => window.OffDay.isOff(date), false)) cls.push('is-off');
+        const cd = safe(() => getDayCountdown(date), null);
+        if (cd && cd.color) { cls.push('has-cd'); style = ` style="--cd-color:${cd.color}"`; }
+        const evs = safe(() => getDayEvents(date), []);
+        if (evs.length) {
+          dots = '<span class="home-cal-dots">' + evs.slice(0, 3).map((ev) => `<i style="--dot-c:${safe(() => ce_evColor(ev), '#ff90e8')}"></i>`).join('') + '</span>';
+        }
+        html += `<span class="${cls.join(' ')}"${style}>${day}${dots}</span>`;
+      }
+      gridEl.innerHTML = html;
+    };
+
+    let raf = 0;
+    const schedule = () => { if (!raf) raf = requestAnimationFrame(() => { raf = 0; render(); }); };
+
+    const goCalendar = () => {
+      const navInputPage6 = document.querySelector('.nav-input[value="page-6"]');
+      if (navInputPage6 && !navInputPage6.checked) {
+        navInputPage6.checked = true;
+        navInputPage6.dispatchEvent(new Event('change'));
+      } else if (typeof goToPage === 'function') {
+        goToPage('page-6');
+      }
+    };
+    root.addEventListener('click', goCalendar);
+    root.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); goCalendar(); }
+    });
+
+    window.addEventListener('home-cal-refresh', schedule);
+    window.addEventListener('offdays-changed', schedule);
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) schedule(); });
+    document.addEventListener('change', (e) => { if (e.target && e.target.classList && e.target.classList.contains('nav-input')) schedule(); });
+    setInterval(render, 60000); // gün değişimini ve dışarıdan gelen verileri yakalar
+    render();
+  })();
 </script>
 
 <!-- ---------- Planyacı: "Yeni Aktivite" tam ekran sayfası ----------
