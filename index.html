@@ -34256,14 +34256,13 @@
       color: rgba(255, 255, 255, 0.55);
     }
     #qhavuzTestCreateBackdrop .qhavuz-tc-item.is-selected {
-      background: color-mix(in srgb, var(--accent-color, #ff90e8) 16%, rgba(255, 255, 255, 0.08));
-      box-shadow:
-        0 0 0 1.5px color-mix(in srgb, var(--accent-color, #ff90e8) 85%, transparent),
-        0 0 18px 2px color-mix(in srgb, var(--accent-color, #ff90e8) 45%, transparent);
+      background: rgba(255, 255, 255, 0.16);
+      box-shadow: none;
     }
     #qhavuzTestCreateBackdrop .qhavuz-tc-item.is-selected .qhavuz-tc-check {
       background: var(--accent-color, #ff90e8);
-      border-color: var(--accent-color, #ff90e8); color: var(--on-accent, #16171b);
+      border-color: var(--accent-color, #ff90e8);
+      color: #000;
     }
     #qhavuzTestCreateBackdrop .qhavuz-tc-item.is-selected .qhavuz-tc-check svg {
       opacity: 1;
@@ -34330,9 +34329,9 @@
       font-family: "Baloo 2", "Space Grotesk", sans-serif;
       font-weight: 700;
       font-size: 0.95rem;
-      background: linear-gradient(180deg, color-mix(in srgb, var(--accent-color, #ff90e8) 100%, white 12%), var(--accent-color, #ff90e8));
-      box-shadow: 0 3px 12px 0 color-mix(in srgb, var(--accent-color, #ff90e8) 50%, transparent), inset 0 1px 0 0 rgba(255, 255, 255, 0.35);
-      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.18);
+      background: var(--accent-color, #ff90e8);
+      box-shadow: none;
+      text-shadow: none;
       cursor: pointer;
       transition: transform 0.15s ease, box-shadow 0.18s ease, opacity 0.2s ease;
     }
@@ -66846,6 +66845,9 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
     if (!wrap || !btn || !menu) return;
     const close = () => { menu.classList.remove('is-open'); btn.setAttribute('aria-expanded', 'false'); };
     const open = () => {
+      // Menü, sayfa kaydırılınca konumu şaşmasın diye (sticky/isolate üst
+      // çubuğun içinde kalırsa fixed koordinatları kayıyordu) body'ye taşınır.
+      if (menu.parentElement !== document.body) document.body.appendChild(menu);
       const r = btn.getBoundingClientRect();
       menu.style.left = `${r.left}px`;
       menu.style.top = `${r.bottom + 8}px`;
@@ -67355,7 +67357,7 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
       row.dataset.key = g.key;
       const check = document.createElement('span');
       check.className = 'qhavuz-tc-check';
-      check.innerHTML = '<svg viewBox="0 0 24 24" width="12" height="12" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+      check.innerHTML = '<svg viewBox="0 0 24 24" width="12" height="12" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
       row.appendChild(check);
       if (g.color) {
         const dot = document.createElement('span');
