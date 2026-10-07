@@ -1396,7 +1396,7 @@ body.is-qhavuz-test-open .pf-side{opacity:.35;pointer-events:none}}
     if (b._h !== h) { b.innerHTML = h; b._h = h; }
     // Ana sayfadaki sağ üst profil rozeti (#pgChip) için: profil/oturum bilgisini yayınla.
     try {
-      var si = signedIn(), pp = prof(), d = { signedIn: si, status: authState, name: si ? dispName(pp) : '', color: si ? pickColor(pp) : '', avatar: si ? avatarHTML(35) : '' };
+      var si = signedIn(), pp = prof(), d = { signedIn: si, status: authState, name: si ? dispName(pp) : '', color: si ? pickColor(pp) : '', avatar: si ? avatarHTML(38) : '' };
       window.__pgProfile = d; window.dispatchEvent(new CustomEvent('pace:profile', { detail: d }));
     } catch (e0) {}
   }

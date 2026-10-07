@@ -37371,32 +37371,26 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
    TAMAMLANINCA: eski ana sayfa + bu gizleme kuralı silinecek (bkz. NOTLAR.md). */
 html[data-pg="on"] #page-1 > :not(.pg-root){display:none !important}
 .pg-root{position:absolute;inset:0;pointer-events:none;z-index:3}
-.pg-chip{--ring:conic-gradient(from 210deg,#ff9a6c,#ff5fa2,#8f6bff,#4cc9f0,#ff9a6c);
-  position:absolute;top:calc(env(safe-area-inset-top) + 14px);right:18px;pointer-events:auto;
-  display:flex;align-items:center;gap:10px;padding:5px 15px 5px 5px;border:0;cursor:pointer;
-  border-radius:999px;font-family:"Baloo 2","Space Grotesk",sans-serif;color:var(--theme-text,#1a1a1a);
-  background:color-mix(in srgb,var(--theme-bg,#f6f4ef) 72%,transparent);
-  -webkit-backdrop-filter:blur(18px) saturate(1.6);backdrop-filter:blur(18px) saturate(1.6);
-  box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--theme-text,#1a1a1a) 10%,transparent),
-             0 6px 20px -8px color-mix(in srgb,var(--theme-text,#1a1a1a) 38%,transparent);
-  transition:transform .45s cubic-bezier(.34,1.45,.64,1),box-shadow .3s;
-  -webkit-tap-highlight-color:transparent;animation:pgIn .8s cubic-bezier(.22,1,.36,1) both}
-.pg-chip:active{transform:scale(.94)}
-@keyframes pgIn{from{opacity:0;transform:translateY(-10px) scale(.92)}to{opacity:1;transform:none}}
-.pg-avatar{--rc:transparent;display:block;box-sizing:border-box;position:relative;width:40px;height:40px;border-radius:50%;flex:none;padding:2.5px;background:var(--ring);animation:pgSpin 9s linear infinite}
-.pg-avatar::before{content:"";position:absolute;inset:2.5px;border-radius:50%;background:var(--theme-bg,#f6f4ef)}
-.pg-avin{position:absolute;inset:2.5px;border-radius:50%;overflow:hidden;display:grid;place-items:center;animation:pgSpin 9s linear infinite reverse}
-.pg-avin .pf-av{width:100% !important;height:100% !important;font-size:15px !important;line-height:1;padding-top:2px}
-.pg-chip.is-in .pg-avatar{background:conic-gradient(from 210deg,var(--rc),color-mix(in srgb,var(--rc) 35%,#fff),var(--rc))}
-.pg-avatar svg{width:22px;height:22px;color:var(--theme-text,#1a1a1a)}
-@keyframes pgSpin{to{transform:rotate(360deg)}}
-.pg-dot{display:block;position:absolute;right:0;bottom:1px;width:11px;height:11px;border-radius:50%;background:#8a8a8a;
-  box-shadow:0 0 0 2.5px var(--theme-bg,#f6f4ef)}
-.pg-avwrap{display:block;position:relative;flex:none;width:40px;height:40px}
-.pg-avwrap .pg-dot{right:-1px;bottom:0}
-.pg-name{font-weight:700;font-size:17px;line-height:1;letter-spacing:-.01em;max-width:34vw;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-top:3px;outline:0;-webkit-user-select:text;user-select:text}
-@media (prefers-reduced-motion:reduce){.pg-avatar,.pg-avin{animation:none}}
+/* Çerçevesiz, kartsız, sade: yalnızca isim + avatar */
+.pg-chip{position:absolute;top:calc(env(safe-area-inset-top) + 16px);right:22px;pointer-events:auto;
+  display:flex;align-items:center;gap:11px;margin:0;padding:0;border:0;background:none;box-shadow:none;cursor:pointer;
+  font-family:"Baloo 2","Space Grotesk",sans-serif;color:var(--theme-text,#1a1a1a);
+  -webkit-tap-highlight-color:transparent;transition:opacity .25s;animation:pgIn .9s cubic-bezier(.22,1,.36,1) both}
+.pg-chip:active{opacity:.55}
+@keyframes pgIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+.pg-name{order:1;font-weight:600;font-size:18px;line-height:1;letter-spacing:-.015em;max-width:44vw;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-top:4px}
+.pg-avwrap{order:2;display:block;position:relative;flex:none;width:38px;height:38px}
+.pg-avatar{display:block;width:100%;height:100%;border-radius:50%;overflow:hidden;position:relative}
+.pg-avin{position:absolute;inset:0;display:grid;place-items:center;border-radius:50%;overflow:hidden;
+  background:color-mix(in srgb,var(--theme-text,#1a1a1a) 8%,transparent)}
+.pg-avin .pf-av{width:100% !important;height:100% !important;font-size:17px !important;line-height:1;padding-top:0}
+.pg-avin svg{width:20px;height:20px;opacity:.7}
+/* Durum noktası yalnızca sorun varsa görünür (oturum düştüyse) */
+.pg-dot{display:none;position:absolute;right:-1px;bottom:-1px;width:10px;height:10px;border-radius:50%;background:#e74c3c;box-shadow:0 0 0 2px var(--theme-bg,#f6f4ef)}
+.pg-chip.is-err .pg-dot{display:block}
+@media (prefers-reduced-motion:reduce){.pg-chip{animation:none}}
 </style>
+
 </head>
 <body oncopy="return false" oncut="return false" onselectstart="return false" ondragstart="return false">
 
@@ -38240,18 +38234,17 @@ html[data-pg="on"] #page-1 > :not(.pg-root){display:none !important}
     (function(){
       var chip=document.getElementById("pgChip"),nm=document.getElementById("pgName"),av=document.getElementById("pgAv"),
           ring=document.getElementById("pgAvRing"),dot=document.getElementById("pgDot"),guest=av.innerHTML;
-      var DOT={in:"#34d399",expired:"#e74c3c"};
-      function render(d){
+            function render(d){
         d=d||{};
         if(d.signedIn){
           nm.textContent=d.name||"Hesap";av.innerHTML=d.avatar||guest;
-          ring.style.setProperty("--rc",d.color||"");chip.classList.add("is-in");
+          chip.classList.add("is-in");
           chip.setAttribute("aria-label","Profil: "+(d.name||""));
         }else{
-          nm.textContent="Giriş yap";av.innerHTML=guest;ring.style.removeProperty("--rc");chip.classList.remove("is-in");
+          nm.textContent="Giriş yap";av.innerHTML=guest;chip.classList.remove("is-in");
           chip.setAttribute("aria-label","Giriş yap");
         }
-        dot.style.background=DOT[d.status]||"#8a8a8a";
+        chip.classList.toggle("is-err",d.status==="expired");
       }
       window.addEventListener("pace:profile",function(e){render(e.detail)});
       if(window.__pgProfile)render(window.__pgProfile);
