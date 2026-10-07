@@ -37042,16 +37042,19 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
 #ztPrev:active svg { transform: translateX(-3px); }
 #ztNext:active svg { transform: translateX(3px); }
 .zt-today {
-  display: inline-flex; align-items: center; gap: 0.35rem; height: 1.9rem; padding: 0 0.75rem;
+  /* Takvim sayfasındaki .calendar-today-btn ile aynı dil: tema ikincil rengi zemin, ana renk yazı. */
+  display: inline-flex; align-items: center; gap: 0.4rem; height: 2.15rem; padding: 0 0.95rem;
   border: none; border-radius: 999px; cursor: pointer; -webkit-tap-highlight-color: transparent;
-  background: color-mix(in srgb, var(--accent-color, #ff90e8) 20%, transparent);
-  color: var(--theme-text, #f2f2f7);
-  font-family: "Baloo 2", "Space Grotesk", sans-serif; font-weight: 700; font-size: 0.8rem;
+  background-color: var(--theme-c2, var(--accent-color, #ff90e8));
+  color: var(--theme-c1, var(--on-accent, #16171b));
+  box-shadow: 0 8px 18px -12px rgba(0, 0, 0, 0.32), 0 2px 6px rgba(0, 0, 0, 0.06);
+  font-family: "Baloo 2", "Space Grotesk", sans-serif; font-weight: 700; font-size: 0.92rem; white-space: nowrap;
   opacity: 0; transform: scale(0.8); pointer-events: none;
   transition: opacity 0.25s ease, transform 0.4s var(--zt-spring);
 }
 .zt-today.is-on { opacity: 1; transform: none; pointer-events: auto; }
-.zt-today i { width: 0.45rem; height: 0.45rem; border-radius: 50%; background: var(--accent-color, #ff90e8); color: var(--on-accent, #16171b); }
+.zt-today.is-on:active { transform: scale(0.95); }
+.zt-today i { display: none; }
 
 .zt-stats { display: grid; grid-template-columns: 1fr auto 1fr auto 1fr; align-items: stretch; gap: 0.85rem; }
 .zt-stat { display: flex; flex-direction: column; gap: 0.12rem; min-width: 0; font-family: "Baloo 2", "Space Grotesk", sans-serif; color: var(--theme-text, #f2f2f7); }
@@ -44160,7 +44163,7 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
       text: '#3B153A',
       /* Açık zeminde pastel kırmızı zor okunduğundan koyu/doygun kırmızı. */
       weekend: '#d61f3c',
-      colors: { c1: '#FFF3E5', c2: '#3B153A' }
+      colors: { c1: '#FFF3E5', c2: '#3B153A', c3: '#B8528C' } /* c3 = üçüncü renk (vurgu): Orkide Gül */
     },
     {
       /* c1 = zemin (Black), c2 = yazı/ikinci renk (Blanched Almond). */
@@ -44254,7 +44257,7 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
     // Vurgu zemini üstündeki yazı/ikon rengi (--on-accent) ve vurgunun tema
     // zemini üstündeki okunabilirliği HER TEMA İÇİN otomatik hesaplanır.
     const bg = c.c1 || t.color;
-    const rawAccent = c.c2 || LEGACY_BLUE_ACCENT;
+    const rawAccent = c.c3 || c.c2 || LEGACY_BLUE_ACCENT;
     const accent = ensureContrastAgainst(rawAccent, bg, 3);
     document.documentElement.style.setProperty('--accent-color', accent);
     document.documentElement.style.setProperty('--on-accent', pickOnColor(accent, bg));
@@ -74164,6 +74167,8 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
 .ztp-bar{width:min(240px,58vw);height:3px;border-radius:9px;background:rgba(255,255,255,.16);overflow:hidden;}
 .ztp-bar i{display:block;height:100%;border-radius:inherit;transform-origin:left center;transform:scaleX(0);transition:transform var(--ztp-ms,2400ms) linear;
   background:linear-gradient(90deg,var(--accent-color,#ff90e8),#fff);box-shadow:0 0 14px var(--accent-color,#ff90e8);}
+/* Mor tema: dolum çubuğu beyaza kaçmasın; plum → orkide → yumuşak pembe-lila geçişi. */
+html[data-pace-theme="plum"] .ztp-bar i{background:linear-gradient(90deg,#8a3a6b,#B8528C 55%,#e8aacd);box-shadow:0 0 12px rgba(184,82,140,.5);}
 .ztp-txt{font:700 15px "Baloo 2","Space Grotesk",sans-serif;letter-spacing:.03em;color:transparent;-webkit-text-fill-color:transparent;
   background:linear-gradient(100deg,rgba(255,255,255,.42) 35%,#fff 50%,rgba(255,255,255,.42) 65%) 100% 0/250% 100%;
   -webkit-background-clip:text;background-clip:text;animation:ztpText 2.2s linear infinite;}
