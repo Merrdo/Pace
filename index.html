@@ -76310,6 +76310,144 @@ html #page-camera .qhavuz-canvas-grid.is-select-mode .qhavuz-wide-thumb {
   transition: opacity 0.2s ease, filter 0.2s ease, transform 0.25s cubic-bezier(0.22, 1, 0.36, 1);
 }
 html #page-camera .qhavuz-canvas-grid.is-select-mode .qhavuz-wide-card.is-selected .qhavuz-wide-thumb { transform: scale(0.97); }
+
+/* =====================================================================
+   ANA SAYFA — MOBİL YENİDEN TASARIM (kart tabanlı, katmanlı)
+   Yalnızca telefon; tüm id/sınıflar ve JS aynen korunur. Renkler aktif
+   temadan (--theme-text / --theme-bg) türetilir, her temada çalışır.
+   ===================================================================== */
+@media not all and (min-width: 768px) and (min-height: 600px) {
+  #page-1 {
+    --h-card: color-mix(in srgb, var(--theme-text, #1a1a1a) 5%, transparent);
+    --h-line: color-mix(in srgb, var(--theme-text, #1a1a1a) 9%, transparent);
+    --h-muted: color-mix(in srgb, var(--theme-text, #1a1a1a) 55%, transparent);
+    --h-accent: #f4a259;
+    --h-shadow: 0 1px 0 rgba(255,255,255,.5) inset, 0 14px 30px -18px rgba(0,0,0,.28);
+    align-items: center;
+    padding-top: calc(env(safe-area-inset-top) + 84px);
+    padding-bottom: calc(96px + env(safe-area-inset-bottom) + 6.6rem);
+  }
+  /* sıcak ışık: sayfaya derinlik verir */
+  #page-1::before {
+    content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+    background:
+      radial-gradient(60% 34% at 88% 4%, color-mix(in srgb, var(--h-accent) 20%, transparent), transparent 70%),
+      radial-gradient(70% 40% at 0% 100%, color-mix(in srgb, var(--h-accent) 9%, transparent), transparent 70%);
+  }
+
+  /* Kronometre: hap şeklinde canlı çip */
+  #page-1 .home-kronometre-widget {
+    display: inline-flex; align-items: center; gap: .5rem;
+    top: calc(env(safe-area-inset-top) + 22px);
+    padding: .5rem .95rem; font-size: .95rem; font-weight: 700;
+    background: var(--h-card); border: 1px solid var(--h-line);
+    border-radius: 999px; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  }
+  #page-1 .home-kronometre-widget::before {
+    content: ""; width: .5rem; height: .5rem; border-radius: 50%;
+    background: var(--h-accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--h-accent) 28%, transparent);
+  }
+
+  #page-1 .home-widgets-stack { gap: 1rem; width: 100%; max-width: 26rem; }
+  #page-1 .home-flip { --home-flip-base-y: 0px; }
+
+  /* ---- Rahatla / görevler: cam kart ---- */
+  #page-1 .home-relax-widget {
+    background: var(--h-card); border: 1px solid var(--h-line);
+    border-radius: 1.75rem; box-shadow: var(--h-shadow); min-height: 0;
+  }
+  #page-1 .home-relax-task-row { min-height: 5.6rem; padding: 1rem 1.2rem; gap: 1rem; }
+  #page-1 .home-relax-task-row::after {
+    content: ""; flex: none; width: .55rem; height: .55rem; margin-left: auto; margin-right: .3rem;
+    border-top: 2.5px solid var(--h-muted); border-right: 2.5px solid var(--h-muted);
+    transform: rotate(45deg); border-radius: 1px;
+  }
+  #page-1 .home-relax-widget-moon {
+    width: 3rem; height: 3rem; box-shadow: none; color: var(--h-accent);
+    background: color-mix(in srgb, var(--h-accent) 18%, transparent);
+  }
+  #page-1 .home-relax-widget-moon svg { width: 22px; height: 22px; }
+  #page-1 .home-relax-widget-title { font-size: 1.35rem; }
+  #page-1 .home-relax-widget-time { font-size: .9rem; }
+  #page-1 .home-relax-widget-bottom { order: 0; }
+
+  #page-1 .home-relax-widget { transform: none !important; }
+  #page-1 .home-relax-widget-bottom { border-left: 0 !important; padding-left: 0 !important; }
+  /* ---- Hero kart (soru sayacı + geri sayım): ters renkli, vurgulu ---- */
+  #page-1 .home-flip .home-live-widget,
+  #page-1 .home-flip-back {
+    background: var(--theme-text, #111); color: var(--theme-bg, #f6f4ef);
+    border-radius: 2rem; overflow: hidden;
+    box-shadow: 0 22px 40px -22px color-mix(in srgb, var(--theme-text, #000) 70%, transparent);
+  }
+  #page-1 .home-flip .home-live-widget {
+    flex-direction: column-reverse; justify-content: space-between;
+    min-height: 17rem; padding: 1.5rem 1.5rem 1.4rem;
+  }
+  #page-1 .home-flip .home-live-widget::before,
+  #page-1 .home-flip-back::before {
+    content: ""; position: absolute; z-index: 0; pointer-events: none;
+    width: 17rem; height: 17rem; right: -6rem; top: -7rem; border-radius: 50%;
+    background: radial-gradient(circle, color-mix(in srgb, var(--h-accent) 55%, transparent), transparent 68%);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--theme-bg, #fff) 10%, transparent);
+  }
+  #page-1 .home-live-widget-count {
+    font-size: clamp(5.2rem, 15dvh, 7rem); color: var(--theme-bg, #f6f4ef); line-height: .85;
+  }
+  #page-1 .home-live-widget-title {
+    font-size: .78rem; letter-spacing: .14em; color: var(--h-accent);
+  }
+  #page-1 .home-live-widget-sub { color: color-mix(in srgb, var(--theme-bg, #fff) 62%, transparent); font-size: .9rem; }
+  body #page-1 .home-live-widget-title { color: var(--h-accent); }
+
+  #page-1 .home-flip-btn {
+    top: 1rem; right: 1rem; width: 2.6rem; height: 2.6rem; z-index: 4;
+    color: var(--theme-bg, #f6f4ef);
+    background: color-mix(in srgb, var(--theme-bg, #fff) 14%, transparent);
+  }
+  body.is-anthracite #page-1 .home-flip-btn { color: var(--theme-bg, #f6f4ef); }
+
+  /* geri sayım yüzü */
+  #page-1 .home-flip-cd, #page-1 .home-flip-add {
+    z-index: 1; justify-content: space-between; padding: 1.4rem 1.5rem 1.3rem;
+  }
+  #page-1 .home-flip-add { justify-content: center; }
+  #page-1 .home-flip-cd-head { padding-right: 3rem; }
+  #page-1 .home-flip-cd-dot { display: block; background: var(--h-accent); }
+  #page-1 .home-flip-cd-nameRow { gap: .55rem; }
+  #page-1 .home-flip-cd-name { font-size: 1.2rem; }
+  body #page-1 .home-flip-cd-date,
+  body #page-1 .home-flip-label,
+  body.is-anthracite #page-1 .home-flip-cd-date,
+  body.is-anthracite #page-1 .home-flip-label {
+    color: color-mix(in srgb, var(--theme-bg, #fff) 58%, transparent);
+  }
+  #page-1 .home-flip-unit:first-child { font-size: clamp(3.4rem, 10dvh, 4.8rem); }
+  #page-1 .home-flip-units { column-gap: 1.3rem; row-gap: .7rem; font-size: 1.7rem; }
+  #page-1 .home-flip-units .cd-colon {
+    height: 2rem; background: color-mix(in srgb, var(--theme-bg, #fff) 24%, transparent);
+  }
+  #page-1 .home-flip-add-text small { color: color-mix(in srgb, var(--theme-bg, #fff) 60%, transparent); }
+
+  /* ---- Takvim: alt kart ---- */
+  #page-1 .home-cal-link {
+    left: 24px; right: 24px; bottom: calc(env(safe-area-inset-bottom, 0px) + 96px + .9rem);
+    max-width: 26rem; margin-inline: auto;
+    padding: .8rem 1.1rem .8rem .8rem; gap: .9rem;
+    background: var(--h-card); border: 1px solid var(--h-line);
+    border-radius: 1.75rem; box-shadow: var(--h-shadow);
+  }
+  #page-1 .home-cal-link-day {
+    display: grid; place-items: center; flex: none; width: 3.5rem; height: 3.5rem;
+    font-size: 1.7rem; border-radius: 1.1rem;
+    background: var(--theme-text, #111); color: var(--theme-bg, #f6f4ef);
+  }
+  #page-1 .home-cal-link-sep { display: none; }
+  #page-1 .home-cal-link-month { font-size: .78rem; letter-spacing: .12em; color: var(--h-accent); }
+  #page-1 .home-cal-link-weekday { font-size: 1.05rem; font-weight: 700; color: var(--theme-text, #111); }
+  #page-1 .home-cal-link-go { font-size: .95rem; }
+  #page-1 .home-cal-link-ev-when { color: var(--h-muted); font-weight: 600; font-size: .78rem; }
+}
 </style>
 <style id="qhavuzSelectBlackStyle">
 /* Soru Havuzu "Seç" butonu: seçim modu açıkken (tüm ekran boyutlarında) mavi/vurgu rengi yerine dolu siyah (tema yazı rengi) hap. */
