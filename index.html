@@ -37389,23 +37389,28 @@ html[data-pg="on"] #page-1 > :not(.pg-root):not(.app-logo):not(.pg-cal){display:
 .pg-dot{display:none;position:absolute;right:-1px;bottom:-1px;width:10px;height:10px;border-radius:50%;background:#e74c3c;box-shadow:0 0 0 2px var(--theme-bg,#f6f4ef)}
 .pg-chip.is-err .pg-dot{display:block}
 @media (prefers-reduced-motion:reduce){.pg-chip,.pg-cal{animation:none}}
-/* ---- Takvim (kompakt, çerçevesiz): tarih satırı + sıradaki etkinlikler ---- */
-.pg-cal{position:absolute;left:24px;right:24px;top:calc(env(safe-area-inset-top) + 84px);pointer-events:auto;
+/* ---- Takvim: ay başlığı + haftalık şerit, saf siyah ayırıcı, altında sıradaki etkinlikler ---- */
+.pg-cal{position:absolute;left:24px;right:24px;top:calc(env(safe-area-inset-top) + 92px);pointer-events:auto;
   font-family:"Baloo 2","Space Grotesk",sans-serif;color:#000;animation:pgIn 1s .12s cubic-bezier(.22,1,.36,1) both}
 .pg-cal button{font:inherit;color:inherit;background:none;border:0;padding:0;margin:0;cursor:pointer;-webkit-tap-highlight-color:transparent;text-align:left;transition:opacity .25s}
 .pg-cal button:active{opacity:.5}
-.pg-cal-row{display:flex;align-items:center;justify-content:space-between}
-.pg-cal .pg-cal-date{display:flex;align-items:baseline;gap:9px;min-width:0}
-.pg-cal-day{font-size:30px;font-weight:700;letter-spacing:-.02em;line-height:1;white-space:nowrap}
-.pg-cal-wd{font-size:17px;font-weight:500;opacity:.4;line-height:1}
-.pg-add{display:grid;place-items:center;width:34px;height:34px;margin-right:-6px}
-.pg-add svg{width:22px;height:22px}
-.pg-up{margin-top:10px}
-.pg-ev{display:flex;align-items:center;gap:10px;width:100%;min-height:34px}
+.pg-cal .pg-cal-head{display:flex;align-items:baseline;gap:8px;margin:0 0 14px}
+.pg-cal-month{font-size:30px;font-weight:700;letter-spacing:-.02em;line-height:1}
+.pg-cal-year{font-size:17px;font-weight:500;opacity:.38}
+.pg-week{display:grid;grid-template-columns:repeat(7,1fr);width:100%}
+.pg-d{display:flex;flex-direction:column;align-items:center;gap:6px;padding:2px 0 0}
+.pg-d small{font-size:12px;font-weight:600;opacity:.4;line-height:1;letter-spacing:.02em}
+.pg-d b{display:grid;place-items:center;width:36px;height:36px;border-radius:50%;font-size:18px;font-weight:600;line-height:1;padding-top:2px}
+.pg-d.is-today b{background:#000;color:#fff}
+.pg-d.is-today small{opacity:1}
+.pg-d i{display:block;width:5px;height:5px;border-radius:50%;background:transparent;margin-top:-1px}
+.pg-d.has-ev i{background:var(--c,#000)}
+.pg-sep{height:1px;margin:18px 0 6px;background:#000}
+.pg-ev{display:flex;align-items:center;gap:10px;width:100%;min-height:38px}
 .pg-ev::before{content:"";flex:none;width:7px;height:7px;border-radius:50%;background:var(--c,#000)}
 .pg-ev-n{min-width:0;flex:0 1 auto;font-size:17px;font-weight:600;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-top:2px}
 .pg-ev-t{flex:none;margin-left:auto;font-size:14px;font-weight:500;opacity:.42;white-space:nowrap;padding-top:2px}
-.pg-empty{font-size:16px;font-weight:500;opacity:.4;min-height:34px;display:flex;align-items:center}
+.pg-empty{font-size:16px;font-weight:500;opacity:.4;min-height:38px;display:flex;align-items:center}
 </style>
 
 </head>
@@ -38270,11 +38275,10 @@ html[data-pg="on"] #page-1 > :not(.pg-root):not(.app-logo):not(.pg-cal){display:
     </script>
     <!-- TAKVİM + YAKLAŞAN: kartsız, çerçevesiz. Veri Takvim sayfasının getDayEvents() fonksiyonundan okunur. -->
     <section class="pg-cal" id="pgCal" aria-label="Takvim">
-      <div class="pg-cal-row">
-        <button type="button" class="pg-cal-date" id="pgCalHead" aria-label="Takvim'e git"><span class="pg-cal-day" id="pgCalDay"></span><span class="pg-cal-wd" id="pgCalWd"></span></button>
-        
-      </div>
-      <div class="pg-up" id="pgUp"></div>
+      <button type="button" class="pg-cal-head" id="pgCalHead" aria-label="Takvim'e git"><span class="pg-cal-month" id="pgCalMonth"></span><span class="pg-cal-year" id="pgCalYear"></span></button>
+      <div class="pg-week" id="pgWeek"></div>
+      <div class="pg-sep" aria-hidden="true"></div>
+      <div id="pgUp"></div>
     </section>
     <script>
     (function(){
@@ -38288,7 +38292,13 @@ html[data-pg="on"] #page-1 > :not(.pg-root):not(.app-logo):not(.pg-cal){display:
       var WDF=["Pazar","Pazartesi","Salı","Çarşamba","Perşembe","Cuma","Cumartesi"];
       function render(){
         var now=new Date(),t0=new Date(now.getFullYear(),now.getMonth(),now.getDate());
-        $("pgCalDay").textContent=now.getDate()+" "+MON[now.getMonth()];$("pgCalWd").textContent=WDF[now.getDay()];
+        $("pgCalMonth").textContent=MON[now.getMonth()];$("pgCalYear").textContent=now.getFullYear();
+        var ws=safe(function(){return calendarWeekStart},1),back=(t0.getDay()-ws+7)%7,wk="";
+        for(var i=0;i<7;i++){
+          var d=new Date(t0.getFullYear(),t0.getMonth(),t0.getDate()-back+i),e=evs(d),c=e.length?safe(function(){return ce_evColor(e[0])},"#000"):"";
+          wk+='<button type="button" class="pg-d'+(+d===+t0?" is-today":"")+(e.length?" has-ev":"")+'" data-go style="--c:'+c+'"><small>'+WD[d.getDay()]+'</small><b>'+d.getDate()+'</b><i></i></button>';
+        }
+        $("pgWeek").innerHTML=wk;
         var out=[],nowMin=now.getHours()*60+now.getMinutes();
         for(var k=0;k<60&&out.length<3;k++){
           var dd=new Date(t0.getFullYear(),t0.getMonth(),t0.getDate()+k),list=evs(dd);
