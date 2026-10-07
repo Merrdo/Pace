@@ -4933,7 +4933,7 @@
      noktası; ardından tarih satırı, dikey "Zaman" çarkı, "Çalışılacak
      Süre" segmentli kontrolü ve altta sabit büyük "Ekle" butonu.
      Açık/koyu (anthracite) mod ve seçilen vurgu rengi (--accent-color)
-     desteklenir. Yukarıdan aşağıya doğru yumuşakça süzülerek açılır.
+     desteklenir. Alttan yukarı kayarak açılır.
      ===================================================================== */
   .task-add-overlay {
     --ta-accent: var(--accent-color, #ff90e8);
@@ -4981,10 +4981,8 @@
     font-family: var(--ta-font);
     opacity: 0;
     pointer-events: none;
-    /* Yukarıdan aşağıya yumuşak iniş: sayfa kısa bir mesafeden süzülürken
-       aynı anda belirir (yalnızca transform + opacity, GPU'da çalışır). */
-    transform: translate3d(0, -9%, 0);
-    transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.4s ease;
+    transform: translateY(100%);
+    transition: transform 0.42s cubic-bezier(0.19, 1, 0.22, 1), opacity 0.32s ease;
   }
 
   body.is-anthracite .task-add-overlay {
@@ -5000,11 +4998,7 @@
   .task-add-overlay.is-open {
     opacity: 1;
     pointer-events: auto;
-    transform: translate3d(0, 0, 0);
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .task-add-overlay { transition-duration: 0.01ms; }
+    transform: translateY(0);
   }
 
   .task-add-sheet {
@@ -15909,12 +15903,11 @@
     opacity: 0;
     transform: scale(0.85);
     pointer-events: none;
-    /* Seçili temanın asıl (vurgu) rengi; yazı rengi de temaya göre okunur. */
-    background-color: var(--accent-color, #ff90e8);
+    background-color: #fff;
     border: none;
     border-radius: 999px;
     box-shadow: 0 8px 18px -12px rgba(0, 0, 0, 0.32), 0 2px 6px rgba(0, 0, 0, 0.06);
-    color: var(--on-accent, #16171b);
+    color: #121212;
     font-family: "Baloo 2", "Space Grotesk", sans-serif;
     font-weight: 700;
     font-size: 0.92rem;
@@ -15925,7 +15918,8 @@
       margin 0.5s var(--cal-ease),
       opacity 0.3s ease,
       transform 0.5s var(--cal-spring),
-      filter 0.2s ease;
+      background-color 0.2s ease,
+      color 0.2s ease;
   }
 
   .calendar-today-btn.is-visible {
@@ -15939,7 +15933,8 @@
 
   .calendar-today-btn.is-visible:active {
     transform: scale(0.95);
-    filter: brightness(0.94);
+    background-color: var(--accent-color, #ff90e8);
+    color: var(--on-accent, #16171b);
   }
 
   .calendar-today-dot {
@@ -15947,7 +15942,11 @@
     width: 0.5rem;
     height: 0.5rem;
     border-radius: 50%;
-    background-color: var(--on-accent, #16171b);
+    background-color: var(--accent-color, #ff90e8); color: var(--on-accent, #16171b);
+  }
+
+  .calendar-today-btn.is-visible:active .calendar-today-dot {
+    background-color: #16171b;
   }
 
   /* Gün adı satırı: Planlayıcı'daki .relax-calendar-day-label ile aynı
@@ -16589,6 +16588,11 @@
   /* Koyu (anthracite) mod: "Bugün" hapı, "Görev Ekle" ile aynı şekilde
      kart rengine geçer; basılınca vurgu rengi görünür. */
   body.is-anthracite .calendar-today-btn {
+    background-color: var(--dark-card-color, #1c1c22);
+    color: #f2f2f4;
+  }
+
+  body.is-anthracite .calendar-today-btn.is-visible:active {
     background-color: var(--accent-color, #ff90e8);
     color: var(--on-accent, #16171b);
   }
@@ -18142,36 +18146,6 @@
   }
 
   .home-flip-num .cd-reel { margin-inline: -0.03em; }
-
-  /* --- Mobil sayaç hanesi (hf-digit) ---
-     Eski rulo (40 satırlık şerit + maske + top/transform karışımı) yerine
-     iki katmanlı hafif hane: yalnızca transform + opacity canlandırılır
-     (GPU'da, ana iş parçacığına dokunmadan). Maske, 40 elemanlı şerit ve
-     "başa sarma" sıçraması yoktur. Boyutlar eski ruloyla birebir aynıdır
-     (0.64em x 1.25em), yani düzen değişmez. */
-  .hf-digit {
-    position: relative;
-    display: inline-block;
-    flex: none;
-    width: 0.64em;
-    height: 1.25em;
-    margin-inline: -0.03em;
-    overflow: hidden;
-    contain: layout style;
-  }
-
-  .hf-digit > i {
-    position: absolute;
-    inset: 0;
-    display: block;
-    font-style: normal;
-    line-height: 1.25em;
-    text-align: center;
-    backface-visibility: hidden;
-    -webkit-backface-visibility: hidden;
-  }
-
-  .hf-digit > i.is-off { opacity: 0; }
 
   .home-flip-label {
     margin-top: 0.1rem;
@@ -36002,11 +35976,6 @@
 
     .home-flip.is-settled .home-live-widget {
       visibility: hidden;
-    }
-
-    /* Ön yüz gizliyken sonsuz dalga animasyonları boşuna kare üretiyordu. */
-    .home-flip.is-settled .home-live-widget-wave {
-      animation-play-state: paused;
     }
   }
 
@@ -71260,14 +71229,13 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
     // orada arka yüz her zaman "görünür" sayılır ve sayaç hep canlı işler.
     const SPLIT_MQ = window.matchMedia('(min-width: 768px) and (min-height: 600px)');
     const isSplit = () => SPLIT_MQ.matches;
-    // Büyük ekranda arka yüz gizli (düz sayaç ayrı widget'ta); boşuna çalışmasın.
-    const showsBack = () => !isSplit() && state.face === 'back';
+    const showsBack = () => isSplit() || state.face === 'back';
 
     const reels = { d: [], h: [], m: [], s: [] };
+    const timers = [];
     let cur = null;          // { date, cd, target(ms) }
     let tickTimer = 0;
     let introEnd = 0;
-    let quietUntil = 0;      // çevirme/yerleşme bitene dek hane değişimi animasyonsuz
     let flipTimer = 0;
     let wasDone = null;
 
@@ -71282,77 +71250,17 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
       return cd ? { date, cd, target: dayCdTarget(date, cd.time).getTime() } : null;
     };
 
-    // ---- Hafif hane animasyonu (yalnızca bu kart; takvim/büyük ekran rulosuna dokunmaz) ----
-    // İki katman (<i>) sırayla görünür olur. Değişimde yeni rakam yukarıdan
-    // süzülerek iner, eskisi aşağı doğru solar. Sadece transform + opacity
-    // kullanılır; WAAPI bunları kompozitörde (GPU) çalıştırır.
-    const CAN_ANIM = typeof Element !== 'undefined' && typeof Element.prototype.animate === 'function';
-    const REDUCE_MQ = window.matchMedia('(prefers-reduced-motion: reduce)');
-    const HF_EASE = 'cubic-bezier(0.22, 1, 0.36, 1)';
-    const HF_TICK_MS = 420;
-    const HF_INTRO_MS = 560;
-    const HF_INTRO_STAGGER = 45;
-
-    const canAnimate = () => CAN_ANIM && !REDUCE_MQ.matches;
-
-    const hfCancel = (cell) => {
-      if (cell.anims) cell.anims.forEach((an) => { try { an.cancel(); } catch (e) { /* yoksay */ } });
-      cell.anims = [];
-    };
-
-    const hfMake = (ch) => {
-      const el = document.createElement('span');
-      el.className = 'hf-digit';
-      const a = document.createElement('i');
-      const b = document.createElement('i');
-      a.textContent = ch;
-      b.className = 'is-off';
-      el.append(a, b);
-      return { el, front: a, back: b, val: ch, anims: [] };
-    };
-
-    const hfIn = (node, delay, dur) => node.animate(
-      [{ transform: 'translateY(-62%)', opacity: 0 }, { transform: 'translateY(0)', opacity: 1 }],
-      { duration: dur, delay, easing: HF_EASE, fill: 'backwards' }
-    );
-
-    const hfOut = (node, dur) => node.animate(
-      [{ transform: 'translateY(0)', opacity: 1 }, { transform: 'translateY(62%)', opacity: 0 }],
-      { duration: dur, easing: 'ease-in', fill: 'backwards' }
-    );
-
-    // Değer değiştiyse haneyi günceller; animate=false ise anında yazar.
-    const hfSet = (cell, ch, animate) => {
-      if (cell.val === ch) return;
-      hfCancel(cell);
-      const prev = cell.front;
-      const next = cell.back;
-      next.textContent = ch;
-      next.classList.remove('is-off');
-      prev.classList.add('is-off');
-      cell.front = next;
-      cell.back = prev;
-      cell.val = ch;
-      if (animate && canAnimate()) cell.anims = [hfIn(next, 0, HF_TICK_MS), hfOut(prev, HF_TICK_MS)];
-    };
-
-    // Açılış: haneler soldan sağa sırayla yukarıdan süzülüp yerine oturur.
-    const hfIntro = (cell, order) => {
-      hfCancel(cell);
-      if (canAnimate()) cell.anims = [hfIn(cell.front, order * HF_INTRO_STAGGER, HF_INTRO_MS)];
-    };
-
-    const build = (u, str) => {
-      if (u === 'd') unitsEl.dataset.len = String(Math.min(str.length, 5));
+    const build = (u, n) => {
+      if (u === 'd') unitsEl.dataset.len = String(Math.min(n, 5));
       numEls[u].textContent = '';
-      reels[u] = str.split('').map((ch) => {
-        const c = hfMake(ch);
-        numEls[u].appendChild(c.el);
-        return c;
+      reels[u] = Array.from({ length: n }, () => {
+        const r = cdReelMake();
+        numEls[u].appendChild(r.el);
+        return r;
       });
     };
 
-    ['h', 'm', 's'].forEach((u) => build(u, '00'));
+    ['h', 'm', 's'].forEach((u) => build(u, 2));
 
     const calc = () => {
       const remaining = cur.target - Date.now();
@@ -71369,7 +71277,7 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
 
     const clearTimers = () => {
       if (tickTimer) { clearTimeout(tickTimer); tickTimer = 0; }
-      ['d', 'h', 'm', 's'].forEach((u) => reels[u].forEach(hfCancel));
+      while (timers.length) clearTimeout(timers.pop());
     };
 
     const applyDone = (v, animate) => {
@@ -71387,24 +71295,20 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
       tickTimer = 0;
       if (!cur) return;
       // Sayaç başka yerden silindiyse kart "Sayaç ekle" haline döner.
-      if (!resolve()) { renderBack(false); return; }
+      if (!resolve()) { renderBack(0); return; }
       if (!isVisible()) return;                       // görünmüyorsa durur; tekrar görününce başlar
-      const now = performance.now();
-      if (now < introEnd) { tickTimer = setTimeout(tick, Math.min(introEnd - now, 150) + 5); return; }
+      if (performance.now() < introEnd) { tickTimer = setTimeout(tick, 150); return; }
       const v = calc();
-      if (reels.d.length !== v.d.length) build('d', v.d);
-      const animate = now >= quietUntil;
+      if (reels.d.length !== v.d.length) build('d', v.d.length);
       ['d', 'h', 'm', 's'].forEach((u) => {
-        v[u].split('').forEach((ch, i) => hfSet(reels[u][i], ch, animate));
+        v[u].split('').forEach((ch, i) => cdReelSet(reels[u][i], Number(ch), CD_TICK_MS));
       });
       if (wasDone !== v.done) { wasDone = v.done; applyDone(v, true); }
-      // Bir sonraki saniye sınırına hizalı tek zamanlayıcı (kayma birikmez).
-      if (!v.done) tickTimer = setTimeout(tick, (v.remaining % 1000 || 1000) + 12);
+      if (!v.done) tickTimer = setTimeout(tick, (v.remaining % 1000 || 1000) + 8);
     };
 
-    // Arka yüzü çizer. intro=true ise haneler sırayla süzülerek oturur
-    // (sayaç yeni seçildiğinde); aksi halde değerler doğrudan yazılır.
-    const renderBack = (intro) => {
+    // Arka yüzü çizer; sayaç varsa haneler soldan sağa dönerek yerine oturur.
+    const renderBack = (delay) => {
       clearTimers();
       const r = resolve();
       addBtn.hidden = !!r;
@@ -71417,17 +71321,18 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
       const v = calc();
       wasDone = v.done;
       applyDone(v, true);
-      ['d', 'h', 'm', 's'].forEach((u) => build(u, v[u]));
-      const now = performance.now();
-      introEnd = now;
-      if (intro && canAnimate() && showsBack()) {
-        let order = 0;
-        ['d', 'h', 'm', 's'].forEach((u) => {
-          reels[u].forEach((c) => { hfIntro(c, order); order += 1; });
+      build('d', v.d.length);
+      if (!isVisible() && !showsBack()) return;
+      let order = 0;
+      ['d', 'h', 'm', 's'].forEach((u) => {
+        v[u].split('').forEach((ch, i) => {
+          cdReelIntro(reels[u][i], Number(ch), delay + order * 55, 1300, timers);
+          order += 1;
         });
-        introEnd = now + order * HF_INTRO_STAGGER + HF_INTRO_MS;
-      }
-      if (showsBack() && !v.done) tickTimer = setTimeout(tick, Math.max(introEnd - now, 0) + 20);
+      });
+      const total = delay + order * 55 + 1300;
+      introEnd = performance.now() + total;
+      tickTimer = setTimeout(tick, total + 20);
     };
 
     // Çevirme bitince arka yüzü 3B bağlamdan çıkarıp düz katmana alır (bkz.
@@ -71450,12 +71355,8 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
       unsettle();
       flipEl.classList.toggle('is-flipped', back);
       if (back && !split) {
-        if (animate) {
-          // Çevirme (0.95sn) + yerleşme anı boyunca haneler animasyonsuz kalır;
-          // 3B -> düz katman geçişi hiçbir kayma animasyonuyla çakışmaz.
-          quietUntil = performance.now() + 1150;
-          settleTimer = setTimeout(() => flipEl.classList.add('is-settled'), 1000);
-        } else flipEl.classList.add('is-settled');
+        if (animate) settleTimer = setTimeout(() => flipEl.classList.add('is-settled'), 1000);
+        else flipEl.classList.add('is-settled');
       }
       frontEl.inert = !split && back;
       backEl.inert = !split && !back;
@@ -71470,7 +71371,7 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
         clearTimeout(flipTimer);
         flipTimer = setTimeout(() => flipEl.classList.remove('is-flipping'), 1000);
       }
-      if (back && !split) renderBack(false);
+      if (back || split) renderBack(animate ? 430 : 250);
       else { clearTimers(); }
     };
 
@@ -71484,8 +71385,8 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
       openCdSheet({
         mode: 'pick',
         selectedKey: has ? state.key : '',
-        onPick: (key) => { setKey(key); renderBack(true); },
-        onClear: () => { setKey(''); renderBack(false); },
+        onPick: (key) => { setKey(key); renderBack(120); },
+        onClear: () => { setKey(''); renderBack(0); },
       });
     };
 
@@ -71501,12 +71402,12 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
     let wasActive = pageEl.classList.contains('is-active');
     new MutationObserver(() => {
       const active = pageEl.classList.contains('is-active');
-      if (active && !wasActive && showsBack()) renderBack(false);
+      if (active && !wasActive && showsBack()) renderBack(300);
       if (!active) clearTimers();
       wasActive = active;
     }).observe(pageEl, { attributes: true, attributeFilter: ['class'] });
     document.addEventListener('visibilitychange', () => {
-      if (!document.hidden && showsBack() && pageEl.classList.contains('is-active')) renderBack(false);
+      if (!document.hidden && showsBack() && pageEl.classList.contains('is-active')) renderBack(0);
     });
 
     // Pencere/cihaz büyük-küçük ekran eşiğini geçerse (döndürme, yeniden
@@ -75978,163 +75879,6 @@ html #page-camera .qhavuz-canvas-grid.is-select-mode .qhavuz-wide-thumb {
   transition: opacity 0.2s ease, filter 0.2s ease, transform 0.25s cubic-bezier(0.22, 1, 0.36, 1);
 }
 html #page-camera .qhavuz-canvas-grid.is-select-mode .qhavuz-wide-card.is-selected .qhavuz-wide-thumb { transform: scale(0.97); }
-</style>
-
-<style id="qhavuzPopupButtons">
-/* ==========================================================================
-   TELEFON (yalnızca mobil): Soru Havuzu "Test Oluştur" ve "Paketlerim"
-   pop-up'ları — butonlar alttaki üçlünün (Geri / Soru Ekle / Seç,
-   #qhavuzFabBar) tasarım dilinde:
-   - Hap şekli, Baloo 2 / 700, sıfır harf aralığı.
-   - İkincil: yarı saydam nötr zemin + ince iç gölge (Geri / Seç gibi);
-     basılınca bir ton koyulur.
-   - Birincil: vurgu renginde DÜZ hap. Eski gradyan, dış parlama, iç
-     ışık çizgisi ve yazı gölgesi kaldırıldı (parıldama buradan geliyordu).
-   - Seçili satır / basılı ikon: dış ışıma yok; ince iç halka + hafif ton.
-   - Hareket: alt çubuktaki gibi aşağıdan 10px süzülerek, kademeli gecikmeyle
-     (0.06 / 0.1 / 0.14sn) belirir; basınca hafifçe kayar.
-   Büyük ekran kuralları DEĞİŞTİRİLMEDİ.
-   ========================================================================== */
-@media not all and (min-width: 768px) and (min-height: 600px) {
-  #qhavuzTestCreateBackdrop,
-  #qhavuzPackagesBackdrop {
-    --pb-ease: cubic-bezier(0.65, 0, 0.35, 1);
-    --pb-neutral: color-mix(in srgb, var(--theme-text, #fff) 8%, transparent);
-    --pb-neutral-press: color-mix(in srgb, var(--theme-text, #fff) 13%, transparent);
-    --pb-neutral-on: color-mix(in srgb, var(--theme-text, #fff) 18%, transparent);
-    --pb-inset: inset 0 1px 3px 0 color-mix(in srgb, var(--theme-text, #fff) 10%, transparent);
-    --pb-fg: color-mix(in srgb, var(--theme-text, #fff) 94%, transparent);
-  }
-
-  @keyframes qhavuzPopBtnIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to   { opacity: 1; transform: none; }
-  }
-
-  /* ---------- Ortak: nötr hap (Geri / Seç dili) ---------- */
-  #qhavuzTestCreateBackdrop .qhavuz-tc-tab,
-  #qhavuzTestCreateBackdrop .qhavuz-tc-limit-chip,
-  #qhavuzTestCreateBackdrop .qhavuz-tc-icon-btn,
-  #qhavuzTestCreateBackdrop .page9-add-close,
-  #qhavuzPackagesBackdrop .page9-add-close,
-  #qhavuzPackagesBackdrop .qhavuz-pk-icon-btn,
-  #qhavuzPackagesBackdrop .qhavuz-pk-ghost,
-  #qhavuzPackagesBackdrop .qhavuz-pk-chip {
-    font-family: "Baloo 2", "Space Grotesk", sans-serif;
-    font-weight: 700;
-    letter-spacing: 0;
-    line-height: 1;
-    color: var(--pb-fg);
-    background: var(--pb-neutral);
-    box-shadow: var(--pb-inset);
-    -webkit-tap-highlight-color: transparent;
-    transition:
-      transform 0.3s var(--pb-ease),
-      background-color 0.2s ease,
-      color 0.2s ease,
-      opacity 0.2s ease;
-  }
-
-  #qhavuzTestCreateBackdrop .qhavuz-tc-tab:active,
-  #qhavuzTestCreateBackdrop .qhavuz-tc-limit-chip:active,
-  #qhavuzTestCreateBackdrop .qhavuz-tc-icon-btn:active,
-  #qhavuzTestCreateBackdrop .page9-add-close:active,
-  #qhavuzPackagesBackdrop .page9-add-close:active,
-  #qhavuzPackagesBackdrop .qhavuz-pk-icon-btn:active,
-  #qhavuzPackagesBackdrop .qhavuz-pk-ghost:active,
-  #qhavuzPackagesBackdrop .qhavuz-pk-chip:active {
-    background: var(--pb-neutral-press);
-    transform: translateY(1px);
-  }
-
-  /* Sekmeler: ray düz, aktif olan nötr "yükselmiş" hap (beyaz dolgu yok). */
-  #qhavuzTestCreateBackdrop .qhavuz-tc-tabs { background: var(--pb-neutral); box-shadow: var(--pb-inset); }
-  #qhavuzTestCreateBackdrop .qhavuz-tc-tab { background: transparent; box-shadow: none; color: color-mix(in srgb, var(--theme-text, #fff) 62%, transparent); }
-  #qhavuzTestCreateBackdrop .qhavuz-tc-tab:active { background: var(--pb-neutral); }
-  #qhavuzTestCreateBackdrop .qhavuz-tc-tab.is-active,
-  #qhavuzTestCreateBackdrop .qhavuz-tc-limit-chip.is-active,
-  #qhavuzPackagesBackdrop .qhavuz-pk-chip.is-on {
-    background: var(--pb-neutral-on);
-    color: var(--theme-text, #fff);
-    box-shadow: var(--pb-inset);
-  }
-
-  /* Başlıktaki ikon düğmesi basılıyken: ışımasız düz vurgu. */
-  #qhavuzTestCreateBackdrop .qhavuz-tc-icon-btn[aria-pressed="true"] {
-    background: var(--accent-color, #ff90e8);
-    color: var(--on-accent, #16171b);
-    box-shadow: none;
-  }
-  #qhavuzTestCreateBackdrop .qhavuz-tc-icon-badge { background: var(--pb-neutral-on); color: var(--theme-text, #fff); box-shadow: none; }
-
-  /* Seçili satır: dış parlama yok; ince iç halka + hafif vurgu tonu. */
-  #qhavuzTestCreateBackdrop .qhavuz-tc-item.is-selected {
-    background: color-mix(in srgb, var(--accent-color, #ff90e8) 12%, rgba(255, 255, 255, 0.08));
-    box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--accent-color, #ff90e8) 42%, transparent);
-  }
-
-  /* ---------- Birincil: vurgu renginde düz hap (Soru Ekle dili, parlamasız) ---------- */
-  #qhavuzTestCreateBackdrop .qhavuz-tc-start,
-  #qhavuzPackagesBackdrop .qhavuz-pk-test {
-    font-family: "Baloo 2", "Space Grotesk", sans-serif;
-    font-weight: 700;
-    letter-spacing: 0;
-    line-height: 1;
-    color: var(--on-accent, #16171b);
-    background: var(--accent-color, #ff90e8);
-    box-shadow: none;
-    text-shadow: none;
-    filter: none;
-    -webkit-tap-highlight-color: transparent;
-    transition:
-      transform 0.3s var(--pb-ease),
-      background-color 0.2s ease,
-      opacity 0.2s ease;
-  }
-  #qhavuzTestCreateBackdrop .qhavuz-tc-start:active:not(:disabled),
-  #qhavuzPackagesBackdrop .qhavuz-pk-test:active {
-    transform: translate(1px, 1px);
-    background: color-mix(in srgb, var(--accent-color, #ff90e8) 90%, #000);
-  }
-  #qhavuzTestCreateBackdrop .qhavuz-tc-start:disabled {
-    opacity: 0.35;
-    box-shadow: none;
-  }
-
-  /* Paket kartındaki oynat düğmesi: vurguya dönmez, nötr kalır. */
-  #qhavuzPackagesBackdrop .qhavuz-pk-play { box-shadow: none; transition: transform 0.3s var(--pb-ease); }
-  #qhavuzPackagesBackdrop .qhavuz-pk-play:active { transform: scale(0.92); }
-
-  /* ---------- Hareket: alt çubuktaki gibi kademeli süzülerek belirme ---------- */
-  #qhavuzTestCreateBackdrop.is-open .qhavuz-tc-limit-chip,
-  #qhavuzTestCreateBackdrop.is-open .qhavuz-tc-start {
-    animation: qhavuzPopBtnIn 0.3s var(--pb-ease) both;
-  }
-  #qhavuzTestCreateBackdrop.is-open .qhavuz-tc-limit-chip:nth-child(1) { animation-delay: 0.06s; }
-  #qhavuzTestCreateBackdrop.is-open .qhavuz-tc-limit-chip:nth-child(2) { animation-delay: 0.1s; }
-  #qhavuzTestCreateBackdrop.is-open .qhavuz-tc-limit-chip:nth-child(3) { animation-delay: 0.14s; }
-  #qhavuzTestCreateBackdrop.is-open .qhavuz-tc-limit-chip:nth-child(n+4) { animation-delay: 0.18s; }
-  #qhavuzTestCreateBackdrop.is-open .qhavuz-tc-start { animation-delay: 0.14s; }
-
-  #qhavuzPackagesBackdrop .qhavuz-pk-test,
-  #qhavuzPackagesBackdrop .qhavuz-pk-ghost,
-  #qhavuzPackagesBackdrop .qhavuz-pk-chip {
-    animation: qhavuzPopBtnIn 0.3s var(--pb-ease) both;
-  }
-  #qhavuzPackagesBackdrop .qhavuz-pk-test { animation-delay: 0.1s; }
-  #qhavuzPackagesBackdrop .qhavuz-pk-ghost { animation-delay: 0.14s; }
-  #qhavuzPackagesBackdrop .qhavuz-pk-chip:nth-child(1) { animation-delay: 0.06s; }
-  #qhavuzPackagesBackdrop .qhavuz-pk-chip:nth-child(2) { animation-delay: 0.1s; }
-  #qhavuzPackagesBackdrop .qhavuz-pk-chip:nth-child(n+3) { animation-delay: 0.14s; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  #qhavuzTestCreateBackdrop .qhavuz-tc-limit-chip,
-  #qhavuzTestCreateBackdrop .qhavuz-tc-start,
-  #qhavuzPackagesBackdrop .qhavuz-pk-test,
-  #qhavuzPackagesBackdrop .qhavuz-pk-ghost,
-  #qhavuzPackagesBackdrop .qhavuz-pk-chip { animation: none !important; }
-}
 </style>
 </body>
 </html>
