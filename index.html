@@ -6537,6 +6537,13 @@
     box-shadow: 1px 1px 0px 0px #000;
   }
 
+
+  /* Kilitli (yakında) tema topları */
+  .wheel-color-swatch.is-soon { opacity: 0.42; cursor: default; }
+  .wheel-color-swatch.is-soon .wheel-color-swatch-lock {
+    position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+    font-size: 0.9rem; pointer-events: none;
+  }
   .wheel-color-swatch-check {
     position: absolute;
     inset: 0;
@@ -37844,11 +37851,19 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
   }
 
   /* ==========================================================================
-     BRANŞLARIM — sade mor tasarım (renk noktası yok, kendi ders ekleme yok)
-     Yüzey derin mor-siyah, metin krem; Orkide Gül yalnızca küçük detaylarda
-     (aktif sekme çizgisi, seçili tik). Mor/gül ön planda değil.
+     BRANŞLARIM — sade tasarım (renk noktası yok, kendi ders ekleme yok)
+     Düzen tüm temalarda aynı; renkler yalnızca mor temada (Milk ve Plum)
+     mor-siyah yüzey + Orkide Gül detay olur, diğer temalarda siyah/beyaz.
      ========================================================================== */
+  /* Varsayılan (tüm temalar): nötr siyah yüzey, beyaz metin, beyaz detaylar.
+     Renk yalnızca Milk ve Plum (data-pace-theme="plum") seçiliyken devreye girer. */
   #stopwatchSubjectsBackdrop {
+    --bs-surface: #000;
+    --bs-text: #fff;
+    --bs-accent: #fff;
+    --bs-line: rgba(255, 255, 255, 0.08);
+  }
+  :root[data-pace-theme="plum"] #stopwatchSubjectsBackdrop {
     --bs-surface: #190A1A;
     --bs-text: #FFF3E5;
     --bs-accent: var(--theme-c3, #B8528C);
@@ -44244,6 +44259,11 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
       : t.gradient;
   });
 
+  // Geçici: yalnızca Saf Siyah ve Fildişi seçilebilir; diğer temalar kilitli
+  // ("Yakında"). Kilidi kaldırmak için ilgili temanın adını bu listeye ekle.
+  const UNLOCKED_THEME_NAMES = ['Saf Siyah', 'Fildişi'];
+  const isThemeLocked = (index) => !!themes[index] && !UNLOCKED_THEME_NAMES.includes(themes[index].name);
+
   // ---------- Otomatik kontrast yardımcıları (vurgu rengi okunabilirliği) ----------
   const LEGACY_BLUE_ACCENT = '#6ec6ff';
   const hexToRgb = (hex) => {
@@ -44564,6 +44584,7 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
   // tıklanınca kullanılır). applyNextTheme ile aynı katman-geçiş mantığını
   // kullanır, farkı sıradaki değil, seçilen temaya geçmesidir.
   const applyTheme = (index) => {
+    if (isThemeLocked(index)) return;
     if (index === themeIndex) return;
     themeIndex = index;
     const theme = themes[themeIndex];
@@ -44662,6 +44683,7 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
   // kullanılır): sayfanın arka planını o temaya uygular ve tik işaretini
   // senkronize eder.
   const selectTheme = (index) => {
+    if (isThemeLocked(index)) return;
     if (index === selectedSwatchIndex) return;
     applyTheme(index);
     syncSwatchSelection(index);
@@ -45078,7 +45100,8 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
   //          sayfasındaki Kart rengi / Renk teması / Vurgu rengi satırları
   //          bu pop-up'ı kendi paletleriyle çağırarak yeniden kullanır.
   // title: (opsiyonel) pop-up başlığı — verilmezse "Renk seç" kalır.
-  const openColorPicker = (subtitle, currentColor, onSelect, palette, title) => {
+  let colorPickerSoonTimer = null;
+  const openColorPicker = (subtitle, currentColor, onSelect, palette, title, lockedColors) => {
     clearTimeout(colorPickerCloseTimer);
     colorPickerOnSelect = onSelect;
     wheelColorGrid.classList.remove('is-locked');
@@ -45103,6 +45126,25 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
       check.className = 'wheel-color-swatch-check';
       check.textContent = '✓';
       swatch.appendChild(check);
+
+      // Kilitli (henüz kullanıma kapalı) renk: soluk görünür, dokununca
+      // seçilmez ve pencere kapanmaz; altbaşlıkta kısa süre "Yakında" yazar.
+      if (lockedColors && lockedColors.some((c) => String(c).toLowerCase() === String(color).toLowerCase())) {
+        swatch.classList.add('is-soon');
+        const lockMark = document.createElement('span');
+        lockMark.className = 'wheel-color-swatch-lock';
+        lockMark.textContent = '🔒';
+        swatch.appendChild(lockMark);
+        swatch.addEventListener('click', () => {
+          if (wheelColorGrid.classList.contains('is-locked')) return;
+          const original = subtitle;
+          wheelColorSubtitle.textContent = 'Yakında';
+          clearTimeout(colorPickerSoonTimer);
+          colorPickerSoonTimer = setTimeout(() => { wheelColorSubtitle.textContent = original; }, 1400);
+        });
+        wheelColorGrid.appendChild(swatch);
+        return;
+      }
 
       swatch.addEventListener('click', () => {
         if (wheelColorGrid.classList.contains('is-locked')) return;
@@ -54747,7 +54789,8 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
           if (i >= 0) selectTheme(i);
         },
         themes.map((t) => t.swatch),
-        'Renk teması'
+        'Renk teması',
+        themes.filter((t, i) => isThemeLocked(i)).map((t) => t.swatch)
       );
     });
   }
