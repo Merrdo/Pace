@@ -44155,6 +44155,15 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
 
   // Her temanın iki ana rengini CSS değişkeni olarak yayınlar (tek renkli temalarda
   // c1 = zemin, c2 = yazı rengi).
+  // Seçici/rozetlerde gösterilen dairesel önizleme: iki renkli temalarda ana renk
+  // sol üstte, yardımcı renk sağ altta (ince yumuşak köşegen geçişle); tek renkli
+  // temalarda düz renk. Sayfa zemini bundan bağımsız olarak hep `gradient` kullanır.
+  themes.forEach((t) => {
+    t.swatch = t.colors
+      ? `linear-gradient(135deg, ${t.colors.c1} 0%, ${t.colors.c1} 49%, ${t.colors.c2} 51%, ${t.colors.c2} 100%)`
+      : t.gradient;
+  });
+
   const applyThemeColors = (t) => {
     const c = t.colors || {};
     document.documentElement.style.setProperty('--theme-c1', c.c1 || t.color);
@@ -54427,7 +54436,7 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
   const settingsThemeLink = document.getElementById('settingsThemeLink');
 
   const syncSettingsThemeChip = (index) => {
-    if (settingsThemeChip) settingsThemeChip.style.background = themes[index].gradient;
+    if (settingsThemeChip) settingsThemeChip.style.background = themes[index].swatch;
   };
   syncSettingsThemeChip(themeIndex);
 
@@ -54435,12 +54444,12 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
     settingsThemeLink.addEventListener('click', () => {
       openColorPicker(
         themes[themeIndex].name,
-        themes[themeIndex].gradient,
-        (gradient) => {
-          const i = themes.findIndex((t) => t.gradient === gradient);
+        themes[themeIndex].swatch,
+        (swatch) => {
+          const i = themes.findIndex((t) => t.swatch === swatch);
           if (i >= 0) selectTheme(i);
         },
-        themes.map((t) => t.gradient),
+        themes.map((t) => t.swatch),
         'Renk teması'
       );
     });
