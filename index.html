@@ -75023,6 +75023,42 @@ body .wheel-color-backdrop.is-open .wheel-color-card{transform:none;opacity:1}
 }
 @media (prefers-reduced-motion:reduce){body .wheel-color-backdrop *{transition-duration:.01s !important;transition-delay:0s !important;animation:none !important}}
 </style>
+<style id="colorPickerMinimalStyle">
+/* ===== Renk seçici · minimal: tek yüzey, düz daireler, yumuşak geçişler =====
+   Önceki cam/yaylanan tasarımın üzerine biner (aynı sınıflar, yalnızca sadeleştirilmiş görünüm). */
+.wheel-color-backdrop{--pc-soft:cubic-bezier(.33,.9,.35,1)}
+body .wheel-color-backdrop{background:rgba(10,10,14,0);-webkit-backdrop-filter:none;backdrop-filter:none;transition:opacity .35s ease,background-color .5s ease}
+body .wheel-color-backdrop.is-open{background:rgba(10,10,14,.22);-webkit-backdrop-filter:none;backdrop-filter:none}
+body .wheel-color-backdrop .wheel-color-card{max-width:400px;margin:0 10px calc(10px + env(safe-area-inset-bottom));padding:10px 24px 28px;border-radius:30px;
+  box-shadow:0 0 0 1px color-mix(in srgb,var(--pc-t) 6%,transparent),0 18px 40px -24px rgba(0,0,0,.28);
+  transition:transform .55s var(--pc-soft)}
+.wheel-color-grip{width:32px;height:4px;margin:0 auto 18px;background:color-mix(in srgb,var(--pc-t) 12%,transparent)}
+/* Başlık: önizleme küresi kalktı, yalnızca iki satır yazı + sade kapat */
+.wheel-color-orb{display:none !important}
+body .wheel-color-backdrop .wheel-color-title{font-size:1.15rem;font-weight:800;letter-spacing:-.01em}
+body .wheel-color-backdrop .wheel-color-subtitle{font-size:.8rem;font-weight:700;opacity:.4}
+body .wheel-color-backdrop .wheel-color-close{width:34px;height:34px;font-size:1.15rem;background:transparent;color:color-mix(in srgb,var(--pc-t) 55%,transparent);transition:background-color .3s ease,color .3s ease,transform .3s var(--pc-soft)}
+body .wheel-color-backdrop .wheel-color-close:hover{background:color-mix(in srgb,var(--pc-t) 6%,transparent);color:var(--pc-t);transform:none;box-shadow:none}
+body .wheel-color-backdrop .wheel-color-close:active{background:color-mix(in srgb,var(--pc-t) 10%,transparent);transform:scale(.92)}
+/* Renkler: ortalı, düz daireler; seçili olan ince bir halkayla belli olur */
+body .wheel-color-backdrop .wheel-color-grid{display:flex;flex-wrap:wrap;justify-content:center;gap:20px 18px;margin-top:26px}
+body .wheel-color-backdrop .wheel-color-swatch{flex:none;width:46px;height:46px;aspect-ratio:auto;border-radius:50%;
+  box-shadow:inset 0 0 0 1px rgba(0,0,0,.08);opacity:0;transform:scale(.9);
+  transition:opacity .25s ease,transform .3s var(--pc-soft),box-shadow .45s var(--pc-soft)}
+body .wheel-color-backdrop.is-open .wheel-color-swatch{opacity:1;transform:none;
+  transition:opacity .5s ease calc(var(--i,0) * 22ms + 120ms),transform .6s var(--pc-soft) calc(var(--i,0) * 22ms + 120ms),box-shadow .45s var(--pc-soft)}
+body .wheel-color-backdrop.is-open .wheel-color-swatch:hover{transform:none;box-shadow:inset 0 0 0 1px rgba(0,0,0,.08)}
+body .wheel-color-backdrop.is-open .wheel-color-swatch:active{transform:scale(.94);transition-delay:0s;transition-duration:.2s}
+body .wheel-color-backdrop .wheel-color-swatch.is-selected{
+  box-shadow:inset 0 0 0 1px rgba(0,0,0,.08),0 0 0 3px var(--pc-bg),0 0 0 4.5px color-mix(in srgb,var(--pc-t) 55%,transparent)}
+body .wheel-color-backdrop .wheel-color-swatch.is-picked{animation:none}
+body .wheel-color-backdrop .wheel-color-swatch-check{opacity:0 !important;transform:none !important}
+.wheel-color-grid.is-locked .wheel-color-swatch:not(.is-picked){opacity:.4;transition:opacity .4s ease}
+@media (min-width:768px) and (min-height:600px){
+body .wheel-color-backdrop .wheel-color-card{max-width:400px;padding-top:26px;transform:translateY(12px) scale(.97);opacity:0;transition:transform .5s var(--pc-soft),opacity .3s ease}
+body .wheel-color-backdrop.is-open .wheel-color-card{transform:none;opacity:1}
+}
+</style>
 <style id="analyticsRedesignStyle">
 /* ===== Analizlerim (telefon): Denemelerim diliyle — tek tonlu, yumuşak kartlar, kademeli giriş ===== */
 @keyframes anRise{from{opacity:0;transform:translateY(22px) scale(.985)}to{opacity:1;transform:none}}
