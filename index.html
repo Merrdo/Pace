@@ -37369,7 +37369,7 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
    Eski ana sayfa SİLİNMEDİ: <html data-pg="on"> iken sadece gizlenir.
    Geri getirmek için <html> etiketinden data-pg="on" kaldırılır.
    TAMAMLANINCA: eski ana sayfa + bu gizleme kuralı silinecek (bkz. NOTLAR.md). */
-html[data-pg="on"] #page-1 > :not(.pg-root):not(.app-logo){display:none !important}
+html[data-pg="on"] #page-1 > :not(.pg-root):not(.app-logo):not(.home-widgets-stack){display:none !important}
 .pg-root{position:absolute;inset:0;pointer-events:none;z-index:3}
 /* Çerçevesiz, kartsız, sade: yalnızca isim + avatar */
 .pg-chip{position:absolute;top:calc(env(safe-area-inset-top) + 22px);right:22px;pointer-events:auto;
@@ -37388,30 +37388,65 @@ html[data-pg="on"] #page-1 > :not(.pg-root):not(.app-logo){display:none !importa
 /* Durum noktası yalnızca sorun varsa görünür (oturum düştüyse) */
 .pg-dot{display:none;position:absolute;right:-1px;bottom:-1px;width:10px;height:10px;border-radius:50%;background:#e74c3c;box-shadow:0 0 0 2px var(--theme-bg,#f6f4ef)}
 .pg-chip.is-err .pg-dot{display:block}
-@media (prefers-reduced-motion:reduce){.pg-chip,.pg-main{animation:none}}
-/* ---- Ana bölümler: selamlama, bugün çözülen, sıradaki görev, sınava kalan (kartsız, çerçevesiz) ---- */
-.pg-main{position:absolute;left:24px;right:24px;top:calc(env(safe-area-inset-top) + 100px);pointer-events:auto;
-  font-family:"Baloo 2","Space Grotesk",sans-serif;color:#000;display:flex;flex-direction:column;animation:pgIn 1s .1s cubic-bezier(.22,1,.36,1) both}
-.pg-main button{font:inherit;color:inherit;background:none;border:0;padding:0;margin:0;cursor:pointer;text-align:left;width:100%;display:block;-webkit-tap-highlight-color:transparent;transition:opacity .25s}
-.pg-main button:active{opacity:.5}
-.pg-hi{font-size:19px;font-weight:500;line-height:1.1;opacity:.4}
-.pg-hi-n{font-size:40px;font-weight:700;line-height:1.05;letter-spacing:-.025em;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.pg-lbl{font-size:12.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;opacity:.4;line-height:1}
-.pg-main .pg-solved{margin-top:44px}
-.pg-big{display:flex;align-items:baseline;gap:12px;margin-top:6px}
-.pg-big b{font-size:92px;font-weight:800;line-height:.95;letter-spacing:-.045em;font-variant-numeric:tabular-nums}
-.pg-big span{font-size:17px;font-weight:500;opacity:.45;line-height:1.2;min-width:0}
-.pg-bar{height:3px;border-radius:2px;margin-top:14px;background:rgba(0,0,0,.1);overflow:hidden}
-.pg-bar i{display:block;height:100%;width:calc(var(--r,0)*100%);background:#000;border-radius:2px;transition:width .9s cubic-bezier(.22,1,.36,1)}
-.pg-bar.is-off{display:none}
-.pg-main .pg-line{height:1px;background:#000;margin:30px 0 0}
-.pg-main .pg-row{padding:22px 0 0}
-.pg-row .pg-v{font-size:23px;font-weight:600;line-height:1.2;letter-spacing:-.01em;margin-top:9px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-top:2px}
-.pg-row .pg-s{font-size:15px;font-weight:500;opacity:.45;margin-top:3px;line-height:1.2}
-.pg-cd{display:flex;align-items:baseline;gap:8px;margin-top:9px}
-.pg-cd b{font-size:46px;font-weight:800;line-height:1;letter-spacing:-.035em;font-variant-numeric:tabular-nums}
-.pg-cd span{font-size:19px;font-weight:600}
+@media (prefers-reduced-motion:reduce){.pg-chip{animation:none}}
 
+
+/* ================= ANA SAYFA: PLANLAYICI (RAHATLA) WIDGET'I =================
+   Eski ana sayfadaki planlayıcı widget'ı yeni sayfaya taşındı. Çalışma mantığı (JS) ve
+   iç görünüm aynen duruyor; yalnızca yerleşim sadeleştirildi ve boş durumdaki
+   "Rahatla" yazısı görev başlığı gibi değil, desenli/animasyonlu bir yazı olarak yeniden tasarlandı.
+   Stack içindeki diğer eski kutular (çözülen, takvim, geri sayım...) gizli kalır. */
+html[data-pg="on"] #page-1 .home-widgets-stack{
+  display:block;position:absolute;z-index:3;
+  left:20px;right:20px;top:calc(env(safe-area-inset-top) + 96px);
+  width:auto;max-width:28rem;min-height:0;margin:0;
+  animation:pgIn 1s .15s cubic-bezier(.22,1,.36,1) both}
+html[data-pg="on"] #page-1 .home-widgets-stack > :not(.home-tile-relax){display:none !important}
+html[data-pg="on"] #page-1 .home-tile-relax::after{content:none !important;display:none !important}
+html[data-pg="on"] #page-1 .home-relax-widget{transform:none;min-height:0}
+html[data-pg="on"] #page-1 .home-relax-task-row{padding:.4rem .2rem}
+
+/* Boş durum: "Rahatla" — ince tarama deseni + akan alacakaranlık renkleri + yavaş parıltı */
+html[data-pg="on"] #page-1 .home-relax-widget.is-empty .home-relax-widget-title{
+  font-family:"Playfair Display","Baloo 2",Georgia,serif;font-style:italic;font-weight:700;
+  font-size:2.35rem;line-height:1.08;letter-spacing:.005em;
+  padding:.04em .2em .14em 0;
+  color:transparent;-webkit-text-fill-color:transparent;
+  background-image:
+    repeating-linear-gradient(118deg,transparent 0 3px,color-mix(in srgb,var(--theme-text,#1a1a1a) 34%,transparent) 3px 4px),
+    linear-gradient(105deg,transparent 44%,rgba(255,255,255,.55) 50%,transparent 56%),
+    linear-gradient(100deg,#f0922f 0%,#e5566f 28%,#8a64d6 56%,#3f7ed6 72%,#f0922f 100%);
+  background-size:auto,260% 100%,260% 100%;
+  background-repeat:repeat,no-repeat,repeat;
+  -webkit-background-clip:text;background-clip:text;
+  animation:pgRelaxIn 1.2s cubic-bezier(.22,1,.36,1) both,pgRelaxFlow 9s ease-in-out 1.2s infinite alternate}
+@keyframes pgRelaxFlow{
+  from{background-position:0 0,130% 0,0% 0}
+  to{background-position:0 0,-30% 0,100% 0}}
+@keyframes pgRelaxIn{
+  from{opacity:0;transform:translateY(8px);filter:blur(6px);letter-spacing:.14em}
+  to{opacity:1;transform:none;filter:blur(0);letter-spacing:.005em}}
+html[data-pg="on"] #page-1 .home-relax-widget.is-empty .home-relax-widget-time{
+  font-size:.82rem;letter-spacing:.06em;text-transform:uppercase;font-weight:600;
+  color:color-mix(in srgb,var(--theme-text,#1a1a1a) 45%,transparent)}
+html[data-pg="on"] #page-1 .home-relax-widget.is-empty .home-relax-widget-moon{
+  justify-content:flex-start;animation:pgMoon 6s ease-in-out infinite}
+@keyframes pgMoon{0%,100%{transform:translateY(0);opacity:.92}50%{transform:translateY(-2px);opacity:1}}
+@media (prefers-reduced-motion:reduce){
+  html[data-pg="on"] #page-1 .home-relax-widget.is-empty .home-relax-widget-title,
+  html[data-pg="on"] #page-1 .home-relax-widget.is-empty .home-relax-widget-moon,
+  html[data-pg="on"] #page-1 .home-widgets-stack{animation:none}}
+
+/* Geniş ekran: bento düzeni yerine sol üstte sade, tek widget */
+@media (min-width:768px) and (min-height:600px){
+  html[data-pg="on"] #page-1 .home-widgets-stack{
+    left:22px;right:auto;top:calc(env(safe-area-inset-top) + 96px);width:min(30rem,60%);max-width:none}
+  html[data-pg="on"] #page-1 .home-tile-relax{
+    display:block;height:min(52dvh,22rem);padding:0 !important;background:none !important;border:0 !important;box-shadow:none !important;border-radius:0 !important}
+  html[data-pg="on"] #page-1 .home-relax-task-row{padding:.6rem .3rem;flex:0 0 auto}
+  html[data-pg="on"] #page-1 .home-relax-widget{justify-content:flex-start}
+  html[data-pg="on"] #page-1 .home-relax-widget.is-empty .home-relax-widget-title{font-size:2.6rem}
+}
 </style>
 
 </head>
@@ -38252,85 +38287,6 @@ html[data-pg="on"] #page-1 > :not(.pg-root):not(.app-logo){display:none !importa
         </span>
         <span class="pg-name" id="pgName">Giriş yap</span>
       </button>
-          <!-- ANA BÖLÜMLER: veri eski sayfanın (gizli) widget'larından okunur; orada ne güncellenirse burası da güncellenir. -->
-      <div class="pg-main" id="pgMain">
-        <div><div class="pg-hi" id="pgHi">Merhaba</div><div class="pg-hi-n" id="pgHiN" hidden></div></div>
-        <button type="button" class="pg-solved" id="pgSolved" data-page="page-9" aria-label="Soru Takibi'ne git">
-          <div class="pg-lbl">Bugün çözülen</div>
-          <div class="pg-big"><b id="pgSolvedN">0</b><span id="pgSolvedSub"></span></div>
-          <div class="pg-bar is-off" id="pgBar"><i></i></div>
-        </button>
-        <div class="pg-line" aria-hidden="true"></div>
-        <button type="button" class="pg-row" id="pgTask" data-page="page-relax" aria-label="Planlayıcıya git">
-          <div class="pg-lbl">Sıradaki görev</div>
-          <div class="pg-v" id="pgTaskV">—</div><div class="pg-s" id="pgTaskS"></div>
-        </button>
-        <button type="button" class="pg-row" id="pgCd" data-page="page-6" aria-label="Takvime git" hidden>
-          <div class="pg-lbl" id="pgCdLbl">Sınava kalan</div>
-          <div class="pg-cd"><b id="pgCdN">0</b><span id="pgCdU">gün</span></div><div class="pg-s" id="pgCdS"></div>
-        </button>
-      </div>
-      <script>
-      (function(){
-        var $=function(i){return document.getElementById(i)};
-        function safe(f,d){try{return f()}catch(e){return d}}
-        var name="";
-        function greet(){
-          var h=new Date().getHours();
-          var g=h>=5&&h<11?"Günaydın":h>=11&&h<17?"İyi günler":h>=17&&h<22?"İyi akşamlar":"İyi geceler";
-          $("pgHi").textContent=g+(name?",":"");
-          var n=$("pgHiN");n.hidden=!name;n.textContent=name;
-        }
-        function txt(id){var e=$(id);return e?(e.textContent||"").trim():""}
-        function solved(){
-          $("pgSolvedN").textContent=txt("homeQuestionWidgetCount")||"0";
-          $("pgSolvedSub").textContent=txt("homeQuestionWidgetSub");
-          var bar=$("homeQuestionWidgetBarFill"),goal=document.getElementById("homeQuestionWidget"),
-              r=bar?parseFloat(bar.style.getPropertyValue("--fill-ratio"))||0:0,
-              b=$("pgBar");b.classList.toggle("is-off",!(goal&&goal.classList.contains("has-goal")));b.style.setProperty("--r",r);
-        }
-        function task(){
-          var t=txt("homeRelaxWidgetTime"),n=txt("homeRelaxWidgetTitle");
-          if(!t||/Yaklaşan görev yok/i.test(t)){$("pgTaskV").textContent="Bugün sırada görev yok";$("pgTaskS").textContent="";return}
-          $("pgTaskV").textContent=n||"Görev";$("pgTaskS").textContent=t;
-        }
-        var MON=["Oca","Şub","Mar","Nis","May","Haz","Tem","Ağu","Eyl","Eki","Kas","Ara"];
-        function cd(){
-          var all=safe(function(){return getDayCountdowns()},{}),now=new Date(),t0=new Date(now.getFullYear(),now.getMonth(),now.getDate()),best=null;
-          Object.keys(all).forEach(function(k){
-            var m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(k);if(!m)return;
-            var d=new Date(+m[1],+m[2]-1,+m[3]),c=all[k]||{},tm=/^\d{2}:\d{2}$/.test(c.time||"")?c.time.split(":"):null;
-            var tg=tm?new Date(d.getFullYear(),d.getMonth(),d.getDate(),+tm[0],+tm[1]):d;
-            if(tm?tg<now:d<t0)return;
-            if(!best||tg<best.tg)best={d:d,tg:tg,name:String(c.name||"Geri sayım")};
-          });
-          var el=$("pgCd");el.hidden=!best;if(!best)return;
-          var days=Math.round((best.d-t0)/86400000);
-          $("pgCdN").textContent=days===0?"Bugün":days;$("pgCdU").textContent=days===0?"":"gün";
-          $("pgCdS").textContent=best.name+" · "+best.d.getDate()+" "+MON[best.d.getMonth()];
-        }
-        function all(){greet();solved();task();cd()}
-        var raf=0;function sch(){if(!raf)raf=requestAnimationFrame(function(){raf=0;all()})}
-        window.addEventListener("pace:profile",function(e){var d=e.detail||{};name=d.signedIn?(d.name||""):"";sch()});
-        if(window.__pgProfile){var d0=window.__pgProfile;name=d0.signedIn?(d0.name||""):""}
-        window.addEventListener("load",function(){
-          all();setTimeout(all,1200);
-          var mo=new MutationObserver(sch);
-          ["homeQuestionWidgetCount","homeQuestionWidgetSub","homeQuestionWidgetBarFill","homeQuestionWidget","homeRelaxWidgetTime","homeRelaxWidgetTitle"].forEach(function(i){
-            var e=$(i);if(e)mo.observe(e,{childList:true,characterData:true,subtree:true,attributes:true})});
-        });
-        window.addEventListener("home-cal-refresh",sch);
-        document.addEventListener("visibilitychange",function(){if(!document.hidden)sch()});
-        setInterval(sch,30000);
-        $("pgMain").addEventListener("click",function(e){
-          var b=e.target.closest("[data-page]");if(!b)return;var id=b.getAttribute("data-page");
-          var n=document.querySelector('.nav-input[value="'+id+'"]');
-          if(n){n.checked=true;n.dispatchEvent(new Event("change"))}
-          else if(typeof goToPage==="function"){goToPage(id);safe(function(){setActiveSidebarItem(id)})}
-        });
-        greet();
-      })();
-      </script>
     </div>
     <script>
     (function(){
@@ -38396,7 +38352,7 @@ html[data-pg="on"] #page-1 > :not(.pg-root):not(.app-logo){display:none !importa
            sayfası açılır. Bundan sonra sohbette "planlayıcı sayfası" denince
            kastedilen yer #page-relax'tir. -->
       <div class="home-tile home-tile-relax">
-      <div class="home-relax-widget" id="homeRelaxWidget" role="list" aria-label="Sıradaki görevler">
+      <div class="home-relax-widget is-empty" id="homeRelaxWidget" role="list" aria-label="Sıradaki görevler">
         <!-- Planlayıcı listesindeki gibi (bkz. #relaxTasksConnectors) satırlar
              arasına renkli, geçişli dikey bağlantı çizgisi çizen katman; JS
              (drawHomeRelaxConnectors) her satırın gerçek konumuna göre kurar. -->
