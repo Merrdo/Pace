@@ -15903,11 +15903,11 @@
     opacity: 0;
     transform: scale(0.85);
     pointer-events: none;
-    background-color: #fff;
+    background-color: var(--theme-c2, var(--accent-color, #ff90e8));
     border: none;
     border-radius: 999px;
     box-shadow: 0 8px 18px -12px rgba(0, 0, 0, 0.32), 0 2px 6px rgba(0, 0, 0, 0.06);
-    color: #121212;
+    color: var(--theme-c1, var(--on-accent, #16171b));
     font-family: "Baloo 2", "Space Grotesk", sans-serif;
     font-weight: 700;
     font-size: 0.92rem;
@@ -15933,20 +15933,6 @@
 
   .calendar-today-btn.is-visible:active {
     transform: scale(0.95);
-    background-color: var(--accent-color, #ff90e8);
-    color: var(--on-accent, #16171b);
-  }
-
-  .calendar-today-dot {
-    flex-shrink: 0;
-    width: 0.5rem;
-    height: 0.5rem;
-    border-radius: 50%;
-    background-color: var(--accent-color, #ff90e8); color: var(--on-accent, #16171b);
-  }
-
-  .calendar-today-btn.is-visible:active .calendar-today-dot {
-    background-color: #16171b;
   }
 
   /* Gün adı satırı: Planlayıcı'daki .relax-calendar-day-label ile aynı
@@ -16585,17 +16571,8 @@
     animation: calTextIn 0.45s var(--cal-ease) calc(var(--info-delay, 0ms) + 80ms) backwards;
   }
 
-  /* Koyu (anthracite) mod: "Bugün" hapı, "Görev Ekle" ile aynı şekilde
-     kart rengine geçer; basılınca vurgu rengi görünür. */
-  body.is-anthracite .calendar-today-btn {
-    background-color: var(--dark-card-color, #1c1c22);
-    color: #f2f2f4;
-  }
-
-  body.is-anthracite .calendar-today-btn.is-visible:active {
-    background-color: var(--accent-color, #ff90e8);
-    color: var(--on-accent, #16171b);
-  }
+  /* "Bugün" hapı her modda temanın ikincil rengi (zemin) + ana rengi (yazı)
+     ile görünür; koyu mod için ayrı bir geçersiz kılma yok. */
 
   /* ---------- Takvim: geri sayım işaretleri ----------
      Üzerine geri sayım kurulmuş günler, seçilen renkte dolu bir daire
@@ -39212,7 +39189,6 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
         <span class="calendar-month-label" id="calendarMonthLabel" aria-live="polite">Eylül 2026</span>
         <div class="calendar-nav-btns">
           <button type="button" class="calendar-today-btn" id="calendarTodayBtn" aria-label="Bugüne dön" aria-hidden="true" tabindex="-1">
-            <span class="calendar-today-dot" aria-hidden="true"></span>
             <span>Bugün</span>
           </button>
           <button type="button" class="calendar-nav-btn" id="calendarPrevBtn" aria-label="Önceki ay">
@@ -71739,12 +71715,12 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
   .of-cupfill { fill: rgba(255, 150, 150, .12); stroke: none; opacity: 0; }
   .of-coffee { fill: rgba(255, 110, 90, .5); }
   .of-rip { fill: none; stroke: #ff5a5a; stroke-width: 1.4; opacity: 0; }
-  .of-chip { order: 3; flex: 0 0 auto; display: none; align-items: center; gap: .32rem; margin: 0 auto 0 0; padding: .3rem .7rem .3rem .5rem; border: 1.5px solid rgba(255, 90, 90, .6); border-radius: 999px; background: rgba(255, 59, 59, .13); color: #ff4a4a; font: 800 .74rem/1 "Baloo 2", "Space Grotesk", sans-serif; letter-spacing: .06em; white-space: nowrap; cursor: pointer; -webkit-tap-highlight-color: transparent; position: relative; overflow: hidden; transition: transform .2s cubic-bezier(.34, 1.56, .64, 1); }
+  .of-chip { order: 3; flex: 0 0 auto; display: none; align-items: center; gap: .32rem; margin: 0 auto 0 0; padding: .3rem .7rem .3rem .5rem; border: 1.5px solid rgba(255, 90, 90, .6); border-radius: 999px; background: rgba(255, 59, 59, .13); color: #ff4a4a; font: 800 .74rem/1 "Baloo 2", "Space Grotesk", sans-serif; letter-spacing: .06em; white-space: nowrap; cursor: pointer; -webkit-tap-highlight-color: transparent; position: relative; overflow: hidden; isolation: isolate; clip-path: inset(0 round 999px); -webkit-clip-path: inset(0 round 999px); transition: transform .2s cubic-bezier(.34, 1.56, .64, 1); }
   .of-chip.is-on { display: inline-flex; }
   .of-chip.is-pop { animation: ofChipIn .7s cubic-bezier(.34, 1.56, .64, 1) both; }
   .of-chip:active { transform: scale(.93); }
   .of-chip svg { width: 15px; height: 15px; flex: none; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-  .of-chip::after { content: ""; position: absolute; inset: 0; background: linear-gradient(105deg, transparent 35%, rgba(255, 255, 255, .45) 50%, transparent 65%); transform: translateX(-120%); animation: ofChipShine 3.6s ease-in-out 1.2s infinite; pointer-events: none; }
+  .of-chip::after { content: ""; position: absolute; inset: 0; border-radius: inherit; will-change: transform; background: linear-gradient(105deg, transparent 35%, rgba(255, 255, 255, .45) 50%, transparent 65%); transform: translateX(-120%); animation: ofChipShine 3.6s ease-in-out 1.2s infinite; pointer-events: none; }
   #gdFlame.has-chip { margin-right: .5rem; }
   @keyframes ofChipIn { 0% { opacity: 0; transform: scale(.4) translateY(-6px); } 100% { opacity: 1; transform: none; } }
   @keyframes ofChipShine { 0%, 55% { transform: translateX(-120%); } 85%, 100% { transform: translateX(120%); } }
