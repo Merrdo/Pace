@@ -16239,10 +16239,36 @@
   .calendar-event-time { flex: 0 0 auto; min-width: 2.9rem; font-weight: 700; font-size: 0.86rem; opacity: 0.55; }
   .calendar-event-name { flex: 1; min-width: 0; font-weight: 700; font-size: 1.02rem; overflow-wrap: anywhere; }
   .calendar-event-add { justify-content: center; background: transparent; font-weight: 700; font-size: 0.88rem; opacity: 0.5; }
-  .calendar-events { display: none !important; }
-  .calendar-events { margin-top: 1.1rem; padding-top: 1rem; border-top: 1px solid color-mix(in srgb, var(--theme-text, #f2f2f7) 10%, transparent); }
-  .calendar-events .calendar-event-add { justify-content: center; gap: .55rem; height: 3rem; opacity: 1; font-weight: 800; font-size: .95rem; background-color: color-mix(in srgb, var(--accent-color, #ff90e8) 22%, transparent); }
-  .calendar-events .calendar-event-add::before { content: ''; width: .55rem; height: .55rem; border-radius: 50%; background: var(--accent-color, #ff90e8); }
+  /* Seçili günün etkinlikleri: bilgi satırının hemen altında kayarak açılan kartlar.
+     Etkinlik yoksa alan 0 yüksekliğe kapanır (grid 0fr → 1fr). */
+  .calendar-events { display: grid; grid-template-rows: 0fr; gap: 0; margin: 0; padding: 0; border: 0;
+    transition: grid-template-rows .55s cubic-bezier(.22, 1, .36, 1); }
+  .calendar-events.has-items { grid-template-rows: 1fr; }
+  .cal-evc-clip { min-height: 0; overflow: hidden; margin: 0 -.2rem; padding: 0 .2rem; }
+  .cal-evc-list { display: flex; flex-direction: column; gap: .5rem; padding: .6rem 0 .25rem; }
+  .cal-evc {
+    --c: var(--accent-color, #ff90e8);
+    position: relative; display: flex; align-items: center; gap: .85rem; width: 100%; box-sizing: border-box; overflow: hidden;
+    padding: .75rem .7rem .75rem .75rem; border: none; border-radius: 1.5rem; cursor: pointer; text-align: left;
+    font: inherit; color: var(--theme-text, #f2f2f7); -webkit-tap-highlight-color: transparent;
+    background: linear-gradient(105deg, color-mix(in srgb, var(--c) 26%, transparent), color-mix(in srgb, var(--c) 8%, transparent));
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--c) 28%, transparent);
+    animation: calEvcIn .6s cubic-bezier(.22, 1, .36, 1) calc(var(--info-delay, 0ms) + var(--i, 0) * 70ms + 120ms) backwards;
+    transition: transform .25s cubic-bezier(.34, 1.56, .64, 1);
+  }
+  .cal-evc:active { transform: scale(.975); }
+  .cal-evc-ic { flex: 0 0 auto; width: 2.6rem; height: 2.6rem; border-radius: 50%; display: grid; place-items: center;
+    background: var(--c); color: #16171b; box-shadow: 0 8px 16px -8px var(--c); }
+  .cal-evc-txt { flex: 1; min-width: 0; display: flex; flex-direction: column; line-height: 1.15; }
+  .cal-evc-txt b { font-weight: 800; font-size: 1.1rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .cal-evc-txt em { font-style: normal; font-weight: 700; font-size: .8rem; opacity: .6; margin-top: .18rem; font-variant-numeric: tabular-nums; }
+  .cal-evc-go { flex: 0 0 auto; width: 1.9rem; height: 1.9rem; border-radius: 50%; display: grid; place-items: center; opacity: .75;
+    background: color-mix(in srgb, var(--theme-text, #f2f2f7) 10%, transparent); }
+  .cal-evc-more { align-self: flex-start; margin: .05rem 0 0 .35rem; padding: .3rem .85rem; border: none; border-radius: 999px; cursor: pointer;
+    font: 800 .78rem "Baloo 2", "Space Grotesk", sans-serif; color: var(--theme-text, #f2f2f7); background: color-mix(in srgb, var(--theme-text, #f2f2f7) 9%, transparent);
+    animation: calEvcIn .6s cubic-bezier(.22, 1, .36, 1) calc(var(--info-delay, 0ms) + 260ms) backwards; }
+  @keyframes calEvcIn { from { opacity: 0; transform: translateY(14px) scale(.97); } to { opacity: 1; transform: none; } }
+  @media (prefers-reduced-motion: reduce) { .cal-evc, .cal-evc-more { animation: none; } .calendar-events { transition-duration: .01s; } }
   .calendar-event-hint { margin: 0; padding: 0 0.2rem; font-weight: 600; font-size: 0.82rem; opacity: 0.4; }
 
   /* ---------- Etkinlik pop-up'ı ----------
@@ -16352,23 +16378,29 @@
   /* Liste görünümü */
   .cal-ev-list { display: flex; flex-direction: column; gap: .5rem; max-height: min(46vh, 22rem); overflow-y: auto; scrollbar-width: none; padding: .1rem; margin: -.1rem; }
   .cal-ev-list::-webkit-scrollbar { display: none; }
+  .cal-ev-count { margin: 0 0 .1rem .2rem; font-weight: 800; font-size: .7rem; letter-spacing: .09em; text-transform: uppercase; opacity: .45; }
   .cal-ev-item {
-    display: flex; align-items: center; gap: .85rem; width: 100%; box-sizing: border-box;
-    padding: .8rem .95rem .8rem .85rem; border: none; border-radius: 1.25rem; cursor: pointer;
-    text-align: left; font: inherit; color: inherit;
-    background: color-mix(in srgb, var(--c) 13%, var(--ce-bg));
-    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--c) 18%, transparent);
+    position: relative; display: flex; align-items: center; gap: .9rem; width: 100%; box-sizing: border-box; overflow: hidden;
+    padding: .85rem .8rem .85rem .85rem; border: none; border-radius: 1.6rem; cursor: pointer;
+    text-align: left; font: inherit; color: inherit; -webkit-tap-highlight-color: transparent;
+    background: linear-gradient(115deg, color-mix(in srgb, var(--c) 28%, var(--ce-bg)) 0%, color-mix(in srgb, var(--c) 9%, var(--ce-bg)) 100%);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--c) 30%, transparent), 0 14px 26px -18px color-mix(in srgb, var(--c) 80%, transparent);
     animation: ceItem .55s cubic-bezier(.22, 1, .36, 1) both;
     animation-delay: calc(var(--i, 0) * 50ms + 100ms);
-    transition: transform .15s ease;
+    transition: transform .25s cubic-bezier(.34, 1.56, .64, 1);
   }
-  .cal-ev-item:active { transform: scale(.98); }
+  .cal-ev-item::after { content: ''; position: absolute; right: -2.4rem; top: -2.6rem; width: 8rem; height: 8rem; border-radius: 50%; pointer-events: none;
+    background: radial-gradient(circle, color-mix(in srgb, var(--c) 30%, transparent), transparent 68%); }
+  .cal-ev-item:active { transform: scale(.975); }
   @keyframes ceItem { from { opacity: 0; transform: translateY(10px) scale(.98); } to { opacity: 1; transform: none; } }
-  .cal-ev-bar { flex: 0 0 auto; align-self: stretch; width: .3rem; min-height: 2.1rem; border-radius: 999px; background: var(--c); }
-  .cal-ev-meta { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: .05rem; }
-  .cal-ev-meta b { font-weight: 800; font-size: 1.02rem; line-height: 1.25; overflow-wrap: anywhere; }
-  .cal-ev-meta em { font-style: normal; font-weight: 700; font-size: .8rem; opacity: .55; font-variant-numeric: tabular-nums; }
-  .cal-ev-item > svg { flex: 0 0 auto; opacity: .4; }
+  .cal-ev-ico { position: relative; z-index: 1; flex: 0 0 auto; width: 3rem; height: 3rem; border-radius: 1.05rem; display: grid; place-items: center;
+    background: var(--c); color: #16171b; box-shadow: 0 10px 18px -10px var(--c); }
+  .cal-ev-meta { position: relative; z-index: 1; flex: 1; min-width: 0; display: flex; flex-direction: column; }
+  .cal-ev-meta b { font-weight: 800; font-size: 1.1rem; line-height: 1.2; overflow-wrap: anywhere; }
+  .cal-ev-meta em { align-self: flex-start; margin-top: .35rem; padding: .16rem .65rem; border-radius: 999px; font-style: normal; font-weight: 800; font-size: .76rem;
+    font-variant-numeric: tabular-nums; background: color-mix(in srgb, var(--c) 24%, transparent); }
+  .cal-ev-go { position: relative; z-index: 1; flex: 0 0 auto; width: 2.1rem; height: 2.1rem; border-radius: 50%; display: grid; place-items: center; opacity: .8;
+    background: color-mix(in srgb, var(--theme-text, #f2f2f7) 10%, transparent); }
   .cal-ev-add {
     width: 100%; height: 2.9rem; margin-top: .85rem; border: none; border-radius: 999px; cursor: pointer;
     font: inherit; font-weight: 800; font-size: .95rem; color: #16171b; background: var(--accent-color, #ff90e8);
@@ -16429,7 +16461,7 @@
     #calEvEditView .cal-ev-actions { margin-top: auto; padding-top: 1.6rem; }
     .cal-ev-actions button, .cal-ev-clockact button { height: 3.3rem; font-size: 1rem; }
     #calEvListView .cal-ev-list { max-height: none; flex: 0 1 auto; }
-    #calEvListView .cal-ev-item { padding: 1.05rem 1.1rem 1.05rem 1rem; }
+    #calEvListView .cal-ev-item { padding: 1rem .95rem 1rem 1rem; }
     #calEvListView .cal-ev-add { margin-top: auto; height: 3.3rem; font-size: 1rem; }
     #calEvListView .cal-ev-list + .cal-ev-add { margin-top: auto; }
     .cal-ev-clockact { padding-top: 1rem; }
@@ -49959,17 +49991,51 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
   const ce_pad2 = (n) => String(n).padStart(2, '0');
   const ce_evColor = (ev) => (ev && ev.color) || ce_EV_COLORS[0];
 
-  // Altta artık liste yok: tek bir düğme, etkinlikleri pop-up'ta açar.
+  // Seçili günün etkinlikleri bilgi satırının altında kart olarak görünür (en fazla 2; kalanı "+N daha").
+  // Karta dokunmak etkinlik penceresini açar. Etkinlik yoksa alan kapanır.
+  const CE_ICON_CLOCK = '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>';
+  const CE_ICON_SUN = '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3.8"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6 7 7M17 17l1.4 1.4M5.6 18.4 7 17M17 7l1.4-1.4"/></svg>';
+  const CE_ICON_CHEV = '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>';
+  let ce_evHideTok = 0;
   const renderCalendarEvents = () => {
     try { ce_renderNext(); } catch (err) { /* yok say */ }
     if (!calendarEventsEl) return;
-    const list = getDayEvents(calendarSelectedDate);
-    calendarEventsEl.innerHTML = '';
-    const btn = document.createElement('button');
-    btn.type = 'button'; btn.className = 'calendar-event-add';
-    btn.textContent = list.length ? `${list.length} etkinlik · göster` : '+ Etkinlik ekle';
-    btn.addEventListener('click', () => (list.length ? openCalEventList(calendarSelectedDate) : openCalEventSheet(calendarSelectedDate, null)));
-    calendarEventsEl.appendChild(btn);
+    const day = new Date(calendarSelectedDate.getFullYear(), calendarSelectedDate.getMonth(), calendarSelectedDate.getDate());
+    const list = getDayEvents(day);
+    if (!calendarEventsEl.firstElementChild) {
+      calendarEventsEl.innerHTML = '<div class="cal-evc-clip"><div class="cal-evc-list"></div></div>';
+    }
+    const box = calendarEventsEl.querySelector('.cal-evc-list');
+    const tok = ++ce_evHideTok;
+    if (!list.length) {
+      calendarEventsEl.classList.remove('has-items');
+      calendarEventsEl.setAttribute('inert', '');
+      setTimeout(() => { if (tok === ce_evHideTok) box.innerHTML = ''; }, 650);
+      return;
+    }
+    const info = document.getElementById('calendarSelectedInfo');
+    calendarEventsEl.style.setProperty('--info-delay', (info && info.style.getPropertyValue('--info-delay')) || '0ms');
+    box.innerHTML = '';
+    const SHOW = 2;
+    list.slice(0, SHOW).forEach((ev, i) => {
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'cal-evc';
+      b.style.setProperty('--c', ce_evColor(ev)); b.style.setProperty('--i', String(i));
+      b.innerHTML = `<span class="cal-evc-ic">${ev.time ? CE_ICON_CLOCK : CE_ICON_SUN}</span><span class="cal-evc-txt"><b></b><em></em></span><span class="cal-evc-go">${CE_ICON_CHEV}</span>`;
+      b.querySelector('b').textContent = ev.name;
+      b.querySelector('em').textContent = ev.time || 'Tüm gün';
+      b.addEventListener('click', (e) => { e.stopPropagation(); openCalEventList(day); });
+      box.appendChild(b);
+    });
+    if (list.length > SHOW) {
+      const m = document.createElement('button');
+      m.type = 'button'; m.className = 'cal-evc-more';
+      m.textContent = `+${list.length - SHOW} etkinlik daha`;
+      m.addEventListener('click', (e) => { e.stopPropagation(); openCalEventList(day); });
+      box.appendChild(m);
+    }
+    calendarEventsEl.removeAttribute('inert');
+    calendarEventsEl.classList.add('has-items');
   };
 
   const ce_dateLabel = (d) => `${d.getDate()} ${CALENDAR_MONTHS[d.getMonth()]} ${d.getFullYear()} · ${CALENDAR_WEEKDAYS_LONG[(d.getDay() + 6) % 7]}`;
@@ -50144,10 +50210,12 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
     if (!list.length) { openCalEventSheet(d, null); return; }
     calEvDay = d; calEvEditId = null;
     const box = $ce('calEvList'); box.innerHTML = '';
+    const cnt = document.createElement('div'); cnt.className = 'cal-ev-count'; cnt.textContent = `${list.length} etkinlik`;
+    box.appendChild(cnt);
     list.forEach((ev, i) => {
       const r = document.createElement('button'); r.type = 'button'; r.className = 'cal-ev-item';
       r.style.setProperty('--c', ce_evColor(ev)); r.style.setProperty('--i', String(i));
-      r.innerHTML = `<span class="cal-ev-bar"></span><span class="cal-ev-meta"><b></b><em></em></span>${CE_CHEV}`;
+      r.innerHTML = `<span class="cal-ev-ico">${ev.time ? CE_ICON_CLOCK : CE_ICON_SUN}</span><span class="cal-ev-meta"><b></b><em></em></span><span class="cal-ev-go">${CE_CHEV}</span>`;
       r.querySelector('b').textContent = ev.name;
       r.querySelector('em').textContent = ev.time || 'Tüm gün';
       r.onclick = () => openCalEventSheet(d, ev);
@@ -54572,8 +54640,21 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
   const navAddSideOptions = navAddSideSegmented
     ? Array.from(navAddSideSegmented.querySelectorAll('.settings-segmented-option'))
     : [];
+  let navAddAnimTimer = 0;
   const applyNavAddSide = (value, { persist } = { persist: true }) => {
     const side = value === 'left' ? 'left' : 'right';
+    if (persist) {
+      // Kullanıcı değiştirirken yumuşak geçiş: önce animasyon sınıfı, sonra taraf.
+      const addBtn = document.getElementById('navAddBtn');
+      document.body.classList.add('nav-add-anim');
+      void document.body.offsetWidth;
+      if (addBtn) { addBtn.classList.remove('is-hop'); void addBtn.offsetWidth; addBtn.classList.add('is-hop'); }
+      clearTimeout(navAddAnimTimer);
+      navAddAnimTimer = setTimeout(() => {
+        document.body.classList.remove('nav-add-anim');
+        if (addBtn) addBtn.classList.remove('is-hop');
+      }, 900);
+    }
     document.body.classList.toggle('nav-add-left', side === 'left');
     navAddSideOptions.forEach((btn) => {
       const on = btn.dataset.value === side;
@@ -75115,7 +75196,13 @@ body .settings-page .settings-panel-card .page9-summary-title{font-family:"Baloo
 /* + butonu solda: dock sağa kayar, buton sola geçer, açılan menü soldan büyür */
 @media not all and (min-width:768px) and (min-height:600px){
 body.nav-add-left .navbar .wrapper{margin-right:0;margin-left:66px}
-body.nav-add-left .navbar .nav-add-btn{left:auto;right:calc(100% + 8px)}
+body.nav-add-left .navbar .nav-add-btn{left:-66px;right:auto}
+/* Taraf değişince dock yana kayar, + butonu dock'un üzerinden hafif bir yay çizerek karşıya geçer */
+body.nav-add-anim .navbar .wrapper{transition:margin .7s cubic-bezier(.65,0,.35,1)}
+body.nav-add-anim .navbar .nav-add-btn{transition:left .7s cubic-bezier(.65,0,.35,1),transform .45s var(--n-ease),background-color .35s ease,color .35s ease}
+.navbar .nav-add-btn.is-hop{animation:navAddHop .7s cubic-bezier(.45,0,.55,1)}
+@keyframes navAddHop{0%{translate:0 0;scale:1}50%{translate:0 -34px;scale:.84}100%{translate:0 0;scale:1}}
+@media (prefers-reduced-motion:reduce){.navbar .nav-add-btn.is-hop{animation:none}body.nav-add-anim .navbar .wrapper,body.nav-add-anim .navbar .nav-add-btn{transition-duration:.01s}}
 body.nav-add-left .navbar .nav-more-menu{right:auto;left:-66px;transform-origin:0 100%}
 }
 </style>
