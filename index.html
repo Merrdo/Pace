@@ -39527,13 +39527,27 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
       <div class="settings-col-right">
       <div class="settings-section">
         <span class="settings-section-label">Takvim</span>
-        <div class="settings-card">
+        <div class="settings-card settings-panel-card" id="settingsCalendarCard">
           <div class="page9-summary-header">
             <span class="page9-summary-title">Hafta başlangıcı</span>
             <div class="settings-segmented page9-segmented" id="weekStartSegmented">
               <div class="settings-segmented-slider" id="weekStartSlider"></div>
               <button type="button" class="settings-segmented-option is-active" data-value="mon">Pazartesi</button>
               <button type="button" class="settings-segmented-option" data-value="sun">Pazar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="settings-section" id="settingsNavSection">
+        <span class="settings-section-label">Nav Bar</span>
+        <div class="settings-card settings-panel-card" id="settingsNavCard">
+          <div class="page9-summary-header">
+            <span class="page9-summary-title">+ butonu konumu</span>
+            <div class="settings-segmented page9-segmented" id="navAddSideSegmented" role="radiogroup" aria-label="+ butonu konumu">
+              <div class="settings-segmented-slider" id="navAddSideSlider"></div>
+              <button type="button" class="settings-segmented-option" data-value="left" role="radio" aria-checked="false">Sol</button>
+              <button type="button" class="settings-segmented-option is-active" data-value="right" role="radio" aria-checked="true">Sağ</button>
             </div>
           </div>
         </div>
@@ -54516,6 +54530,31 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
 
   // Sayfa yüklenirken kaydedilmiş tercihi (varsa) arayüze de yansıt.
   applyWeekStart(APP_STATE.weekStart === 'sun' ? 'sun' : 'mon', { persist: false });
+
+  // ---- Nav Bar: telefondaki alt dock'ta "+" butonunun tarafı (sol / sağ) ----
+  const navAddSideSegmented = document.getElementById('navAddSideSegmented');
+  const navAddSideSlider = document.getElementById('navAddSideSlider');
+  const navAddSideOptions = navAddSideSegmented
+    ? Array.from(navAddSideSegmented.querySelectorAll('.settings-segmented-option'))
+    : [];
+  const applyNavAddSide = (value, { persist } = { persist: true }) => {
+    const side = value === 'left' ? 'left' : 'right';
+    document.body.classList.toggle('nav-add-left', side === 'left');
+    navAddSideOptions.forEach((btn) => {
+      const on = btn.dataset.value === side;
+      btn.classList.toggle('is-active', on);
+      btn.setAttribute('aria-checked', on ? 'true' : 'false');
+    });
+    if (navAddSideSlider) navAddSideSlider.style.transform = side === 'right' ? 'translateX(100%)' : 'translateX(0)';
+    if (persist) saveAppState({ navAddSide: side });
+  };
+  navAddSideOptions.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      if (btn.classList.contains('is-active')) return;
+      applyNavAddSide(btn.dataset.value);
+    });
+  });
+  applyNavAddSide(APP_STATE.navAddSide === 'left' ? 'left' : 'right', { persist: false });
 
   // ---- Tüm verileri sıfırlama: brüt stilde onay pop-up'ı ----
   const settingsResetBtn = document.getElementById('settingsResetBtn');
@@ -75022,6 +75061,28 @@ body .wheel-color-backdrop.is-open .wheel-color-card{transform:none;opacity:1}
 .wheel-color-grip{display:none}
 }
 @media (prefers-reduced-motion:reduce){body .wheel-color-backdrop *{transition-duration:.01s !important;transition-delay:0s !important;animation:none !important}}
+</style>
+<style id="settingsPanelStyle">
+/* ===== Ayarlar · panel kartları (Takvim, Nav Bar): Denemelerim dili ===========
+   Tema yazı rengi + yumuşak yüzey, 30px köşe, vurgu rengi YOK. Seçili hap temanın
+   yazı renginde dolu; renkler tema değişince yumuşakça geçer. ======================= */
+.settings-panel-card{--m-t:var(--theme-text,#121212);--m-bg:var(--theme-bg,#f6f4ef);--m-soft2:color-mix(in srgb,var(--m-t) 12%,transparent);--m-mute:color-mix(in srgb,var(--m-t) 52%,transparent);--m-ease:cubic-bezier(.22,1,.36,1)}
+body .settings-page .settings-card.settings-panel-card{box-sizing:border-box;padding:18px 18px 20px !important;border-radius:30px !important;border:0 !important;box-shadow:none !important;
+  background:color-mix(in srgb,var(--m-t) 6%,transparent) !important;transition:background-color .5s ease}
+body .settings-page .settings-panel-card .page9-summary-header{gap:.8rem}
+body .settings-page .settings-panel-card .page9-summary-title{font-family:"Baloo 2","Space Grotesk",sans-serif;font-weight:800;font-size:.95rem;letter-spacing:-.005em;text-transform:none;color:var(--m-t) !important;opacity:1;transition:color .5s ease}
+.settings-panel-card .settings-segmented.page9-segmented{height:46px;padding:3px;border:0 !important;border-radius:999px !important;box-shadow:none !important;background:var(--m-soft2) !important;transition:background-color .5s ease}
+.settings-panel-card .settings-segmented-slider{background:var(--m-t) !important;border-radius:999px !important;box-shadow:none !important;transition:transform .6s var(--m-ease),background-color .5s ease !important}
+.settings-panel-card .settings-segmented-option{font-family:"Baloo 2","Space Grotesk",sans-serif;font-weight:800;font-size:.9rem;color:var(--m-mute) !important;border-radius:999px;-webkit-tap-highlight-color:transparent;transition:color .4s var(--m-ease) !important}
+.settings-panel-card .settings-segmented-option.is-active{color:var(--m-bg) !important}
+/* Nav Bar ayarı yalnızca telefondaki alt dock için anlamlı; büyük ekranda yan panel var */
+@media (min-width:768px) and (min-height:600px){#settingsNavSection{display:none}}
+/* + butonu solda: dock sağa kayar, buton sola geçer, açılan menü soldan büyür */
+@media not all and (min-width:768px) and (min-height:600px){
+body.nav-add-left .navbar .wrapper{margin-right:0;margin-left:66px}
+body.nav-add-left .navbar .nav-add-btn{left:auto;right:calc(100% + 8px)}
+body.nav-add-left .navbar .nav-more-menu{right:auto;left:-66px;transform-origin:0 100%}
+}
 </style>
 <style id="colorPickerMinimalStyle">
 /* ===== Renk seçici · minimal: tek yüzey, düz daireler, yumuşak geçişler =====
