@@ -1394,6 +1394,11 @@ body.is-qhavuz-test-open .pf-side{opacity:.35;pointer-events:none}}
     var h = signedIn() ? avatarHTML(48) : '<span class="pf-ph">' + ic(IC.user, 22) + '</span>';
     b.setAttribute('aria-label', signedIn() ? 'Profil resmini büyüt' : 'Giriş yap');
     if (b._h !== h) { b.innerHTML = h; b._h = h; }
+    // Ana sayfadaki sağ üst profil rozeti (#pgChip) için: profil/oturum bilgisini yayınla.
+    try {
+      var si = signedIn(), pp = prof(), d = { signedIn: si, status: authState, name: si ? dispName(pp) : '', color: si ? pickColor(pp) : '', avatar: si ? avatarHTML(35) : '' };
+      window.__pgProfile = d; window.dispatchEvent(new CustomEvent('pace:profile', { detail: d }));
+    } catch (e0) {}
   }
   var prevYd = '', okAt = 0;
   function ui() {

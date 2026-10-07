@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html lang="tr" data-pg="on">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover">
@@ -40,7 +40,6 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Coiny&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Archivo+Expanded:wght@700;800&family=Playfair+Display:ital,wght@0,400;0,700;0,800;1,400;1,700&family=Baloo+2:wght@600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -281,8 +280,8 @@
   }
 
   .app-logo text {
-    font-family: "Coiny", "Baloo 2", "Sabon", sans-serif;
-    font-weight: 400;
+    font-family: "Baloo 2", "Sabon", sans-serif;
+    font-weight: 700;
     font-size: 42px;
     letter-spacing: -0.01em;
     fill: currentColor;
@@ -37365,6 +37364,39 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
 }
 
 </style>
+<style id="pg-css">
+/* ===== PROFİL SAYFASI (yeniden tasarım) =====
+   Eski ana sayfa SİLİNMEDİ: <html data-pg="on"> iken sadece gizlenir.
+   Geri getirmek için <html> etiketinden data-pg="on" kaldırılır.
+   TAMAMLANINCA: eski ana sayfa + bu gizleme kuralı silinecek (bkz. NOTLAR.md). */
+html[data-pg="on"] #page-1 > :not(.pg-root){display:none !important}
+.pg-root{position:absolute;inset:0;pointer-events:none;z-index:3}
+.pg-chip{--ring:conic-gradient(from 210deg,#ff9a6c,#ff5fa2,#8f6bff,#4cc9f0,#ff9a6c);
+  position:absolute;top:calc(env(safe-area-inset-top) + 14px);right:18px;pointer-events:auto;
+  display:flex;align-items:center;gap:10px;padding:5px 15px 5px 5px;border:0;cursor:pointer;
+  border-radius:999px;font-family:"Baloo 2","Space Grotesk",sans-serif;color:var(--theme-text,#1a1a1a);
+  background:color-mix(in srgb,var(--theme-bg,#f6f4ef) 72%,transparent);
+  -webkit-backdrop-filter:blur(18px) saturate(1.6);backdrop-filter:blur(18px) saturate(1.6);
+  box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--theme-text,#1a1a1a) 10%,transparent),
+             0 6px 20px -8px color-mix(in srgb,var(--theme-text,#1a1a1a) 38%,transparent);
+  transition:transform .45s cubic-bezier(.34,1.45,.64,1),box-shadow .3s;
+  -webkit-tap-highlight-color:transparent;animation:pgIn .8s cubic-bezier(.22,1,.36,1) both}
+.pg-chip:active{transform:scale(.94)}
+@keyframes pgIn{from{opacity:0;transform:translateY(-10px) scale(.92)}to{opacity:1;transform:none}}
+.pg-avatar{--rc:transparent;display:block;box-sizing:border-box;position:relative;width:40px;height:40px;border-radius:50%;flex:none;padding:2.5px;background:var(--ring);animation:pgSpin 9s linear infinite}
+.pg-avatar::before{content:"";position:absolute;inset:2.5px;border-radius:50%;background:var(--theme-bg,#f6f4ef)}
+.pg-avin{position:absolute;inset:2.5px;border-radius:50%;overflow:hidden;display:grid;place-items:center;animation:pgSpin 9s linear infinite reverse}
+.pg-avin .pf-av{width:100% !important;height:100% !important;font-size:15px !important;line-height:1;padding-top:2px}
+.pg-chip.is-in .pg-avatar{background:conic-gradient(from 210deg,var(--rc),color-mix(in srgb,var(--rc) 35%,#fff),var(--rc))}
+.pg-avatar svg{width:22px;height:22px;color:var(--theme-text,#1a1a1a)}
+@keyframes pgSpin{to{transform:rotate(360deg)}}
+.pg-dot{display:block;position:absolute;right:0;bottom:1px;width:11px;height:11px;border-radius:50%;background:#8a8a8a;
+  box-shadow:0 0 0 2.5px var(--theme-bg,#f6f4ef)}
+.pg-avwrap{display:block;position:relative;flex:none;width:40px;height:40px}
+.pg-avwrap .pg-dot{right:-1px;bottom:0}
+.pg-name{font-weight:700;font-size:17px;line-height:1;letter-spacing:-.01em;max-width:34vw;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-top:3px;outline:0;-webkit-user-select:text;user-select:text}
+@media (prefers-reduced-motion:reduce){.pg-avatar,.pg-avin{animation:none}}
+</style>
 </head>
 <body oncopy="return false" oncut="return false" onselectstart="return false" ondragstart="return false">
 
@@ -38193,6 +38225,40 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
 <div class="app">
 
   <section class="page is-active" id="page-1">
+    <!-- PROFİL: sağ üst rozet. Bilgi ayarlardaki profilden gelir (sync.js -> 'pace:profile' olayı).
+         Dokununca profil resmi büyür / girişli değilse giriş penceresi açılır. -->
+    <div class="pg-root" id="pgRoot">
+      <button type="button" class="pg-chip" id="pgChip" aria-label="Profil">
+        <span class="pg-avwrap">
+          <span class="pg-avatar" id="pgAvRing" aria-hidden="true"><span class="pg-avin" id="pgAv"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8.5" r="3.6"/><path d="M4.8 20c.9-3.6 3.8-5.6 7.2-5.6s6.3 2 7.2 5.6"/></svg></span></span>
+          <span class="pg-dot" id="pgDot"></span>
+        </span>
+        <span class="pg-name" id="pgName">Giriş yap</span>
+      </button>
+    </div>
+    <script>
+    (function(){
+      var chip=document.getElementById("pgChip"),nm=document.getElementById("pgName"),av=document.getElementById("pgAv"),
+          ring=document.getElementById("pgAvRing"),dot=document.getElementById("pgDot"),guest=av.innerHTML;
+      var DOT={in:"#34d399",expired:"#e74c3c"};
+      function render(d){
+        d=d||{};
+        if(d.signedIn){
+          nm.textContent=d.name||"Hesap";av.innerHTML=d.avatar||guest;
+          ring.style.setProperty("--rc",d.color||"");chip.classList.add("is-in");
+          chip.setAttribute("aria-label","Profil: "+(d.name||""));
+        }else{
+          nm.textContent="Giriş yap";av.innerHTML=guest;ring.style.removeProperty("--rc");chip.classList.remove("is-in");
+          chip.setAttribute("aria-label","Giriş yap");
+        }
+        dot.style.background=DOT[d.status]||"#8a8a8a";
+      }
+      window.addEventListener("pace:profile",function(e){render(e.detail)});
+      if(window.__pgProfile)render(window.__pgProfile);
+      chip.addEventListener("click",function(){var s=document.getElementById("pfSide");if(s)s.click()});
+    })();
+    </script>
+
     <!-- Ana sayfa şimdilik boş: yeniden tasarım için hazırlanıyor.
          Eski tüm elementler aşağıdaki küçük buton + panel içine taşındı. -->
     <svg class="app-logo" viewBox="0 0 150 52" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Pace">
@@ -44860,8 +44926,7 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
       eEl.setAttribute('x', String(parseFloat(base.getAttribute('x')) + base.getComputedTextLength()));
     };
     // Font yüklendikten sonra ölç; yoksa kısa gecikmeyle dene.
-    if (document.fonts && document.fonts.load) document.fonts.load('42px Coiny', 'Pace').then(buildE, buildE);
-    else if (document.fonts && document.fonts.ready) document.fonts.ready.then(buildE);
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(buildE);
     else setTimeout(buildE, 600);
 
     // Göz kırpma: "e"nin üst ve alt kısmı ortadaki çizgiye doğru kapanır
@@ -76240,7 +76305,7 @@ body #page-camera #qhavuzCanvasSelectBtn.is-active{background:var(--m-t);color:v
   })();
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" crossorigin="anonymous"></script>
-<script src="sync.js?v=41"></script>
+<script src="sync.js?v=42"></script>
 
 <style id="themePopupSurfaces">
 /* ==========================================================================
