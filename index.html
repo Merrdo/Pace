@@ -44247,6 +44247,8 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
     const c = t.colors || {};
     document.documentElement.style.setProperty('--theme-c1', c.c1 || t.color);
     document.documentElement.style.setProperty('--theme-c2', c.c2 || t.text);
+    // İkincil rengin üstünde okunur yazı/ikon rengi (ör. Planlayıcı "Görev Ekle" butonu).
+    document.documentElement.style.setProperty('--theme-c2-on', relLuminance(c.c2 || t.text) < 0.4 ? '#ffffff' : '#16171b');
     // Vurgu rengi: iki renkli temalarda temanın ikincil rengi (c2). Tek renkli
     // temalarda (Saf Siyah, Fildişi) eski mavi vurgu (#6ec6ff) kullanılır.
     // Vurgu zemini üstündeki yazı/ikon rengi (--on-accent) ve vurgunun tema
@@ -44256,6 +44258,11 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
     const accent = ensureContrastAgainst(rawAccent, bg, 3);
     document.documentElement.style.setProperty('--accent-color', accent);
     document.documentElement.style.setProperty('--on-accent', pickOnColor(accent, bg));
+    // Vurgu renginin üstünde okunur ikon/yazı rengi: koyu vurguda beyaz, açıkta koyu.
+    document.documentElement.style.setProperty('--accent-on-readable', relLuminance(accent) < 0.4 ? '#ffffff' : '#16171b');
+    // Temaya özel yüzeyler (ör. Planlayıcı alt panelleri) için işaret.
+    if (t.name === 'Milk ve Plum') document.documentElement.setAttribute('data-pace-theme', 'plum');
+    else document.documentElement.removeAttribute('data-pace-theme');
     applyPopupSurface(t, accent, bg);
   };
 
@@ -52214,7 +52221,7 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
 
       tasks.forEach((task) => {
         const markerColor = task.color || 'var(--accent-color, #ff90e8)';
-        const markerTextColor = task.color ? getReadableTextColor(task.color) : '#16171b';
+        const markerTextColor = task.color ? getReadableTextColor(task.color) : 'var(--accent-on-readable, #16171b)';
         const range = relaxTaskRangeMs(task, dateStr);
         const isDone = !!task.done;
 
@@ -54089,7 +54096,7 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
         fillEl: markerEl.querySelector('.relax-task-marker-fill'),
         itemEl: null,
         color: task.color || 'var(--accent-color, #ff90e8)',
-        onColor: task.color ? getReadableTextColor(task.color) : '#16171b',
+        onColor: task.color ? getReadableTextColor(task.color) : 'var(--accent-on-readable, #16171b)',
         startMs,
         endMs,
         done: true,
@@ -74793,6 +74800,41 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
   }
   @media (prefers-reduced-motion: reduce) {
     #page-8 .hl-sh, #page-8 .hl-sh::before, #page-8 .hl-sh::after, #page-8 .hl-sh-ch, #page-8 .hl-sec, #page-8 .hl-sec-in { animation: none !important; transition: none !important; }
+  }
+</style>
+<style id="plumSheetCss">
+  /* Milk ve Plum teması: Planlayıcı alt panelleri (görev eylem sayfası, Ay takvimi, uyku,
+     yeniden planla, geri sayım) zemini tema ana rengi (krem) olur; yazılar/karolar plum tonunda,
+     renkli daire içindeki ikonlar beyaz okunur. */
+  html[data-pace-theme="plum"] .task-sheet {
+    --ts-bg: var(--theme-c1, #FFF3E5);
+    --ts-text: var(--theme-c2, #3B153A);
+    --ts-muted: color-mix(in srgb, var(--theme-c2, #3B153A) 58%, transparent);
+    --ts-tile: color-mix(in srgb, var(--theme-c2, #3B153A) 7%, transparent);
+    --ts-tile-strong: color-mix(in srgb, var(--theme-c2, #3B153A) 13%, transparent);
+    --ts-on-task: #ffffff;
+    box-shadow: 0 -22px 56px -22px rgba(30, 8, 30, 0.45), 0 -2px 12px rgba(30, 8, 30, 0.05);
+  }
+  /* Üstteki renkli ışıma kalkar: zemin düz tema rengi. */
+  html[data-pace-theme="plum"] .task-sheet::before { opacity: 0; }
+  html[data-pace-theme="plum"] .task-sheet-action[data-action="done"] {
+    --ic-bg: var(--ts-task);
+    --ic-fg: var(--ts-on-task);
+  }
+</style>
+<style id="relaxAddBtnThemeCss">
+  /* Planlayıcı "Görev Ekle" butonu: seçili temanın ikincil rengi (--theme-c2), yazı/ikon okunur renkte. */
+  body .relax-add-btn,
+  body.is-anthracite .relax-add-btn {
+    background-color: var(--theme-c2, #fff);
+    color: var(--theme-c2-on, #121212);
+  }
+  body .relax-add-btn:active,
+  body .relax-add-btn.is-pressed,
+  body.is-anthracite .relax-add-btn:active,
+  body.is-anthracite .relax-add-btn.is-pressed {
+    background-color: color-mix(in srgb, var(--theme-c2, #fff) 82%, var(--theme-c1, #888));
+    color: var(--theme-c2-on, #121212);
   }
 </style>
 <style id="safeAreaSyncCss">
