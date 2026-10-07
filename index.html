@@ -44258,6 +44258,34 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
     const accent = ensureContrastAgainst(rawAccent, bg, 3);
     document.documentElement.style.setProperty('--accent-color', accent);
     document.documentElement.style.setProperty('--on-accent', pickOnColor(accent, bg));
+    applyPopupSurface(t, accent, bg);
+  };
+
+  // ---------- Pop-up / dock yüzeyleri temadan türetilir ----------
+  // Pop-up kartları (Soru Havuzu, sınav, kronometre vb.) artık sabit saf siyah
+  // değil: temanın ikincil rengi koyulaştırılarak (açık renkse siyaha karıştırılarak)
+  // koyu bir yüzey elde edilir; iç yüzeyler (--pop-raise*) bundan bir tık açıktır.
+  // Pop-up içinde vurgu rengi, kendi yüzeyiyle kontrastı yetmezse (ör. Milk ve
+  // Plum'da mor üstüne mor) temanın zemin rengine döner; böylece düğmeler,
+  // halkalar ve yazılar her temada okunur kalır.
+  const mixHex = (a, b, k) => {
+    const A = hexToRgb(a), B = hexToRgb(b);
+    return rgbToHex(A[0] * (1 - k) + B[0] * k, A[1] * (1 - k) + B[1] * k, A[2] * (1 - k) + B[2] * k);
+  };
+  const applyPopupSurface = (t, accent, bg) => {
+    const c = t.colors || {};
+    const base = c.c2 || t.text;
+    let pop = relLuminance(base) < 0.2 ? base : mixHex('#000000', base, 0.16);
+    if (!t.colors) pop = mixHex(pop, accent, 0.06); // tek renkli temalarda hafif vurgu tonu
+    let popAccent = accent;
+    if (contrastRatio(popAccent, pop) < 3) popAccent = bg;
+    if (contrastRatio(popAccent, pop) < 3) popAccent = '#ffffff';
+    const root = document.documentElement.style;
+    root.setProperty('--pop-bg', pop);
+    root.setProperty('--pop-raise', mixHex(pop, '#ffffff', 0.09));
+    root.setProperty('--pop-raise2', mixHex(pop, '#ffffff', 0.15));
+    root.setProperty('--pop-accent', popAccent);
+    root.setProperty('--pop-on-accent', pickOnColor(popAccent, pop));
   };
 
   // iPhone'da üst güvenli alan (çentik/Dynamic Island şeridi) tarayıcı
@@ -75779,5 +75807,82 @@ body .wheel-color-backdrop.is-open .wheel-color-card{transform:none;opacity:1}
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" crossorigin="anonymous"></script>
 <script src="sync.js?v=40"></script>
+
+<style id="themePopupSurfaces">
+/* ==========================================================================
+   Tema duyarlı pop-up yüzeyleri + seçim modu görünümü
+   (--pop-* değişkenleri applyThemeColors → applyPopupSurface tarafından yazılır)
+   ========================================================================== */
+html #qhavuzAddBackdrop .qhavuz-add-card,
+html #qhavuzBooksBackdrop .qhavuz-add-card,
+html #qhavuzPackagesBackdrop .qhavuz-add-card,
+html #qhavuzRunsBackdrop .qhavuz-add-card,
+html #qhavuzTestCreateBackdrop .qhavuz-tc-card,
+html #qhavuzPackageNameBackdrop .qhavuz-pn-card,
+html #qhavuzInfoBackdrop .qhavuz-info-card,
+html #qhavuzLightboxBackdrop .qhavuz-lightbox-card,
+html #qhavuzDeleteConfirmBackdrop .settings-confirm-card,
+html #qhavuzPackageDeleteConfirmBackdrop .settings-confirm-card,
+html #page11ExamDeleteConfirmBackdrop .settings-confirm-card,
+html #page11AddBackdrop .page11-modal-card,
+html #page11AddBackdrop.is-date-view .page11-modal-card,
+html #stopwatchSubjectsBackdrop .page9-add-card,
+html .qt-exit-card,
+html .page11-context-menu,
+html #qhavuzCanvasBackupMenu.page11-context-menu,
+html #page-camera .qhavuz-select-dock,
+html #qhavuzCanvasSelectBar .qhavuz-select-dock {
+  background: var(--pop-bg, #000);
+  border-color: var(--pop-bg, #000);
+  /* Pop-up içinde vurgu ve yazı değişkenleri yüzeye göre yeniden tanımlanır. */
+  --accent-color: var(--pop-accent, #ff90e8);
+  --on-accent: var(--pop-on-accent, #16171b);
+  --dock-accent: var(--pop-accent, #ff90e8);
+  --theme-text: #ffffff;
+}
+html #qhavuzInfoBackdrop .qhavuz-info-value,
+html #qhavuzInfoBackdrop .qhavuz-info-input,
+html #qhavuzInfoBackdrop .settings-confirm-actions button,
+html #qhavuzLightboxBackdrop .qhavuz-answer-reveal { background: var(--pop-raise, #1d1d22); }
+html #qhavuzLightboxBackdrop .qhavuz-lightbox-answer-wrap { background: color-mix(in srgb, var(--pop-bg, #000) 70%, var(--pop-raise, #141416)); }
+html .qt-exit-stay { background: var(--pop-raise2, #26262b); }
+html #qhavuzPackagesBackdrop .qhavuz-pk-play { background: var(--pop-bg, #000); }
+
+/* Seçim paneli: "Tümü" düğmesi vurgu zemininde okunur yazı/ikon rengi alır. */
+html #page-camera .qhavuz-select-dock-icon-btn.is-all,
+html #qhavuzCanvasSelectBar .qhavuz-select-dock-icon-btn.is-all {
+  background: var(--pop-accent, #ff90e8);
+  color: var(--pop-on-accent, #121212);
+}
+html #page-camera .qhavuz-select-dock-icon-btn.is-all:disabled,
+html #qhavuzCanvasSelectBar .qhavuz-select-dock-icon-btn.is-all:disabled { opacity: 0.5; }
+
+/* ---------- Seçim modu: belirgin tik rozeti + seçili/seçilmemiş ayrımı ---------- */
+html #page-camera .qhavuz-wide-select {
+  top: 0.8rem; right: 0.8rem;
+  width: 1.95rem; height: 1.95rem;
+  border: 2px solid rgba(255, 255, 255, 0.92);
+  background: rgba(20, 20, 22, 0.42);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+}
+html #page-camera .qhavuz-wide-select svg { width: 17px; height: 17px; }
+html #page-camera .qhavuz-wide-card.is-selected .qhavuz-wide-select {
+  background: #ffffff;
+  border-color: #ffffff;
+  color: #16171b;
+  box-shadow: 0 0 0 3px var(--accent-color, #ff90e8), 0 6px 14px rgba(0, 0, 0, 0.4);
+  animation: qhavuzTickPop 0.34s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes qhavuzTickPop { 0% { transform: scale(0.55); } 100% { transform: scale(1); } }
+html #page-camera .qhavuz-canvas-grid.is-select-mode .qhavuz-wide-thumb {
+  transition: opacity 0.2s ease, filter 0.2s ease, transform 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+}
+/* Seçim yapıldıysa seçilmeyenler hafifçe söner, seçili olan öne çıkar. */
+html #page-camera .qhavuz-canvas-grid.is-select-mode:has(.qhavuz-wide-card.is-selected) .qhavuz-wide-card:not(.is-selected) .qhavuz-wide-thumb {
+  opacity: 0.6;
+  filter: saturate(0.75);
+}
+html #page-camera .qhavuz-canvas-grid.is-select-mode .qhavuz-wide-card.is-selected .qhavuz-wide-thumb { transform: scale(0.97); }
+</style>
 </body>
 </html>
