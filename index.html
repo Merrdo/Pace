@@ -37820,21 +37820,22 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
   // eklenirse buraya da eklenmelidir).
   (function () {
     var SPLASH_THEME_COLORS = [
-      '#272727', // 0: Orijinal (antrasit)
-      '#121212', // 1: Koyu
-      '#000000', // 2: Saf Siyah
-      '#f2e8d5', // 3: Krem
-      '#F6F4EF', // 4: Fildişi
-      '#A8D8FF', // 5: Bebek Mavisi
-      '#2B2F4A'  // 6: Lacivert
+      '#000000', // 0: Saf Siyah
+      '#f2e8d5', // 1: Krem
+      '#F6F4EF', // 2: Fildişi
+      '#371931'  // 3: Plum ve Milk
     ];
+    // Eski kayıtlar 7 temalı listeye göre indekslenmişti (themeV2 işareti yok): yeni listeye çevrilir.
+    var OLD_THEME_TO_NEW = [0, 0, 0, 1, 2, 2, 0];
     try {
       var raw = localStorage.getItem('takvimim_app_state_v1');
       var saved = raw ? JSON.parse(raw) : null;
       // Kayıtlı bir tema tercihi yoksa (ilk açılış), varsayılan olarak
-      // Fildişi (index 4) kullanılır.
-      var themeIndex = saved && typeof saved.theme === 'number' ? saved.theme : 4;
-      var color = SPLASH_THEME_COLORS[themeIndex] || SPLASH_THEME_COLORS[4];
+      // Fildişi (index 2) kullanılır.
+      var themeIndex = saved && typeof saved.theme === 'number'
+        ? (saved.themeV2 ? saved.theme : OLD_THEME_TO_NEW[saved.theme])
+        : 2;
+      var color = SPLASH_THEME_COLORS[themeIndex] || SPLASH_THEME_COLORS[2];
       var splashEl = document.getElementById('app-splash');
       if (splashEl) splashEl.style.background = color;
       var meta = document.querySelector('meta[name="theme-color"]');
@@ -44109,27 +44110,12 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
 <script>
   // Ayarlar/Desenler sayfasındaki renk paleti kartından (.theme-swatch-card)
   // seçilince tema (arka plan + yazı rengi) değişir; applyTheme() bu geçişi
-  // uygular. Toplam 7 tema: orijinal (antresit gri), koyu, saf siyah, krem,
-  // fildişi, bebek mavisi ve lacivert.
+  // uygular. Toplam 3 tema: saf siyah, krem ve fildişi.
   // "Orijinal" referans görseldeki antresit (#272727) tonu; ancak uygulama
   // ilk açılışta (daha önce kaydedilmiş bir tema tercihi yoksa) artık
   // Fildişi (#F6F4EF, index 4) rengiyle açılır (bkz. aşağıdaki themeIndex
   // varsayılanı ve splash ekranı script'i).
   const themes = [
-    {
-      name: 'Orijinal',
-      gradient: 'linear-gradient(135deg, #272727 0%, #272727 50%, #272727 100%)',
-      color: '#272727',
-      text: '#f2f2f7',
-      weekend: '#ff6b81'
-    },
-    {
-      name: 'Koyu',
-      gradient: 'linear-gradient(135deg, #121212 0%, #121212 50%, #121212 100%)',
-      color: '#121212',
-      text: '#f5f5f5',
-      weekend: '#ff6b81'
-    },
     {
       name: 'Saf Siyah',
       gradient: 'linear-gradient(135deg, #000000 0%, #000000 50%, #000000 100%)',
@@ -44154,20 +44140,25 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
       weekend: '#d61f3c'
     },
     {
-      name: 'Bebek Mavisi',
-      gradient: 'linear-gradient(135deg, #A8D8FF 0%, #A8D8FF 50%, #A8D8FF 100%)',
-      color: '#A8D8FF',
-      text: '#000000',
-      weekend: '#d61f3c'
-    },
-    {
-      name: 'Lacivert',
-      gradient: 'linear-gradient(135deg, #2B2F4A 0%, #2B2F4A 50%, #2B2F4A 100%)',
-      color: '#2B2F4A',
-      text: '#f5f5f5',
-      weekend: '#ff6b81'
+      /* İki renkli kombinasyon: c1 = zemin (Plum), c2 = yazı/ikinci renk (Milk).
+         Bu temaya özel buton/alan renkleri sonradan --theme-c1 / --theme-c2
+         üzerinden bağlanacak (bkz. applyThemeColors). */
+      name: 'Plum ve Milk',
+      gradient: 'linear-gradient(135deg, #371931 0%, #371931 50%, #371931 100%)',
+      color: '#371931',
+      text: '#FFF3E5',
+      weekend: '#ff6b81',
+      colors: { c1: '#371931', c2: '#FFF3E5' }
     }
   ];
+
+  // Her temanın iki ana rengini CSS değişkeni olarak yayınlar (tek renkli temalarda
+  // c1 = zemin, c2 = yazı rengi).
+  const applyThemeColors = (t) => {
+    const c = t.colors || {};
+    document.documentElement.style.setProperty('--theme-c1', c.c1 || t.color);
+    document.documentElement.style.setProperty('--theme-c2', c.c2 || t.text);
+  };
 
   // iPhone'da üst güvenli alan (çentik/Dynamic Island şeridi) tarayıcı
   // tarafından <meta name="theme-color"> rengiyle boyanır. Tema her
@@ -44340,8 +44331,13 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
   const layerB = document.getElementById('themeLayerB');
   // Daha önce seçilmiş bir tema kaydedilmişse (localStorage), uygulama onunla açılır.
   // Kaydedilmiş bir tercih yoksa (ilk açılış), varsayılan olarak Fildişi (index 4) kullanılır.
-  const savedThemeIndex = APP_STATE.theme;
-  let themeIndex = (typeof savedThemeIndex === 'number' && themes[savedThemeIndex]) ? savedThemeIndex : 4;
+  // Eski kayıtlar 7 temalı listeye göre indekslenmişti (themeV2 işareti yok): yeni listeye çevrilir.
+  const OLD_THEME_TO_NEW = [0, 0, 0, 1, 2, 2, 0];
+  const savedThemeIndex = APP_STATE.themeV2
+    ? APP_STATE.theme
+    : (typeof APP_STATE.theme === 'number' ? OLD_THEME_TO_NEW[APP_STATE.theme] : undefined);
+  let themeIndex = (typeof savedThemeIndex === 'number' && themes[savedThemeIndex]) ? savedThemeIndex : 2;
+  if (!APP_STATE.themeV2) saveAppState({ theme: themeIndex, themeV2: true });
   let visibleLayer = layerA;
   let hiddenLayer = layerB;
 
@@ -44351,6 +44347,7 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
   document.documentElement.style.setProperty('--theme-ring', themePureOf(themes[themeIndex].text) === '#ffffff' ? '#ffffff' : '#272727');
   document.documentElement.style.setProperty('--theme-bg', themes[themeIndex].color);
   document.documentElement.style.setProperty('--weekend-color', themes[themeIndex].weekend);
+  applyThemeColors(themes[themeIndex]);
   refreshThemeColorMeta();
 
   const applyNextTheme = () => {
@@ -44366,6 +44363,7 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
     document.documentElement.style.setProperty('--theme-ring', themePureOf(theme.text) === '#ffffff' ? '#ffffff' : '#272727');
     document.documentElement.style.setProperty('--theme-bg', theme.color);
     document.documentElement.style.setProperty('--weekend-color', theme.weekend);
+    applyThemeColors(theme);
     refreshThemeColorMeta();
 
     const temp = visibleLayer;
@@ -44381,7 +44379,7 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
       window.syncSwatchSelection(themeIndex);
     }
 
-    saveAppState({ theme: themeIndex });
+    saveAppState({ theme: themeIndex, themeV2: true });
   };
 
   // Belirli bir tema index'ini doğrudan uygular (Sayfa 3'teki gradyana
@@ -44401,13 +44399,14 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
     document.documentElement.style.setProperty('--theme-ring', themePureOf(theme.text) === '#ffffff' ? '#ffffff' : '#272727');
     document.documentElement.style.setProperty('--theme-bg', theme.color);
     document.documentElement.style.setProperty('--weekend-color', theme.weekend);
+    applyThemeColors(theme);
     refreshThemeColorMeta();
 
     const temp = visibleLayer;
     visibleLayer = hiddenLayer;
     hiddenLayer = temp;
 
-    saveAppState({ theme: themeIndex });
+    saveAppState({ theme: themeIndex, themeV2: true });
   };
 </script>
 
