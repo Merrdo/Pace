@@ -8524,6 +8524,23 @@
     animation: p9Bump 0.32s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
 
+  /* Soft sayı değişimi: rakam yukarı/aşağı sayarak akar, birim ve rakam
+     hafifçe solup yerine oturur (zıplama yok). */
+  @keyframes qhSoftNum {
+    0%   { opacity: 0.35; transform: translateY(5px); filter: blur(1.5px); }
+    100% { opacity: 1; transform: translateY(0); filter: blur(0); }
+  }
+  .qhavuz-count-num.is-soft,
+  .qhavuz-count-unit.is-soft,
+  .qhavuz-canvas-stat-num.is-soft {
+    animation: qhSoftNum 0.5s cubic-bezier(0.22, 0.61, 0.36, 1);
+  }
+  .qhavuz-count-unit.is-soft { animation-name: qhSoftNumUnit; }
+  @keyframes qhSoftNumUnit {
+    0%   { opacity: 0; transform: translateY(5px); }
+    100% { opacity: 0.5; transform: translateY(0); }
+  }
+
   .qhavuz-count-unit {
     font-family: "Baloo 2", "Space Grotesk", sans-serif;
     font-weight: 600;
@@ -8534,7 +8551,10 @@
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .qhavuz-count-num.is-bump {
+    .qhavuz-count-num.is-bump,
+    .qhavuz-count-num.is-soft,
+    .qhavuz-count-unit.is-soft,
+    .qhavuz-canvas-stat-num.is-soft {
       animation: none;
     }
   }
@@ -40521,8 +40541,8 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
 .q9-chip svg{flex:none}
 .q9-chip.up{background:color-mix(in srgb,#59c97b 22%,transparent)}
 .q9-chip.up svg{color:#2f9a52}
-.q9-chip.down{background:color-mix(in srgb,#ff7a59 20%,transparent)}
-.q9-chip.down svg{color:#d9573a}
+.q9-chip.down{background:#ff5d6c;color:#121212}
+.q9-chip.down svg{color:#121212}
 .q9-tiles{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
 .q9-tile{display:flex;flex-direction:column;gap:3px;padding:16px 16px 15px;border-radius:26px;background:var(--soft);min-width:0}
 .q9-tile .l{font-size:.76rem;font-weight:700;color:var(--mute)}
@@ -44391,6 +44411,12 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
     // bu yüzden üst güvenli alan hiç renklenmiyordu. Bu backdrop için
     // .is-open kuralındaki gerçek rgba tonunu burada baştan sabitliyoruz,
     // böylece hiç yanlış zamanlı bir okuma yapılmıyor.
+    // Renk seçici sheet'i (.wheel-color-backdrop) de karartmayı geçişle açar
+    // (rgba(10,10,14,0) → .42); sınıf eklenince okunan ara değer saydam olduğu
+    // için üst güvenli alan hiç boyanmıyordu. Gerçek ton burada sabitlenir.
+    if (backdrop.classList.contains('wheel-color-backdrop') && !backdrop._themeTint) {
+      backdrop._themeTint = { r: 10, g: 10, b: 14, alpha: 0.42 };
+    }
     if (backdrop.classList.contains('task-sheet-backdrop') && !backdrop._themeTint) {
       // Bazı .task-sheet-backdrop türevleri (ör. Ay takvimi sheet'i) kendi
       // rgba tonunu ezip farklı bir renk/alfa kullanıyor; genel varsayılanı
@@ -67718,6 +67744,36 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
   const qhavuzCountNum = document.getElementById('qhavuzCountNum');
   const qhavuzCountUnit = document.getElementById('qhavuzCountUnit');
   let qhavuzLastShownCount = null;
+  let qhavuzCountNoAnim = false;
+  // Sayıyı eski değerden yeniye yumuşakça sayarak akıtır; ilk çizimde veya
+  // "hareketi azalt" açıkken anında yazar.
+  const qhavuzSoftNum = (el, to, animate) => {
+    if (!el) return;
+    to = Number(to) || 0;
+    const from = el._softV;
+    if (el._softRaf) { cancelAnimationFrame(el._softRaf); el._softRaf = 0; }
+    const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (!animate || reduce || typeof from !== 'number' || from === to) {
+      el._softV = to;
+      el.textContent = to;
+      return;
+    }
+    el.classList.remove('is-soft');
+    void el.offsetWidth;
+    el.classList.add('is-soft');
+    const t0 = performance.now();
+    const dur = 520;
+    const step = (now) => {
+      const k = Math.min(1, (now - t0) / dur);
+      const e = 1 - Math.pow(1 - k, 3);
+      const v = Math.round(from + (to - from) * e);
+      el._softV = v;
+      el.textContent = v;
+      if (k < 1) el._softRaf = requestAnimationFrame(step);
+      else { el._softV = to; el.textContent = to; el._softRaf = 0; }
+    };
+    el._softRaf = requestAnimationFrame(step);
+  };
   // Telefonda sayaca dokununca "soru" ↔ "çözüldü" görünümü arasında geçilir.
   // Çözülen sayı, filtreye uyan sorular içinden hesaplanır (sayaçla tutarlı).
   let qhavuzCountShowSolved = false;
@@ -67728,6 +67784,7 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
     if (!qhavuzCountNum || !qhavuzCountUnit) return;
     const shown = qhavuzCountShown;
     const total = qhavuzCountTotal;
+    const prevUnitText = qhavuzCountUnit.textContent;
     qhavuzCountNum.classList.remove('is-rate-low', 'is-rate-mid', 'is-rate-high');
     let text;
     if (qhavuzCountShowSolved) {
@@ -67745,12 +67802,11 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
       text = shown;
       qhavuzCountUnit.textContent = shown === total ? 'soru' : `/ ${total} soru`;
     }
-    const changed = String(qhavuzCountNum.textContent) !== String(text);
-    qhavuzCountNum.textContent = text;
-    if (bump || changed) {
-      qhavuzCountNum.classList.remove('is-bump');
-      void qhavuzCountNum.offsetWidth; // reflow: animasyonu baştan başlat
-      qhavuzCountNum.classList.add('is-bump');
+    qhavuzSoftNum(qhavuzCountNum, text, !qhavuzCountNoAnim);
+    if (!qhavuzCountNoAnim && prevUnitText !== qhavuzCountUnit.textContent) {
+      qhavuzCountUnit.classList.remove('is-soft');
+      void qhavuzCountUnit.offsetWidth;
+      qhavuzCountUnit.classList.add('is-soft');
     }
     const box = document.getElementById('qhavuzCount');
     if (box) {
@@ -67767,12 +67823,9 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
     qhavuzCountTotal = total;
     if (filteredIds) qhavuzCountFilteredIds = filteredIds;
     // İlk çizimde animasyon yok; sonrasında sayı değişirse bump yapar.
-    if (firstRender) {
-      qhavuzCountNum.classList.remove('is-bump');
-      qhavuzCountNum.textContent = '';
-    }
+    qhavuzCountNoAnim = firstRender;
     qhavuzRenderCount(false);
-    if (firstRender) qhavuzCountNum.classList.remove('is-bump');
+    qhavuzCountNoAnim = false;
     qhavuzLastShownCount = shown;
   };
   const qhavuzCountToggle = () => {
@@ -67801,8 +67854,8 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
     if (!qhavuzCanvasTotalNum || !qhavuzCanvasSolvedNum) return;
     const total = qhavuzState.items.length;
     const solved = qhavuzState.items.reduce((acc, item) => acc + (item.solved ? 1 : 0), 0);
-    qhavuzCanvasTotalNum.textContent = total;
-    qhavuzCanvasSolvedNum.textContent = solved;
+    qhavuzSoftNum(qhavuzCanvasTotalNum, total, true);
+    qhavuzSoftNum(qhavuzCanvasSolvedNum, solved, true);
     if (typeof qhavuzRenderCount === 'function') qhavuzRenderCount(false);
 
     // Çözülen soru rakamının rengi çözülme oranına göre değişir: %50 altı
@@ -71637,13 +71690,19 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
     const close = document.getElementById('qhavuzTcClose');
     if (!opts || !head || !a || !b) return;
     const mq = window.matchMedia('not all and (min-width: 768px) and (min-height: 600px)');
+    // Telefonda süre kutusu liste ile birlikte kayan gövdenin içine alınır:
+    // "Süreli" açıkken de tüm seçeneklere kaydırarak ulaşılır.
+    const timer = document.getElementById('qhavuzTcTimer');
+    const body = document.querySelector('#qhavuzTestCreateBackdrop .qhavuz-tc-body');
     const place = () => {
       if (mq.matches) {
         if (a.parentElement !== opts) opts.appendChild(a);
         if (b.parentElement !== opts) opts.appendChild(b);
+        if (timer && body && timer.parentElement !== body) body.insertBefore(timer, body.firstChild);
       } else {
         if (a.parentElement !== head) head.insertBefore(a, close || null);
         if (b.parentElement !== head) head.insertBefore(b, close || null);
+        if (timer && body && timer.parentElement === body) body.parentElement.insertBefore(timer, body);
       }
     };
     place();
