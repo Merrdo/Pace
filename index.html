@@ -74946,6 +74946,23 @@ body #page-11.page .page11-canvas-sort-btn:active,body #page-11.page .page11-can
 body #page-11.page .page11-canvas-search:focus-within{background:color-mix(in srgb,var(--m-t) 8%,transparent) !important;box-shadow:inset 0 1px 3px 0 color-mix(in srgb,var(--m-t) 10%,transparent) !important}
 }
 </style>
+<style id="wn2LargeScreenFix">
+/* Kronometre / Zamanlayıcı tam ekran ses paneli (.wn2) — YALNIZCA büyük ekran.
+   Sorun: panel ekran yüksekliğinin %67,5'ine sabitliydi; saat bloğu (saat + "dokun" ipucu + Tur butonu)
+   ise ortadan sabit ölçüyle aşağı uzandığı için ekran boyuna göre Tur butonu, ipucu yazıları ve açılan
+   ses menüsü birbirinin üstüne biniyordu.
+   Çözüm: panel ve menü, saat bloğunun ALTINDA (ekran ortasından sabit mesafede) durur; kısa ekranda
+   alt kenara taşmaz. Animasyonlu ipucu yazısı panelin ÜSTÜNDEN ALTINA alındı. Menü baloncukları küçüldü.
+   Telefon / küçük ekran kuralları değişmedi. */
+@media (min-width:768px) and (min-height:600px){
+:root{--wn2y:min(calc(50% + 14rem),calc(100% - 5.5rem))}
+body .wn2-hint-cap{bottom:auto;top:calc(50% + 32px)}
+body .wn2-hint-cap.is-in{animation-name:wn2CapInBelow}
+@keyframes wn2CapInBelow{from{opacity:0;transform:translate(-50%,-6px)}to{opacity:.85;transform:translate(-50%,0)}}
+body .wn2-menu{--D:clamp(46px,4.2vw,56px)}
+body .wn2-n{font-size:.68rem}
+}
+</style>
 <style id="qhavuzBtnReactStyle">
 /* Soru Havuzu arama satırındaki derinlikli düğmeler (Yedekle, En Yeni/En Eski, telefon):
    basma tepkisi Denemelerim'dekiyle aynı: yumuşak küçülme (%95) + zemin bir kademe koyulaşır.
