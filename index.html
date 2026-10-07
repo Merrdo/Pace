@@ -1223,7 +1223,7 @@
      kural aynı öğeyi hedefleyip vurgulu rengi koyu modda da geri getirir. */
   body.is-anthracite #spinBtn .button_top {
     background: var(--button_color, var(--accent-color, #ff90e8));
-    color: #121212;
+    color: var(--on-accent, #121212);
   }
 
   body.is-anthracite button {
@@ -1599,7 +1599,7 @@
      diye (diğer ikon-only butonlardan farklı olarak burada metin var). */
   body.is-anthracite .relax-add-btn:active,
   body.is-anthracite .relax-add-btn.is-pressed {
-    color: #16171b;
+    color: var(--on-accent, #16171b);
   }
 
   /* Kronometre / Zamanlayıcı sayfası: aynı sorun (body.is-anthracite'ın
@@ -1881,7 +1881,7 @@
 
   /* Sıvı yükselince gri alt metin vurgu rengi üstünde okunmaz hale gelirdi. */
   .home-live-widget.has-goal .home-live-widget-sub {
-    color: rgba(0, 0, 0, 0.6);
+    color: color-mix(in srgb, var(--on-accent, #000) 70%, transparent);
   }
 
   /* Koyu modda beyaz metinler açık kalıyor; sıvıyı yarı saydam tutarak
@@ -3750,7 +3750,7 @@
     --ts-tile: rgba(22, 23, 27, 0.05);
     --ts-tile-strong: rgba(22, 23, 27, 0.1);
     --ts-task: var(--accent-color, #ff90e8);
-    --ts-on-task: #16171b;
+    --ts-on-task: var(--on-accent, #16171b);
     --ts-danger: #ff5c5c;
     position: relative;
     width: 100%;
@@ -20811,7 +20811,7 @@
       border-radius: 50%;
       /* Mobildeki .home-flip-add-ic ile aynı dil: vurgu renginde dolu daire + yumuşak parıltı. */
       background: var(--accent-color, #ff90e8);
-      color: #16171b;
+      color: var(--on-accent, #16171b);
       box-shadow: 0 10px 18px -10px var(--accent-color, #ff90e8);
       transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
     }
@@ -27690,7 +27690,7 @@
       }
 
       body.is-anthracite #examResGalleryBackdrop .exam-res-gallery-arrow:hover {
-        color: #121212;
+        color: var(--on-accent, #121212);
       }
     }
   }
@@ -44204,14 +44204,58 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
       : t.gradient;
   });
 
+  // ---------- Otomatik kontrast yardımcıları (vurgu rengi okunabilirliği) ----------
+  const LEGACY_BLUE_ACCENT = '#6ec6ff';
+  const hexToRgb = (hex) => {
+    let h = String(hex || '#000000').replace('#', '');
+    if (h.length === 3) h = h.split('').map((x) => x + x).join('');
+    return [parseInt(h.substring(0, 2), 16), parseInt(h.substring(2, 4), 16), parseInt(h.substring(4, 6), 16)];
+  };
+  const rgbToHex = (r, g, b) => '#' + [r, g, b].map((n) => Math.max(0, Math.min(255, Math.round(n))).toString(16).padStart(2, '0')).join('');
+  const relLuminance = (hex) => {
+    const [r, g, b] = hexToRgb(hex).map((v) => {
+      const x = v / 255;
+      return x <= 0.03928 ? x / 12.92 : Math.pow((x + 0.055) / 1.055, 2.4);
+    });
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  };
+  const contrastRatio = (a, b) => {
+    const la = relLuminance(a), lb = relLuminance(b);
+    return (Math.max(la, lb) + 0.05) / (Math.min(la, lb) + 0.05);
+  };
+  // Vurgu zemini üstüne konacak yazı rengi: önce temanın zemin rengi (c1);
+  // yeterli kontrast (4.5) vermezse siyah/beyazdan daha okunaklı olanı.
+  const pickOnColor = (accentHex, bgHex) => {
+    if (contrastRatio(bgHex, accentHex) >= 4.5) return bgHex;
+    const dark = '#16171b', light = '#ffffff';
+    return contrastRatio(dark, accentHex) >= contrastRatio(light, accentHex) ? dark : light;
+  };
+  // Vurgu, tema zemini üstünde yazı/ikon/çizgi olarak da kullanıldığından
+  // zeminle kontrastı en az `min` değilse tonu koruyup açıklığını ayarlar.
+  const ensureContrastAgainst = (hex, bgHex, min) => {
+    if (contrastRatio(hex, bgHex) >= min) return hex;
+    const goDarker = relLuminance(bgHex) > 0.4;
+    let [r, g, b] = hexToRgb(hex);
+    for (let i = 0; i < 40 && contrastRatio(rgbToHex(r, g, b), bgHex) < min; i++) {
+      if (goDarker) { r *= 0.94; g *= 0.94; b *= 0.94; }
+      else { r += (255 - r) * 0.08; g += (255 - g) * 0.08; b += (255 - b) * 0.08; }
+    }
+    return rgbToHex(r, g, b);
+  };
+
   const applyThemeColors = (t) => {
     const c = t.colors || {};
     document.documentElement.style.setProperty('--theme-c1', c.c1 || t.color);
     document.documentElement.style.setProperty('--theme-c2', c.c2 || t.text);
-    // Vurgu rengi artık ayrı bir ayar değil: seçili temanın ikincil rengi (c2).
-    // Vurgu zemini üstündeki yazı/ikon rengi de temanın birincil rengi (c1) olur.
-    document.documentElement.style.setProperty('--accent-color', c.c2 || t.text);
-    document.documentElement.style.setProperty('--on-accent', c.c1 || t.color);
+    // Vurgu rengi: iki renkli temalarda temanın ikincil rengi (c2). Tek renkli
+    // temalarda (Saf Siyah, Fildişi) eski mavi vurgu (#6ec6ff) kullanılır.
+    // Vurgu zemini üstündeki yazı/ikon rengi (--on-accent) ve vurgunun tema
+    // zemini üstündeki okunabilirliği HER TEMA İÇİN otomatik hesaplanır.
+    const bg = c.c1 || t.color;
+    const rawAccent = c.c2 || LEGACY_BLUE_ACCENT;
+    const accent = ensureContrastAgainst(rawAccent, bg, 3);
+    document.documentElement.style.setProperty('--accent-color', accent);
+    document.documentElement.style.setProperty('--on-accent', pickOnColor(accent, bg));
   };
 
   // iPhone'da üst güvenli alan (çentik/Dynamic Island şeridi) tarayıcı
