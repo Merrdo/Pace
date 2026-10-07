@@ -37986,6 +37986,10 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
       </svg>
     </button>
 
+    <button type="button" class="sidebar-nav-item" data-page="page-kaynaklar" aria-label="Kaynaklarım">
+      <svg class="sidebar-nav-icon nav-icon-sources" viewBox="0 0 24 24"><path d="M5 4.5A1.5 1.5 0 0 1 6.5 3H19v14H6.5A1.5 1.5 0 0 0 5 18.5z"/><path d="M5 18.5A1.5 1.5 0 0 0 6.5 20H19v1.5"/><path d="M9 7.5h6"/></svg>
+    </button>
+
     <button type="button" class="sidebar-nav-item" data-page="page-settings" aria-label="Ayarlar">
       <svg class="sidebar-nav-icon nav-icon-gear" viewBox="0 0 24 24">
         <path d="M9.59356 3.94014C9.68397 3.39768 10.1533 3.00009 10.7033 3.00009H13.2972C13.8472 3.00009 14.3165 3.39768 14.4069 3.94014L14.6204 5.22119C14.6828 5.59523 14.9327 5.9068 15.2645 6.09045C15.3387 6.13151 15.412 6.17393 15.4844 6.21766C15.8095 6.41393 16.2048 6.47495 16.5604 6.34175L17.7772 5.88587C18.2922 5.69293 18.8712 5.9006 19.1462 6.37687L20.4432 8.6233C20.7181 9.09957 20.6085 9.70482 20.1839 10.0544L19.1795 10.8812C18.887 11.122 18.742 11.4938 18.7491 11.8726C18.7498 11.915 18.7502 11.9575 18.7502 12.0001C18.7502 12.0427 18.7498 12.0852 18.7491 12.1275C18.742 12.5064 18.887 12.8782 19.1795 13.119L20.1839 13.9458C20.6085 14.2953 20.7181 14.9006 20.4432 15.3769L19.1462 17.6233C18.8712 18.0996 18.2922 18.3072 17.7772 18.1143L16.5604 17.6584C16.2048 17.5252 15.8095 17.5862 15.4844 17.7825C15.412 17.8263 15.3387 17.8687 15.2645 17.9097C14.9327 18.0934 14.6828 18.4049 14.6204 18.779L14.4069 20.06C14.3165 20.6025 13.8472 21.0001 13.2972 21.0001H10.7033C10.1533 21.0001 9.68397 20.6025 9.59356 20.06L9.38005 18.779C9.31771 18.4049 9.06774 18.0934 8.73597 17.9097C8.66179 17.8687 8.58847 17.8263 8.51604 17.7825C8.19101 17.5863 7.79568 17.5252 7.44011 17.6584L6.22325 18.1143C5.70826 18.3072 5.12926 18.0996 4.85429 17.6233L3.55731 15.3769C3.28234 14.9006 3.39199 14.2954 3.81657 13.9458L4.82092 13.119C5.11343 12.8782 5.25843 12.5064 5.25141 12.1276C5.25063 12.0852 5.25023 12.0427 5.25023 12.0001C5.25023 11.9575 5.25063 11.915 5.25141 11.8726C5.25843 11.4938 5.11343 11.122 4.82092 10.8812L3.81657 10.0544C3.39199 9.70484 3.28234 9.09958 3.55731 8.62332L4.85429 6.37688C5.12926 5.90061 5.70825 5.69295 6.22325 5.88588L7.4401 6.34176C7.79566 6.47496 8.19099 6.41394 8.51603 6.21767C8.58846 6.17393 8.66179 6.13151 8.73597 6.09045C9.06774 5.9068 9.31771 5.59523 9.38005 5.22119L9.59356 3.94014Z"/>
@@ -40769,6 +40773,34 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
   <!-- Zaman Takvimi: kronometreyle çalışılan süreyi gün gün gösteren aylık takvim (YPT mantığı:
        her günün hücresinde o günün toplam süresi, yoğunluğa göre vurgu rengi; güne dokununca
        toplam ve ders dağılımı). Veri: APP_STATE.stopwatchLogs / stopwatchSubjectLogs. -->
+  <!-- Kaynaklarım: ders kitaplarının kapak ızgarası. Ekleme/düzenleme sihirbazı, ayrıntı sayfası ve
+       cevap anahtarı görüntüleyicisi sayfanın sonundaki #knDetail / #knForm / #knViewer katmanlarındadır. -->
+  <section class="page" id="page-kaynaklar" aria-label="Kaynaklarım">
+    <div class="kn" id="knRoot">
+      <header class="kn-head">
+        <div class="kn-head-row">
+          <div class="kn-titles">
+            <h1 class="kn-title">Kaynaklarım</h1>
+            <p class="kn-sub" id="knSub"></p>
+          </div>
+          <button type="button" class="kn-add" id="knAddBtn" aria-label="Kaynak ekle"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button>
+        </div>
+        <div class="kn-overview" id="knOverview" hidden>
+          <div class="kn-ov-bar" aria-hidden="true"><i class="a" id="knOvA"></i><i class="b" id="knOvB"></i></div>
+          <div class="kn-ov-text" id="knOvText"></div>
+        </div>
+        <div class="kn-seg" id="knExamSeg" role="tablist" aria-label="Sınav türü" style="--i:0">
+          <span class="kn-seg-thumb" aria-hidden="true"></span>
+          <button type="button" role="tab" class="is-on" data-v="all">Tümü</button>
+          <button type="button" role="tab" data-v="tyt">TYT</button>
+          <button type="button" role="tab" data-v="ayt">AYT</button>
+        </div>
+        <div class="kn-chips" id="knChips"></div>
+      </header>
+      <main id="knList"></main>
+    </div>
+  </section>
+
   <section class="page" id="page-ztakvim" aria-label="Zaman Takvimi">
     <div class="zt-wrap">
       <div class="calendar-topbar">
@@ -43221,7 +43253,8 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
       <button type="button" class="nav-more-item" role="menuitem" data-action="calendar" style="--k:1"><svg class="nav-more-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="3.2"/><path d="M4 10h16M8.5 3v3.4M15.5 3v3.4"/><text class="nav-calendar-daynum" x="12" y="17.4" text-anchor="middle">1</text></svg><span>Takvim</span></button>
       <button type="button" class="nav-more-item" role="menuitem" data-action="tracker" style="--k:2"><svg class="nav-more-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="5.5" width="14" height="15" rx="2.4"/><rect x="9" y="3" width="6" height="2.5" rx="1"/><polyline points="8.3 13 10.8 15.5 15.7 9.5"/></svg><span>Soru Takibi</span></button>
       <button type="button" class="nav-more-item" role="menuitem" data-action="exams" style="--k:3"><svg class="nav-more-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2"/><line x1="8" y1="8" x2="16" y2="8"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="8" y1="16" x2="13" y2="16"/></svg><span>Denemelerim</span></button>
-      <button type="button" class="nav-more-item" role="menuitem" data-action="games" style="--k:4" hidden><svg class="nav-more-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7.4 7h9.2a4.5 4.5 0 0 1 4.4 5.4l-.8 4a2.5 2.5 0 0 1-4.2 1.3L14.4 16H9.6l-1.6 1.7A2.5 2.5 0 0 1 3.8 16.4l-.8-4A4.5 4.5 0 0 1 7.4 7z"/><path d="M8 10v3.2M6.4 11.6h3.2"/><circle cx="15.6" cy="10.6" r=".6"/><circle cx="17.6" cy="12.6" r=".6"/></svg><span>Oyunlar</span></button>
+      <button type="button" class="nav-more-item" role="menuitem" data-action="sources" style="--k:4"><svg class="nav-more-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4.5A1.5 1.5 0 0 1 6.5 3H19v14H6.5A1.5 1.5 0 0 0 5 18.5z"/><path d="M5 18.5A1.5 1.5 0 0 0 6.5 20H19v1.5"/><path d="M9 7.5h6"/></svg><span>Kaynaklarım</span></button>
+      <button type="button" class="nav-more-item" role="menuitem" data-action="games" style="--k:5" hidden><svg class="nav-more-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7.4 7h9.2a4.5 4.5 0 0 1 4.4 5.4l-.8 4a2.5 2.5 0 0 1-4.2 1.3L14.4 16H9.6l-1.6 1.7A2.5 2.5 0 0 1 3.8 16.4l-.8-4A4.5 4.5 0 0 1 7.4 7z"/><path d="M8 10v3.2M6.4 11.6h3.2"/><circle cx="15.6" cy="10.6" r=".6"/><circle cx="17.6" cy="12.6" r=".6"/></svg><span>Oyunlar</span></button>
     </div>
   </div>
 </nav>
@@ -75875,5 +75908,1600 @@ html #page-camera .qhavuz-canvas-grid.is-select-mode .qhavuz-wide-thumb {
 }
 html #page-camera .qhavuz-canvas-grid.is-select-mode .qhavuz-wide-card.is-selected .qhavuz-wide-thumb { transform: scale(0.97); }
 </style>
+<style id="kaynaklarim-css">
+/* ==========================================================================
+   KAYNAKLARIM — ders kitabı kitaplığı (#page-kaynaklar)
+   Kitaplar, kapak ızgarası olarak raflanır. Ekleme/düzenleme 4 adımlı bir
+   sihirbazla, ayrıntı alttan açılan bir sayfayla yapılır. Tüm renkler uygulamanın
+   tema değişkenlerinden (--theme-bg, --theme-text, --accent-color) türetilir.
+   ========================================================================== */
+#page-kaynaklar, .kn-layer, .kn-toast {
+  --t: var(--theme-text, #121212);
+  --bg: var(--theme-bg, #f6f4ef);
+  --soft: color-mix(in srgb, var(--t) 6%, transparent);
+  --soft2: color-mix(in srgb, var(--t) 12%, transparent);
+  --soft3: color-mix(in srgb, var(--t) 22%, transparent);
+  --mute: color-mix(in srgb, var(--t) 55%, transparent);
+  --acc: var(--accent-color, #ff90e8);
+  --on: var(--on-accent, #16171b);
+  --ok: #59c97b;
+  --bad: #ff5d6c;
+  --ease: cubic-bezier(.22, 1, .36, 1);
+  --spring: cubic-bezier(.34, 1.45, .64, 1);
+  font-family: "Baloo 2", "Space Grotesk", sans-serif;
+  color: var(--t);
+}
+:where(#page-kaynaklar, .kn-layer, .kn-toast) button {
+  font-family: inherit; color: inherit; border: 0; background: none; padding: 0; margin: 0;
+  cursor: pointer; -webkit-tap-highlight-color: transparent;
+}
+:where(.kn-layer) :where(input, textarea) {
+  -webkit-user-select: text; user-select: text; font-family: inherit; color: inherit;
+  border: 0; background: none; outline: none; -webkit-appearance: none; appearance: none;
+}
+:where(#page-kaynaklar, .kn-layer, .kn-toast) svg { fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+:where(#page-kaynaklar, .kn-layer) :where(button, input):focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--t) 60%, transparent); outline-offset: 2px;
+}
+
+/* ---------- Sayfa ---------- */
+#page-kaynaklar.page {
+  flex-direction: column; align-items: stretch; justify-content: flex-start;
+  padding: 0 18px calc(120px + env(safe-area-inset-bottom));
+  overflow-y: auto; overscroll-behavior: contain;
+}
+.kn { width: 100%; max-width: 760px; margin: 0 auto; }
+
+.kn-head {
+  position: sticky; top: 0; z-index: 30;
+  padding: calc(14px + env(safe-area-inset-top)) 0 14px;
+  display: flex; flex-direction: column; gap: 14px;
+}
+.kn-head::before {
+  content: ""; position: absolute; z-index: -1; top: 0; bottom: 0; left: 50%; width: 100vw; transform: translateX(-50%);
+  background: color-mix(in srgb, var(--bg) 90%, transparent);
+  -webkit-backdrop-filter: blur(22px) saturate(1.5); backdrop-filter: blur(22px) saturate(1.5);
+}
+.kn-head-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.kn-titles { min-width: 0; }
+#page-kaynaklar .kn-title {
+  font-size: 1.95rem; font-weight: 800; letter-spacing: -.02em; line-height: 1.05; color: var(--t);
+}
+.kn-sub { margin-top: 3px; font-size: .84rem; font-weight: 600; color: var(--mute); font-variant-numeric: tabular-nums; min-height: 1.2em; }
+.kn-add {
+  flex: 0 0 auto; width: 48px; height: 48px; border-radius: 50%; display: grid; place-items: center;
+  background: var(--acc); color: var(--on);
+  box-shadow: 0 8px 20px -8px color-mix(in srgb, var(--acc) 80%, #000);
+  transition: transform .45s var(--spring), box-shadow .3s;
+}
+.kn-add svg { width: 22px; height: 22px; stroke-width: 2.6; transition: transform .5s var(--spring); }
+.kn-add:active { transform: scale(.9); }
+.kn-add:active svg { transform: rotate(90deg); }
+@media (hover: hover) { .kn-add:hover svg { transform: rotate(90deg); } }
+
+/* genel ilerleme */
+.kn-overview { display: flex; flex-direction: column; gap: 7px; }
+.kn-overview[hidden] { display: none; }
+.kn-ov-bar { position: relative; height: 6px; border-radius: 6px; background: var(--soft2); overflow: hidden; }
+.kn-ov-bar i { position: absolute; left: 0; top: 0; bottom: 0; width: 100%; transform-origin: left; transform: scaleX(var(--p, 0)); border-radius: 6px; transition: transform .9s var(--ease); }
+.kn-ov-bar .a { background: color-mix(in srgb, var(--acc) 55%, transparent); }
+.kn-ov-bar .b { background: var(--acc); }
+.kn-ov-text { font-size: .78rem; font-weight: 600; color: var(--mute); font-variant-numeric: tabular-nums; display: flex; justify-content: space-between; gap: 8px; }
+.kn-ov-text b { color: var(--t); font-weight: 800; }
+
+/* sınav türü ayırıcı */
+.kn-seg { position: relative; display: grid; grid-template-columns: repeat(3, 1fr); padding: 4px; border-radius: 999px; background: var(--soft); }
+.kn-seg-thumb {
+  position: absolute; top: 4px; bottom: 4px; left: 4px; width: calc((100% - 8px) / 3); border-radius: 999px; background: var(--acc);
+  transform: translateX(calc(var(--i, 0) * 100%)); transition: transform .55s var(--spring);
+}
+.kn-seg button { position: relative; z-index: 1; height: 38px; font-weight: 700; font-size: .94rem; color: var(--mute); transition: color .3s; }
+.kn-seg button.is-on { color: var(--on); }
+
+/* ders çipleri */
+.kn-chips {
+  display: flex; gap: 8px; overflow-x: auto; margin: 0 -18px; padding: 2px 18px; scroll-snap-type: x proximity;
+  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 18px, #000 calc(100% - 18px), transparent 100%);
+  mask-image: linear-gradient(90deg, transparent 0, #000 18px, #000 calc(100% - 18px), transparent 100%);
+  touch-action: pan-x pan-y;
+}
+.kn-chips:empty { display: none; }
+.kn-chip {
+  flex: 0 0 auto; height: 34px; padding: 0 14px; border-radius: 999px; display: inline-flex; align-items: center; gap: 7px;
+  font-weight: 700; font-size: .86rem; background: var(--soft); scroll-snap-align: start;
+  transition: background .3s, color .3s, transform .35s var(--spring);
+}
+.kn-chip:active { transform: scale(.94); }
+.kn-chip small { font-size: .74rem; font-weight: 700; opacity: .55; }
+.kn-chip.is-on { background: var(--t); color: var(--bg); }
+
+/* ---------- Liste ---------- */
+.kn-group { margin: 18px 0 12px; display: flex; align-items: baseline; gap: 8px; font-size: .86rem; font-weight: 700; color: var(--mute); }
+.kn-group b { color: var(--t); font-weight: 800; font-size: .98rem; }
+.kn-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(146px, 1fr)); gap: 24px 16px; }
+
+.kn-card { position: relative; }
+.kn-open { display: block; width: 100%; text-align: left; border-radius: 14px; transition: transform .4s var(--spring); }
+.kn-open:active { transform: scale(.965); }
+@media (hover: hover) { .kn-open:hover .kn-cover { transform: translateY(-5px) rotate(-.6deg); box-shadow: 0 22px 34px -14px rgba(0,0,0,.4), 0 3px 8px rgba(0,0,0,.14); } }
+
+.kn-cover {
+  --c: #cfcfd4;
+  position: relative; display: block; width: 100%; aspect-ratio: 3 / 4; overflow: hidden; container-type: inline-size;
+  border-radius: 5px 14px 14px 5px; color: #16171b;
+  background: linear-gradient(155deg, color-mix(in srgb, var(--c) 88%, #fff), color-mix(in srgb, var(--c) 86%, #000));
+  box-shadow: 0 12px 24px -12px rgba(0,0,0,.38), 0 2px 6px rgba(0,0,0,.12);
+  transition: transform .5s var(--ease), box-shadow .5s var(--ease), filter .5s;
+}
+.kn-cover img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity .5s; }
+.kn-cover img.is-in { opacity: 1; }
+.kn-spine {
+  position: absolute; left: 0; top: 0; bottom: 0; width: 9%; pointer-events: none;
+  background: linear-gradient(90deg, rgba(0,0,0,.26), rgba(0,0,0,.05) 55%, rgba(255,255,255,.2) 78%, transparent);
+}
+.kn-gen { position: absolute; inset: 0; padding: 7% 8% 7% 17%; display: flex; flex-direction: column; gap: 6%; }
+.kn-gen-s { font-weight: 800; font-size: clamp(.6rem, 6cqw, .8rem); opacity: .72; line-height: 1.1; }
+.kn-gen-t {
+  font-family: "Playfair Display", Georgia, serif; font-weight: 800; font-size: clamp(.82rem, 9.4cqw, 1.5rem); line-height: 1.08; letter-spacing: -.01em;
+  display: -webkit-box; -webkit-line-clamp: 5; -webkit-box-orient: vertical; overflow: hidden; word-break: break-word;
+}
+.kn-gen-t::before { content: ""; display: block; width: 24%; height: 2px; border-radius: 2px; background: currentColor; opacity: .45; margin-bottom: 8%; }
+.kn-gen-e { margin-top: auto; align-self: flex-start; font-weight: 800; font-size: clamp(.58rem, 5.6cqw, .74rem); padding: .12em .6em; border-radius: 999px; border: 1.5px solid rgba(22,23,27,.45); }
+
+.kn-info { display: block; padding: 11px 2px 0; }
+.kn-name { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; font-weight: 700; font-size: .98rem; line-height: 1.15; }
+.kn-meta { display: block; margin-top: 3px; font-size: .76rem; font-weight: 600; color: var(--mute); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.kn-bar { display: block; height: 5px; margin: 9px 0 7px; border-radius: 5px; background: var(--soft2); overflow: hidden; }
+.kn-bar i { display: block; height: 100%; border-radius: 5px; transform-origin: left; transform: scaleX(var(--p, 0)); background: color-mix(in srgb, var(--c) 82%, var(--t) 18%); }
+.kn-stat { display: flex; align-items: center; gap: 6px; font-size: .76rem; font-weight: 700; color: var(--mute); }
+.kn-stat i { width: 7px; height: 7px; border-radius: 50%; background: currentColor; flex: 0 0 auto; }
+.kn-stat.is-bad { color: var(--bad); }
+.kn-stat.is-ok { color: color-mix(in srgb, var(--ok) 75%, var(--t)); }
+.kn-stat.is-soon { color: var(--t); }
+
+.kn-card.is-solved .kn-cover { filter: saturate(.78); }
+
+/* çözüldü işareti */
+.kn-check {
+  position: absolute; z-index: 3; top: 9px; right: 9px; width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center;
+  background: rgba(255,255,255,.74); color: #16171b; box-shadow: 0 0 0 1px rgba(0,0,0,.07);
+  -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+  transition: transform .45s var(--spring), background .3s, color .3s;
+}
+.kn-check:active { transform: scale(.82); }
+.kn-check svg { width: 20px; height: 20px; stroke-width: 2.8; }
+.kn-check .ring { stroke-width: 1.8; opacity: .55; transition: opacity .3s; }
+.kn-check .tick { stroke-dasharray: 22; stroke-dashoffset: 22; transition: stroke-dashoffset .5s var(--ease) .05s; }
+.kn-check.is-on { background: var(--ok); color: #121212; }
+.kn-check.is-on .tick { stroke-dashoffset: 0; }
+.kn-check.is-on .ring { opacity: 0; }
+
+/* ilk açılış: tek bir orkestre edilmiş an */
+.kn.is-intro .kn-card { animation: knRise .8s var(--ease) both; animation-delay: calc(var(--i, 0) * 55ms); }
+.kn.is-intro .kn-bar i { animation: knFill 1.1s var(--ease) both; animation-delay: calc(var(--i, 0) * 55ms + 250ms); }
+@keyframes knRise { from { opacity: 0; transform: translateY(26px) scale(.96); } to { opacity: 1; transform: none; } }
+@keyframes knFill { from { transform: scaleX(0); } }
+
+/* boş durum */
+.kn-empty { display: flex; flex-direction: column; align-items: center; text-align: center; padding: 56px 24px 24px; gap: 8px; }
+.kn-empty-art { position: relative; width: 150px; height: 140px; margin-bottom: 14px; }
+.kn-empty-art span { position: absolute; bottom: 0; width: 56px; border-radius: 4px 10px 10px 4px; box-shadow: 0 10px 18px -10px rgba(0,0,0,.4); animation: knBob 4.2s ease-in-out infinite; }
+.kn-empty-art span:nth-child(1) { left: 6px; height: 104px; background: #c9a6ff; transform-origin: bottom; --r: -7deg; }
+.kn-empty-art span:nth-child(2) { left: 46px; height: 124px; background: var(--acc); z-index: 1; animation-delay: -1.4s; --r: 0deg; }
+.kn-empty-art span:nth-child(3) { left: 88px; height: 96px; background: #7cc7ff; --r: 8deg; animation-delay: -2.8s; }
+@keyframes knBob { 0%, 100% { transform: rotate(var(--r, 0)) translateY(0); } 50% { transform: rotate(var(--r, 0)) translateY(-7px); } }
+.kn-empty h2 { font-size: 1.35rem; font-weight: 800; }
+.kn-empty p { max-width: 290px; font-size: .92rem; line-height: 1.35; color: var(--mute); font-weight: 500; }
+.kn-empty .kn-btn { margin-top: 14px; }
+
+/* ---------- Butonlar ---------- */
+.kn-btn {
+  height: 52px; padding: 0 26px; border-radius: 999px; display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  font-weight: 800; font-size: 1rem; background: var(--soft); transition: transform .4s var(--spring), opacity .3s, background .3s;
+}
+.kn-btn:active { transform: scale(.95); }
+.kn-btn.primary { background: var(--acc); color: var(--on); }
+.kn-btn.ok { background: var(--ok); color: #121212; }
+.kn-btn.danger { color: var(--bad); }
+.kn-btn:disabled { opacity: .32; pointer-events: none; }
+.kn-btn svg { width: 19px; height: 19px; stroke-width: 2.6; }
+
+/* ---------- Katmanlar (sheet) ---------- */
+.kn-layer { position: fixed; inset: 0; z-index: 900; display: flex; align-items: flex-end; justify-content: center; visibility: hidden; pointer-events: none; transition: visibility 0s linear .55s; }
+.kn-layer.is-open { visibility: visible; pointer-events: auto; transition-delay: 0s; }
+#knForm { z-index: 910; }
+#knViewer { z-index: 920; }
+.kn-scrim { position: absolute; inset: 0; background: rgba(0,0,0,.46); opacity: 0; transition: opacity .45s var(--ease); -webkit-backdrop-filter: blur(5px); backdrop-filter: blur(5px); }
+.kn-layer.is-open .kn-scrim { opacity: 1; }
+.kn-sheet {
+  position: relative; width: 100%; max-width: 560px; max-height: min(93dvh, 900px); display: flex; flex-direction: column; overflow: hidden;
+  background: var(--bg); border-radius: 30px 30px 0 0; padding-bottom: env(safe-area-inset-bottom);
+  box-shadow: 0 -20px 60px -20px rgba(0,0,0,.45);
+  transform: translateY(104%); transition: transform .62s var(--ease);
+  will-change: transform;
+}
+.kn-layer.is-open .kn-sheet { transform: none; }
+.kn-sheet.is-dragging { transition: none; }
+.kn-grab { flex: 0 0 auto; display: grid; place-items: center; height: 26px; cursor: grab; touch-action: none; }
+.kn-grab i { width: 38px; height: 5px; border-radius: 5px; background: var(--soft3); }
+.kn-sheet-scroll { flex: 1 1 auto; overflow-y: auto; overscroll-behavior: contain; padding: 4px 20px 24px; touch-action: pan-y; }
+@media (min-width: 768px) and (min-height: 600px) {
+  .kn-layer { align-items: center; }
+  .kn-sheet { border-radius: 30px; padding-bottom: 0; transform: translateY(30px) scale(.96); opacity: 0; transition: transform .6s var(--ease), opacity .35s; }
+  .kn-layer.is-open .kn-sheet { transform: none; opacity: 1; }
+  .kn-grab { display: none; }
+  .kn-sheet-scroll { padding-top: 24px; }
+  .kn-grid { grid-template-columns: repeat(auto-fill, minmax(158px, 1fr)); gap: 30px 20px; }
+  #page-kaynaklar.page { padding-left: 32px; padding-right: 32px; }
+  .kn-chips { margin: 0; padding: 2px 0; }
+}
+
+/* ---------- Ayrıntı ---------- */
+.kn-d-top { display: flex; gap: 18px; align-items: flex-end; padding-top: 4px; }
+.kn-d-cover { flex: 0 0 132px; perspective: 700px; }
+.kn-d-cover .kn-cover { transition: transform .25s ease-out, box-shadow .4s; transform-style: preserve-3d; }
+.kn-d-info { min-width: 0; padding-bottom: 4px; }
+.kn-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 9px; }
+.kn-tag { height: 26px; padding: 0 11px; display: inline-flex; align-items: center; border-radius: 999px; font-size: .76rem; font-weight: 800; background: var(--soft2); }
+.kn-tag.s { background: color-mix(in srgb, var(--c) 45%, transparent); }
+.kn-d-title { font-size: 1.42rem; font-weight: 800; line-height: 1.1; letter-spacing: -.015em; word-break: break-word; }
+.kn-d-pages { margin-top: 5px; font-size: .88rem; font-weight: 600; color: var(--mute); }
+
+.kn-box { margin-top: 14px; padding: 16px; border-radius: 22px; background: var(--soft); }
+.kn-box-h { display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: .86rem; font-weight: 700; color: var(--mute); }
+.kn-box-h b { color: var(--t); font-size: 1.05rem; font-weight: 800; font-variant-numeric: tabular-nums; }
+.kn-link { height: 30px; padding: 0 12px; border-radius: 999px; background: var(--soft2); font-size: .8rem; font-weight: 800; color: var(--t); transition: transform .35s var(--spring); }
+.kn-link:active { transform: scale(.92); }
+
+.kn-range { --p: 0; position: relative; height: 34px; margin-top: 8px; }
+.kn-range::before { content: ""; position: absolute; left: 0; right: 0; top: 14px; height: 6px; border-radius: 6px; background: var(--soft2); }
+.kn-range::after { content: ""; position: absolute; left: 0; top: 14px; height: 6px; width: 100%; border-radius: 6px; background: var(--c, var(--acc)); transform-origin: left; transform: scaleX(var(--p)); pointer-events: none; }
+.kn-range input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; z-index: 2; background: none; touch-action: pan-y; cursor: pointer; }
+.kn-range input::-webkit-slider-runnable-track { height: 34px; background: none; }
+.kn-range input::-moz-range-track { height: 34px; background: none; }
+.kn-range input::-webkit-slider-thumb { -webkit-appearance: none; width: 26px; height: 26px; margin-top: 4px; border-radius: 50%; background: var(--t); border: 4px solid var(--bg); box-shadow: 0 2px 8px rgba(0,0,0,.3); transition: transform .3s var(--spring); }
+.kn-range input::-moz-range-thumb { width: 18px; height: 18px; border-radius: 50%; background: var(--t); border: 4px solid var(--bg); box-shadow: 0 2px 8px rgba(0,0,0,.3); }
+.kn-range input:active::-webkit-slider-thumb { transform: scale(1.18); }
+.kn-quick { display: flex; gap: 8px; margin-top: 6px; }
+.kn-quick button { flex: 1; height: 38px; border-radius: 12px; background: var(--soft2); font-weight: 800; font-size: .88rem; transition: transform .35s var(--spring); font-variant-numeric: tabular-nums; }
+.kn-quick button:active { transform: scale(.92); }
+
+.kn-dates { display: flex; align-items: center; gap: 10px; margin-top: 2px; }
+.kn-date { flex: 1; min-width: 0; padding: 10px 12px; border-radius: 14px; background: var(--soft); display: flex; flex-direction: column; }
+.kn-date small { font-size: .72rem; font-weight: 700; color: var(--mute); }
+.kn-date b { font-size: 1rem; font-weight: 800; white-space: nowrap; }
+.kn-date b.is-none { color: var(--mute); font-weight: 600; }
+.kn-dates > svg { width: 18px; height: 18px; color: var(--mute); flex: 0 0 auto; }
+.kn-pace { margin-top: 12px; font-size: .9rem; font-weight: 600; color: var(--mute); line-height: 1.3; }
+.kn-pace b { color: var(--t); font-weight: 800; }
+.kn-pace.is-bad b { color: var(--bad); }
+
+.kn-keystrip { display: flex; gap: 10px; overflow-x: auto; margin: 12px -16px 0; padding: 2px 16px 4px; touch-action: pan-x pan-y; }
+.kn-key { position: relative; flex: 0 0 auto; width: 72px; height: 96px; border-radius: 12px; overflow: hidden; background: var(--soft2); display: grid; place-items: center; transition: transform .4s var(--spring); }
+.kn-key:active { transform: scale(.93); }
+.kn-key img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity .4s; }
+.kn-key img.is-in { opacity: 1; }
+.kn-key.pdf { flex-direction: column; gap: 4px; align-content: center; font-weight: 800; font-size: .78rem; }
+.kn-key.pdf svg { width: 26px; height: 26px; }
+.kn-key-add { flex: 0 0 auto; width: 72px; height: 96px; border-radius: 12px; border: 2px dashed var(--soft3); display: grid; place-items: center; color: var(--mute); transition: transform .4s var(--spring), border-color .3s; }
+.kn-key-add:active { transform: scale(.93); }
+.kn-key-add svg { width: 22px; height: 22px; }
+.kn-key-none { margin-top: 10px; font-size: .88rem; font-weight: 500; color: var(--mute); }
+
+.kn-actions { margin-top: 18px; display: flex; flex-direction: column; gap: 10px; }
+.kn-act2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+/* ---------- Sihirbaz ---------- */
+.kn-sheet-form { height: min(90dvh, 740px); padding-bottom: env(safe-area-inset-bottom); }
+.kn-fhead { flex: 0 0 auto; display: flex; align-items: center; gap: 10px; padding: 16px 16px 4px 14px; }
+.kn-icon { flex: 0 0 auto; width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; background: var(--soft); transition: transform .4s var(--spring); }
+.kn-icon:active { transform: scale(.88); }
+.kn-icon svg { width: 18px; height: 18px; stroke-width: 2.6; }
+.kn-icon.danger { color: var(--bad); }
+.kn-ftitle { flex: 1; min-width: 0; font-size: 1.28rem; font-weight: 800; letter-spacing: -.015em; transition: opacity .16s, transform .3s var(--ease); }
+.kn-ftitle.is-out { opacity: 0; transform: translateY(5px); }
+.kn-fcount { flex: 0 0 auto; font-size: .82rem; font-weight: 800; color: var(--mute); font-variant-numeric: tabular-nums; }
+.kn-prog { flex: 0 0 auto; display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; padding: 12px 20px 6px; }
+.kn-prog button { position: relative; height: 18px; display: flex; align-items: center; }
+.kn-prog button::before { content: ""; width: 100%; height: 5px; border-radius: 5px; background: var(--soft2); }
+.kn-prog button::after { content: ""; position: absolute; left: 0; width: 100%; height: 5px; border-radius: 5px; background: var(--acc); transform-origin: left; transform: scaleX(0); transition: transform .6s var(--ease); }
+.kn-prog button.is-done::after { transform: scaleX(1); }
+.kn-prog button:disabled { pointer-events: none; }
+.kn-discard { flex: 0 0 auto; margin: 6px 16px 0; padding: 10px 10px 10px 16px; border-radius: 18px; background: color-mix(in srgb, var(--bad) 16%, transparent); display: flex; align-items: center; gap: 8px; font-size: .88rem; font-weight: 700; animation: knDrop .5s var(--spring); }
+.kn-discard[hidden] { display: none; }
+.kn-discard span { flex: 1; }
+.kn-discard button { height: 34px; padding: 0 14px; border-radius: 999px; font-weight: 800; font-size: .84rem; background: var(--soft2); }
+.kn-discard button.x { background: var(--bad); color: #121212; }
+@keyframes knDrop { from { opacity: 0; transform: translateY(-10px) scale(.96); } }
+
+.kn-steps { position: relative; flex: 1 1 auto; min-height: 0; overflow: hidden; }
+.kn-step {
+  position: absolute; inset: 0; overflow-y: auto; overscroll-behavior: contain; padding: 14px 20px 20px; touch-action: pan-y;
+  opacity: 0; visibility: hidden; transform: translateX(32px);
+  transition: opacity .35s ease, transform .6s var(--ease), visibility 0s linear .6s;
+}
+.kn-step.is-before { transform: translateX(-32px); }
+.kn-step.is-cur { opacity: 1; visibility: visible; transform: none; transition-delay: 0s; }
+.kn-step .rv { opacity: 0; transform: translateY(14px); }
+.kn-step.is-cur .rv { opacity: 1; transform: none; transition: opacity .5s ease, transform .7s var(--ease); transition-delay: calc(var(--r, 0) * 60ms + 80ms); }
+.kn-ffoot { flex: 0 0 auto; display: flex; gap: 10px; padding: 12px 16px 16px; }
+.kn-ffoot .kn-btn:last-child { flex: 1; }
+.kn-ffoot .kn-btn.back { flex: 0 0 auto; padding: 0 22px; transition: transform .4s var(--spring), opacity .3s, width .5s var(--ease), padding .5s var(--ease), margin .5s var(--ease); }
+.kn-ffoot .kn-btn.back.is-hidden { width: 0; padding: 0; margin-right: -10px; opacity: 0; pointer-events: none; overflow: hidden; }
+
+.kn-lbl { display: block; margin: 0 2px 8px; font-size: .84rem; font-weight: 700; color: var(--mute); }
+.kn-sect + .kn-sect { margin-top: 22px; }
+
+.kn-exams { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.kn-exam { position: relative; padding: 16px 16px 15px; border-radius: 22px; text-align: left; background: var(--soft); display: flex; flex-direction: column; gap: 2px; overflow: hidden; transition: transform .45s var(--spring), background .35s, color .35s; }
+.kn-exam b { font-size: 1.75rem; font-weight: 800; letter-spacing: -.02em; line-height: 1; }
+.kn-exam span { font-size: .8rem; font-weight: 600; opacity: .6; }
+.kn-exam:active { transform: scale(.95); }
+.kn-exam.is-on { background: var(--acc); color: var(--on); }
+.kn-exam.is-on span { opacity: .72; }
+.kn-exam svg { position: absolute; right: 12px; top: 12px; width: 22px; height: 22px; stroke-width: 3; opacity: 0; transform: scale(.4); transition: opacity .3s, transform .5s var(--spring); }
+.kn-exam.is-on svg { opacity: 1; transform: none; }
+
+.kn-subjs { display: flex; flex-wrap: wrap; gap: 9px; }
+.kn-sj { height: 42px; padding: 0 16px 0 12px; border-radius: 999px; display: inline-flex; align-items: center; gap: 9px; font-weight: 700; font-size: .96rem; background: var(--soft); transition: transform .4s var(--spring), background .3s, color .3s; }
+.kn-sj::before { content: ""; width: 12px; height: 12px; border-radius: 50%; background: var(--c, var(--soft3)); transition: transform .45s var(--spring); }
+.kn-sj:active { transform: scale(.93); }
+.kn-sj.is-on { background: var(--t); color: var(--bg); }
+.kn-sj.is-on::before { transform: scale(1.35); }
+.kn-subjs.is-pop .kn-sj { animation: knChipIn .55s var(--spring) both; animation-delay: calc(var(--r, 0) * 28ms); }
+@keyframes knChipIn { from { opacity: 0; transform: scale(.7) translateY(6px); } }
+.kn-fold { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .55s var(--ease), margin .55s var(--ease); }
+.kn-fold > div { overflow: hidden; min-height: 0; }
+.kn-fold.is-open { grid-template-rows: 1fr; margin-top: 12px; }
+
+.kn-field { display: block; padding: 11px 16px 10px; border-radius: 18px; background: var(--soft); transition: box-shadow .3s, background .3s; }
+.kn-field:focus-within { background: var(--soft); box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--acc) 85%, transparent); }
+.kn-field small { display: block; font-size: .74rem; font-weight: 700; color: var(--mute); }
+.kn-field input { display: block; width: 100%; padding: 2px 0 0; font-size: 1.12rem; font-weight: 700; line-height: 1.3; }
+.kn-field input::placeholder { color: var(--soft3); }
+
+.kn-book { display: flex; gap: 16px; align-items: flex-start; }
+.kn-book-cover { flex: 0 0 120px; }
+.kn-covpick { position: relative; display: block; width: 100%; border-radius: 6px 14px 14px 6px; transition: transform .45s var(--spring); }
+.kn-covpick:active { transform: scale(.95); }
+.kn-covpick .kn-cover { box-shadow: 0 12px 22px -12px rgba(0,0,0,.4); }
+.kn-covpick-plus {
+  position: absolute; z-index: 2; right: -8px; bottom: -8px; width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center;
+  background: var(--t); color: var(--bg); box-shadow: 0 6px 14px -4px rgba(0,0,0,.4); border: 3px solid var(--bg);
+}
+.kn-covpick-plus svg { width: 16px; height: 16px; stroke-width: 2.8; }
+.kn-cov-rm { margin: 14px 0 0; display: block; width: 100%; font-size: .8rem; font-weight: 700; color: var(--mute); text-align: center; }
+.kn-cov-rm[hidden] { display: none; }
+.kn-book-fields { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 10px; }
+.kn-stepper { display: flex; align-items: center; gap: 6px; }
+.kn-stepper input { flex: 1; min-width: 0; }
+.kn-stepper button { flex: 0 0 auto; width: 36px; height: 36px; border-radius: 50%; background: var(--soft2); display: grid; place-items: center; font-size: 1.2rem; font-weight: 800; transition: transform .35s var(--spring); }
+.kn-stepper button:active { transform: scale(.85); }
+.kn-hint { margin-top: 12px; font-size: .84rem; font-weight: 500; color: var(--mute); line-height: 1.35; }
+
+/* takvim */
+.kn-tabs { position: relative; display: grid; grid-template-columns: 1fr 1fr; gap: 0; padding: 4px; border-radius: 20px; background: var(--soft); }
+.kn-tabs-thumb { position: absolute; top: 4px; bottom: 4px; left: 4px; width: calc((100% - 8px) / 2); border-radius: 16px; background: var(--acc); transform: translateX(calc(var(--i, 0) * 100%)); transition: transform .55s var(--spring); }
+.kn-tab { position: relative; z-index: 1; padding: 8px 14px 9px; text-align: left; display: flex; flex-direction: column; color: var(--mute); transition: color .3s; }
+.kn-tab small { font-size: .72rem; font-weight: 700; }
+.kn-tab b { font-size: 1.04rem; font-weight: 800; white-space: nowrap; }
+.kn-tab.is-on { color: var(--on); }
+.kn-tab b.is-none { font-weight: 600; opacity: .7; }
+.kn-cal-nav { display: flex; align-items: center; justify-content: space-between; margin: 18px 0 8px; }
+.kn-cal-month { font-size: 1.22rem; font-weight: 800; letter-spacing: -.01em; }
+.kn-cal-month span { color: var(--acc); margin-left: 6px; }
+.kn-cal-btns { display: flex; gap: 6px; }
+.kn-cal-btns button { width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; background: var(--soft); transition: transform .35s var(--spring); }
+.kn-cal-btns button:active { transform: scale(.85); }
+.kn-cal-btns svg { width: 16px; height: 16px; stroke-width: 2.8; }
+.kn-wd, .kn-days { display: grid; grid-template-columns: repeat(7, 1fr); }
+.kn-wd span { text-align: center; font-size: .74rem; font-weight: 800; color: var(--mute); padding-bottom: 6px; }
+.kn-days { touch-action: pan-y; }
+.kn-days.s-l { animation: knSlideL .5s var(--ease); }
+.kn-days.s-r { animation: knSlideR .5s var(--ease); }
+@keyframes knSlideL { from { opacity: 0; transform: translateX(34px); } }
+@keyframes knSlideR { from { opacity: 0; transform: translateX(-34px); } }
+.kn-day { position: relative; height: 44px; display: grid; place-items: center; }
+.kn-day.is-blank { pointer-events: none; }
+.kn-day::before { content: ""; position: absolute; top: 4px; bottom: 4px; left: 0; right: 0; background: color-mix(in srgb, var(--acc) 26%, transparent); opacity: 0; transform: scaleX(0); transform-origin: left; }
+.kn-day.in::before { opacity: 1; transform: none; animation: knBand .45s var(--ease); }
+.kn-day.is-start.has-end::before { opacity: 1; left: 50%; transform: none; animation: knBand .45s var(--ease); }
+.kn-day.is-end.has-start::before { opacity: 1; right: 50%; transform: none; transform-origin: right; animation: knBand .45s var(--ease); }
+@keyframes knBand { from { transform: scaleX(0); } }
+.kn-day:nth-child(7n+1).in::before { border-radius: 999px 0 0 999px; }
+.kn-day:nth-child(7n).in::before { border-radius: 0 999px 999px 0; }
+.kn-day span { position: relative; z-index: 1; width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; font-size: .98rem; font-weight: 700; font-variant-numeric: tabular-nums; transition: transform .45s var(--spring), background .3s, color .3s; }
+.kn-day:active span { transform: scale(.86); }
+.kn-day.is-today span { box-shadow: inset 0 0 0 2px var(--soft3); }
+.kn-day.is-start span, .kn-day.is-end span { background: var(--acc); color: var(--on); font-weight: 800; box-shadow: none; transform: scale(1); }
+.kn-day.is-start.pop span, .kn-day.is-end.pop span { animation: knPop .5s var(--spring); }
+@keyframes knPop { from { transform: scale(.6); } }
+.kn-presets { display: flex; gap: 8px; margin-top: 14px; overflow-x: auto; margin-left: -20px; margin-right: -20px; padding: 2px 20px; touch-action: pan-x pan-y; }
+.kn-presets button { flex: 0 0 auto; height: 36px; padding: 0 14px; border-radius: 999px; background: var(--soft); font-weight: 700; font-size: .86rem; transition: transform .35s var(--spring), background .3s; }
+.kn-presets button:active { transform: scale(.92); }
+.kn-presets button.clear { color: var(--mute); }
+.kn-insight { margin-top: 14px; min-height: 22px; font-size: .92rem; font-weight: 600; color: var(--mute); transition: opacity .25s; }
+.kn-insight b { color: var(--t); font-weight: 800; }
+
+/* anahtar satırı */
+.kn-switch { width: 100%; display: flex; align-items: center; gap: 14px; padding: 14px 16px; border-radius: 20px; background: var(--soft); text-align: left; }
+.kn-switch > span:first-child { flex: 1; display: flex; flex-direction: column; font-weight: 800; font-size: 1.02rem; }
+.kn-switch small { font-size: .8rem; font-weight: 600; color: var(--mute); }
+.kn-sw { position: relative; flex: 0 0 auto; width: 54px; height: 32px; border-radius: 32px; background: var(--soft3); transition: background .35s; }
+.kn-sw::after { content: ""; position: absolute; top: 3px; left: 3px; width: 26px; height: 26px; border-radius: 50%; background: #fff; box-shadow: 0 2px 6px rgba(0,0,0,.28); transition: transform .5s var(--spring), width .3s; }
+.kn-switch:active .kn-sw::after { width: 32px; }
+.kn-switch[aria-checked="true"] .kn-sw { background: var(--ok); }
+.kn-switch[aria-checked="true"] .kn-sw::after { transform: translateX(22px); }
+.kn-switch[aria-checked="true"]:active .kn-sw::after { transform: translateX(16px); }
+
+.kn-drop { width: 100%; padding: 22px 16px; border-radius: 22px; border: 2px dashed var(--soft3); display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center; transition: transform .4s var(--spring), border-color .3s, background .3s; }
+.kn-drop:active { transform: scale(.98); background: var(--soft); }
+.kn-drop svg { width: 28px; height: 28px; color: var(--mute); }
+.kn-drop b { font-size: 1rem; font-weight: 800; }
+.kn-drop small { font-size: .8rem; font-weight: 500; color: var(--mute); }
+.kn-keylist { display: grid; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: 10px; margin-top: 12px; }
+.kn-keylist:empty { display: none; }
+.kn-kitem { position: relative; aspect-ratio: 3 / 4; border-radius: 14px; overflow: hidden; background: var(--soft2); display: grid; place-items: center; }
+.kn-kitem.is-new { animation: knChipIn .55s var(--spring) both; }
+.kn-kitem img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.kn-kitem.pdf { flex-direction: column; font-weight: 800; font-size: .76rem; text-align: center; padding: 6px; gap: 4px; align-content: center; }
+.kn-kitem.pdf svg { width: 24px; height: 24px; }
+.kn-kitem.pdf em { font-style: normal; font-weight: 600; opacity: .6; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: .68rem; }
+.kn-kx { position: absolute; top: 5px; right: 5px; width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; background: rgba(0,0,0,.55); color: #fff; }
+.kn-kx svg { width: 12px; height: 12px; stroke-width: 3; }
+.kn-busy::after { content: ""; width: 18px; height: 18px; border-radius: 50%; border: 3px solid currentColor; border-right-color: transparent; animation: knSpin .7s linear infinite; }
+@keyframes knSpin { to { transform: rotate(360deg); } }
+
+/* ---------- Görüntüleyici ---------- */
+.kn-viewer { background: #000; align-items: stretch; opacity: 0; transition: opacity .4s ease, visibility 0s linear .4s; }
+.kn-viewer.is-open { opacity: 1; transition-delay: 0s; }
+.kn-v-top, .kn-v-bot { position: absolute; left: 0; right: 0; z-index: 3; display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: calc(12px + env(safe-area-inset-top)) 14px 12px; color: #fff; transition: opacity .3s, transform .4s var(--ease); }
+.kn-v-top { top: 0; background: linear-gradient(rgba(0,0,0,.6), transparent); }
+.kn-v-bot { bottom: 0; padding: 12px 14px calc(14px + env(safe-area-inset-bottom)); background: linear-gradient(transparent, rgba(0,0,0,.6)); justify-content: center; }
+.kn-viewer.is-bare .kn-v-top { opacity: 0; transform: translateY(-14px); pointer-events: none; }
+.kn-viewer.is-bare .kn-v-bot { opacity: 0; transform: translateY(14px); pointer-events: none; }
+.kn-viewer .kn-icon { background: rgba(255,255,255,.16); color: #fff; }
+.kn-viewer .kn-icon.danger { color: #ff8a95; }
+.kn-v-count { font-weight: 800; font-size: .95rem; font-variant-numeric: tabular-nums; }
+.kn-v-stage { position: absolute; inset: 0; overflow: auto; display: flex; touch-action: pan-x pan-y pinch-zoom; }
+.kn-v-stage img { margin: auto; max-width: 100%; max-height: 100%; width: auto; height: auto; object-fit: contain; transition: opacity .3s, transform .5s var(--ease); }
+.kn-v-stage.is-zoom img { max-width: none; max-height: none; width: 230%; }
+.kn-v-stage img.is-swap { opacity: 0; transform: translateX(var(--sx, 30px)); }
+.kn-v-nav { position: absolute; top: 50%; z-index: 3; width: 46px; height: 46px; margin-top: -23px; border-radius: 50%; display: grid; place-items: center; background: rgba(255,255,255,.16); color: #fff; transition: opacity .3s, transform .4s var(--spring); }
+.kn-v-nav:active { transform: scale(.88); }
+.kn-v-nav.l { left: 12px; } .kn-v-nav.r { right: 12px; }
+.kn-v-nav[hidden] { display: none; }
+.kn-v-nav svg { width: 20px; height: 20px; stroke-width: 2.8; }
+.kn-viewer.is-bare .kn-v-nav { opacity: 0; pointer-events: none; }
+
+/* ---------- Bildirim ---------- */
+.kn-toast { position: fixed; z-index: 1000; left: 50%; bottom: calc(112px + env(safe-area-inset-bottom)); max-width: calc(100vw - 32px); display: flex; align-items: center; gap: 10px; padding: 10px 10px 10px 18px; border-radius: 999px; background: var(--t); color: var(--bg); font-weight: 700; font-size: .92rem; box-shadow: 0 14px 30px -10px rgba(0,0,0,.45); opacity: 0; visibility: hidden; transform: translate(-50%, 18px) scale(.94); transition: opacity .3s, transform .55s var(--spring), visibility 0s linear .55s; }
+.kn-toast.is-on { opacity: 1; visibility: visible; transform: translate(-50%, 0); transition-delay: 0s; }
+.kn-toast button { height: 32px; padding: 0 14px; border-radius: 999px; background: color-mix(in srgb, var(--bg) 22%, transparent); font-weight: 800; font-size: .86rem; }
+.kn-toast button[hidden] { display: none; }
+@media (min-width: 768px) and (min-height: 600px) { .kn-toast { bottom: 40px; } }
+
+/* konfeti */
+.kn-spark { position: fixed; z-index: 1100; width: 8px; height: 8px; border-radius: 50%; pointer-events: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  #page-kaynaklar *, .kn-layer *, .kn-toast, .kn-toast * { animation-duration: .01ms !important; animation-delay: 0s !important; transition-duration: .01ms !important; transition-delay: 0s !important; }
+}
+
+/* 8 simge sığsın: kısa tabletlerde yan panel aralığı daralır */
+@media (min-width: 768px) and (max-height: 700px) { .sidebar-nav { gap: 12px; } }
+</style>
+<!-- ===== Kaynaklarım katmanları ===== -->
+<div class="kn-layer" id="knDetail" aria-hidden="true">
+  <div class="kn-scrim" data-close></div>
+  <div class="kn-sheet" id="knDetailSheet" role="dialog" aria-modal="true" aria-label="Kaynak ayrıntısı">
+    <div class="kn-grab" id="knGrab"><i></i></div>
+    <div class="kn-sheet-scroll" id="knDetailBody"></div>
+  </div>
+</div>
+
+<div class="kn-layer" id="knForm" aria-hidden="true">
+  <div class="kn-scrim" data-close></div>
+  <div class="kn-sheet kn-sheet-form" role="dialog" aria-modal="true" aria-labelledby="knFTitle">
+    <div class="kn-fhead">
+      <button type="button" class="kn-icon" id="knFClose" aria-label="Kapat"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+      <h2 class="kn-ftitle" id="knFTitle">Hangi sınav, hangi ders?</h2>
+      <span class="kn-fcount" id="knFCount">1 / 4</span>
+    </div>
+    <div class="kn-prog" id="knProg">
+      <button type="button" aria-label="1. adım: Sınav ve ders"></button>
+      <button type="button" aria-label="2. adım: Kitap"></button>
+      <button type="button" aria-label="3. adım: Takvim"></button>
+      <button type="button" aria-label="4. adım: Cevap anahtarı"></button>
+    </div>
+    <div class="kn-discard" id="knDiscard" hidden>
+      <span>Girdiklerin kaydedilmeyecek.</span>
+      <button type="button" id="knDiscardStay">Devam et</button>
+      <button type="button" class="x" id="knDiscardGo">Çık</button>
+    </div>
+
+    <div class="kn-steps" id="knSteps">
+      <!-- 1 · Sınav ve ders -->
+      <section class="kn-step" data-step="0">
+        <div class="kn-sect rv" style="--r:0">
+          <span class="kn-lbl">Sınav türü</span>
+          <div class="kn-exams" id="knExams">
+            <button type="button" class="kn-exam" data-v="tyt"><b>TYT</b><span>Temel Yeterlilik</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></button>
+            <button type="button" class="kn-exam" data-v="ayt"><b>AYT</b><span>Alan Yeterlilik</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></button>
+          </div>
+        </div>
+        <div class="kn-sect rv" style="--r:1">
+          <span class="kn-lbl">Ders</span>
+          <div class="kn-subjs" id="knSubjs"></div>
+          <div class="kn-fold" id="knCustomFold"><div>
+            <label class="kn-field" style="margin-top:2px"><small>Ders adı</small><input id="knCustomSubj" type="text" maxlength="28" placeholder="Örn. Geometri" autocomplete="off" autocapitalize="words"></label>
+          </div></div>
+        </div>
+      </section>
+
+      <!-- 2 · Kitap -->
+      <section class="kn-step" data-step="1">
+        <div class="kn-book rv" style="--r:0">
+          <div class="kn-book-cover">
+            <button type="button" class="kn-covpick" id="knCovPick" aria-label="Kitap görseli seç">
+              <span id="knCovPrev"></span>
+              <span class="kn-covpick-plus" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></span>
+            </button>
+            <button type="button" class="kn-cov-rm" id="knCovRm" hidden>Görseli kaldır</button>
+          </div>
+          <div class="kn-book-fields">
+            <label class="kn-field"><small>Kitap adı</small><input id="knTitleIn" type="text" maxlength="60" placeholder="Örn. 3D Problemler" autocomplete="off" autocapitalize="words" enterkeyhint="next"></label>
+            <div class="kn-field"><small>Sayfa sayısı</small>
+              <div class="kn-stepper">
+                <button type="button" id="knPgMinus" aria-label="10 sayfa azalt">−</button>
+                <input id="knPagesIn" type="text" inputmode="numeric" maxlength="4" placeholder="320" autocomplete="off" style="text-align:center">
+                <button type="button" id="knPgPlus" aria-label="10 sayfa artır">+</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <p class="kn-hint rv" style="--r:1">Görsel eklemezsen kitabın dersine göre renkli bir kapak oluşturulur.</p>
+      </section>
+
+      <!-- 3 · Takvim -->
+      <section class="kn-step" data-step="2">
+        <div class="kn-tabs rv" id="knTabs" style="--i:0;--r:0">
+          <span class="kn-tabs-thumb" aria-hidden="true"></span>
+          <button type="button" class="kn-tab is-on" data-f="start"><small>Başlangıç</small><b id="knTabStart">Seç</b></button>
+          <button type="button" class="kn-tab" data-f="target"><small>Hedef bitiş</small><b id="knTabTarget">Seç</b></button>
+        </div>
+        <div class="rv" style="--r:1">
+          <div class="kn-cal-nav">
+            <div class="kn-cal-month" id="knCalMonth"></div>
+            <div class="kn-cal-btns">
+              <button type="button" id="knCalPrev" aria-label="Önceki ay"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
+              <button type="button" id="knCalNext" aria-label="Sonraki ay"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button>
+            </div>
+          </div>
+          <div class="kn-wd" aria-hidden="true"><span>P</span><span>S</span><span>Ç</span><span>P</span><span>C</span><span>C</span><span>P</span></div>
+          <div class="kn-days" id="knDays"></div>
+        </div>
+        <div class="kn-presets rv" id="knPresets" style="--r:2">
+          <button type="button" data-add="7d">1 hafta</button>
+          <button type="button" data-add="14d">2 hafta</button>
+          <button type="button" data-add="1m">1 ay</button>
+          <button type="button" data-add="2m">2 ay</button>
+          <button type="button" class="clear" data-add="clear">Temizle</button>
+        </div>
+        <p class="kn-insight rv" id="knInsight" style="--r:3"></p>
+      </section>
+
+      <!-- 4 · Cevap anahtarı ve durum -->
+      <section class="kn-step" data-step="3">
+        <div class="kn-sect rv" style="--r:0">
+          <button type="button" class="kn-switch" id="knSolvedSw" role="switch" aria-checked="false">
+            <span><span>Çözüldü</span><small>Kitabı bitirdiysen işaretle</small></span>
+            <span class="kn-sw" aria-hidden="true"></span>
+          </button>
+        </div>
+        <div class="kn-sect rv" style="--r:1">
+          <span class="kn-lbl">Cevap anahtarı</span>
+          <button type="button" class="kn-drop" id="knKeyAdd">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V5M7.5 9.5L12 5l4.5 4.5M5 15v2.5A2.5 2.5 0 0 0 7.5 20h9a2.5 2.5 0 0 0 2.5-2.5V15"/></svg>
+            <b>Fotoğraf veya PDF ekle</b>
+            <small>Birden fazla sayfa seçebilirsin</small>
+          </button>
+          <div class="kn-keylist" id="knKeyList"></div>
+        </div>
+      </section>
+    </div>
+
+    <div class="kn-ffoot">
+      <button type="button" class="kn-btn back is-hidden" id="knBack">Geri</button>
+      <button type="button" class="kn-btn primary" id="knNext">Devam</button>
+    </div>
+  </div>
+</div>
+
+<div class="kn-layer kn-viewer" id="knViewer" aria-hidden="true" role="dialog" aria-modal="true" aria-label="Cevap anahtarı">
+  <div class="kn-v-stage" id="knVStage"><img id="knVImg" alt="Cevap anahtarı sayfası"></div>
+  <div class="kn-v-top">
+    <button type="button" class="kn-icon" id="knVClose" aria-label="Kapat"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    <span class="kn-v-count" id="knVCount"></span>
+    <button type="button" class="kn-icon danger" id="knVDel" aria-label="Bu sayfayı sil"><svg viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3"/></svg></button>
+  </div>
+  <button type="button" class="kn-v-nav l" id="knVPrev" aria-label="Önceki sayfa"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
+  <button type="button" class="kn-v-nav r" id="knVNext" aria-label="Sonraki sayfa"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button>
+</div>
+
+<div class="kn-toast" id="knToast" role="status" aria-live="polite"><span id="knToastText"></span><button type="button" id="knToastAct" hidden>Geri al</button></div>
+<input type="file" id="knCoverFile" accept="image/*" hidden>
+<input type="file" id="knKeyFile" accept="image/*,application/pdf" multiple hidden>
+
+<script id="kaynaklarim-js">
+/* ==========================================================================
+   KAYNAKLARIM — mantık
+   Veri: APP_STATE.kaynaklar = { v: 1, items: [...] } (saveAppState ile; yedek/eşitleme akışına dahildir).
+   Görseller: uygulamanın kendi IndexedDB görsel deposu (storeImageAndGetRef / resolveImageSrc).
+   ========================================================================== */
+(function () {
+  'use strict';
+  var page = document.getElementById('page-kaynaklar');
+  if (!page) return;
+
+  /* ---------------- yardımcılar ---------------- */
+  var $ = function (id) { return document.getElementById(id); };
+  var q = function (s, r) { return (r || document).querySelector(s); };
+  var qa = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
+  var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
+  var uid = function () { return 'kn_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7); };
+  var nf = new Intl.NumberFormat('tr-TR');
+  var clamp = function (v, a, b) { return Math.max(a, Math.min(b, v)); };
+  var buzz = function (n) { try { if (navigator.vibrate) navigator.vibrate(n || 8); } catch (e) { /* yok say */ } };
+  var wait = function (ms) { return new Promise(function (r) { setTimeout(r, ms); }); };
+
+  var MONTHS = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
+  var MON_S = ['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara'];
+  var DOW_S = ['Paz', 'Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt'];
+  var SUBJECTS = {
+    tyt: ['Türkçe', 'Matematik', 'Geometri', 'Fizik', 'Kimya', 'Biyoloji', 'Tarih', 'Coğrafya', 'Felsefe', 'Din'],
+    ayt: ['Matematik', 'Geometri', 'Fizik', 'Kimya', 'Biyoloji', 'Edebiyat', 'Tarih', 'Coğrafya', 'Felsefe']
+  };
+  var COLORS = {
+    'Türkçe': '#ff90e8', 'Matematik': '#c9a6ff', 'Geometri': '#8fb4ff', 'Fizik': '#7cc7ff', 'Kimya': '#ffc46b', 'Biyoloji': '#7ddc9a',
+    'Tarih': '#ff9b7a', 'Coğrafya': '#6fe0c5', 'Felsefe': '#b9a8ff', 'Din': '#e8d36a', 'Edebiyat': '#ff90b8'
+  };
+  var colorOf = function (name) {
+    if (COLORS[name]) return COLORS[name];
+    var h = 0, s = String(name || 'x');
+    for (var i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) % 360;
+    return 'hsl(' + h + ' 82% 78%)';
+  };
+
+  /* tarih */
+  var pad = function (n) { return (n < 10 ? '0' : '') + n; };
+  var toKey = function (d) { return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); };
+  var fromKey = function (k) { var p = k.split('-'); return new Date(+p[0], +p[1] - 1, +p[2]); };
+  var todayKey = function () { return toKey(new Date()); };
+  var diffDays = function (a, b) { return Math.round((fromKey(b) - fromKey(a)) / 86400000); };
+  var addDaysKey = function (k, n) { var d = fromKey(k); d.setDate(d.getDate() + n); return toKey(d); };
+  var addMonthsKey = function (k, n) {
+    var d = fromKey(k), day = d.getDate();
+    d.setDate(1); d.setMonth(d.getMonth() + n);
+    var last = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
+    d.setDate(Math.min(day, last));
+    return toKey(d);
+  };
+  var fmtDate = function (k, dow) {
+    if (!k) return '';
+    var d = fromKey(k), y = d.getFullYear() !== new Date().getFullYear() ? ' ' + d.getFullYear() : '';
+    return d.getDate() + ' ' + MON_S[d.getMonth()] + y + (dow === false ? '' : ' ' + DOW_S[d.getDay()]);
+  };
+
+  /* ---------------- veri ---------------- */
+  var LS_KEY = 'pace_kaynaklar_v1';
+  var S = { items: [], exam: 'all', subj: 'all', detailId: null };
+
+  var normalize = function (it) {
+    var pages = Math.max(1, parseInt(it.pages, 10) || 1);
+    return {
+      id: it.id || uid(),
+      exam: it.exam === 'ayt' ? 'ayt' : 'tyt',
+      subject: String(it.subject || ''),
+      title: String(it.title || ''),
+      pages: pages,
+      pagesDone: clamp(parseInt(it.pagesDone, 10) || 0, 0, pages),
+      prevDone: parseInt(it.prevDone, 10) || 0,
+      solved: !!it.solved,
+      solvedAt: it.solvedAt || 0,
+      start: it.start || '',
+      target: it.target || '',
+      cover: it.cover || '',
+      keys: Array.isArray(it.keys) ? it.keys.filter(function (k) { return k && k.ref; }).map(function (k) { return { ref: k.ref, type: k.type === 'pdf' ? 'pdf' : 'image', name: k.name || '' }; }) : [],
+      createdAt: it.createdAt || Date.now()
+    };
+  };
+  var load = function () {
+    var src = null;
+    try { if (typeof APP_STATE !== 'undefined' && APP_STATE && APP_STATE.kaynaklar) src = APP_STATE.kaynaklar; } catch (e) { /* yok say */ }
+    if (!src) { try { src = JSON.parse(localStorage.getItem(LS_KEY) || 'null'); } catch (e) { src = null; } }
+    return src && Array.isArray(src.items) ? src.items.map(normalize) : [];
+  };
+  var persist = function () {
+    var payload = { v: 1, items: S.items };
+    try {
+      if (typeof saveAppState === 'function') return saveAppState({ kaynaklar: payload }) !== false;
+    } catch (e) { /* aşağıdaki yedeğe düş */ }
+    try { localStorage.setItem(LS_KEY, JSON.stringify(payload)); return true; } catch (e) { return false; }
+  };
+  var get = function (id) { for (var i = 0; i < S.items.length; i++) if (S.items[i].id === id) return S.items[i]; return null; };
+
+  /* ---------------- görseller ---------------- */
+  var srcCache = new Map();
+  var resolve = async function (ref) {
+    if (!ref) return '';
+    if (srcCache.has(ref)) return srcCache.get(ref);
+    var u = ref;
+    if (ref.indexOf('idb://') === 0) {
+      try { u = typeof resolveImageSrc === 'function' ? await resolveImageSrc(ref) : ''; } catch (e) { u = ''; }
+    }
+    if (u) srcCache.set(ref, u);
+    return u || '';
+  };
+  var compress = function (file, max, quality) {
+    return new Promise(function (res, rej) {
+      var url = URL.createObjectURL(file), img = new Image();
+      img.onload = function () {
+        var w = img.naturalWidth, h = img.naturalHeight, k = Math.min(1, max / Math.max(w, h));
+        w = Math.round(w * k); h = Math.round(h * k);
+        var c = document.createElement('canvas'); c.width = w; c.height = h;
+        var x = c.getContext('2d'); x.fillStyle = '#fff'; x.fillRect(0, 0, w, h); x.drawImage(img, 0, 0, w, h);
+        URL.revokeObjectURL(url);
+        res(c.toDataURL('image/jpeg', quality));
+      };
+      img.onerror = function () { URL.revokeObjectURL(url); rej(new Error('Görsel okunamadı')); };
+      img.src = url;
+    });
+  };
+  var storeDataUrl = async function (dataUrl) {
+    try { if (typeof storeImageAndGetRef === 'function') return await storeImageAndGetRef(dataUrl); } catch (e) { /* ham veriye düş */ }
+    return dataUrl;
+  };
+  var storePdf = async function (blob) {
+    try {
+      if (typeof idbPutImageBlob === 'function') { var ref = await idbPutImageBlob(blob); if (ref) return ref; }
+    } catch (e) { /* aşağıya düş */ }
+    if (blob.size > 3 * 1024 * 1024) throw new Error('PDF bu cihazda saklanamıyor (3 MB üstü).');
+    return await new Promise(function (res, rej) { var r = new FileReader(); r.onload = function () { res(r.result); }; r.onerror = rej; r.readAsDataURL(blob); });
+  };
+  var dropRef = function (ref) {
+    try { if (ref && typeof deleteImageRef === 'function') deleteImageRef(ref); } catch (e) { /* yok say */ }
+    if (ref) srcCache.delete(ref);
+  };
+  var hydrate = function (root) {
+    qa('img[data-ref]', root).forEach(function (img) {
+      if (img.getAttribute('src')) return;
+      resolve(img.dataset.ref).then(function (u) {
+        if (!u || !img.isConnected) return;
+        img.addEventListener('load', function () { img.classList.add('is-in'); }, { once: true });
+        img.src = u;
+        if (img.complete) img.classList.add('is-in');
+      });
+    });
+  };
+  var openPdf = async function (ref) {
+    var w = null;
+    try { w = window.open('', '_blank'); } catch (e) { w = null; }
+    var u = await resolve(ref);
+    if (u && u.indexOf('data:') === 0) { try { var b = await (await fetch(u)).blob(); u = URL.createObjectURL(b); } catch (e) { /* olduğu gibi */ } }
+    if (!u) { if (w) w.close(); toast('PDF açılamadı'); return; }
+    if (w) w.location.href = u;
+    else { var a = document.createElement('a'); a.href = u; a.target = '_blank'; a.rel = 'noopener'; document.body.appendChild(a); a.click(); a.remove(); }
+  };
+
+  /* ---------------- bildirim + efekt ---------------- */
+  var toastEl = $('knToast'), toastText = $('knToastText'), toastAct = $('knToastAct');
+  var toastState = null;
+  var endToast = function (callEnd) {
+    if (!toastState) return;
+    clearTimeout(toastState.timer);
+    var st = toastState; toastState = null;
+    toastEl.classList.remove('is-on');
+    if (callEnd && st.onEnd) st.onEnd();
+  };
+  var toast = function (msg, opt) {
+    opt = opt || {};
+    endToast(true);
+    toastText.textContent = msg;
+    toastAct.hidden = !opt.act;
+    if (opt.act) toastAct.textContent = opt.act;
+    void toastEl.offsetWidth;
+    toastEl.classList.add('is-on');
+    toastState = { fn: opt.fn, onEnd: opt.onEnd, timer: setTimeout(function () { endToast(true); }, opt.ms || (opt.act ? 5200 : 2200)) };
+  };
+  toastAct.addEventListener('click', function () {
+    var fn = toastState && toastState.fn;
+    endToast(false);
+    if (fn) fn();
+  });
+  var burst = function (x, y, color) {
+    if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    for (var i = 0; i < 14; i++) {
+      var p = document.createElement('i'); p.className = 'kn-spark';
+      p.style.left = x - 4 + 'px'; p.style.top = y - 4 + 'px';
+      p.style.background = i % 3 === 0 ? '#59c97b' : color;
+      document.body.appendChild(p);
+      var a = (Math.PI * 2 * i) / 14 + Math.random() * .5, d = 46 + Math.random() * 44;
+      p.animate([
+        { transform: 'translate(0,0) scale(1)', opacity: 1 },
+        { transform: 'translate(' + Math.cos(a) * d + 'px,' + (Math.sin(a) * d + 16) + 'px) scale(.2)', opacity: 0 }
+      ], { duration: 650 + Math.random() * 250, easing: 'cubic-bezier(.2,.8,.3,1)' }).onfinish = (function (el) { return function () { el.remove(); }; })(p);
+    }
+  };
+
+  /* ---------------- hesaplar ---------------- */
+  var progressOf = function (it) { return it.solved ? 1 : clamp(it.pagesDone / it.pages, 0, 1); };
+  var statusOf = function (it) {
+    if (it.solved) return { cls: 'is-ok', text: 'Çözüldü' };
+    var td = todayKey();
+    if (it.start && it.start > td) return { cls: '', text: fmtDate(it.start, false) + ' tarihinde başlıyor' };
+    if (it.target) {
+      var d = diffDays(td, it.target);
+      if (d < 0) return { cls: 'is-bad', text: -d + ' gün gecikti' };
+      if (d === 0) return { cls: 'is-soon', text: 'Bugün bitiyor' };
+      if (d === 1) return { cls: 'is-soon', text: 'Yarın bitiyor' };
+      return { cls: '', text: d + ' gün kaldı' };
+    }
+    if (it.pagesDone > 0) return { cls: '', text: '%' + Math.round(progressOf(it) * 100) + ' tamamlandı' };
+    return { cls: '', text: 'Başlanmadı' };
+  };
+  var paceOf = function (it) {
+    if (it.solved) return { cls: '', html: 'Bu kitabı tamamladın.' };
+    if (!it.target) return { cls: '', html: 'Hedef bitiş tarihi eklersen günlük temponu burada görürsün.' };
+    var td = todayKey(), rem = it.pages - it.pagesDone, d = diffDays(td, it.target);
+    if (d < 0) return { cls: 'is-bad', html: 'Hedef tarihi <b>' + (-d) + ' gün</b> önce geçti. Kalan <b>' + nf.format(rem) + ' sayfa</b>.' };
+    var from = it.start && it.start > td ? it.start : td;
+    var days = Math.max(1, diffDays(from, it.target) + 1), per = Math.ceil(rem / days);
+    return { cls: '', html: 'Kalan <b>' + nf.format(rem) + ' sayfa</b> için günde yaklaşık <b>' + nf.format(per) + ' sayfa</b> yeterli.' };
+  };
+
+  /* ---------------- kapak ---------------- */
+  var coverHTML = function (o) {
+    var c = colorOf(o.subject), ref = o.cover || '', cached = o.coverSrc || (ref && srcCache.get(ref)) || '', inner;
+    if (ref || o.coverSrc) {
+      inner = '<img alt=""' + (ref ? ' data-ref="' + esc(ref) + '"' : '') + (cached ? ' src="' + esc(cached) + '" class="is-in"' : '') + '>';
+    } else {
+      inner = '<span class="kn-gen"><span class="kn-gen-s">' + esc(o.subject || 'Ders') + '</span><span class="kn-gen-t">' + esc(o.title || 'Kitap adı') + '</span><span class="kn-gen-e">' + esc((o.exam || 'tyt').toUpperCase()) + '</span></span>';
+    }
+    return '<span class="kn-cover" style="--c:' + c + '">' + inner + '<i class="kn-spine"></i></span>';
+  };
+
+  /* ---------------- liste ---------------- */
+  var root = $('knRoot'), listEl = $('knList');
+  var introTimer = null;
+  var CHECK_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle class="ring" cx="12" cy="12" r="8.5"/><path class="tick" d="M6.5 12.5l4 4 7-8.5"/></svg>';
+
+  var visibleItems = function () {
+    return S.items.filter(function (it) { return (S.exam === 'all' || it.exam === S.exam) && (S.subj === 'all' || it.subject === S.subj); });
+  };
+  var rank = function (it) { return it.solved ? 2 : (it.pagesDone > 0 ? 0 : 1); };
+  var sortItems = function (arr) {
+    return arr.slice().sort(function (a, b) {
+      return rank(a) - rank(b) || (a.target || '9999').localeCompare(b.target || '9999') || b.createdAt - a.createdAt;
+    });
+  };
+  var cardHTML = function (it, i) {
+    var st = statusOf(it), p = progressOf(it);
+    return '<article class="kn-card' + (it.solved ? ' is-solved' : '') + '" data-id="' + it.id + '" style="--i:' + Math.min(i, 14) + ';--c:' + colorOf(it.subject) + '">' +
+      '<button type="button" class="kn-open" data-act="open" aria-label="' + esc(it.title) + ' ayrıntıları">' +
+      coverHTML(it) +
+      '<span class="kn-info"><span class="kn-name">' + esc(it.title) + '</span>' +
+      '<span class="kn-meta">' + esc(it.subject) + ' · ' + nf.format(it.pages) + ' sayfa</span>' +
+      '<span class="kn-bar"><i style="--p:' + p.toFixed(3) + '"></i></span>' +
+      '<span class="kn-stat ' + st.cls + '"><i></i>' + esc(st.text) + '</span></span>' +
+      '</button>' +
+      '<button type="button" class="kn-check' + (it.solved ? ' is-on' : '') + '" data-act="toggle" aria-pressed="' + it.solved + '" aria-label="' + (it.solved ? 'Çözüldü işaretini kaldır' : 'Çözüldü olarak işaretle') + '">' + CHECK_SVG + '</button>' +
+      '</article>';
+  };
+
+  var renderHead = function (vis) {
+    var solvedAll = S.items.filter(function (i) { return i.solved; }).length;
+    $('knSub').textContent = S.items.length ? S.items.length + ' kitap · ' + solvedAll + ' çözüldü' : 'Ders kitaplarını buraya ekle';
+    var ov = $('knOverview');
+    ov.hidden = !vis.length;
+    if (vis.length) {
+      var total = 0, done = 0, full = 0;
+      vis.forEach(function (it) { total += it.pages; done += it.solved ? it.pages : it.pagesDone; if (it.solved) full += it.pages; });
+      $('knOvA').style.setProperty('--p', (done / total).toFixed(3));
+      $('knOvB').style.setProperty('--p', (full / total).toFixed(3));
+      $('knOvText').innerHTML = '<span><b>%' + Math.round(done / total * 100) + '</b> tamamlandı</span><span>' + nf.format(done) + ' / ' + nf.format(total) + ' sayfa</span>';
+    }
+    /* sınav ayırıcı */
+    var idx = { all: 0, tyt: 1, ayt: 2 }[S.exam];
+    var seg = $('knExamSeg'); seg.style.setProperty('--i', idx);
+    qa('button', seg).forEach(function (b) { var on = b.dataset.v === S.exam; b.classList.toggle('is-on', on); b.setAttribute('aria-selected', on); });
+    /* ders çipleri */
+    var pool = S.items.filter(function (i) { return S.exam === 'all' || i.exam === S.exam; }), counts = {}, order = [];
+    pool.forEach(function (i) { if (!counts[i.subject]) { counts[i.subject] = 0; order.push(i.subject); } counts[i.subject]++; });
+    if (S.subj !== 'all' && !counts[S.subj]) S.subj = 'all';
+    var chips = $('knChips');
+    if (order.length < 2) { chips.innerHTML = ''; if (S.subj !== 'all') S.subj = 'all'; return; }
+    var html = '<button type="button" class="kn-chip' + (S.subj === 'all' ? ' is-on' : '') + '" data-v="all">Tümü</button>';
+    order.forEach(function (s) { html += '<button type="button" class="kn-chip' + (S.subj === s ? ' is-on' : '') + '" data-v="' + esc(s) + '">' + esc(s) + ' <small>' + counts[s] + '</small></button>'; });
+    chips.innerHTML = html;
+  };
+
+  var render = function (opts) {
+    opts = opts || {};
+    if (!opts.keepIntro) root.classList.remove('is-intro');
+    var first = new Map();
+    qa('.kn-card', listEl).forEach(function (c) { first.set(c.dataset.id, c.getBoundingClientRect()); });
+    renderHead(visibleItems());
+    var vis = visibleItems(), html = '';
+    if (!S.items.length) {
+      html = '<div class="kn-empty"><div class="kn-empty-art" aria-hidden="true"><span></span><span></span><span></span></div>' +
+        '<h2>Kitaplığın boş</h2><p>Ders kitaplarını ekle; sayfa sayısını, takvimini ve cevap anahtarını burada takip et.</p>' +
+        '<button type="button" class="kn-btn primary" data-act="add"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>İlk kaynağını ekle</button></div>';
+    } else if (!vis.length) {
+      html = '<div class="kn-empty"><h2>Bu filtrede kitap yok</h2><p>Başka bir sınav türü ya da ders seçebilirsin.</p><button type="button" class="kn-btn" data-act="reset">Filtreyi temizle</button></div>';
+    } else {
+      var sorted = sortItems(vis), todo = sorted.filter(function (i) { return !i.solved; }), done = sorted.filter(function (i) { return i.solved; }), n = 0;
+      if (todo.length) {
+        if (done.length) html += '<div class="kn-group"><b>Çözülecekler</b><span>' + todo.length + '</span></div>';
+        html += '<div class="kn-grid">' + todo.map(function (it) { return cardHTML(it, n++); }).join('') + '</div>';
+      }
+      if (done.length) {
+        html += '<div class="kn-group"><b>Çözülenler</b><span>' + done.length + '</span></div>';
+        html += '<div class="kn-grid">' + done.map(function (it) { return cardHTML(it, n++); }).join('') + '</div>';
+      }
+    }
+    listEl.innerHTML = html;
+    hydrate(listEl);
+    if (opts.noFlip || !first.size) return;
+    qa('.kn-card', listEl).forEach(function (c) {
+      var f = first.get(c.dataset.id);
+      if (!f) { c.animate([{ opacity: 0, transform: 'scale(.9) translateY(12px)' }, { opacity: 1, transform: 'none' }], { duration: 520, easing: 'cubic-bezier(.22,1,.36,1)' }); return; }
+      var l = c.getBoundingClientRect(), dx = f.left - l.left, dy = f.top - l.top;
+      if (Math.abs(dx) + Math.abs(dy) > 1) c.animate([{ transform: 'translate(' + dx + 'px,' + dy + 'px)' }, { transform: 'none' }], { duration: 600, easing: 'cubic-bezier(.22,1,.36,1)' });
+    });
+  };
+  var playIntro = function () {
+    root.classList.add('is-intro');
+    clearTimeout(introTimer);
+    introTimer = setTimeout(function () { root.classList.remove('is-intro'); }, 1900);
+  };
+
+  /* ---------------- katman yönetimi ---------------- */
+  var L = { detail: $('knDetail'), form: $('knForm'), viewer: $('knViewer') };
+  var syncModal = function () {
+    var any = qa('.kn-layer.is-open').length > 0;
+    document.body.classList.toggle('has-modal-open', any);
+  };
+  var openLayer = function (el) { el.classList.add('is-open'); el.setAttribute('aria-hidden', 'false'); syncModal(); };
+  var closeLayer = function (el) { el.classList.remove('is-open'); el.setAttribute('aria-hidden', 'true'); syncModal(); };
+
+  /* ---------------- çözüldü / silme ---------------- */
+  var toggleSolved = function (it, origin) {
+    var snap = { solved: it.solved, pagesDone: it.pagesDone, solvedAt: it.solvedAt, prevDone: it.prevDone };
+    if (!it.solved) { it.prevDone = it.pagesDone; it.pagesDone = it.pages; it.solved = true; it.solvedAt = Date.now(); }
+    else { it.solved = false; it.solvedAt = 0; it.pagesDone = Math.min(it.prevDone || 0, Math.max(0, it.pages - 1)); }
+    var nowSolved = it.solved;
+    persist(); buzz(nowSolved ? [10, 30, 14] : 8);
+    if (nowSolved && origin) { var r = origin.getBoundingClientRect(); burst(r.left + r.width / 2, r.top + r.height / 2, colorOf(it.subject)); }
+    render(); if (S.detailId === it.id) renderDetail(false);
+    toast(nowSolved ? 'Çözüldü olarak işaretlendi' : 'Çözüldü işareti kaldırıldı', {
+      act: 'Geri al', fn: function () {
+        it.solved = snap.solved; it.pagesDone = snap.pagesDone; it.solvedAt = snap.solvedAt; it.prevDone = snap.prevDone;
+        persist(); render(); if (S.detailId === it.id) renderDetail(false);
+      }
+    });
+  };
+  var pendingDel = null;
+  var finalizeDel = function () {
+    if (!pendingDel) return;
+    var it = pendingDel; pendingDel = null;
+    dropRef(it.cover); it.keys.forEach(function (k) { dropRef(k.ref); });
+  };
+  var deleteItem = function (id) {
+    var idx = S.items.findIndex(function (i) { return i.id === id; });
+    if (idx < 0) return;
+    finalizeDel();
+    var it = S.items.splice(idx, 1)[0];
+    pendingDel = it;
+    persist(); closeDetail(); render();
+    toast('Kaynak silindi', {
+      act: 'Geri al',
+      fn: function () { pendingDel = null; S.items.splice(Math.min(idx, S.items.length), 0, it); persist(); render(); },
+      onEnd: finalizeDel
+    });
+  };
+
+  /* ---------------- ayrıntı sayfası ---------------- */
+  var detailBody = $('knDetailBody');
+  var keyThumb = function (k, i) {
+    if (k.type === 'pdf') return '<button type="button" class="kn-key pdf" data-act="key" data-i="' + i + '" aria-label="PDF aç"><svg viewBox="0 0 24 24"><path d="M7 3h7l5 5v11a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><path d="M14 3v5h5"/></svg>PDF</button>';
+    var cached = srcCache.get(k.ref) || '';
+    return '<button type="button" class="kn-key" data-act="key" data-i="' + i + '" aria-label="Cevap anahtarı sayfası ' + (i + 1) + '"><img alt="" data-ref="' + esc(k.ref) + '"' + (cached ? ' src="' + esc(cached) + '" class="is-in"' : '') + '></button>';
+  };
+  var renderDetail = function (animate) {
+    var it = get(S.detailId); if (!it) return;
+    var pace = paceOf(it), p = progressOf(it);
+    var html =
+      '<div class="kn-d-top"><div class="kn-d-cover" id="knTilt">' + coverHTML(it) + '</div>' +
+      '<div class="kn-d-info"><div class="kn-tags"><span class="kn-tag">' + it.exam.toUpperCase() + '</span><span class="kn-tag s" style="--c:' + colorOf(it.subject) + '">' + esc(it.subject) + '</span></div>' +
+      '<h2 class="kn-d-title">' + esc(it.title) + '</h2><p class="kn-d-pages">' + nf.format(it.pages) + ' sayfa</p></div></div>' +
+
+      '<section class="kn-box"><div class="kn-box-h"><span>Çözülen sayfa</span><b id="knDoneNum">' + nf.format(it.solved ? it.pages : it.pagesDone) + ' / ' + nf.format(it.pages) + '</b></div>' +
+      '<div class="kn-range" id="knRange" style="--p:' + p.toFixed(3) + ';--c:' + colorOf(it.subject) + '"><input type="range" id="knDoneRange" min="0" max="' + it.pages + '" step="1" value="' + (it.solved ? it.pages : it.pagesDone) + '" aria-label="Çözülen sayfa sayısı"></div>' +
+      '<div class="kn-quick"><button type="button" data-d="-10">−10</button><button type="button" data-d="10">+10</button><button type="button" data-d="25">+25</button></div></section>' +
+
+      '<section class="kn-box"><div class="kn-box-h"><span>Takvim</span><button type="button" class="kn-link" data-act="editcal">Düzenle</button></div>' +
+      '<div class="kn-dates" style="margin-top:12px"><div class="kn-date"><small>Başlangıç</small><b' + (it.start ? '' : ' class="is-none"') + '>' + (it.start ? fmtDate(it.start) : 'Seçilmedi') + '</b></div>' +
+      '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>' +
+      '<div class="kn-date"><small>Hedef bitiş</small><b' + (it.target ? '' : ' class="is-none"') + '>' + (it.target ? fmtDate(it.target) : 'Seçilmedi') + '</b></div></div>' +
+      '<p class="kn-pace ' + pace.cls + '" id="knPace">' + pace.html + '</p></section>' +
+
+      '<section class="kn-box"><div class="kn-box-h"><span>Cevap anahtarı</span><button type="button" class="kn-link" data-act="addkey">Ekle</button></div>' +
+      (it.keys.length ? '<div class="kn-keystrip" id="knKeyStrip">' + it.keys.map(keyThumb).join('') + '<button type="button" class="kn-key-add" data-act="addkey" aria-label="Cevap anahtarı ekle"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button></div>'
+        : '<p class="kn-key-none">Henüz eklenmedi. Fotoğraf ya da PDF ekleyebilirsin.</p>') + '</section>' +
+
+      '<div class="kn-actions"><button type="button" class="kn-btn ' + (it.solved ? '' : 'ok') + '" id="knSolveBtn" data-act="solve">' + (it.solved ? 'Çözüldü işaretini kaldır' : 'Çözüldü olarak işaretle') + '</button>' +
+      '<div class="kn-act2"><button type="button" class="kn-btn" data-act="edit">Düzenle</button><button type="button" class="kn-btn danger" id="knDelBtn" data-act="del">Sil</button></div></div>';
+    var sc = detailBody.scrollTop;
+    detailBody.innerHTML = html;
+    detailBody.scrollTop = sc;
+    hydrate(detailBody);
+    bindTilt($('knTilt'));
+  };
+  var bindTilt = function (el) {
+    if (!el) return;
+    var c = el.firstElementChild;
+    var reset = function () { c.style.transform = ''; };
+    el.addEventListener('pointermove', function (e) {
+      var r = el.getBoundingClientRect(), px = (e.clientX - r.left) / r.width - .5, py = (e.clientY - r.top) / r.height - .5;
+      c.style.transform = 'rotateY(' + (px * 20).toFixed(1) + 'deg) rotateX(' + (-py * 20).toFixed(1) + 'deg) scale(1.04)';
+    });
+    ['pointerleave', 'pointerup', 'pointercancel'].forEach(function (ev) { el.addEventListener(ev, reset); });
+  };
+  var syncDetailLive = function (it) {
+    var done = it.solved ? it.pages : it.pagesDone;
+    $('knDoneNum').textContent = nf.format(done) + ' / ' + nf.format(it.pages);
+    $('knRange').style.setProperty('--p', progressOf(it).toFixed(3));
+    var pace = paceOf(it), pe = $('knPace'); pe.className = 'kn-pace ' + pace.cls; pe.innerHTML = pace.html;
+    var sb = $('knSolveBtn'); sb.textContent = it.solved ? 'Çözüldü işaretini kaldır' : 'Çözüldü olarak işaretle'; sb.classList.toggle('ok', !it.solved);
+  };
+  var commitDone = function (it, val, origin) {
+    val = clamp(val, 0, it.pages);
+    var was = it.solved;
+    it.pagesDone = val;
+    if (val >= it.pages && !was) { it.prevDone = it.prevDone || 0; it.solved = true; it.solvedAt = Date.now(); buzz([10, 30, 14]); if (origin) { var r = origin.getBoundingClientRect(); burst(r.left + r.width / 2, r.top + r.height / 2, colorOf(it.subject)); } }
+    else if (val < it.pages && was) { it.solved = false; it.solvedAt = 0; }
+    persist(); syncDetailLive(it); render();
+  };
+  var openDetail = function (id) {
+    if (!get(id)) return;
+    S.detailId = id; renderDetail(true); openLayer(L.detail);
+    detailBody.scrollTop = 0;
+  };
+  var closeDetail = function () { closeLayer(L.detail); S.detailId = null; };
+
+  var delArm = null;
+  detailBody.addEventListener('input', function (e) {
+    if (e.target.id !== 'knDoneRange') return;
+    var it = get(S.detailId); if (!it) return;
+    var v = parseInt(e.target.value, 10) || 0;
+    $('knDoneNum').textContent = nf.format(v) + ' / ' + nf.format(it.pages);
+    $('knRange').style.setProperty('--p', (v / it.pages).toFixed(3));
+  });
+  detailBody.addEventListener('change', function (e) {
+    if (e.target.id !== 'knDoneRange') return;
+    var it = get(S.detailId); if (!it) return;
+    commitDone(it, parseInt(e.target.value, 10) || 0, e.target);
+  });
+  detailBody.addEventListener('click', function (e) {
+    var it = get(S.detailId); if (!it) return;
+    var qb = e.target.closest('.kn-quick button');
+    if (qb) {
+      var next = clamp((it.solved ? it.pages : it.pagesDone) + parseInt(qb.dataset.d, 10), 0, it.pages);
+      $('knDoneRange').value = next; commitDone(it, next, qb); buzz(6); return;
+    }
+    var b = e.target.closest('[data-act]'); if (!b) return;
+    var act = b.dataset.act;
+    if (act === 'solve') toggleSolved(it, b);
+    else if (act === 'edit') openForm(it.id, 0);
+    else if (act === 'editcal') openForm(it.id, 2);
+    else if (act === 'addkey') { fileMode = 'detail'; $('knKeyFile').click(); }
+    else if (act === 'key') {
+      var k = it.keys[parseInt(b.dataset.i, 10)];
+      if (!k) return;
+      if (k.type === 'pdf') openPdf(k.ref); else openViewer(it.id, k);
+    } else if (act === 'del') {
+      if (delArm) { clearTimeout(delArm); delArm = null; deleteItem(it.id); return; }
+      b.textContent = 'Silmek için tekrar dokun'; b.classList.add('primary'); b.style.background = 'var(--bad)'; b.style.color = '#121212';
+      delArm = setTimeout(function () { delArm = null; if (b.isConnected) { b.textContent = 'Sil'; b.classList.remove('primary'); b.style.background = ''; b.style.color = ''; } }, 2600);
+    }
+  });
+  /* aşağı sürükleyerek kapat */
+  (function () {
+    var sheet = $('knDetailSheet'), grab = $('knGrab'), sy = 0, dy = 0, drag = false, t0 = 0;
+    grab.addEventListener('pointerdown', function (e) { drag = true; sy = e.clientY; dy = 0; t0 = performance.now(); sheet.classList.add('is-dragging'); try { grab.setPointerCapture(e.pointerId); } catch (x) { /* yok say */ } });
+    grab.addEventListener('pointermove', function (e) { if (!drag) return; dy = Math.max(0, e.clientY - sy); sheet.style.transform = 'translateY(' + dy + 'px)'; });
+    var end = function () {
+      if (!drag) return; drag = false;
+      sheet.classList.remove('is-dragging'); sheet.style.transform = '';
+      var v = dy / Math.max(1, performance.now() - t0);
+      if (dy > 110 || v > .6) closeDetail();
+    };
+    grab.addEventListener('pointerup', end); grab.addEventListener('pointercancel', end);
+  })();
+
+  /* ---------------- görüntüleyici ---------------- */
+  var V = { itemId: null, list: [], i: 0, armed: null, lastTap: 0, tapTimer: null };
+  var vStage = $('knVStage'), vImg = $('knVImg');
+  var showV = async function (dir) {
+    var k = V.list[V.i]; if (!k) return;
+    $('knVCount').textContent = (V.i + 1) + ' / ' + V.list.length;
+    $('knVPrev').hidden = $('knVNext').hidden = V.list.length < 2;
+    vStage.classList.remove('is-zoom');
+    if (dir) { vImg.style.setProperty('--sx', (dir > 0 ? 40 : -40) + 'px'); vImg.classList.add('is-swap'); await wait(160); }
+    var u = await resolve(k.ref);
+    vImg.onload = function () { vImg.classList.remove('is-swap'); };
+    vImg.src = u || '';
+    if (!u) vImg.classList.remove('is-swap');
+    if (vImg.complete) vImg.classList.remove('is-swap');
+  };
+  var openViewer = function (itemId, key) {
+    var it = get(itemId); if (!it) return;
+    V.itemId = itemId; V.list = it.keys.filter(function (k) { return k.type === 'image'; });
+    V.i = Math.max(0, V.list.indexOf(key));
+    $('knViewer').classList.remove('is-bare');
+    openLayer(L.viewer); showV(0);
+  };
+  var closeViewer = function () { closeLayer(L.viewer); V.armed = null; qa('#knVDel').forEach(function (b) { b.classList.remove('is-armed'); }); };
+  var stepV = function (d) { if (V.list.length < 2) return; V.i = (V.i + d + V.list.length) % V.list.length; showV(d); };
+  $('knVClose').addEventListener('click', closeViewer);
+  $('knVPrev').addEventListener('click', function () { stepV(-1); });
+  $('knVNext').addEventListener('click', function () { stepV(1); });
+  $('knVDel').addEventListener('click', function () {
+    var btn = $('knVDel');
+    if (!V.armed) {
+      btn.style.background = 'var(--bad)'; btn.style.color = '#121212';
+      V.armed = setTimeout(function () { V.armed = null; btn.style.background = ''; btn.style.color = ''; }, 2400);
+      buzz(8); return;
+    }
+    clearTimeout(V.armed); V.armed = null; btn.style.background = ''; btn.style.color = '';
+    var it = get(V.itemId), k = V.list[V.i]; if (!it || !k) return;
+    it.keys = it.keys.filter(function (x) { return x !== k; });
+    persist(); dropRef(k.ref);
+    V.list = it.keys.filter(function (x) { return x.type === 'image'; });
+    renderDetail(false);
+    if (!V.list.length) closeViewer(); else { V.i = Math.min(V.i, V.list.length - 1); showV(0); }
+    toast('Sayfa silindi');
+  });
+  vStage.addEventListener('click', function (e) {
+    var now = Date.now();
+    if (now - V.lastTap < 300) {
+      clearTimeout(V.tapTimer); V.lastTap = 0;
+      var z = !vStage.classList.contains('is-zoom'); vStage.classList.toggle('is-zoom', z);
+      if (z) { var r = vImg.getBoundingClientRect(); requestAnimationFrame(function () { vStage.scrollLeft = (vStage.scrollWidth - vStage.clientWidth) / 2; vStage.scrollTop = (vStage.scrollHeight - vStage.clientHeight) / 2; }); }
+      return;
+    }
+    V.lastTap = now;
+    V.tapTimer = setTimeout(function () { $('knViewer').classList.toggle('is-bare'); }, 300);
+  });
+  (function () {
+    var sx = 0, sy = 0;
+    vStage.addEventListener('touchstart', function (e) { if (e.touches.length === 1) { sx = e.touches[0].clientX; sy = e.touches[0].clientY; } }, { passive: true });
+    vStage.addEventListener('touchend', function (e) {
+      if (vStage.classList.contains('is-zoom') || !e.changedTouches.length) return;
+      var dx = e.changedTouches[0].clientX - sx, dy = e.changedTouches[0].clientY - sy;
+      if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) stepV(dx < 0 ? 1 : -1);
+    }, { passive: true });
+  })();
+
+  /* ---------------- sihirbaz (ekle / düzenle) ---------------- */
+  var F = null, editing = null, step = 0, dirty = false, saving = false, fileMode = 'form';
+  var STEP_TITLES = ['Hangi sınav, hangi ders?', 'Kitabı tanıt', 'Ne zaman çözeceksin?', 'Cevap anahtarı'];
+  var cal = { y: 0, m: 0, active: 'start' };
+  var steps = qa('.kn-step', $('knSteps'));
+
+  var presetsOf = function (exam) { return SUBJECTS[exam] || []; };
+  var customsOf = function (exam) {
+    var out = [];
+    S.items.forEach(function (i) { if (i.exam === exam && presetsOf(exam).indexOf(i.subject) < 0 && out.indexOf(i.subject) < 0) out.push(i.subject); });
+    return out;
+  };
+  var newForm = function () { return { exam: '', subject: '', custom: false, title: '', pages: '', solved: false, start: '', target: '', cover: { ref: '', pending: '', removed: false }, keys: [], removedRefs: [] }; };
+  var formFrom = function (it) {
+    return {
+      exam: it.exam, subject: it.subject, custom: false, title: it.title, pages: String(it.pages), solved: it.solved, start: it.start, target: it.target,
+      cover: { ref: it.cover, pending: '', removed: false },
+      keys: it.keys.map(function (k) { return { ref: k.ref, type: k.type, name: k.name, pending: null }; }), removedRefs: []
+    };
+  };
+  var markDirty = function () { dirty = true; };
+  var valid = function (n) {
+    if (n === 0) return !!(F.exam && F.subject.trim());
+    if (n === 1) return !!(F.title.trim() && parseInt(F.pages, 10) > 0);
+    return true;
+  };
+  var canGo = function (n) { for (var i = 0; i < n; i++) if (!valid(i)) return false; return true; };
+
+  var refreshNav = function () {
+    var next = $('knNext');
+    next.disabled = !valid(step) || saving;
+    qa('button', $('knProg')).forEach(function (b, i) { b.disabled = !canGo(i); b.classList.toggle('is-done', i <= step); });
+    var last = step === 3;
+    next.classList.remove('kn-busy');
+    next.innerHTML = last ? (editing ? 'Değişiklikleri kaydet' : 'Kaydet') : 'Devam';
+    if (saving) { next.classList.add('kn-busy'); next.innerHTML = 'Kaydediliyor'; }
+    $('knBack').classList.toggle('is-hidden', step === 0);
+    $('knFCount').textContent = (step + 1) + ' / 4';
+  };
+
+  var renderExamCards = function () { qa('#knExams .kn-exam').forEach(function (b) { b.classList.toggle('is-on', b.dataset.v === F.exam); }); };
+  var renderSubjs = function (pop) {
+    var box = $('knSubjs');
+    if (!F.exam) { box.classList.remove('is-pop'); box.innerHTML = '<p class="kn-hint" style="margin:0">Önce sınav türünü seç; dersler burada görünecek.</p>'; return; }
+    var list = presetsOf(F.exam).concat(customsOf(F.exam));
+    if (F.subject && !F.custom && list.indexOf(F.subject) < 0) list.push(F.subject);
+    var html = list.map(function (s, i) {
+      return '<button type="button" class="kn-sj' + (!F.custom && F.subject === s ? ' is-on' : '') + '" data-v="' + esc(s) + '" style="--c:' + colorOf(s) + ';--r:' + i + '">' + esc(s) + '</button>';
+    }).join('');
+    html += '<button type="button" class="kn-sj' + (F.custom ? ' is-on' : '') + '" data-v="__other" style="--r:' + list.length + '">Diğer…</button>';
+    box.classList.toggle('is-pop', !!pop);
+    box.innerHTML = html;
+    $('knCustomFold').classList.toggle('is-open', F.custom);
+  };
+  var renderCovPrev = function () {
+    var c = F.cover, ref = c.removed ? '' : c.ref;
+    $('knCovPrev').innerHTML = coverHTML({ subject: F.subject, title: F.title, exam: F.exam, cover: c.pending ? '' : ref, coverSrc: c.pending });
+    hydrate($('knCovPrev'));
+    $('knCovRm').hidden = !(c.pending || ref);
+  };
+  var keyItemHTML = function (k, i) {
+    var inner;
+    if (k.type === 'pdf') inner = '<svg viewBox="0 0 24 24"><path d="M7 3h7l5 5v11a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><path d="M14 3v5h5"/></svg>PDF<em>' + esc(k.name || '') + '</em>';
+    else if (k.pending) inner = '<img alt="" src="' + esc(k.pending) + '">';
+    else { var c = srcCache.get(k.ref) || ''; inner = '<img alt="" data-ref="' + esc(k.ref) + '"' + (c ? ' src="' + esc(c) + '"' : '') + '>'; }
+    return '<div class="kn-kitem' + (k.type === 'pdf' ? ' pdf' : '') + (k._new ? ' is-new' : '') + '">' + inner + '<button type="button" class="kn-kx" data-i="' + i + '" aria-label="Kaldır"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>';
+  };
+  var renderKeyList = function () {
+    $('knKeyList').innerHTML = F.keys.map(keyItemHTML).join('');
+    F.keys.forEach(function (k) { k._new = false; });
+    qa('#knKeyList img[data-ref]').forEach(function (img) { resolve(img.dataset.ref).then(function (u) { if (u && img.isConnected) img.src = u; }); });
+  };
+
+  /* takvim */
+  var tabLabel = function (k) { return k ? fmtDate(k) : 'Seç'; };
+  var paintTabs = function () {
+    var a = $('knTabStart'), b = $('knTabTarget');
+    a.textContent = tabLabel(F.start); a.classList.toggle('is-none', !F.start);
+    b.textContent = tabLabel(F.target); b.classList.toggle('is-none', !F.target);
+    $('knTabs').style.setProperty('--i', cal.active === 'start' ? 0 : 1);
+    qa('.kn-tab', $('knTabs')).forEach(function (t) { t.classList.toggle('is-on', t.dataset.f === cal.active); });
+  };
+  var paintInsight = function () {
+    var el = $('knInsight');
+    if (F.start && F.target) {
+      var days = diffDays(F.start, F.target) + 1, pg = parseInt(F.pages, 10) || 0, per = pg ? Math.ceil(pg / days) : 0;
+      el.innerHTML = '<b>' + days + ' gün</b> var' + (per ? '; günde yaklaşık <b>' + nf.format(per) + ' sayfa</b> çözmen gerekir.' : '.');
+    } else if (F.start) el.textContent = 'Şimdi hedef bitiş tarihini seç.';
+    else el.textContent = 'İstersen tarih seçmeden de geçebilirsin.';
+  };
+  var paintCal = function (popKey) {
+    qa('.kn-day[data-k]', $('knDays')).forEach(function (b) {
+      var k = b.dataset.k, isS = k === F.start, isE = k === F.target;
+      var inR = !!(F.start && F.target && k > F.start && k < F.target);
+      b.classList.toggle('is-start', isS); b.classList.toggle('is-end', isE); b.classList.toggle('in', inR);
+      b.classList.toggle('has-end', isS && !!F.target && F.target > F.start);
+      b.classList.toggle('has-start', isE && !!F.start && F.start < F.target);
+      if (popKey && k === popKey) { b.classList.remove('pop'); void b.offsetWidth; b.classList.add('pop'); }
+    });
+    paintTabs(); paintInsight();
+  };
+  var renderMonth = function (dir) {
+    var first = new Date(cal.y, cal.m, 1), offset = (first.getDay() + 6) % 7, dim = new Date(cal.y, cal.m + 1, 0).getDate(), td = todayKey(), html = '';
+    for (var i = 0; i < offset; i++) html += '<span class="kn-day is-blank"></span>';
+    for (var d = 1; d <= dim; d++) {
+      var k = cal.y + '-' + pad(cal.m + 1) + '-' + pad(d);
+      html += '<button type="button" class="kn-day' + (k === td ? ' is-today' : '') + '" data-k="' + k + '"><span>' + d + '</span></button>';
+    }
+    var grid = $('knDays');
+    grid.classList.remove('s-l', 's-r'); void grid.offsetWidth;
+    grid.innerHTML = html;
+    if (dir) grid.classList.add(dir > 0 ? 's-l' : 's-r');
+    $('knCalMonth').innerHTML = MONTHS[cal.m] + '<span>' + cal.y + '</span>';
+    paintCal();
+  };
+  var setView = function (key, anim) {
+    var d = fromKey(key || todayKey()), dir = anim ? ((d.getFullYear() * 12 + d.getMonth()) > (cal.y * 12 + cal.m) ? 1 : -1) : 0;
+    if (anim && d.getFullYear() === cal.y && d.getMonth() === cal.m) dir = 0;
+    cal.y = d.getFullYear(); cal.m = d.getMonth(); renderMonth(dir);
+  };
+  var moveMonth = function (n) { var d = new Date(cal.y, cal.m + n, 1); cal.y = d.getFullYear(); cal.m = d.getMonth(); renderMonth(n); buzz(4); };
+  var pickDay = function (k) {
+    markDirty();
+    if (cal.active === 'start') {
+      F.start = k; if (F.target && F.target < k) F.target = '';
+      cal.active = 'target';
+    } else {
+      if (!F.start || k < F.start) { F.start = k; if (F.target && F.target < k) F.target = ''; }
+      else F.target = k;
+    }
+    buzz(6); paintCal(k);
+  };
+
+  var enterStep = function (n) {
+    if (n === 2) {
+      cal.active = !F.start ? 'start' : (F.target ? 'target' : 'target');
+      var base = F.target || F.start || todayKey(), d = fromKey(base); cal.y = d.getFullYear(); cal.m = d.getMonth();
+      renderMonth(0);
+    }
+    if (n === 1) renderCovPrev();
+    if (n === 3) { $('knSolvedSw').setAttribute('aria-checked', F.solved); renderKeyList(); }
+  };
+  var goStep = function (n, instant) {
+    var prev = step; step = clamp(n, 0, 3);
+    steps.forEach(function (s, i) {
+      s.classList.toggle('is-cur', i === step); s.classList.toggle('is-before', i < step);
+      if (i === step) s.removeAttribute('inert'); else s.setAttribute('inert', '');
+      if (i === step) s.scrollTop = 0;
+    });
+    enterStep(step);
+    var t = $('knFTitle');
+    if (instant) t.textContent = STEP_TITLES[step];
+    else if (prev !== step) { t.classList.add('is-out'); setTimeout(function () { t.textContent = STEP_TITLES[step]; t.classList.remove('is-out'); }, 150); }
+    refreshNav();
+  };
+
+  var openForm = function (id, atStep) {
+    editing = id ? get(id) : null;
+    F = editing ? formFrom(editing) : newForm();
+    dirty = false; saving = false;
+    $('knDiscard').hidden = true;
+    $('knCustomSubj').value = ''; $('knTitleIn').value = F.title; $('knPagesIn').value = F.pages;
+    $('knSolvedSw').setAttribute('aria-checked', F.solved);
+    renderExamCards(); renderSubjs(false); renderCovPrev();
+    steps.forEach(function (s, i) { s.classList.toggle('is-before', i < (atStep || 0)); s.classList.remove('is-cur'); });
+    void $('knSteps').offsetWidth;
+    goStep(atStep || 0, true);
+    openLayer(L.form);
+  };
+  var attemptCloseForm = function () {
+    if (saving) return;
+    if (dirty) { $('knDiscard').hidden = false; buzz(8); return; }
+    closeLayer(L.form);
+  };
+
+  /* --- adım 1 --- */
+  $('knExams').addEventListener('click', function (e) {
+    var b = e.target.closest('.kn-exam'); if (!b) return;
+    var changed = F.exam !== b.dataset.v;
+    F.exam = b.dataset.v; markDirty(); buzz(6);
+    if (!F.custom && F.subject && presetsOf(F.exam).concat(customsOf(F.exam)).indexOf(F.subject) < 0) F.subject = '';
+    renderExamCards(); if (changed) renderSubjs(true); refreshNav();
+  });
+  $('knSubjs').addEventListener('click', function (e) {
+    var b = e.target.closest('.kn-sj'); if (!b) return;
+    markDirty(); buzz(6);
+    if (b.dataset.v === '__other') {
+      F.custom = true; F.subject = $('knCustomSubj').value.trim();
+      qa('#knSubjs .kn-sj').forEach(function (x) { x.classList.toggle('is-on', x === b); });
+      $('knCustomFold').classList.add('is-open');
+      setTimeout(function () { $('knCustomSubj').focus({ preventScroll: true }); }, 350);
+    } else {
+      F.custom = false; F.subject = b.dataset.v;
+      qa('#knSubjs .kn-sj').forEach(function (x) { x.classList.toggle('is-on', x === b); });
+      $('knCustomFold').classList.remove('is-open');
+    }
+    refreshNav();
+  });
+  $('knCustomSubj').addEventListener('input', function (e) { F.subject = e.target.value.trim(); markDirty(); refreshNav(); });
+
+  /* --- adım 2 --- */
+  $('knTitleIn').addEventListener('input', function (e) {
+    F.title = e.target.value; markDirty();
+    var t = q('.kn-gen-t', $('knCovPrev')); if (t) t.textContent = F.title.trim() || 'Kitap adı';
+    refreshNav();
+  });
+  $('knTitleIn').addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); $('knPagesIn').focus(); } });
+  $('knPagesIn').addEventListener('input', function (e) {
+    var v = e.target.value.replace(/\D/g, '').slice(0, 4); if (v !== e.target.value) e.target.value = v;
+    F.pages = v; markDirty(); refreshNav();
+  });
+  $('knPagesIn').addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); e.target.blur(); if (valid(1)) goStep(2); } });
+  var bumpPages = function (d) {
+    var v = clamp((parseInt(F.pages, 10) || 0) + d, 0, 5000);
+    F.pages = v ? String(v) : ''; $('knPagesIn').value = F.pages; markDirty(); refreshNav(); buzz(5);
+  };
+  $('knPgMinus').addEventListener('click', function () { bumpPages(-10); });
+  $('knPgPlus').addEventListener('click', function () { bumpPages(10); });
+  $('knCovPick').addEventListener('click', function () { $('knCoverFile').click(); });
+  $('knCovRm').addEventListener('click', function () { F.cover.pending = ''; F.cover.removed = true; markDirty(); renderCovPrev(); });
+  $('knCoverFile').addEventListener('change', async function (e) {
+    var f = e.target.files && e.target.files[0]; e.target.value = '';
+    if (!f) return;
+    try { F.cover.pending = await compress(f, 900, .82); F.cover.removed = false; markDirty(); renderCovPrev(); }
+    catch (err) { toast('Görsel okunamadı'); }
+  });
+
+  /* --- adım 3 --- */
+  $('knTabs').addEventListener('click', function (e) {
+    var t = e.target.closest('.kn-tab'); if (!t) return;
+    cal.active = t.dataset.f; buzz(4); paintTabs();
+    var k = cal.active === 'target' ? (F.target || F.start) : F.start;
+    if (k) setView(k, true);
+  });
+  $('knCalPrev').addEventListener('click', function () { moveMonth(-1); });
+  $('knCalNext').addEventListener('click', function () { moveMonth(1); });
+  $('knDays').addEventListener('click', function (e) { var b = e.target.closest('.kn-day[data-k]'); if (b) pickDay(b.dataset.k); });
+  (function () {
+    var sx = 0, sy = 0, on = false, el = $('knDays');
+    el.addEventListener('pointerdown', function (e) { on = true; sx = e.clientX; sy = e.clientY; });
+    el.addEventListener('pointerup', function (e) {
+      if (!on) return; on = false;
+      var dx = e.clientX - sx, dy = e.clientY - sy;
+      if (Math.abs(dx) > 55 && Math.abs(dx) > Math.abs(dy) * 1.6) moveMonth(dx < 0 ? 1 : -1);
+    });
+    el.addEventListener('pointercancel', function () { on = false; });
+  })();
+  $('knPresets').addEventListener('click', function (e) {
+    var b = e.target.closest('button'); if (!b) return;
+    markDirty(); buzz(6);
+    var a = b.dataset.add;
+    if (a === 'clear') { F.start = ''; F.target = ''; cal.active = 'start'; paintCal(); setView(todayKey(), true); return; }
+    if (!F.start) F.start = todayKey();
+    F.target = a.slice(-1) === 'd' ? addDaysKey(F.start, parseInt(a, 10) - 1) : addMonthsKey(F.start, parseInt(a, 10));
+    cal.active = 'target'; setView(F.target, true); paintCal(F.target);
+  });
+
+  /* --- adım 4 --- */
+  $('knSolvedSw').addEventListener('click', function () {
+    F.solved = !F.solved; markDirty(); buzz(8);
+    $('knSolvedSw').setAttribute('aria-checked', F.solved);
+  });
+  $('knKeyAdd').addEventListener('click', function () { fileMode = 'form'; $('knKeyFile').click(); });
+  $('knKeyList').addEventListener('click', function (e) {
+    var b = e.target.closest('.kn-kx'); if (!b) return;
+    var k = F.keys[parseInt(b.dataset.i, 10)]; if (!k) return;
+    if (k.ref) F.removedRefs.push(k.ref);
+    F.keys.splice(parseInt(b.dataset.i, 10), 1); markDirty(); renderKeyList(); buzz(5);
+  });
+  $('knKeyFile').addEventListener('change', async function (e) {
+    var files = Array.prototype.slice.call(e.target.files || []); e.target.value = '';
+    if (!files.length) return;
+    var added = [], failed = 0;
+    for (var i = 0; i < files.length; i++) {
+      var f = files[i];
+      try {
+        if (f.type === 'application/pdf' || /\.pdf$/i.test(f.name)) {
+          if (f.size > 25 * 1024 * 1024) { failed++; continue; }
+          added.push({ ref: '', type: 'pdf', name: f.name, pending: f, _new: true });
+        } else added.push({ ref: '', type: 'image', name: f.name, pending: await compress(f, 1700, .8), _new: true });
+      } catch (err) { failed++; }
+    }
+    if (fileMode === 'detail') {
+      var it = get(S.detailId); if (!it) return;
+      var ok = 0;
+      for (var j = 0; j < added.length; j++) {
+        try {
+          var a = added[j], ref = a.type === 'pdf' ? await storePdf(a.pending) : await storeDataUrl(a.pending);
+          it.keys.push({ ref: ref, type: a.type, name: a.name }); ok++;
+        } catch (err) { failed++; }
+      }
+      if (ok) { persist(); renderDetail(false); toast(ok + ' dosya eklendi'); }
+      if (failed) toast('Bazı dosyalar eklenemedi');
+    } else {
+      F.keys = F.keys.concat(added); markDirty(); renderKeyList();
+      if (failed) toast('Bazı dosyalar eklenemedi');
+    }
+  });
+
+  /* --- gezinme + kaydet --- */
+  $('knNext').addEventListener('click', function () { if (step < 3) { goStep(step + 1); buzz(6); } else save(); });
+  $('knBack').addEventListener('click', function () { goStep(step - 1); });
+  qa('button', $('knProg')).forEach(function (b, i) { b.addEventListener('click', function () { if (canGo(i)) goStep(i); }); });
+  $('knFClose').addEventListener('click', attemptCloseForm);
+  $('knDiscardStay').addEventListener('click', function () { $('knDiscard').hidden = true; });
+  $('knDiscardGo').addEventListener('click', function () { $('knDiscard').hidden = true; closeLayer(L.form); });
+
+  var save = async function () {
+    if (saving || !valid(0) || !valid(1)) return;
+    saving = true; refreshNav();
+    try {
+      var cover = F.cover.removed ? '' : F.cover.ref;
+      if (F.cover.pending) cover = await storeDataUrl(F.cover.pending);
+      var keys = [];
+      for (var i = 0; i < F.keys.length; i++) {
+        var k = F.keys[i];
+        if (k.pending) keys.push({ ref: k.type === 'pdf' ? await storePdf(k.pending) : await storeDataUrl(k.pending), type: k.type, name: k.name });
+        else keys.push({ ref: k.ref, type: k.type, name: k.name });
+      }
+      var pages = parseInt(F.pages, 10), it = editing || normalize({ id: uid(), exam: F.exam, subject: F.subject, title: F.title, pages: pages, createdAt: Date.now() });
+      var oldCover = editing ? editing.cover : '';
+      it.exam = F.exam; it.subject = F.subject.trim(); it.title = F.title.trim(); it.pages = pages;
+      it.start = F.start; it.target = F.target; it.cover = cover; it.keys = keys;
+      if (F.solved && !it.solved) { it.prevDone = it.pagesDone; it.pagesDone = pages; it.solved = true; it.solvedAt = Date.now(); }
+      else if (!F.solved && it.solved) { it.solved = false; it.solvedAt = 0; it.pagesDone = Math.min(it.prevDone || 0, Math.max(0, pages - 1)); }
+      else it.pagesDone = it.solved ? pages : Math.min(it.pagesDone, pages);
+      if (!editing) S.items.unshift(it);
+      persist();
+      if (editing) { if (oldCover && oldCover !== cover) dropRef(oldCover); F.removedRefs.forEach(dropRef); }
+      if (S.exam !== 'all' && S.exam !== it.exam) S.exam = 'all';
+      S.subj = 'all';
+      saving = false; dirty = false;
+      closeLayer(L.form);
+      render();
+      if (S.detailId === it.id) renderDetail(false);
+      toast(editing ? 'Değişiklikler kaydedildi' : 'Kaynak eklendi');
+      if (!editing) {
+        await wait(260);
+        var card = q('.kn-card[data-id="' + it.id + '"]', listEl);
+        if (card) { card.scrollIntoView({ behavior: 'smooth', block: 'center' }); card.animate([{ transform: 'scale(1)' }, { transform: 'scale(1.06)' }, { transform: 'scale(1)' }], { duration: 700, delay: 350, easing: 'cubic-bezier(.34,1.45,.64,1)' }); }
+      }
+    } catch (err) {
+      saving = false; refreshNav();
+      toast(err && err.message ? err.message : 'Kaydedilemedi');
+    }
+  };
+
+  /* ---------------- sayfa olayları ---------------- */
+  $('knAddBtn').addEventListener('click', function () { openForm(null, 0); });
+  listEl.addEventListener('click', function (e) {
+    var b = e.target.closest('[data-act]'); if (!b) return;
+    var card = b.closest('.kn-card'), act = b.dataset.act;
+    if (act === 'add') openForm(null, 0);
+    else if (act === 'reset') { S.exam = 'all'; S.subj = 'all'; render(); }
+    else if (card && act === 'toggle') toggleSolved(get(card.dataset.id), b);
+    else if (card && act === 'open') openDetail(card.dataset.id);
+  });
+  $('knExamSeg').addEventListener('click', function (e) {
+    var b = e.target.closest('button'); if (!b || b.dataset.v === S.exam) return;
+    S.exam = b.dataset.v; S.subj = 'all'; buzz(5); render();
+  });
+  $('knChips').addEventListener('click', function (e) {
+    var b = e.target.closest('.kn-chip'); if (!b || b.dataset.v === S.subj) return;
+    S.subj = b.dataset.v; buzz(4); render();
+  });
+  qa('[data-close]').forEach(function (el) {
+    el.addEventListener('click', function () {
+      var layer = el.closest('.kn-layer');
+      if (layer === L.detail) closeDetail(); else if (layer === L.form) attemptCloseForm();
+    });
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') {
+      if (L.viewer.classList.contains('is-open')) closeViewer();
+      else if (L.form.classList.contains('is-open')) attemptCloseForm();
+      else if (L.detail.classList.contains('is-open')) closeDetail();
+    } else if (L.viewer.classList.contains('is-open')) {
+      if (e.key === 'ArrowLeft') stepV(-1); else if (e.key === 'ArrowRight') stepV(1);
+    }
+  });
+  /* uygulama gövdesi metin seçmeyi/kopyalamayı kapatır; yazı alanlarında açık kalmalı */
+  ['selectstart', 'copy', 'cut', 'paste'].forEach(function (ev) {
+    document.addEventListener(ev, function (e) {
+      var n = e.target; if (n && n.nodeType === 3) n = n.parentElement;
+      if (n && n.closest && n.closest('.kn-layer input, .kn-layer textarea')) e.stopPropagation();
+    }, true);
+  });
+
+  /* ---------------- uygulama entegrasyonu ---------------- */
+  try { if (typeof NAV_EXTRA_PAGES !== 'undefined') NAV_EXTRA_PAGES.add('page-kaynaklar'); } catch (e) { /* yok say */ }
+  var openPage = function () { if (typeof goToPage === 'function') goToPage('page-kaynaklar'); };
+  var menu = $('navMoreMenu');
+  if (menu) menu.addEventListener('click', function (e) { var it = e.target.closest('.nav-more-item'); if (it && it.dataset.action === 'sources') openPage(); });
+  window.openKaynaklarPage = openPage;
+
+  new MutationObserver(function (muts) {
+    muts.forEach(function (m) {
+      var was = (m.oldValue || '').indexOf('is-active') >= 0, now = page.classList.contains('is-active');
+      if (now && !was) { S.items = load(); render({ noFlip: true, keepIntro: true }); playIntro(); }
+      if (!now && was) { [L.detail, L.form, L.viewer].forEach(function (l) { if (l.classList.contains('is-open')) closeLayer(l); }); S.detailId = null; }
+    });
+  }).observe(page, { attributes: true, attributeFilter: ['class'], attributeOldValue: true });
+
+  S.items = load();
+  render({ noFlip: true, keepIntro: true });
+  if (page.classList.contains('is-active')) playIntro();
+})();
+
+</script>
 </body>
 </html>
