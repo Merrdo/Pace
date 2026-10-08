@@ -5385,7 +5385,11 @@
     flex: 1;
     min-height: 0;
     overflow-y: auto;
+    /* Yatay sürüklemeyi kapat: sayfa yalnızca yukarı/aşağı kayar (saat çarkı dahil). */
+    overflow-x: hidden;
+    touch-action: pan-y;
     overscroll-behavior: contain;
+    overscroll-behavior-x: none;
     padding: 20px var(--ta-gutter) 16px;
     display: flex;
     flex-direction: column;
@@ -5467,6 +5471,7 @@
   /* ---- Zaman çarkı: dikey, 15 dk adımlı, ortadaki hap seçili aralığı gösterir ---- */
   .task-add-wheel-wrap {
     position: relative;
+    touch-action: pan-y;
     height: calc(var(--ta-row) * 5);
   }
 
@@ -5487,7 +5492,10 @@
     z-index: 1;
     height: 100%;
     overflow-y: auto;
+    overflow-x: hidden;
+    touch-action: pan-y;
     overscroll-behavior: contain;
+    overscroll-behavior-x: none;
     scroll-snap-type: y mandatory;
     padding: calc(var(--ta-row) * 2) 0;
     -webkit-overflow-scrolling: touch;
@@ -51384,7 +51392,7 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
       ms += safe(() => page10LiveTodayMs(), safe(() => currentElapsedMs(), 0));
       const mins = Math.max(0, Math.floor(ms / 60000));
       const h = Math.floor(mins / 60), m = mins % 60;
-      const studyHtml = h > 0 ? h + '<small>sa</small>' + m + '<small>dk</small>' : m + '<small>dk</small>';
+      const studyHtml = h > 0 ? h + '<small>sa</small>' + (m > 0 ? m + '<small>dk</small>' : '') : m + '<small>dk</small>';
       // Soru: Soru Takibi'ndeki bugünün kayıtlarının toplamı; erişilemezse "Bugün Çözülen" kartındaki sayı.
       let q = safe(() => {
         const k = page9DateKey(page9StartOfDay(new Date()));
@@ -51396,7 +51404,7 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
       lastStats = sig;
       studyValEl.innerHTML = studyHtml;
       qValEl.textContent = String(q);
-      const label = (h > 0 ? h + ' saat ' : '') + m + ' dakika';
+      const label = (h > 0 ? h + ' saat' + (m > 0 ? ' ' : '') : '') + (h === 0 || m > 0 ? m + ' dakika' : '');
       studyBtn.setAttribute('aria-label', 'Bugün çalışılan süre: ' + label + ". Kronometre'ye git");
       qBtn.setAttribute('aria-label', 'Bugün çözülen soru: ' + q + ". Soru Takibi'ne git");
     };
@@ -74227,7 +74235,7 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
   .task-add-overlay .task-add-hint, .task-add-overlay .task-add-dur-hint { color: var(--ta-body-muted, var(--ta-muted)); }
 
   /* ===== Zaman: takvimdeki gibi 3B (perspektifli) saat + dakika çarkları ===== */
-  .task-add-wheels { --ih: 2.75rem; position: relative; display: flex; justify-content: center; align-items: center; gap: .2rem; margin: .4rem 0 .2rem; }
+  .task-add-wheels { touch-action: pan-y; --ih: 2.75rem; position: relative; display: flex; justify-content: center; align-items: center; gap: .2rem; margin: .4rem 0 .2rem; }
   .task-add-wheels::before {
     content: ''; position: absolute; left: .2rem; right: .2rem; top: 50%; height: var(--ih);
     transform: translateY(-50%); border-radius: 1.1rem; pointer-events: none;
