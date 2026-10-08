@@ -41,7 +41,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css2?family=Archivo+Expanded:wght@700;800&family=Playfair+Display:ital,wght@0,400;0,700;0,800;1,400;1,700&family=Baloo+2:wght@600;700;800&family=Coiny&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Expanded:wght@700;800&family=Playfair+Display:ital,wght@0,400;0,700;0,800;1,400;1,700&family=Baloo+2:wght@600;700;800&family=Coiny&family=Caveat:wght@500;600&display=swap" rel="stylesheet">
 <style>
   * {
     margin: 0;
@@ -51477,78 +51477,71 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
 </script>
 
 <style id="relaxWriteCss">
-/* Boş durum: "Mevcut göreviniz yok" yazısı Coiny ile, harf harf yazılıp kaybolur ve döngüyle tekrarlanır.
-   Orijinal başlık/saat metinleri ekran okuyucu için DOM'da kalır, yalnızca görsel olarak gizlenir. */
+/* Boş durum: "Rahatla" yazısı eskisi gibi büyük (Playfair italik) duruyor; hemen SAĞINDA, aynı taban çizgisinde,
+   daha küçük ve eğik bir el yazısıyla "Mevcut göreviniz yok" gerçek bir kalemle yazılıyormuş gibi
+   yumuşak ve pürüzsüz akan tek bir hareketle yazılır, bir süre durur, silinir ve döngüyle tekrarlanır. */
 html[data-pg="on"] #page-1 .home-relax-write{display:none}
+html[data-pg="on"] #page-1 .home-relax-widget.is-empty .home-relax-widget-bottom{
+  flex-direction:row !important;flex-wrap:nowrap;align-items:baseline;justify-content:flex-start !important;gap:.7rem}
+html[data-pg="on"] #page-1 .home-relax-widget.is-empty .home-relax-widget-title{flex:0 0 auto}
 html[data-pg="on"] #page-1 .home-relax-widget.is-empty .home-relax-task-row[data-row-index="0"] .home-relax-write{
-  display:block;margin:0;padding:.1em 0;text-align:left;white-space:nowrap;pointer-events:none;
-  font-family:"Coiny","Baloo 2",system-ui,sans-serif;font-weight:400;
-  font-size:min(2rem,7vw);line-height:1.2;letter-spacing:.01em}
-html[data-pg="on"] #page-1 .home-relax-write .hw-ch{display:inline-block;will-change:clip-path,transform,opacity}
-html[data-pg="on"] #page-1 .home-relax-widget.is-empty .home-relax-widget-time,
-html[data-pg="on"] #page-1 .home-relax-widget.is-empty .home-relax-widget-title{
+  display:block;flex:0 1 auto;min-width:0;margin:0;padding:.05em .25em .1em 0;text-align:left;white-space:nowrap;pointer-events:none;
+  font-family:"Caveat","Baloo 2",cursive,system-ui,sans-serif;font-weight:600;
+  font-size:clamp(1rem,4.7vw,1.35rem);line-height:1.15;letter-spacing:.01em;
+  transform-origin:0 100%;transform:skewX(-12deg) rotate(-2deg);
+  background:linear-gradient(90deg,#8b5cf6 0%,#ec4899 55%,#f59e0b 100%);
+  -webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent}
+/* Tek parça, kenarı yumuşak bir "kalem ucu" maskesi soldan sağa akar: harfler arasında kesik/basamak yok. */
+html[data-pg="on"] #page-1 .home-relax-write.is-anim{
+  -webkit-mask-image:linear-gradient(90deg,#000 0,#000 40%,transparent 49%,transparent 100%);
+  mask-image:linear-gradient(90deg,#000 0,#000 40%,transparent 49%,transparent 100%);
+  -webkit-mask-size:250% 100%;mask-size:250% 100%;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
+  -webkit-mask-position:100% 0;mask-position:100% 0;
+  animation:hwPen 7.6s infinite both;animation-play-state:paused;will-change:mask-position,opacity}
+html[data-pg="on"] #page-1 .home-relax-write.is-anim.is-run{animation-play-state:running}
+@keyframes hwPen{
+  0%{-webkit-mask-position:100% 0;mask-position:100% 0;opacity:1;animation-timing-function:cubic-bezier(.45,.05,.35,1)}
+  34%{-webkit-mask-position:0% 0;mask-position:0% 0;opacity:1}
+  68%{-webkit-mask-position:0% 0;mask-position:0% 0;opacity:1;animation-timing-function:ease-in}
+  77%{-webkit-mask-position:0% 0;mask-position:0% 0;opacity:0}
+  77.1%,100%{-webkit-mask-position:100% 0;mask-position:100% 0;opacity:0}}
+/* "Rahatla" başlığı artık gizlenmiyor; yalnızca soluk saat/durum satırı (yerine el yazısı geçti) ekran okuyucuya kalır. */
+html[data-pg="on"] #page-1 .home-relax-widget.is-empty .home-relax-widget-time{
   position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;
   clip:rect(0 0 0 0);white-space:nowrap;border:0;animation:none}
+@media (prefers-reduced-motion:reduce){
+  html[data-pg="on"] #page-1 .home-relax-write.is-anim{-webkit-mask-image:none;mask-image:none;animation:none}}
 </style>
 <script id="relaxWriteJs">
-  // ---------- Ana sayfa: boş durum yazısı (el yazısı efekti, sonsuz döngü) ----------
-  // Her harf, sırayla soldan sağa açılan bir kırpma (clip-path) ile "yazılır"; yazı bitince bir süre
-  // okunur, sonra birlikte kaybolur; 2 sn boş kaldıktan sonra baştan yazılmaya başlar.
-  // Tek bir sonsuz Web Animations döngüsüdür (harfler arasında kayma olmaz); ana sayfa görünmüyorsa durur,
-  // boş duruma/ana sayfaya her dönüşte baştan yazar. "Hareketi azalt" açıksa sabit gösterilir.
+  // ---------- Ana sayfa: "Rahatla" yanındaki el yazısı (tek parça, yumuşak, sonsuz döngü) ----------
+  // Yazı tek bir parça olarak, kenarı yumuşatılmış bir maskeyle soldan sağa açılır (CSS: hwPen).
+  // Ana sayfa görünmüyorsa / boş durum değilse durur; boş duruma dönüldüğünde baştan yazar.
+  // "Hareketi azalt" açıksa yazı sabit gösterilir.
   (function () {
     const host = document.getElementById('homeRelaxWrite');
     const widget = document.getElementById('homeRelaxWidget');
     const page = document.getElementById('page-1');
     if (!host || !widget || !page) return;
 
-    const TEXT = 'Mevcut göreviniz yok';
-    const WRITE_MS = 2000;   // yazma süresi (ilk harften son harfin başlangıcına)
-    const LETTER_MS = 460;   // tek harfin açılma süresi
-    const HOLD_END = 5000;   // yazı bu ana kadar ekranda kalır
-    const FADE_END = 5600;   // kaybolma biter
-    const CYCLE = 7600;      // toplam döngü: 5,6 sn + 2 sn boşluk
-    const PALETTE = [[139, 92, 246], [236, 72, 153], [245, 158, 11]]; // mor → pembe → amber
-    const HIDDEN = 'inset(-20% 102% -20% -6%)';
-    const SHOWN = 'inset(-20% -6% -20% -6%)';
-    const REST = 'translateY(.1em) rotate(-4deg)';
-
-    const colorAt = (t) => {
-      const seg = t * (PALETTE.length - 1);
-      const i = Math.min(PALETTE.length - 2, Math.floor(seg));
-      const f = seg - i, a = PALETTE[i], b = PALETTE[i + 1];
-      return 'rgb(' + a.map((v, k) => Math.round(v + (b[k] - v) * f)).join(',') + ')';
-    };
+    host.textContent = 'Mevcut göreviniz yok';
 
     const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const chars = Array.from(TEXT);
-    const anims = [];
-    chars.forEach((ch, i) => {
-      if (ch === ' ') { host.appendChild(document.createTextNode('\u00a0')); return; }
-      const span = document.createElement('span');
-      span.className = 'hw-ch';
-      span.textContent = ch;
-      span.style.color = colorAt(i / (chars.length - 1));
-      host.appendChild(span);
-      if (reduce || !span.animate) return;
-      const s = (i / chars.length) * WRITE_MS, e = s + LETTER_MS;
-      anims.push(span.animate([
-        { offset: 0, clipPath: HIDDEN, opacity: 1, transform: REST },
-        { offset: s / CYCLE, clipPath: HIDDEN, opacity: 1, transform: REST, easing: 'cubic-bezier(.3,.6,.3,1)' },
-        { offset: e / CYCLE, clipPath: SHOWN, opacity: 1, transform: 'none' },
-        { offset: HOLD_END / CYCLE, clipPath: SHOWN, opacity: 1, transform: 'none', easing: 'ease-in' },
-        { offset: FADE_END / CYCLE, clipPath: SHOWN, opacity: 0, transform: 'translateY(-.08em)' },
-        { offset: 1, clipPath: SHOWN, opacity: 0, transform: 'translateY(-.08em)' },
-      ], { duration: CYCLE, iterations: Infinity, fill: 'both' }));
-    });
-    if (!anims.length) return;
+    if (reduce) return;
+    host.classList.add('is-anim');
 
     let running = false;
-    anims.forEach((a) => a.pause());
     const sync = () => {
       const want = widget.classList.contains('is-empty') && page.classList.contains('is-active') && !document.hidden;
-      if (want && !running) { running = true; anims.forEach((a) => { a.currentTime = 0; a.play(); }); }
-      else if (!want && running) { running = false; anims.forEach((a) => a.pause()); }
+      if (want && !running) {
+        running = true;
+        host.style.animation = 'none';
+        void host.offsetWidth;          // animasyonu baştan başlat
+        host.style.animation = '';
+        host.classList.add('is-run');
+      } else if (!want && running) {
+        running = false;
+        host.classList.remove('is-run');
+      }
     };
     if ('MutationObserver' in window) {
       const mo = new MutationObserver(sync);
