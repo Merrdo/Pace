@@ -49886,15 +49886,13 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
       row.style.setProperty('--mk', it.cd.color);
       row.style.setProperty('--mk-on', dayCdOnColor(it.cd.color));
       const parts = dayCdRemainingParts(it.target);
-      const marker = parts
-        ? `<b>${parts.num}</b><i>${parts.unit}</i>`
-        : DAY_CD_CHECK_SVG;
+      const marker = parts ? `<b>${parts.num}</b><i>${parts.unit}</i>` : '<b>Bitti</b>';
       row.innerHTML =
         '<button type="button" class="cd-sheet-main">' +
-          `<span class="cd-sheet-marker" aria-hidden="true">${marker}</span>` +
+          `<span class="cd-sheet-count" aria-hidden="true">${marker}</span>` +
           '<span class="cd-sheet-body"><span class="cd-sheet-name"></span><span class="cd-sheet-date"></span></span>' +
         '</button>' +
-        `<span class="cd-sheet-end">${isSelected ? CD_SHEET_TICK_SVG : DAY_CD_CHEV_SVG}` +
+        `<span class="cd-sheet-end">${pick ? (isSelected ? CD_SHEET_TICK_SVG : '<span class="cd-sheet-ring"></span>') : DAY_CD_CHEV_SVG}` +
           (pick ? '' : '<button type="button" class="cd-sheet-del" tabindex="-1" aria-label="Sayacı sil">Sil</button>') +
         '</span>';
       const main = row.querySelector('.cd-sheet-main');
@@ -75880,82 +75878,6 @@ html[data-pace-theme="plum"] .ztp-bar i{background:linear-gradient(90deg,#8a3a6b
 
   .cd-sheet .cd-sheet-list { gap: 0.55rem; margin: 0 -0.5rem; padding: 0 0.5rem 0.3rem; }
 
-  /* Her sayaç: yumuşak bir kart, solda sayaç renginde ince çizgi. */
-  .cd-sheet .cd-sheet-item {
-    position: relative;
-    gap: 0.5rem;
-    padding: 0.85rem 0.9rem 0.85rem 1.3rem;
-    border: 1px solid var(--cds-line);
-    border-radius: 1.3rem;
-    background-color: var(--cds-card);
-  }
-
-  .cd-sheet .cd-sheet-item::before {
-    content: "";
-    position: absolute;
-    left: 0.55rem;
-    top: 0.85rem;
-    bottom: 0.85rem;
-    width: 4px;
-    border-radius: 999px;
-    background: var(--mk);
-    box-shadow: 0 0 0 1px color-mix(in srgb, var(--cds-ink) 14%, transparent);
-  }
-
-  .cd-sheet .cd-sheet-main { gap: 0.6rem; }
-
-  /* Ad + tarih solda, kalan süre sağda. */
-  .cd-sheet .cd-sheet-body { order: 1; gap: 0.1rem; }
-  .cd-sheet .cd-sheet-name { font-size: 1.08rem; font-weight: 800; }
-  .cd-sheet .cd-sheet-date { font-size: 0.82rem; }
-
-  .cd-sheet .cd-sheet-marker {
-    order: 2;
-    width: auto;
-    height: auto;
-    min-width: 3rem;
-    align-items: flex-end;
-    border-radius: 0;
-    background: none;
-    box-shadow: none;
-    color: var(--ts-text);
-  }
-  .cd-sheet .cd-sheet-marker b {
-    font-size: 1.75rem;
-    font-weight: 800;
-    letter-spacing: -0.02em;
-    font-variant-numeric: tabular-nums;
-  }
-  .cd-sheet .cd-sheet-marker i {
-    margin-top: 0.12rem;
-    font-size: 0.74rem;
-    font-weight: 700;
-    opacity: 1;
-    color: var(--ts-muted);
-  }
-  /* Süresi dolan sayaç: sayaç renginde küçük onay işareti. */
-  .cd-sheet .cd-sheet-marker:has(svg) {
-    width: 1.9rem;
-    height: 1.9rem;
-    min-width: 0;
-    align-items: center;
-    border-radius: 50%;
-    background: var(--mk);
-    color: var(--mk-on);
-  }
-  .cd-sheet .cd-sheet-marker svg { width: 1.05rem; height: 1.05rem; }
-
-  /* Seçme kipi ve silme kipi kart üzerinde gösterilir. */
-  .cd-sheet .cd-sheet-item.is-selected {
-    border-color: var(--mk);
-    background-color: color-mix(in srgb, var(--mk) 12%, var(--ts-bg));
-  }
-  .cd-sheet .cd-sheet-item.is-selected .cd-sheet-marker { outline: none; }
-  .cd-sheet .cd-sheet-item.is-delete {
-    border-color: color-mix(in srgb, var(--ts-danger) 45%, transparent);
-    background-color: color-mix(in srgb, var(--ts-danger) 11%, var(--ts-bg));
-  }
-  .cd-sheet .cd-sheet-item.is-removing { border-width: 0; }
 </style>
 <style id="relaxAddBtnThemeCss">
   /* Planlayıcı "Görev Ekle" butonu: seçili temanın ikincil rengi (--theme-c2), yazı/ikon okunur renkte. */
@@ -77172,56 +77094,78 @@ html[data-pg="on"] #page-1 .pg-cdline{display:block;position:absolute;z-index:3;
 .pg-cdline.is-done .pgcl-units{display:none}
 .pg-cdline.is-done .pgcl-done{display:block}
 
-/* Yeni sayaç kur: alttan açılan küçük sayfa */
-.pgcl-bd{position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,.42);opacity:0;pointer-events:none;transition:opacity .3s}
-.pgcl-bd.is-open{opacity:1;pointer-events:auto}
-.pgcl-sh{position:absolute;left:0;right:0;bottom:0;max-width:30rem;margin:0 auto;display:flex;flex-direction:column;gap:.7rem;
-  padding:1.2rem 1.2rem calc(env(safe-area-inset-bottom,0px) + 1.2rem);border-radius:1.8rem 1.8rem 0 0;
-  background:var(--theme-bg,#f6f4ef);color:var(--theme-text,#121212);font-family:"Baloo 2","Space Grotesk",sans-serif;
-  transform:translateY(100%);transition:transform .5s cubic-bezier(.22,1,.36,1)}
-.pgcl-bd.is-open .pgcl-sh{transform:none}
-.pgcl-sh-t{font-size:1.2rem;font-weight:800}
-.pgcl-row{display:flex;gap:.6rem}
-.pgcl-in{flex:1 1 0;min-width:0;height:3rem;padding:0 1rem;border:0;border-radius:1rem;font:inherit;font-size:1rem;font-weight:600;
-  color:inherit;background:color-mix(in srgb,currentColor 8%,transparent);
-  -webkit-user-select:text;user-select:text;-webkit-appearance:none;appearance:none}
-.pgcl-sw{display:flex;gap:.7rem;padding:.2rem .1rem}
-.pgcl-sw button{flex:none;width:2rem;height:2rem;border-radius:50%;border:0;padding:0;background:var(--k);cursor:pointer;
-  transition:transform .25s cubic-bezier(.34,1.56,.64,1),box-shadow .25s}
-.pgcl-sw button.is-on{transform:scale(1.18);box-shadow:0 0 0 3px var(--theme-bg,#f6f4ef),0 0 0 5px var(--k)}
-.pgcl-save{height:3.1rem;border:0;border-radius:1.2rem;font:inherit;font-size:1.02rem;font-weight:800;cursor:pointer;
-  background:var(--k,#ff90e8);color:var(--ko,#16171b);transition:transform .2s}
-.pgcl-save:active{transform:scale(.97)}
+/* Yeni geri sayım: tam sayfa, minimalist. Tarih = uygulamanın takvimi, saat = çark. */
+.pgn{--t:var(--theme-c2,var(--theme-text,#111));--bg:var(--theme-c1,var(--theme-bg,#f6f4ef));--mute:color-mix(in srgb,var(--t) 50%,transparent);--line:color-mix(in srgb,var(--t) 10%,transparent);--soft:color-mix(in srgb,var(--t) 6%,transparent);
+  position:fixed;inset:0;z-index:9000;display:flex;flex-direction:column;background:var(--bg);color:var(--t);font-family:"Baloo 2","Space Grotesk",sans-serif;
+  transform:translate3d(0,100%,0);visibility:hidden;transition:transform .5s cubic-bezier(.22,1,.36,1),visibility 0s linear .5s}
+.pgn.is-open{transform:none;visibility:visible;transition:transform .5s cubic-bezier(.22,1,.36,1),visibility 0s}
+.pgn button{font-family:inherit;color:inherit;-webkit-tap-highlight-color:transparent;cursor:pointer}
+.pgn-bar,.pgn-scroll,.pgn-foot{width:100%;max-width:30rem;margin:0 auto;box-sizing:border-box}
+.pgn-bar{display:flex;align-items:center;gap:.8rem;padding:calc(env(safe-area-inset-top) + 12px) 20px 6px}
+.pgn-x{flex:none;width:2.6rem;height:2.6rem;display:grid;place-items:center;border:0;border-radius:50%;background:var(--soft)}
+.pgn-bar h2{margin:0;font-size:1.25rem;font-weight:800}
+.pgn-scroll{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;touch-action:pan-y;padding:8px 20px 16px}
+.pgn-name{-webkit-user-select:text;user-select:text;width:100%;box-sizing:border-box;margin:0;padding:.6rem 0 .9rem;border:0;border-bottom:1px solid var(--line);border-radius:0;outline:0;background:none;color:inherit;font:inherit;font-weight:800;font-size:1.9rem;letter-spacing:-.02em}
+.pgn-name::placeholder{color:var(--mute);opacity:.7}
+.pgn-sec{border-bottom:1px solid var(--line)}
+.pgn-head{display:flex;align-items:center;gap:.8rem;width:100%;padding:1.15rem 0;border:0;background:none;text-align:left}
+.pgn-lbl{flex:1;font-size:.72rem;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:var(--mute)}
+.pgn-val{font-size:1.1rem;font-weight:800;font-variant-numeric:tabular-nums}
+.pgn-chev{flex:none;opacity:.4;transition:transform .35s cubic-bezier(.22,1,.36,1)}
+.pgn-sec.is-open .pgn-chev{transform:rotate(90deg)}
+.pgn-body{display:grid;grid-template-rows:0fr;transition:grid-template-rows .4s cubic-bezier(.22,1,.36,1)}
+.pgn-sec.is-open .pgn-body{grid-template-rows:1fr}
+.pgn-body>div{min-height:0;overflow:hidden}
+.pgn-nav{display:flex;align-items:center;justify-content:space-between;padding:0 0 .3rem}
+.pgn-nav b{font-size:1.02rem;font-weight:800}
+.pgn-nav button{width:2.4rem;height:2.4rem;display:grid;place-items:center;border:0;border-radius:50%;background:var(--soft)}
+.pgn-nav button:disabled{opacity:.25}
+.pgn-wd,.pgn-grid{display:grid;grid-template-columns:repeat(7,1fr)}
+.pgn-wd span{padding:.3rem 0 .4rem;text-align:center;font-size:.68rem;font-weight:800;color:var(--mute)}
+.pgn-day{height:2.7rem;display:grid;place-items:center;border:0;background:none;font-size:1rem;font-weight:700;font-variant-numeric:tabular-nums}
+.pgn-day span{width:2.4rem;height:2.4rem;display:grid;place-items:center;border-radius:50%;transition:background-color .2s,color .2s}
+.pgn-day.is-today span{box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--t) 35%,transparent)}
+.pgn-day.is-on span{background:var(--t);color:var(--bg);box-shadow:none}
+.pgn-day:disabled{opacity:.22}
+.pgn-wheels{--ih:2.8rem;position:relative;display:flex;justify-content:center;align-items:center;padding:.2rem 0 1rem}
+.pgn-wheels::before{content:"";position:absolute;left:0;right:0;top:calc(50% - .4rem);height:var(--ih);transform:translateY(-50%);border-radius:1rem;background:var(--soft)}
+.pgn-wheel{position:relative;z-index:1;width:5rem;height:calc(var(--ih) * 5);overflow-y:auto;scroll-snap-type:y mandatory;overscroll-behavior:contain;touch-action:pan-y;
+  -webkit-mask-image:linear-gradient(transparent,#000 28%,#000 72%,transparent);mask-image:linear-gradient(transparent,#000 28%,#000 72%,transparent)}
+.pgn-wheel::before,.pgn-wheel::after{content:"";display:block;height:calc(var(--ih) * 2)}
+.pgn-wi{height:var(--ih);display:grid;place-items:center;scroll-snap-align:center;font-size:1.7rem;font-weight:700;font-variant-numeric:tabular-nums;color:var(--mute);transition:color .15s}
+.pgn-wi.is-sel{color:var(--t)}
+.pgn-colon{position:relative;z-index:1;font-size:1.7rem;font-weight:800}
+.pgn-foot{padding:10px 20px calc(14px + env(safe-area-inset-bottom))}
+.pgn-save{width:100%;height:3.3rem;border:0;border-radius:999px;background:var(--t);color:var(--bg);font-weight:800;font-size:1.02rem;transition:transform .2s}
+.pgn-save:active{transform:scale(.97)}
+@media (prefers-reduced-motion:reduce){.pgn,.pgn-body{transition-duration:.01s}}
 </style>
 <style id="pg-ui2-css">
-/* ===== Sayaç seçici: Soru Takibi dili (vurgusuz, yumuşak yüzey, koyu seçili kart; renk yok) ===== */
-.cd-sheet{--t:var(--theme-text,#121212);--bg:var(--theme-bg,#f6f4ef);--soft:color-mix(in srgb,var(--t) 6%,transparent);--soft2:color-mix(in srgb,var(--t) 12%,transparent);--mute:color-mix(in srgb,var(--t) 52%,transparent);
-  font-family:"Baloo 2","Space Grotesk",sans-serif}
-.cd-sheet .cd-sheet-head{gap:.15rem;padding:.2rem .4rem 1rem}
-.cd-sheet .cd-sheet-title{font-size:1.9rem;font-weight:800;letter-spacing:-.02em;line-height:1.05}
-.cd-sheet .cd-sheet-sub{font-size:.82rem;font-weight:700;color:var(--mute)}
-.cd-sheet .cd-sheet-list{gap:.55rem}
-.cd-sheet .cd-sheet-item{padding:.7rem .9rem .7rem .7rem;border-radius:26px;background:var(--soft);transition:transform .25s cubic-bezier(.34,1.56,.64,1),background-color .3s ease,color .3s ease}
-.cd-sheet .cd-sheet-main:focus-visible{outline-color:var(--t)}
-.cd-sheet .cd-sheet-marker{width:3.2rem;height:3.2rem;border-radius:1.1rem;background:var(--soft2);color:var(--t);box-shadow:none}
-.cd-sheet .cd-sheet-marker b{font-size:1.15rem;letter-spacing:-.01em;font-variant-numeric:tabular-nums}
-.cd-sheet .cd-sheet-marker i{font-weight:800;opacity:.55}
-.cd-sheet .cd-sheet-name{font-weight:800;font-size:1.08rem}
-.cd-sheet .cd-sheet-date{font-weight:700;font-size:.8rem;color:var(--mute)}
-.cd-sheet .cd-sheet-chev{color:var(--mute)}
-.cd-sheet .cd-sheet-item.is-selected{background:var(--t);color:var(--bg)}
-.cd-sheet .cd-sheet-item.is-selected .cd-sheet-marker{outline:0;background:color-mix(in srgb,var(--bg) 18%,transparent);color:var(--bg)}
-.cd-sheet .cd-sheet-item.is-selected .cd-sheet-date{color:color-mix(in srgb,var(--bg) 62%,transparent)}
-.cd-sheet .cd-sheet-item.is-selected .cd-sheet-tick{color:var(--bg)}
-.cd-sheet .cd-sheet-item.is-delete{background:color-mix(in srgb,var(--ts-danger,#ff453a) 12%,var(--bg))}
-.cd-sheet .cd-sheet-empty{color:var(--mute);font-weight:700}
-.cd-sheet .cd-sheet-empty strong{color:var(--t)}
-.cd-sheet .cd-sheet-foot{gap:.5rem;padding:.9rem 0 0}
-.cd-sheet .cd-sheet-clear{flex:1;height:3rem;padding:0 1rem;border-radius:999px;font-weight:800;font-size:.92rem;background:var(--soft);color:var(--t)}
-.cd-sheet .cd-sheet-clear:active{background:var(--soft2)}
-.cd-sheet .cd-sheet-new{background:var(--t);color:var(--bg)}
-.cd-sheet .cd-sheet-new:active{background:var(--t);opacity:.8}
-.cd-sheet .cd-sheet-empty-btn{background:var(--t);color:var(--bg)}
+/* ===== Sayaç seç: minimalist liste (kartsız, çizgili satırlar, renk yok) ===== */
+.cd-sheet{font-family:"Baloo 2","Space Grotesk",sans-serif}
+.cd-sheet .cd-sheet-head{gap:.2rem;padding:.2rem .3rem 1rem}
+.cd-sheet .cd-sheet-title{font-size:1.7rem;font-weight:800;letter-spacing:-.02em;line-height:1.05}
+.cd-sheet .cd-sheet-sub{font-size:.82rem;font-weight:700}
+.cd-sheet .cd-sheet-list{gap:0;margin:0;padding:0 .3rem}
+.cd-sheet .cd-sheet-item{gap:.9rem;padding:1rem 0;border:0;border-bottom:1px solid var(--cds-line);border-radius:0;background:none}
+.cd-sheet .cd-sheet-item:last-child{border-bottom:0}
+.cd-sheet .cd-sheet-item:active{transform:none;opacity:.6}
+.cd-sheet .cd-sheet-item.is-delete{background:none}
+.cd-sheet .cd-sheet-main{gap:1rem;align-items:center}
+.cd-sheet .cd-sheet-body{order:1;flex:1;min-width:0;gap:.1rem}
+.cd-sheet .cd-sheet-name{font-size:1.12rem;font-weight:800;letter-spacing:-.01em}
+.cd-sheet .cd-sheet-date{font-size:.8rem;font-weight:700}
+.cd-sheet .cd-sheet-count{order:2;flex:none;display:flex;align-items:baseline;gap:.3rem;font-variant-numeric:tabular-nums}
+.cd-sheet .cd-sheet-count b{font-size:1.6rem;font-weight:800;letter-spacing:-.02em;line-height:1}
+.cd-sheet .cd-sheet-count i{font-style:normal;font-size:.78rem;font-weight:700;color:var(--ts-muted)}
+.cd-sheet .cd-sheet-end{width:1.5rem}
+.cd-sheet .cd-sheet-ring{width:1.5rem;height:1.5rem;border-radius:50%;box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--cds-ink) 22%,transparent)}
+.cd-sheet .cd-sheet-tick{width:1.5rem;height:1.5rem;padding:.32rem;box-sizing:border-box;border-radius:50%;background:var(--cds-ink);color:var(--ts-bg)}
+.cd-sheet .cd-sheet-empty strong{color:var(--cds-ink)}
+.cd-sheet .cd-sheet-foot{flex-direction:column;align-items:stretch;gap:.2rem;padding:1rem 0 0}
+.cd-sheet .cd-sheet-clear{height:3.1rem;padding:0 1rem;border-radius:999px;font-weight:800;font-size:.95rem;background:none;color:var(--ts-muted)}
+.cd-sheet .cd-sheet-new,.cd-sheet .cd-sheet-empty-btn{background:var(--cds-ink);color:var(--ts-bg)}
+.cd-sheet .cd-sheet-new:active{background:var(--cds-ink);opacity:.8}
 
 /* ===== Etkinlik ekleme: Resmî tatil ekranı dili (renk tonlu kart, ikon karosu, küçük harfli bölüm başlıkları, hap düğmeler) ===== */
 .ce-card{position:relative;display:flex;align-items:center;gap:.9rem;width:100%;box-sizing:border-box;overflow:hidden;padding:.85rem .95rem .85rem .85rem;border-radius:1.6rem;cursor:text;
@@ -77332,51 +77276,108 @@ html[data-pg="on"] #page-1 .pg-cdline{display:block;position:absolute;z-index:3;
   };
   const setKey = (k) => { key = k; saveAppState({ [KEY]: k }); };
 
-  // ---- Yeni sayaç kur ----
-  const COLORS = ['#ff90e8', '#59c97b', '#ffb454', '#6ea8ff', '#ff5d6c', '#b79cff'];
-  let bd, color = COLORS[0];
-  const ymd = (d) => d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
-  const paintSave = () => {
-    const sv = bd.querySelector('.pgcl-save');
-    sv.style.setProperty('--k', color);
-    sv.style.setProperty('--ko', typeof dayCdOnColor === 'function' ? dayCdOnColor(color) : '#16171b');
-    bd.querySelectorAll('.pgcl-sw button').forEach((b) => b.classList.toggle('is-on', b.dataset.c === color));
+  // ---- Yeni geri sayım: tam sayfa (ad + uygulamanın takvimi + saat çarkı) ----
+  const NEUTRAL = '#8e8e93';
+  const MON = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
+  const DOW = ['Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi', 'Pazar'];
+  const CHEV = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>';
+  const CHEV_L = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>';
+  let bd, nameIn, st = { date: new Date(), vy: 0, vm: 0, h: 9, m: 0 };
+  const today0 = () => { const d = new Date(); d.setHours(0, 0, 0, 0); return d; };
+  const q = (s) => bd.querySelector(s);
+  const syncVals = () => {
+    q('[data-v="date"]').textContent = st.date.getDate() + ' ' + MON[st.date.getMonth()] + ' · ' + DOW[(st.date.getDay() + 6) % 7];
+    q('[data-v="time"]').textContent = pad(st.h) + ':' + pad(st.m);
+  };
+  const drawCal = () => {
+    const first = new Date(st.vy, st.vm, 1), lead = (first.getDay() + 6) % 7, days = new Date(st.vy, st.vm + 1, 0).getDate(), t0 = today0().getTime();
+    q('.pgn-mlabel').textContent = MON[st.vm] + ' ' + st.vy;
+    q('.pgn-prev').disabled = st.vy === new Date().getFullYear() && st.vm <= new Date().getMonth();
+    let h = '<span></span>'.repeat(lead);
+    for (let d = 1; d <= days; d++) {
+      const ts = new Date(st.vy, st.vm, d).getTime();
+      h += '<button type="button" class="pgn-day' + (ts === t0 ? ' is-today' : '') + (ts === new Date(st.date.getFullYear(), st.date.getMonth(), st.date.getDate()).getTime() ? ' is-on' : '') + '" data-d="' + d + '"' + (ts < t0 ? ' disabled' : '') + '><span>' + d + '</span></button>';
+    }
+    q('.pgn-grid').innerHTML = h;
+  };
+  const wheelH = (el) => el.children[1].getBoundingClientRect().height || 45;
+  const markWheel = (el, i) => { Array.from(el.children).forEach((c, k) => c.classList.toggle('is-sel', k === i)); };
+  const buildWheel = (el, n, key) => {
+    el.innerHTML = '';
+    for (let i = 0; i < n; i++) { const d = document.createElement('div'); d.className = 'pgn-wi'; d.textContent = pad(i); el.appendChild(d); }
+    // İlk ve son öğe dolgu için değil; sadece ::before/::after boşlukları var, bu yüzden indeks doğrudan çocuk sırası.
+    let raf = 0;
+    el.addEventListener('scroll', () => {
+      if (raf) return;
+      raf = requestAnimationFrame(() => {
+        raf = 0;
+        const i = Math.max(0, Math.min(n - 1, Math.round(el.scrollTop / wheelH(el))));
+        if (i !== st[key]) { st[key] = i; markWheel(el, i); syncVals(); }
+      });
+    }, { passive: true });
+    el.addEventListener('click', (e) => { const it = e.target.closest('.pgn-wi'); if (it) el.scrollTo({ top: Array.prototype.indexOf.call(el.children, it) * wheelH(el), behavior: 'smooth' }); });
+  };
+  const setWheels = () => {
+    [['h', 24], ['m', 60]].forEach(([k]) => {
+      const el = q('[data-w="' + k + '"]');
+      el.style.scrollSnapType = 'none'; el.scrollTop = st[k] * wheelH(el); markWheel(el, st[k]);
+      requestAnimationFrame(() => { el.style.scrollSnapType = ''; });
+    });
+  };
+  const openSec = (name) => {
+    bd.querySelectorAll('.pgn-sec').forEach((s) => s.classList.toggle('is-open', s.dataset.s === name && !s.classList.contains('is-open')));
+    if (name === 'time' && q('[data-s="time"]').classList.contains('is-open')) setTimeout(setWheels, 60);
   };
   const closeCreate = () => { bd.classList.remove('is-open'); if (document.activeElement && document.activeElement.blur) document.activeElement.blur(); };
   const save = () => {
-    const name = bd.querySelector('.pgcl-name-in').value.trim(), dv = bd.querySelector('.pgcl-date-in').value, time = bd.querySelector('.pgcl-time-in').value || '';
+    const name = nameIn.value.trim();
     const toast = (m) => { if (typeof showAppToast === 'function') showAppToast(m, 'error'); };
-    if (!name) { toast('Sayaca bir isim ver'); return; }
-    const p = dv.split('-').map(Number);
-    if (p.length !== 3 || p.some((n) => !Number.isFinite(n))) { toast('Bir tarih seç'); return; }
-    const date = new Date(p[0], p[1] - 1, p[2]);
+    if (!name) { toast('Sayaca bir isim ver'); nameIn.focus(); return; }
+    const date = new Date(st.date.getFullYear(), st.date.getMonth(), st.date.getDate()), time = pad(st.h) + ':' + pad(st.m);
     if (dayCdTarget(date, time).getTime() <= Date.now()) { toast('Seçilen zaman geçmişte kaldı'); return; }
     const k = dayCdKey(date), all = { ...getDayCountdowns() };
     if (all[k]) { toast('Bu güne ait bir sayaç zaten var, o seçildi'); }
     else {
-      all[k] = { name, time, color, createdAt: Date.now() };
+      all[k] = { name, time, color: NEUTRAL, createdAt: Date.now() };
       if (!saveAppState({ [DAY_CD_STATE_KEY]: all })) return;
       if (typeof applyCalendarMarks === 'function') { try { applyCalendarMarks(); } catch (e) { /* yoksay */ } }
     }
-    setKey(k); closeCreate(); setTimeout(() => render(150), 250);
+    setKey(k); closeCreate(); setTimeout(() => render(0), 250);
+  };
+  const buildCreate = () => {
+    bd = document.createElement('div'); bd.className = 'pgn'; bd.setAttribute('role', 'dialog'); bd.setAttribute('aria-label', 'Yeni geri sayım');
+    bd.innerHTML =
+      '<div class="pgn-bar"><button type="button" class="pgn-x" aria-label="Kapat"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button><h2>Yeni geri sayım</h2></div>' +
+      '<div class="pgn-scroll"><input class="pgn-name" type="text" maxlength="40" placeholder="Ne için sayıyorsun?" autocomplete="off" enterkeyhint="done">' +
+      '<div class="pgn-sec" data-s="date"><button type="button" class="pgn-head"><span class="pgn-lbl">Tarih</span><span class="pgn-val" data-v="date"></span><span class="pgn-chev">' + CHEV + '</span></button>' +
+        '<div class="pgn-body"><div><div class="pgn-nav"><button type="button" class="pgn-prev" aria-label="Önceki ay">' + CHEV_L + '</button><b class="pgn-mlabel"></b><button type="button" class="pgn-next" aria-label="Sonraki ay">' + CHEV + '</button></div>' +
+        '<div class="pgn-wd"><span>PT</span><span>SA</span><span>ÇA</span><span>PE</span><span>CU</span><span>CT</span><span>PZ</span></div><div class="pgn-grid"></div></div></div></div>' +
+      '<div class="pgn-sec" data-s="time"><button type="button" class="pgn-head"><span class="pgn-lbl">Saat</span><span class="pgn-val" data-v="time"></span><span class="pgn-chev">' + CHEV + '</span></button>' +
+        '<div class="pgn-body"><div><div class="pgn-wheels"><div class="pgn-wheel" data-w="h" aria-label="Saat"></div><span class="pgn-colon">:</span><div class="pgn-wheel" data-w="m" aria-label="Dakika"></div></div></div></div></div></div>' +
+      '<div class="pgn-foot"><button type="button" class="pgn-save">Sayacı kur</button></div>';
+    document.body.appendChild(bd);
+    nameIn = q('.pgn-name');
+    buildWheel(q('[data-w="h"]'), 24, 'h'); buildWheel(q('[data-w="m"]'), 60, 'm');
+    q('.pgn-x').addEventListener('click', closeCreate);
+    q('.pgn-save').addEventListener('click', save);
+    nameIn.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); nameIn.blur(); } });
+    bd.querySelectorAll('.pgn-head').forEach((h) => h.addEventListener('click', () => { nameIn.blur(); openSec(h.parentNode.dataset.s); }));
+    q('.pgn-prev').addEventListener('click', () => { st.vm -= 1; if (st.vm < 0) { st.vm = 11; st.vy -= 1; } drawCal(); });
+    q('.pgn-next').addEventListener('click', () => { st.vm += 1; if (st.vm > 11) { st.vm = 0; st.vy += 1; } drawCal(); });
+    q('.pgn-grid').addEventListener('click', (e) => {
+      const b = e.target.closest('.pgn-day'); if (!b || b.disabled) return;
+      st.date = new Date(st.vy, st.vm, +b.dataset.d); drawCal(); syncVals();
+    });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && bd.classList.contains('is-open')) closeCreate(); });
   };
   const openCreate = () => {
-    if (!bd) {
-      bd = document.createElement('div'); bd.className = 'pgcl-bd';
-      bd.innerHTML = '<div class="pgcl-sh" role="dialog" aria-label="Yeni geri sayım"><b class="pgcl-sh-t">Yeni geri sayım</b>' +
-        '<input class="pgcl-in pgcl-name-in" type="text" maxlength="40" placeholder="Adı (ör. YKS)" autocomplete="off">' +
-        '<div class="pgcl-row"><input class="pgcl-in pgcl-date-in" type="date"><input class="pgcl-in pgcl-time-in" type="time" value="09:00"></div>' +
-        '<div class="pgcl-sw">' + COLORS.map((c) => '<button type="button" data-c="' + c + '" style="--k:' + c + '" aria-label="Renk"></button>').join('') + '</div>' +
-        '<button type="button" class="pgcl-save">Sayacı kur</button></div>';
-      document.body.appendChild(bd);
-      bd.addEventListener('click', (e) => { if (e.target === bd) closeCreate(); });
-      bd.querySelector('.pgcl-sw').addEventListener('click', (e) => { const b = e.target.closest('button'); if (b) { color = b.dataset.c; paintSave(); } });
-      bd.querySelector('.pgcl-save').addEventListener('click', save);
-    }
-    const t = new Date(); t.setDate(t.getDate() + 1);
-    const di = bd.querySelector('.pgcl-date-in'); di.min = ymd(new Date()); di.value = ymd(t);
-    bd.querySelector('.pgcl-name-in').value = '';
-    paintSave(); void bd.offsetWidth; bd.classList.add('is-open');
+    if (!bd) buildCreate();
+    const d = today0(); d.setDate(d.getDate() + 1);
+    st = { date: d, vy: d.getFullYear(), vm: d.getMonth(), h: 9, m: 0 };
+    nameIn.value = ''; drawCal(); syncVals();
+    bd.querySelectorAll('.pgn-sec').forEach((s) => s.classList.toggle('is-open', s.dataset.s === 'date'));
+    setWheels(); q('.pgn-scroll').scrollTop = 0;
+    void bd.offsetWidth; bd.classList.add('is-open');
   };
 
   btn.addEventListener('click', () => {
