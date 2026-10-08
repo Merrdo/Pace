@@ -37542,6 +37542,37 @@ html[data-pg="on"] #page-1 .home-relax-widget.is-empty .home-relax-widget-title{
 @media (prefers-reduced-motion:reduce){.pg-cal,.pg-today{animation:none}}
 </style>
 
+<style>
+/* ===== Türkiye resmî tatil ve özel günleri (yeşil etkinlik kartları + liste) ===== */
+.cal-evc-date{flex:0 0 auto;align-self:center;padding:.3rem .72rem;border-radius:999px;font-weight:800;font-size:.78rem;line-height:1;
+  white-space:nowrap;font-variant-numeric:tabular-nums;background:color-mix(in srgb,var(--c) 26%,transparent);
+  color:var(--theme-text,#f2f2f7)}
+.cal-evc.is-hol .cal-evc-txt b{white-space:normal;overflow-wrap:anywhere;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2}
+.cal-ev-dt{position:relative;z-index:1;flex:0 0 auto;display:flex;flex-direction:column;align-items:flex-end;gap:.1rem;text-align:right;
+  font-variant-numeric:tabular-nums}
+.cal-ev-dt b{font-weight:800;font-size:.95rem;line-height:1.1;white-space:nowrap}
+.cal-ev-dt small{font-weight:700;font-size:.68rem;line-height:1;opacity:.55;white-space:nowrap}
+.cal-ev-item.is-hol .cal-ev-meta b{font-size:1.02rem}
+.cal-ev-item.is-past{opacity:.5}
+.cal-ev-item.is-today{box-shadow:inset 0 0 0 2px var(--c),0 14px 26px -18px color-mix(in srgb,var(--c) 80%,transparent)}
+.tr-hol-sheet{display:flex;flex-direction:column}
+.tr-hol-years{display:flex;gap:.4rem;margin:-.25rem 0 .8rem;overflow-x:auto;scrollbar-width:none;padding:.1rem}
+.tr-hol-years::-webkit-scrollbar{display:none}
+.tr-hol-years button{flex:0 0 auto;border:none;cursor:pointer;padding:.38rem .85rem;border-radius:999px;font:inherit;font-weight:800;font-size:.82rem;
+  color:inherit;background:color-mix(in srgb,var(--theme-text,#f2f2f7) 10%,transparent);-webkit-tap-highlight-color:transparent;
+  transition:background-color .25s ease,color .25s ease,transform .25s cubic-bezier(.34,1.56,.64,1)}
+.tr-hol-years button:active{transform:scale(.94)}
+.tr-hol-years button.is-on{background:#34c759;color:#0c1f12}
+.tr-hol-list{max-height:min(58vh,32rem) !important}
+.tr-hol-list > *{flex:0 0 auto}
+.tr-hol-month{margin:.7rem 0 .05rem .2rem;font-weight:800;font-size:.7rem;letter-spacing:.09em;text-transform:uppercase;opacity:.5}
+.tr-hol-month:first-child{margin-top:0}
+.tr-hol-note{margin:.8rem .2rem 0;font-weight:600;font-size:.74rem;line-height:1.35;opacity:.5}
+.tr-hol-note:empty{display:none}
+#settingsHolidayListRow.is-off{opacity:.4;pointer-events:none}
+#settingsHolidayToggleWrap input:checked + .track{background:#34c759}
+</style>
+
 </head>
 <body oncopy="return false" oncut="return false" onselectstart="return false" ondragstart="return false">
 
@@ -39684,6 +39715,19 @@ html[data-pg="on"] #page-1 .home-relax-widget.is-empty .home-relax-widget-title{
     </div>
   </div>
 
+  <!-- Takvim: Türkiye resmî tatil ve özel günleri listesi (Ayarlar > Takvim ya da yeşil bir kartın dokunuşuyla açılır). -->
+  <div class="cal-ev-backdrop" id="trHolBackdrop" aria-hidden="true">
+    <div class="cal-ev-sheet tr-hol-sheet" role="dialog" aria-modal="true" aria-labelledby="trHolTitle">
+      <div class="cal-ev-head">
+        <div class="cal-ev-headtxt"><h3 class="cal-ev-title" id="trHolTitle">Resmî tatil ve özel günler</h3><p class="cal-ev-date" id="trHolSub"></p></div>
+        <button type="button" class="cal-ev-ic" id="trHolX" aria-label="Kapat"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+      </div>
+      <div class="tr-hol-years" id="trHolYears" role="tablist" aria-label="Yıl"></div>
+      <div class="cal-ev-list tr-hol-list" id="trHolList"></div>
+      <p class="tr-hol-note" id="trHolNote"></p>
+    </div>
+  </div>
+
   <!-- Takvim: Gün Geri Sayımı. Takvimde seçili güne bir kez daha
        dokunulunca açılan tam ekran sayfa. Üç hali var:
        • Kurulum formu (.cd-form): ad, isteğe bağlı saat, renk.
@@ -39941,6 +39985,31 @@ html[data-pg="on"] #page-1 .home-relax-widget.is-empty .home-relax-widget-title{
               <button type="button" class="settings-segmented-option is-active" data-value="mon">Pazartesi</button>
               <button type="button" class="settings-segmented-option" data-value="sun">Pazar</button>
             </div>
+          </div>
+
+          <div class="settings-divider"></div>
+
+          <div class="settings-row" id="settingsHolidayRow">
+            <div class="settings-row-text">
+              <span class="settings-row-title">Resmî tatil ve özel günler</span>
+              <span class="settings-row-desc">Türkiye'deki bayramlar ve önemli günler takvimde yeşil etkinlik olarak görünür</span>
+            </div>
+            <label class="toggle brutal-toggle settings-toggle" id="settingsHolidayToggleWrap">
+              <input type="checkbox" id="settingsHolidayToggle" checked />
+              <span class="track">
+                <span class="thumb"></span>
+              </span>
+            </label>
+          </div>
+
+          <div class="settings-divider"></div>
+
+          <div class="settings-row" id="settingsHolidayListRow">
+            <div class="settings-row-text">
+              <span class="settings-row-title">Tüm günleri gör</span>
+              <span class="settings-row-desc">Bayram ve özel günlerin tarihleriyle sıralı listesi</span>
+            </div>
+            <button type="button" class="settings-outline-btn" id="settingsHolidayListBtn">Listeyi aç</button>
           </div>
         </div>
       </div>
@@ -50515,14 +50584,88 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
   let calLastTapCell = null, calLastTapAt = 0;
   const clearCalLp = () => { if (calLpTimer) { clearTimeout(calLpTimer); calLpTimer = null; } };
 
+  // ---------- Takvim: Türkiye resmî tatil ve özel günleri ----------
+  // Ayarlar > Takvim'deki anahtara (APP_STATE.trHolidays, varsayılan açık) bağlıdır. Açıkken getDayEvents()
+  // bu günleri her günün etkinliklerine yeşil, salt-okunur kartlar olarak ekler (düzenlenemez/silinemez).
+  // Sabit günler her yıl aynıdır; Anneler/Babalar Günü hesaplanır; dini günler yıl yıl bu tabloda tutulur.
+  // 2028 ve sonrası dini günler tahminidir (Diyanet duyurunca ±1 gün kayabilir).
+  const TR_HOL_COLOR = '#34c759';
+  const TR_HOL_YEARS = [2026, 2027, 2028, 2029, 2030];
+  const TR_HOL_FIXED = [
+    [1, 1, 'Yılbaşı', 'Resmî tatil'],
+    [3, 8, 'Dünya Kadınlar Günü', 'Özel gün'],
+    [3, 12, 'İstiklal Marşı’nın Kabulü', 'Özel gün'],
+    [3, 14, 'Tıp Bayramı', 'Özel gün'],
+    [3, 18, 'Çanakkale Zaferi ve Şehitleri Anma Günü', 'Özel gün'],
+    [3, 21, 'Nevruz', 'Özel gün'],
+    [4, 23, 'Ulusal Egemenlik ve Çocuk Bayramı', 'Resmî tatil'],
+    [5, 1, 'Emek ve Dayanışma Günü', 'Resmî tatil'],
+    [5, 19, 'Atatürk’ü Anma, Gençlik ve Spor Bayramı', 'Resmî tatil'],
+    [7, 15, 'Demokrasi ve Milli Birlik Günü', 'Resmî tatil'],
+    [8, 30, 'Zafer Bayramı', 'Resmî tatil'],
+    [10, 28, 'Cumhuriyet Bayramı Arifesi', 'Yarım gün tatil'],
+    [10, 29, 'Cumhuriyet Bayramı', 'Resmî tatil'],
+    [11, 10, 'Atatürk’ü Anma Günü', 'Özel gün'],
+    [11, 24, 'Öğretmenler Günü', 'Özel gün'],
+  ];
+  // [yıl]: { rb: Ramazan Bayramı arifesi, kb: Kurban Bayramı arifesi, nights: [[ay,gün,ad,etiket]], approx }
+  const TR_HOL_RELIGIOUS = {
+    2026: { rb: [3, 19], kb: [5, 26], approx: false, extra: [
+      [1, 15, 'Miraç Kandili', 'Dini gün'], [2, 2, 'Berat Kandili', 'Dini gün'], [2, 19, 'Ramazan Başlangıcı', 'Dini gün'],
+      [3, 16, 'Kadir Gecesi', 'Dini gün'], [6, 16, 'Hicri Yılbaşı', 'Dini gün'], [6, 25, 'Aşure Günü', 'Dini gün'],
+      [8, 24, 'Mevlid Kandili', 'Dini gün'], [12, 10, 'Regaib Kandili', 'Dini gün'] ] },
+    2027: { rb: [3, 8], kb: [5, 15], approx: false, extra: [
+      [1, 4, 'Miraç Kandili', 'Dini gün'], [1, 22, 'Berat Kandili', 'Dini gün'], [2, 8, 'Ramazan Başlangıcı', 'Dini gün'],
+      [3, 5, 'Kadir Gecesi', 'Dini gün'] ] },
+    2028: { rb: [2, 26], kb: [5, 4], approx: true, extra: [] },
+    2029: { rb: [2, 14], kb: [4, 23], approx: true, extra: [] },
+    2030: { rb: [2, 4], kb: [4, 13], approx: true, extra: [] },
+  };
+  const trHolCache = {};
+  const trHolidaysOfYear = (y) => {
+    if (trHolCache[y]) return trHolCache[y];
+    const rows = TR_HOL_FIXED.map((r) => r.slice());
+    // Anneler Günü: Mayıs'ın 2. Pazarı; Babalar Günü: Haziran'ın 3. Pazarı.
+    const nthSunday = (m, n) => { const first = new Date(y, m, 1); return 1 + ((7 - first.getDay()) % 7) + (n - 1) * 7; };
+    rows.push([5, nthSunday(4, 2), 'Anneler Günü', 'Özel gün']);
+    rows.push([6, nthSunday(5, 3), 'Babalar Günü', 'Özel gün']);
+    const rel = TR_HOL_RELIGIOUS[y];
+    if (rel) {
+      const mk = (arife, name, days) => {
+        const b = new Date(y, arife[0] - 1, arife[1]);
+        rows.push([b.getMonth() + 1, b.getDate(), `${name} Arifesi`, 'Yarım gün tatil']);
+        for (let i = 1; i <= days; i++) { const d = new Date(b); d.setDate(b.getDate() + i); rows.push([d.getMonth() + 1, d.getDate(), `${name} ${i}. Gün`, 'Resmî tatil']); }
+      };
+      mk(rel.rb, 'Ramazan Bayramı', 3);
+      mk(rel.kb, 'Kurban Bayramı', 4);
+      rel.extra.forEach((r) => rows.push(r.slice()));
+    }
+    const list = rows.map((r) => ({
+      y, m: r[0], d: r[1], name: r[2], label: r[3], approx: !!(rel && rel.approx && /^(Ramazan|Kurban) Bayramı/.test(r[2])),
+      key: `${y}-${String(r[0]).padStart(2, '0')}-${String(r[1]).padStart(2, '0')}`,
+    })).sort((a, b) => a.key.localeCompare(b.key) || a.name.localeCompare(b.name, 'tr'));
+    trHolCache[y] = list;
+    return list;
+  };
+  const trHolEnabled = () => APP_STATE.trHolidays !== false;
+  const trHolForDay = (d) => {
+    if (!trHolEnabled()) return [];
+    const m = d.getMonth() + 1, day = d.getDate();
+    return trHolidaysOfYear(d.getFullYear()).filter((h) => h.m === m && h.d === day);
+  };
+
   const getAllDayEvents = () => {
     const stored = APP_STATE[DAY_EVENTS_STATE_KEY];
     return stored && typeof stored === 'object' && !Array.isArray(stored) ? stored : {};
   };
   const getDayEvents = (d) => {
+    const hol = trHolForDay(d).map((h, i) => ({
+      id: `tr:${h.key}:${i}`, name: h.name, time: '', color: TR_HOL_COLOR, createdAt: -1,
+      holiday: true, label: h.label, approx: h.approx, date: new Date(h.y, h.m - 1, h.d),
+    }));
     const list = getAllDayEvents()[dayCdKey(d)];
-    if (!Array.isArray(list)) return [];
-    return list
+    if (!Array.isArray(list)) return hol;
+    return hol.concat(list
       .filter((ev) => ev && typeof ev === 'object')
       .map((ev) => ({
         id: String(ev.id || ''),
@@ -50531,7 +50674,7 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
         color: /^#[0-9a-f]{6}$/i.test(ev.color || '') ? ev.color : '',
         createdAt: Number.isFinite(ev.createdAt) ? ev.createdAt : 0,
       }))
-      .sort((a, b) => (a.time || '').localeCompare(b.time || '') || a.createdAt - b.createdAt);
+      .sort((a, b) => (a.time || '').localeCompare(b.time || '') || a.createdAt - b.createdAt));
   };
 
   const calendarEventsEl = document.getElementById('calendarEvents');
@@ -50551,6 +50694,10 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
   const CE_ICON_CLOCK = '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>';
   const CE_ICON_SUN = '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3.8"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6 7 7M17 17l1.4 1.4M5.6 18.4 7 17M17 7l1.4-1.4"/></svg>';
   const CE_ICON_CHEV = '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>';
+  const CE_ICON_FLAG = '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5.5 21V4"/><path d="M5.5 4.5h11.2l-2.3 4 2.3 4H5.5"/></svg>';
+  const ce_evIcon = (ev) => (ev && ev.holiday ? CE_ICON_FLAG : (ev && ev.time ? CE_ICON_CLOCK : CE_ICON_SUN));
+  const ce_evSub = (ev) => (ev.holiday ? ev.label : (ev.time || 'Tüm gün'));
+  const ce_shortDate = (d) => `${d.getDate()} ${CALENDAR_MONTHS[d.getMonth()]}`;
   let ce_evHideTok = 0;
   const renderCalendarEvents = () => {
     if (!calendarEventsEl) return;
@@ -50580,12 +50727,14 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
     const SHOW = 2;
     list.slice(0, SHOW).forEach((ev, i) => {
       const b = document.createElement('button');
-      b.type = 'button'; b.className = 'cal-evc';
+      b.type = 'button'; b.className = 'cal-evc' + (ev.holiday ? ' is-hol' : '');
       b.style.setProperty('--c', ce_evColor(ev)); b.style.setProperty('--i', String(i));
-      b.innerHTML = `<span class="cal-evc-ic">${ev.time ? CE_ICON_CLOCK : CE_ICON_SUN}</span><span class="cal-evc-txt"><b></b><em></em></span><span class="cal-evc-go">${CE_ICON_CHEV}</span>`;
+      b.innerHTML = `<span class="cal-evc-ic">${ce_evIcon(ev)}</span><span class="cal-evc-txt"><b></b><em></em></span>` +
+        (ev.holiday ? '<span class="cal-evc-date"></span>' : `<span class="cal-evc-go">${CE_ICON_CHEV}</span>`);
       b.querySelector('b').textContent = ev.name;
-      b.querySelector('em').textContent = ev.time || 'Tüm gün';
-      b.addEventListener('click', (e) => { e.stopPropagation(); openCalEventList(day); });
+      b.querySelector('em').textContent = ce_evSub(ev);
+      if (ev.holiday) b.querySelector('.cal-evc-date').textContent = ce_shortDate(ev.date);
+      b.addEventListener('click', (e) => { e.stopPropagation(); if (ev.holiday) window.openTrHolidayList(ev.date); else openCalEventList(day); });
       box.appendChild(b);
     });
     if (list.length > SHOW) {
@@ -50784,17 +50933,88 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
     const cnt = document.createElement('div'); cnt.className = 'cal-ev-count'; cnt.textContent = `${list.length} etkinlik`;
     box.appendChild(cnt);
     list.forEach((ev, i) => {
-      const r = document.createElement('button'); r.type = 'button'; r.className = 'cal-ev-item';
+      const r = document.createElement('button'); r.type = 'button'; r.className = 'cal-ev-item' + (ev.holiday ? ' is-hol' : '');
       r.style.setProperty('--c', ce_evColor(ev)); r.style.setProperty('--i', String(i));
-      r.innerHTML = `<span class="cal-ev-ico">${ev.time ? CE_ICON_CLOCK : CE_ICON_SUN}</span><span class="cal-ev-meta"><b></b><em></em></span><span class="cal-ev-go">${CE_CHEV}</span>`;
+      r.innerHTML = `<span class="cal-ev-ico">${ce_evIcon(ev)}</span><span class="cal-ev-meta"><b></b><em></em></span>` +
+        (ev.holiday ? '<span class="cal-ev-dt"><b></b></span>' : `<span class="cal-ev-go">${CE_CHEV}</span>`);
       r.querySelector('b').textContent = ev.name;
-      r.querySelector('em').textContent = ev.time || 'Tüm gün';
-      r.onclick = () => openCalEventSheet(d, ev);
+      r.querySelector('em').textContent = ce_evSub(ev);
+      if (ev.holiday) r.querySelector('.cal-ev-dt b').textContent = ce_shortDate(ev.date);
+      r.onclick = () => { if (ev.holiday) { closeCalEventSheet(); window.openTrHolidayList(ev.date); } else openCalEventSheet(d, ev); };
       box.appendChild(r);
     });
     ce_go('list', -1, ['Etkinlikler', ce_dateLabel(d)]);
     ce_showBackdrop();
   };
+
+  // ---- Türkiye resmî tatil ve özel günleri: yıl sekmeli, tarihe göre sıralı tam liste ----
+  const trHolBackdrop = $ce('trHolBackdrop');
+  let trHolYear = 0;
+  const trHolIsOpen = () => trHolBackdrop.classList.contains('is-open');
+  const closeTrHolidayList = () => { trHolBackdrop.classList.remove('is-open'); trHolBackdrop.setAttribute('aria-hidden', 'true'); };
+  const renderTrHolidayList = (focusKey) => {
+    const yearsEl = $ce('trHolYears'), listEl = $ce('trHolList');
+    yearsEl.innerHTML = '';
+    TR_HOL_YEARS.forEach((y) => {
+      const b = document.createElement('button'); b.type = 'button'; b.textContent = String(y);
+      b.setAttribute('role', 'tab'); b.setAttribute('aria-selected', y === trHolYear ? 'true' : 'false');
+      b.classList.toggle('is-on', y === trHolYear);
+      b.onclick = () => { if (y === trHolYear) return; trHolYear = y; renderTrHolidayList(); };
+      yearsEl.appendChild(b);
+    });
+    const now = new Date(), todayKey = dayCdKey(now);
+    const items = trHolidaysOfYear(trHolYear);
+    $ce('trHolSub').textContent = `Türkiye · ${trHolYear} · ${items.length} gün`;
+    listEl.innerHTML = '';
+    let lastMonth = -1, focusEl = null, firstUpcoming = null, idx = 0;
+    items.forEach((h) => {
+      if (h.m !== lastMonth) {
+        lastMonth = h.m;
+        const mh = document.createElement('div'); mh.className = 'tr-hol-month'; mh.textContent = CALENDAR_MONTHS[h.m - 1];
+        listEl.appendChild(mh);
+      }
+      const dt = new Date(h.y, h.m - 1, h.d);
+      const r = document.createElement('div'); r.className = 'cal-ev-item is-hol';
+      r.style.setProperty('--c', TR_HOL_COLOR); r.style.setProperty('--i', String(Math.min(idx++, 10)));
+      if (h.key < todayKey) r.classList.add('is-past');
+      if (h.key === todayKey) r.classList.add('is-today');
+      r.innerHTML = `<span class="cal-ev-ico">${CE_ICON_FLAG}</span><span class="cal-ev-meta"><b></b><em></em></span><span class="cal-ev-dt"><b></b><small></small></span>`;
+      r.querySelector('.cal-ev-meta b').textContent = h.name;
+      r.querySelector('em').textContent = h.label;
+      r.querySelector('.cal-ev-dt b').textContent = ce_shortDate(dt);
+      r.querySelector('small').textContent = CALENDAR_WEEKDAYS_LONG[(dt.getDay() + 6) % 7];
+      listEl.appendChild(r);
+      if (!firstUpcoming && h.key >= todayKey) firstUpcoming = r;
+      if (focusKey && h.key === focusKey && !focusEl) focusEl = r;
+    });
+    const hasApprox = items.some((h) => h.approx);
+    $ce('trHolNote').textContent = hasApprox ? 'Bu yılın dini bayram tarihleri tahminidir; Diyanet’in açıklamasına göre 1 gün kayabilir.' : '';
+    const target = focusEl || firstUpcoming;
+    listEl.scrollTop = 0;
+    if (target) requestAnimationFrame(() => { listEl.scrollTop += target.getBoundingClientRect().top - listEl.getBoundingClientRect().top - 28; });
+  };
+  window.openTrHolidayList = (date) => {
+    const base = date instanceof Date ? date : new Date();
+    const y = base.getFullYear();
+    trHolYear = TR_HOL_YEARS.includes(y) ? y : (y < TR_HOL_YEARS[0] ? TR_HOL_YEARS[0] : TR_HOL_YEARS[TR_HOL_YEARS.length - 1]);
+    renderTrHolidayList(date instanceof Date && TR_HOL_YEARS.includes(y) ? dayCdKey(date) : '');
+    trHolBackdrop.classList.add('is-open'); trHolBackdrop.setAttribute('aria-hidden', 'false');
+    // Pencere açıldıktan sonra (yerleşim oturunca) odaklanacak satıra yeniden kaydır.
+    setTimeout(() => {
+      const el = document.querySelector('#trHolList .cal-ev-item.is-today') || (date instanceof Date ? null : document.querySelector('#trHolList .cal-ev-item:not(.is-past)'));
+      if (el) { const l = $ce('trHolList'); l.scrollTop += el.getBoundingClientRect().top - l.getBoundingClientRect().top - 28; }
+    }, 80);
+  };
+  $ce('trHolX').addEventListener('click', closeTrHolidayList);
+  trHolBackdrop.addEventListener('click', (e) => { if (e.target === trHolBackdrop) closeTrHolidayList(); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && trHolIsOpen()) closeTrHolidayList(); });
+  // Ayarlar'daki anahtar değişince takvim işaretleri ve kartlar yenilenir.
+  window.addEventListener('tr-holidays-changed', () => {
+    if (!trHolEnabled() && trHolIsOpen()) closeTrHolidayList();
+    try { applyCalendarMarks(); } catch (e) { /* yok say */ }
+    try { renderCalendarEvents(); } catch (e) { /* yok say */ }
+    try { updateCalendarSelectedInfo(); } catch (e) { /* yok say */ }
+  });
 
   const openCalEventSheet = (date, ev) => {
     const wasOpen = ce_isOpen();
@@ -51007,11 +51227,11 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
           const b = document.createElement('button');
           b.type = 'button'; b.className = 'cal-evc';
           b.style.setProperty('--c', safe(() => ce_evColor(ev), '#ff90e8'));
-          const ic = safe(() => (ev.time ? CE_ICON_CLOCK : CE_ICON_SUN), '');
+          const ic = safe(() => ce_evIcon(ev), '');
           b.innerHTML = `<span class="cal-evc-ic" aria-hidden="true">${ic}</span><span class="cal-evc-txt"><b></b><em></em></span>`;
           b.querySelector('b').textContent = ev.name;
-          b.querySelector('em').textContent = ev.time || 'Tüm gün';
-          b.setAttribute('aria-label', 'Etkinlik: ' + ev.name + ', ' + (ev.time || 'Tüm gün') + ". Takvim'e git");
+          b.querySelector('em').textContent = ce_evSub(ev);
+          b.setAttribute('aria-label', 'Etkinlik: ' + ev.name + ', ' + ce_evSub(ev) + ". Takvim'e git");
           b.addEventListener('click', goCalendar);
           listEl.appendChild(b);
         });
@@ -55270,6 +55490,28 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
 
   // Sayfa yüklenirken kaydedilmiş tercihi (varsa) arayüze de yansıt.
   applyWeekStart(APP_STATE.weekStart === 'sun' ? 'sun' : 'mon', { persist: false });
+
+
+  // ---- Takvim: Türkiye resmî tatil ve özel günleri anahtarı + liste ----
+  const holToggle = document.getElementById('settingsHolidayToggle');
+  const holListRow = document.getElementById('settingsHolidayListRow');
+  const holListBtn = document.getElementById('settingsHolidayListBtn');
+  const syncHolidayUi = () => {
+    const on = APP_STATE.trHolidays !== false;
+    if (holToggle) holToggle.checked = on;
+    if (holListRow) holListRow.classList.toggle('is-off', !on);
+  };
+  if (holToggle) {
+    holToggle.addEventListener('change', () => {
+      saveAppState({ trHolidays: holToggle.checked });
+      syncHolidayUi();
+      window.dispatchEvent(new Event('tr-holidays-changed'));
+      window.dispatchEvent(new Event('home-cal-refresh'));
+    });
+  }
+  if (holListBtn) holListBtn.addEventListener('click', () => { if (typeof window.openTrHolidayList === 'function') window.openTrHolidayList(); });
+  window.addEventListener('app-state-saved', syncHolidayUi);
+  syncHolidayUi();
 
   // ---- Nav Bar: telefondaki alt dock'ta "+" butonunun tarafı (sol / sağ) ----
   const navAddSideSegmented = document.getElementById('navAddSideSegmented');
