@@ -37424,31 +37424,37 @@ html[data-pg="on"] #page-1 .home-relax-widget.is-empty .home-relax-widget-lead{d
 html[data-pg="on"] #page-1 .home-relax-widget.is-empty .home-relax-widget-bottom{
   border-left:0 !important;padding-left:0 !important;min-height:0 !important;gap:.2rem}
 
-/* "Rahatla": çerçeveli (outline) dev yazı. İçi, nefes alıp verir gibi alttan dolup boşalan
-   yumuşak bir "gelgit" ile dolar; dolgunun içinde ince çapraz tarama deseni görünür.
-   Açılışta soldan sağa perde gibi açılır. Renk = temanın ikincil rengi. */
-@property --pgLvl{syntax:"<percentage>";inherits:false;initial-value:70%}
+/* ===== PLANLAYICI WIDGET'I: sade ve şık tipografi (SADECE görünüm; JS/mekanik aynen) =====
+   Üstte küçük, geniş harf aralıklı "künye" satırı (Şimdi/Sıradaki + saat, ya da "Yaklaşan görev yok"),
+   altında görev adı. DOM sırası (saat → ad) korunur; yalnızca flex yönü değişir.
+   Boş durumda "Rahatla": düz, serif italik tek kelime; çerçeve/desen/animasyon yok. */
+@keyframes pgSoft{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+html[data-pg="on"] #page-1 .home-relax-widget-bottom{flex-direction:column !important;gap:.34rem}
+html[data-pg="on"] #page-1 .home-relax-widget-time{
+  font-family:"Baloo 2","Space Grotesk",sans-serif;font-weight:600;font-size:.66rem;line-height:1.25;
+  letter-spacing:.2em;text-transform:uppercase;
+  color:color-mix(in srgb,var(--pg-ink) 52%,transparent)}
+html[data-pg="on"] #page-1 .home-relax-widget-title{letter-spacing:-.018em}
+html[data-pg="on"] #page-1 .home-relax-widget.is-empty .home-relax-widget-bottom{gap:.5rem}
 html[data-pg="on"] #page-1 .home-relax-widget.is-empty .home-relax-widget-title{
   display:block;overflow:visible;-webkit-line-clamp:unset;
-  font-family:"Baloo 2","Space Grotesk",sans-serif;font-style:normal;font-weight:600;
-  font-size:1.85rem;line-height:1.1;letter-spacing:.07em;
-  padding:.08em .12em .14em 0;
-  -webkit-text-stroke:1.1px var(--pg-ink);
-  color:transparent;-webkit-text-fill-color:transparent;
-  background-image:
-    repeating-linear-gradient(115deg,transparent 0 4px,color-mix(in srgb,var(--theme-c1,var(--theme-bg,#fff)) 70%,transparent) 4px 4.8px),
-    linear-gradient(180deg,transparent 0,transparent var(--pgLvl),var(--pg-ink) calc(var(--pgLvl) + 24%));
-  -webkit-background-clip:text;background-clip:text;
-  animation:pgTideIn 1.4s cubic-bezier(.22,1,.36,1) both,pgTide 6.5s ease-in-out 1.4s infinite alternate}
-@keyframes pgTide{from{--pgLvl:92%}to{--pgLvl:-28%}}
-@keyframes pgTideIn{
-  from{clip-path:inset(-20% 100% -20% 0);opacity:0;transform:translateX(-10px)}
-  to{clip-path:inset(-20% -20% -20% -20%);opacity:1;transform:none}}
-html[data-pg="on"] #page-1 .home-relax-widget.is-empty .home-relax-widget-time{
-  font-size:.68rem;letter-spacing:.18em;text-transform:uppercase;font-weight:600;
-  color:color-mix(in srgb,var(--pg-ink) 50%,transparent)}
+  font-family:"Playfair Display",Georgia,"Times New Roman",serif;font-style:italic;font-weight:400;
+  font-size:2.4rem;line-height:1.05;letter-spacing:-.01em;padding:0;
+  color:var(--pg-ink);-webkit-text-fill-color:currentColor;-webkit-text-stroke:0;
+  background:none;-webkit-background-clip:border-box;background-clip:border-box;
+  animation:pgSoft 1.1s .2s cubic-bezier(.22,1,.36,1) both}
+
+/* Telefon: görev satırı daha ince ve ferah (işaretçi biraz küçülür, ince bir ayraç, kısa ve dengeli) */
+@media not all and (min-width:768px) and (min-height:600px){
+  html[data-pg="on"] #page-1 .home-relax-task-row{gap:.95rem;padding:.45rem .2rem}
+  html[data-pg="on"] #page-1 .home-relax-widget-lead{zoom:.86}
+  html[data-pg="on"] #page-1 .home-relax-widget-bottom{
+    align-self:center;min-height:2.6rem;padding-left:.95rem;
+    border-left:1px solid color-mix(in srgb,var(--pg-ink) 22%,transparent) !important}
+  html[data-pg="on"] #page-1 .home-relax-widget-title{font-size:1.5rem;line-height:1.12;font-weight:600}
+}
 @media (prefers-reduced-motion:reduce){
-  html[data-pg="on"] #page-1 .home-relax-widget.is-empty .home-relax-widget-title{animation:none;--pgLvl:35%}
+  html[data-pg="on"] #page-1 .home-relax-widget.is-empty .home-relax-widget-title{animation:none}
   html[data-pg="on"] #page-1 .home-widgets-stack{animation:none}}
 
 /* Geniş ekran: bento düzeni yerine sol üstte sade, tek widget */
