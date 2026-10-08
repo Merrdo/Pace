@@ -77765,12 +77765,62 @@ html[data-pg="on"] #page-1 .pg-tm{
     return true;
   };
 
+  // ---- Pace'e özgü ses imzası: "damla + cam çan" ----
+  // Dışarıdan ses dosyası yok; her şey Web Audio ile üretilir. Her vuruş, hızlıca
+  // süzülen yumuşak bir su damlası (sinüs glissando) + üstüne çok hafif çan armonikleri
+  // (x2.76, x5.4) ve kısa, karanlık bir yankıdan oluşur. Keskin ön vuruş yok (12 ms
+  // yumuşak giriş), tiz frekanslar kırpılmış. Başlat: yukarı doğru iki damla (açılma).
+  // Duraklat: aşağı doğru iki damla (yerine oturma).
+  const sfx = (() => {
+    let ctx = null, bus = null;
+    const init = () => {
+      if (ctx) return ctx;
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) return null;
+      try { ctx = new AC(); } catch (e) { return null; }
+      const master = ctx.createGain(); master.gain.value = 0.9;
+      const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 3000; lp.Q.value = 0.3;
+      const dly = ctx.createDelay(0.5); dly.delayTime.value = 0.17;
+      const fb = ctx.createGain(); fb.gain.value = 0.28;
+      const wet = ctx.createGain(); wet.gain.value = 0.22;
+      const dlp = ctx.createBiquadFilter(); dlp.type = 'lowpass'; dlp.frequency.value = 1700;
+      lp.connect(master); lp.connect(dly); dly.connect(dlp); dlp.connect(fb); fb.connect(dly);
+      dlp.connect(wet); wet.connect(master); master.connect(ctx.destination);
+      bus = lp;
+      return ctx;
+    };
+    const drop = (f0, f1, t, dur, vol) => {
+      [[1, vol], [2.76, vol * 0.16], [5.4, vol * 0.04]].forEach(([m, v], i) => {
+        const o = ctx.createOscillator(), g = ctx.createGain(), d = dur / (i + 1);
+        o.type = 'sine';
+        o.frequency.setValueAtTime(f0 * m, t);
+        if (f1 !== f0) o.frequency.exponentialRampToValueAtTime(f1 * m, t + 0.07);
+        g.gain.setValueAtTime(0.0001, t);
+        g.gain.exponentialRampToValueAtTime(v, t + 0.012);
+        g.gain.exponentialRampToValueAtTime(0.0001, t + d);
+        o.connect(g); g.connect(bus); o.start(t); o.stop(t + d + 0.05);
+      });
+    };
+    const play = (kind) => {
+      try {
+        const c = init(); if (!c) return;
+        if (c.state === 'suspended') c.resume();
+        const t = c.currentTime + 0.02;
+        if (kind === 'start') { drop(500, 587.33, t, 0.5, 0.15); drop(783.99, 880, t + 0.11, 0.62, 0.1); }
+        else { drop(523.25, 440, t, 0.5, 0.14); drop(349.23, 293.66, t + 0.1, 0.62, 0.09); }
+      } catch (e) { /* ses hiçbir zaman akışı bozmasın */ }
+    };
+    return { play };
+  })();
+
   main.addEventListener('click', () => {
     const mode = curMode || lastMode;
     let ok = true;
+    const wasOn = mode === 'timer' ? (cdRun() || cdDone()) : swRun();
     try { ok = mode === 'timer' ? toggleTimer() : toggleStopwatch(); }
     catch (err) { console.error('[pg-tm]', err); ok = false; }
     if (ok) {
+      sfx.play(wasOn ? 'pause' : 'start');
       setLast(mode);
       card.classList.remove('is-tap'); void card.offsetWidth; card.classList.add('is-tap');
       clearTimeout(tapT); tapT = setTimeout(() => card.classList.remove('is-tap'), 800);
