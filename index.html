@@ -72229,12 +72229,10 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
     const isUserBusy = () => touching || (performance.now() - lastScrollAt) < SCROLL_IDLE_MS;
 
     // Aynı karede, eşzamanlı tazeleme: ekranda görünür bir "hidden" karesi yok.
-    const refresh = (el) => {
-      const prev = el.style.overflowY;
-      el.style.overflowY = 'hidden';
-      void el.offsetHeight; // düzeni zorla yeniden hesaplat
-      el.style.overflowY = prev;
-    };
+    // DEVRE DIŞI: Kaydırma kutusuna overflow-y:hidden yazıp geri almak, iOS/Android'de
+    // momentum (kayarak devam eden) kaydırmayı ve dokunuş takibini kesiyor; kaydırma
+    // bitmeden dokunulamamasının ve tekrar yakalanamamasının asıl sebebi buydu.
+    const refresh = (el) => { /* bilerek boş */ };
 
     const pending = new Set();
     let timer = null;
@@ -79042,5 +79040,737 @@ html[data-pg="on"] #page-1 .pg-rq.is-on{display:block}
   #page-11-detail .exam-detail-subject-top { border-bottom-width: 3px; }
 }
 </style>
+<style id="qpSheetCss">
+/* ==========================================================================
+   SORU HAVUZU POP-UP'LARI — YENİ TASARIM (düzenlenmiş brutalist)
+   Tek bir "sheet" dili: telefonda alttan çıkan, tutamaçlı ve aşağı çekip
+   kapatılabilen sayfa; geniş ekranda ortalanmış kart. Üst bar sabit, içerik
+   kendi içinde kaydırılır, eylem butonu altta sabit kalır. Renkler tema
+   değişkenlerinden (--theme-bg / --theme-text / --accent-color) türer; açık,
+   koyu ve özel temalarda otomatik uyum sağlar.
+   ========================================================================== */
+:is(#qhavuzAddBackdrop,#qhavuzBooksBackdrop,#qhavuzTestCreateBackdrop,#qhavuzPackagesBackdrop,#qhavuzRunsBackdrop,#qhavuzTestSetupBackdrop,#page11QuestionBackdrop,#qhavuzFilterBackdrop,#qhavuzInfoBackdrop,#qhavuzDeleteConfirmBackdrop,#qhavuzPackageNameBackdrop,#qhavuzPackageDeleteConfirmBackdrop) {
+  --qp-bg: var(--theme-bg, #f6f4ef);
+  --qp-ink: var(--theme-text, #111);
+  --qp-acc: var(--accent-color, #ff90e8);
+  --qp-on-acc: var(--on-accent, #16171b);
+  --qp-soft: color-mix(in srgb, var(--qp-ink) 7%, var(--qp-bg));
+  --qp-soft2: color-mix(in srgb, var(--qp-ink) 13%, var(--qp-bg));
+  --qp-mute: color-mix(in srgb, var(--qp-ink) 60%, transparent);
+  --qp-sh: 5px;
+  --qp-ease: cubic-bezier(.22, 1, .36, 1);
+  --qp-spring: cubic-bezier(.34, 1.4, .64, 1);
+}
+
+/* ---------- Arka plan + yerleşim ---------- */
+html body :is(#qhavuzAddBackdrop,#qhavuzBooksBackdrop,#qhavuzTestCreateBackdrop,#qhavuzPackagesBackdrop,#qhavuzRunsBackdrop,#qhavuzTestSetupBackdrop,#page11QuestionBackdrop,#qhavuzFilterBackdrop,#qhavuzInfoBackdrop,#qhavuzDeleteConfirmBackdrop,#qhavuzPackageNameBackdrop,#qhavuzPackageDeleteConfirmBackdrop) {
+  display: flex !important;
+  align-items: flex-end !important;
+  justify-content: center !important;
+  padding: 0 !important;
+  background: rgba(8, 8, 12, 0.58) !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none !important;
+  touch-action: none;
+  overscroll-behavior: contain;
+  transition: opacity .22s ease, visibility 0s linear .3s !important;
+}
+html body :is(#qhavuzAddBackdrop,#qhavuzBooksBackdrop,#qhavuzTestCreateBackdrop,#qhavuzPackagesBackdrop,#qhavuzRunsBackdrop,#qhavuzTestSetupBackdrop,#page11QuestionBackdrop,#qhavuzFilterBackdrop,#qhavuzInfoBackdrop,#qhavuzDeleteConfirmBackdrop,#qhavuzPackageNameBackdrop,#qhavuzPackageDeleteConfirmBackdrop).is-open {
+  opacity: 1 !important;
+  visibility: visible;
+  pointer-events: auto !important;
+  transition: opacity .22s ease, visibility 0s !important;
+}
+
+/* ---------- Kart (sheet) ---------- */
+html body :is(#qhavuzAddBackdrop,#qhavuzBooksBackdrop,#qhavuzTestCreateBackdrop,#qhavuzPackagesBackdrop,#qhavuzRunsBackdrop,#qhavuzTestSetupBackdrop,#page11QuestionBackdrop,#qhavuzFilterBackdrop,#qhavuzInfoBackdrop,#qhavuzDeleteConfirmBackdrop,#qhavuzPackageNameBackdrop,#qhavuzPackageDeleteConfirmBackdrop) :is(.page9-add-card,.page11-modal-card,.settings-confirm-card) {
+  position: relative;
+  display: flex !important;
+  flex-direction: column;
+  width: 100% !important;
+  max-width: 560px !important;
+  height: auto !important;
+  max-height: min(92vh, calc(100dvh - 12px)) !important;
+  margin: 0 !important;
+  padding: 0 0 calc(14px + env(safe-area-inset-bottom)) !important;
+  background: var(--qp-bg) !important;
+  color: var(--qp-ink) !important;
+  border: 3px solid var(--qp-ink) !important;
+  border-bottom: 0 !important;
+  border-radius: 22px 22px 0 0 !important;
+  box-shadow: 0 calc(var(--qp-sh) * -1) 0 0 var(--qp-ink) !important;
+  font-family: "Baloo 2", -apple-system, "Segoe UI", sans-serif !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  touch-action: pan-y !important;
+  overscroll-behavior: contain !important;
+  -webkit-overflow-scrolling: auto;
+  opacity: 1 !important;
+  transform: translate3d(0, 105%, 0) !important;
+  transition: transform .36s var(--qp-ease) !important;
+}
+html body :is(#qhavuzAddBackdrop,#qhavuzBooksBackdrop,#qhavuzTestCreateBackdrop,#qhavuzPackagesBackdrop,#qhavuzRunsBackdrop,#qhavuzTestSetupBackdrop,#page11QuestionBackdrop,#qhavuzFilterBackdrop,#qhavuzInfoBackdrop,#qhavuzDeleteConfirmBackdrop,#qhavuzPackageNameBackdrop,#qhavuzPackageDeleteConfirmBackdrop).is-open :is(.page9-add-card,.page11-modal-card,.settings-confirm-card) {
+  transform: translate3d(0, 0, 0) !important;
+  transition: transform .42s var(--qp-spring) !important;
+}
+html body :is(#qhavuzAddBackdrop,#qhavuzBooksBackdrop,#qhavuzTestCreateBackdrop,#qhavuzPackagesBackdrop,#qhavuzRunsBackdrop,#qhavuzTestSetupBackdrop,#page11QuestionBackdrop,#qhavuzFilterBackdrop,#qhavuzInfoBackdrop,#qhavuzDeleteConfirmBackdrop,#qhavuzPackageNameBackdrop,#qhavuzPackageDeleteConfirmBackdrop) :is(.page9-add-card,.page11-modal-card,.settings-confirm-card).is-dragging {
+  transition: none !important;
+}
+/* Üst tutamaç */
+html body :is(#qhavuzAddBackdrop,#qhavuzBooksBackdrop,#qhavuzTestCreateBackdrop,#qhavuzPackagesBackdrop,#qhavuzRunsBackdrop,#qhavuzTestSetupBackdrop,#page11QuestionBackdrop,#qhavuzFilterBackdrop,#qhavuzInfoBackdrop,#qhavuzDeleteConfirmBackdrop,#qhavuzPackageNameBackdrop,#qhavuzPackageDeleteConfirmBackdrop) :is(.page9-add-card,.page11-modal-card,.settings-confirm-card)::before {
+  content: "";
+  flex: 0 0 auto;
+  align-self: center;
+  width: 46px;
+  height: 6px;
+  margin: 9px 0 2px;
+  border-radius: 99px;
+  background: var(--qp-ink);
+  opacity: .9;
+}
+html body :is(#qhavuzAddBackdrop,#qhavuzBooksBackdrop,#qhavuzTestCreateBackdrop,#qhavuzPackagesBackdrop,#qhavuzRunsBackdrop,#qhavuzTestSetupBackdrop,#page11QuestionBackdrop,#qhavuzFilterBackdrop,#qhavuzInfoBackdrop,#qhavuzDeleteConfirmBackdrop,#qhavuzPackageNameBackdrop,#qhavuzPackageDeleteConfirmBackdrop) :is(.page9-add-card,.page11-modal-card,.settings-confirm-card) > * {
+  flex-shrink: 0;
+}
+/* Gövdeli kartlarda kartın kendisi kaymaz; yalnızca gövde kayar */
+html body :is(#qhavuzAddBackdrop,#qhavuzBooksBackdrop,#qhavuzTestCreateBackdrop,#qhavuzPackagesBackdrop,#qhavuzRunsBackdrop,#page11QuestionBackdrop) :is(.qhavuz-add-card,.qhavuz-tc-card) {
+  overflow-y: hidden !important;
+}
+
+/* ---------- Başlık çubuğu ---------- */
+html body :is(#qhavuzAddBackdrop,#qhavuzBooksBackdrop,#qhavuzTestCreateBackdrop,#qhavuzPackagesBackdrop,#qhavuzRunsBackdrop,#qhavuzTestSetupBackdrop,#page11QuestionBackdrop,#qhavuzFilterBackdrop) :is(.page9-add-header,.exam-resources-header) {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0 !important;
+  padding: 10px 18px 14px !important;
+  background: var(--qp-bg);
+  border-bottom: 3px solid var(--qp-ink) !important;
+  touch-action: none;
+  cursor: grab;
+}
+html body :is(#qhavuzAddBackdrop,#qhavuzBooksBackdrop,#qhavuzTestCreateBackdrop,#qhavuzPackagesBackdrop,#qhavuzRunsBackdrop,#qhavuzTestSetupBackdrop,#page11QuestionBackdrop,#qhavuzFilterBackdrop) :is(.page9-add-heading,.page11-modal-heading) {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+html body :is(#qhavuzAddBackdrop,#qhavuzBooksBackdrop,#qhavuzTestCreateBackdrop,#qhavuzPackagesBackdrop,#qhavuzRunsBackdrop,#qhavuzTestSetupBackdrop,#page11QuestionBackdrop,#qhavuzFilterBackdrop,#qhavuzInfoBackdrop,#qhavuzDeleteConfirmBackdrop,#qhavuzPackageNameBackdrop,#qhavuzPackageDeleteConfirmBackdrop) :is(.page9-add-title,.page11-modal-title,.settings-confirm-title) {
+  font-family: "Archivo Expanded", "Baloo 2", sans-serif !important;
+  font-weight: 800 !important;
+  font-size: 1.22rem !important;
+  line-height: 1.1 !important;
+  letter-spacing: -.01em;
+  text-transform: uppercase;
+  color: var(--qp-ink) !important;
+  text-align: left;
+}
+html body :is(#qhavuzAddBackdrop,#qhavuzBooksBackdrop,#qhavuzTestCreateBackdrop,#qhavuzPackagesBackdrop,#qhavuzRunsBackdrop,#qhavuzTestSetupBackdrop,#page11QuestionBackdrop,#qhavuzFilterBackdrop) :is(.page9-add-subtitle,.page11-modal-subtitle) {
+  font-family: "Baloo 2", sans-serif !important;
+  font-weight: 600 !important;
+  font-size: .86rem !important;
+  line-height: 1.2;
+  color: var(--qp-mute) !important;
+  opacity: 1 !important;
+}
+/* Kapat / ikon düğmeleri: kare, kalın çerçeveli, basınca oturur */
+html body :is(#qhavuzAddBackdrop,#qhavuzBooksBackdrop,#qhavuzTestCreateBackdrop,#qhavuzPackagesBackdrop,#qhavuzRunsBackdrop,#qhavuzTestSetupBackdrop,#page11QuestionBackdrop,#qhavuzFilterBackdrop) :is(.page9-add-close,.exam-resources-close,.qhavuz-pk-icon-btn,.qhavuz-tc-icon-btn) {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 42px !important;
+  height: 42px !important;
+  min-width: 42px;
+  padding: 0 !important;
+  font-size: 1.6rem !important;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--qp-ink) !important;
+  background: var(--qp-bg) !important;
+  border: 3px solid var(--qp-ink) !important;
+  border-radius: 12px !important;
+  box-shadow: 3px 3px 0 0 var(--qp-ink) !important;
+  touch-action: manipulation;
+  transition: transform .12s var(--qp-ease), box-shadow .12s var(--qp-ease), background-color .2s ease !important;
+}
+html body :is(#qhavuzAddBackdrop,#qhavuzBooksBackdrop,#qhavuzTestCreateBackdrop,#qhavuzPackagesBackdrop,#qhavuzRunsBackdrop,#qhavuzTestSetupBackdrop,#page11QuestionBackdrop,#qhavuzFilterBackdrop) :is(.page9-add-close,.exam-resources-close,.qhavuz-pk-icon-btn,.qhavuz-tc-icon-btn):active {
+  transform: translate(3px, 3px) !important;
+  box-shadow: 0 0 0 0 var(--qp-ink) !important;
+  background: var(--qp-acc) !important;
+  color: var(--qp-on-acc) !important;
+}
+html body :is(#qhavuzAddBackdrop,#qhavuzBooksBackdrop,#qhavuzTestCreateBackdrop,#qhavuzPackagesBackdrop,#qhavuzRunsBackdrop,#qhavuzTestSetupBackdrop,#page11QuestionBackdrop,#qhavuzFilterBackdrop) .qhavuz-tc-icon-btn {
+  width: auto !important;
+  padding: 0 10px !important;
+  gap: 6px;
+  font-size: .8rem !important;
+}
+html body :is(#qhavuzTestCreateBackdrop) .qhavuz-tc-icon-btn[aria-pressed="true"] {
+  background: var(--qp-acc) !important;
+  color: var(--qp-on-acc) !important;
+  box-shadow: 0 0 0 0 var(--qp-ink) !important;
+  transform: translate(3px, 3px);
+}
+html body :is(#qhavuzBooksBackdrop,#qhavuzPackagesBackdrop,#qhavuzRunsBackdrop,#qhavuzTestCreateBackdrop) :is(.qhavuz-books-head-actions,.qhavuz-tc-head-actions) {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+/* Gizli düğmeler gizli kalsın */
+html body :is(#qhavuzPackagesBackdrop) .qhavuz-pk-icon-btn[hidden] { display: none !important; }
+
+/* ---------- Kaydırılan gövde ---------- */
+html body :is(#qhavuzAddBackdrop,#qhavuzBooksBackdrop,#qhavuzPackagesBackdrop,#qhavuzRunsBackdrop,#page11QuestionBackdrop) .qhavuz-add-body,
+html body #qhavuzTestCreateBackdrop .qhavuz-tc-body {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  height: auto !important;
+  padding: 16px 18px 8px !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  touch-action: pan-y !important;
+  overscroll-behavior: contain !important;
+  -webkit-overflow-scrolling: auto;
+  scrollbar-width: none;
+}
+html body :is(#qhavuzAddBackdrop,#qhavuzBooksBackdrop,#qhavuzPackagesBackdrop,#qhavuzRunsBackdrop,#page11QuestionBackdrop) .qhavuz-add-body::-webkit-scrollbar,
+html body #qhavuzTestCreateBackdrop .qhavuz-tc-body::-webkit-scrollbar { display: none; }
+
+/* Etiketler */
+html body :is(#qhavuzAddBackdrop,#page11QuestionBackdrop,#qhavuzFilterBackdrop) :is(.qhavuz-add-label,.qhavuz-filter-section-title) {
+  display: block;
+  margin: 16px 0 8px !important;
+  font-family: "Archivo Expanded", "Baloo 2", sans-serif !important;
+  font-weight: 800 !important;
+  font-size: .7rem !important;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--qp-ink) !important;
+}
+html body :is(#qhavuzAddBackdrop,#page11QuestionBackdrop) .qhavuz-add-step > .qhavuz-add-label:first-child { margin-top: 2px !important; }
+html body :is(#qhavuzAddBackdrop,#page11QuestionBackdrop) .qhavuz-add-label-optional {
+  font-family: "Baloo 2", sans-serif;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--qp-mute);
+}
+
+/* ---------- Adım göstergesi: üstte segmentli ilerleme çubuğu ---------- */
+html body :is(#qhavuzAddBackdrop,#page11QuestionBackdrop) .qhavuz-add-steps {
+  position: relative;
+  order: 0;
+  display: flex !important;
+  gap: 6px;
+  margin: 0 !important;
+  padding: 6px 18px 12px !important;
+  background: var(--qp-bg);
+}
+html body :is(#qhavuzAddBackdrop,#page11QuestionBackdrop) .qhavuz-add-step-dot {
+  flex: 1 1 0;
+  width: auto !important;
+  height: 8px !important;
+  border: 2px solid var(--qp-ink) !important;
+  border-radius: 99px !important;
+  background: transparent !important;
+  transform: none !important;
+  transition: background-color .3s ease, flex-grow .35s var(--qp-ease) !important;
+}
+html body :is(#qhavuzAddBackdrop,#page11QuestionBackdrop) .qhavuz-add-step-dot.is-done { background: var(--qp-ink) !important; }
+html body :is(#qhavuzAddBackdrop,#page11QuestionBackdrop) .qhavuz-add-step-dot.is-active {
+  background: var(--qp-acc) !important;
+  flex-grow: 2.2;
+}
+/* Başlık, ilerleme çubuğunun altında kalsın */
+html body :is(#qhavuzAddBackdrop,#page11QuestionBackdrop) :is(.page9-add-card) > .page9-add-header { order: 1; }
+html body :is(#qhavuzAddBackdrop,#page11QuestionBackdrop) .qhavuz-add-body { order: 2; }
+html body :is(#qhavuzAddBackdrop,#page11QuestionBackdrop) .qhavuz-add-nav { order: 3; }
+
+/* Adım geçişi */
+html body :is(#qhavuzAddBackdrop,#page11QuestionBackdrop) .qhavuz-add-step:not(.is-hidden) {
+  animation: qpStepIn .34s var(--qp-ease) both;
+}
+@keyframes qpStepIn { from { opacity: 0; transform: translate3d(18px, 0, 0); } to { opacity: 1; transform: none; } }
+
+/* ---------- Kırpma alanı ---------- */
+html body :is(#qhavuzAddBackdrop,#page11QuestionBackdrop) .qhavuz-crop-box {
+  border: 3px solid var(--qp-ink) !important;
+  border-radius: 16px !important;
+  box-shadow: var(--qp-sh) var(--qp-sh) 0 0 var(--qp-ink) !important;
+  background: var(--qp-soft) !important;
+  touch-action: none;
+}
+html body :is(#qhavuzAddBackdrop,#page11QuestionBackdrop) .qhavuz-crop-zoom-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 18px;
+  padding: 10px 14px;
+  color: var(--qp-ink);
+  background: var(--qp-soft);
+  border: 3px solid var(--qp-ink);
+  border-radius: 14px;
+}
+html body :is(#qhavuzAddBackdrop,#page11QuestionBackdrop) .qhavuz-crop-zoom-row input[type="range"] { flex: 1 1 auto; accent-color: var(--qp-acc); touch-action: pan-x; }
+
+/* ---------- Çipler / seçim düğmeleri ---------- */
+html body :is(#qhavuzAddBackdrop,#page11QuestionBackdrop,#qhavuzFilterBackdrop,#qhavuzTestSetupBackdrop,#qhavuzTestCreateBackdrop) :is(.qhavuz-add-subject-chip,.qhavuz-filter-chip,.page9-add-chip,.qhavuz-tc-preset,.qhavuz-tc-limit-chip,.qhavuz-add-answer-btn,.qhavuz-pk-chip) {
+  color: var(--qp-ink) !important;
+  background: var(--qp-bg) !important;
+  border: 2.5px solid var(--qp-ink) !important;
+  border-radius: 12px !important;
+  box-shadow: 3px 3px 0 0 var(--qp-ink) !important;
+  font-family: "Baloo 2", sans-serif !important;
+  font-weight: 700 !important;
+  touch-action: manipulation;
+  transition: transform .12s var(--qp-ease), box-shadow .12s var(--qp-ease), background-color .18s ease, color .18s ease !important;
+}
+html body :is(#qhavuzAddBackdrop,#page11QuestionBackdrop,#qhavuzFilterBackdrop,#qhavuzTestSetupBackdrop,#qhavuzTestCreateBackdrop) :is(.qhavuz-add-subject-chip,.qhavuz-filter-chip,.page9-add-chip,.qhavuz-tc-preset,.qhavuz-tc-limit-chip,.qhavuz-add-answer-btn,.qhavuz-pk-chip):active {
+  transform: translate(3px, 3px) !important;
+  box-shadow: 0 0 0 0 var(--qp-ink) !important;
+}
+html body :is(#qhavuzAddBackdrop,#page11QuestionBackdrop,#qhavuzFilterBackdrop,#qhavuzTestSetupBackdrop,#qhavuzTestCreateBackdrop) :is(.is-selected,.is-active,[aria-pressed="true"]):is(.qhavuz-add-subject-chip,.qhavuz-filter-chip,.page9-add-chip,.qhavuz-tc-preset,.qhavuz-tc-limit-chip,.qhavuz-add-answer-btn,.qhavuz-pk-chip) {
+  background: var(--qp-acc) !important;
+  color: var(--qp-on-acc) !important;
+  transform: translate(3px, 3px);
+  box-shadow: 0 0 0 0 var(--qp-ink) !important;
+}
+html body :is(#qhavuzAddBackdrop,#page11QuestionBackdrop) .qhavuz-add-subject-grid,
+html body :is(#qhavuzAddBackdrop,#page11QuestionBackdrop) .qhavuz-add-answer-grid,
+html body #qhavuzFilterBackdrop .page8-groups-chip-list {
+  display: flex !important;
+  flex-wrap: wrap;
+  gap: 10px !important;
+  padding: 2px 4px 6px 0;
+}
+html body :is(#qhavuzAddBackdrop,#page11QuestionBackdrop) .qhavuz-add-answer-btn {
+  min-width: 52px;
+  min-height: 52px;
+  font-size: 1.15rem !important;
+}
+html body :is(#qhavuzAddBackdrop,#page11QuestionBackdrop) .qhavuz-add-answer-grid.is-locked { opacity: .45; pointer-events: none; }
+
+/* Segmentli kontroller (Şıklı/Açık Uçlu, TYT/AYT) */
+html body :is(#qhavuzAddBackdrop,#page11QuestionBackdrop,#qhavuzFilterBackdrop) .settings-segmented {
+  background: var(--qp-soft) !important;
+  border: 3px solid var(--qp-ink) !important;
+  border-radius: 14px !important;
+  box-shadow: 3px 3px 0 0 var(--qp-ink) !important;
+  padding: 3px !important;
+}
+html body :is(#qhavuzAddBackdrop,#page11QuestionBackdrop,#qhavuzFilterBackdrop) .settings-segmented-slider {
+  background: var(--qp-acc) !important;
+  border: 2.5px solid var(--qp-ink) !important;
+  border-radius: 10px !important;
+  box-shadow: none !important;
+}
+html body :is(#qhavuzAddBackdrop,#page11QuestionBackdrop,#qhavuzFilterBackdrop) .settings-segmented-option {
+  color: var(--qp-ink) !important;
+  font-weight: 800 !important;
+  touch-action: manipulation;
+}
+html body :is(#qhavuzAddBackdrop,#page11QuestionBackdrop,#qhavuzFilterBackdrop) .settings-segmented-option.is-active { color: var(--qp-on-acc) !important; }
+
+/* Yazı alanları */
+html body :is(#qhavuzAddBackdrop,#page11QuestionBackdrop,#qhavuzFilterBackdrop,#qhavuzInfoBackdrop,#qhavuzPackageNameBackdrop,#qhavuzTestCreateBackdrop) :is(input[type="text"],input[type="number"],input[type="date"],textarea,.page9-add-custom-input) {
+  width: 100%;
+  color: var(--qp-ink) !important;
+  background: var(--qp-soft) !important;
+  border: 3px solid var(--qp-ink) !important;
+  border-radius: 14px !important;
+  padding: 12px 14px !important;
+  font-family: "Baloo 2", sans-serif !important;
+  font-weight: 600 !important;
+  font-size: 1rem !important;
+  box-shadow: none !important;
+  -webkit-user-select: text;
+  user-select: text;
+  transition: box-shadow .15s var(--qp-ease), transform .15s var(--qp-ease), background-color .15s ease !important;
+}
+html body :is(#qhavuzAddBackdrop,#page11QuestionBackdrop,#qhavuzFilterBackdrop,#qhavuzInfoBackdrop,#qhavuzPackageNameBackdrop,#qhavuzTestCreateBackdrop) :is(input,textarea):focus {
+  background: var(--qp-bg) !important;
+  box-shadow: 4px 4px 0 0 var(--qp-acc), 4px 4px 0 3px var(--qp-ink) !important;
+  transform: translate(-2px, -2px);
+}
+html body :is(#qhavuzAddBackdrop,#page11QuestionBackdrop) .qhavuz-add-book-row { display: flex; gap: 10px; }
+html body :is(#qhavuzAddBackdrop,#page11QuestionBackdrop) .qhavuz-add-book-row .qhavuz-add-page-input { flex: 0 0 96px; }
+html body :is(#qhavuzAddBackdrop,#page11QuestionBackdrop) .qhavuz-add-desc-input { min-height: 96px; resize: none; }
+
+/* Cevap önizleme kartı */
+html body :is(#qhavuzAddBackdrop,#page11QuestionBackdrop) .qhavuz-add-answer-preview {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px;
+  background: var(--qp-soft);
+  border: 3px solid var(--qp-ink);
+  border-radius: 16px;
+  box-shadow: 4px 4px 0 0 var(--qp-ink);
+}
+html body :is(#qhavuzAddBackdrop,#page11QuestionBackdrop) .qhavuz-add-answer-preview img {
+  width: 64px; height: 64px; object-fit: cover; flex: 0 0 auto;
+  border: 2.5px solid var(--qp-ink); border-radius: 10px; background: var(--qp-bg);
+}
+html body :is(#qhavuzAddBackdrop,#page11QuestionBackdrop) .qhavuz-add-answer-preview-track {
+  display: inline-block; align-self: flex-start; padding: 2px 8px;
+  font-weight: 800; font-size: .7rem; letter-spacing: .06em;
+  color: var(--qp-on-acc); background: var(--qp-acc);
+  border: 2px solid var(--qp-ink); border-radius: 99px;
+}
+html body :is(#qhavuzAddBackdrop,#page11QuestionBackdrop) .qhavuz-add-answer-preview-info { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+html body :is(#qhavuzAddBackdrop,#page11QuestionBackdrop) .qhavuz-add-answer-preview-subject { font-weight: 800; font-size: 1.02rem; color: var(--qp-ink); }
+
+/* ---------- Alt eylem çubuğu (Geri / İleri / Kaydet / Uygula / Başlat) ---------- */
+html body :is(#qhavuzAddBackdrop,#page11QuestionBackdrop) .qhavuz-add-nav,
+html body #qhavuzBooksBackdrop .qhavuz-books-footer.is-visible,
+html body #qhavuzTestCreateBackdrop .qhavuz-tc-footer {
+  position: relative;
+  z-index: 4;
+  display: flex !important;
+  align-items: stretch;
+  gap: 10px;
+  margin: 0 !important;
+  padding: 12px 18px 4px !important;
+  background: var(--qp-bg);
+  border-top: 3px solid var(--qp-ink);
+}
+html body :is(#qhavuzAddBackdrop,#page11QuestionBackdrop) .qhavuz-add-nav > * { flex: 1 1 0; }
+html body :is(#qhavuzAddBackdrop,#page11QuestionBackdrop) .qhavuz-add-nav > .is-hidden { display: none !important; }
+html body :is(#qhavuzAddBackdrop,#page11QuestionBackdrop,#qhavuzBooksBackdrop,#qhavuzTestCreateBackdrop,#qhavuzTestSetupBackdrop,#qhavuzFilterBackdrop,#qhavuzPackagesBackdrop) :is(.page9-add-confirm,.qhavuz-books-apply-btn,.qhavuz-tc-start,.qhavuz-edit-save,.qhavuz-add-back,.qhavuz-filter-clearall-btn,.qhavuz-books-select-btn) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 52px;
+  padding: 0 18px !important;
+  font-family: "Archivo Expanded", "Baloo 2", sans-serif !important;
+  font-weight: 800 !important;
+  font-size: .92rem !important;
+  letter-spacing: .02em;
+  text-transform: uppercase;
+  color: var(--qp-ink) !important;
+  background: var(--qp-bg) !important;
+  border: 3px solid var(--qp-ink) !important;
+  border-radius: 14px !important;
+  box-shadow: 4px 4px 0 0 var(--qp-ink) !important;
+  touch-action: manipulation;
+  transition: transform .12s var(--qp-ease), box-shadow .12s var(--qp-ease), background-color .2s ease, opacity .2s ease !important;
+}
+html body :is(#qhavuzAddBackdrop,#page11QuestionBackdrop,#qhavuzBooksBackdrop,#qhavuzTestCreateBackdrop,#qhavuzTestSetupBackdrop) :is(.page9-add-confirm,.qhavuz-books-apply-btn,.qhavuz-tc-start) {
+  background: var(--qp-acc) !important;
+  color: var(--qp-on-acc) !important;
+}
+html body :is(#qhavuzAddBackdrop,#page11QuestionBackdrop,#qhavuzBooksBackdrop,#qhavuzTestCreateBackdrop,#qhavuzTestSetupBackdrop,#qhavuzFilterBackdrop,#qhavuzPackagesBackdrop) :is(.page9-add-confirm,.qhavuz-books-apply-btn,.qhavuz-tc-start,.qhavuz-edit-save,.qhavuz-add-back,.qhavuz-filter-clearall-btn,.qhavuz-books-select-btn):active:not(:disabled) {
+  transform: translate(4px, 4px) !important;
+  box-shadow: 0 0 0 0 var(--qp-ink) !important;
+}
+html body :is(#qhavuzAddBackdrop,#page11QuestionBackdrop,#qhavuzBooksBackdrop,#qhavuzTestCreateBackdrop,#qhavuzTestSetupBackdrop) :is(.page9-add-confirm,.qhavuz-books-apply-btn,.qhavuz-tc-start):disabled {
+  opacity: .45;
+  background: var(--qp-soft2) !important;
+  color: var(--qp-mute) !important;
+  box-shadow: none !important;
+  transform: translate(4px, 4px);
+}
+html body #qhavuzTestCreateBackdrop .qhavuz-tc-footer { flex-direction: column; gap: 12px; }
+html body #qhavuzTestCreateBackdrop .qhavuz-tc-start { width: 100%; }
+html body #qhavuzTestSetupBackdrop .page9-add-confirm { margin: 14px 18px 0 !important; width: calc(100% - 36px) !important; }
+html body #qhavuzFilterBackdrop .qhavuz-filter-clearall-btn { margin: 6px 18px 0 !important; width: calc(100% - 36px); }
+html body #qhavuzBooksBackdrop .qhavuz-books-footer:not(.is-visible) { display: none !important; }
+
+/* ---------- Test Oluştur ---------- */
+html body #qhavuzTestCreateBackdrop .qhavuz-tc-tabs {
+  display: flex;
+  gap: 8px;
+  margin: 0 !important;
+  padding: 14px 18px 4px !important;
+}
+html body #qhavuzTestCreateBackdrop .qhavuz-tc-tab {
+  flex: 1 1 0;
+  min-height: 44px;
+  font-family: "Archivo Expanded", "Baloo 2", sans-serif;
+  font-weight: 800;
+  font-size: .78rem;
+  text-transform: uppercase;
+  color: var(--qp-ink);
+  background: var(--qp-bg);
+  border: 3px solid var(--qp-ink);
+  border-radius: 12px;
+  box-shadow: 3px 3px 0 0 var(--qp-ink);
+  touch-action: manipulation;
+  transition: transform .12s var(--qp-ease), box-shadow .12s var(--qp-ease), background-color .2s ease;
+}
+html body #qhavuzTestCreateBackdrop .qhavuz-tc-tab.is-active {
+  background: var(--qp-acc);
+  color: var(--qp-on-acc);
+  transform: translate(3px, 3px);
+  box-shadow: 0 0 0 0 var(--qp-ink);
+}
+html body #qhavuzTestCreateBackdrop .qhavuz-tc-opts { padding: 0 18px; }
+html body #qhavuzTestCreateBackdrop .qhavuz-tc-timer {
+  margin: 10px 18px 0 !important;
+  padding: 12px !important;
+  background: var(--qp-soft);
+  border: 3px solid var(--qp-ink);
+  border-radius: 16px;
+  box-shadow: 4px 4px 0 0 var(--qp-ink);
+  animation: qpDrop .32s var(--qp-ease) both;
+}
+html body #qhavuzTestCreateBackdrop .qhavuz-tc-timer[hidden] { display: none !important; }
+@keyframes qpDrop { from { opacity: 0; transform: translate3d(0, -10px, 0) scale(.98); } to { opacity: 1; transform: none; } }
+html body #qhavuzTestCreateBackdrop .qhavuz-tc-timer-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+html body #qhavuzTestCreateBackdrop .qhavuz-tc-timer-label { font-weight: 800; color: var(--qp-ink); }
+html body #qhavuzTestCreateBackdrop .qhavuz-tc-timer-hint { font-size: .78rem; color: var(--qp-mute); font-weight: 600; }
+html body #qhavuzTestCreateBackdrop .qhavuz-tc-stepper { display: flex; align-items: center; gap: 6px; }
+html body #qhavuzTestCreateBackdrop .qhavuz-tc-step-btn {
+  width: 38px; height: 38px; display: inline-flex; align-items: center; justify-content: center;
+  color: var(--qp-ink); background: var(--qp-bg); border: 3px solid var(--qp-ink); border-radius: 10px;
+  box-shadow: 2px 2px 0 0 var(--qp-ink); touch-action: manipulation;
+  transition: transform .1s var(--qp-ease), box-shadow .1s var(--qp-ease);
+}
+html body #qhavuzTestCreateBackdrop .qhavuz-tc-step-btn:active { transform: translate(2px, 2px); box-shadow: none; background: var(--qp-acc); color: var(--qp-on-acc); }
+html body #qhavuzTestCreateBackdrop .qhavuz-tc-time-field { display: inline-flex; align-items: center; gap: 4px; font-weight: 800; }
+html body #qhavuzTestCreateBackdrop .qhavuz-tc-time-field input { width: 64px !important; text-align: center; padding: 8px 4px !important; }
+html body #qhavuzTestCreateBackdrop .qhavuz-tc-presets { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+html body #qhavuzTestCreateBackdrop .qhavuz-tc-preset { min-height: 36px; padding: 0 12px; font-size: .82rem; }
+html body #qhavuzTestCreateBackdrop .qhavuz-tc-list { display: flex; flex-direction: column; gap: 10px; }
+html body #qhavuzTestCreateBackdrop .qhavuz-tc-limit { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+html body #qhavuzTestCreateBackdrop .qhavuz-tc-limit-label { font-weight: 800; font-size: .86rem; color: var(--qp-ink); }
+html body #qhavuzTestCreateBackdrop .qhavuz-tc-limit-chips { display: flex; gap: 8px; }
+html body #qhavuzTestCreateBackdrop .qhavuz-tc-limit-chip { min-width: 46px; min-height: 38px; padding: 0 10px; font-size: .86rem; }
+html body #qhavuzTestCreateBackdrop .qhavuz-tc-icon-badge {
+  min-width: 20px; height: 20px; padding: 0 5px; display: inline-flex; align-items: center; justify-content: center;
+  font-size: .7rem; font-weight: 800; color: var(--qp-on-acc); background: var(--qp-acc); border: 2px solid var(--qp-ink); border-radius: 99px;
+}
+
+/* ---------- Liste satırları: kaynaklar, test öğeleri, koşular, paketler ---------- */
+html body :is(#qhavuzBooksBackdrop,#qhavuzTestCreateBackdrop,#qhavuzRunsBackdrop,#qhavuzPackagesBackdrop) :is(.qhavuz-books-item,.qhavuz-tc-item,.qhavuz-run,.qhavuz-pk-card) {
+  color: var(--qp-ink) !important;
+  background: var(--qp-bg) !important;
+  border: 3px solid var(--qp-ink) !important;
+  border-radius: 16px !important;
+  box-shadow: 4px 4px 0 0 var(--qp-ink) !important;
+  touch-action: manipulation;
+  transition: transform .12s var(--qp-ease), box-shadow .12s var(--qp-ease), background-color .2s ease !important;
+}
+html body :is(#qhavuzBooksBackdrop,#qhavuzTestCreateBackdrop,#qhavuzRunsBackdrop,#qhavuzPackagesBackdrop) :is(.qhavuz-books-item,.qhavuz-tc-item,.qhavuz-run,.qhavuz-pk-card):active {
+  transform: translate(4px, 4px) !important;
+  box-shadow: 0 0 0 0 var(--qp-ink) !important;
+}
+html body :is(#qhavuzBooksBackdrop,#qhavuzTestCreateBackdrop) :is(.is-selected,.is-active,.is-checked,[aria-pressed="true"],[aria-checked="true"]):is(.qhavuz-books-item,.qhavuz-tc-item) {
+  background: var(--qp-acc) !important;
+  color: var(--qp-on-acc) !important;
+}
+html body :is(#qhavuzBooksBackdrop,#qhavuzRunsBackdrop) .qhavuz-books-list,
+html body #qhavuzRunsBackdrop .qhavuz-runs-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 2px 4px 8px 0;
+}
+html body :is(#qhavuzBooksBackdrop,#qhavuzTestCreateBackdrop,#qhavuzRunsBackdrop,#qhavuzPackagesBackdrop) :is(.qhavuz-books-empty,.qhavuz-tc-empty,.qhavuz-runs-empty) {
+  padding: 28px 16px;
+  text-align: center;
+  font-weight: 700;
+  color: var(--qp-mute);
+  border: 3px dashed var(--qp-ink);
+  border-radius: 16px;
+}
+html body :is(#qhavuzBooksBackdrop,#qhavuzTestCreateBackdrop,#qhavuzRunsBackdrop,#qhavuzPackagesBackdrop) :is(.qhavuz-books-item-name,.qhavuz-tc-name,.qhavuz-run-title,.qhavuz-pk-name) { font-weight: 800; color: inherit; }
+html body :is(#qhavuzBooksBackdrop,#qhavuzTestCreateBackdrop,#qhavuzRunsBackdrop,#qhavuzPackagesBackdrop) :is(.qhavuz-books-item-count,.qhavuz-tc-count,.qhavuz-run-sub,.qhavuz-pk-meta) { font-weight: 700; opacity: .75; }
+html body :is(#qhavuzPackagesBackdrop) .qhavuz-pk-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 14px; }
+html body :is(#qhavuzPackagesBackdrop) .qhavuz-pk-qgrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+html body :is(#qhavuzPackagesBackdrop) .qhavuz-pk-qgrid img { border: 2.5px solid var(--qp-ink); border-radius: 12px; }
+
+/* Liste girişinde kademeli animasyon */
+html body :is(#qhavuzBooksBackdrop,#qhavuzRunsBackdrop,#qhavuzTestCreateBackdrop,#qhavuzPackagesBackdrop).is-open :is(.qhavuz-books-list,.qhavuz-runs-list,.qhavuz-tc-list,.qhavuz-pk-grid) > * {
+  animation: qpRise .4s var(--qp-ease) both;
+}
+html body .is-open :is(.qhavuz-books-list,.qhavuz-runs-list,.qhavuz-tc-list,.qhavuz-pk-grid) > *:nth-child(1) { animation-delay: .04s; }
+html body .is-open :is(.qhavuz-books-list,.qhavuz-runs-list,.qhavuz-tc-list,.qhavuz-pk-grid) > *:nth-child(2) { animation-delay: .08s; }
+html body .is-open :is(.qhavuz-books-list,.qhavuz-runs-list,.qhavuz-tc-list,.qhavuz-pk-grid) > *:nth-child(3) { animation-delay: .12s; }
+html body .is-open :is(.qhavuz-books-list,.qhavuz-runs-list,.qhavuz-tc-list,.qhavuz-pk-grid) > *:nth-child(4) { animation-delay: .16s; }
+html body .is-open :is(.qhavuz-books-list,.qhavuz-runs-list,.qhavuz-tc-list,.qhavuz-pk-grid) > *:nth-child(5) { animation-delay: .2s; }
+html body .is-open :is(.qhavuz-books-list,.qhavuz-runs-list,.qhavuz-tc-list,.qhavuz-pk-grid) > *:nth-child(n+6) { animation-delay: .24s; }
+@keyframes qpRise { from { opacity: 0; transform: translate3d(0, 14px, 0); } to { opacity: 1; transform: none; } }
+
+/* ---------- Filtrele ---------- */
+html body #qhavuzFilterBackdrop .page11-modal-card { overflow-y: auto !important; }
+html body #qhavuzFilterBackdrop .qhavuz-filter-section { padding: 4px 18px 8px !important; margin: 0 !important; }
+html body #qhavuzFilterBackdrop .qhavuz-filter-divider { height: 3px; margin: 8px 18px; background: var(--qp-ink); border: 0; opacity: 1; }
+html body #qhavuzFilterBackdrop .qhavuz-source-search-input { margin-bottom: 12px; }
+
+/* ---------- Soru Bilgisi ---------- */
+html body #qhavuzInfoBackdrop .qhavuz-info-card { padding-bottom: calc(18px + env(safe-area-inset-bottom)) !important; }
+html body #qhavuzInfoBackdrop .settings-confirm-title { padding: 6px 18px 12px; margin: 0; border-bottom: 3px solid var(--qp-ink); }
+html body #qhavuzInfoBackdrop .qhavuz-info-badge {
+  align-self: flex-start; margin: 14px 18px 0; padding: 4px 12px;
+  font-weight: 800; font-size: .8rem; letter-spacing: .05em; text-transform: uppercase;
+  color: var(--qp-on-acc); background: var(--qp-acc);
+  border: 3px solid var(--qp-ink); border-radius: 99px; box-shadow: 3px 3px 0 0 var(--qp-ink);
+}
+html body #qhavuzInfoBackdrop .qhavuz-info-badge:empty { display: none; }
+html body #qhavuzInfoBackdrop .qhavuz-info-rows { display: flex; flex-direction: column; gap: 10px; padding: 14px 18px 4px; }
+html body #qhavuzInfoBackdrop .qhavuz-info-row {
+  display: flex; flex-direction: column; gap: 4px; padding: 10px 12px;
+  background: var(--qp-soft); border: 3px solid var(--qp-ink); border-radius: 14px;
+}
+html body #qhavuzInfoBackdrop .qhavuz-info-label { font-family: "Archivo Expanded", "Baloo 2", sans-serif; font-weight: 800; font-size: .64rem; letter-spacing: .08em; text-transform: uppercase; color: var(--qp-mute); }
+html body #qhavuzInfoBackdrop .qhavuz-info-value { font-weight: 700; color: var(--qp-ink); word-break: break-word; }
+
+/* ---------- Onay pop-up'ları (silme, paket adı) ---------- */
+html body :is(#qhavuzDeleteConfirmBackdrop,#qhavuzPackageDeleteConfirmBackdrop,#qhavuzPackageNameBackdrop,#qhavuzInfoBackdrop) :is(.settings-confirm-desc) {
+  padding: 12px 18px 0; font-weight: 600; font-size: .96rem; line-height: 1.35; color: var(--qp-mute); text-align: left;
+}
+html body :is(#qhavuzDeleteConfirmBackdrop,#qhavuzPackageDeleteConfirmBackdrop,#qhavuzPackageNameBackdrop,#qhavuzInfoBackdrop) .settings-confirm-title { padding: 6px 18px 0; text-align: left; }
+html body :is(#qhavuzDeleteConfirmBackdrop,#qhavuzPackageDeleteConfirmBackdrop,#qhavuzPackageNameBackdrop,#qhavuzInfoBackdrop) .settings-confirm-actions {
+  display: flex; gap: 10px; padding: 16px 18px 0;
+}
+html body :is(#qhavuzDeleteConfirmBackdrop,#qhavuzPackageDeleteConfirmBackdrop,#qhavuzPackageNameBackdrop,#qhavuzInfoBackdrop) :is(.settings-confirm-cancel,.settings-confirm-confirm,.page11-modal-confirm) {
+  flex: 1 1 0; min-height: 52px; padding: 0 14px;
+  font-family: "Archivo Expanded", "Baloo 2", sans-serif; font-weight: 800; font-size: .86rem; text-transform: uppercase;
+  color: var(--qp-ink); background: var(--qp-bg); border: 3px solid var(--qp-ink); border-radius: 14px; box-shadow: 4px 4px 0 0 var(--qp-ink);
+  touch-action: manipulation;
+  transition: transform .12s var(--qp-ease), box-shadow .12s var(--qp-ease);
+}
+html body :is(#qhavuzDeleteConfirmBackdrop,#qhavuzPackageDeleteConfirmBackdrop) .settings-confirm-confirm { background: #ff5a5f; color: #16171b; }
+html body #qhavuzPackageNameBackdrop :is(.settings-confirm-confirm,.page11-modal-confirm) { background: var(--qp-acc); color: var(--qp-on-acc); }
+html body :is(#qhavuzDeleteConfirmBackdrop,#qhavuzPackageDeleteConfirmBackdrop,#qhavuzPackageNameBackdrop,#qhavuzInfoBackdrop) :is(.settings-confirm-cancel,.settings-confirm-confirm,.page11-modal-confirm):active { transform: translate(4px, 4px); box-shadow: none; }
+
+/* ---------- Geniş ekran: ortada kart ---------- */
+@media (min-width: 768px) and (min-height: 600px) {
+  html body :is(#qhavuzAddBackdrop,#qhavuzBooksBackdrop,#qhavuzTestCreateBackdrop,#qhavuzPackagesBackdrop,#qhavuzRunsBackdrop,#qhavuzTestSetupBackdrop,#page11QuestionBackdrop,#qhavuzFilterBackdrop,#qhavuzInfoBackdrop,#qhavuzDeleteConfirmBackdrop,#qhavuzPackageNameBackdrop,#qhavuzPackageDeleteConfirmBackdrop) {
+    align-items: center !important;
+    padding: 24px !important;
+  }
+  html body :is(#qhavuzAddBackdrop,#qhavuzBooksBackdrop,#qhavuzTestCreateBackdrop,#qhavuzPackagesBackdrop,#qhavuzRunsBackdrop,#qhavuzTestSetupBackdrop,#page11QuestionBackdrop,#qhavuzFilterBackdrop,#qhavuzInfoBackdrop,#qhavuzDeleteConfirmBackdrop,#qhavuzPackageNameBackdrop,#qhavuzPackageDeleteConfirmBackdrop) :is(.page9-add-card,.page11-modal-card,.settings-confirm-card) {
+    max-width: 600px !important;
+    max-height: min(88vh, 52rem) !important;
+    padding-bottom: 14px !important;
+    border: 3px solid var(--qp-ink) !important;
+    border-radius: 22px !important;
+    box-shadow: 8px 8px 0 0 var(--qp-ink) !important;
+    transform: translate3d(0, 24px, 0) scale(.96) !important;
+    opacity: 0 !important;
+    transition: transform .3s var(--qp-ease), opacity .2s ease !important;
+  }
+  html body :is(#qhavuzAddBackdrop,#qhavuzBooksBackdrop,#qhavuzTestCreateBackdrop,#qhavuzPackagesBackdrop,#qhavuzRunsBackdrop,#qhavuzTestSetupBackdrop,#page11QuestionBackdrop,#qhavuzFilterBackdrop,#qhavuzInfoBackdrop,#qhavuzDeleteConfirmBackdrop,#qhavuzPackageNameBackdrop,#qhavuzPackageDeleteConfirmBackdrop).is-open :is(.page9-add-card,.page11-modal-card,.settings-confirm-card) {
+    transform: none !important;
+    opacity: 1 !important;
+    transition: transform .4s var(--qp-spring), opacity .2s ease !important;
+  }
+  html body :is(#qhavuzAddBackdrop,#qhavuzBooksBackdrop,#qhavuzTestCreateBackdrop,#qhavuzPackagesBackdrop,#qhavuzRunsBackdrop,#qhavuzTestSetupBackdrop,#page11QuestionBackdrop,#qhavuzFilterBackdrop,#qhavuzInfoBackdrop,#qhavuzDeleteConfirmBackdrop,#qhavuzPackageNameBackdrop,#qhavuzPackageDeleteConfirmBackdrop) :is(.page9-add-card,.page11-modal-card,.settings-confirm-card)::before { display: none; }
+  html body :is(#qhavuzAddBackdrop,#qhavuzBooksBackdrop,#qhavuzTestCreateBackdrop,#qhavuzPackagesBackdrop,#qhavuzRunsBackdrop,#qhavuzTestSetupBackdrop,#page11QuestionBackdrop,#qhavuzFilterBackdrop) :is(.page9-add-header,.exam-resources-header) { padding-top: 18px !important; cursor: default; }
+}
+
+/* Kısa ekran (yatay telefon): kart daha kısa, başlık sıkı */
+@media (max-height: 520px) {
+  html body :is(#qhavuzAddBackdrop,#qhavuzBooksBackdrop,#qhavuzTestCreateBackdrop,#qhavuzPackagesBackdrop,#qhavuzRunsBackdrop,#qhavuzTestSetupBackdrop,#page11QuestionBackdrop,#qhavuzFilterBackdrop,#qhavuzInfoBackdrop) :is(.page9-add-card,.page11-modal-card,.settings-confirm-card) { max-height: 98dvh !important; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html body :is(#qhavuzAddBackdrop,#qhavuzBooksBackdrop,#qhavuzTestCreateBackdrop,#qhavuzPackagesBackdrop,#qhavuzRunsBackdrop,#qhavuzTestSetupBackdrop,#page11QuestionBackdrop,#qhavuzFilterBackdrop,#qhavuzInfoBackdrop,#qhavuzDeleteConfirmBackdrop,#qhavuzPackageNameBackdrop,#qhavuzPackageDeleteConfirmBackdrop) *,
+  html body :is(#qhavuzAddBackdrop,#qhavuzBooksBackdrop,#qhavuzTestCreateBackdrop,#qhavuzPackagesBackdrop,#qhavuzRunsBackdrop,#qhavuzTestSetupBackdrop,#page11QuestionBackdrop,#qhavuzFilterBackdrop,#qhavuzInfoBackdrop,#qhavuzDeleteConfirmBackdrop,#qhavuzPackageNameBackdrop,#qhavuzPackageDeleteConfirmBackdrop) :is(.page9-add-card,.page11-modal-card,.settings-confirm-card) {
+    animation-duration: .01ms !important;
+    transition-duration: .01ms !important;
+  }
+}
+
+/* ==========================================================================
+   GENEL KAYDIRMA DÜZELTMESİ
+   - Tüm elemanlara uygulanan -webkit-overflow-scrolling:touch kaldırıldı.
+   - Modal kilidi artık touch-action:none uygulamıyor (body zaten sabit);
+     takılı kalırsa tüm sayfalardaki dokunuşu kesiyordu.
+   - Tüm tıklanabilir öğelerde 300ms/çift-dokunma gecikmesi kapalı.
+   - Kaydırma sürerken ağır görsel efektler (blur) devre dışı.
+   ========================================================================== */
+* { -webkit-overflow-scrolling: auto !important; }
+body.has-modal-open { touch-action: auto !important; }
+button, [role="button"], a, label, summary, select { touch-action: manipulation; }
+
+</style>
+<script id="qpSheetJs">
+(function () {
+  'use strict';
+  // ---- Soru Havuzu pop-up'ları: aşağı çekerek kapatma (yalnızca telefon düzeni) ----
+  var IDS = ['qhavuzAddBackdrop','qhavuzBooksBackdrop','qhavuzTestCreateBackdrop','qhavuzPackagesBackdrop','qhavuzRunsBackdrop','qhavuzTestSetupBackdrop','page11QuestionBackdrop','qhavuzFilterBackdrop','qhavuzInfoBackdrop','qhavuzDeleteConfirmBackdrop','qhavuzPackageNameBackdrop','qhavuzPackageDeleteConfirmBackdrop'];
+  var SEL = IDS.map(function (i) { return '#' + i; }).join(',');
+  var CARD = '.page9-add-card,.page11-modal-card,.settings-confirm-card';
+  var CLOSE = '.page9-add-close,.exam-resources-close,#qhavuzInfoCloseBtn,.settings-confirm-cancel';
+  var WIDE = window.matchMedia('(min-width:768px) and (min-height:600px)');
+  var drag = null;
+
+  function setImp(el, p, v) { el.style.setProperty(p, v, 'important'); }
+  function clearDrag(d) {
+    d.card.classList.remove('is-dragging');
+    d.card.style.removeProperty('transform');
+    d.back.style.removeProperty('opacity');
+  }
+
+  document.addEventListener('pointerdown', function (e) {
+    if (WIDE.matches || (e.pointerType === 'mouse' && e.button !== 0)) return;
+    var back = e.target.closest && e.target.closest(SEL);
+    if (!back || !back.classList.contains('is-open')) return;
+    var card = back.querySelector(CARD);
+    if (!card || !card.contains(e.target)) return;
+    if (e.target.closest('button, input, textarea, select, a')) return;
+    var r = card.getBoundingClientRect();
+    var inHead = !!e.target.closest('.page9-add-header, .exam-resources-header, .settings-confirm-title');
+    if (!inHead && e.clientY - r.top > 30) return;
+    drag = { back: back, card: card, y0: e.clientY, t0: performance.now(), dy: 0, id: e.pointerId, moved: false, h: r.height };
+  }, { passive: true });
+
+  document.addEventListener('pointermove', function (e) {
+    if (!drag || e.pointerId !== drag.id) return;
+    var dy = Math.max(0, e.clientY - drag.y0);
+    if (!drag.moved && dy < 6) return;
+    drag.moved = true; drag.dy = dy;
+    drag.card.classList.add('is-dragging');
+    setImp(drag.card, 'transform', 'translate3d(0,' + dy + 'px,0)');
+    setImp(drag.back, 'opacity', String(Math.max(0.15, 1 - dy / (drag.h * 1.1))));
+  }, { passive: true });
+
+  function end(e, cancel) {
+    if (!drag || (e && e.pointerId !== drag.id)) return;
+    var d = drag; drag = null;
+    if (!d.moved) return;
+    var v = d.dy / Math.max(1, performance.now() - d.t0);
+    clearDrag(d);
+    if (!cancel && (d.dy > 110 || (v > 0.55 && d.dy > 40))) {
+      var btn = d.back.querySelector(CLOSE);
+      if (btn) btn.click(); else d.back.classList.remove('is-open');
+    }
+  }
+  document.addEventListener('pointerup', function (e) { end(e, false); }, { passive: true });
+  document.addEventListener('pointercancel', function (e) { end(e, true); }, { passive: true });
+
+  // ---- Sekmeler arasında geçerken kaydırma konumunu başa al (Test Oluştur) ----
+  document.addEventListener('click', function (e) {
+    var tab = e.target.closest && e.target.closest('.qhavuz-tc-tab');
+    if (!tab) return;
+    var body = document.querySelector('#qhavuzTestCreateBackdrop .qhavuz-tc-body');
+    if (body) body.scrollTop = 0;
+  }, true);
+
+  // ---- Kaydırma güvenlik ağı: takılı kalmış inline kilitleri temizle ----
+  function unstick() {
+    var open = document.querySelector('.is-open[id$="Backdrop"], .is-open.page9-add-backdrop, .is-open.settings-confirm-backdrop');
+    if (!open && document.body.classList.contains('has-modal-open')) document.body.classList.remove('has-modal-open');
+    var pg = document.querySelector('.page.is-active');
+    if (pg && pg.style.overflowY === 'hidden') pg.style.overflowY = '';
+  }
+  document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'visible') unstick(); });
+  window.addEventListener('pageshow', unstick);
+  window.addEventListener('focus', unstick);
+})();
+</script>
 </body>
 </html>
