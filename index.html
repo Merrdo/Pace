@@ -41,7 +41,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css2?family=Archivo+Expanded:wght@700;800&family=Playfair+Display:ital,wght@0,400;0,700;0,800;1,400;1,700&family=Baloo+2:wght@600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Expanded:wght@700;800&family=Playfair+Display:ital,wght@0,400;0,700;0,800;1,400;1,700&family=Baloo+2:wght@600;700;800&family=Coiny&display=swap" rel="stylesheet">
 <style>
   * {
     margin: 0;
@@ -37458,7 +37458,7 @@ html[data-pg="on"] #page-1 .home-relax-widget.is-empty .home-relax-widget-title{
   html[data-pg="on"] #page-1 .home-relax-widget{height:5.6rem;min-height:0;justify-content:center}
   html[data-pg="on"] #page-1 .home-relax-task-row{gap:.8rem;padding:.2rem .2rem;flex:1 1 auto;min-height:0}
   /* Boş durumda alan büyük tipografiyle kullanılır */
-  html[data-pg="on"] #page-1 .home-relax-widget.is-empty .home-relax-widget-title{font-size:3.4rem;line-height:1;position:relative;top:-.75rem}
+  html[data-pg="on"] #page-1 .home-relax-widget.is-empty .home-relax-widget-title{font-size:3.4rem;line-height:1}
   html[data-pg="on"] #page-1 .home-relax-widget-lead{zoom:.86}
   /* Soluk saat/durum yazısı: en sağa yaslı (yazı bloğu satırın sağ kenarına kadar uzar) */
   html[data-pg="on"] #page-1 .home-relax-widget-time{align-self:flex-end;text-align:right;max-width:100%}
@@ -37468,9 +37468,13 @@ html[data-pg="on"] #page-1 .home-relax-widget.is-empty .home-relax-widget-title{
   html[data-pg="on"] #page-1 .home-relax-widget-bottom{
     flex:1 1 auto;align-self:center;justify-content:center;min-height:0;padding-left:0 !important;
     border-left:0 !important;position:relative;align-self:stretch}
-  /* Görev adı işaretçinin tam ortasına hizalanır; saat/durum yazısı akıştan çıkıp sağ üstte durur. */
+  /* Görev adı + altında saat tek blok olarak işaretçinin tam ortasına hizalanır; saat siyah (tema yazı rengi), soluk değil. */
+  html[data-pg="on"] #page-1 .home-relax-widget:not(.is-empty) .home-relax-widget-bottom{
+    flex-direction:column-reverse !important;gap:.28rem}
   html[data-pg="on"] #page-1 .home-relax-widget:not(.is-empty) .home-relax-widget-time{
-    position:absolute;top:.15rem;right:0;align-self:auto;margin:0}
+    position:static;align-self:flex-start;text-align:left;margin:0;
+    font-size:1.02rem;font-weight:600;line-height:1.2;letter-spacing:0;
+    font-variant-numeric:tabular-nums;color:var(--pg-ink)}
   html[data-pg="on"] #page-1 .home-relax-widget:not(.is-empty) .home-relax-widget-title{margin:0}
   html[data-pg="on"] #page-1 .home-relax-widget:not(.is-empty) .home-relax-widget-title{font-size:1.65rem;line-height:1.1;font-weight:600}
 }
@@ -38540,6 +38544,8 @@ html[data-pg="on"] #page-1 .home-relax-widget.is-empty .home-relax-widget-title{
           <span class="home-relax-widget-bottom">
             <span class="home-relax-widget-time" id="homeRelaxWidgetTime">Yaklaşan görev yok</span>
             <span class="home-relax-widget-title" id="homeRelaxWidgetTitle">Rahatla</span>
+            <!-- Boş durumda görünen, "el yazısıyla yazılıp silinen" Coiny yazısı (JS: "Ana sayfa: boş durum yazısı"). -->
+            <span class="home-relax-write" id="homeRelaxWrite" aria-hidden="true"></span>
           </span>
         </button>
       </div>
@@ -51470,6 +51476,91 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
   })();
 </script>
 
+<style id="relaxWriteCss">
+/* Boş durum: "Mevcut göreviniz yok" yazısı Coiny ile, harf harf yazılıp kaybolur ve döngüyle tekrarlanır.
+   Orijinal başlık/saat metinleri ekran okuyucu için DOM'da kalır, yalnızca görsel olarak gizlenir. */
+html[data-pg="on"] #page-1 .home-relax-write{display:none}
+html[data-pg="on"] #page-1 .home-relax-widget.is-empty .home-relax-task-row[data-row-index="0"] .home-relax-write{
+  display:block;margin:0;padding:.1em 0;text-align:left;white-space:nowrap;pointer-events:none;
+  font-family:"Coiny","Baloo 2",system-ui,sans-serif;font-weight:400;
+  font-size:min(2rem,7vw);line-height:1.2;letter-spacing:.01em}
+html[data-pg="on"] #page-1 .home-relax-write .hw-ch{display:inline-block;will-change:clip-path,transform,opacity}
+html[data-pg="on"] #page-1 .home-relax-widget.is-empty .home-relax-widget-time,
+html[data-pg="on"] #page-1 .home-relax-widget.is-empty .home-relax-widget-title{
+  position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;
+  clip:rect(0 0 0 0);white-space:nowrap;border:0;animation:none}
+</style>
+<script id="relaxWriteJs">
+  // ---------- Ana sayfa: boş durum yazısı (el yazısı efekti, sonsuz döngü) ----------
+  // Her harf, sırayla soldan sağa açılan bir kırpma (clip-path) ile "yazılır"; yazı bitince bir süre
+  // okunur, sonra birlikte kaybolur; 2 sn boş kaldıktan sonra baştan yazılmaya başlar.
+  // Tek bir sonsuz Web Animations döngüsüdür (harfler arasında kayma olmaz); ana sayfa görünmüyorsa durur,
+  // boş duruma/ana sayfaya her dönüşte baştan yazar. "Hareketi azalt" açıksa sabit gösterilir.
+  (function () {
+    const host = document.getElementById('homeRelaxWrite');
+    const widget = document.getElementById('homeRelaxWidget');
+    const page = document.getElementById('page-1');
+    if (!host || !widget || !page) return;
+
+    const TEXT = 'Mevcut göreviniz yok';
+    const WRITE_MS = 2000;   // yazma süresi (ilk harften son harfin başlangıcına)
+    const LETTER_MS = 460;   // tek harfin açılma süresi
+    const HOLD_END = 5000;   // yazı bu ana kadar ekranda kalır
+    const FADE_END = 5600;   // kaybolma biter
+    const CYCLE = 7600;      // toplam döngü: 5,6 sn + 2 sn boşluk
+    const PALETTE = [[139, 92, 246], [236, 72, 153], [245, 158, 11]]; // mor → pembe → amber
+    const HIDDEN = 'inset(-20% 102% -20% -6%)';
+    const SHOWN = 'inset(-20% -6% -20% -6%)';
+    const REST = 'translateY(.1em) rotate(-4deg)';
+
+    const colorAt = (t) => {
+      const seg = t * (PALETTE.length - 1);
+      const i = Math.min(PALETTE.length - 2, Math.floor(seg));
+      const f = seg - i, a = PALETTE[i], b = PALETTE[i + 1];
+      return 'rgb(' + a.map((v, k) => Math.round(v + (b[k] - v) * f)).join(',') + ')';
+    };
+
+    const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const chars = Array.from(TEXT);
+    const anims = [];
+    chars.forEach((ch, i) => {
+      if (ch === ' ') { host.appendChild(document.createTextNode('\u00a0')); return; }
+      const span = document.createElement('span');
+      span.className = 'hw-ch';
+      span.textContent = ch;
+      span.style.color = colorAt(i / (chars.length - 1));
+      host.appendChild(span);
+      if (reduce || !span.animate) return;
+      const s = (i / chars.length) * WRITE_MS, e = s + LETTER_MS;
+      anims.push(span.animate([
+        { offset: 0, clipPath: HIDDEN, opacity: 1, transform: REST },
+        { offset: s / CYCLE, clipPath: HIDDEN, opacity: 1, transform: REST, easing: 'cubic-bezier(.3,.6,.3,1)' },
+        { offset: e / CYCLE, clipPath: SHOWN, opacity: 1, transform: 'none' },
+        { offset: HOLD_END / CYCLE, clipPath: SHOWN, opacity: 1, transform: 'none', easing: 'ease-in' },
+        { offset: FADE_END / CYCLE, clipPath: SHOWN, opacity: 0, transform: 'translateY(-.08em)' },
+        { offset: 1, clipPath: SHOWN, opacity: 0, transform: 'translateY(-.08em)' },
+      ], { duration: CYCLE, iterations: Infinity, fill: 'both' }));
+    });
+    if (!anims.length) return;
+
+    let running = false;
+    anims.forEach((a) => a.pause());
+    const sync = () => {
+      const want = widget.classList.contains('is-empty') && page.classList.contains('is-active') && !document.hidden;
+      if (want && !running) { running = true; anims.forEach((a) => { a.currentTime = 0; a.play(); }); }
+      else if (!want && running) { running = false; anims.forEach((a) => a.pause()); }
+    };
+    if ('MutationObserver' in window) {
+      const mo = new MutationObserver(sync);
+      mo.observe(widget, { attributes: true, attributeFilter: ['class'] });
+      mo.observe(page, { attributes: true, attributeFilter: ['class'] });
+    }
+    document.addEventListener('visibilitychange', sync);
+    window.addEventListener('load', sync);
+    sync();
+  })();
+</script>
+
 <!-- ---------- Planyacı: "Yeni Aktivite" tam ekran sayfası ----------
      Bağımsız bir script bloğu: WHEEL_PALETTE (Karar Çarkı script'inde
      tanımlı) ve relaxAddBtn (Planyacı script'inde tanımlı) bu noktada
@@ -54750,12 +54841,12 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
 
     const homeTimeLabel = (pick) => {
       const { task, mode } = pick;
-      if (mode === 'now') return `Şimdi · ${task.start} – ${task.end}`;
+      if (mode === 'now') return `${task.start} – ${task.end}`;
       const d = new Date(pick.startMs);
       const diff = Math.round((startOfDay(d) - startOfDay(new Date())) / 86400000);
       // Gece yarısından sonraki Yatış (ertesi günün 00:00'ı) "Yarın" diye etiketlenmez.
       const day = (task.sleepKind || diff <= 0) ? '' : (diff === 1 ? 'Yarın ' : `${d.getDate()} ${MONTHS_SHORT_TR[d.getMonth()]} `);
-      return `Sıradaki · ${day}${task.start}`;
+      return `${day}${task.start} – ${task.end}`;
     };
 
     // Widget'taki bir satırdaki görev "Yapıldı" işaretlendiyse (ya da
