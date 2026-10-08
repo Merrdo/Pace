@@ -44993,7 +44993,7 @@ html[data-pg="on"] #page-1 .home-relax-widget.is-empty .home-relax-widget-time{d
   // Geçici: yalnızca Saf Siyah ve Fildişi seçilebilir; diğer temalar kilitli
   // ("Yakında"). Kilidi kaldırmak için ilgili temanın adını bu listeye ekle.
   const UNLOCKED_THEME_NAMES = ['Saf Siyah', 'Fildişi'];
-  const isThemeLocked = (index) => !!themes[index] && !UNLOCKED_THEME_NAMES.includes(themes[index].name);
+  const isThemeLocked = (index) => false; // Tüm temalar açık
 
   // ---------- Otomatik kontrast yardımcıları (vurgu rengi okunabilirliği) ----------
   const LEGACY_BLUE_ACCENT = '#6ec6ff';
@@ -73664,7 +73664,7 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
       if (!opened) return; opened = false;
       if (curId != null && !noDraft) { if (keepDraft && ta.value.trim()) drafts.set(curId, ta.value); else drafts.delete(curId); }
       { const d = onDismiss; onDismiss = null; if (d) d(); }
-      clearTimeout(focusT);
+      clearTimeout(focusT); ta.style.caretColor = '';
       try { ta.blur(); proxy.blur(); } catch (e) { /* yok say */ }
       bd.classList.remove('is-open'); card.style.transform = '';
     };
@@ -73817,11 +73817,17 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
         }
         ta.value = opts.text != null ? opts.text : (noDraft ? '' : (drafts.get(g.id) || '')); vv(); grow();
         bd.classList.add('is-open');
-        if (!confirmMode) { try { proxy.focus({ preventScroll: true }); } catch (e) { /* yok say */ } }   // onay penceresinde klavye açılmasın
+        if (!confirmMode) {   // onay penceresinde klavye açılmasın
+          // Klavyenin açılması için odak, dokunuş anında doğrudan asıl yazı alanına verilir (proxy'ye geçiş bazı cihazlarda klavyeyi açmıyordu).
+          ta.style.caretColor = 'transparent';
+          try { ta.focus({ preventScroll: true }); } catch (e) { /* yok say */ }
+          if (document.activeElement !== ta) { try { proxy.focus({ preventScroll: true }); } catch (e) { /* yok say */ } }
+        }
         let moved = false;
         const toTa = () => {
           if (moved || !opened || confirmMode) return; moved = true; clearTimeout(focusT);
           try { ta.focus({ preventScroll: true }); ta.setSelectionRange(ta.value.length, ta.value.length); } catch (e) { /* yok say */ }
+          ta.style.caretColor = '';
         };
         card.addEventListener('transitionend', function te(ev) { if (ev.target !== card || ev.propertyName !== 'transform') return; card.removeEventListener('transitionend', te); toTa(); });
         focusT = setTimeout(toTa, 560);
