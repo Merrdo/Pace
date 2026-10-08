@@ -37628,6 +37628,37 @@ html[data-pg="on"] #page-1 .home-relax-widget.is-empty .home-relax-widget-time{d
 }
 #page-5 .stopwatch-flip-inner { backface-visibility: hidden; }
 </style>
+<style id="blackSheetCss">
+  /* SAF SİYAH teması: Planlayıcı alt panelleri (görev eylem sayfası, Uyku ayarı, Yeniden Planla,
+     Yeniden Planla nasıl çalışır?, Ay takvimi) beyaz yerine saf siyah açılır; renkler "Sayaçlarım"
+     paneliyle aynı dilde, tamamen --ts-* değişkenlerinden akar (iç bileşenler zaten bunları kullanır).
+     Yalnızca html[data-pace-theme="black"] iken geçerlidir: Fildişi ve diğer temalar etkilenmez. */
+  html[data-pace-theme="black"] .task-sheet {
+    --ts-bg: #000000;
+    --ts-text: #f5f5f7;
+    --ts-muted: rgba(245, 245, 247, 0.58);
+    --ts-tile: rgba(255, 255, 255, 0.075);
+    --ts-tile-strong: rgba(255, 255, 255, 0.15);
+    --ts-danger: #ff6b6b;
+    box-shadow: 0 -22px 56px -22px rgba(0, 0, 0, 0.85), 0 -1px 0 rgba(255, 255, 255, 0.09);
+  }
+  /* Üstteki renkli ışıma siyahta daha ince: başlık okunurluğu bozulmasın. */
+  html[data-pace-theme="black"] .task-sheet::before { opacity: 0.38; }
+  /* Silme satırı: koyu zeminde okunur kırmızı ikon dairesi. */
+  html[data-pace-theme="black"] .task-sheet-action[data-action="delete"] {
+    --ic-bg: color-mix(in srgb, var(--ts-danger) 22%, transparent);
+    --ic-fg: var(--ts-danger);
+  }
+  /* Uyku ayarı: saat alanları ve sistem saat seçici koyu şemada; anahtar topu belirgin. */
+  html[data-pace-theme="black"] .sleep-time-input { color-scheme: dark; }
+  html[data-pace-theme="black"] .sleep-switch-track::after { box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5); }
+  /* Kaydet / Anladım / Kapat düğmeleri siyah zeminde kaybolmasın: açık düğme, koyu yazı. */
+  html[data-pace-theme="black"] .sleep-save-btn { background: var(--ts-text); color: #000000; }
+  html[data-pace-theme="black"] .task-sheet-btn:not(.is-danger):not(.replan-intro-cta) { color: var(--ts-text); }
+  /* Yeniden Planla kartı: siyah zeminde hafif yükselen yüzey. */
+  html[data-pace-theme="black"] .replan-card { background: linear-gradient(var(--ts-tile), var(--ts-tile)), #000000; }
+  html[data-pace-theme="black"] .replan-card.is-empty { background: transparent; }
+</style>
 </head>
 <body oncopy="return false" oncut="return false" onselectstart="return false" ondragstart="return false">
 
@@ -44853,6 +44884,7 @@ html[data-pg="on"] #page-1 .home-relax-widget.is-empty .home-relax-widget-time{d
     document.documentElement.style.setProperty('--accent-on-readable', relLuminance(accent) < 0.4 ? '#ffffff' : '#16171b');
     // Temaya özel yüzeyler (ör. Planlayıcı alt panelleri) için işaret.
     if (t.name === 'Milk ve Plum') document.documentElement.setAttribute('data-pace-theme', 'plum');
+    else if (t.name === 'Saf Siyah') document.documentElement.setAttribute('data-pace-theme', 'black');
     else document.documentElement.removeAttribute('data-pace-theme');
     applyPopupSurface(t, accent, bg);
   };
