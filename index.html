@@ -37613,6 +37613,20 @@ html[data-pg="on"] #page-1 .home-relax-widget.is-empty .home-relax-widget-title{
 /* Boş durumda (yaklaşan görev yok) üstteki soluk durum satırı kasıtlı olarak boş bırakıldı. */
 html[data-pg="on"] #page-1 .home-relax-widget.is-empty .home-relax-widget-time{display:none !important}
 </style>
+
+<style id="smooth-home-and-title-fix">
+/* Kronometre <-> Zamanlayıcı geçişinde başlık yazıları: geçiş sırasında
+   katman yeniden rasterlanıp yazının rengi/inceliği aniden değişiyordu.
+   Başlıklar baştan sona aynı katmanda ve aynı renkte kalır. */
+#page-5 .stopwatch-title-wrap { will-change: transform, opacity; }
+#page-5 h1.stopwatch-title {
+  color: var(--theme-text, #f2f2f7);
+  -webkit-font-smoothing: antialiased;
+  backface-visibility: hidden;
+  transform: translateZ(0);
+}
+#page-5 .stopwatch-flip-inner { backface-visibility: hidden; }
+</style>
 </head>
 <body oncopy="return false" oncut="return false" onselectstart="return false" ondragstart="return false">
 
@@ -55235,7 +55249,7 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
       const isHomeActive = () => homePageEl.classList.contains('is-active');
       homeVisibleCount = measureHomeRowsFit();
       syncHomeRelaxWidget();
-      if (isHomeActive()) { startHomeTicker(); playHomeIntro(350); }
+      if (isHomeActive()) { startHomeTicker(); applyHomeProgress('instant'); }
 
       // Ana sayfa her görünür olduğunda dolum boştan güncel duruma süpürülür.
       if ('MutationObserver' in window) {
@@ -55245,9 +55259,11 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
           if (active === homeWasActive) return;
           homeWasActive = active;
           if (active) {
-            updateHomeRowsFit();
+            // Eskiden burada widget yeniden ölçülüp dolumlar boşaltılarak baştan
+            // oynatılıyordu; bu, ana sayfaya her dönüşte zıplama/yenilenme hissi
+            // veriyordu. Artık sadece güncel durum anında (animasyonsuz) uygulanır.
             syncHomeRelaxWidget();
-            playHomeIntro(200);
+            applyHomeProgress('instant');
             startHomeTicker();
           } else {
             stopHomeTicker();
@@ -57437,9 +57453,10 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
   // Boştan güncel hedef orana doğru baştan doldurur. Sayfa geçiş
   // animasyonu (200ms) bitmeden başlamasın diye kısa bir gecikme var.
   const homeFillReplay = () => {
+    // Boştan baştan doldurma kaldırıldı (zıplama yaratıyordu): sıvı doğrudan
+    // güncel seviyeye getirilir, görünür bir hareket olmaz.
     clearTimeout(homeFillReplayTimer);
-    homeFillJump(0);
-    homeFillReplayTimer = setTimeout(() => homeFillAnimateTo(homeFillTarget), 220);
+    homeFillJump(homeFillTarget);
   };
 
   // page9State.logs üzerinden bugünün tarih anahtarına ait kayıtların
