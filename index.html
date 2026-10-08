@@ -37482,20 +37482,25 @@ html[data-pg="on"] #page-1 .home-relax-widget.is-empty .home-relax-widget-title{
   .pg-cal{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;
     position:relative;pointer-events:auto;margin:18px 2px 0 3px;
     animation:pgIn 1s .1s cubic-bezier(.22,1,.36,1) both}
-  .pg-cal-box{flex:none;width:var(--pg-cal-w,150px)}
-  /* Bugünün etkinliği: takvimin solunda, ince renkli çizgi + künye + ad (yalnızca etkinlik varsa görünür) */
-  .pg-today{flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:.3rem;
-    margin:0;padding:.05rem 0 .05rem .8rem;border:0;border-left:2px solid var(--ev-c,var(--pg-ink));
-    border-radius:0;background:none;box-shadow:none;text-align:left;cursor:pointer;
+  .pg-cal-box{flex:none;width:var(--pg-cal-w,150px);margin-left:auto}
+  /* Bugünün etkinliği: takvimin solunda; künye (renkli nokta + BUGÜN), büyük serif italik saat, ad.
+     Yalnızca etkinlik varsa görünür; yokken takvim yine sağda sabit kalır (.pg-cal-box margin-left:auto). */
+  .pg-today{flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:.28rem;
+    margin:0;padding:0;border:0;background:none;box-shadow:none;text-align:left;cursor:pointer;
     font-family:"Baloo 2","Space Grotesk",sans-serif;color:var(--pg-ink,var(--theme-c2,#1a1a1a));
     -webkit-tap-highlight-color:transparent;transition:opacity .2s;animation:pgSoft .9s .3s cubic-bezier(.22,1,.36,1) both}
   .pg-today:active{opacity:.55}
   .pg-today[hidden]{display:none !important}
-  .pg-today-eyebrow{font-weight:600;font-size:.66rem;line-height:1.25;letter-spacing:.2em;text-transform:uppercase;
-    color:color-mix(in srgb,var(--pg-ink) 52%,transparent);white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}
-  .pg-today-name{font-weight:600;font-size:1.2rem;line-height:1.14;letter-spacing:-.012em;color:var(--pg-ink);
-    overflow-wrap:anywhere;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden}
-  .pg-today-more{font-weight:600;font-size:.72rem;line-height:1.2;color:color-mix(in srgb,var(--pg-ink) 52%,transparent)}
+  .pg-today-eyebrow{display:flex;align-items:center;gap:.5rem;max-width:100%;font-weight:600;font-size:.66rem;line-height:1.25;
+    letter-spacing:.2em;text-transform:uppercase;color:color-mix(in srgb,var(--pg-ink) 52%,transparent);white-space:nowrap}
+  .pg-today-dot{flex:none;width:7px;height:7px;margin-left:3px;border-radius:50%;background:var(--ev-c,var(--pg-ink));
+    box-shadow:0 0 0 3px color-mix(in srgb,var(--ev-c,var(--pg-ink)) 22%,transparent)}
+  .pg-today-time{font-family:"Playfair Display",Georgia,"Times New Roman",serif;font-style:italic;font-weight:400;
+    font-size:2.3rem;line-height:1;letter-spacing:-.01em;color:var(--pg-ink);margin-top:.12rem;white-space:nowrap}
+  .pg-today-name{font-weight:600;font-size:1.02rem;line-height:1.18;letter-spacing:-.008em;color:var(--pg-ink);
+    overflow-wrap:anywhere;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}
+  .pg-today-more{margin-top:.1rem;font-weight:600;font-size:.7rem;line-height:1.2;letter-spacing:.02em;
+    color:color-mix(in srgb,var(--pg-ink) 50%,transparent)}
   .pg-today-more[hidden]{display:none !important}
   .pg-cal .home-cal-widget{padding:0;margin:0;background:none;border:0;box-shadow:none;border-radius:0;
     color:var(--pg-ink,var(--theme-c2,#1a1a1a));font-family:"Baloo 2","Space Grotesk",sans-serif;
@@ -38460,7 +38465,8 @@ html[data-pg="on"] #page-1 .home-relax-widget.is-empty .home-relax-widget-title{
       <div class="pg-cal">
         <!-- Bugünün etkinliği (varsa): takvimin solunda. JS: "Ana sayfa: bugünün etkinliği" script'i. -->
         <button type="button" class="pg-today" id="pgToday" hidden aria-label="Bugünün etkinliği, Takvim'e git">
-          <span class="pg-today-eyebrow" id="pgTodayEyebrow">Bugün</span>
+          <span class="pg-today-eyebrow"><i class="pg-today-dot" aria-hidden="true"></i><span id="pgTodayEyebrow">Bugün</span></span>
+          <span class="pg-today-time" id="pgTodayTime"></span>
           <span class="pg-today-name" id="pgTodayName"></span>
           <span class="pg-today-more" id="pgTodayMore" hidden></span>
         </button>
@@ -50954,9 +50960,10 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
   (function () {
     const box = document.getElementById('pgToday');
     const eyebrow = document.getElementById('pgTodayEyebrow');
+    const timeEl = document.getElementById('pgTodayTime');
     const nameEl = document.getElementById('pgTodayName');
     const moreEl = document.getElementById('pgTodayMore');
-    if (!box || !eyebrow || !nameEl || !moreEl) return;
+    if (!box || !eyebrow || !timeEl || !nameEl || !moreEl) return;
     const safe = (fn, fallback) => { try { return fn(); } catch (e) { return fallback; } };
     const pad = (n) => String(n).padStart(2, '0');
 
@@ -50967,7 +50974,8 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
       const hm = pad(now.getHours()) + ':' + pad(now.getMinutes());
       const ev = list.find((e) => e.time && e.time >= hm) || list.find((e) => !e.time) || list[list.length - 1];
       const rest = list.length - 1;
-      eyebrow.textContent = ev.time ? 'Bugün · ' + ev.time : 'Bugün';
+      eyebrow.textContent = 'Bugün';
+      timeEl.textContent = ev.time || 'Tüm gün';
       nameEl.textContent = ev.name;
       moreEl.hidden = rest < 1;
       moreEl.textContent = rest > 0 ? '+' + rest + ' etkinlik daha' : '';
