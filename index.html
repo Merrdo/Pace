@@ -39770,10 +39770,22 @@ html[data-pg="on"] #page-1 .home-relax-widget.is-empty .home-relax-widget-time{d
           <button type="button" class="cal-ev-add" id="calEvAddBtn">+ Etkinlik ekle</button>
         </div>
         <div class="cal-ev-view" id="calEvEditView" hidden>
-          <input class="cal-ev-input" id="calEvName" type="text" maxlength="60" placeholder="Örn. Ali'nin doğum günü" autocomplete="off">
-          <div class="cal-ev-lbl">Renk</div>
-          <div class="cal-ev-colors" id="calEvColors" role="radiogroup" aria-label="Etkinlik rengi"></div>
-          <button type="button" class="cal-ev-row" id="calEvTimeRow"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12.5" r="8"/><path d="M12 8.5v4l2.5 1.5"/></svg><span class="cal-ev-row-lbl">Saat</span><span class="cal-ev-row-val" id="calEvTimeVal">Ekle</span><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>
+          <label class="ce-card" for="calEvName">
+            <span class="cal-ev-ico" id="calEvIco" aria-hidden="true"></span>
+            <span class="ce-card-mid">
+              <input class="ce-name" id="calEvName" type="text" maxlength="60" placeholder="Etkinlik adı" autocomplete="off">
+              <em class="ce-hint" id="calEvHint">Tüm gün</em>
+            </span>
+            <span class="cal-ev-dt" aria-hidden="true"><b id="calEvDt"></b><small id="calEvDow"></small></span>
+          </label>
+          <div class="ce-sec">
+            <div class="ce-lbl">Renk</div>
+            <div class="ce-colors" id="calEvColors" role="radiogroup" aria-label="Etkinlik rengi"></div>
+          </div>
+          <div class="ce-sec">
+            <div class="ce-lbl">Zaman</div>
+            <button type="button" class="ce-row" id="calEvTimeRow"><span class="ce-row-ic"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12.5" r="8"/><path d="M12 8.5v4l2.5 1.5"/></svg></span><span class="ce-row-lbl">Saat</span><span class="cal-ev-row-val" id="calEvTimeVal">Ekle</span><svg class="ce-chev" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>
+          </div>
           <div class="cal-ev-actions">
             <button type="button" class="cal-ev-delete" id="calEvDelete" hidden>Sil</button>
             <button type="button" id="calEvCancel">Vazgeç</button>
@@ -50975,6 +50987,12 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
   const ce_syncTimeUi = () => {
     $ce('calEvTimeVal').textContent = calEvTimeVal || 'Ekle';
     $ce('calEvTimeRow').classList.toggle('is-set', !!calEvTimeVal);
+    $ce('calEvIco').innerHTML = calEvTimeVal ? CE_ICON_CLOCK : CE_ICON_SUN;
+    $ce('calEvHint').textContent = calEvTimeVal || 'Tüm gün';
+    if (calEvDay) {
+      $ce('calEvDt').textContent = ce_shortDate(calEvDay);
+      $ce('calEvDow').textContent = CALENDAR_WEEKDAYS_LONG[(calEvDay.getDay() + 6) % 7];
+    }
   };
   const ce_pos = (w, k) => k * ce_ih + ce_ih / 2 - w.el.clientHeight / 2;
   const ce_centerIdx = (w) => (w.el.scrollTop + w.el.clientHeight / 2 - ce_ih / 2) / ce_ih;
@@ -51068,12 +51086,13 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
 
   const ce_renderColors = () => {
     const w = $ce('calEvColors'); w.innerHTML = '';
+    ce_sheetEl.style.setProperty('--c', calEvColor);
     ce_EV_COLORS.forEach((c) => {
       const b = document.createElement('button');
       b.type = 'button'; b.style.setProperty('--c', c);
       b.setAttribute('role', 'radio'); b.setAttribute('aria-label', c);
       b.classList.toggle('is-on', c === calEvColor);
-      b.onclick = () => { calEvColor = c; w.querySelectorAll('button').forEach((x) => x.classList.toggle('is-on', x === b)); };
+      b.onclick = () => { calEvColor = c; ce_sheetEl.style.setProperty('--c', c); w.querySelectorAll('button').forEach((x) => x.classList.toggle('is-on', x === b)); };
       w.appendChild(b);
     });
   };
@@ -77173,6 +77192,71 @@ html[data-pg="on"] #page-1 .pg-cdline{display:block;position:absolute;z-index:3;
 .pgcl-save{height:3.1rem;border:0;border-radius:1.2rem;font:inherit;font-size:1.02rem;font-weight:800;cursor:pointer;
   background:var(--k,#ff90e8);color:var(--ko,#16171b);transition:transform .2s}
 .pgcl-save:active{transform:scale(.97)}
+</style>
+<style id="pg-ui2-css">
+/* ===== Sayaç seçici: Soru Takibi dili (vurgusuz, yumuşak yüzey, koyu seçili kart; renk yok) ===== */
+.cd-sheet{--t:var(--theme-text,#121212);--bg:var(--theme-bg,#f6f4ef);--soft:color-mix(in srgb,var(--t) 6%,transparent);--soft2:color-mix(in srgb,var(--t) 12%,transparent);--mute:color-mix(in srgb,var(--t) 52%,transparent);
+  font-family:"Baloo 2","Space Grotesk",sans-serif}
+.cd-sheet .cd-sheet-head{gap:.15rem;padding:.2rem .4rem 1rem}
+.cd-sheet .cd-sheet-title{font-size:1.9rem;font-weight:800;letter-spacing:-.02em;line-height:1.05}
+.cd-sheet .cd-sheet-sub{font-size:.82rem;font-weight:700;color:var(--mute)}
+.cd-sheet .cd-sheet-list{gap:.55rem}
+.cd-sheet .cd-sheet-item{padding:.7rem .9rem .7rem .7rem;border-radius:26px;background:var(--soft);transition:transform .25s cubic-bezier(.34,1.56,.64,1),background-color .3s ease,color .3s ease}
+.cd-sheet .cd-sheet-main:focus-visible{outline-color:var(--t)}
+.cd-sheet .cd-sheet-marker{width:3.2rem;height:3.2rem;border-radius:1.1rem;background:var(--soft2);color:var(--t);box-shadow:none}
+.cd-sheet .cd-sheet-marker b{font-size:1.15rem;letter-spacing:-.01em;font-variant-numeric:tabular-nums}
+.cd-sheet .cd-sheet-marker i{font-weight:800;opacity:.55}
+.cd-sheet .cd-sheet-name{font-weight:800;font-size:1.08rem}
+.cd-sheet .cd-sheet-date{font-weight:700;font-size:.8rem;color:var(--mute)}
+.cd-sheet .cd-sheet-chev{color:var(--mute)}
+.cd-sheet .cd-sheet-item.is-selected{background:var(--t);color:var(--bg)}
+.cd-sheet .cd-sheet-item.is-selected .cd-sheet-marker{outline:0;background:color-mix(in srgb,var(--bg) 18%,transparent);color:var(--bg)}
+.cd-sheet .cd-sheet-item.is-selected .cd-sheet-date{color:color-mix(in srgb,var(--bg) 62%,transparent)}
+.cd-sheet .cd-sheet-item.is-selected .cd-sheet-tick{color:var(--bg)}
+.cd-sheet .cd-sheet-item.is-delete{background:color-mix(in srgb,var(--ts-danger,#ff453a) 12%,var(--bg))}
+.cd-sheet .cd-sheet-empty{color:var(--mute);font-weight:700}
+.cd-sheet .cd-sheet-empty strong{color:var(--t)}
+.cd-sheet .cd-sheet-foot{gap:.5rem;padding:.9rem 0 0}
+.cd-sheet .cd-sheet-clear{flex:1;height:3rem;padding:0 1rem;border-radius:999px;font-weight:800;font-size:.92rem;background:var(--soft);color:var(--t)}
+.cd-sheet .cd-sheet-clear:active{background:var(--soft2)}
+.cd-sheet .cd-sheet-new{background:var(--t);color:var(--bg)}
+.cd-sheet .cd-sheet-new:active{background:var(--t);opacity:.8}
+.cd-sheet .cd-sheet-empty-btn{background:var(--t);color:var(--bg)}
+
+/* ===== Etkinlik ekleme: Resmî tatil ekranı dili (renk tonlu kart, ikon karosu, küçük harfli bölüm başlıkları, hap düğmeler) ===== */
+.ce-card{position:relative;display:flex;align-items:center;gap:.9rem;width:100%;box-sizing:border-box;overflow:hidden;padding:.85rem .95rem .85rem .85rem;border-radius:1.6rem;cursor:text;
+  background:linear-gradient(115deg,color-mix(in srgb,var(--c,#ff90e8) 28%,var(--ce-bg)) 0%,color-mix(in srgb,var(--c,#ff90e8) 9%,var(--ce-bg)) 100%);
+  box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--c,#ff90e8) 30%,transparent),0 14px 26px -18px color-mix(in srgb,var(--c,#ff90e8) 80%,transparent);
+  transition:box-shadow .25s ease}
+.ce-card::after{content:"";position:absolute;right:-2.4rem;top:-2.6rem;width:8rem;height:8rem;border-radius:50%;pointer-events:none;
+  background:radial-gradient(circle,color-mix(in srgb,var(--c,#ff90e8) 30%,transparent),transparent 68%)}
+.ce-card:focus-within{box-shadow:inset 0 0 0 2px var(--c,#ff90e8),0 14px 26px -18px color-mix(in srgb,var(--c,#ff90e8) 80%,transparent)}
+.ce-card .cal-ev-ico{background:var(--c,#ff90e8);box-shadow:0 10px 18px -10px var(--c,#ff90e8)}
+.ce-card-mid{position:relative;z-index:1;flex:1;min-width:0;display:flex;flex-direction:column}
+.ce-name{-webkit-user-select:text;user-select:text;width:100%;min-width:0;margin:0;padding:0;border:0;outline:0;background:none;color:inherit;font:inherit;font-weight:800;font-size:1.1rem;line-height:1.25}
+.ce-name::placeholder{color:inherit;opacity:.38}
+.ce-hint{align-self:flex-start;margin-top:.35rem;padding:.16rem .65rem;border-radius:999px;font-style:normal;font-weight:800;font-size:.76rem;font-variant-numeric:tabular-nums;
+  background:color-mix(in srgb,var(--c,#ff90e8) 24%,transparent)}
+.ce-sec{margin-top:1.1rem}
+.ce-lbl{margin:0 0 .5rem .2rem;font-weight:800;font-size:.7rem;letter-spacing:.09em;text-transform:uppercase;opacity:.5}
+.ce-colors{display:flex;justify-content:space-between;gap:.3rem;padding:.75rem .9rem;border-radius:1.6rem;background:color-mix(in srgb,var(--theme-text,#f2f2f7) 7%,transparent)}
+.ce-colors button{flex:0 0 auto;width:1.8rem;height:1.8rem;border:0;padding:0;border-radius:50%;cursor:pointer;background:var(--c);-webkit-tap-highlight-color:transparent;
+  transition:transform .3s cubic-bezier(.34,1.56,.64,1),box-shadow .25s ease}
+.ce-colors button:active{transform:scale(.88)}
+.ce-colors button.is-on{transform:scale(1.12);box-shadow:0 0 0 3px var(--ce-bg),0 0 0 5px var(--c)}
+.ce-row{display:flex;align-items:center;gap:.8rem;width:100%;box-sizing:border-box;padding:.6rem .85rem .6rem .6rem;border:0;border-radius:1.6rem;cursor:pointer;text-align:left;font:inherit;color:inherit;
+  background:color-mix(in srgb,var(--theme-text,#f2f2f7) 7%,transparent);-webkit-tap-highlight-color:transparent;transition:transform .15s ease,background-color .2s ease}
+.ce-row:active{transform:scale(.98);background:color-mix(in srgb,var(--theme-text,#f2f2f7) 11%,transparent)}
+.ce-row-ic{flex:none;width:2.6rem;height:2.6rem;border-radius:1rem;display:grid;place-items:center;background:var(--c,#ff90e8);color:#16171b}
+.ce-row-lbl{flex:1;font-weight:800;font-size:1rem}
+.ce-row.is-set .cal-ev-row-val{opacity:1;background:var(--c,#ff90e8);color:#16171b}
+.ce-chev{flex:none;opacity:.4}
+.cal-ev-actions .cal-ev-save,.cal-ev-clockact #calEvClockOk{background:var(--c,var(--accent-color,#ff90e8));color:#16171b}
+.cal-ev-wheels::before{background:color-mix(in srgb,var(--c,var(--accent-color,#ff90e8)) 26%,transparent)}
+@media not all and (min-width:768px) and (min-height:600px){
+  #calEvEditView .ce-card{padding:1.1rem 1.1rem 1.1rem 1rem}
+  #calEvEditView .ce-sec{margin-top:auto;padding-top:1rem}
+}
 </style>
 <script id="pg-cdline-js">
 /* ---------- Ana sayfa: geri sayım çizgisi ----------
