@@ -37425,15 +37425,15 @@ html[data-pg="on"] #page-1 .home-relax-widget.is-empty .home-relax-widget-bottom
   border-left:0 !important;padding-left:0 !important;min-height:0 !important;gap:.2rem}
 
 /* ===== PLANLAYICI WIDGET'I: sade ve şık tipografi (SADECE görünüm; JS/mekanik aynen) =====
-   Üstte küçük, geniş harf aralıklı "künye" satırı (Şimdi/Sıradaki + saat, ya da "Yaklaşan görev yok"),
+   Üstte soluk Baloo 2 künye satırı, sağa yaslı (Şimdi/Sıradaki + saat, ya da "Yaklaşan görev yok"),
    altında görev adı. DOM sırası (saat → ad) korunur; yalnızca flex yönü değişir.
    Boş durumda "Rahatla": düz, serif italik tek kelime; çerçeve/desen/animasyon yok. */
 @keyframes pgSoft{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
 html[data-pg="on"] #page-1 .home-relax-widget-bottom{flex-direction:column !important;gap:.34rem}
 html[data-pg="on"] #page-1 .home-relax-widget-time{
-  font-family:"Baloo 2","Space Grotesk",sans-serif;font-weight:600;font-size:.66rem;line-height:1.25;
-  letter-spacing:.2em;text-transform:uppercase;
-  color:color-mix(in srgb,var(--pg-ink) 52%,transparent)}
+  font-family:"Baloo 2","Space Grotesk",sans-serif;font-weight:600;font-size:.86rem;line-height:1.2;
+  letter-spacing:0;text-transform:none;
+  color:color-mix(in srgb,var(--pg-ink) 55%,transparent)}
 html[data-pg="on"] #page-1 .home-relax-widget-title{letter-spacing:-.018em}
 html[data-pg="on"] #page-1 .home-relax-widget.is-empty .home-relax-widget-bottom{gap:.5rem}
 html[data-pg="on"] #page-1 .home-relax-widget.is-empty .home-relax-widget-title{
@@ -37452,8 +37452,11 @@ html[data-pg="on"] #page-1 .home-relax-widget.is-empty .home-relax-widget-title{
   /* Boş durumda alan büyük tipografiyle kullanılır */
   html[data-pg="on"] #page-1 .home-relax-widget.is-empty .home-relax-widget-title{font-size:3.4rem;line-height:1}
   html[data-pg="on"] #page-1 .home-relax-widget-lead{zoom:.86}
+  /* Soluk saat/durum yazısı: en sağa yaslı (yazı bloğu satırın sağ kenarına kadar uzar) */
+  html[data-pg="on"] #page-1 .home-relax-widget-time{align-self:flex-end;text-align:right;max-width:100%}
+  html[data-pg="on"] #page-1 .home-relax-widget.is-empty .home-relax-widget-bottom{flex:1 1 auto;align-self:stretch}
   html[data-pg="on"] #page-1 .home-relax-widget-bottom{
-    align-self:center;min-height:2.6rem;padding-left:.95rem;
+    flex:1 1 auto;align-self:center;min-height:2.6rem;padding-left:.95rem;
     border-left:1px solid color-mix(in srgb,var(--pg-ink) 22%,transparent) !important}
   html[data-pg="on"] #page-1 .home-relax-widget:not(.is-empty) .home-relax-widget-title{font-size:1.65rem;line-height:1.1;font-weight:600}
 }
@@ -37490,6 +37493,7 @@ html[data-pg="on"] #page-1 .home-relax-widget.is-empty .home-relax-widget-title{
     margin:0;padding:0;font-family:"Baloo 2","Space Grotesk",sans-serif;
     color:var(--pg-ink,var(--theme-c2,#1a1a1a));animation:pgSoft .9s .3s cubic-bezier(.22,1,.36,1) both}
   .pg-today[hidden]{display:none !important}
+  .pg-today-list{display:flex;flex-direction:column;gap:.4rem;width:100%}
   .pg-today .cal-evc{width:100%;gap:.6rem;padding:.45rem .6rem .45rem .5rem;border-radius:1.3rem;
     color:var(--pg-ink,var(--theme-c2,#1a1a1a));font-family:inherit;animation:none}
   .pg-today .cal-evc-ic{width:2.2rem;height:2.2rem}
@@ -37500,6 +37504,15 @@ html[data-pg="on"] #page-1 .home-relax-widget.is-empty .home-relax-widget-title{
   .pg-today .cal-evc-more{margin:0 0 0 .35rem;animation:none;font-family:inherit;color:var(--pg-ink,var(--theme-c2,#1a1a1a));
     background:color-mix(in srgb,var(--pg-ink,#1a1a1a) 9%,transparent)}
   .pg-today .cal-evc-more[hidden]{display:none !important}
+  /* 3 etkinlik: takvimin yüksekliğine sığması için kompakt kartlar (tek satır ad, küçük ikon) */
+  .pg-today.is-compact{gap:.3rem}
+  .pg-today.is-compact .pg-today-list{gap:.3rem}
+  .pg-today.is-compact .cal-evc{gap:.45rem;padding:.28rem .55rem .28rem .3rem;border-radius:1.05rem}
+  .pg-today.is-compact .cal-evc-ic{width:1.7rem;height:1.7rem;box-shadow:none}
+  .pg-today.is-compact .cal-evc-ic svg{width:14px;height:14px}
+  .pg-today.is-compact .cal-evc-txt b{font-size:.84rem;line-height:1.1;-webkit-line-clamp:1}
+  .pg-today.is-compact .cal-evc-txt em{font-size:.62rem;line-height:1;margin-top:.05rem}
+  .pg-today.is-compact .cal-evc-more{padding:.16rem .7rem;font-size:.68rem}
   .pg-cal .home-cal-widget{padding:0;margin:0;background:none;border:0;box-shadow:none;border-radius:0;
     color:var(--pg-ink,var(--theme-c2,#1a1a1a));font-family:"Baloo 2","Space Grotesk",sans-serif;
     cursor:pointer;-webkit-tap-highlight-color:transparent;transition:opacity .2s}
@@ -38462,10 +38475,7 @@ html[data-pg="on"] #page-1 .home-relax-widget.is-empty .home-relax-widget-title{
       <div class="pg-cal">
         <!-- Bugünün etkinliği (varsa): takvimin solunda. JS: "Ana sayfa: bugünün etkinliği" script'i. -->
         <div class="pg-today" id="pgToday" hidden>
-          <button type="button" class="cal-evc" id="pgTodayCard" aria-label="Bugünün etkinliği, Takvim'e git">
-            <span class="cal-evc-ic" id="pgTodayIc" aria-hidden="true"></span>
-            <span class="cal-evc-txt"><b id="pgTodayName"></b><em id="pgTodayTime"></em></span>
-          </button>
+          <div class="pg-today-list" id="pgTodayList"></div>
           <button type="button" class="cal-evc-more" id="pgTodayMore" hidden></button>
         </div>
         <div class="pg-cal-box">
@@ -50958,43 +50968,55 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
 </script>
 
 <script>
-  // ---------- Ana sayfa: bugünün etkinliği (mobil, takvimin solu) ----------
-  // Veri, Takvim sayfasının kendi fonksiyonlarından okunur (getDayEvents, ce_evColor) ve kart,
-  // Takvim sayfasındaki etkinlik kartıyla (.cal-evc) aynı yapıda çizilir. Bugünün ilk etkinliği
-  // gösterilir (mini takvimdeki bugün işaretçisiyle aynı etkinlik/renk); kalanı "+N etkinlik daha".
-  // Bugün etkinlik yoksa alan gizli kalır. Dokununca Takvim açılır (mini takvimle aynı akış).
+  // ---------- Ana sayfa: bugünün etkinlikleri (mobil, takvimin solu) ----------
+  // Veri, Takvim sayfasının kendi fonksiyonlarından okunur (getDayEvents, ce_evColor) ve kartlar,
+  // Takvim sayfasındaki etkinlik kartıyla (.cal-evc) aynı yapıda çizilir. En fazla 3 etkinlik gösterilir
+  // (3 olunca kartlar kompakt, takvimin yüksekliğine sığar); daha fazlası "+N etkinlik daha" olur.
+  // İlk etkinlik, mini takvimdeki bugün işaretçisinin rengini de belirler. Etkinlik yoksa alan gizli kalır.
+  // Dokununca Takvim açılır (mini takvimle aynı akış).
   (function () {
     const box = document.getElementById('pgToday');
-    const card = document.getElementById('pgTodayCard');
-    const icEl = document.getElementById('pgTodayIc');
-    const nameEl = document.getElementById('pgTodayName');
-    const timeEl = document.getElementById('pgTodayTime');
+    const listEl = document.getElementById('pgTodayList');
     const moreEl = document.getElementById('pgTodayMore');
-    if (!box || !card || !icEl || !nameEl || !timeEl || !moreEl) return;
+    if (!box || !listEl || !moreEl) return;
     const safe = (fn, fallback) => { try { return fn(); } catch (e) { return fallback; } };
+    const SHOW = 3;
+    let lastKey = '';
+
+    const goCalendar = () => { const cal = document.getElementById('homeCalWidget'); if (cal) cal.click(); };
+    moreEl.addEventListener('click', goCalendar);
 
     const render = () => {
       const now = new Date();
       const list = safe(() => getDayEvents(new Date(now.getFullYear(), now.getMonth(), now.getDate())), []);
-      if (!list.length) { box.hidden = true; return; }
-      const ev = list[0];
-      const rest = list.length - 1;
-      card.style.setProperty('--c', safe(() => ce_evColor(ev), '#ff90e8'));
-      icEl.innerHTML = safe(() => (ev.time ? CE_ICON_CLOCK : CE_ICON_SUN), '');
-      nameEl.textContent = ev.name;
-      timeEl.textContent = ev.time || 'Tüm gün';
-      moreEl.hidden = rest < 1;
-      moreEl.textContent = rest > 0 ? '+' + rest + ' etkinlik daha' : '';
-      card.setAttribute('aria-label', 'Bugünün etkinliği: ' + ev.name + ', ' + (ev.time || 'Tüm gün') + ". Takvim'e git");
+      if (!list.length) { box.hidden = true; lastKey = ''; return; }
+      const shown = list.slice(0, SHOW);
+      const rest = list.length - shown.length;
+      const key = JSON.stringify([shown.map((e) => [e.id, e.name, e.time, e.color]), rest]);
+      if (key !== lastKey) {
+        lastKey = key;
+        box.classList.toggle('is-compact', shown.length >= 3);
+        listEl.innerHTML = '';
+        shown.forEach((ev) => {
+          const b = document.createElement('button');
+          b.type = 'button'; b.className = 'cal-evc';
+          b.style.setProperty('--c', safe(() => ce_evColor(ev), '#ff90e8'));
+          const ic = safe(() => (ev.time ? CE_ICON_CLOCK : CE_ICON_SUN), '');
+          b.innerHTML = `<span class="cal-evc-ic" aria-hidden="true">${ic}</span><span class="cal-evc-txt"><b></b><em></em></span>`;
+          b.querySelector('b').textContent = ev.name;
+          b.querySelector('em').textContent = ev.time || 'Tüm gün';
+          b.setAttribute('aria-label', 'Etkinlik: ' + ev.name + ', ' + (ev.time || 'Tüm gün') + ". Takvim'e git");
+          b.addEventListener('click', goCalendar);
+          listEl.appendChild(b);
+        });
+        moreEl.hidden = rest < 1;
+        moreEl.textContent = rest > 0 ? '+' + rest + ' etkinlik daha' : '';
+      }
       box.hidden = false;
     };
 
     let raf = 0;
     const schedule = () => { if (!raf) raf = requestAnimationFrame(() => { raf = 0; render(); }); };
-
-    const goCalendar = () => { const cal = document.getElementById('homeCalWidget'); if (cal) cal.click(); };
-    card.addEventListener('click', goCalendar);
-    moreEl.addEventListener('click', goCalendar);
 
     window.addEventListener('home-cal-refresh', schedule);
     window.addEventListener('app-state-saved', schedule);
