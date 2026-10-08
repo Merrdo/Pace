@@ -39844,48 +39844,24 @@ html[data-pg="on"] #page-1 .home-relax-widget.is-empty .home-relax-widget-time{d
       </button>
     </div>
 
-    <!-- Kurulum formu -->
-    <div class="cd-form" id="dayCdForm">
-      <div class="cd-form-head">
-        <span class="cd-form-dot" aria-hidden="true"></span>
-        <div>
-          <span class="cd-form-date-main" id="dayCdFormDate"></span>
-          <span class="cd-form-date-sub" id="dayCdFormWeekday"></span>
-        </div>
+    <!-- Kurulum formu: minimalist; saat = çark (ana sayfadaki yeni geri sayımla aynı), renk seçilebilir -->
+    <div class="cd-form cdf" id="dayCdForm">
+      <div class="cdf-hero">
+        <b id="dayCdFormDate"></b>
+        <span id="dayCdFormWeekday"></span>
       </div>
-
-      <div class="cd-field">
-        <label class="cd-field-label" for="dayCdNameInput">Sayaç adı</label>
-        <div class="cd-input-wrap">
-          <input class="cd-input" id="dayCdNameInput" type="text" maxlength="40" placeholder="Örn. Sınav günü" autocomplete="off" autocapitalize="sentences" enterkeyhint="done">
-          <span class="cd-field-line" aria-hidden="true"></span>
-        </div>
+      <input class="cdf-name" id="dayCdNameInput" type="text" maxlength="40" placeholder="Ne için sayıyorsun?" autocomplete="off" autocapitalize="sentences" enterkeyhint="done">
+      <div class="cdf-sec">
+        <button type="button" class="cdf-head" id="dayCdTimeSwitch" role="switch" aria-checked="false"><span class="cdf-lbl">Saat</span><span class="cdf-val" id="dayCdTimeText">Ekle</span><svg class="cdf-chev" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>
+        <div class="cdf-body" id="dayCdTimeWrap"><div>
+          <div class="pgn-wheels"><div class="pgn-wheel" id="cdfWheelH" aria-label="Saat"></div><span class="pgn-colon">:</span><div class="pgn-wheel" id="cdfWheelM" aria-label="Dakika"></div></div>
+          <input type="hidden" id="dayCdTimeInput" value="09:00">
+        </div></div>
       </div>
-
-      <div class="cd-field">
-        <div class="cd-switch-row">
-          <span class="cd-field-label" id="dayCdTimeLabel">Saat ekle<small>isteğe bağlı</small></span>
-          <button type="button" class="cd-switch" id="dayCdTimeSwitch" role="switch" aria-checked="false" aria-labelledby="dayCdTimeLabel">
-            <span class="cd-switch-knob"></span>
-          </button>
-        </div>
-        <div class="cd-time-wrap" id="dayCdTimeWrap">
-          <div class="cd-time-inner">
-            <div class="cd-input-wrap cd-time-field">
-              <span class="cd-time-text" id="dayCdTimeText" aria-hidden="true">09:00</span>
-              <svg class="cd-time-ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 7.5V12l3 2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-              <input class="cd-input cd-time-input" id="dayCdTimeInput" type="time" value="09:00" aria-label="Saat">
-              <span class="cd-field-line" aria-hidden="true"></span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="cd-field">
-        <span class="cd-field-label">Renk</span>
+      <div class="cdf-sec cdf-sec-col">
+        <div class="cdf-lbl">Renk</div>
         <div class="cd-colors" id="dayCdColors"></div>
       </div>
-
       <div class="cd-form-actions">
         <button type="button" class="cd-primary-btn" id="dayCdSaveBtn">Sayacı kur</button>
         <button type="button" class="cd-text-danger" id="dayCdDeleteBtn" hidden>Sayacı sil</button>
@@ -49333,7 +49309,9 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
     dayCdTimeOn = on;
     dayCdTimeSwitch.setAttribute('aria-checked', on ? 'true' : 'false');
     dayCdTimeWrap.classList.toggle('is-open', on);
-    dayCdTimeInput.tabIndex = on ? 0 : -1;
+    dayCdTimeSwitch.classList.toggle('is-open', on);
+    syncDayCdTimeText();
+    if (on) setTimeout(cdfSetWheels, 60);
   };
 
   dayCdTimeSwitch.addEventListener('click', () => setDayCdTimeOn(!dayCdTimeOn));
@@ -49638,10 +49616,41 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
   // Saat alanında gösterilen metin (Baloo 2) yerel girdiyle eşit tutulur.
   const dayCdTimeTextEl = document.getElementById('dayCdTimeText');
   const syncDayCdTimeText = () => {
-    dayCdTimeTextEl.textContent = dayCdTimeInput.value || '--:--';
+    dayCdTimeTextEl.textContent = dayCdTimeOn ? (dayCdTimeInput.value || '09:00') : 'Ekle';
   };
-  dayCdTimeInput.addEventListener('input', syncDayCdTimeText);
-  dayCdTimeInput.addEventListener('change', syncDayCdTimeText);
+  // Saat çarkları (ana sayfadaki "Yeni geri sayım" ile aynı mekanik): kaydırınca gizli girdiye yazar.
+  const cdfWheels = { h: document.getElementById('cdfWheelH'), m: document.getElementById('cdfWheelM') };
+  const cdfPad = (n) => String(n).padStart(2, '0');
+  const cdfIh = (el) => (el.children[0] ? el.children[0].getBoundingClientRect().height : 0) || 45;
+  const cdfMark = (el, i) => { Array.from(el.children).forEach((c, k) => c.classList.toggle('is-sel', k === i)); };
+  const cdfCur = () => { const v = (dayCdTimeInput.value || '09:00').split(':'); return { h: +v[0] || 0, m: +v[1] || 0 }; };
+  const cdfSetWheels = () => {
+    const c = cdfCur();
+    [['h', c.h], ['m', c.m]].forEach(([k, v]) => {
+      const el = cdfWheels[k];
+      el.style.scrollSnapType = 'none'; el.scrollTop = v * cdfIh(el); cdfMark(el, v);
+      requestAnimationFrame(() => { el.style.scrollSnapType = ''; });
+    });
+  };
+  [['h', 24], ['m', 60]].forEach(([k, n]) => {
+    const el = cdfWheels[k];
+    for (let i = 0; i < n; i += 1) { const d = document.createElement('div'); d.className = 'pgn-wi'; d.textContent = cdfPad(i); el.appendChild(d); }
+    let raf = 0;
+    el.addEventListener('scroll', () => {
+      if (raf) return;
+      raf = requestAnimationFrame(() => {
+        raf = 0;
+        const i = Math.max(0, Math.min(n - 1, Math.round(el.scrollTop / cdfIh(el)))), c = cdfCur();
+        if ((k === 'h' ? c.h : c.m) === i) return;
+        dayCdTimeInput.value = cdfPad(k === 'h' ? i : c.h) + ':' + cdfPad(k === 'm' ? i : c.m);
+        cdfMark(el, i); syncDayCdTimeText();
+      });
+    }, { passive: true });
+    el.addEventListener('click', (e) => {
+      const it = e.target.closest('.pgn-wi');
+      if (it) el.scrollTo({ top: Array.prototype.indexOf.call(el.children, it) * cdfIh(el), behavior: 'smooth' });
+    });
+  });
 
   // Silme onayı: sayfa içinden (Sayacı sil) ve Takvim'deki Sayaçlarım
   // panelinden aynı pencereyi kullanır; onaylanınca çalışacak eylem dışarıdan verilir.
@@ -77201,6 +77210,28 @@ html[data-pg="on"] #page-1 .pg-cdline{display:block;position:absolute;z-index:3;
   #calEvEditView .ce-card{padding:1.1rem 1.1rem 1.1rem 1rem}
   #calEvEditView .ce-sec{margin-top:auto;padding-top:1rem}
 }
+/* ===== Takvim > gün basılı tut > sayaç kur: minimalist form (renk seçilebilir) ===== */
+#page-day-cd .cdf{--t:var(--theme-c2,var(--theme-text,#111));--bg:var(--theme-c1,var(--theme-bg,#f6f4ef));--mute:color-mix(in srgb,var(--t) 50%,transparent);--line:color-mix(in srgb,var(--t) 10%,transparent);--soft:color-mix(in srgb,var(--t) 6%,transparent);gap:0;padding-top:.6rem}
+.cdf .cdf-hero{display:flex;flex-direction:column;gap:.35rem;padding:0 0 .9rem}
+.cdf .cdf-hero b{font-size:2.3rem;font-weight:800;letter-spacing:-.03em;line-height:1}
+.cdf .cdf-hero span{display:flex;align-items:center;gap:.5rem;font-size:.95rem;font-weight:700;color:var(--mute)}
+.cdf .cdf-hero span::before{content:"";width:.6rem;height:.6rem;border-radius:50%;background:var(--cd-color);transition:background-color .3s}
+.cdf .cdf-name{-webkit-user-select:text;user-select:text;width:100%;box-sizing:border-box;margin:0;padding:.6rem 0 .9rem;border:0;border-bottom:1px solid var(--line);border-radius:0;outline:0;background:none;color:inherit;font:inherit;font-weight:800;font-size:1.6rem;letter-spacing:-.02em}
+.cdf .cdf-name::placeholder{color:var(--mute);opacity:.7}
+.cdf .cdf-sec{border-bottom:1px solid var(--line)}
+.cdf .cdf-head{display:flex;align-items:center;gap:.8rem;width:100%;padding:1.15rem 0;border:0;background:none;color:inherit;text-align:left;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.cdf .cdf-lbl{flex:1;font-size:.72rem;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:var(--mute)}
+.cdf .cdf-sec-col .cdf-lbl{display:block;padding:1.15rem 0 .5rem}
+.cdf .cdf-val{font-size:1.1rem;font-weight:800;font-variant-numeric:tabular-nums}
+.cdf .cdf-chev{flex:none;opacity:.4;transition:transform .35s cubic-bezier(.22,1,.36,1)}
+.cdf .cdf-head.is-open .cdf-chev{transform:rotate(90deg)}
+.cdf .cdf-body{display:grid;grid-template-rows:0fr;transition:grid-template-rows .4s cubic-bezier(.22,1,.36,1)}
+.cdf .cdf-body.is-open{grid-template-rows:1fr}
+.cdf .cdf-body>div{min-height:0;overflow:hidden}
+.cdf .cd-colors{margin:0 -8px .6rem;padding:8px}
+.cdf .cd-form-actions{margin-top:1.4rem}
+.cdf .cd-primary-btn{background:var(--t);color:var(--bg)}
+@media (prefers-reduced-motion:reduce){.cdf .cdf-body{transition-duration:.01s}}
 </style>
 <script id="pg-cdline-js">
 /* ---------- Ana sayfa: geri sayım çizgisi ----------
