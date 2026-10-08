@@ -77422,6 +77422,21 @@ html[data-pg="on"] #page-1 .pg-cdline{display:block;position:absolute;z-index:3;
     introEnd = 0;
     timer = setTimeout(tick, (v.rem % 1000 || 1000) + 8);
   };
+  // Ana sayfaya her dönüşte satırı baştan kurmak (render) haneleri sökıp yeniden
+  // oluşturuyor ve "yenilenme/zıplama" hissi veriyordu. Aynı geri sayım hâlâ
+  // seçiliyse mevcut haneler yerinde kalır; sadece değerler anında güncellenir.
+  const resume = () => {
+    const r = resolve();
+    if (!r || !cur || !reels.s || !reels.s.length || r.target !== cur.target || r.cd.name !== cur.cd.name) { render(300); return; }
+    cur = r;
+    clearTimeout(timer); tm.forEach(clearTimeout); tm = [];
+    const v = vals();
+    if (reels.d.length !== v.d.length) build('d', v.d.length);
+    paint(v);
+    U.forEach((u) => v[u].split('').forEach((c, i) => cdReelSet(reels[u][i], +c, 0)));
+    introEnd = 0;
+    if (!v.done) timer = setTimeout(tick, (v.rem % 1000 || 1000) + 8);
+  };
   const setKey = (k) => { key = k; saveAppState({ [KEY]: k }); };
 
   // ---- Yeni geri sayım: tam sayfa (ad + uygulamanın takvimi + saat çarkı) ----
@@ -77541,7 +77556,7 @@ html[data-pg="on"] #page-1 .pg-cdline{display:block;position:absolute;z-index:3;
   let wasActive = pageEl.classList.contains('is-active');
   new MutationObserver(() => {
     const a = pageEl.classList.contains('is-active');
-    if (a && !wasActive) render(300);
+    if (a && !wasActive) resume();
     if (!a) { clearTimeout(timer); timer = 0; }
     wasActive = a;
   }).observe(pageEl, { attributes: true, attributeFilter: ['class'] });
@@ -77592,10 +77607,13 @@ html[data-pg="on"] #page-1 .pg-tm{
 .pg-tm.is-finished .pg-tm-ring,.pg-tm.is-finished .pg-tm-kicker{animation:pgTmAlert 1.1s ease-in-out infinite}
 /* Dokunma / geçiş animasyonları */
 .pg-tm.is-tap .pg-tm-pulse{animation:pgTmPulse .75s cubic-bezier(.22,1,.36,1)}
-.pg-tm.is-swap .pg-tm-ring,.pg-tm.is-swap .pg-tm-kicker{animation:pgTmSwap .5s cubic-bezier(.22,1,.36,1)}
+.pg-tm.is-swap .pg-tm-ring{animation:pgTmSwap .5s cubic-bezier(.22,1,.36,1)}
+.pg-tm.is-swap .pg-tm-kicker{animation:pgTmSwapKicker .5s cubic-bezier(.22,1,.36,1)}
 .pg-tm.is-nudge{animation:pgTmNudge .4s ease}
 @keyframes pgTmPulse{from{opacity:.4;transform:scale(.86)}to{opacity:0;transform:scale(1.28)}}
 @keyframes pgTmSwap{from{opacity:0;transform:translateY(6px) scale(.96)}to{opacity:1;transform:none}}
+/* Yazı baştan sona soluk kalır: 0 -> .32 (hiç beyaza çıkmaz, bitişte sıçrama olmaz) */
+@keyframes pgTmSwapKicker{from{opacity:0;transform:translateY(6px) scale(.96)}to{opacity:.32;transform:none}}
 @keyframes pgTmBreath{0%,100%{opacity:1}50%{opacity:.4}}
 @keyframes pgTmAlert{0%,100%{opacity:1}50%{opacity:.4}}
 @keyframes pgTmNudge{0%,100%{transform:none}25%{transform:translateX(-6px)}60%{transform:translateX(5px)}}
