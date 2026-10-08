@@ -37377,15 +37377,18 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
    Eski ana sayfa SİLİNMEDİ: <html data-pg="on"> iken sadece gizlenir.
    Geri getirmek için <html> etiketinden data-pg="on" kaldırılır.
    TAMAMLANINCA: eski ana sayfa + bu gizleme kuralı silinecek (bkz. NOTLAR.md). */
-html[data-pg="on"] #page-1 > :not(.pg-root):not(.app-logo):not(.home-widgets-stack){display:none !important}
+html[data-pg="on"] #page-1 > :not(.pg-root):not(.app-logo):not(.home-widgets-stack):not(.pg-cdline){display:none !important}
 .pg-root{position:absolute;inset:0;pointer-events:none;z-index:3}
 /* Çerçevesiz, kartsız, sade: yalnızca isim + avatar */
 .pg-chip{position:absolute;top:calc(env(safe-area-inset-top) + 22px);right:22px;pointer-events:auto;
   display:flex;align-items:center;gap:11px;margin:0;padding:0;border:0;background:none;box-shadow:none;cursor:pointer;
   font-family:"Baloo 2","Space Grotesk",sans-serif;color:#000;
-  -webkit-tap-highlight-color:transparent;transition:opacity .25s;animation:pgIn .9s cubic-bezier(.22,1,.36,1) both}
+  -webkit-tap-highlight-color:transparent;transition:opacity .25s}
 .pg-chip:active{opacity:.55}
-@keyframes pgIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+/* Ana sayfa girişi: tüm sayfa tek parça, hafifçe aşağıdan yükselerek belirir (tek katman, yalnızca opacity+transform) */
+@keyframes pgEnter{from{opacity:0;transform:translate3d(0,14px,0)}to{opacity:1;transform:translate3d(0,0,0)}}
+html[data-pg="on"] #page-1.is-active{animation:pgEnter .42s cubic-bezier(.22,1,.36,1)}
+@media (prefers-reduced-motion:reduce){html[data-pg="on"] #page-1.is-active{animation:none}}
 .pg-name{order:2;color:#000;font-weight:600;font-size:18px;line-height:1;letter-spacing:-.015em;max-width:44vw;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-top:4px}
 .pg-avwrap{order:1;display:block;position:relative;flex:none;width:38px;height:38px}
 .pg-avatar{display:block;width:100%;height:100%;border-radius:50%;overflow:hidden;position:relative}
@@ -37408,7 +37411,7 @@ html[data-pg="on"] #page-1 .home-widgets-stack{
   display:block;position:absolute;z-index:3;
   left:20px;right:20px;top:calc(env(safe-area-inset-top) + 96px);
   width:auto;max-width:28rem;min-height:0;margin:0;
-  animation:pgIn 1s .15s cubic-bezier(.22,1,.36,1) both}
+  }
 html[data-pg="on"] #page-1 .home-widgets-stack > :not(.home-tile-relax):not(.pg-cal):not(.pg-cdline){display:none !important}
 html[data-pg="on"] #page-1 .home-tile-relax::after{content:none !important;display:none !important}
 html[data-pg="on"] #page-1 .home-relax-widget{transform:none;min-height:0}
@@ -37450,7 +37453,7 @@ html[data-pg="on"] #page-1 .home-relax-widget.is-empty .home-relax-widget-title{
   font-size:2.4rem;line-height:1.05;letter-spacing:-.01em;padding:0;
   color:var(--pg-ink);-webkit-text-fill-color:currentColor;-webkit-text-stroke:0;
   background:none;-webkit-background-clip:border-box;background-clip:border-box;
-  animation:pgSoft 1.1s .2s cubic-bezier(.22,1,.36,1) both}
+  }
 
 /* Telefon: görev satırı daha ince ve ferah (işaretçi biraz küçülür, ince bir ayraç, kısa ve dengeli) */
 @media not all and (min-width:768px) and (min-height:600px){
@@ -37502,14 +37505,14 @@ html[data-pg="on"] #page-1 .home-relax-widget.is-empty .home-relax-widget-title{
   html[data-pg="on"] #page-1{--pg-cal-w:clamp(132px,40vw,160px)}
   .pg-cal{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;
     position:relative;pointer-events:auto;margin:18px 2px 0 3px;
-    animation:pgIn 1s .1s cubic-bezier(.22,1,.36,1) both}
+    }
   .pg-cal-box{flex:none;width:var(--pg-cal-w,150px);margin-left:auto}
   /* Bugünün etkinliği: takvimin solunda, TAKVİM SAYFASINDAKİ etkinlik kartıyla aynı tasarım dili
      (.cal-evc: etkinlik renginde tonlu zemin + yuvarlak ikon + ad/saat), burada küçük boyutta.
      Yalnızca etkinlik varsa görünür; yokken takvim yine sağda sabit kalır (.pg-cal-box margin-left:auto). */
   .pg-today{flex:1 1 0;min-width:0;max-width:12.5rem;align-self:flex-start;display:flex;flex-direction:column;align-items:flex-start;gap:.4rem;
     margin:0;padding:0;font-family:"Baloo 2","Space Grotesk",sans-serif;
-    color:var(--pg-ink,var(--theme-c2,#1a1a1a));animation:pgSoft .9s .3s cubic-bezier(.22,1,.36,1) both}
+    color:var(--pg-ink,var(--theme-c2,#1a1a1a))}
   .pg-today[hidden]{display:none !important}
   .pg-today-list{display:flex;flex-direction:column;gap:.4rem;width:100%}
   .pg-today .cal-evc{width:100%;gap:.6rem;padding:.45rem .6rem .45rem .5rem;border-radius:1.3rem;
@@ -38485,6 +38488,17 @@ html[data-pg="on"] #page-1 .home-relax-widget.is-empty .home-relax-widget-time{d
 
     <!-- Ana sayfa şimdilik boş: yeniden tasarım için hazırlanıyor.
          Eski tüm elementler aşağıdaki küçük buton + panel içine taşındı. -->
+    <!-- GERİ SAYIM: ana sayfanın alt kısmında, dock'un üstünde; üstteki akışa (planlayıcı + takvim) karışmaz.
+         Dokununca Takvim'deki sayaçlar seçilir ya da yeni sayaç kurulur. JS: "Ana sayfa: geri sayım" script'i (sayfa sonu). -->
+    <div class="pg-cdline is-idle" id="pgCdLine">
+      <button type="button" class="pgcl-btn" aria-label="Geri sayım ekle">
+        <span class="pgcl-name">Geri sayım ekle</span>
+        <span class="pgcl-plus" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16"><path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg></span>
+        <span class="pgcl-units"></span>
+        <span class="pgcl-done">Süre doldu</span>
+      </button>
+    </div>
+
     <svg class="app-logo" viewBox="0 0 150 52" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Pace">
       <rect id="appLogoHit" x="0" y="0" width="150" height="52" fill="transparent"/>
       <text id="appLogoBase" x="2" y="40">Pace</text>
@@ -38551,21 +38565,6 @@ html[data-pg="on"] #page-1 .home-relax-widget.is-empty .home-relax-widget-time{d
           </span>
         </button>
       </div>
-      </div>
-
-      <!-- GERİ SAYIM ÇİZGİSİ: tek satırlık, kartsız sayaç. Dokununca Takvim'deki sayaçlar seçilir ya da yeni sayaç kurulur.
-           JS: "Ana sayfa: geri sayım çizgisi" script'i (sayfa sonu). -->
-      <div class="pg-cdline is-idle" id="pgCdLine">
-        <button type="button" class="pgcl-btn" aria-label="Geri sayım ekle">
-          <span class="pgcl-row1">
-            <span class="pgcl-dot" aria-hidden="true"></span>
-            <span class="pgcl-name">Geri sayım ekle</span>
-            <span class="pgcl-plus" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16"><path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg></span>
-            <span class="pgcl-units"></span>
-            <span class="pgcl-done">Süre doldu</span>
-          </span>
-          <span class="pgcl-track" aria-hidden="true"><span class="pgcl-fill"></span></span>
-        </button>
       </div>
 
       <!-- MİNİ TAKVİM (yalnızca mobil): Planlayıcı widget'ının hemen altında, sağa hizalı durur (planlayıcı uzarsa takvim de aşağı iner).
@@ -77131,17 +77130,15 @@ html body #page-relax .calendar-topbar{overflow:visible}
 html body #page-relax.is-behind-sheet .calendar-topbar{overflow:hidden}
 </style>
 <style id="pg-cdline-css">
-/* Ana sayfa: geri sayım çizgisi — tek satır, kartsız. Renk = sayacın kendi rengi (--c). */
+/* Ana sayfa: geri sayım — tek satır, kartsız, renksiz; alt dock'un hemen üstünde. */
 .pg-cdline{display:none}
-html[data-pg="on"] #page-1 .pg-cdline{display:block;position:relative;pointer-events:auto;margin:16px 3px 0;--c:#ff90e8;
-  color:var(--pg-ink,var(--theme-c2,#1a1a1a));font-family:"Baloo 2","Space Grotesk",sans-serif;
-  animation:pgIn 1s .2s cubic-bezier(.22,1,.36,1) both}
-.pgcl-btn{display:block;width:100%;margin:0;padding:.2rem 0 .1rem;border:0;background:none;color:inherit;font:inherit;text-align:left;cursor:pointer;
-  -webkit-tap-highlight-color:transparent;transition:opacity .2s,transform .25s cubic-bezier(.22,1,.36,1)}
-.pgcl-btn:active{opacity:.55;transform:scale(.985)}
-.pgcl-row1{display:flex;align-items:center;gap:.6rem;min-height:1.7rem}
-.pgcl-dot{flex:none;width:9px;height:9px;border-radius:50%;background:var(--c);animation:pgclPulse 2.4s ease-out infinite}
-@keyframes pgclPulse{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--c) 55%,transparent)}70%,100%{box-shadow:0 0 0 8px transparent}}
+html[data-pg="on"] #page-1 .pg-cdline{display:block;position:absolute;z-index:3;left:22px;right:22px;max-width:28rem;
+  bottom:calc(env(safe-area-inset-bottom) + 96px);pointer-events:auto;
+  color:var(--pg-ink,var(--theme-c2,#1a1a1a));font-family:"Baloo 2","Space Grotesk",sans-serif}
+@media (min-width:768px) and (min-height:600px){html[data-pg="on"] #page-1 .pg-cdline{bottom:28px}}
+.pgcl-btn{display:flex;align-items:center;gap:.8rem;width:100%;min-height:2.2rem;margin:0;padding:.2rem 0;border:0;background:none;color:inherit;font:inherit;text-align:left;cursor:pointer;
+  -webkit-tap-highlight-color:transparent;transition:opacity .2s}
+.pgcl-btn:active{opacity:.55}
 .pgcl-name{flex:1 1 0;min-width:0;font-size:.95rem;font-weight:700;letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .pgcl-plus{display:none;flex:none;opacity:.55}
 .pgcl-units{flex:none;display:flex;align-items:center;gap:.5rem;font-size:1.05rem;font-weight:800;font-variant-numeric:tabular-nums;line-height:1}
@@ -77149,25 +77146,12 @@ html[data-pg="on"] #page-1 .pg-cdline{display:block;position:relative;pointer-ev
 .pgcl-u[hidden]{display:none}
 .pgcl-n{display:inline-flex}
 .pgcl-u small{font-size:.62rem;font-weight:700;letter-spacing:.04em;opacity:.5;margin-left:.08rem}
-.pgcl-done{display:none;font-size:.95rem;font-weight:800;color:var(--c)}
-.pgcl-track{display:block;position:relative;height:3px;margin-top:.32rem;border-radius:3px;overflow:hidden;
-  background:color-mix(in srgb,currentColor 12%,transparent)}
-.pgcl-fill{position:absolute;left:0;top:0;bottom:0;width:var(--p,0%);border-radius:3px;
-  background:linear-gradient(90deg,color-mix(in srgb,var(--c) 45%,transparent),var(--c));
-  transition:width 1.1s cubic-bezier(.22,1,.36,1)}
-.pgcl-fill::after{content:"";position:absolute;top:0;bottom:0;width:38px;right:0;
-  background:linear-gradient(90deg,transparent,rgba(255,255,255,.75),transparent);animation:pgclShine 2.8s ease-in-out infinite}
-@keyframes pgclShine{0%{transform:translateX(-120%);opacity:0}30%{opacity:1}100%{transform:translateX(60px);opacity:0}}
-.pg-cdline.is-idle .pgcl-dot{background:currentColor;opacity:.3;animation:none}
+.pgcl-done{display:none;font-size:.95rem;font-weight:800}
 .pg-cdline.is-idle .pgcl-name{opacity:.55;font-weight:600}
 .pg-cdline.is-idle .pgcl-plus{display:block}
-.pg-cdline.is-idle .pgcl-units,.pg-cdline.is-idle .pgcl-fill{display:none}
-.pg-cdline.is-idle .pgcl-track{background:none;border-top:1.5px dashed color-mix(in srgb,currentColor 22%,transparent);height:0;border-radius:0}
+.pg-cdline.is-idle .pgcl-units{display:none}
 .pg-cdline.is-done .pgcl-units{display:none}
-.pg-cdline.is-done .pgcl-done{display:block;animation:pgclPop .7s cubic-bezier(.34,1.56,.64,1) both}
-.pg-cdline.is-done .pgcl-fill::after{animation:none}
-@keyframes pgclPop{from{opacity:0;transform:scale(.8)}to{opacity:1;transform:none}}
-@media (prefers-reduced-motion:reduce){.pgcl-dot,.pgcl-fill::after{animation:none}}
+.pg-cdline.is-done .pgcl-done{display:block}
 
 /* Yeni sayaç kur: alttan açılan küçük sayfa */
 .pgcl-bd{position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,.42);opacity:0;pointer-events:none;transition:opacity .3s}
@@ -77198,7 +77182,7 @@ html[data-pg="on"] #page-1 .pg-cdline{display:block;position:relative;pointer-ev
   const root = document.getElementById('pgCdLine'), pageEl = document.getElementById('page-1');
   if (!root || !pageEl || typeof openCdSheet !== 'function' || typeof getDayCountdown !== 'function' || typeof cdReelMake !== 'function') return;
   const btn = root.querySelector('.pgcl-btn'), nameEl = root.querySelector('.pgcl-name');
-  const fillEl = root.querySelector('.pgcl-fill'), unitsEl = root.querySelector('.pgcl-units');
+  const unitsEl = root.querySelector('.pgcl-units');
   const KEY = 'homeCdLineKey', U = ['d', 'h', 'm', 's'], LBL = { d: 'g', h: 'sa', m: 'dk', s: 'sn' };
   let key = typeof APP_STATE[KEY] === 'string' ? APP_STATE[KEY] : (typeof APP_STATE.homeCardCountdown === 'string' ? APP_STATE.homeCardCountdown : '');
   const box = {}, gEl = {}, reels = { d: [], h: [], m: [], s: [] };
@@ -77228,9 +77212,7 @@ html[data-pg="on"] #page-1 .pg-cdline{display:block;position:relative;pointer-ev
     return { rem, done, d: String(Math.floor(t / 86400)), h: pad(Math.floor(t % 86400 / 3600)), m: pad(Math.floor(t % 3600 / 60)), s: pad(t % 60) };
   };
   const paint = (v) => {
-    const p = Math.max(0, Math.min(1, (Date.now() - cur.start) / (cur.target - cur.start)));
     root.classList.toggle('is-done', v.done);
-    fillEl.style.setProperty('--p', (v.done ? 100 : p * 100).toFixed(2) + '%');
     gEl.d.hidden = v.d === '0';
   };
   const visible = () => !!cur && pageEl.classList.contains('is-active') && !document.hidden;
@@ -77251,22 +77233,18 @@ html[data-pg="on"] #page-1 .pg-cdline{display:block;position:relative;pointer-ev
     cur = resolve();
     root.classList.toggle('is-idle', !cur);
     if (!cur) {
-      nameEl.textContent = 'Geri sayım ekle'; root.style.removeProperty('--c');
+      nameEl.textContent = 'Geri sayım ekle';
       btn.setAttribute('aria-label', 'Geri sayım ekle'); return;
     }
-    root.style.setProperty('--c', cur.cd.color);
     nameEl.textContent = cur.cd.name;
     btn.setAttribute('aria-label', cur.cd.name + ', sayacı değiştir');
     const v = vals();
     build('d', v.d.length); ['h', 'm', 's'].forEach((u) => build(u, 2));
-    fillEl.style.transition = 'none'; fillEl.style.setProperty('--p', '0%'); void fillEl.offsetWidth; fillEl.style.transition = '';
+    // Açılışta rulo dönüşü yok: haneler doğrudan yerine oturur (iPhone'da takılmayı önler).
     root.classList.toggle('is-done', v.done); gEl.d.hidden = v.d === '0';
-    let order = 0;
-    U.forEach((u) => v[u].split('').forEach((c, i) => { cdReelIntro(reels[u][i], +c, delay + order * 55, 1300, tm); order += 1; }));
-    const total = delay + order * 55 + 1300;
-    introEnd = performance.now() + total;
-    tm.push(setTimeout(() => { if (cur) paint(vals()); }, delay + 250));
-    timer = setTimeout(tick, total + 20);
+    U.forEach((u) => v[u].split('').forEach((c, i) => cdReelSet(reels[u][i], +c, 0)));
+    introEnd = 0;
+    timer = setTimeout(tick, (v.rem % 1000 || 1000) + 8);
   };
   const setKey = (k) => { key = k; saveAppState({ [KEY]: k }); };
 
