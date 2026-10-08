@@ -652,7 +652,7 @@ ${stag}
 .ac-lr{position:relative;display:flex;align-items:center}
 #acctChip{position:absolute;right:6px;top:50%;transform:translateY(-50%);display:flex}
 .settings-scroll .settings-page #acctSection>.settings-card,.settings-scroll .settings-page #updSection>.settings-card{padding-top:0;padding-bottom:0}
-.ac-chip{--sc:#8a8a8a;display:inline-flex;align-items:center;gap:7px;font-size:13.5px;font-weight:600;white-space:nowrap}
+.ac-chip{--sc:#8a8a8a;color:var(--theme-text,#fff);display:inline-flex;align-items:center;gap:7px;font-size:13.5px;font-weight:600;white-space:nowrap}
 .ac-chip[data-s=err]{color:#e5484d}
 .ac-ci{display:grid;place-items:center;width:20px;height:20px;border-radius:50%}
 .ac-ci svg{color:var(--sc);overflow:visible}
@@ -1394,11 +1394,6 @@ body.is-qhavuz-test-open .pf-side{opacity:.35;pointer-events:none}}
     var h = signedIn() ? avatarHTML(48) : '<span class="pf-ph">' + ic(IC.user, 22) + '</span>';
     b.setAttribute('aria-label', signedIn() ? 'Profil resmini büyüt' : 'Giriş yap');
     if (b._h !== h) { b.innerHTML = h; b._h = h; }
-    // Ana sayfadaki sağ üst profil rozeti (#pgChip) için: profil/oturum bilgisini yayınla.
-    try {
-      var si = signedIn(), pp = prof(), d = { signedIn: si, status: authState, name: si ? dispName(pp) : '', color: si ? pickColor(pp) : '', avatar: si ? avatarHTML(38) : '' };
-      window.__pgProfile = d; window.dispatchEvent(new CustomEvent('pace:profile', { detail: d }));
-    } catch (e0) {}
   }
   var prevYd = '', okAt = 0;
   function ui() {

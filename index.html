@@ -40019,6 +40019,21 @@ html[data-pg="on"] #page-1 .home-relax-widget.is-empty .home-relax-widget-time{d
 
           <div class="settings-divider"></div>
 
+          <div class="settings-row" id="settingsAutoThemeRow">
+            <div class="settings-row-text">
+              <span class="settings-row-title">Otomatik tema</span>
+              <span class="settings-row-desc">Gündüz (07:00–19:00) Fildişi, gece Saf Siyah</span>
+            </div>
+            <label class="toggle brutal-toggle settings-toggle" id="settingsAutoThemeToggleWrap">
+              <input type="checkbox" id="settingsAutoThemeToggle" />
+              <span class="track">
+                <span class="thumb"></span>
+              </span>
+            </label>
+          </div>
+
+          <div class="settings-divider"></div>
+
           <button type="button" class="settings-row settings-row-link" id="settingsPatternsLink">
             <div class="settings-row-text">
               <span class="settings-row-title">Renk Paleti</span>
@@ -55741,7 +55756,53 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
   // değiştirdiğinde tetiklenen ortak kancaya bağlanıyoruz (syncSwatchSelection
   // içinden çağrılır); böylece hangi yoldan değiştirilirse değiştirilsin
   // Ayarlar'daki rozet anında doğru renge taşınır.
-  window.onThemeSelectionChanged = syncSettingsThemeChip;
+  // ---- Otomatik tema: saate göre gündüz Fildişi (açık), gece Saf Siyah (koyu).
+  // Kullanıcı temayı elle değiştirirse otomatik mod kapanır. ----
+  const AUTO_THEME_DAY_START = 7;    // 07:00'dan itibaren gündüz
+  const AUTO_THEME_NIGHT_START = 19; // 19:00'dan itibaren gece
+  const autoThemeToggle = document.getElementById('settingsAutoThemeToggle');
+  let autoThemeOn = !!APP_STATE.autoTheme;
+  let autoThemeApplying = false;
+
+  const autoThemeTargetIndex = () => {
+    const h = new Date().getHours();
+    const isDay = h >= AUTO_THEME_DAY_START && h < AUTO_THEME_NIGHT_START;
+    return themes.findIndex((t) => t.name === (isDay ? 'Fildişi' : 'Saf Siyah'));
+  };
+
+  const runAutoTheme = () => {
+    if (!autoThemeOn) return;
+    const i = autoThemeTargetIndex();
+    if (i < 0 || i === themeIndex) return;
+    autoThemeApplying = true;
+    try {
+      applyTheme(i);
+      syncSwatchSelection(i);
+    } finally {
+      autoThemeApplying = false;
+    }
+  };
+
+  const setAutoTheme = (on) => {
+    autoThemeOn = !!on;
+    if (autoThemeToggle) autoThemeToggle.checked = autoThemeOn;
+    saveAppState({ autoTheme: autoThemeOn });
+    if (autoThemeOn) runAutoTheme();
+  };
+
+  if (autoThemeToggle) {
+    autoThemeToggle.checked = autoThemeOn;
+    autoThemeToggle.addEventListener('change', () => setAutoTheme(autoThemeToggle.checked));
+  }
+  setInterval(runAutoTheme, 60 * 1000);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) runAutoTheme(); });
+  runAutoTheme();
+
+  window.onThemeSelectionChanged = (index) => {
+    syncSettingsThemeChip(index);
+    // Elle yapılan tema değişikliği otomatik modu kapatır.
+    if (autoThemeOn && !autoThemeApplying) setAutoTheme(false);
+  };
 
   // ---- Hafta başlangıcı: kayan siyah pil ile segmented control ----
   const weekStartSegmented = document.getElementById('weekStartSegmented');
