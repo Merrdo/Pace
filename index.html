@@ -37616,6 +37616,37 @@ html[data-pg="on"] #page-1 .home-relax-widget.is-empty .home-relax-widget-title{
 #settingsIntlToggleWrap input:checked + .track{background:#9775fa}
 </style>
 
+<style id="relaxIdleCss">
+/* Boş durum (yaklaşan görev yok): soluk yazı yerine küçük, nefes alan bir nokta + saate göre değişen sakin bir cümle.
+   Görev varsa bu satır zaten görevin saatini gösterir; bu stil yalnızca .is-empty iken geçerlidir. */
+html[data-pg="on"] #page-1 .home-relax-widget.is-empty .home-relax-widget-time{
+  display:inline-flex;align-items:center;gap:.5rem;
+  font-family:"Baloo 2","Space Grotesk",sans-serif;font-weight:600;font-size:.86rem;line-height:1.2;letter-spacing:.01em;
+  color:color-mix(in srgb,var(--pg-ink) 62%,transparent)}
+html[data-pg="on"] #page-1 .home-relax-widget.is-empty .home-relax-widget-time::before{
+  content:"";flex:none;width:.42rem;height:.42rem;border-radius:50%;background:var(--pg-ink);
+  opacity:.85;animation:pgIdleDot 4.8s ease-in-out infinite}
+@keyframes pgIdleDot{0%,100%{opacity:.35;transform:scale(.78)}50%{opacity:.9;transform:scale(1)}}
+@media (prefers-reduced-motion:reduce){
+  html[data-pg="on"] #page-1 .home-relax-widget.is-empty .home-relax-widget-time::before{animation:none;opacity:.7}}
+</style>
+<script id="relaxIdleJs">
+  // Boş durum cümlesi: günün saatine göre seçilir; dakikada bir tazelenir (widget boşken).
+  window.homeIdleLine = function () {
+    const h = new Date().getHours();
+    if (h >= 5 && h < 11) return 'Güne boş başlıyorsun';
+    if (h >= 11 && h < 17) return 'Önünde görev yok';
+    if (h >= 17 && h < 22) return 'Bugünlük görev kalmadı';
+    return 'Dinlenme vakti, görev yok';
+  };
+  setInterval(function () {
+    const w = document.getElementById('homeRelaxWidget');
+    if (!w || !w.classList.contains('is-empty')) return;
+    const t = document.getElementById('homeRelaxWidgetTime');
+    const line = window.homeIdleLine();
+    if (t && t.textContent !== line) t.textContent = line;
+  }, 60000);
+</script>
 </head>
 <body oncopy="return false" oncut="return false" onselectstart="return false" ondragstart="return false">
 
@@ -54826,7 +54857,7 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
       if (!pick) {
         row.slotEl.innerHTML = HOME_MOON_HTML;
         row.leadEl.style.removeProperty('--hw-line');
-        row.timeEl.textContent = 'Yaklaşan görev yok';
+        row.timeEl.textContent = (window.homeIdleLine ? window.homeIdleLine() : 'Yaklaşan görev yok');
         row.titleEl.textContent = 'Rahatla';
         row.rowEl.setAttribute('aria-label', "Rahatla'ya git, yaklaşan görev yok");
         return { key, fillEl: null, from: NaN, to: NaN, pick: null };
