@@ -1389,7 +1389,18 @@ body.is-qhavuz-test-open .pf-side{opacity:.35;pointer-events:none}}
     b.addEventListener('click', function () { if (signedIn()) openViewer(b); else openModal(); });
     refreshSide();
   }
+  // Ana sayfadaki sağ üst profil rozetine (index.html #pgChip) bilgi gönderir: 'pace:profile' olayı.
+  function emitProfile() {
+    var on = signedIn();
+    var d = { signedIn: on, name: on ? dispName() : '', avatar: on ? avatarHTML(48) : '', status: authState };
+    var k = JSON.stringify(d);
+    if (emitProfile._k === k) return;
+    emitProfile._k = k;
+    window.__pgProfile = d;
+    try { window.dispatchEvent(new CustomEvent('pace:profile', { detail: d })); } catch (e) { /* yok say */ }
+  }
   function refreshSide() {
+    emitProfile();
     var b = document.getElementById('pfSide'); if (!b) return;
     var h = signedIn() ? avatarHTML(48) : '<span class="pf-ph">' + ic(IC.user, 22) + '</span>';
     b.setAttribute('aria-label', signedIn() ? 'Profil resmini büyüt' : 'Giriş yap');
