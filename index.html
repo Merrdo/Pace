@@ -78248,8 +78248,8 @@ html[data-pg="on"] #page-1 .pg-rq.is-on{display:block}
 .pg-rq .rq-cust{height:1.55rem;padding:0 .7rem;border:0;border-radius:999px;cursor:pointer;font:inherit;font-size:.72rem;font-weight:700;color:inherit;opacity:.6;
   background:color-mix(in srgb,var(--pg-ink,var(--theme-text,#fff)) 10%,transparent);-webkit-tap-highlight-color:transparent;transition:opacity .2s,transform .2s}
 .pg-rq .rq-cust:active{opacity:.9;transform:scale(.94)}
-.rq-sh-bd{position:fixed;inset:0;z-index:9600;background:rgba(0,0,0,.55);opacity:0;visibility:hidden;transition:opacity .35s,visibility 0s linear .35s}
-.rq-sh-bd.is-open{opacity:1;visibility:visible;transition:opacity .35s,visibility 0s}
+.rq-sh-bd{position:fixed;inset:0;z-index:9600;background:rgba(0,0,0,.55);opacity:0;visibility:hidden;transition:opacity var(--theme-transition-duration,480ms) var(--theme-transition-easing,ease),visibility 0s linear var(--theme-transition-duration,480ms)}
+.rq-sh-bd.is-open{opacity:1;visibility:visible;transition:opacity var(--theme-transition-duration,480ms) var(--theme-transition-easing,ease),visibility 0s}
 .rq-sh{position:fixed;left:0;right:0;bottom:0;z-index:9601;box-sizing:border-box;width:min(100%,32rem);margin:0 auto;padding:.6rem 1.3rem calc(env(safe-area-inset-bottom,0px) + 1.3rem);
   border-radius:1.9rem 1.9rem 0 0;font-family:"Baloo 2","Space Grotesk",sans-serif;color:var(--theme-text,#fff);background:var(--theme-bg,#000);
   box-shadow:0 -1px 0 color-mix(in srgb,var(--theme-text,#fff) 12%,transparent),0 -30px 60px -30px rgba(0,0,0,.7);
@@ -78533,6 +78533,9 @@ html[data-pg="on"] #page-1 .pg-rq.is-on{display:block}
   const sheetBd = document.createElement('div'); sheetBd.className = 'rq-sh-bd'; sheetBd.id = 'rqSheetBd';
   const sheet = document.createElement('div'); sheet.className = 'rq-sh'; sheet.id = 'rqSheet'; sheet.setAttribute('role', 'dialog'); sheet.setAttribute('aria-label', 'Özelleştir');
   document.body.appendChild(sheetBd); document.body.appendChild(sheet);
+  // Üst güvenli alan (theme-color): karartma (rgba(0,0,0,.55)) ile eş zamanlı aynı tona çekilir.
+  sheetBd._themeTint = { r: 0, g: 0, b: 0, alpha: 0.55 };
+  if (typeof window.watchBackdropForThemeColor === 'function') window.watchBackdropForThemeColor(sheetBd);
   const sheetHtml = () => `<span class="rq-sh-grip"></span><h3>Özelleştir</h3>` +
     `<div class="rq-sh-l">Soru sayısı</div><div class="rq-sh-step"><button type="button" data-step="-1" aria-label="Azalt">−</button><output id="rqShCnt">${st.count}</output><button type="button" data-step="1" aria-label="Artır">+</button></div>` +
     `<div class="rq-sh-pre">${PRESETS.map((n) => `<button type="button" data-n="${n}" class="${n === st.count ? 'is-on' : ''}">${n}</button>`).join('')}</div>` +
