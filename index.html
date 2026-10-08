@@ -40270,7 +40270,7 @@ html[data-pg="on"] #page-1 .home-relax-widget.is-empty .home-relax-widget-time{d
           <button type="button" class="settings-row settings-row-link" id="settingsRqRow">
             <div class="settings-row-text">
               <span class="settings-row-title">Soru hatırlatıcı</span>
-              <span class="settings-row-desc">Ana sayfada çözülmemiş soruları hatırlatır (dokun: süreyi değiştir)</span>
+              <span class="settings-row-desc">Ana sayfada çözülmemiş soruları hatırlatır (dokun: süre · basılı tut: şimdi hatırlat)</span>
             </div>
             <div class="settings-row-link-right">
               <span class="rq-set-val" id="settingsRqVal">45 dk</span>
@@ -78068,10 +78068,11 @@ html[data-pg="on"] #page-1 .pg-tm{
 </script>
 <style id="rqCss">
 /* ===== Soru hatırlatıcı (ana sayfa): soldan süzülen kart + rastgele test ===== */
-.rq-card{position:absolute;left:16px;z-index:5;bottom:calc(env(safe-area-inset-bottom,0px) + 112px);width:min(21.5rem,calc(100% - 32px));box-sizing:border-box;
-  padding:.85rem .9rem .8rem;border-radius:1.7rem;font-family:"Baloo 2","Space Grotesk",sans-serif;color:var(--theme-text,#16171b);
-  background:color-mix(in srgb,var(--theme-text,#16171b) 7%,var(--theme-bg,#f6f4ef));
-  box-shadow:0 18px 40px -22px rgba(0,0,0,.45),inset 0 0 0 1px color-mix(in srgb,var(--theme-text,#16171b) 9%,transparent);
+.rq-card{position:absolute;left:16px;z-index:5;bottom:calc(env(safe-area-inset-bottom,0px) + 112px);width:min(22.5rem,calc(100% - 32px));box-sizing:border-box;
+  padding:.6rem .6rem .65rem;border-radius:1.9rem;font-family:"Baloo 2","Space Grotesk",sans-serif;color:var(--theme-text,#16171b);
+  background:color-mix(in srgb,var(--theme-text,#16171b) 8%,var(--theme-bg,#f6f4ef));
+  -webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);
+  box-shadow:0 22px 44px -20px rgba(0,0,0,.55),0 0 30px -10px color-mix(in srgb,var(--accent-color,#ff90e8) 55%,transparent),inset 0 0 0 1px color-mix(in srgb,var(--theme-text,#16171b) 10%,transparent);
   opacity:0;visibility:hidden;transform:translate3d(-115%,0,0);pointer-events:none;will-change:transform;
   transition:transform .7s cubic-bezier(.22,1,.36,1),opacity .4s ease,visibility 0s linear .7s}
 .rq-card.is-in{opacity:1;visibility:visible;transform:translate3d(0,0,0);pointer-events:auto;
@@ -78081,7 +78082,14 @@ html[data-pg="on"] #page-1 .pg-tm{
 .rq-card>*{position:relative}
 .rq-x{position:absolute;top:.5rem;right:.55rem;width:1.7rem;height:1.7rem;display:grid;place-items:center;border:0;border-radius:50%;cursor:pointer;color:inherit;opacity:.45;background:none;-webkit-tap-highlight-color:transparent;transition:opacity .2s,background-color .2s}
 .rq-x:active{opacity:.9;background:color-mix(in srgb,var(--theme-text,#16171b) 10%,transparent)}
-.rq-main{display:flex;align-items:center;gap:.75rem;padding-right:1.4rem}
+.rq-main{display:flex;align-items:center;gap:.7rem}
+.rq-card.is-in .rq-top-ic svg{animation:rqRoll .9s cubic-bezier(.22,1,.36,1) .5s both}
+.rq-card.is-in .rq-top-ic::after{animation:rqRing 1.6s ease-out .7s 2}
+.rq-card.is-in .rq-top-bar{animation:rqBar 30s linear forwards}
+.rq-card .rq-chips{margin:.6rem .2rem .15rem}
+.rq-card .rq-foot{padding:0 .3rem 0 .6rem}
+.rq-card>.rq-kick{display:block;margin:.35rem 0 0 .6rem}
+.rq-card .rq-res{margin-left:.6rem}
 .rq-body{flex:1;min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:.1rem;border:0;background:none;padding:0;margin:0;text-align:left;cursor:pointer;color:inherit;font:inherit;-webkit-tap-highlight-color:transparent}
 .rq-kick{font-weight:800;font-size:.68rem;letter-spacing:.09em;text-transform:uppercase;opacity:.5}
 .rq-title{font-weight:800;font-size:1rem;line-height:1.2;overflow-wrap:anywhere}
@@ -78120,8 +78128,37 @@ html[data-pg="on"] #page-1 .pg-tm{
 .rq-step{display:flex;align-items:center;justify-content:space-between;margin-top:.6rem}
 .rq-step button{width:2.2rem;height:2.2rem;border-radius:50%;font-size:1.2rem;line-height:1}
 .rq-step output{font-weight:800;font-size:1.3rem;font-variant-numeric:tabular-nums}
-.rq-set-val{font-weight:800;font-size:.9rem;opacity:.6;font-variant-numeric:tabular-nums}
+.rq-set-val{font-weight:800;font-size:.9rem;color:var(--theme-text,#fff);opacity:1;font-variant-numeric:tabular-nums}
 @media (prefers-reduced-motion:reduce){.rq-card,.rq-card.is-in,.rq-pop{transition-duration:.01s}.rq-dice.is-roll svg{animation:none}}
+
+/* ----- Üst bildirim (ana sayfada değilken) ----- */
+.rq-top{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 10px);z-index:9500;width:min(22.5rem,calc(100% - 24px));box-sizing:border-box;
+  display:flex;align-items:center;gap:.7rem;padding:.6rem .6rem .6rem .6rem;border-radius:1.9rem;overflow:hidden;font-family:"Baloo 2","Space Grotesk",sans-serif;color:var(--theme-text,#f5f5f7);
+  background:color-mix(in srgb,var(--theme-text,#f5f5f7) 8%,var(--theme-bg,#101014));
+  -webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);
+  box-shadow:0 22px 44px -20px rgba(0,0,0,.6),0 0 30px -10px color-mix(in srgb,var(--accent-color,#ff90e8) 55%,transparent),inset 0 0 0 1px color-mix(in srgb,var(--theme-text,#f5f5f7) 10%,transparent);
+  opacity:0;visibility:hidden;pointer-events:none;transform:translate3d(-50%,-150%,0) scale(.94);will-change:transform}
+.rq-top.is-in{visibility:visible;pointer-events:auto;animation:rqTopIn .95s cubic-bezier(.22,1,.36,1) forwards}
+.rq-top.is-out{visibility:visible;animation:rqTopOut .5s cubic-bezier(.5,0,.75,0) forwards}
+@keyframes rqTopIn{0%{opacity:0;transform:translate3d(-50%,-150%,0) scale(.94)}55%{opacity:1;transform:translate3d(-50%,8px,0) scale(1.012)}80%{transform:translate3d(-50%,-2px,0) scale(.998)}100%{opacity:1;transform:translate3d(-50%,0,0) scale(1)}}
+@keyframes rqTopOut{from{opacity:1;transform:translate3d(-50%,0,0) scale(1)}to{opacity:0;transform:translate3d(-50%,-140%,0) scale(.95)}}
+.rq-top::before{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;background:radial-gradient(110% 160% at 0% 0%,color-mix(in srgb,var(--accent-color,#ff90e8) 26%,transparent),transparent 60%)}
+.rq-top>*{position:relative}
+.rq-top-main{flex:1;min-width:0;display:flex;align-items:center;gap:.7rem;border:0;background:none;padding:0;margin:0;text-align:left;color:inherit;font:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.rq-top-ic{flex:none;position:relative;width:2.7rem;height:2.7rem;display:grid;place-items:center;border-radius:50%;color:#16171b;background:var(--accent-color,#ff90e8)}
+.rq-top-ic svg{width:22px;height:22px}
+.rq-top.is-in .rq-top-ic svg{animation:rqRoll .9s cubic-bezier(.22,1,.36,1) .25s both}
+.rq-top-ic::after{content:"";position:absolute;inset:0;border-radius:50%;border:2px solid var(--accent-color,#ff90e8);opacity:0;pointer-events:none}
+.rq-top.is-in .rq-top-ic::after{animation:rqRing 1.6s ease-out .45s 2}
+@keyframes rqRing{0%{transform:scale(1);opacity:.55}100%{transform:scale(1.9);opacity:0}}
+.rq-top-txt{display:flex;flex-direction:column;min-width:0}
+.rq-top-txt .rq-title{font-size:.95rem;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}
+.rq-top-go{flex:none;height:2.2rem;padding:0 .95rem;border:0;border-radius:999px;cursor:pointer;font:inherit;font-weight:800;font-size:.84rem;color:#16171b;background:var(--accent-color,#ff90e8);-webkit-tap-highlight-color:transparent;transition:transform .25s cubic-bezier(.34,1.56,.64,1)}
+.rq-top-go:active{transform:scale(.92)}
+.rq-top-bar{position:absolute!important;left:1.2rem;right:1.2rem;bottom:0;height:2px;border-radius:2px;transform-origin:left center;background:color-mix(in srgb,var(--accent-color,#ff90e8) 70%,transparent);opacity:.8}
+.rq-top.is-in .rq-top-bar{animation:rqBar 7s linear forwards}
+@keyframes rqBar{from{transform:scaleX(1)}to{transform:scaleX(0)}}
+@media (prefers-reduced-motion:reduce){.rq-top.is-in{animation:none;opacity:1;transform:translate3d(-50%,0,0)}.rq-top.is-out{animation:none;opacity:0}.rq-top.is-in .rq-top-ic svg,.rq-top.is-in .rq-top-ic::after,.rq-top.is-in .rq-top-bar{animation:none}}
 </style>
 <script id="rqJs">
 /* ---------- Ana sayfa: Soru hatırlatıcı ----------
@@ -78174,11 +78211,11 @@ html[data-pg="on"] #page-1 .pg-tm{
       const r = st.res;
       card.innerHTML = `<button type="button" class="rq-x" data-a="close" aria-label="Kapat">${XI}</button><span class="rq-kick">Rastgele test bitti</span>` +
         `<div class="rq-res"><div><b class="ok">${r.correct}</b><i>Doğru</i></div><div><b class="no">${r.wrong}</b><i>Yanlış</i></div>${r.blank ? `<div><b>${r.blank}</b><i>Boş</i></div>` : ''}<div><b>${fmt(r.ms)}</b><i>Süre</i></div></div>` +
-        `<div class="rq-foot"><span>Toplam <b>${st.total}</b> soru çözdün</span><button type="button" class="rq-dice" data-a="dice" aria-label="Tekrar rastgele soru çöz">${DICE}<small>${st.count}</small></button></div>${popHtml()}`;
+        `<div class="rq-foot"><span>Toplam <b>${st.total}</b> soru çözdün</span><button type="button" class="rq-top-go" data-a="dice" aria-label="Tekrar rastgele soru çöz">Tekrar · ${st.count}</button></div>${popHtml()}`;
     } else {
       const zc = zeList().length, pc = poolList().length;
-      card.innerHTML = `<button type="button" class="rq-x" data-a="close" aria-label="Kapat">${XI}</button><div class="rq-main"><button type="button" class="rq-body" data-a="go"><span class="rq-kick">Soru zamanı</span><span class="rq-title">${kind === 'ze' ? `Sıfır Hata'da ${zc} soru bakılmayı bekliyor` : `Soru havuzunda ${pc} soru çözülmeyi bekliyor`}</span></button>` +
-        `<button type="button" class="rq-dice" data-a="dice" aria-label="Rastgele soru çöz. Basılı tut: soru sayısı">${DICE}<small>${st.count}</small></button></div>${chipsHtml()}${popHtml()}`;
+      card.innerHTML = `<div class="rq-main"><button type="button" class="rq-top-main" data-a="go"><span class="rq-top-ic">${DICE}</span><span class="rq-top-txt"><span class="rq-kick">Soru zamanı</span><span class="rq-title">${titleFor(kind)}</span></span></button>` +
+        `<button type="button" class="rq-top-go" data-a="dice" aria-label="Rastgele soru çöz. Basılı tut: soru sayısı">Rastgele · ${st.count}</button></div>${chipsHtml()}${popHtml()}<span class="rq-top-bar"></span>`;
     }
   };
 
@@ -78190,6 +78227,74 @@ html[data-pg="on"] #page-1 .pg-tm{
   };
   const hide = () => { clearTimeout(autoT); card.classList.remove('is-in'); popOpen = false; const p = card.querySelector('.rq-pop'); if (p) p.classList.remove('is-open'); mode = card.classList.contains('is-in') ? mode : ''; };
   const visible = () => card.classList.contains('is-in');
+
+
+  // ---- Ses: yumuşak, üç notalı yükselen "damla" (sinüs + hafif yankı; sert/klasik zil sesi yok) ----
+  let ac = null;
+  const chime = () => {
+    try {
+      const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return;
+      ac = ac || new AC(); if (ac.state === 'suspended') ac.resume();
+      const t0 = ac.currentTime + 0.03;
+      const lp = ac.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 2400; lp.Q.value = 0.2;
+      const dl = ac.createDelay(0.6); dl.delayTime.value = 0.21;
+      const fb = ac.createGain(); fb.gain.value = 0.3;
+      const wet = ac.createGain(); wet.gain.value = 0.32;
+      lp.connect(ac.destination); lp.connect(dl); dl.connect(fb); fb.connect(dl); dl.connect(wet); wet.connect(ac.destination);
+      [[587.33, 0], [739.99, 0.11], [880, 0.23]].forEach(([f, d], i) => {
+        const peak = 0.05 - i * 0.006;
+        [[1, 1, 0], [2, 0.16, 4]].forEach(([mul, amp, det]) => {
+          const o = ac.createOscillator(), g = ac.createGain();
+          o.type = 'sine'; o.frequency.value = f * mul; o.detune.value = det;
+          const t = t0 + d;
+          g.gain.setValueAtTime(0.0001, t);
+          g.gain.exponentialRampToValueAtTime(peak * amp, t + 0.025);
+          g.gain.exponentialRampToValueAtTime(0.0001, t + 1.1);
+          o.connect(g); g.connect(lp); o.start(t); o.stop(t + 1.2);
+        });
+      });
+    } catch (e) { /* ses çalınamazsa sessiz geç */ }
+  };
+
+  // ---- Üst bildirim (ana sayfada değilken) ----
+  const top = document.createElement('div');
+  top.className = 'rq-top'; top.id = 'rqTop'; top.setAttribute('role', 'status');
+  document.body.appendChild(top);
+  let topT = 0, topY = 0;
+  const topVisible = () => top.classList.contains('is-in');
+  const titleFor = (k) => (k === 'ze' ? `Sıfır Hata'da ${zeList().length} soru bakılmayı bekliyor` : `Soru havuzunda ${poolList().length} soru çözülmeyi bekliyor`);
+  const hideTop = () => {
+    clearTimeout(topT);
+    if (!topVisible()) return;
+    top.classList.remove('is-in'); top.classList.add('is-out');
+    setTimeout(() => top.classList.remove('is-out'), 520);
+  };
+  const showTop = () => {
+    clearTimeout(topT);
+    top.innerHTML = `<button type="button" class="rq-top-main" data-a="go"><span class="rq-top-ic">${DICE}</span><span class="rq-top-txt"><span class="rq-kick">Soru zamanı</span><span class="rq-title">${titleFor(kind)}</span></span></button><button type="button" class="rq-top-go" data-a="dice">Rastgele · ${st.count}</button><span class="rq-top-bar"></span>`;
+    top.classList.remove('is-out', 'is-in'); void top.offsetWidth; top.classList.add('is-in');
+    chime();
+    if (navigator.vibrate) { try { navigator.vibrate(12); } catch (e) { /* yok say */ } }
+    topT = setTimeout(hideTop, 7000);
+  };
+  top.addEventListener('click', (e) => {
+    const a = e.target.closest('[data-a]'); if (!a) return;
+    hideTop();
+    if (a.dataset.a === 'dice') startRandom();
+    else if (kind === 'ze' && typeof openZeroErrorPage === 'function') openZeroErrorPage('page-1');
+    else goToPage('page-camera');
+  });
+  top.addEventListener('pointerdown', (e) => { topY = e.clientY; clearTimeout(topT); });
+  top.addEventListener('pointerup', (e) => { if (topY - e.clientY > 24) hideTop(); else if (topVisible()) topT = setTimeout(hideTop, 4000); });
+
+  // Şimdi hatırlat: ana sayfadaysan kart, değilsen üst bildirim
+  const remindNow = () => {
+    const zc = zeList().length, pc = poolList().length;
+    if (!zc && !pc) { try { showAppToast('Şu an hatırlatılacak soru yok'); } catch (e) { /* yok say */ } return; }
+    kind = zc && pc ? (Math.random() < 0.5 ? 'ze' : 'pool') : (zc ? 'ze' : 'pool');
+    st.last = Date.now(); save();
+    if (pageActive() && !busy()) { show('remind'); chime(); } else if (!busy()) showTop();
+  };
 
   const startRandom = () => {
     if (!st.src.length) return;
@@ -78209,18 +78314,20 @@ html[data-pg="on"] #page-1 .pg-tm{
   };
 
   // ---- Etkileşim ----
-  let pressT = 0, longFired = false;
+  let pressT = 0, longFired = false, cardX = 0;
   card.addEventListener('pointerdown', (e) => {
     clearTimeout(autoT);
-    const d = e.target.closest('.rq-dice'); if (!d) return;
+    cardX = e.clientX;
+    const d = e.target.closest('.rq-dice, .rq-top-go'); if (!d) return;
     longFired = false; clearTimeout(pressT);
     pressT = setTimeout(() => {
       longFired = true; popOpen = true; card.querySelector('.rq-pop').classList.add('is-open');
       if (navigator.vibrate) { try { navigator.vibrate(10); } catch (x) { /* yok say */ } }
     }, 480);
   });
-  ['pointerup', 'pointercancel', 'pointerleave'].forEach((t) => card.addEventListener(t, (e) => { if (e.target.closest && e.target.closest('.rq-dice') || t !== 'pointerleave') clearTimeout(pressT); }));
+  ['pointerup', 'pointercancel', 'pointerleave'].forEach((t) => card.addEventListener(t, (e) => { if (e.target.closest && e.target.closest('.rq-dice, .rq-top-go') || t !== 'pointerleave') clearTimeout(pressT); }));
   card.addEventListener('contextmenu', (e) => e.preventDefault());
+  card.addEventListener('pointerup', (e) => { if (mode === 'remind' && cardX - e.clientX > 40 && !longFired) hide(); });
   card.addEventListener('click', (e) => {
     const pop = card.querySelector('.rq-pop');
     const n = e.target.closest('[data-n]'), stp = e.target.closest('[data-step]');
@@ -78229,6 +78336,7 @@ html[data-pg="on"] #page-1 .pg-tm{
       st.count = Math.max(1, Math.min(100, st.count + (+stp.dataset.step))); save();
       card.querySelector('#rqCnt').textContent = st.count;
       card.querySelectorAll('.rq-dice small').forEach((s) => { s.textContent = st.count; });
+      card.querySelectorAll('.rq-top-go').forEach((g) => { g.textContent = (mode === 'result' ? 'Tekrar · ' : 'Rastgele · ') + st.count; });
       card.querySelectorAll('.rq-pre button').forEach((b) => b.classList.toggle('is-on', +b.dataset.n === st.count));
       return;
     }
@@ -78256,23 +78364,24 @@ html[data-pg="on"] #page-1 .pg-tm{
       setTimeout(startRandom, 280);
     }
   });
-  document.addEventListener('pointerdown', (e) => { const p = card.querySelector('.rq-pop'); if (p && p.classList.contains('is-open') && !e.target.closest('.rq-pop') && !e.target.closest('.rq-dice')) p.classList.remove('is-open'); }, true);
+  document.addEventListener('pointerdown', (e) => { const p = card.querySelector('.rq-pop'); if (p && p.classList.contains('is-open') && !e.target.closest('.rq-pop') && !e.target.closest('.rq-dice, .rq-top-go')) p.classList.remove('is-open'); }, true);
 
   // ---- Zamanlama ----
   const pageActive = () => page.classList.contains('is-active');
   const busy = () => document.body.classList.contains('is-qhavuz-test-open');
   function evaluate() {
-    if (!pageActive() || busy()) { if (visible() && mode === 'remind') hide(); return; }
-    if (st.res && !st.res.dismissed) { if (!visible() || mode !== 'result') show('result'); return; }
-    if (visible()) return;
+    if (busy()) { if (visible() && mode === 'remind') hide(); hideTop(); return; }
+    const home = pageActive();
+    if (home && st.res && !st.res.dismissed) { if (!visible() || mode !== 'result') show('result'); return; }
+    if (visible() || topVisible()) return;
     if (!(st.interval > 0) || Date.now() - (st.last || 0) < st.interval * 60000) return;
     const zc = zeList().length, pc = poolList().length;
     if (!zc && !pc) return;
     kind = zc && pc ? (Math.random() < 0.5 ? 'ze' : 'pool') : (zc ? 'ze' : 'pool');
     st.last = Date.now(); save();
-    show('remind');
+    if (home) { show('remind'); chime(); } else showTop();
   }
-  new MutationObserver(() => { if (!pageActive()) { if (visible()) { clearTimeout(autoT); card.classList.remove('is-in'); } } else setTimeout(evaluate, 600); }).observe(page, { attributes: true, attributeFilter: ['class'] });
+  new MutationObserver(() => { if (pageActive()) hideTop(); if (!pageActive()) { if (visible()) { clearTimeout(autoT); card.classList.remove('is-in'); } } else setTimeout(evaluate, 600); }).observe(page, { attributes: true, attributeFilter: ['class'] });
   setInterval(evaluate, 20000);
   setTimeout(evaluate, 2500);
 
@@ -78280,10 +78389,20 @@ html[data-pg="on"] #page-1 .pg-tm{
   const row = document.getElementById('settingsRqRow'), val = document.getElementById('settingsRqVal');
   const syncRow = () => { if (val) val.textContent = st.interval ? `${st.interval} dk` : 'Kapalı'; };
   syncRow();
-  if (row) row.addEventListener('click', () => {
-    const i = INTERVALS.indexOf(st.interval);
-    st.interval = INTERVALS[(i + 1) % INTERVALS.length]; st.last = Date.now(); save(); syncRow();
-  });
+  let rowT = 0, rowLong = false;
+  if (row) {
+    row.addEventListener('pointerdown', () => {
+      rowLong = false; clearTimeout(rowT);
+      rowT = setTimeout(() => { rowLong = true; if (navigator.vibrate) { try { navigator.vibrate(12); } catch (e) { /* yok say */ } } remindNow(); }, 550);
+    });
+    ['pointerup', 'pointerleave', 'pointercancel'].forEach((t) => row.addEventListener(t, () => clearTimeout(rowT)));
+    row.addEventListener('contextmenu', (e) => e.preventDefault());
+    row.addEventListener('click', () => {
+      if (rowLong) { rowLong = false; return; }
+      const i = INTERVALS.indexOf(st.interval);
+      st.interval = INTERVALS[(i + 1) % INTERVALS.length]; st.last = Date.now(); save(); syncRow();
+    });
+  }
 })();
 </script>
 </body>
