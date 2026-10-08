@@ -37519,6 +37519,28 @@ html[data-pg="on"] #page-1 .home-relax-widget.is-empty .home-relax-widget-title{
   .pg-today.is-compact .cal-evc-txt b{font-size:.92rem;line-height:1.1;-webkit-line-clamp:1}
   .pg-today.is-compact .cal-evc-txt em{font-size:.7rem;line-height:1.1;margin-top:.08rem}
   .pg-today.is-compact .cal-evc-more{padding:.2rem .75rem;font-size:.72rem}
+  /* Bugün etkinlik yokken: yaklaşan etkinlik + günün mini özeti. Kartsız, sade tipografi. */
+  .pg-today.is-idle .pg-today-list{display:none}
+  .pg-today .pgt-idle{display:flex;flex-direction:column;gap:1rem;width:100%}
+  .pg-today .pgt-idle[hidden],.pg-today .pgt-next[hidden]{display:none !important}
+  .pg-today .pgt-next,.pg-today .pgt-stat{background:none;border:0;padding:0;margin:0;font:inherit;color:inherit;
+    text-align:left;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:opacity .2s}
+  .pg-today .pgt-next:active,.pg-today .pgt-stat:active{opacity:.5}
+  .pg-today .pgt-next{display:flex;align-items:stretch;gap:.65rem;width:100%}
+  .pg-today .pgt-bar{flex:none;width:3px;border-radius:3px;background:var(--c,#ff90e8)}
+  .pg-today .pgt-next-txt{min-width:0;display:flex;flex-direction:column;gap:.18rem;padding:.02rem 0}
+  .pg-today .pgt-kicker,.pg-today .pgt-lbl{font-size:.6rem;font-weight:700;letter-spacing:.09em;
+    text-transform:uppercase;opacity:.5;line-height:1}
+  .pg-today .pgt-next-name{font-size:.95rem;font-weight:700;line-height:1.15;display:-webkit-box;
+    -webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;overflow-wrap:anywhere}
+  .pg-today .pgt-next-when{font-size:.74rem;font-weight:600;opacity:.62;line-height:1.1}
+  .pg-today .pgt-stats{display:flex;flex-wrap:wrap;align-items:stretch;gap:.5rem 1.05rem}
+  .pg-today .pgt-stat{display:flex;flex-direction:column;gap:.38rem}
+  .pg-today .pgt-sep{flex:none;width:1px;background:currentColor;opacity:.16;border-radius:1px}
+  .pg-today .pgt-val{font-size:1.5rem;font-weight:800;line-height:1;letter-spacing:-.01em;
+    font-variant-numeric:tabular-nums;white-space:nowrap}
+  .pg-today .pgt-val small{font-size:.68rem;font-weight:700;letter-spacing:0;opacity:.55;margin:0 .24em 0 .08em}
+  .pg-today .pgt-val small:last-child{margin-right:0}
   .pg-cal .home-cal-widget{padding:0;margin:0;background:none;border:0;box-shadow:none;border-radius:0;
     color:var(--pg-ink,var(--theme-c2,#1a1a1a));font-family:"Baloo 2","Space Grotesk",sans-serif;
     cursor:pointer;-webkit-tap-highlight-color:transparent;transition:opacity .2s}
@@ -38522,6 +38544,29 @@ html[data-pg="on"] #page-1 .home-relax-widget.is-empty .home-relax-widget-title{
         <div class="pg-today" id="pgToday" hidden>
           <div class="pg-today-list" id="pgTodayList"></div>
           <button type="button" class="cal-evc-more" id="pgTodayMore" hidden></button>
+          <!-- Bugün etkinlik yoksa: yaklaşan ilk etkinlik + günün mini özeti (toplam çalışma süresi, çözülen soru).
+               JS: "Ana sayfa: bugünün etkinlikleri" script'i (showIdle / renderStats). -->
+          <div class="pgt-idle" id="pgTodayIdle" hidden>
+            <button type="button" class="pgt-next" id="pgTodayNext" hidden>
+              <span class="pgt-bar" aria-hidden="true"></span>
+              <span class="pgt-next-txt">
+                <span class="pgt-kicker">Yaklaşan</span>
+                <span class="pgt-next-name" id="pgTodayNextName"></span>
+                <span class="pgt-next-when" id="pgTodayNextWhen"></span>
+              </span>
+            </button>
+            <div class="pgt-stats">
+              <button type="button" class="pgt-stat" id="pgTodayStudy" aria-label="Bugün çalışılan süre. Kronometre'ye git">
+                <span class="pgt-val" id="pgTodayStudyVal">0<small>dk</small></span>
+                <span class="pgt-lbl">Çalışma</span>
+              </button>
+              <span class="pgt-sep" aria-hidden="true"></span>
+              <button type="button" class="pgt-stat" id="pgTodayQ" aria-label="Bugün çözülen soru. Soru Takibi'ne git">
+                <span class="pgt-val" id="pgTodayQVal">0</span>
+                <span class="pgt-lbl">Soru</span>
+              </button>
+            </div>
+          </div>
         </div>
         <div class="pg-cal-box">
           <div class="home-cal-widget" id="homeCalWidget" role="button" tabindex="0" aria-label="Takvim'e git">
@@ -51263,7 +51308,7 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
   // Veri, Takvim sayfasının kendi fonksiyonlarından okunur (getDayEvents, ce_evColor) ve kartlar,
   // Takvim sayfasındaki etkinlik kartıyla (.cal-evc) aynı yapıda çizilir. En fazla 3 etkinlik gösterilir
   // (3 olunca kartlar kompakt, takvimin yüksekliğine sığar); daha fazlası "+N etkinlik daha" olur.
-  // İlk etkinlik, mini takvimdeki bugün işaretçisinin rengini de belirler. Etkinlik yoksa alan gizli kalır.
+  // İlk etkinlik, mini takvimdeki bugün işaretçisinin rengini de belirler. Etkinlik yoksa yaklaşan etkinlik + günün mini özeti (çalışma süresi, çözülen soru) gösterilir.
   // Dokununca Takvim açılır (mini takvimle aynı akış).
   (function () {
     const box = document.getElementById('pgToday');
@@ -51277,10 +51322,105 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
     const goCalendar = () => { const cal = document.getElementById('homeCalWidget'); if (cal) cal.click(); };
     moreEl.addEventListener('click', goCalendar);
 
+    // ---- Bugün etkinlik yokken: yaklaşan etkinlik + günün mini özeti ----
+    const idleEl = document.getElementById('pgTodayIdle');
+    const nextBtn = document.getElementById('pgTodayNext');
+    const nextNameEl = document.getElementById('pgTodayNextName');
+    const nextWhenEl = document.getElementById('pgTodayNextWhen');
+    const studyBtn = document.getElementById('pgTodayStudy');
+    const studyValEl = document.getElementById('pgTodayStudyVal');
+    const qBtn = document.getElementById('pgTodayQ');
+    const qValEl = document.getElementById('pgTodayQVal');
+    const MON = ['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara'];
+    let idleOn = false;
+    let lastStats = '';
+
+    if (nextBtn) nextBtn.addEventListener('click', goCalendar);
+    if (studyBtn) studyBtn.addEventListener('click', () => {
+      const input = document.querySelector('.nav-input[value="page-5"]');
+      if (input && !input.checked) { input.checked = true; input.dispatchEvent(new Event('change')); }
+      else if (typeof goToPage === 'function') goToPage('page-5');
+    });
+    if (qBtn) qBtn.addEventListener('click', () => {
+      const w = document.getElementById('homeQuestionWidget'); if (w) w.click();
+    });
+
+    // Yarından başlayarak en yakın etkinliği (kullanıcı etkinliği ya da resmî tatil) bulur; aynı günde kullanıcı etkinliği önceliklidir.
+    const findUpcoming = (now) => {
+      for (let i = 1; i <= 90; i++) {
+        const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() + i);
+        const l = safe(() => getDayEvents(d), []);
+        if (l.length) return { ev: l.find((e) => !e.holiday) || l[0], d, diff: i };
+      }
+      return null;
+    };
+
+    const renderNext = (now) => {
+      if (!nextBtn) return;
+      const up = findUpcoming(now);
+      if (!up) { nextBtn.hidden = true; return; }
+      const { ev, d, diff } = up;
+      const day = diff === 1 ? 'Yarın' : diff <= 14 ? diff + ' gün sonra' : d.getDate() + ' ' + MON[d.getMonth()];
+      const when = ev.time ? day + ' · ' + ev.time : day;
+      nextBtn.style.setProperty('--c', safe(() => ce_evColor(ev), '#ff90e8'));
+      nextNameEl.textContent = ev.name;
+      nextWhenEl.textContent = when;
+      nextBtn.setAttribute('aria-label', 'Yaklaşan etkinlik: ' + ev.name + ', ' + when + ". Takvim'e git");
+      nextBtn.hidden = false;
+    };
+
+    const todayKey = () => {
+      const n = new Date();
+      return n.getFullYear() + '-' + String(n.getMonth() + 1).padStart(2, '0') + '-' + String(n.getDate()).padStart(2, '0');
+    };
+
+    const renderStats = () => {
+      if (!idleOn || !studyValEl || !qValEl) return;
+      // Çalışma: arşivlenmiş günlük toplam + henüz arşive yazılmamış canlı kronometre/sayaç payı
+      // (İstatistiklerim sayfasındaki "Bugün" ile aynı hesap).
+      const logs = safe(() => APP_STATE.stopwatchLogs, null);
+      let ms = (logs && typeof logs === 'object' && logs[todayKey()]) || 0;
+      ms += safe(() => page10LiveTodayMs(), safe(() => currentElapsedMs(), 0));
+      const mins = Math.max(0, Math.floor(ms / 60000));
+      const h = Math.floor(mins / 60), m = mins % 60;
+      const studyHtml = h > 0 ? h + '<small>sa</small>' + m + '<small>dk</small>' : m + '<small>dk</small>';
+      // Soru: Soru Takibi'ndeki bugünün kayıtlarının toplamı; erişilemezse "Bugün Çözülen" kartındaki sayı.
+      let q = safe(() => {
+        const k = page9DateKey(page9StartOfDay(new Date()));
+        return page9State.logs.reduce((sum, log) => sum + (log.date === k ? (log.count || 0) : 0), 0);
+      }, null);
+      if (q === null) q = parseInt((document.getElementById('homeQuestionWidgetCount') || {}).textContent, 10) || 0;
+      const sig = studyHtml + '|' + q;
+      if (sig === lastStats) return;
+      lastStats = sig;
+      studyValEl.innerHTML = studyHtml;
+      qValEl.textContent = String(q);
+      const label = (h > 0 ? h + ' saat ' : '') + m + ' dakika';
+      studyBtn.setAttribute('aria-label', 'Bugün çalışılan süre: ' + label + ". Kronometre'ye git");
+      qBtn.setAttribute('aria-label', 'Bugün çözülen soru: ' + q + ". Soru Takibi'ne git");
+    };
+
+    const showIdle = (now) => {
+      if (!idleEl) { box.hidden = true; lastKey = ''; return; }
+      idleOn = true; lastKey = ''; lastStats = '';
+      listEl.innerHTML = ''; moreEl.hidden = true;
+      box.classList.remove('is-compact');
+      box.classList.add('is-idle');
+      idleEl.hidden = false;
+      renderNext(now);
+      renderStats();
+      box.hidden = false;
+    };
+
     const render = () => {
       const now = new Date();
       const list = safe(() => getDayEvents(new Date(now.getFullYear(), now.getMonth(), now.getDate())), []);
-      if (!list.length) { box.hidden = true; lastKey = ''; return; }
+      if (!list.length) { showIdle(now); return; }
+      if (idleOn) {
+        idleOn = false; lastKey = '';
+        box.classList.remove('is-idle');
+        if (idleEl) idleEl.hidden = true;
+      }
       const shown = list.slice(0, SHOW);
       const rest = list.length - shown.length;
       const key = JSON.stringify([shown.map((e) => [e.id, e.name, e.time, e.color]), rest]);
@@ -51315,6 +51455,8 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
     document.addEventListener('visibilitychange', () => { if (!document.hidden) schedule(); });
     document.addEventListener('change', (e) => { if (e.target && e.target.classList && e.target.classList.contains('nav-input')) schedule(); });
     setInterval(render, 60000);
+    // Kronometre çalışırken / soru eklenirken özet canlı kalsın (yalnızca boş-gün görünümünde ve sayfa görünürken).
+    setInterval(() => { if (idleOn && !document.hidden) renderStats(); }, 5000);
     render();
   })();
 </script>
