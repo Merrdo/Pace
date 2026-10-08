@@ -37401,7 +37401,7 @@ html[data-pg="on"] #page-1 .home-widgets-stack{
   left:20px;right:20px;top:calc(env(safe-area-inset-top) + 96px);
   width:auto;max-width:28rem;min-height:0;margin:0;
   animation:pgIn 1s .15s cubic-bezier(.22,1,.36,1) both}
-html[data-pg="on"] #page-1 .home-widgets-stack > :not(.home-tile-relax){display:none !important}
+html[data-pg="on"] #page-1 .home-widgets-stack > :not(.home-tile-relax):not(.pg-cal){display:none !important}
 html[data-pg="on"] #page-1 .home-tile-relax::after{content:none !important;display:none !important}
 html[data-pg="on"] #page-1 .home-relax-widget{transform:none;min-height:0}
 html[data-pg="on"] #page-1 .home-relax-task-row{padding:.4rem .2rem}
@@ -37464,13 +37464,13 @@ html[data-pg="on"] #page-1 .home-relax-widget.is-empty .home-relax-widget-time{
 
 /* ===== ANA SAYFA (MOBİL): profilin altında mini takvim =====
    Kartsız/sade; yazı rengi diğer ana sayfa öğeleri gibi temanın ikincil rengi (--pg-ink).
-   Profil rozeti: üstten 22px + 38px yükseklik = 60px; takvim 80px'te başlar (≈20px boşluk).
+   Takvim .home-widgets-stack içinde, planlayıcı kartının hemen altında akar (sağa hizalı).
    Sadece mobil: büyük ekran koşulunun (min-width:768px ve min-height:600px) tersi. */
 .pg-cal{display:none}
 @media not all and (min-width:768px) and (min-height:600px){
   html[data-pg="on"] #page-1{--pg-cal-w:clamp(132px,40vw,160px)}
-  .pg-cal{display:block;position:absolute;pointer-events:auto;
-    top:calc(env(safe-area-inset-top) + 80px);right:22px;width:var(--pg-cal-w,150px);
+  .pg-cal{display:block;position:relative;pointer-events:auto;
+    width:var(--pg-cal-w,150px);margin:22px 2px 0 auto;
     animation:pgIn 1s .1s cubic-bezier(.22,1,.36,1) both}
   .pg-cal .home-cal-widget{padding:0;margin:0;background:none;border:0;box-shadow:none;border-radius:0;
     color:var(--pg-ink,var(--theme-c2,#1a1a1a));font-family:"Baloo 2","Space Grotesk",sans-serif;
@@ -37492,8 +37492,6 @@ html[data-pg="on"] #page-1 .home-relax-widget.is-empty .home-relax-widget-time{
   .pg-cal .home-cal-dots{position:absolute;left:0;right:0;bottom:6%;display:flex;justify-content:center;gap:1.5px}
   .pg-cal .home-cal-dots i{width:3px;height:3px;border-radius:50%;background:var(--dot-c,currentColor)}
   .pg-cal .home-cal-day.is-today .home-cal-dots i{box-shadow:0 0 0 .5px var(--theme-c1,#fff)}
-  /* Planlayıcı widget'ı takvimin altına/üstüne binmesin: sağ kenarı takvimin soluna çekilir. */
-  html[data-pg="on"] #page-1 .home-widgets-stack{right:calc(22px + var(--pg-cal-w,150px) + 14px)}
 }
 @media (prefers-reduced-motion:reduce){.pg-cal{animation:none}}
 </style>
@@ -38336,17 +38334,6 @@ html[data-pg="on"] #page-1 .home-relax-widget.is-empty .home-relax-widget-time{
         </span>
         <span class="pg-name" id="pgName">Giriş yap</span>
       </button>
-
-      <!-- MİNİ TAKVİM (yalnızca mobil): profilin altında, aralarında boşluk bırakılarak durur.
-           İçeriği JS çizer (bkz. "Ana sayfa: mini ay takvimi" script'i); dokununca Takvim açılır.
-           Büyük ekranda gizlidir (orada eski düzen geçerli). -->
-      <div class="pg-cal">
-        <div class="home-cal-widget" id="homeCalWidget" role="button" tabindex="0" aria-label="Takvim'e git">
-          <div class="home-cal-head" id="homeCalHead"></div>
-          <div class="home-cal-wd" id="homeCalWd" aria-hidden="true"></div>
-          <div class="home-cal-grid" id="homeCalGrid"></div>
-        </div>
-      </div>
     </div>
     <script>
     (function(){
@@ -38440,6 +38427,17 @@ html[data-pg="on"] #page-1 .home-relax-widget.is-empty .home-relax-widget-time{
           </span>
         </button>
       </div>
+      </div>
+
+      <!-- MİNİ TAKVİM (yalnızca mobil): Planlayıcı widget'ının hemen altında, sağa hizalı durur (planlayıcı uzarsa takvim de aşağı iner).
+           İçeriği JS çizer (bkz. "Ana sayfa: mini ay takvimi" script'i); dokununca Takvim açılır.
+           Büyük ekranda gizlidir (orada eski düzen geçerli). -->
+      <div class="pg-cal">
+        <div class="home-cal-widget" id="homeCalWidget" role="button" tabindex="0" aria-label="Takvim'e git">
+          <div class="home-cal-head" id="homeCalHead"></div>
+          <div class="home-cal-wd" id="homeCalWd" aria-hidden="true"></div>
+          <div class="home-cal-grid" id="homeCalGrid"></div>
+        </div>
       </div>
 
 
