@@ -37409,7 +37409,7 @@ html[data-pg="on"] #page-1 .home-widgets-stack{
   left:20px;right:20px;top:calc(env(safe-area-inset-top) + 96px);
   width:auto;max-width:28rem;min-height:0;margin:0;
   animation:pgIn 1s .15s cubic-bezier(.22,1,.36,1) both}
-html[data-pg="on"] #page-1 .home-widgets-stack > :not(.home-tile-relax):not(.pg-cal){display:none !important}
+html[data-pg="on"] #page-1 .home-widgets-stack > :not(.home-tile-relax):not(.pg-cal):not(.pg-cdline){display:none !important}
 html[data-pg="on"] #page-1 .home-tile-relax::after{content:none !important;display:none !important}
 html[data-pg="on"] #page-1 .home-relax-widget{transform:none;min-height:0}
 html[data-pg="on"] #page-1 .home-relax-task-row{padding:.4rem .2rem}
@@ -38551,6 +38551,21 @@ html[data-pg="on"] #page-1 .home-relax-widget.is-empty .home-relax-widget-time{d
           </span>
         </button>
       </div>
+      </div>
+
+      <!-- GERİ SAYIM ÇİZGİSİ: tek satırlık, kartsız sayaç. Dokununca Takvim'deki sayaçlar seçilir ya da yeni sayaç kurulur.
+           JS: "Ana sayfa: geri sayım çizgisi" script'i (sayfa sonu). -->
+      <div class="pg-cdline is-idle" id="pgCdLine">
+        <button type="button" class="pgcl-btn" aria-label="Geri sayım ekle">
+          <span class="pgcl-row1">
+            <span class="pgcl-dot" aria-hidden="true"></span>
+            <span class="pgcl-name">Geri sayım ekle</span>
+            <span class="pgcl-plus" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16"><path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg></span>
+            <span class="pgcl-units"></span>
+            <span class="pgcl-done">Süre doldu</span>
+          </span>
+          <span class="pgcl-track" aria-hidden="true"><span class="pgcl-fill"></span></span>
+        </button>
       </div>
 
       <!-- MİNİ TAKVİM (yalnızca mobil): Planlayıcı widget'ının hemen altında, sağa hizalı durur (planlayıcı uzarsa takvim de aşağı iner).
@@ -49937,15 +49952,28 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
       cdSheetListEl.appendChild(row);
     });
 
-    // Seçme kipinde karttaki sayaç varsa kaldırma seçeneği.
-    if (pick && selectedKey && cdSheetOpts.onClear) {
-      cdSheetFootEl.innerHTML = '<button type="button" class="cd-sheet-clear">Sayacı karttan kaldır</button>';
-      cdSheetFootEl.hidden = false;
-      cdSheetFootEl.querySelector('button').addEventListener('click', () => {
-        const opts = cdSheetOpts;
-        closeCdSheet();
-        setTimeout(() => { if (opts && opts.onClear) opts.onClear(); }, 200);
-      });
+    // Seçme kipinde: yeni sayaç kur (varsa) + karttaki sayacı kaldır (varsa).
+    if (pick) {
+      const canNew = !!cdSheetOpts.onCreate;
+      const canClear = !!(selectedKey && cdSheetOpts.onClear);
+      if (canNew || canClear) {
+        cdSheetFootEl.innerHTML =
+          (canNew ? '<button type="button" class="cd-sheet-clear cd-sheet-new">+ Yeni sayaç kur</button>' : '') +
+          (canClear ? '<button type="button" class="cd-sheet-clear cd-sheet-rm">Sayacı karttan kaldır</button>' : '');
+        cdSheetFootEl.hidden = false;
+        const nb = cdSheetFootEl.querySelector('.cd-sheet-new');
+        if (nb) nb.addEventListener('click', () => {
+          const opts = cdSheetOpts;
+          closeCdSheet();
+          setTimeout(() => { if (opts && opts.onCreate) opts.onCreate(); }, 220);
+        });
+        const rb = cdSheetFootEl.querySelector('.cd-sheet-rm');
+        if (rb) rb.addEventListener('click', () => {
+          const opts = cdSheetOpts;
+          closeCdSheet();
+          setTimeout(() => { if (opts && opts.onClear) opts.onClear(); }, 200);
+        });
+      }
     }
   };
 
@@ -77102,5 +77130,213 @@ html body #qhavuzFabBar .qhavuz-fab-select.is-active{
 html body #page-relax .calendar-topbar{overflow:visible}
 html body #page-relax.is-behind-sheet .calendar-topbar{overflow:hidden}
 </style>
+<style id="pg-cdline-css">
+/* Ana sayfa: geri sayım çizgisi — tek satır, kartsız. Renk = sayacın kendi rengi (--c). */
+.pg-cdline{display:none}
+html[data-pg="on"] #page-1 .pg-cdline{display:block;position:relative;pointer-events:auto;margin:16px 3px 0;--c:#ff90e8;
+  color:var(--pg-ink,var(--theme-c2,#1a1a1a));font-family:"Baloo 2","Space Grotesk",sans-serif;
+  animation:pgIn 1s .2s cubic-bezier(.22,1,.36,1) both}
+.pgcl-btn{display:block;width:100%;margin:0;padding:.2rem 0 .1rem;border:0;background:none;color:inherit;font:inherit;text-align:left;cursor:pointer;
+  -webkit-tap-highlight-color:transparent;transition:opacity .2s,transform .25s cubic-bezier(.22,1,.36,1)}
+.pgcl-btn:active{opacity:.55;transform:scale(.985)}
+.pgcl-row1{display:flex;align-items:center;gap:.6rem;min-height:1.7rem}
+.pgcl-dot{flex:none;width:9px;height:9px;border-radius:50%;background:var(--c);animation:pgclPulse 2.4s ease-out infinite}
+@keyframes pgclPulse{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--c) 55%,transparent)}70%,100%{box-shadow:0 0 0 8px transparent}}
+.pgcl-name{flex:1 1 0;min-width:0;font-size:.95rem;font-weight:700;letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pgcl-plus{display:none;flex:none;opacity:.55}
+.pgcl-units{flex:none;display:flex;align-items:center;gap:.5rem;font-size:1.05rem;font-weight:800;font-variant-numeric:tabular-nums;line-height:1}
+.pgcl-u{display:inline-flex;align-items:center;gap:.1rem}
+.pgcl-u[hidden]{display:none}
+.pgcl-n{display:inline-flex}
+.pgcl-u small{font-size:.62rem;font-weight:700;letter-spacing:.04em;opacity:.5;margin-left:.08rem}
+.pgcl-done{display:none;font-size:.95rem;font-weight:800;color:var(--c)}
+.pgcl-track{display:block;position:relative;height:3px;margin-top:.32rem;border-radius:3px;overflow:hidden;
+  background:color-mix(in srgb,currentColor 12%,transparent)}
+.pgcl-fill{position:absolute;left:0;top:0;bottom:0;width:var(--p,0%);border-radius:3px;
+  background:linear-gradient(90deg,color-mix(in srgb,var(--c) 45%,transparent),var(--c));
+  transition:width 1.1s cubic-bezier(.22,1,.36,1)}
+.pgcl-fill::after{content:"";position:absolute;top:0;bottom:0;width:38px;right:0;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.75),transparent);animation:pgclShine 2.8s ease-in-out infinite}
+@keyframes pgclShine{0%{transform:translateX(-120%);opacity:0}30%{opacity:1}100%{transform:translateX(60px);opacity:0}}
+.pg-cdline.is-idle .pgcl-dot{background:currentColor;opacity:.3;animation:none}
+.pg-cdline.is-idle .pgcl-name{opacity:.55;font-weight:600}
+.pg-cdline.is-idle .pgcl-plus{display:block}
+.pg-cdline.is-idle .pgcl-units,.pg-cdline.is-idle .pgcl-fill{display:none}
+.pg-cdline.is-idle .pgcl-track{background:none;border-top:1.5px dashed color-mix(in srgb,currentColor 22%,transparent);height:0;border-radius:0}
+.pg-cdline.is-done .pgcl-units{display:none}
+.pg-cdline.is-done .pgcl-done{display:block;animation:pgclPop .7s cubic-bezier(.34,1.56,.64,1) both}
+.pg-cdline.is-done .pgcl-fill::after{animation:none}
+@keyframes pgclPop{from{opacity:0;transform:scale(.8)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.pgcl-dot,.pgcl-fill::after{animation:none}}
+
+/* Yeni sayaç kur: alttan açılan küçük sayfa */
+.pgcl-bd{position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,.42);opacity:0;pointer-events:none;transition:opacity .3s}
+.pgcl-bd.is-open{opacity:1;pointer-events:auto}
+.pgcl-sh{position:absolute;left:0;right:0;bottom:0;max-width:30rem;margin:0 auto;display:flex;flex-direction:column;gap:.7rem;
+  padding:1.2rem 1.2rem calc(env(safe-area-inset-bottom,0px) + 1.2rem);border-radius:1.8rem 1.8rem 0 0;
+  background:var(--theme-bg,#f6f4ef);color:var(--theme-text,#121212);font-family:"Baloo 2","Space Grotesk",sans-serif;
+  transform:translateY(100%);transition:transform .5s cubic-bezier(.22,1,.36,1)}
+.pgcl-bd.is-open .pgcl-sh{transform:none}
+.pgcl-sh-t{font-size:1.2rem;font-weight:800}
+.pgcl-row{display:flex;gap:.6rem}
+.pgcl-in{flex:1 1 0;min-width:0;height:3rem;padding:0 1rem;border:0;border-radius:1rem;font:inherit;font-size:1rem;font-weight:600;
+  color:inherit;background:color-mix(in srgb,currentColor 8%,transparent);
+  -webkit-user-select:text;user-select:text;-webkit-appearance:none;appearance:none}
+.pgcl-sw{display:flex;gap:.7rem;padding:.2rem .1rem}
+.pgcl-sw button{flex:none;width:2rem;height:2rem;border-radius:50%;border:0;padding:0;background:var(--k);cursor:pointer;
+  transition:transform .25s cubic-bezier(.34,1.56,.64,1),box-shadow .25s}
+.pgcl-sw button.is-on{transform:scale(1.18);box-shadow:0 0 0 3px var(--theme-bg,#f6f4ef),0 0 0 5px var(--k)}
+.pgcl-save{height:3.1rem;border:0;border-radius:1.2rem;font:inherit;font-size:1.02rem;font-weight:800;cursor:pointer;
+  background:var(--k,#ff90e8);color:var(--ko,#16171b);transition:transform .2s}
+.pgcl-save:active{transform:scale(.97)}
+</style>
+<script id="pg-cdline-js">
+/* ---------- Ana sayfa: geri sayım çizgisi ----------
+   Veri/seçici/rulo haneler Takvim script'inden gelir (getDayCountdown, openCdSheet, cdReel*).
+   Seçili sayaç anahtarı: APP_STATE.homeCdLineKey (yoksa eski kartın seçimi başlangıç olur). */
+(() => {
+  const root = document.getElementById('pgCdLine'), pageEl = document.getElementById('page-1');
+  if (!root || !pageEl || typeof openCdSheet !== 'function' || typeof getDayCountdown !== 'function' || typeof cdReelMake !== 'function') return;
+  const btn = root.querySelector('.pgcl-btn'), nameEl = root.querySelector('.pgcl-name');
+  const fillEl = root.querySelector('.pgcl-fill'), unitsEl = root.querySelector('.pgcl-units');
+  const KEY = 'homeCdLineKey', U = ['d', 'h', 'm', 's'], LBL = { d: 'g', h: 'sa', m: 'dk', s: 'sn' };
+  let key = typeof APP_STATE[KEY] === 'string' ? APP_STATE[KEY] : (typeof APP_STATE.homeCardCountdown === 'string' ? APP_STATE.homeCardCountdown : '');
+  const box = {}, gEl = {}, reels = { d: [], h: [], m: [], s: [] };
+  U.forEach((u) => {
+    const g = document.createElement('span'); g.className = 'pgcl-u';
+    g.innerHTML = '<span class="pgcl-n"></span><small>' + LBL[u] + '</small>';
+    unitsEl.appendChild(g); gEl[u] = g; box[u] = g.firstChild;
+  });
+  let cur = null, timer = 0, introEnd = 0, tm = [];
+  const pad = (n) => String(n).padStart(2, '0');
+  const resolve = () => {
+    const p = String(key).split('-').map(Number);
+    if (p.length !== 3 || p.some((n) => !Number.isFinite(n))) return null;
+    const date = new Date(p[0], p[1] - 1, p[2]), cd = getDayCountdown(date);
+    if (!cd) return null;
+    const target = dayCdTarget(date, cd.time).getTime();
+    let start = cd.created || target - 365 * 864e5;
+    if (start >= target) start = target - 864e5;
+    return { date, cd, target, start };
+  };
+  const build = (u, n) => {
+    box[u].textContent = '';
+    reels[u] = Array.from({ length: n }, () => { const r = cdReelMake(); box[u].appendChild(r.el); return r; });
+  };
+  const vals = () => {
+    const rem = cur.target - Date.now(), done = rem <= 0, t = done ? 0 : Math.ceil(rem / 1000);
+    return { rem, done, d: String(Math.floor(t / 86400)), h: pad(Math.floor(t % 86400 / 3600)), m: pad(Math.floor(t % 3600 / 60)), s: pad(t % 60) };
+  };
+  const paint = (v) => {
+    const p = Math.max(0, Math.min(1, (Date.now() - cur.start) / (cur.target - cur.start)));
+    root.classList.toggle('is-done', v.done);
+    fillEl.style.setProperty('--p', (v.done ? 100 : p * 100).toFixed(2) + '%');
+    gEl.d.hidden = v.d === '0';
+  };
+  const visible = () => !!cur && pageEl.classList.contains('is-active') && !document.hidden;
+  const tick = () => {
+    timer = 0;
+    const r = resolve(); if (!r) { render(0); return; }
+    cur = r;
+    if (!visible()) return;
+    if (performance.now() < introEnd) { timer = setTimeout(tick, 150); return; }
+    const v = vals();
+    if (reels.d.length !== v.d.length) build('d', v.d.length);
+    U.forEach((u) => v[u].split('').forEach((c, i) => cdReelSet(reels[u][i], +c, CD_TICK_MS)));
+    paint(v);
+    if (!v.done) timer = setTimeout(tick, (v.rem % 1000 || 1000) + 8);
+  };
+  const render = (delay) => {
+    clearTimeout(timer); tm.forEach(clearTimeout); tm = [];
+    cur = resolve();
+    root.classList.toggle('is-idle', !cur);
+    if (!cur) {
+      nameEl.textContent = 'Geri sayım ekle'; root.style.removeProperty('--c');
+      btn.setAttribute('aria-label', 'Geri sayım ekle'); return;
+    }
+    root.style.setProperty('--c', cur.cd.color);
+    nameEl.textContent = cur.cd.name;
+    btn.setAttribute('aria-label', cur.cd.name + ', sayacı değiştir');
+    const v = vals();
+    build('d', v.d.length); ['h', 'm', 's'].forEach((u) => build(u, 2));
+    fillEl.style.transition = 'none'; fillEl.style.setProperty('--p', '0%'); void fillEl.offsetWidth; fillEl.style.transition = '';
+    root.classList.toggle('is-done', v.done); gEl.d.hidden = v.d === '0';
+    let order = 0;
+    U.forEach((u) => v[u].split('').forEach((c, i) => { cdReelIntro(reels[u][i], +c, delay + order * 55, 1300, tm); order += 1; }));
+    const total = delay + order * 55 + 1300;
+    introEnd = performance.now() + total;
+    tm.push(setTimeout(() => { if (cur) paint(vals()); }, delay + 250));
+    timer = setTimeout(tick, total + 20);
+  };
+  const setKey = (k) => { key = k; saveAppState({ [KEY]: k }); };
+
+  // ---- Yeni sayaç kur ----
+  const COLORS = ['#ff90e8', '#59c97b', '#ffb454', '#6ea8ff', '#ff5d6c', '#b79cff'];
+  let bd, color = COLORS[0];
+  const ymd = (d) => d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+  const paintSave = () => {
+    const sv = bd.querySelector('.pgcl-save');
+    sv.style.setProperty('--k', color);
+    sv.style.setProperty('--ko', typeof dayCdOnColor === 'function' ? dayCdOnColor(color) : '#16171b');
+    bd.querySelectorAll('.pgcl-sw button').forEach((b) => b.classList.toggle('is-on', b.dataset.c === color));
+  };
+  const closeCreate = () => { bd.classList.remove('is-open'); if (document.activeElement && document.activeElement.blur) document.activeElement.blur(); };
+  const save = () => {
+    const name = bd.querySelector('.pgcl-name-in').value.trim(), dv = bd.querySelector('.pgcl-date-in').value, time = bd.querySelector('.pgcl-time-in').value || '';
+    const toast = (m) => { if (typeof showAppToast === 'function') showAppToast(m, 'error'); };
+    if (!name) { toast('Sayaca bir isim ver'); return; }
+    const p = dv.split('-').map(Number);
+    if (p.length !== 3 || p.some((n) => !Number.isFinite(n))) { toast('Bir tarih seç'); return; }
+    const date = new Date(p[0], p[1] - 1, p[2]);
+    if (dayCdTarget(date, time).getTime() <= Date.now()) { toast('Seçilen zaman geçmişte kaldı'); return; }
+    const k = dayCdKey(date), all = { ...getDayCountdowns() };
+    if (all[k]) { toast('Bu güne ait bir sayaç zaten var, o seçildi'); }
+    else {
+      all[k] = { name, time, color, createdAt: Date.now() };
+      if (!saveAppState({ [DAY_CD_STATE_KEY]: all })) return;
+      if (typeof applyCalendarMarks === 'function') { try { applyCalendarMarks(); } catch (e) { /* yoksay */ } }
+    }
+    setKey(k); closeCreate(); setTimeout(() => render(150), 250);
+  };
+  const openCreate = () => {
+    if (!bd) {
+      bd = document.createElement('div'); bd.className = 'pgcl-bd';
+      bd.innerHTML = '<div class="pgcl-sh" role="dialog" aria-label="Yeni geri sayım"><b class="pgcl-sh-t">Yeni geri sayım</b>' +
+        '<input class="pgcl-in pgcl-name-in" type="text" maxlength="40" placeholder="Adı (ör. YKS)" autocomplete="off">' +
+        '<div class="pgcl-row"><input class="pgcl-in pgcl-date-in" type="date"><input class="pgcl-in pgcl-time-in" type="time" value="09:00"></div>' +
+        '<div class="pgcl-sw">' + COLORS.map((c) => '<button type="button" data-c="' + c + '" style="--k:' + c + '" aria-label="Renk"></button>').join('') + '</div>' +
+        '<button type="button" class="pgcl-save">Sayacı kur</button></div>';
+      document.body.appendChild(bd);
+      bd.addEventListener('click', (e) => { if (e.target === bd) closeCreate(); });
+      bd.querySelector('.pgcl-sw').addEventListener('click', (e) => { const b = e.target.closest('button'); if (b) { color = b.dataset.c; paintSave(); } });
+      bd.querySelector('.pgcl-save').addEventListener('click', save);
+    }
+    const t = new Date(); t.setDate(t.getDate() + 1);
+    const di = bd.querySelector('.pgcl-date-in'); di.min = ymd(new Date()); di.value = ymd(t);
+    bd.querySelector('.pgcl-name-in').value = '';
+    paintSave(); void bd.offsetWidth; bd.classList.add('is-open');
+  };
+
+  btn.addEventListener('click', () => {
+    if (!resolve() && !Object.keys(getDayCountdowns()).length) { openCreate(); return; }
+    openCdSheet({
+      mode: 'pick', selectedKey: resolve() ? key : '',
+      onPick: (k) => { setKey(k); render(120); },
+      onClear: () => { setKey(''); render(0); },
+      onCreate: openCreate,
+    });
+  });
+
+  let wasActive = pageEl.classList.contains('is-active');
+  new MutationObserver(() => {
+    const a = pageEl.classList.contains('is-active');
+    if (a && !wasActive) render(300);
+    if (!a) { clearTimeout(timer); timer = 0; }
+    wasActive = a;
+  }).observe(pageEl, { attributes: true, attributeFilter: ['class'] });
+  document.addEventListener('visibilitychange', () => { if (!document.hidden && pageEl.classList.contains('is-active')) render(0); });
+  render(500);
+})();
+</script>
 </body>
 </html>
