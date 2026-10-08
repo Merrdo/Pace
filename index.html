@@ -37396,9 +37396,8 @@ html[data-pg="on"] #page-1 > :not(.pg-root):not(.app-logo):not(.home-widgets-sta
    iç görünüm aynen duruyor; yalnızca yerleşim sadeleştirildi ve boş durumdaki
    "Rahatla" yazısı görev başlığı gibi değil, desenli/animasyonlu bir yazı olarak yeniden tasarlandı.
    Stack içindeki diğer eski kutular (çözülen, takvim, geri sayım...) gizli kalır. */
-/* GEÇİCİ: planlayıcı widget'ı mobilde kaldırıldı (silinmedi). Geri açmak için bu satırdaki display:none'ı kaldır. */
 html[data-pg="on"] #page-1 .home-widgets-stack{
-  display:none !important;position:absolute;z-index:3;
+  display:block;position:absolute;z-index:3;
   left:20px;right:20px;top:calc(env(safe-area-inset-top) + 96px);
   width:auto;max-width:28rem;min-height:0;margin:0;
   animation:pgIn 1s .15s cubic-bezier(.22,1,.36,1) both}
@@ -37452,44 +37451,51 @@ html[data-pg="on"] #page-1 .home-relax-widget.is-empty .home-relax-widget-time{
   html[data-pg="on"] #page-1 .home-relax-widget.is-empty .home-relax-widget-title{animation:none;--pgLvl:35%}
   html[data-pg="on"] #page-1 .home-widgets-stack{animation:none}}
 
-/* ---- Hedefe Kalan Süre kartı (sağ alt) ---- */
-html[data-pg="on"] #page-1 .pg-goal{
-  position:absolute;pointer-events:auto;z-index:3;
-  right:16px;bottom:92px;
-  width:min(52vw,13.5rem);box-sizing:border-box;text-align:left;cursor:pointer;
-  display:flex;flex-direction:column;gap:.7rem;padding:.9rem 1rem 1rem;
-  font-family:"Baloo 2","Space Grotesk",sans-serif;color:var(--pg-ink);
-  background:color-mix(in srgb,var(--pg-ink) 5%,transparent);
-  border:1px solid color-mix(in srgb,var(--pg-ink) 9%,transparent);border-radius:22px;
-  -webkit-tap-highlight-color:transparent;transition:transform .25s cubic-bezier(.22,1,.36,1),opacity .25s;
-  animation:pgGoalIn .9s .25s cubic-bezier(.22,1,.36,1) both}
-html[data-pg="on"] #page-1 .pg-goal:active{transform:scale(.97);opacity:.8}
-@keyframes pgGoalIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
-.pg-goal-head{display:flex;align-items:center;gap:.4rem;font-size:.72rem;font-weight:600;letter-spacing:.01em;
-  color:color-mix(in srgb,var(--pg-ink) 62%,transparent)}
-.pg-goal-head svg{flex:none;color:var(--pg-ink)}
-.pg-goal-body{display:flex;align-items:flex-end;justify-content:space-between;gap:.6rem}
-.pg-goal-info{display:flex;flex-direction:column;min-width:0;gap:.1rem}
-.pg-goal-name{font-size:1.02rem;font-weight:700;line-height:1.1;letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.pg-goal-date{font-size:.7rem;font-weight:500;line-height:1.2;color:color-mix(in srgb,var(--pg-ink) 55%,transparent);white-space:nowrap}
-.pg-goal-num{display:flex;flex-direction:column;align-items:flex-end;flex:none;line-height:1}
-.pg-goal-num b{font-size:1.75rem;font-weight:800;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
-.pg-goal-num small{font-size:.7rem;font-weight:500;margin-top:.1rem;color:color-mix(in srgb,var(--pg-ink) 55%,transparent)}
-.pg-goal.is-empty .pg-goal-num b,.pg-goal.is-empty .pg-goal-num small{display:none}
-.pg-goal.is-empty .pg-goal-num::after{content:"+";font-size:1.7rem;font-weight:500;line-height:1;color:var(--pg-ink)}
-@media (prefers-reduced-motion:reduce){html[data-pg="on"] #page-1 .pg-goal{animation:none}}
-
 /* Geniş ekran: bento düzeni yerine sol üstte sade, tek widget */
 @media (min-width:768px) and (min-height:600px){
   html[data-pg="on"] #page-1 .home-widgets-stack{
-    display:block !important;left:22px;right:auto;top:calc(env(safe-area-inset-top) + 96px);width:min(30rem,60%);max-width:none}
+    left:22px;right:auto;top:calc(env(safe-area-inset-top) + 96px);width:min(30rem,60%);max-width:none}
   html[data-pg="on"] #page-1 .home-tile-relax{
     display:block;height:min(52dvh,22rem);padding:0 !important;background:none !important;border:0 !important;box-shadow:none !important;border-radius:0 !important}
-  html[data-pg="on"] #page-1 .pg-goal{right:32px;bottom:32px;width:15rem}
   html[data-pg="on"] #page-1 .home-relax-task-row{padding:.6rem .3rem;flex:0 0 auto}
   html[data-pg="on"] #page-1 .home-relax-widget{justify-content:flex-start}
   html[data-pg="on"] #page-1 .home-relax-widget.is-empty .home-relax-widget-title{font-size:2.3rem}
 }
+
+/* ===== ANA SAYFA (MOBİL): profilin altında mini takvim =====
+   Kartsız/sade; yazı rengi diğer ana sayfa öğeleri gibi temanın ikincil rengi (--pg-ink).
+   Profil rozeti: üstten 22px + 38px yükseklik = 60px; takvim 80px'te başlar (≈20px boşluk).
+   Sadece mobil: büyük ekran koşulunun (min-width:768px ve min-height:600px) tersi. */
+.pg-cal{display:none}
+@media not all and (min-width:768px) and (min-height:600px){
+  html[data-pg="on"] #page-1{--pg-cal-w:clamp(132px,40vw,160px)}
+  .pg-cal{display:block;position:absolute;pointer-events:auto;
+    top:calc(env(safe-area-inset-top) + 80px);right:22px;width:var(--pg-cal-w,150px);
+    animation:pgIn 1s .1s cubic-bezier(.22,1,.36,1) both}
+  .pg-cal .home-cal-widget{padding:0;margin:0;background:none;border:0;box-shadow:none;border-radius:0;
+    color:var(--pg-ink,var(--theme-c2,#1a1a1a));font-family:"Baloo 2","Space Grotesk",sans-serif;
+    cursor:pointer;-webkit-tap-highlight-color:transparent;transition:opacity .2s}
+  .pg-cal .home-cal-widget:active{opacity:.55}
+  .pg-cal .home-cal-head{margin:0 0 6px;font-weight:700;font-size:12.5px;line-height:1;
+    letter-spacing:.06em;text-transform:uppercase}
+  .pg-cal .home-cal-head .home-cal-year{margin-left:.45em;font-weight:600;color:inherit;opacity:.5}
+  .pg-cal .home-cal-wd,.pg-cal .home-cal-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:0}
+  .pg-cal .home-cal-wd span{text-align:center;padding-bottom:3px;font-weight:600;font-size:8px;
+    letter-spacing:.02em;text-transform:uppercase;opacity:.45}
+  .pg-cal .home-cal-day{position:relative;display:grid;place-items:center;aspect-ratio:1;border-radius:50%;
+    font-weight:600;font-size:11px;line-height:1;font-variant-numeric:tabular-nums}
+  .pg-cal .home-cal-day.is-weekend{opacity:.6}
+  .pg-cal .home-cal-day.is-off{color:#e74c3c;opacity:1}
+  .pg-cal .home-cal-day.has-cd{box-shadow:inset 0 0 0 1.5px var(--cd-color)}
+  .pg-cal .home-cal-day.is-today{background:var(--pg-ink,var(--theme-c2,#1a1a1a));
+    color:var(--theme-c1,var(--theme-bg,#fff));opacity:1}
+  .pg-cal .home-cal-dots{position:absolute;left:0;right:0;bottom:6%;display:flex;justify-content:center;gap:1.5px}
+  .pg-cal .home-cal-dots i{width:3px;height:3px;border-radius:50%;background:var(--dot-c,currentColor)}
+  .pg-cal .home-cal-day.is-today .home-cal-dots i{box-shadow:0 0 0 .5px var(--theme-c1,#fff)}
+  /* Planlayıcı widget'ı takvimin altına/üstüne binmesin: sağ kenarı takvimin soluna çekilir. */
+  html[data-pg="on"] #page-1 .home-widgets-stack{right:calc(22px + var(--pg-cal-w,150px) + 14px)}
+}
+@media (prefers-reduced-motion:reduce){.pg-cal{animation:none}}
 </style>
 
 </head>
@@ -38331,18 +38337,16 @@ html[data-pg="on"] #page-1 .pg-goal:active{transform:scale(.97);opacity:.8}
         <span class="pg-name" id="pgName">Giriş yap</span>
       </button>
 
-      <!-- HEDEFE KALAN SÜRE: sağ altta sade kart. Veri, mevcut geri sayım seçimiyle ('homeCardCountdown') ortaktır.
-           Dokununca geri sayım seçici açılır. Boşken "Hedef ekle" görünür. -->
-      <button type="button" class="pg-goal is-empty" id="pgGoal" aria-label="Hedefe kalan süre">
-        <span class="pg-goal-head">
-          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.2"/><circle cx="12" cy="12" r=".9" fill="currentColor"/><path d="M12 3.5V1.5M12 22.5v-2M3.5 12h-2M22.5 12h-2"/></svg>
-          <span>Hedefe Kalan Süre</span>
-        </span>
-        <span class="pg-goal-body">
-          <span class="pg-goal-info"><b class="pg-goal-name" id="pgGoalName">Hedef ekle</b><small class="pg-goal-date" id="pgGoalDate">Geri sayımı seç</small></span>
-          <span class="pg-goal-num"><b id="pgGoalN">0</b><small id="pgGoalU">gün</small></span>
-        </span>
-      </button>
+      <!-- MİNİ TAKVİM (yalnızca mobil): profilin altında, aralarında boşluk bırakılarak durur.
+           İçeriği JS çizer (bkz. "Ana sayfa: mini ay takvimi" script'i); dokununca Takvim açılır.
+           Büyük ekranda gizlidir (orada eski düzen geçerli). -->
+      <div class="pg-cal">
+        <div class="home-cal-widget" id="homeCalWidget" role="button" tabindex="0" aria-label="Takvim'e git">
+          <div class="home-cal-head" id="homeCalHead"></div>
+          <div class="home-cal-wd" id="homeCalWd" aria-hidden="true"></div>
+          <div class="home-cal-grid" id="homeCalGrid"></div>
+        </div>
+      </div>
     </div>
     <script>
     (function(){
@@ -38438,15 +38442,6 @@ html[data-pg="on"] #page-1 .pg-goal:active{transform:scale(.97);opacity:.8}
       </div>
       </div>
 
-      <!-- MİNİ AY TAKVİMİ (yalnızca büyük ekran): içeriği JS çizer (bkz.
-           "Ana sayfa: mini ay takvimi" script'i). Dokununca Takvim sayfası açılır. -->
-      <div class="home-tile home-tile-cal">
-        <div class="home-cal-widget" id="homeCalWidget" role="button" tabindex="0" aria-label="Takvim'e git">
-          <div class="home-cal-head" id="homeCalHead"></div>
-          <div class="home-cal-wd" id="homeCalWd" aria-hidden="true"></div>
-          <div class="home-cal-grid" id="homeCalGrid"></div>
-        </div>
-      </div>
 
       <!-- BUGÜN ÇÖZÜLEN + GERİ SAYIM KARTI: küçük ekranlarda eski yerinde
            (Rahatla ile Mini Oyunlar arasında) geri gösteriliyor. Büyük
@@ -71843,74 +71838,6 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
     innerEl.style.transition = '';
   })();
 </script>
-
-<script>
-  // ---------- Ana sayfa: "Hedefe Kalan Süre" kartı ----------
-  // Veri kaynağı: seçili geri sayım (APP_STATE.homeCardCountdown -> getDayCountdown). Kalan süre
-  // gün olarak gösterilir; 1 günden az kaldıysa saat, 1 saatten az kaldıysa dakika.
-  (() => {
-    const btn = document.getElementById('pgGoal');
-    if (!btn || typeof openCdSheet !== 'function' || typeof getDayCountdown !== 'function') return;
-    const nameEl = document.getElementById('pgGoalName');
-    const dateEl = document.getElementById('pgGoalDate');
-    const numEl = document.getElementById('pgGoalN');
-    const unitEl = document.getElementById('pgGoalU');
-    const KEY_CD = 'homeCardCountdown';
-    let shown = '';
-    let raf = 0;
-
-    const currentKey = () => (typeof APP_STATE[KEY_CD] === 'string' ? APP_STATE[KEY_CD] : '');
-    const resolve = () => {
-      const parts = String(currentKey()).split('-').map(Number);
-      if (parts.length !== 3 || parts.some((n) => !Number.isFinite(n))) return null;
-      const date = new Date(parts[0], parts[1] - 1, parts[2]);
-      const cd = getDayCountdown(date);
-      return cd ? { date, cd, target: dayCdTarget(date, cd.time).getTime() } : null;
-    };
-    const countUp = (to) => {
-      cancelAnimationFrame(raf);
-      if (matchMedia('(prefers-reduced-motion: reduce)').matches || to < 2) { numEl.textContent = String(to); return; }
-      const t0 = performance.now(), dur = 1000;
-      const step = (now) => {
-        const p = Math.min(1, (now - t0) / dur);
-        numEl.textContent = String(Math.round(to * (1 - Math.pow(1 - p, 3))));
-        if (p < 1) raf = requestAnimationFrame(step);
-      };
-      raf = requestAnimationFrame(step);
-    };
-    const render = () => {
-      const r = resolve();
-      btn.classList.toggle('is-empty', !r);
-      if (!r) { nameEl.textContent = 'Hedef ekle'; dateEl.textContent = 'Geri sayımı seç'; shown = ''; cancelAnimationFrame(raf); return; }
-      nameEl.textContent = r.cd.name;
-      dateEl.textContent = dayCdDateText(r.date);
-      const rem = r.target - Date.now();
-      let val, unit;
-      if (rem <= 0) { val = 0; unit = 'gün'; }
-      else if (rem >= 86400000) { val = Math.ceil(rem / 86400000); unit = 'gün'; }
-      else if (rem >= 3600000) { val = Math.ceil(rem / 3600000); unit = 'saat'; }
-      else { val = Math.max(1, Math.ceil(rem / 60000)); unit = 'dk'; }
-      unitEl.textContent = unit;
-      const sig = val + unit + r.target;
-      if (sig !== shown) { shown = sig; countUp(val); }
-      btn.setAttribute('aria-label', `${r.cd.name}: ${val} ${unit} kaldı, sayacı değiştir`);
-    };
-    btn.addEventListener('click', () => {
-      const has = !!resolve();
-      openCdSheet({
-        mode: 'pick',
-        selectedKey: has ? currentKey() : '',
-        onPick: (key) => { saveAppState({ [KEY_CD]: key }); shown = ''; render(); },
-        onClear: () => { saveAppState({ [KEY_CD]: '' }); render(); },
-      });
-    });
-    render();
-    setInterval(render, 30000);
-    document.addEventListener('visibilitychange', () => { if (!document.hidden) render(); });
-    window.addEventListener('focus', render);
-  })();
-</script>
-
 
 <script>
   // ---------- Ana sayfa (BÜYÜK EKRAN): kartsız Geri Sayım widget'ı ----------
