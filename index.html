@@ -78242,6 +78242,35 @@ html[data-pg="on"] #page-1 .pg-rq.is-on{display:block}
 .rq-top.is-in .rq-top-ic svg{animation:none}
 .rq-top-go{background:var(--theme-text,#f5f5f7);color:var(--theme-bg,#000)}
 .rq-top-bar{background:color-mix(in srgb,var(--theme-text,#f5f5f7) 45%,transparent)}
+
+/* ===== Özelleştir butonu + alt panel ===== */
+.pg-rq .rq-hr{display:flex;align-items:center;gap:.35rem}
+.pg-rq .rq-cust{height:1.55rem;padding:0 .7rem;border:0;border-radius:999px;cursor:pointer;font:inherit;font-size:.72rem;font-weight:700;color:inherit;opacity:.6;
+  background:color-mix(in srgb,var(--pg-ink,var(--theme-text,#fff)) 10%,transparent);-webkit-tap-highlight-color:transparent;transition:opacity .2s,transform .2s}
+.pg-rq .rq-cust:active{opacity:.9;transform:scale(.94)}
+.rq-sh-bd{position:fixed;inset:0;z-index:9600;background:rgba(0,0,0,.55);opacity:0;visibility:hidden;transition:opacity .35s,visibility 0s linear .35s}
+.rq-sh-bd.is-open{opacity:1;visibility:visible;transition:opacity .35s,visibility 0s}
+.rq-sh{position:fixed;left:0;right:0;bottom:0;z-index:9601;box-sizing:border-box;width:min(100%,32rem);margin:0 auto;padding:.6rem 1.3rem calc(env(safe-area-inset-bottom,0px) + 1.3rem);
+  border-radius:1.9rem 1.9rem 0 0;font-family:"Baloo 2","Space Grotesk",sans-serif;color:var(--theme-text,#fff);background:var(--theme-bg,#000);
+  box-shadow:0 -1px 0 color-mix(in srgb,var(--theme-text,#fff) 12%,transparent),0 -30px 60px -30px rgba(0,0,0,.7);
+  transform:translate3d(0,105%,0);visibility:hidden;transition:transform .5s cubic-bezier(.22,1,.36,1),visibility 0s linear .5s;touch-action:manipulation}
+.rq-sh.is-open{transform:none;visibility:visible;transition:transform .5s cubic-bezier(.22,1,.36,1),visibility 0s}
+.rq-sh-grip{display:block;width:2.4rem;height:4px;margin:0 auto .9rem;border-radius:4px;background:color-mix(in srgb,var(--theme-text,#fff) 22%,transparent)}
+.rq-sh h3{margin:0 0 1.1rem;font-size:1.35rem;font-weight:800;letter-spacing:-.01em}
+.rq-sh-l{margin:1.1rem 0 .55rem;font-size:.78rem;font-weight:600;opacity:.5}
+.rq-sh button{border:0;cursor:pointer;font:inherit;color:inherit;-webkit-tap-highlight-color:transparent;transition:transform .2s,background-color .2s,color .2s}
+.rq-sh button:active{transform:scale(.94)}
+.rq-sh-step{display:flex;align-items:center;justify-content:space-between;gap:1rem}
+.rq-sh-step button{width:3rem;height:3rem;border-radius:50%;font-size:1.5rem;line-height:1;background:color-mix(in srgb,var(--theme-text,#fff) 9%,transparent)}
+.rq-sh-step output{font-size:3rem;font-weight:800;line-height:1;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.rq-sh-pre{display:flex;gap:.4rem;margin-top:.9rem}
+.rq-sh-pre button{flex:1;height:2.3rem;border-radius:999px;font-size:.9rem;font-weight:700;background:color-mix(in srgb,var(--theme-text,#fff) 9%,transparent)}
+.rq-sh-pre button.is-on,.rq-sh-src button.is-on{background:var(--theme-text,#fff);color:var(--theme-bg,#000)}
+.rq-sh-src{display:flex;gap:.5rem}
+.rq-sh-src button{flex:1;height:2.8rem;border-radius:1rem;font-size:.9rem;font-weight:700;display:flex;align-items:center;justify-content:center;gap:.45rem;background:color-mix(in srgb,var(--theme-text,#fff) 9%,transparent)}
+.rq-sh-src b{font-weight:800;opacity:.6;font-variant-numeric:tabular-nums}
+.rq-sh-done{display:block;width:100%;height:3.1rem;margin-top:1.5rem;border-radius:999px;font-size:1rem;font-weight:800;background:var(--theme-text,#fff);color:var(--theme-bg,#000)}
+@media (prefers-reduced-motion:reduce){.rq-sh,.rq-sh-bd{transition-duration:.01s}}
 </style>
 <script id="rqJs">
 /* ---------- Ana sayfa: Soru hatırlatıcı ----------
@@ -78299,17 +78328,17 @@ html[data-pg="on"] #page-1 .pg-rq.is-on{display:block}
     if (mode === 'result' && st.res) {
       const r = st.res;
       card.innerHTML = `<div class="pg-rq-in"><span class="pg-rq-bar"></span><div class="pg-rq-col">` +
-        `<div class="pg-rq-head"><span class="rq-kick"><i></i>Test bitti</span><button type="button" class="rq-x" data-a="close" aria-label="Kapat">${XI}</button></div>` +
+        `<div class="pg-rq-head"><span class="rq-kick"><i></i>Test bitti</span><span class="rq-hr"><button type="button" class="rq-cust" data-a="custom">Özelleştir</button><button type="button" class="rq-x" data-a="close" aria-label="Kapat">${XI}</button></span></div>` +
         `<div class="rq-res"><div><b class="ok">${r.correct}</b><i>Doğru</i></div><div><b class="no">${r.wrong}</b><i>Yanlış</i></div>${r.blank ? `<div><b>${r.blank}</b><i>Boş</i></div>` : ''}<div><b>${fmt(r.ms)}</b><i>Süre</i></div></div>` +
-        `<div class="rq-foot"><span><b>%${Math.round(100 * r.correct / Math.max(1, r.correct + r.wrong + (r.blank || 0)))}</b> isabet · toplam <b>${st.total}</b> soru</span><button type="button" class="rq-again" data-a="dice" aria-label="Tekrar rastgele soru çöz. Basılı tut: soru sayısı">${DICE}<span style="color:inherit" class="rq-again-n">Tekrar · ${st.count}</span></button></div>` +
-        `</div></div>${popHtml()}`;
+        `<div class="rq-foot"><span><b>%${Math.round(100 * r.correct / Math.max(1, r.correct + r.wrong + (r.blank || 0)))}</b> isabet · toplam <b>${st.total}</b> soru</span><button type="button" class="rq-again" data-a="dice" aria-label="Tekrar rastgele soru çöz">${DICE}<span style="color:inherit" class="rq-again-n">Tekrar · ${st.count}</span></button></div>` +
+        `</div></div>`;
     } else {
       const tile = (k, label, n) => `<button type="button" class="rq-chip rq-tile${st.src.includes(k) ? ' is-on' : ''}${n ? '' : ' is-zero'}" data-src="${k}"><b>${n}</b><span>${label}</span></button>`;
       card.innerHTML = `<div class="pg-rq-in"><span class="pg-rq-bar"></span><div class="pg-rq-col">` +
-        `<div class="pg-rq-head"><button type="button" class="rq-kick" data-a="go">Soru zamanı<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button><button type="button" class="rq-x" data-a="close" aria-label="Kapat">${XI}</button></div>` +
+        `<div class="pg-rq-head"><button type="button" class="rq-kick" data-a="go">Soru zamanı<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button><span class="rq-hr"><button type="button" class="rq-cust" data-a="custom">Özelleştir</button><button type="button" class="rq-x" data-a="close" aria-label="Kapat">${XI}</button></span></div>` +
         `<div class="rq-tiles">${tile('pool', 'Soru Havuzu', poolList().length)}${tile('ze', 'Sıfır Hata', zeList().length)}` +
-        `<button type="button" class="rq-dice" data-a="dice" aria-label="Rastgele soru çöz. Basılı tut: soru sayısı">${DICE}<small>${st.count}</small></button></div>` +
-        `</div></div>${popHtml()}`;
+        `<button type="button" class="rq-dice" data-a="dice" aria-label="Rastgele soru çöz">${DICE}<small>${st.count}</small></button></div>` +
+        `</div></div>`;
     }
   };
 
@@ -78323,6 +78352,7 @@ html[data-pg="on"] #page-1 .pg-rq.is-on{display:block}
     card.classList.remove('is-out', 'is-in'); card.classList.add('is-on');
     void card.offsetWidth;
     card.classList.add('is-in');
+    if (!seen) setTimeout(() => { if (card.classList.contains('is-in') && mode === m) card.classList.add('no-anim'); }, 1500);
   };
   const hide = (instant) => {
     clearTimeout(outT); popOpen = false;
@@ -78391,7 +78421,7 @@ html[data-pg="on"] #page-1 .pg-rq.is-on{display:block}
     if (!e.target.closest('[data-a]')) return;
     hideTop();
     if (!pageActive()) goToPage('page-1');
-    setTimeout(evaluate, 650);
+    setTimeout(evaluate, 60);
   });
   top.addEventListener('pointerdown', (e) => { topY = e.clientY; clearTimeout(topT); });
   top.addEventListener('pointerup', (e) => { if (topY - e.clientY > 24) hideTop(); else if (topVisible()) topT = setTimeout(hideTop, 4000); });
@@ -78436,12 +78466,45 @@ html[data-pg="on"] #page-1 .pg-rq.is-on{display:block}
     card.querySelectorAll('.rq-dice small').forEach((s) => { s.textContent = st.count; });
     card.querySelectorAll('.rq-again-n').forEach((s) => { s.textContent = 'Tekrar · ' + st.count; });
     card.querySelectorAll('.rq-pre button').forEach((b) => b.classList.toggle('is-on', +b.dataset.n === st.count));
+    sheet.querySelectorAll('#rqShCnt').forEach((o) => { o.textContent = st.count; });
+    sheet.querySelectorAll('[data-n]').forEach((b) => b.classList.toggle('is-on', +b.dataset.n === st.count));
     top.querySelectorAll('.rq-top-go').forEach((g) => { g.textContent = st.count + ' soru'; });
   };
-  // Alanın herhangi bir yerine (zar dahil) basılı tutunca soru sayısı seçimi açılır
+
+  // ---- Özelleştir: alttan açılan panel ----
+  const sheetBd = document.createElement('div'); sheetBd.className = 'rq-sh-bd'; sheetBd.id = 'rqSheetBd';
+  const sheet = document.createElement('div'); sheet.className = 'rq-sh'; sheet.id = 'rqSheet'; sheet.setAttribute('role', 'dialog'); sheet.setAttribute('aria-label', 'Özelleştir');
+  document.body.appendChild(sheetBd); document.body.appendChild(sheet);
+  const sheetHtml = () => `<span class="rq-sh-grip"></span><h3>Özelleştir</h3>` +
+    `<div class="rq-sh-l">Soru sayısı</div><div class="rq-sh-step"><button type="button" data-step="-1" aria-label="Azalt">−</button><output id="rqShCnt">${st.count}</output><button type="button" data-step="1" aria-label="Artır">+</button></div>` +
+    `<div class="rq-sh-pre">${PRESETS.map((n) => `<button type="button" data-n="${n}" class="${n === st.count ? 'is-on' : ''}">${n}</button>`).join('')}</div>` +
+    `<div class="rq-sh-l">Kaynak</div><div class="rq-sh-src"><button type="button" data-src="pool" class="${st.src.includes('pool') ? 'is-on' : ''}">Soru Havuzu <b>${poolList().length}</b></button><button type="button" data-src="ze" class="${st.src.includes('ze') ? 'is-on' : ''}">Sıfır Hata <b>${zeList().length}</b></button></div>` +
+    `<button type="button" class="rq-sh-done" data-done>Tamam</button>`;
+  const openSheet = () => { sheet.innerHTML = sheetHtml(); sheetBd.classList.add('is-open'); sheet.classList.add('is-open'); };
+  const closeSheet = () => { sheetBd.classList.remove('is-open'); sheet.classList.remove('is-open'); };
+  const syncSrc = () => {
+    card.querySelectorAll('.rq-chip').forEach((c) => c.classList.toggle('is-on', st.src.includes(c.dataset.src)));
+    sheet.querySelectorAll('[data-src]').forEach((c) => c.classList.toggle('is-on', st.src.includes(c.dataset.src)));
+  };
+  sheetBd.addEventListener('click', closeSheet);
+  sheet.addEventListener('click', (e) => {
+    const n = e.target.closest('[data-n]'), stp = e.target.closest('[data-step]'), src = e.target.closest('[data-src]');
+    if (n) { st.count = +n.dataset.n; save(); applyCount(); }
+    else if (stp) { st.count = Math.max(1, Math.min(100, st.count + (+stp.dataset.step))); save(); applyCount(); }
+    else if (src) {
+      const k = src.dataset.src, on = st.src.includes(k);
+      if (on && st.src.length === 1) return;
+      st.src = on ? st.src.filter((x) => x !== k) : st.src.concat(k); save(); syncSrc();
+    } else if (e.target.closest('[data-done]')) closeSheet();
+  });
+  let shY = 0;
+  sheet.addEventListener('pointerdown', (e) => { shY = e.clientY; });
+  sheet.addEventListener('pointerup', (e) => { if (e.clientY - shY > 60) closeSheet(); });
+
+  // (eski basılı tutma kaldırıldı)
   card.addEventListener('pointerdown', (e) => {
     clearTimeout(pressT); longFired = false; downX = e.clientX; downY = e.clientY;
-    if (e.target.closest('.rq-pop, .rq-x, [data-src]')) return;
+    return; // basılı tutma kaldırıldı: özelleştirme alt panelden
     pressT = setTimeout(() => {
       longFired = true; openPop();
       if (navigator.vibrate) { try { navigator.vibrate(10); } catch (x) { /* yok say */ } }
@@ -78460,11 +78523,12 @@ html[data-pg="on"] #page-1 .pg-rq.is-on{display:block}
       const k = chip.dataset.src, on = st.src.includes(k);
       if (on && st.src.length === 1) return; // en az bir kaynak seçili kalır
       st.src = on ? st.src.filter((x) => x !== k) : st.src.concat(k); save();
-      card.querySelectorAll('.rq-chip').forEach((c) => c.classList.toggle('is-on', st.src.includes(c.dataset.src)));
+      syncSrc();
       return;
     }
     if (popOpen && !e.target.closest('.rq-pop')) { closePop(); return; }
     const a = e.target.closest('[data-a]'); if (!a) return;
+    if (a.dataset.a === 'custom') { openSheet(); return; }
     if (a.dataset.a === 'close') {
       if (mode === 'result' && st.res) { st.res.dismissed = true; save(); }
       else if (mode === 'remind') { st.pending = null; save(); }
@@ -78504,11 +78568,18 @@ html[data-pg="on"] #page-1 .pg-rq.is-on{display:block}
     if (home) { show('remind'); chime(); } else showTop();
   }
   new MutationObserver(() => {
-    if (pageActive()) { hideTop(); setTimeout(evaluate, 600); }
-    else if (card.classList.contains('is-on')) hide(true);
+    if (pageActive()) {
+      hideTop();
+      // Kart zaten oradaysa sayılarını tazele, animasyonsuz yerinde dursun
+      if (card.classList.contains('is-on') && mode === 'remind') {
+        const cnt = { pool: poolList().length, ze: zeList().length };
+        card.querySelectorAll('.rq-tile').forEach((t) => { const b = t.querySelector('b'); if (b) b.textContent = cnt[t.dataset.src]; t.classList.toggle('is-zero', !cnt[t.dataset.src]); });
+      }
+      evaluate();
+    } else closeSheet();
   }).observe(page, { attributes: true, attributeFilter: ['class'] });
   setInterval(evaluate, 20000);
-  setTimeout(evaluate, 2500);
+  setTimeout(evaluate, 400); setTimeout(evaluate, 2500);
 
   // ---- Ayarlar satırı: dokununca aralık değişir, basılı tutunca şimdi hatırlatır ----
   const row = document.getElementById('settingsRqRow'), val = document.getElementById('settingsRqVal');
