@@ -17777,18 +17777,6 @@
     transform: translateY(-50%) scale(1);
   }
 
-  /* Silinen satır yumuşakça kapanır. */
-  .cd-sheet-item.is-removing {
-    height: 0 !important;
-    margin-bottom: -0.15rem;
-    padding-top: 0;
-    padding-bottom: 0;
-    overflow: hidden;
-    opacity: 0;
-    pointer-events: none;
-    transition: height 0.35s cubic-bezier(0.16, 1, 0.3, 1), padding 0.35s cubic-bezier(0.16, 1, 0.3, 1),
-      margin 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.22s ease;
-  }
 
   .task-sheet-backdrop.is-open .cd-sheet-item {
     animation: cdRise 0.5s cubic-bezier(0.16, 1, 0.3, 1) calc(120ms + var(--i, 0) * 45ms) backwards;
@@ -49837,13 +49825,22 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
     if (!saveAppState({ [DAY_CD_STATE_KEY]: all })) return;
     applyCalendarMarks();
     updateCalendarSelectedInfo(0);
-    row.style.height = `${row.offsetHeight}px`;
-    void row.offsetHeight;
     row.classList.add('is-removing');
+    setTimeout(() => {
+      row.style.boxSizing = 'border-box';
+      row.style.height = `${row.offsetHeight}px`;
+      row.style.overflow = 'hidden';
+      void row.offsetHeight;
+      row.classList.add('is-collapsing');
+      row.style.height = '0px';
+      row.style.paddingTop = '0px';
+      row.style.paddingBottom = '0px';
+      row.style.borderBottomWidth = '0px';
+    }, 300);
     setTimeout(() => {
       row.remove();
       if (!cdSheetListEl.querySelector('.cd-sheet-item')) renderCdSheet();
-    }, 380);
+    }, 740);
     showAppToast('Sayaç silindi');
   };
 
@@ -49941,6 +49938,9 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
           holdTimer = 0;
           holdFired = true;
           cdSheetClearDeleteMode(row);
+          const rc = row.getBoundingClientRect(), pressRight = sx > rc.left + rc.width / 2;
+          row.classList.toggle('del-left', pressRight);
+          row.classList.toggle('del-right', !pressRight);
           row.classList.add('is-delete');
           del.tabIndex = 0;
           try { if (navigator.vibrate) navigator.vibrate(12); } catch (err) { /* yoksay */ }
@@ -77232,6 +77232,18 @@ html[data-pg="on"] #page-1 .pg-cdline{display:block;position:absolute;z-index:3;
 .cdf .cd-form-actions{margin-top:1.4rem}
 .cdf .cd-primary-btn{background:var(--t);color:var(--bg)}
 @media (prefers-reduced-motion:reduce){.cdf .cdf-body{transition-duration:.01s}}
+/* Sayaçlarım: Sil düğmesi dokunulan yarının tersinde; silme animasyonu planlayıcıdakiyle aynı */
+.cd-sheet .cd-sheet-item{position:relative;transition:transform .25s cubic-bezier(.34,1.56,.64,1),padding .35s cubic-bezier(.22,1,.36,1)}
+.cd-sheet .cd-sheet-end{position:static}
+.cd-sheet .cd-sheet-del{right:0;left:auto;height:2.4rem;padding:0 1.15rem}
+.cd-sheet .cd-sheet-item.del-left .cd-sheet-del{left:0;right:auto;transform-origin:left center}
+.cd-sheet .cd-sheet-item.del-right .cd-sheet-del{right:0;left:auto;transform-origin:right center}
+.cd-sheet .cd-sheet-item.is-delete .cd-sheet-end{width:0;overflow:visible}
+.cd-sheet .cd-sheet-item.is-delete.del-right{padding-right:4.6rem}
+.cd-sheet .cd-sheet-item.is-delete.del-left{padding-left:4.6rem}
+.task-sheet-backdrop.is-open .cd-sheet-item.is-removing{pointer-events:none;animation:relaxItemOut .32s cubic-bezier(.5,0,.9,.4) forwards}
+.cd-sheet .cd-sheet-item.is-collapsing{transition:height .4s cubic-bezier(.65,0,.35,1),padding .4s cubic-bezier(.65,0,.35,1),border-bottom-width .4s ease}
+@media (prefers-reduced-motion:reduce){.task-sheet-backdrop.is-open .cd-sheet-item.is-removing{animation-duration:.01ms}}
 </style>
 <script id="pg-cdline-js">
 /* ---------- Ana sayfa: geri sayım çizgisi ----------
