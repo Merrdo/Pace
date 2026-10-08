@@ -37446,12 +37446,16 @@ html[data-pg="on"] #page-1 .home-relax-widget.is-empty .home-relax-widget-title{
 
 /* Telefon: görev satırı daha ince ve ferah (işaretçi biraz küçülür, ince bir ayraç, kısa ve dengeli) */
 @media not all and (min-width:768px) and (min-height:600px){
-  html[data-pg="on"] #page-1 .home-relax-task-row{gap:.95rem;padding:.45rem .2rem}
+  /* SABİT YÜKSEKLİK: boş ("Rahatla") ve görevli durum aynı yüksekliği kaplar; alttaki takvim/etkinlik yerinden oynamaz. */
+  html[data-pg="on"] #page-1 .home-relax-widget{height:5.6rem;min-height:0;justify-content:center}
+  html[data-pg="on"] #page-1 .home-relax-task-row{gap:.95rem;padding:.2rem .2rem;flex:1 1 auto;min-height:0}
+  /* Boş durumda alan büyük tipografiyle kullanılır */
+  html[data-pg="on"] #page-1 .home-relax-widget.is-empty .home-relax-widget-title{font-size:3.4rem;line-height:1}
   html[data-pg="on"] #page-1 .home-relax-widget-lead{zoom:.86}
   html[data-pg="on"] #page-1 .home-relax-widget-bottom{
     align-self:center;min-height:2.6rem;padding-left:.95rem;
     border-left:1px solid color-mix(in srgb,var(--pg-ink) 22%,transparent) !important}
-  html[data-pg="on"] #page-1 .home-relax-widget-title{font-size:1.5rem;line-height:1.12;font-weight:600}
+  html[data-pg="on"] #page-1 .home-relax-widget:not(.is-empty) .home-relax-widget-title{font-size:1.65rem;line-height:1.1;font-weight:600}
 }
 @media (prefers-reduced-motion:reduce){
   html[data-pg="on"] #page-1 .home-relax-widget.is-empty .home-relax-widget-title{animation:none}
@@ -37475,9 +37479,24 @@ html[data-pg="on"] #page-1 .home-relax-widget.is-empty .home-relax-widget-title{
 .pg-cal{display:none}
 @media not all and (min-width:768px) and (min-height:600px){
   html[data-pg="on"] #page-1{--pg-cal-w:clamp(132px,40vw,160px)}
-  .pg-cal{display:block;position:relative;pointer-events:auto;
-    width:var(--pg-cal-w,150px);margin:22px 2px 0 auto;
+  .pg-cal{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;
+    position:relative;pointer-events:auto;margin:18px 2px 0 3px;
     animation:pgIn 1s .1s cubic-bezier(.22,1,.36,1) both}
+  .pg-cal-box{flex:none;width:var(--pg-cal-w,150px)}
+  /* Bugünün etkinliği: takvimin solunda, ince renkli çizgi + künye + ad (yalnızca etkinlik varsa görünür) */
+  .pg-today{flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:.3rem;
+    margin:0;padding:.05rem 0 .05rem .8rem;border:0;border-left:2px solid var(--ev-c,var(--pg-ink));
+    border-radius:0;background:none;box-shadow:none;text-align:left;cursor:pointer;
+    font-family:"Baloo 2","Space Grotesk",sans-serif;color:var(--pg-ink,var(--theme-c2,#1a1a1a));
+    -webkit-tap-highlight-color:transparent;transition:opacity .2s;animation:pgSoft .9s .3s cubic-bezier(.22,1,.36,1) both}
+  .pg-today:active{opacity:.55}
+  .pg-today[hidden]{display:none !important}
+  .pg-today-eyebrow{font-weight:600;font-size:.66rem;line-height:1.25;letter-spacing:.2em;text-transform:uppercase;
+    color:color-mix(in srgb,var(--pg-ink) 52%,transparent);white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+  .pg-today-name{font-weight:600;font-size:1.2rem;line-height:1.14;letter-spacing:-.012em;color:var(--pg-ink);
+    overflow-wrap:anywhere;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden}
+  .pg-today-more{font-weight:600;font-size:.72rem;line-height:1.2;color:color-mix(in srgb,var(--pg-ink) 52%,transparent)}
+  .pg-today-more[hidden]{display:none !important}
   .pg-cal .home-cal-widget{padding:0;margin:0;background:none;border:0;box-shadow:none;border-radius:0;
     color:var(--pg-ink,var(--theme-c2,#1a1a1a));font-family:"Baloo 2","Space Grotesk",sans-serif;
     cursor:pointer;-webkit-tap-highlight-color:transparent;transition:opacity .2s}
@@ -37499,7 +37518,7 @@ html[data-pg="on"] #page-1 .home-relax-widget.is-empty .home-relax-widget-title{
   .pg-cal .home-cal-dots i{width:3px;height:3px;border-radius:50%;background:var(--dot-c,currentColor)}
   .pg-cal .home-cal-day.is-today .home-cal-dots i{box-shadow:0 0 0 .5px var(--theme-c1,#fff)}
 }
-@media (prefers-reduced-motion:reduce){.pg-cal{animation:none}}
+@media (prefers-reduced-motion:reduce){.pg-cal,.pg-today{animation:none}}
 </style>
 
 </head>
@@ -38439,10 +38458,18 @@ html[data-pg="on"] #page-1 .home-relax-widget.is-empty .home-relax-widget-title{
            İçeriği JS çizer (bkz. "Ana sayfa: mini ay takvimi" script'i); dokununca Takvim açılır.
            Büyük ekranda gizlidir (orada eski düzen geçerli). -->
       <div class="pg-cal">
-        <div class="home-cal-widget" id="homeCalWidget" role="button" tabindex="0" aria-label="Takvim'e git">
-          <div class="home-cal-head" id="homeCalHead"></div>
-          <div class="home-cal-wd" id="homeCalWd" aria-hidden="true"></div>
-          <div class="home-cal-grid" id="homeCalGrid"></div>
+        <!-- Bugünün etkinliği (varsa): takvimin solunda. JS: "Ana sayfa: bugünün etkinliği" script'i. -->
+        <button type="button" class="pg-today" id="pgToday" hidden aria-label="Bugünün etkinliği, Takvim'e git">
+          <span class="pg-today-eyebrow" id="pgTodayEyebrow">Bugün</span>
+          <span class="pg-today-name" id="pgTodayName"></span>
+          <span class="pg-today-more" id="pgTodayMore" hidden></span>
+        </button>
+        <div class="pg-cal-box">
+          <div class="home-cal-widget" id="homeCalWidget" role="button" tabindex="0" aria-label="Takvim'e git">
+            <div class="home-cal-head" id="homeCalHead"></div>
+            <div class="home-cal-wd" id="homeCalWd" aria-hidden="true"></div>
+            <div class="home-cal-grid" id="homeCalGrid"></div>
+          </div>
         </div>
       </div>
 
@@ -50914,6 +50941,55 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
     document.addEventListener('visibilitychange', () => { if (!document.hidden) schedule(); });
     document.addEventListener('change', (e) => { if (e.target && e.target.classList && e.target.classList.contains('nav-input')) schedule(); });
     setInterval(render, 60000); // gün değişimini ve dışarıdan gelen verileri yakalar
+    render();
+  })();
+</script>
+
+<script>
+  // ---------- Ana sayfa: bugünün etkinliği (mobil, takvimin solu) ----------
+  // Veri, Takvim sayfasının kendi fonksiyonlarından okunur (getDayEvents, ce_evColor).
+  // Bugün etkinlik yoksa alan gizli kalır. Birden çok etkinlik varsa önce henüz geçmemiş
+  // (ya da saatsiz) ilki gösterilir, kalanı "+N etkinlik daha" olarak yazılır.
+  // Dokununca Takvim açılır (mini takvimle aynı akış).
+  (function () {
+    const box = document.getElementById('pgToday');
+    const eyebrow = document.getElementById('pgTodayEyebrow');
+    const nameEl = document.getElementById('pgTodayName');
+    const moreEl = document.getElementById('pgTodayMore');
+    if (!box || !eyebrow || !nameEl || !moreEl) return;
+    const safe = (fn, fallback) => { try { return fn(); } catch (e) { return fallback; } };
+    const pad = (n) => String(n).padStart(2, '0');
+
+    const render = () => {
+      const now = new Date();
+      const list = safe(() => getDayEvents(new Date(now.getFullYear(), now.getMonth(), now.getDate())), []);
+      if (!list.length) { box.hidden = true; return; }
+      const hm = pad(now.getHours()) + ':' + pad(now.getMinutes());
+      const ev = list.find((e) => e.time && e.time >= hm) || list.find((e) => !e.time) || list[list.length - 1];
+      const rest = list.length - 1;
+      eyebrow.textContent = ev.time ? 'Bugün · ' + ev.time : 'Bugün';
+      nameEl.textContent = ev.name;
+      moreEl.hidden = rest < 1;
+      moreEl.textContent = rest > 0 ? '+' + rest + ' etkinlik daha' : '';
+      box.style.setProperty('--ev-c', safe(() => ce_evColor(ev), '#ff90e8'));
+      box.setAttribute('aria-label', 'Bugünün etkinliği: ' + ev.name + (ev.time ? ', ' + ev.time : '') + ". Takvim'e git");
+      box.hidden = false;
+    };
+
+    let raf = 0;
+    const schedule = () => { if (!raf) raf = requestAnimationFrame(() => { raf = 0; render(); }); };
+
+    box.addEventListener('click', () => {
+      const cal = document.getElementById('homeCalWidget');
+      if (cal) cal.click();
+    });
+
+    window.addEventListener('home-cal-refresh', schedule);
+    window.addEventListener('app-state-saved', schedule);
+    window.addEventListener('load', schedule);
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) schedule(); });
+    document.addEventListener('change', (e) => { if (e.target && e.target.classList && e.target.classList.contains('nav-input')) schedule(); });
+    setInterval(render, 30000); // saat ilerledikçe "sıradaki" etkinlik güncellensin
     render();
   })();
 </script>
