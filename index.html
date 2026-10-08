@@ -78188,7 +78188,7 @@ html[data-pg="on"] #page-1 .pg-rq.is-on{display:block}
 (() => {
   const page = document.getElementById('page-1');
   if (!page) return;
-  const DEF = { interval: 45, count: 10, src: ['pool', 'ze'], last: 0, res: null, total: 0 };
+  const DEF = { interval: 45, count: 10, src: ['pool', 'ze'], last: 0, res: null, total: 0, pending: null };
   const st = Object.assign({}, DEF, (typeof APP_STATE !== 'undefined' && APP_STATE && APP_STATE.rq) || {});
   if (!Array.isArray(st.src) || !st.src.length) st.src = ['pool', 'ze'];
   const save = () => { try { saveAppState({ rq: st }); } catch (e) { /* yok say */ } };
@@ -78317,10 +78317,13 @@ html[data-pg="on"] #page-1 .pg-rq.is-on{display:block}
   const goSource = () => {
     if (kind === 'ze' && typeof openZeroErrorPage === 'function') openZeroErrorPage('page-1'); else goToPage('page-camera');
   };
+  // Üst bildirimin neresine dokunulursa dokunulsun ana sayfaya gidilir; ana sayfadaki hatırlatma
+  // kartı (st.pending) kullanıcı çarpıya basana kadar orada kalır.
   top.addEventListener('click', (e) => {
-    const a = e.target.closest('[data-a]'); if (!a) return;
+    if (!e.target.closest('[data-a]')) return;
     hideTop();
-    if (a.dataset.a === 'dice') startRandom(); else goSource();
+    if (!pageActive()) goToPage('page-1');
+    setTimeout(evaluate, 650);
   });
   top.addEventListener('pointerdown', (e) => { topY = e.clientY; clearTimeout(topT); });
   top.addEventListener('pointerup', (e) => { if (topY - e.clientY > 24) hideTop(); else if (topVisible()) topT = setTimeout(hideTop, 4000); });
@@ -78334,7 +78337,7 @@ html[data-pg="on"] #page-1 .pg-rq.is-on{display:block}
   };
   const remindNow = () => {
     if (!pickKind()) { try { showAppToast('Şu an hatırlatılacak soru yok'); } catch (e) { /* yok say */ } return; }
-    st.last = Date.now(); save();
+    st.last = Date.now(); st.pending = kind; save();
     if (pageActive() && !busy()) { show('remind'); chime(); } else if (!busy()) showTop();
   };
 
@@ -78352,6 +78355,7 @@ html[data-pg="on"] #page-1 .pg-rq.is-on{display:block}
     if (!window.__rqActive) return;
     st.res = Object.assign({}, r, { at: Date.now(), dismissed: false });
     st.total = (st.total || 0) + (r.answered || 0);
+    st.pending = null;
     save();
   };
 
@@ -78395,6 +78399,7 @@ html[data-pg="on"] #page-1 .pg-rq.is-on{display:block}
     const a = e.target.closest('[data-a]'); if (!a) return;
     if (a.dataset.a === 'close') {
       if (mode === 'result' && st.res) { st.res.dismissed = true; save(); }
+      else if (mode === 'remind') { st.pending = null; save(); }
       hide();
     } else if (a.dataset.a === 'go') {
       hide(true); goSource();
@@ -78412,10 +78417,22 @@ html[data-pg="on"] #page-1 .pg-rq.is-on{display:block}
     if (busy()) { if (visible() && mode === 'remind') hide(true); hideTop(); return; }
     const home = pageActive();
     if (home && st.res && !st.res.dismissed) { if (!visible() || mode !== 'result') show('result'); return; }
+    // Bekleyen hatırlatma: kullanıcı çarpıya basana kadar ana sayfada kalır (süreye bağlı değil).
+    if (home && st.pending) {
+      if (!visible() || mode !== 'remind') {
+        const other = st.pending === 'ze' ? 'pool' : 'ze';
+        const cnt = (k) => (k === 'ze' ? zeList().length : poolList().length);
+        kind = st.pending;
+        if (!cnt(kind) && cnt(other)) kind = other;
+        if (!cnt(kind)) return;
+        show('remind');
+      }
+      return;
+    }
     if (visible() || topVisible()) return;
     if (!(st.interval > 0) || Date.now() - (st.last || 0) < st.interval * 60000) return;
     if (!pickKind()) return;
-    st.last = Date.now(); save();
+    st.last = Date.now(); st.pending = kind; save();
     if (home) { show('remind'); chime(); } else showTop();
   }
   new MutationObserver(() => {
