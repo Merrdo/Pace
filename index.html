@@ -37740,6 +37740,77 @@ html[data-pg="on"] #page-1 .home-relax-widget.is-empty .home-relax-widget-time{d
     html[data-pace-theme="black"] #calEvBackdrop.is-open .cal-ev-head, html[data-pace-theme="black"] #calEvBackdrop.is-open .cal-ev-view > * { animation: none; }
   }
 </style>
+<style id="evSheetFixCss">
+  /* ===== Etkinlik paneli düzeltmeleri ===== */
+
+  /* 1) Panel yatayda hiç kaymaz; yalnızca dikey kaydırma serbest */
+  #calEvBackdrop, #calEvBackdrop .cal-ev-sheet { touch-action: pan-y; overscroll-behavior: contain; }
+  #calEvBackdrop .cal-ev-sheet { overflow-x: hidden; }
+
+  /* 2) İkon ışıması: kare/kırpılan box-shadow yerine ikonun arkasında yumuşak radyal ışık */
+  .cal-ev-ico svg, .ce-row-ic svg { display: block; flex: none; }
+  .ce-card .cal-ev-ico { box-shadow: none; }
+  .ce-card .cal-ev-ico::before {
+    content: ""; position: absolute; inset: -1.15rem; border-radius: 50%; z-index: -1; pointer-events: none;
+    background: radial-gradient(circle closest-side,
+      color-mix(in srgb, var(--c, #ff90e8) 42%, transparent) 0%,
+      color-mix(in srgb, var(--c, #ff90e8) 26%, transparent) 30%,
+      color-mix(in srgb, var(--c, #ff90e8) 11%, transparent) 58%,
+      color-mix(in srgb, var(--c, #ff90e8) 3%, transparent) 82%,
+      transparent 100%);
+    transition: background .4s ease;
+  }
+  html[data-pace-theme="black"] #calEvBackdrop .ce-card,
+  html[data-pace-theme="black"] #calEvBackdrop #calEvEditView .ce-card { overflow: visible; }
+  html[data-pace-theme="black"] #calEvBackdrop .ce-card .cal-ev-ico { box-shadow: none; }
+  html[data-pace-theme="black"] #calEvBackdrop .ce-card .cal-ev-ico::before { inset: -1.3rem; }
+  /* Işık kırpılmasın diye sahne yatayda biraz geniş tutulur (net etki sıfır) */
+  html[data-pace-theme="black"] #calEvBackdrop .cal-ev-stage { margin: -.5rem -1.3rem; padding: .5rem 1.3rem; }
+  /* Liste satırlarındaki ikon ışığı da aynı dilde */
+  html[data-pace-theme="black"] #calEvBackdrop .cal-ev-item .cal-ev-ico { box-shadow: none; }
+  html[data-pace-theme="black"] #calEvBackdrop .cal-ev-item .cal-ev-ico::before {
+    content: ""; position: absolute; inset: -.9rem; border-radius: 50%; z-index: -1; pointer-events: none;
+    background: radial-gradient(circle closest-side,
+      color-mix(in srgb, var(--c) 34%, transparent) 0%,
+      color-mix(in srgb, var(--c) 18%, transparent) 40%,
+      color-mix(in srgb, var(--c) 6%, transparent) 70%,
+      transparent 100%);
+  }
+
+  /* 3) Giriş: öğeler yukarı kaymadan sadece solarak belirir; ikonlar yerinde sabit kalır */
+  html[data-pace-theme="black"] #calEvBackdrop.is-open .cal-ev-head { animation-name: ceBlkFade; }
+  html[data-pace-theme="black"] #calEvBackdrop.is-open .cal-ev-view > :not(.cal-ev-list) { animation-name: ceBlkFade; }
+  @keyframes ceBlkFade { from { opacity: 0; } to { opacity: 1; } }
+  .cal-ev-view.is-entering, .cal-ev-view.is-leaving { transform: none; }
+  /* Panel açıldığında kompozit katman korunur: animasyon bitince ikon/yazı yeniden çizilip kaymaz */
+  html[data-pace-theme="black"] #calEvBackdrop.is-open .cal-ev-sheet { transform: translate3d(0, 0, 0); }
+  html[data-pace-theme="black"] #calEvBackdrop .cal-ev-sheet { will-change: transform; }
+
+  /* 4) Panel boyutu sabit: Saat / Sil onayı / Düzenle / Liste görünümleri arasında küçülüp büyümez */
+  @media not all and (min-width: 768px) and (min-height: 600px) {
+    .cal-ev-sheet { height: min(34rem, 86vh); height: min(34rem, 86dvh); min-height: 0; overflow-y: auto; scrollbar-width: none; }
+    .cal-ev-sheet::-webkit-scrollbar { display: none; }
+    html[data-pace-theme="black"] #calEvBackdrop .cal-ev-sheet {
+      height: calc(min(34rem, 88vh) + env(safe-area-inset-bottom));
+      height: calc(min(34rem, 88dvh) + env(safe-area-inset-bottom));
+      min-height: 0; max-height: none;
+    }
+    .cal-ev-sheet[data-view="list"] .cal-ev-stage, #calEvListView:not([hidden]) { min-height: 0; }
+    #calEvListView .cal-ev-list { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
+  }
+</style>
+<style id="themeRingCss">
+  /* Ayarlar > Renk teması: seçili renk, etkinlik panelindeki gibi boşluklu renkli halka + yumuşak ışıkla belirir */
+  body .wheel-color-backdrop .wheel-color-grid.is-ring .wheel-color-swatch { --sw-ring: #888; }
+  body .wheel-color-backdrop .wheel-color-grid.is-ring .wheel-color-swatch.is-selected {
+    box-shadow: inset 0 0 0 1px rgba(0,0,0,.08),
+      0 0 0 3px var(--pc-bg),
+      0 0 0 5.5px var(--sw-ring),
+      0 0 16px 1px color-mix(in srgb, var(--sw-ring) 45%, transparent);
+  }
+  body .wheel-color-backdrop.is-open .wheel-color-grid.is-ring .wheel-color-swatch.is-selected { transform: scale(1.06); }
+  body .wheel-color-backdrop.is-open .wheel-color-grid.is-ring .wheel-color-swatch.is-selected:active { transform: scale(.94); }
+</style>
 </head>
 <body oncopy="return false" oncut="return false" onselectstart="return false" ondragstart="return false">
 
@@ -45749,6 +45820,7 @@ html[data-pg="on"] #page-1 .home-relax-widget.is-empty .home-relax-widget-time{d
     clearTimeout(colorPickerCloseTimer);
     colorPickerOnSelect = onSelect;
     wheelColorGrid.classList.remove('is-locked');
+    wheelColorGrid.classList.toggle('is-ring', title === 'Renk teması');
     if (wheelColorOrb) wheelColorOrb.style.background = currentColor || 'color-mix(in srgb, var(--pc-t) 14%, transparent)';
     if (wheelColorTitle) wheelColorTitle.textContent = title || 'Renk seç';
     wheelColorSubtitle.textContent = subtitle;
@@ -45760,6 +45832,7 @@ html[data-pg="on"] #page-1 .home-relax-widget.is-empty .home-relax-widget-time{d
       swatch.type = 'button';
       swatch.className = 'wheel-color-swatch';
       swatch.style.background = color;
+      swatch.style.setProperty('--sw-ring', (String(color).match(/#[0-9a-f]{3,8}|rgba?\([^)]*\)|hsla?\([^)]*\)/i) || [color])[0]);
       swatch.style.setProperty('--wheel-swatch-check-color', getCheckColorForGradient(color));
       swatch.setAttribute('aria-label', color);
       if (currentColor && currentColor.toLowerCase() === color.toLowerCase()) {
@@ -51139,8 +51212,9 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
       if (name === 'clock') ce_initWheels();
       return;
     }
-    const h0 = ce_stage.offsetHeight;
-    ce_stage.style.height = h0 + 'px';
+    const fixedSheet = window.matchMedia('not all and (min-width: 768px) and (min-height: 600px)').matches;
+    const h0 = fixedSheet ? 0 : ce_stage.offsetHeight;
+    if (!fixedSheet) ce_stage.style.height = h0 + 'px';
     ce_stage.style.setProperty('--dir', String(dir));
     prev.classList.add('is-leaving');
     setTimeout(() => {
@@ -51148,6 +51222,7 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
       prev.hidden = true; prev.classList.remove('is-leaving');
       next.hidden = false; next.classList.add('is-entering');
       if (name === 'clock') ce_initWheels();
+      if (fixedSheet) { requestAnimationFrame(() => requestAnimationFrame(() => next.classList.remove('is-entering'))); return; }
       ce_stage.style.height = 'auto';
       const h1 = ce_stage.offsetHeight;
       ce_stage.style.height = h0 + 'px';
@@ -51436,6 +51511,14 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
   $ce('calEvConfirmYes').addEventListener('click', deleteCalEvent);
   $ce('calEvConfirmNo').addEventListener('click', () => ce_go('edit', -1, [ce_editHead(), ce_dateLabel(calEvDay)]));
   calEvBackdrop.addEventListener('click', (e) => { if (e.target === calEvBackdrop) closeCalEventSheet(); });
+  // Panelde yatay kaydırma/sürükleme tamamen kapalı (yalnızca dikey kaydırma serbest).
+  let ce_tx = 0, ce_ty = 0;
+  calEvBackdrop.addEventListener('touchstart', (e) => { const t = e.touches[0]; ce_tx = t.clientX; ce_ty = t.clientY; }, { passive: true });
+  calEvBackdrop.addEventListener('touchmove', (e) => {
+    if (e.target.closest && e.target.closest('input')) return;
+    const t = e.touches[0];
+    if (Math.abs(t.clientX - ce_tx) > Math.abs(t.clientY - ce_ty) && e.cancelable) e.preventDefault();
+  }, { passive: false });
   calEvName.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); saveCalEvent(); } });
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && calEvBackdrop.classList.contains('is-open')) closeCalEventSheet(); });
 
