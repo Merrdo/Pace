@@ -40264,6 +40264,21 @@ html[data-pg="on"] #page-1 .home-relax-widget.is-empty .home-relax-widget-time{d
               </svg>
             </div>
           </button>
+
+          <div class="settings-divider"></div>
+
+          <button type="button" class="settings-row settings-row-link" id="settingsRqRow">
+            <div class="settings-row-text">
+              <span class="settings-row-title">Soru hatırlatıcı</span>
+              <span class="settings-row-desc">Ana sayfada çözülmemiş soruları hatırlatır (dokun: süreyi değiştir)</span>
+            </div>
+            <div class="settings-row-link-right">
+              <span class="rq-set-val" id="settingsRqVal">45 dk</span>
+              <svg class="settings-row-chevron" viewBox="0 0 24 24" width="16" height="16">
+                <path d="M9 4l8 8-8 8" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+          </button>
         </div>
       </div>
 
@@ -70200,8 +70215,8 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
   // Test, "0 Hata Testlerim"den başlatıldıysa (qhavuzTestReturnPage bunu
   // işaret eder) ve soru doğru yapıldıysa, Denemelerim'deki Hata Analizi
   // grafiğinin "Giderilen" sayacını 1 artırır ve kalıcı olarak kaydeder.
-  const qhavuzTestNoteZeroErrorFix = () => {
-    if (qhavuzTestReturnPage !== 'page-zero-error') return;
+  const qhavuzTestNoteZeroErrorFix = (zItem) => {
+    if (qhavuzTestReturnPage !== 'page-zero-error' && !(window.__rqActive && zItem && !qhavuzState.items.includes(zItem))) return;
     page11State.zeroErrorFixedCount = (page11State.zeroErrorFixedCount || 0) + 1;
     savePage11State();
     if (typeof renderPage11MistakeStats === 'function') renderPage11MistakeStats();
@@ -70219,7 +70234,7 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
     const isCorrect = letter === item.answer;
     if (isCorrect) {
       qhavuzTestScore += 1;
-      qhavuzTestNoteZeroErrorFix();
+      qhavuzTestNoteZeroErrorFix(item);
       // Soru havuzundaki karta yeşil tik atmak için işaretle ve kaydet.
       // (0 Hata Testlerim gibi soru havuzu dışından gelen sorularda bu
       // alan yoktur; yalnızca gerçek havuz öğeleri güncellenir.)
@@ -70266,7 +70281,7 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
 
     if (isCorrect) {
       qhavuzTestScore += 1;
-      qhavuzTestNoteZeroErrorFix();
+      qhavuzTestNoteZeroErrorFix(item);
       if (!item.solved && qhavuzState.items.includes(item)) {
         item.solved = true;
         saveQhavuzState();
@@ -70310,7 +70325,7 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
     const item = qhavuzTestQuestions[qhavuzTestIndex];
     if (isCorrect) {
       qhavuzTestScore += 1;
-      qhavuzTestNoteZeroErrorFix();
+      qhavuzTestNoteZeroErrorFix(item);
       if (!item.solved && qhavuzState.items.includes(item)) {
         item.solved = true;
         saveQhavuzState();
@@ -70363,6 +70378,15 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
       if (qhavuzTestTimeLimitMs) parts.push(`Hedef: ${Math.round(qhavuzTestTimeLimitMs / 60000)} dk`);
       if (qhavuzTestTimedOut) parts.push(`${answered}/${total} soru cevaplandı`);
       qhavuzTestResultTime.textContent = parts.join(' · ');
+    }
+    if (typeof window.__rqFinish === 'function') {
+      window.__rqFinish({
+        correct: qhavuzTestScore, total,
+        answered,
+        wrong: qtExam ? qtStats.wrong : Math.max(0, answered - qhavuzTestScore),
+        blank: qtExam ? qtStats.blank : Math.max(0, total - answered),
+        ms: qhavuzTestElapsedFinal,
+      });
     }
   };
 
@@ -71239,7 +71263,7 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
       const inPool = !qtReplay && qhavuzState.items.includes(item);
       if (ok) {
         correct += 1;
-        qhavuzTestNoteZeroErrorFix();
+        qhavuzTestNoteZeroErrorFix(item);
         if (!item.solved && inPool) { item.solved = true; changed = true; }
         return 'correct';
       }
@@ -78040,6 +78064,226 @@ html[data-pg="on"] #page-1 .pg-tm{
   });
 
   render();
+})();
+</script>
+<style id="rqCss">
+/* ===== Soru hatırlatıcı (ana sayfa): soldan süzülen kart + rastgele test ===== */
+.rq-card{position:absolute;left:16px;z-index:5;bottom:calc(env(safe-area-inset-bottom,0px) + 112px);width:min(21.5rem,calc(100% - 32px));box-sizing:border-box;
+  padding:.85rem .9rem .8rem;border-radius:1.7rem;font-family:"Baloo 2","Space Grotesk",sans-serif;color:var(--theme-text,#16171b);
+  background:color-mix(in srgb,var(--theme-text,#16171b) 7%,var(--theme-bg,#f6f4ef));
+  box-shadow:0 18px 40px -22px rgba(0,0,0,.45),inset 0 0 0 1px color-mix(in srgb,var(--theme-text,#16171b) 9%,transparent);
+  opacity:0;visibility:hidden;transform:translate3d(-115%,0,0);pointer-events:none;will-change:transform;
+  transition:transform .7s cubic-bezier(.22,1,.36,1),opacity .4s ease,visibility 0s linear .7s}
+.rq-card.is-in{opacity:1;visibility:visible;transform:translate3d(0,0,0);pointer-events:auto;
+  transition:transform .85s cubic-bezier(.22,1,.36,1),opacity .55s ease,visibility 0s}
+.rq-card::before{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+  background:radial-gradient(120% 150% at 0% 0%,color-mix(in srgb,var(--accent-color,#ff90e8) 24%,transparent),transparent 62%)}
+.rq-card>*{position:relative}
+.rq-x{position:absolute;top:.5rem;right:.55rem;width:1.7rem;height:1.7rem;display:grid;place-items:center;border:0;border-radius:50%;cursor:pointer;color:inherit;opacity:.45;background:none;-webkit-tap-highlight-color:transparent;transition:opacity .2s,background-color .2s}
+.rq-x:active{opacity:.9;background:color-mix(in srgb,var(--theme-text,#16171b) 10%,transparent)}
+.rq-main{display:flex;align-items:center;gap:.75rem;padding-right:1.4rem}
+.rq-body{flex:1;min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:.1rem;border:0;background:none;padding:0;margin:0;text-align:left;cursor:pointer;color:inherit;font:inherit;-webkit-tap-highlight-color:transparent}
+.rq-kick{font-weight:800;font-size:.68rem;letter-spacing:.09em;text-transform:uppercase;opacity:.5}
+.rq-title{font-weight:800;font-size:1rem;line-height:1.2;overflow-wrap:anywhere}
+.rq-dice{flex:none;position:relative;width:3rem;height:3rem;display:grid;place-items:center;border:0;border-radius:1.05rem;cursor:pointer;color:#16171b;background:var(--accent-color,#ff90e8);
+  box-shadow:0 0 22px -4px color-mix(in srgb,var(--accent-color,#ff90e8) 70%,transparent);-webkit-tap-highlight-color:transparent;touch-action:manipulation;
+  transition:transform .35s cubic-bezier(.34,1.56,.64,1)}
+.rq-dice:active{transform:scale(.9) rotate(-8deg)}
+.rq-dice.is-roll svg{animation:rqRoll .6s cubic-bezier(.22,1,.36,1)}
+@keyframes rqRoll{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+.rq-dice small{position:absolute;right:-.3rem;top:-.35rem;min-width:1.15rem;height:1.15rem;padding:0 .25rem;box-sizing:border-box;border-radius:999px;display:grid;place-items:center;font-size:.66rem;font-weight:800;
+  background:var(--theme-text,#16171b);color:var(--theme-bg,#f6f4ef);font-variant-numeric:tabular-nums}
+.rq-chips{display:flex;gap:.4rem;margin-top:.7rem}
+.rq-chip{display:flex;align-items:center;gap:.4rem;height:1.9rem;padding:0 .75rem;border:0;border-radius:999px;cursor:pointer;font:inherit;font-weight:800;font-size:.78rem;color:inherit;
+  background:color-mix(in srgb,var(--theme-text,#16171b) 8%,transparent);opacity:.55;-webkit-tap-highlight-color:transparent;transition:opacity .25s,background-color .25s,transform .2s}
+.rq-chip b{font-weight:800;font-variant-numeric:tabular-nums;opacity:.7}
+.rq-chip.is-on{opacity:1;background:color-mix(in srgb,var(--accent-color,#ff90e8) 38%,transparent)}
+.rq-chip:active{transform:scale(.95)}
+.rq-res{display:flex;gap:1.1rem;margin-top:.45rem;padding-right:1.4rem}
+.rq-res>div{display:flex;flex-direction:column}
+.rq-res b{font-weight:800;font-size:1.55rem;line-height:1.05;font-variant-numeric:tabular-nums}
+.rq-res i{font-style:normal;font-weight:700;font-size:.7rem;opacity:.5}
+.rq-res .ok{color:#2fb55a}.rq-res .no{color:#ff5a52}
+.rq-foot{display:flex;align-items:center;justify-content:space-between;gap:.6rem;margin-top:.65rem;font-weight:700;font-size:.82rem}
+.rq-foot span{opacity:.6}.rq-foot b{font-weight:800;opacity:1}
+.rq-foot .rq-dice{width:2.4rem;height:2.4rem;border-radius:.9rem}
+.rq-pop{position:absolute;right:0;bottom:calc(100% + .55rem);width:min(16.5rem,100%);box-sizing:border-box;padding:.8rem .85rem .85rem;border-radius:1.4rem;
+  background:color-mix(in srgb,var(--theme-text,#16171b) 9%,var(--theme-bg,#f6f4ef));box-shadow:0 18px 40px -20px rgba(0,0,0,.5),inset 0 0 0 1px color-mix(in srgb,var(--theme-text,#16171b) 9%,transparent);
+  opacity:0;visibility:hidden;transform:translateY(8px) scale(.97);transform-origin:90% 100%;transition:opacity .25s,transform .45s cubic-bezier(.22,1,.36,1),visibility 0s linear .45s}
+.rq-pop.is-open{opacity:1;visibility:visible;transform:none;transition:opacity .25s,transform .45s cubic-bezier(.22,1,.36,1),visibility 0s}
+.rq-pop h4{margin:0 0 .55rem;font-size:.7rem;font-weight:800;letter-spacing:.09em;text-transform:uppercase;opacity:.5}
+.rq-pre{display:flex;gap:.35rem;flex-wrap:wrap}
+.rq-pre button,.rq-step button{border:0;cursor:pointer;font:inherit;font-weight:800;color:inherit;background:color-mix(in srgb,var(--theme-text,#16171b) 8%,transparent);-webkit-tap-highlight-color:transparent;transition:transform .2s,background-color .25s}
+.rq-pre button{height:2rem;min-width:2.4rem;padding:0 .7rem;border-radius:999px;font-size:.85rem}
+.rq-pre button.is-on{background:var(--accent-color,#ff90e8);color:#16171b}
+.rq-pre button:active,.rq-step button:active{transform:scale(.92)}
+.rq-step{display:flex;align-items:center;justify-content:space-between;margin-top:.6rem}
+.rq-step button{width:2.2rem;height:2.2rem;border-radius:50%;font-size:1.2rem;line-height:1}
+.rq-step output{font-weight:800;font-size:1.3rem;font-variant-numeric:tabular-nums}
+.rq-set-val{font-weight:800;font-size:.9rem;opacity:.6;font-variant-numeric:tabular-nums}
+@media (prefers-reduced-motion:reduce){.rq-card,.rq-card.is-in,.rq-pop{transition-duration:.01s}.rq-dice.is-roll svg{animation:none}}
+</style>
+<script id="rqJs">
+/* ---------- Ana sayfa: Soru hatırlatıcı ----------
+   Belirli aralıkla ana sayfada soldan süzülür; Soru Havuzu / Sıfır Hata'dan rastgele test başlatır.
+   Zar: dokun = rastgele test, basılı tut = soru sayısı. Test bitince ana sayfaya dönülür ve sonuç bu kartta görünür. */
+(() => {
+  const page = document.getElementById('page-1');
+  if (!page) return;
+  const DEF = { interval: 45, count: 10, src: ['pool', 'ze'], last: 0, res: null, total: 0, resShown: false };
+  const st = Object.assign({}, DEF, (typeof APP_STATE !== 'undefined' && APP_STATE && APP_STATE.rq) || {});
+  if (!Array.isArray(st.src) || !st.src.length) st.src = ['pool', 'ze'];
+  const save = () => { try { saveAppState({ rq: st }); } catch (e) { /* yok say */ } };
+  const INTERVALS = [0, 15, 30, 45, 60, 90];
+  const PRESETS = [5, 10, 15, 20, 30];
+  const DICE = '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="4.8"/><g fill="currentColor" stroke="none"><circle cx="8.6" cy="8.6" r="1.3"/><circle cx="15.4" cy="8.6" r="1.3"/><circle cx="12" cy="12" r="1.3"/><circle cx="8.6" cy="15.4" r="1.3"/><circle cx="15.4" cy="15.4" r="1.3"/></g></svg>';
+  const XI = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>';
+
+  const shuffle = (a) => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); const t = a[i]; a[i] = a[j]; a[j] = t; } return a; };
+  const poolList = () => { try { return qhavuzState.items.filter((it) => !it.solved); } catch (e) { return []; } };
+  const zeList = () => { try { return Object.values(collectZeroErrorBySubject()).reduce((a, l) => a.concat(l), []); } catch (e) { return []; } };
+  const fmt = (ms) => { const t = Math.max(0, Math.floor(ms / 1000)), h = Math.floor(t / 3600), m = String(Math.floor(t % 3600 / 60)).padStart(2, '0'), s = String(t % 60).padStart(2, '0'); return h ? `${h}:${m}:${s}` : `${m}:${s}`; };
+
+  // Seçili kaynaklardan rastgele soru seç: iki kaynak seçiliyse yarı yarıya, biri yetmezse diğerinden tamamlanır
+  const pickRandom = () => {
+    const useP = st.src.includes('pool'), useZ = st.src.includes('ze');
+    const P = useP ? shuffle(poolList()) : [], Z = useZ ? shuffle(zeList()) : [], n = st.count;
+    let np, nz;
+    if (useP && useZ) {
+      let a = Math.floor(n / 2), b = n - a;
+      if (Math.random() < 0.5) { const t = a; a = b; b = t; }
+      np = Math.min(a, P.length); nz = Math.min(b, Z.length);
+      let rest = n - np - nz;
+      if (rest > 0) { const ap = Math.min(rest, P.length - np); np += ap; rest -= ap; nz += Math.min(rest, Z.length - nz); }
+    } else { np = Math.min(n, P.length); nz = Math.min(n, Z.length); }
+    return shuffle(P.slice(0, np).concat(Z.slice(0, nz)));
+  };
+
+  // ---- Kart ----
+  const card = document.createElement('div');
+  card.className = 'rq-card'; card.id = 'rqCard'; card.setAttribute('aria-live', 'polite');
+  page.appendChild(card);
+  let mode = '', kind = 'pool', hideT = 0, autoT = 0, popOpen = false;
+
+  const chipsHtml = () => `<div class="rq-chips"><button type="button" class="rq-chip${st.src.includes('pool') ? ' is-on' : ''}" data-src="pool">Soru Havuzu <b>${poolList().length}</b></button><button type="button" class="rq-chip${st.src.includes('ze') ? ' is-on' : ''}" data-src="ze">Sıfır Hata <b>${zeList().length}</b></button></div>`;
+  const popHtml = () => `<div class="rq-pop" id="rqPop"><h4>Kaç soru gelsin?</h4><div class="rq-pre">${PRESETS.map((n) => `<button type="button" data-n="${n}" class="${n === st.count ? 'is-on' : ''}">${n}</button>`).join('')}</div><div class="rq-step"><button type="button" data-step="-1" aria-label="Azalt">−</button><output id="rqCnt">${st.count}</output><button type="button" data-step="1" aria-label="Artır">+</button></div></div>`;
+
+  const render = () => {
+    popOpen = false;
+    if (mode === 'result' && st.res) {
+      const r = st.res;
+      card.innerHTML = `<button type="button" class="rq-x" data-a="close" aria-label="Kapat">${XI}</button><span class="rq-kick">Rastgele test bitti</span>` +
+        `<div class="rq-res"><div><b class="ok">${r.correct}</b><i>Doğru</i></div><div><b class="no">${r.wrong}</b><i>Yanlış</i></div>${r.blank ? `<div><b>${r.blank}</b><i>Boş</i></div>` : ''}<div><b>${fmt(r.ms)}</b><i>Süre</i></div></div>` +
+        `<div class="rq-foot"><span>Toplam <b>${st.total}</b> soru çözdün</span><button type="button" class="rq-dice" data-a="dice" aria-label="Tekrar rastgele soru çöz">${DICE}<small>${st.count}</small></button></div>${popHtml()}`;
+    } else {
+      const zc = zeList().length, pc = poolList().length;
+      card.innerHTML = `<button type="button" class="rq-x" data-a="close" aria-label="Kapat">${XI}</button><div class="rq-main"><button type="button" class="rq-body" data-a="go"><span class="rq-kick">Soru zamanı</span><span class="rq-title">${kind === 'ze' ? `Sıfır Hata'da ${zc} soru bakılmayı bekliyor` : `Soru havuzunda ${pc} soru çözülmeyi bekliyor`}</span></button>` +
+        `<button type="button" class="rq-dice" data-a="dice" aria-label="Rastgele soru çöz. Basılı tut: soru sayısı">${DICE}<small>${st.count}</small></button></div>${chipsHtml()}${popHtml()}`;
+    }
+  };
+
+  const show = (m) => {
+    clearTimeout(hideT); clearTimeout(autoT);
+    mode = m; render();
+    requestAnimationFrame(() => requestAnimationFrame(() => card.classList.add('is-in')));
+    if (m === 'remind') autoT = setTimeout(() => hide(), 30000);
+  };
+  const hide = () => { clearTimeout(autoT); card.classList.remove('is-in'); popOpen = false; const p = card.querySelector('.rq-pop'); if (p) p.classList.remove('is-open'); mode = card.classList.contains('is-in') ? mode : ''; };
+  const visible = () => card.classList.contains('is-in');
+
+  const startRandom = () => {
+    if (!st.src.length) return;
+    const qs = pickRandom();
+    if (!qs.length) { try { showAppToast('Seçili kaynakta çözülecek soru yok', 'error'); } catch (e) { /* yok say */ } return; }
+    hide();
+    window.__rqActive = true;
+    try {
+      startQhavuzTest(qs, `Rastgele · ${qs.length} soru`, 'page-1', () => { window.__rqActive = false; setTimeout(evaluate, 500); }, {});
+    } catch (e) { window.__rqActive = false; }
+  };
+  window.__rqFinish = (r) => {
+    if (!window.__rqActive) return;
+    st.res = Object.assign({}, r, { at: Date.now(), dismissed: false });
+    st.total = (st.total || 0) + (r.answered || 0);
+    save();
+  };
+
+  // ---- Etkileşim ----
+  let pressT = 0, longFired = false;
+  card.addEventListener('pointerdown', (e) => {
+    clearTimeout(autoT);
+    const d = e.target.closest('.rq-dice'); if (!d) return;
+    longFired = false; clearTimeout(pressT);
+    pressT = setTimeout(() => {
+      longFired = true; popOpen = true; card.querySelector('.rq-pop').classList.add('is-open');
+      if (navigator.vibrate) { try { navigator.vibrate(10); } catch (x) { /* yok say */ } }
+    }, 480);
+  });
+  ['pointerup', 'pointercancel', 'pointerleave'].forEach((t) => card.addEventListener(t, (e) => { if (e.target.closest && e.target.closest('.rq-dice') || t !== 'pointerleave') clearTimeout(pressT); }));
+  card.addEventListener('contextmenu', (e) => e.preventDefault());
+  card.addEventListener('click', (e) => {
+    const pop = card.querySelector('.rq-pop');
+    const n = e.target.closest('[data-n]'), stp = e.target.closest('[data-step]');
+    if (n) { st.count = +n.dataset.n; save(); render(); card.querySelector('.rq-pop').classList.remove('is-open'); return; }
+    if (stp) {
+      st.count = Math.max(1, Math.min(100, st.count + (+stp.dataset.step))); save();
+      card.querySelector('#rqCnt').textContent = st.count;
+      card.querySelectorAll('.rq-dice small').forEach((s) => { s.textContent = st.count; });
+      card.querySelectorAll('.rq-pre button').forEach((b) => b.classList.toggle('is-on', +b.dataset.n === st.count));
+      return;
+    }
+    const chip = e.target.closest('[data-src]');
+    if (chip) {
+      const k = chip.dataset.src, on = st.src.includes(k);
+      if (on && st.src.length === 1) return; // en az bir kaynak seçili kalır
+      st.src = on ? st.src.filter((x) => x !== k) : st.src.concat(k); save();
+      card.querySelectorAll('.rq-chip').forEach((c) => c.classList.toggle('is-on', st.src.includes(c.dataset.src)));
+      return;
+    }
+    const a = e.target.closest('[data-a]');
+    if (!a) { if (pop && pop.classList.contains('is-open') && !e.target.closest('.rq-pop')) pop.classList.remove('is-open'); return; }
+    if (pop && pop.classList.contains('is-open') && a.dataset.a !== 'dice') { pop.classList.remove('is-open'); return; }
+    if (a.dataset.a === 'close') {
+      if (mode === 'result' && st.res) { st.res.dismissed = true; save(); }
+      hide();
+    } else if (a.dataset.a === 'go') {
+      hide();
+      if (kind === 'ze' && typeof openZeroErrorPage === 'function') openZeroErrorPage('page-1'); else goToPage('page-camera');
+    } else if (a.dataset.a === 'dice') {
+      if (longFired) { longFired = false; return; }
+      if (pop && pop.classList.contains('is-open')) { pop.classList.remove('is-open'); return; }
+      a.classList.add('is-roll');
+      setTimeout(startRandom, 280);
+    }
+  });
+  document.addEventListener('pointerdown', (e) => { const p = card.querySelector('.rq-pop'); if (p && p.classList.contains('is-open') && !e.target.closest('.rq-pop') && !e.target.closest('.rq-dice')) p.classList.remove('is-open'); }, true);
+
+  // ---- Zamanlama ----
+  const pageActive = () => page.classList.contains('is-active');
+  const busy = () => document.body.classList.contains('is-qhavuz-test-open');
+  function evaluate() {
+    if (!pageActive() || busy()) { if (visible() && mode === 'remind') hide(); return; }
+    if (st.res && !st.res.dismissed) { if (!visible() || mode !== 'result') show('result'); return; }
+    if (visible()) return;
+    if (!(st.interval > 0) || Date.now() - (st.last || 0) < st.interval * 60000) return;
+    const zc = zeList().length, pc = poolList().length;
+    if (!zc && !pc) return;
+    kind = zc && pc ? (Math.random() < 0.5 ? 'ze' : 'pool') : (zc ? 'ze' : 'pool');
+    st.last = Date.now(); save();
+    show('remind');
+  }
+  new MutationObserver(() => { if (!pageActive()) { if (visible()) { clearTimeout(autoT); card.classList.remove('is-in'); } } else setTimeout(evaluate, 600); }).observe(page, { attributes: true, attributeFilter: ['class'] });
+  setInterval(evaluate, 20000);
+  setTimeout(evaluate, 2500);
+
+  // ---- Ayarlar satırı: dokununca aralık değişir ----
+  const row = document.getElementById('settingsRqRow'), val = document.getElementById('settingsRqVal');
+  const syncRow = () => { if (val) val.textContent = st.interval ? `${st.interval} dk` : 'Kapalı'; };
+  syncRow();
+  if (row) row.addEventListener('click', () => {
+    const i = INTERVALS.indexOf(st.interval);
+    st.interval = INTERVALS[(i + 1) % INTERVALS.length]; st.last = Date.now(); save(); syncRow();
+  });
 })();
 </script>
 </body>
