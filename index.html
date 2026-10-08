@@ -78204,6 +78204,21 @@ html[data-pg="on"] #page-1 .pg-rq.is-on{display:block}
 .pg-rq .rq-foot{margin-top:.2rem;font-size:.82rem}
 .pg-rq .rq-again{height:2.3rem;padding:0 .95rem 0 .8rem;font-size:.85rem;background:var(--accent-color,#ff90e8);color:#16171b}
 .pg-rq .rq-again svg{width:17px;height:17px}
+
+/* ===== Soru zamanı kartı: cümle yok, iki sayı karesi + zar karesi (tek satır, aynı yükseklik) ===== */
+.pg-rq button.rq-kick{display:inline-flex;align-items:center;gap:.15rem;border:0;background:none;padding:0;margin:0;font:inherit;font-size:.78rem;font-weight:600;letter-spacing:.02em;text-transform:none;opacity:.5;color:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.pg-rq button.rq-kick:active{opacity:.3}
+.pg-rq .rq-tiles{display:flex;align-items:stretch;gap:.5rem;margin-top:.3rem}
+.pg-rq .rq-chip.rq-tile{flex:1;min-width:0;height:4.6rem;padding:.55rem .85rem .6rem;border-radius:1.3rem;flex-direction:column;align-items:flex-start;justify-content:space-between;gap:0;text-align:left;
+  opacity:.55;background:transparent;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--pg-ink,#fff) 22%,transparent);transition:opacity .25s,box-shadow .25s,background-color .25s,transform .2s}
+.pg-rq .rq-chip.rq-tile b{display:block;font-size:2rem;font-weight:800;line-height:1;letter-spacing:-.02em;font-variant-numeric:tabular-nums;opacity:1;color:var(--accent-color,#ff90e8)}
+.pg-rq .rq-chip.rq-tile span{display:block;max-width:100%;font-size:.76rem;font-weight:700;line-height:1;opacity:.7;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pg-rq .rq-chip.rq-tile.is-on{opacity:1;background:color-mix(in srgb,var(--accent-color,#ff90e8) 10%,transparent);box-shadow:inset 0 0 0 1.5px var(--accent-color,#ff90e8)}
+.pg-rq .rq-chip.rq-tile.is-zero b{color:inherit;opacity:.45}
+.pg-rq .rq-tiles .rq-dice{flex:none;width:4.6rem;height:4.6rem;padding:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.3rem;border-radius:1.3rem;box-shadow:none;background:var(--accent-color,#ff90e8);color:#16171b}
+.pg-rq .rq-tiles .rq-dice svg{width:26px;height:26px}
+.pg-rq .rq-tiles .rq-dice .rq-dn{font-size:.72rem;font-weight:700;line-height:1;white-space:nowrap}
+.pg-rq .rq-tiles .rq-dice small{position:static;display:inline;min-width:0;height:auto;padding:0;border-radius:0;box-shadow:none;background:none;font-size:.9rem;font-weight:800;color:inherit}
 </style>
 <script id="rqJs">
 /* ---------- Ana sayfa: Soru hatırlatıcı ----------
@@ -78266,11 +78281,12 @@ html[data-pg="on"] #page-1 .pg-rq.is-on{display:block}
         `<div class="rq-foot"><span><b>%${Math.round(100 * r.correct / Math.max(1, r.correct + r.wrong + (r.blank || 0)))}</b> isabet · toplam <b>${st.total}</b> soru</span><button type="button" class="rq-again" data-a="dice" aria-label="Tekrar rastgele soru çöz. Basılı tut: soru sayısı">${DICE}<span style="color:inherit" class="rq-again-n">Tekrar · ${st.count}</span></button></div>` +
         `</div></div>${popHtml()}`;
     } else {
+      const tile = (k, label, n) => `<button type="button" class="rq-chip rq-tile${st.src.includes(k) ? ' is-on' : ''}${n ? '' : ' is-zero'}" data-src="${k}"><b>${n}</b><span>${label}</span></button>`;
       card.innerHTML = `<div class="pg-rq-in"><span class="pg-rq-bar"></span><div class="pg-rq-col">` +
-        `<div class="pg-rq-head"><span class="rq-kick"><i></i>Soru zamanı</span><button type="button" class="rq-x" data-a="close" aria-label="Kapat">${XI}</button></div>` +
-        `<div class="pg-rq-row"><button type="button" class="rq-body" data-a="go"><span class="rq-title">${titleFor(kind)}</span></button>` +
-        `<button type="button" class="rq-dice" data-a="dice" aria-label="Rastgele soru çöz. Basılı tut: soru sayısı">${DICE}<small>${st.count}</small></button></div>` +
-        `${chipsHtml()}</div></div>${popHtml()}`;
+        `<div class="pg-rq-head"><button type="button" class="rq-kick" data-a="go">Soru zamanı<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button><button type="button" class="rq-x" data-a="close" aria-label="Kapat">${XI}</button></div>` +
+        `<div class="rq-tiles">${tile('pool', 'Soru Havuzu', poolList().length)}${tile('ze', 'Sıfır Hata', zeList().length)}` +
+        `<button type="button" class="rq-dice" data-a="dice" aria-label="Rastgele soru çöz. Basılı tut: soru sayısı">${DICE}<span class="rq-dn"><small>${st.count}</small> soru</span></button></div>` +
+        `</div></div>${popHtml()}`;
     }
   };
 
@@ -78324,7 +78340,8 @@ html[data-pg="on"] #page-1 .pg-rq.is-on{display:block}
   document.body.appendChild(top);
   let topT = 0, topY = 0;
   const topVisible = () => top.classList.contains('is-in');
-  const topTitle = (k) => (k === 'ze' ? `Sıfır Hata'da ${zeList().length} soru bakılmayı bekliyor` : `Soru havuzunda ${poolList().length} soru çözülmeyi bekliyor`);
+  const topTitle = (k) => `${k === 'ze' ? zeList().length : poolList().length} soru bekliyor`;
+  const topKick = (k) => (k === 'ze' ? 'Sıfır Hata' : 'Soru Havuzu');
   const hideTop = () => {
     clearTimeout(topT);
     if (!topVisible()) return;
@@ -78333,7 +78350,7 @@ html[data-pg="on"] #page-1 .pg-rq.is-on{display:block}
   };
   const showTop = () => {
     clearTimeout(topT);
-    top.innerHTML = `<button type="button" class="rq-top-main" data-a="go"><span class="rq-top-ic">${DICE}</span><span class="rq-top-txt"><span class="rq-kick">Soru zamanı</span><span class="rq-title">${topTitle(kind)}</span></span></button><button type="button" class="rq-top-go" data-a="dice">Rastgele · ${st.count}</button><span class="rq-top-bar"></span>`;
+    top.innerHTML = `<button type="button" class="rq-top-main" data-a="go"><span class="rq-top-ic">${DICE}</span><span class="rq-top-txt"><span class="rq-kick">${topKick(kind)}</span><span class="rq-title">${topTitle(kind)}</span></span></button><button type="button" class="rq-top-go" data-a="dice">${st.count} soru</button><span class="rq-top-bar"></span>`;
     top.classList.remove('is-out', 'is-in'); void top.offsetWidth; top.classList.add('is-in');
     chime();
     if (navigator.vibrate) { try { navigator.vibrate(12); } catch (e) { /* yok say */ } }
@@ -78393,7 +78410,7 @@ html[data-pg="on"] #page-1 .pg-rq.is-on{display:block}
     card.querySelectorAll('.rq-dice small').forEach((s) => { s.textContent = st.count; });
     card.querySelectorAll('.rq-again-n').forEach((s) => { s.textContent = 'Tekrar · ' + st.count; });
     card.querySelectorAll('.rq-pre button').forEach((b) => b.classList.toggle('is-on', +b.dataset.n === st.count));
-    top.querySelectorAll('.rq-top-go').forEach((g) => { g.textContent = 'Rastgele · ' + st.count; });
+    top.querySelectorAll('.rq-top-go').forEach((g) => { g.textContent = st.count + ' soru'; });
   };
   // Alanın herhangi bir yerine (zar dahil) basılı tutunca soru sayısı seçimi açılır
   card.addEventListener('pointerdown', (e) => {
