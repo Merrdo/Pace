@@ -41,7 +41,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css2?family=Archivo+Expanded:wght@700;800&family=Playfair+Display:ital,wght@0,400;0,700;0,800;1,400;1,700&family=Baloo+2:wght@600;700;800&family=Coiny&family=Yellowtail&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Expanded:wght@700;800&family=Playfair+Display:ital,wght@0,400;0,700;0,800;1,400;1,700&family=Baloo+2:wght@600;700;800&family=Coiny&display=swap" rel="stylesheet">
 <style>
   * {
     margin: 0;
@@ -38544,8 +38544,6 @@ html[data-pg="on"] #page-1 .home-relax-widget.is-empty .home-relax-widget-title{
           <span class="home-relax-widget-bottom">
             <span class="home-relax-widget-time" id="homeRelaxWidgetTime">Yaklaşan görev yok</span>
             <span class="home-relax-widget-title" id="homeRelaxWidgetTitle">Rahatla</span>
-            <!-- Boş durumda görünen, "el yazısıyla yazılıp silinen" Coiny yazısı (JS: "Ana sayfa: boş durum yazısı"). -->
-            <span class="home-relax-write" id="homeRelaxWrite" aria-hidden="true"></span>
           </span>
         </button>
       </div>
@@ -51476,90 +51474,8 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
   })();
 </script>
 
-<style id="relaxWriteCss">
-/* Boş durum: "Rahatla" eskisi gibi büyük duruyor; sağında, aynı taban çizgisinde, tek renk neon tabela
-   tarzı küçük bir "Görev yok" yazısı var. Açılışta yumuşakça "yanar", sonra sadece çok hafif nefes alır
-   (başlangıcı/bitişi olmayan, kesintisiz bir parlaklık dalgası); bu yüzden döngü fark edilmez. */
-html[data-pg="on"] #page-1{--hw-neon:#ff5fb0}
-html[data-pg="on"] #page-1 .home-relax-write{display:none}
-html[data-pg="on"] #page-1 .home-relax-widget.is-empty .home-relax-widget-bottom{
-  flex-direction:row !important;flex-wrap:nowrap;align-items:baseline;justify-content:flex-start !important;gap:.55rem}
-html[data-pg="on"] #page-1 .home-relax-widget.is-empty .home-relax-widget-title{flex:0 0 auto}
-html[data-pg="on"] #page-1 .home-relax-widget.is-empty .home-relax-task-row[data-row-index="0"] .home-relax-write{
-  display:block;position:relative;flex:0 1 auto;min-width:0;margin:0;padding:.1em .3em .15em .1em;white-space:nowrap;pointer-events:none;
-  font-family:"Yellowtail","Baloo 2",cursive,sans-serif;font-weight:400;
-  font-size:clamp(1.45rem,6.6vw,1.9rem);line-height:1.1;letter-spacing:.02em;
-  transform:rotate(-3deg) translateY(-.04em);transform-origin:0 100%;
-  color:color-mix(in srgb,var(--hw-neon) 38%,#fff);-webkit-text-fill-color:currentColor;
-  text-shadow:0 0 1px #fff,0 0 5px var(--hw-neon),0 0 12px color-mix(in srgb,var(--hw-neon) 70%,transparent)}
-/* Dış hale: aynı yazının bulanık kopyası; sadece opaklığı yavaşça dalgalanır (ucuz ve pürüzsüz). */
-html[data-pg="on"] #page-1 .home-relax-write::before{
-  content:attr(data-text);position:absolute;inset:.1em .3em .15em .1em;z-index:-1;
-  color:var(--hw-neon);-webkit-text-fill-color:var(--hw-neon);filter:blur(9px);opacity:.6;pointer-events:none}
-html[data-pg="on"] #page-1 .home-relax-write.is-anim{
-  -webkit-mask-image:linear-gradient(90deg,#000 0,#000 42%,transparent 56%,transparent 100%);
-  mask-image:linear-gradient(90deg,#000 0,#000 42%,transparent 56%,transparent 100%);
-  -webkit-mask-size:260% 100%;mask-size:260% 100%;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
-  -webkit-mask-position:100% 0;mask-position:100% 0;
-  animation:hwOn 2.2s cubic-bezier(.35,.1,.25,1) both;animation-play-state:paused}
-html[data-pg="on"] #page-1 .home-relax-write.is-anim::before{
-  animation:hwBreathe 6.4s ease-in-out infinite alternate;animation-play-state:paused}
-html[data-pg="on"] #page-1 .home-relax-write.is-anim.is-run,
-html[data-pg="on"] #page-1 .home-relax-write.is-anim.is-run::before{animation-play-state:running}
-@keyframes hwOn{
-  0%{-webkit-mask-position:100% 0;mask-position:100% 0;opacity:0}
-  25%{opacity:1}
-  100%{-webkit-mask-position:0% 0;mask-position:0% 0;opacity:1}}
-@keyframes hwBreathe{from{opacity:.38}to{opacity:.72}}
-html[data-pg="on"] #page-1 .home-relax-widget.is-empty .home-relax-widget-time{
-  position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;
-  clip:rect(0 0 0 0);white-space:nowrap;border:0;animation:none}
-@media (prefers-reduced-motion:reduce){
-  html[data-pg="on"] #page-1 .home-relax-write.is-anim,
-  html[data-pg="on"] #page-1 .home-relax-write.is-anim::before{-webkit-mask-image:none;mask-image:none;animation:none}}
-</style>
-<script id="relaxWriteJs">
-  // ---------- Ana sayfa: "Rahatla" yanındaki neon "Görev yok" yazısı ----------
-  // Boş duruma / ana sayfaya her dönüşte yumuşakça yanar (bir kez); ardından sadece hafifçe nefes alır.
-  // Ana sayfa görünmüyorsa durur. "Hareketi azalt" açıksa sabit, yanmış halde kalır.
-  (function () {
-    const host = document.getElementById('homeRelaxWrite');
-    const widget = document.getElementById('homeRelaxWidget');
-    const page = document.getElementById('page-1');
-    if (!host || !widget || !page) return;
 
-    const TEXT = 'Görev yok';
-    host.textContent = TEXT;
-    host.setAttribute('data-text', TEXT);
 
-    const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (reduce) return;
-    host.classList.add('is-anim');
-
-    let running = false;
-    const sync = () => {
-      const want = widget.classList.contains('is-empty') && page.classList.contains('is-active') && !document.hidden;
-      if (want && !running) {
-        running = true;
-        host.style.animation = 'none';
-        void host.offsetWidth;          // yanma animasyonunu baştan başlat
-        host.style.animation = '';
-        host.classList.add('is-run');
-      } else if (!want && running) {
-        running = false;
-        host.classList.remove('is-run');
-      }
-    };
-    if ('MutationObserver' in window) {
-      const mo = new MutationObserver(sync);
-      mo.observe(widget, { attributes: true, attributeFilter: ['class'] });
-      mo.observe(page, { attributes: true, attributeFilter: ['class'] });
-    }
-    document.addEventListener('visibilitychange', sync);
-    window.addEventListener('load', sync);
-    sync();
-  })();
-</script>
 
 <!-- ---------- Planyacı: "Yeni Aktivite" tam ekran sayfası ----------
      Bağımsız bir script bloğu: WHEEL_PALETTE (Karar Çarkı script'inde
