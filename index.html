@@ -75208,6 +75208,7 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
   }
 
   function renderDetail(first, quiet) {
+    if (!quiet && window.PaceTime) window.PaceTime.release(page.querySelector('.zt-wrap'));
     const [Y, M, D] = sel.split('-').map(Number);
     const date = new Date(Y, M - 1, D);
     const ms = dayMs(sel);
@@ -75922,6 +75923,7 @@ html[data-pace-theme="plum"] .ztp-bar i{background:linear-gradient(90deg,#8a3a6b
       if (k === '__unlabeled__') { scope = { type: 'unlabeled' }; label = 'Etiketsiz'; }
       else { const i = k.indexOf('::'); scope = { type: 'subject', track: k.slice(0, i), name: k.slice(i + 2) }; label = scope.name; }
       const full = sb.dataset.full === '1' && row;
+      if (window.PaceTime) window.PaceTime.hold(page.querySelector('.zt-wrap'));
       if (full) collapseRow(row);
       const key = sel;
       setTimeout(() => { if (window.PaceTime) window.PaceTime.run([key], scope, label, { manual: true }); }, full ? 380 : 120);
@@ -75936,6 +75938,7 @@ html[data-pace-theme="plum"] .ztp-bar i{background:linear-gradient(90deg,#8a3a6b
       }
       clearTimeout(armedAllTimer);
       const key = sel;
+      if (window.PaceTime) window.PaceTime.hold(page.querySelector('.zt-wrap'));
       setTimeout(() => { if (window.PaceTime) window.PaceTime.run([key], { type: 'all' }, 'Süre', { manual: true }); }, 120);
     }
   });
@@ -79283,14 +79286,18 @@ html[data-pg="on"] #page-1 .pg-rq.is-on{display:block}
     var res = remove(keys, scope, manual);
     if (res.failed) return res;
     if (!res.removedMs) {
-      if (window.paceNToast) window.paceNToast(live ? 'Kayıtlı süre yok · çalışan süre silinemez' : 'Silinecek süre yok', null, 2800);
+      if (window.paceNToast) window.paceNToast(live ? 'Bugünkü süre kronometrede tutuluyor, gün bitince (00:00) kaydedilir. Kaydedildikten sonra silebilirsin.' : 'Silinecek süre yok', null, 4600);
       return res;
     }
-    var msg = label + ' silindi · ' + fmt(res.removedMs) + (live ? ' (canlı süre hariç)' : '');
+    var msg = label + ' silindi · ' + fmt(res.removedMs) + (live ? ' · kronometrede tutulan süre silinmedi' : '');
     if (window.paceNToast) window.paceNToast(msg, res.undo, 5500);
     return res;
   }
-  window.PaceTime = { plan: plan, remove: remove, run: run, soft: soft };
+  // Silme sırasında içerik kısalınca tarayıcı scrollTop'u kıstığı için sayfa yukarı fırlıyordu.
+  // Silmeden önce kapsayıcıya mevcut yüksekliği kilitleriz; kullanıcı başka bir güne/aralığa geçene kadar tutulur.
+  function hold(wrap) { if (wrap && wrap.offsetHeight) wrap.style.minHeight = wrap.offsetHeight + 'px'; }
+  function release(wrap) { if (wrap) wrap.style.minHeight = ''; }
+  window.PaceTime = { plan: plan, remove: remove, run: run, soft: soft, hold: hold, release: release };
 
   /* ---------- İstatistikler > Ders Dağılımı: etikete basılı tut -> "Süreyi sil" ---------- */
   var legend = document.getElementById('page10DonutLegend');
@@ -79322,6 +79329,7 @@ html[data-pg="on"] #page-1 .pg-rq.is-on{display:block}
 
   function doDelete(item, key) {
     var o = scopeOf(key), b = page10GetRangeBounds();
+    hold(document.querySelector('#page-10 .page10-wrap'));
     var keys = page10BuildDaysList(b.start, b.end).map(function (d) { return d.key; });
     item.classList.add('is-removing');
     setTimeout(function () {
@@ -79378,6 +79386,12 @@ html[data-pg="on"] #page-1 .pg-rq.is-on{display:block}
   // Uzun basıştan sonra gelen "tıklama" tooltip'i açmasın
   legend.addEventListener('click', function (e) { if (fired) { fired = false; e.stopPropagation(); e.preventDefault(); } }, true);
 
+  ['page10RangeSegmented', 'page10PrevBtn', 'page10NextBtn'].forEach(function (id) {
+    var el = document.getElementById(id);
+    if (el) el.addEventListener('pointerdown', function () { release(document.querySelector('#page-10 .page10-wrap')); }, true);
+  });
+  var p10 = document.getElementById('page-10');
+  if (p10) new MutationObserver(function () { if (!p10.classList.contains('is-active')) release(document.querySelector('#page-10 .page10-wrap')); }).observe(p10, { attributes: true, attributeFilter: ['class'] });
   window.addEventListener('pace-time-edited', function () {
     soft(document.querySelector('.page10-donut-card'), function () {
       try { if (typeof page10HideDonutTooltip === 'function') page10HideDonutTooltip(true); } catch (e) { /* yok say */ }
