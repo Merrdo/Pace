@@ -37374,7 +37374,7 @@ body.is-ztakvim-open .navbar .wrapper { pointer-events: none; }
    Eski ana sayfa SİLİNMEDİ: <html data-pg="on"> iken sadece gizlenir.
    Geri getirmek için <html> etiketinden data-pg="on" kaldırılır.
    TAMAMLANINCA: eski ana sayfa + bu gizleme kuralı silinecek (bkz. NOTLAR.md). */
-html[data-pg="on"] #page-1 > :not(.pg-root):not(.app-logo):not(.home-widgets-stack):not(.pg-cdline){display:none !important}
+html[data-pg="on"] #page-1 > :not(.pg-root):not(.app-logo):not(.home-widgets-stack):not(.pg-cdline):not(.home-datetime-widget){display:none !important}
 .pg-root{position:absolute;inset:0;pointer-events:none;z-index:3}
 /* Çerçevesiz, kartsız, sade: yalnızca isim + avatar */
 .pg-chip{position:absolute;top:calc(env(safe-area-inset-top) + 22px);right:22px;pointer-events:auto;
@@ -37400,6 +37400,7 @@ html[data-pg="on"] #page-1.is-active{animation:none}
 @media (prefers-reduced-motion:reduce){.pg-chip{animation:none}}
 
 
+@media not all and (min-width:768px) and (min-height:600px){
 /* ================= ANA SAYFA: PLANLAYICI (RAHATLA) WIDGET'I =================
    Eski ana sayfadaki planlayıcı widget'ı yeni sayfaya taşındı. Çalışma mantığı (JS) ve
    iç görünüm aynen duruyor; yalnızca yerleşim sadeleştirildi ve boş durumdaki
@@ -37494,12 +37495,14 @@ html[data-pg="on"] #page-1 .home-relax-widget.is-empty .home-relax-widget-title{
   html[data-pg="on"] #page-1 .home-relax-widget.is-empty .home-relax-widget-title{font-size:2.3rem}
 }
 
+}
+
 /* ===== ANA SAYFA (MOBİL): profilin altında mini takvim =====
    Kartsız/sade; yazı rengi diğer ana sayfa öğeleri gibi temanın ikincil rengi (--pg-ink).
    Takvim .home-widgets-stack içinde, planlayıcı kartının hemen altında akar (sağa hizalı).
    Sadece mobil: büyük ekran koşulunun (min-width:768px ve min-height:600px) tersi. */
 .pg-cal{display:none}
-@media not all and (min-width:768px) and (min-height:600px){
+@media all{
   html[data-pg="on"] #page-1{--pg-cal-w:clamp(132px,40vw,160px)}
   .pg-cal{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;
     position:relative;pointer-events:auto;margin:18px 2px 0 3px;
@@ -37576,6 +37579,169 @@ html[data-pg="on"] #page-1 .home-relax-widget.is-empty .home-relax-widget-title{
   .pg-cal .home-cal-dots i{width:3px;height:3px;border-radius:50%;background:var(--dot-c,currentColor)}
 }
 @media (prefers-reduced-motion:reduce){.pg-cal,.pg-today{animation:none}}
+
+/* ===== MASAÜSTÜ: seçili günün etkinliği ("Yaklaşan" tasarımıyla, tek etkinlik + oklar) ===== */
+.pgt-dayev{display:none}
+@media (min-width:768px) and (min-height:600px){
+  html[data-pg="on"] #page-1 .pg-today .pgt-dayev{display:block;position:relative;width:22rem;max-width:100%;touch-action:pan-y;
+    user-select:none;-webkit-user-select:none;
+    --cal-ease:cubic-bezier(0.16,1,0.3,1);--cal-spring:cubic-bezier(0.34,1.56,0.64,1)}
+  html[data-pg="on"] #page-1 .pg-today .pgt-dayev[hidden]{display:none !important}
+  .pg-today .pgt-dayev-card{max-width:100%}
+  .pg-today .pgt-dayev-card.is-swap .pgt-next-txt{animation:calLabelIn .42s var(--cal-ease) backwards}
+  .pg-today .pgt-dayev-card.is-swap .pgt-bar{animation:calBubblePop .42s var(--cal-spring) backwards}
+  .pg-today .pgt-dayev-nav{position:absolute;top:-.3rem;right:-.35rem;z-index:2;display:flex;gap:.05rem}
+  .pg-today .pgt-dayev-nav[hidden]{display:none !important}
+  .pg-today .pgt-dayev-btn{width:1.6rem;height:1.6rem;display:grid;place-items:center;padding:0;border:0;border-radius:50%;
+    background:transparent;color:var(--accent-color,#ff90e8);cursor:pointer;-webkit-tap-highlight-color:transparent;
+    transition:background-color .15s ease,transform .15s ease}
+  @media (hover:hover){.pg-today .pgt-dayev-btn:hover{background:rgba(127,127,127,.16)}}
+  .pg-today .pgt-dayev-btn:active{transform:scale(.88);background:rgba(127,127,127,.24)}
+  .pg-today .pgt-dayev-btn:focus-visible{outline:2px solid var(--accent-color,#ff90e8);outline-offset:1px}
+  /* Ay/yıl başlığı: dokununca bugüne döner */
+  .home-cal-widget.is-live .home-cal-head{cursor:pointer;width:fit-content;transition:opacity .2s ease}
+  @media (hover:hover){.home-cal-widget.is-live .home-cal-head:hover{opacity:.7}}
+}
+@media (prefers-reduced-motion:reduce){.pg-today .pgt-dayev-card.is-swap .pgt-next-txt,.pg-today .pgt-dayev-card.is-swap .pgt-bar{animation:none !important}}
+
+/* ===== ANA SAYFA (MASAÜSTÜ): CANLI MİNİ TAKVİM =====
+   Yalnızca büyük ekranda ve JS .is-live sınıfını eklediğinde etkindir; mobil kurallara dokunmaz.
+   Gün seçimi, ay değişimi (ok + kaydırma) ve animasyonlar Takvim sayfasındakiyle aynı keyframe'leri kullanır
+   (calSettle / calDayIn / calBubblePop / calLabelIn). Basılı tutunca Takvim sayfası açılır. */
+.home-cal-navbtns,.home-cal-bubble{display:none}
+@media (min-width:768px) and (min-height:600px){
+  html[data-pg="on"] #page-1 .pg-cal .home-cal-widget.is-live{
+    --cal-ease:cubic-bezier(0.16,1,0.3,1);--cal-spring:cubic-bezier(0.34,1.56,0.64,1);
+    position:relative;cursor:default;touch-action:pan-y;user-select:none;-webkit-user-select:none;
+    -webkit-touch-callout:none;opacity:1;transition:transform .5s var(--cal-ease)}
+  html[data-pg="on"] #page-1 .pg-cal .home-cal-widget.is-live:active{opacity:1}
+  html[data-pg="on"] #page-1 .pg-cal .home-cal-widget.is-live.is-holding{transform:scale(.965)}
+  .home-cal-widget.is-live .home-cal-head{padding-right:4.4rem;display:flex;align-items:baseline}
+  .home-cal-widget.is-live .home-cal-head > span{display:inline-block}
+  .home-cal-widget.is-live .home-cal-head.is-swap > span{animation:calLabelIn .45s var(--cal-ease) backwards}
+  .home-cal-widget.is-live .home-cal-head.is-swap > .home-cal-year{animation-delay:60ms}
+  /* Ay okları: başlıkla aynı satırda, sağ üstte; Takvim sayfasındaki ok düğmeleriyle aynı dil (çerçevesiz, vurgu rengi) */
+  .home-cal-widget.is-live .home-cal-navbtns{display:flex;position:absolute;top:-.42rem;right:-.45rem;z-index:2;gap:.1rem}
+  .home-cal-widget.is-live .home-cal-navbtn{width:2rem;height:2rem;display:grid;place-items:center;padding:0;
+    background:transparent;border:0;border-radius:50%;cursor:pointer;color:var(--accent-color,#ff90e8);
+    -webkit-tap-highlight-color:transparent;transition:background-color .15s ease,transform .15s ease}
+  .home-cal-widget.is-live .home-cal-navbtn svg{transition:transform .3s var(--cal-spring)}
+  @media (hover:hover){.home-cal-widget.is-live .home-cal-navbtn:hover{background:rgba(127,127,127,.14)}}
+  .home-cal-widget.is-live .home-cal-navbtn:active{transform:scale(.9);background:rgba(127,127,127,.22)}
+  .home-cal-widget.is-live #homeCalPrev:active svg{transform:translateX(-3px)}
+  .home-cal-widget.is-live #homeCalNext:active svg{transform:translateX(3px)}
+  .home-cal-widget.is-live .home-cal-navbtn:focus-visible,.home-cal-widget.is-live .home-cal-day:focus-visible{outline:2px solid var(--accent-color,#ff90e8);outline-offset:1px}
+  /* Izgara: Takvim sayfasındaki gibi 6 satır sabit (ay değişince widget boyu zıplamaz); ay dışı günler soluk */
+  .home-cal-widget.is-live .home-cal-grid{position:relative}
+  html[data-pg="on"] #page-1 .pg-cal .home-cal-widget.is-live .home-cal-day{
+    z-index:1;padding:0;margin:0;border:0;border-radius:50%;background:none;box-shadow:none;
+    font:inherit;font-size:1.02rem;font-weight:600;line-height:1;color:inherit;cursor:pointer;
+    -webkit-tap-highlight-color:transparent;overflow:visible}
+  html[data-pg="on"] #page-1 .pg-cal .home-cal-widget.is-live .home-cal-day.is-off{color:#e74c3c}
+  html[data-pg="on"] #page-1 .pg-cal .home-cal-widget.is-live .home-cal-day.is-outside{opacity:.25;cursor:default}
+  html[data-pg="on"] #page-1 .pg-cal .home-cal-widget.is-live .home-cal-day.is-selected{opacity:1}
+  .home-cal-widget.is-live .home-cal-num{position:relative;display:grid;place-items:center;width:100%;height:100%;border-radius:50%;
+    transition:color .25s ease,background-color .15s ease,transform .15s ease}
+  @media (hover:hover){.home-cal-widget.is-live .home-cal-day:not(:disabled):not(.is-selected):hover .home-cal-num{background:rgba(127,127,127,.14)}}
+  .home-cal-widget.is-live .home-cal-day:not(:disabled):active .home-cal-num{transform:scale(.9)}
+  .home-cal-widget.is-live .home-cal-day.has-cd .home-cal-num{box-shadow:inset 0 0 0 2px var(--cd-color)}
+  .home-cal-widget.is-live .home-cal-day.is-today .home-cal-num{box-shadow:inset 0 0 0 2px var(--pg-ink,var(--theme-c2,#1a1a1a));font-weight:800}
+  .home-cal-widget.is-live .home-cal-day.is-today.has-cd .home-cal-num{box-shadow:inset 0 0 0 2px var(--cd-color)}
+  .home-cal-widget.is-live .home-cal-day.is-selected .home-cal-num{
+    box-shadow:none;font-weight:800;color:var(--bfg,var(--theme-c1,var(--theme-bg,#fff)))}
+  .home-cal-widget.is-live .home-cal-dots{bottom:11%}
+  .home-cal-widget.is-live .home-cal-day.is-selected .home-cal-dots{display:none}
+  /* Seçili günün dairesi: günden güne yaylanarak kayar (JS, Takvim sayfasıyla aynı eğri) */
+  .home-cal-widget.is-live .home-cal-bubble{display:block;position:absolute;left:0;top:0;z-index:0;pointer-events:none;
+    will-change:transform;transition:opacity .25s ease}
+  .home-cal-widget.is-live .home-cal-bubble.is-hidden{opacity:0}
+  .home-cal-widget.is-live .home-cal-bubble i{display:block;width:100%;height:100%;border-radius:50%;transform:scale(1.04);
+    background:var(--bc,var(--pg-ink,var(--theme-c2,#1a1a1a)));box-shadow:0 8px 16px -8px rgba(0,0,0,.35);
+    transition:background-color .35s ease}
+  .home-cal-widget.is-live .home-cal-bubble.is-pop i{animation:calBubblePop .6s var(--cal-spring) var(--pop-delay,0ms) backwards}
+  .home-cal-widget.is-live .home-cal-day.is-anim .home-cal-num{
+    animation:calDayIn .55s var(--cal-ease) calc(var(--base,30ms) + var(--r,0) * 42ms + var(--c,0) * 20ms) backwards}
+}
+@media (prefers-reduced-motion:reduce){
+  .home-cal-widget.is-live,.home-cal-widget.is-live .home-cal-head > span,.home-cal-widget.is-live .home-cal-num,
+  .home-cal-widget.is-live .home-cal-bubble i{animation:none !important;transition:none !important}
+}
+
+/* ===== ANA SAYFA (MASAÜSTÜ / TABLET) =====
+   Planlayıcı widget'ı (.home-tile-relax) ESKİ masaüstü tasarımındaki haliyle, hiç dokunulmadan kalır:
+   ızgara, yer ve boyut değişmez. Takvim ızgaranın DIŞINDA (absolute) sağ tarafta durur, bu yüzden planlayıcıyı etkilemez.
+   Profil rozeti ve diğer widget'lar gizli. */
+@media (min-width:768px) and (min-height:600px){
+  html[data-pg="on"] #page-1 .pg-root{display:none !important}
+  /* Planlayıcı kartı kaldırıldı: yalnızca zemin, çerçeve rengi ve gölge gider; boyut, iç boşluk ve yerleşim aynen kalır. */
+  html[data-pg="on"] #page-1 .home-tile-relax{background:none !important;border-color:transparent !important;box-shadow:none !important}
+  /* --pg-ink (ana sayfa yazı rengi) yalnızca mobil blokta tanımlıydı; masaüstünde tanımsız kalınca soluk yazılar
+     koyu yedek renge (#1a1a1a) düşüp saf siyah temada görünmez oluyordu. Masaüstünde de temanın ikincil rengine bağlanır. */
+  html[data-pg="on"] #page-1{--pg-ink:var(--theme-c2,var(--theme-text,#1a1a1a))}
+  html[data-pg="on"] #page-1 .home-widgets-stack > :not(.home-tile-relax):not(.pg-cal):not(.pg-tm):not(.pg-rq){display:none !important}
+  html[data-pg="on"] #page-1 .pg-cal{position:absolute;z-index:3;margin:0;display:flex;align-items:flex-start;
+    justify-content:flex-start;gap:clamp(2rem,3.5vw,3.5rem);width:auto;max-width:calc(100% - 44px);
+    top:calc(env(safe-area-inset-top) + 120px);left:22px;right:auto}
+  html[data-pg="on"] #page-1 .pg-cal-box{order:1;flex:none;margin:0;width:clamp(16.5rem,21vw,21rem)}
+  /* Bugünün etkinliği / yaklaşan etkinlik + çalışma süresi + çözülen soru: takvimin sağında, masaüstü ölçüsünde */
+  html[data-pg="on"] #page-1 .pg-cal{width:var(--pg-cal-avail,auto)}
+  /* Özet alanı takvimin sağından planlayıcıya kadar uzanır (genişlik JS ile ölçülür: --pg-cal-avail);
+     içerik bu alanın içinde yatay ORTALANIR (punto büyütülmez). Üst kenar hafta günü satırıyla hizalı. */
+  html[data-pg="on"] #page-1 .pg-today{order:2;flex:1 1 0;min-width:0;width:auto;max-width:none;align-self:flex-start;
+    align-items:center;margin-top:calc(1.05rem + .8rem)}
+  html[data-pg="on"] #page-1 .pg-today.is-idle{max-width:none}
+  html[data-pg="on"] #page-1 .pg-today .pgt-idle{width:22rem;max-width:100%;gap:1.5rem}
+  html[data-pg="on"] #page-1 .pg-today .pgt-next{width:100%;max-width:100%}
+  html[data-pg="on"] #page-1 .pg-today .pg-today-list{width:fit-content;max-width:min(100%,22rem)}
+  html[data-pg="on"] #page-1 .pg-today .pgt-kicker,html[data-pg="on"] #page-1 .pg-today .pgt-lbl{font-size:.76rem}
+  html[data-pg="on"] #page-1 .pg-today .pgt-next-name{font-size:1.25rem}
+  html[data-pg="on"] #page-1 .pg-today .pgt-next-when{font-size:.9rem}
+  html[data-pg="on"] #page-1 .pg-today .pgt-val{font-size:1.9rem}
+  html[data-pg="on"] #page-1 .pg-today .pgt-val small{font-size:.85rem}
+  html[data-pg="on"] #page-1 .pg-today .pgt-stats{gap:.8rem 1.6rem}
+  html[data-pg="on"] #page-1 .pg-today .cal-evc{padding:.55rem .75rem .55rem .6rem}
+  html[data-pg="on"] #page-1 .pg-today .cal-evc-txt b{font-size:1.05rem}
+  html[data-pg="on"] #page-1 .pg-cal .home-cal-head{font-size:1.05rem;margin-bottom:.8rem}
+  html[data-pg="on"] #page-1 .pg-cal .home-cal-wd span{font-size:.72rem;padding-bottom:.4rem}
+  html[data-pg="on"] #page-1 .pg-cal .home-cal-day{font-size:1.02rem}
+  html[data-pg="on"] #page-1 .pg-cal .home-cal-dots i{width:4px;height:4px}
+  /* Soru hatırlatıcı: sol altta, ızgaranın dışında. Mobil tasarımın yapısı AYNEN korunur (sayı + etiket kutuları, hap zar butonu,
+     Özelleştir, X); yalnızca masaüstüne göre ölçeklenir. Seçili olmayanlar da okunur kalır (saf siyah tema dahil). */
+  html[data-pg="on"] #page-1 .pg-rq{position:absolute !important;z-index:4;margin:0 !important;
+    left:22px;bottom:calc(env(safe-area-inset-bottom) + 40px);width:clamp(22rem,28vw,30rem)}
+  html[data-pg="on"] #page-1 .pg-rq .pg-rq-col{gap:.7rem}
+  html[data-pg="on"] #page-1 .pg-rq .rq-kick,html[data-pg="on"] #page-1 .pg-rq button.rq-kick{font-size:1rem;opacity:.85}
+  html[data-pg="on"] #page-1 .pg-rq .rq-hr{gap:.5rem}
+  html[data-pg="on"] #page-1 .pg-rq .rq-cust{height:2.1rem;padding:0 1rem;font-size:.84rem;opacity:.95}
+  html[data-pg="on"] #page-1 .pg-rq .rq-x{width:2.1rem;height:2.1rem;margin:0;opacity:1;color:color-mix(in srgb,var(--pg-ink,#fff) 85%,transparent);
+    background:color-mix(in srgb,var(--pg-ink,#fff) 14%,transparent)}
+  html[data-pg="on"] #page-1 .pg-rq .rq-x svg{width:15px;height:15px}
+  html[data-pg="on"] #page-1 .pg-rq .rq-tiles{gap:2.2rem;margin-top:.6rem}
+  html[data-pg="on"] #page-1 .pg-rq .rq-chip.rq-tile{opacity:.6;gap:.45rem}
+  html[data-pg="on"] #page-1 .pg-rq .rq-chip.rq-tile.is-on{opacity:1}
+  html[data-pg="on"] #page-1 .pg-rq .rq-chip.rq-tile b{font-size:2.4rem}
+  html[data-pg="on"] #page-1 .pg-rq .rq-chip.rq-tile span{font-size:.9rem;opacity:.9}
+  html[data-pg="on"] #page-1 .pg-rq .rq-tiles .rq-dice{height:3.4rem;padding:0 1.35rem 0 1.15rem;gap:.65rem}
+  html[data-pg="on"] #page-1 .pg-rq .rq-tiles .rq-dice svg{width:25px;height:25px}
+  html[data-pg="on"] #page-1 .pg-rq .rq-tiles .rq-dice small{font-size:1.25rem}
+  html[data-pg="on"] #page-1 .pg-rq .rq-res{gap:1.7rem;margin-top:.3rem}
+  html[data-pg="on"] #page-1 .pg-rq .rq-res b{font-size:2rem}
+  html[data-pg="on"] #page-1 .pg-rq .rq-res i{font-size:.76rem;opacity:.9}
+  html[data-pg="on"] #page-1 .pg-rq .rq-foot{margin-top:.5rem;font-size:1rem}
+  html[data-pg="on"] #page-1 .pg-rq .rq-foot span{opacity:.95}
+  html[data-pg="on"] #page-1 .pg-rq .rq-again{height:2.8rem;padding:0 1.2rem 0 1rem;font-size:1rem}
+  html[data-pg="on"] #page-1 .pg-rq .rq-again svg{width:20px;height:20px}
+  /* Geri sayım satırı: takvimin hemen altında (üst konum ve genişlik JS ile takvimden ölçülür), masaüstü ölçüsü */
+  html[data-pg="on"] #page-1 .pg-cdline{bottom:auto !important;max-width:none !important;min-width:21rem;
+    top:calc(env(safe-area-inset-top) + 80px + 22rem)}
+  html[data-pg="on"] #page-1 .pgcl-btn{gap:2rem;min-height:3rem;justify-content:flex-start}
+  html[data-pg="on"] #page-1 .pgcl-name{font-size:1.4rem;flex:0 0 auto}
+  html[data-pg="on"] #page-1 .pgcl-units{gap:.8rem;font-size:1.6rem}
+  html[data-pg="on"] #page-1 .pgcl-u{gap:.2rem}
+  html[data-pg="on"] #page-1 .pgcl-u small{font-size:.76rem;margin-left:.14rem}
+  html[data-pg="on"] #page-1 .pgcl-done{font-size:1.4rem}
+  html[data-pg="on"] #page-1 .pgcl-plus svg{width:26px;height:26px}
+}
 </style>
 
 <style>
@@ -38779,6 +38945,25 @@ html[data-pg="on"] #page-1 .home-relax-widget.is-empty .home-relax-widget-time{d
           <!-- Bugün etkinlik yoksa: yaklaşan ilk etkinlik + günün mini özeti (toplam çalışma süresi, çözülen soru).
                JS: "Ana sayfa: bugünün etkinlikleri" script'i (showIdle / renderStats). -->
           <div class="pgt-idle" id="pgTodayIdle" hidden>
+            <!-- MASAÜSTÜ (canlı takvim): seçili günün etkinliği, "Yaklaşan" tasarımıyla; birden fazlaysa sağ üstte oklar. Mobilde hep gizli. -->
+            <div class="pgt-dayev" id="pgTodayDayEv" hidden>
+              <div class="pgt-dayev-nav" id="pgDayNav" hidden>
+                <button type="button" class="pgt-dayev-btn" id="pgDayPrev" aria-label="Önceki etkinlik">
+                  <svg viewBox="0 0 24 24" width="14" height="14"><path d="M15 4l-8 8 8 8" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button>
+                <button type="button" class="pgt-dayev-btn" id="pgDayNext" aria-label="Sonraki etkinlik">
+                  <svg viewBox="0 0 24 24" width="14" height="14"><path d="M9 4l8 8-8 8" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button>
+              </div>
+              <button type="button" class="pgt-next pgt-dayev-card" id="pgDayCard">
+                <span class="pgt-bar" aria-hidden="true"></span>
+                <span class="pgt-next-txt">
+                  <span class="pgt-kicker" id="pgDayKicker"></span>
+                  <span class="pgt-next-name" id="pgDayName"></span>
+                  <span class="pgt-next-when" id="pgDayWhen"></span>
+                </span>
+              </button>
+            </div>
             <button type="button" class="pgt-next" id="pgTodayNext" hidden>
               <span class="pgt-bar" aria-hidden="true"></span>
               <span class="pgt-next-txt">
@@ -38803,6 +38988,15 @@ html[data-pg="on"] #page-1 .home-relax-widget.is-empty .home-relax-widget-time{d
         <div class="pg-cal-box">
           <div class="home-cal-widget" id="homeCalWidget" role="button" tabindex="0" aria-label="Takvim'e git">
             <div class="home-cal-head" id="homeCalHead"></div>
+            <!-- Yalnızca masaüstünde (canlı mod) görünür: ay okları. Mobilde display:none. -->
+            <div class="home-cal-navbtns" id="homeCalNavBtns">
+              <button type="button" class="home-cal-navbtn" id="homeCalPrev" aria-label="Önceki ay">
+                <svg viewBox="0 0 24 24" width="16" height="16"><path d="M15 4l-8 8 8 8" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+              <button type="button" class="home-cal-navbtn" id="homeCalNext" aria-label="Sonraki ay">
+                <svg viewBox="0 0 24 24" width="16" height="16"><path d="M9 4l8 8-8 8" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+            </div>
             <div class="home-cal-wd" id="homeCalWd" aria-hidden="true"></div>
             <div class="home-cal-grid" id="homeCalGrid"></div>
           </div>
@@ -44426,6 +44620,7 @@ html[data-pg="on"] #page-1 .home-relax-widget.is-empty .home-relax-widget-time{d
     'page-day-cd': 'page-1',
     'page-7': 'page-1',
     'page-10': 'page-5',
+    'page-ztakvim': 'page-5', // Zaman Takvimi Kronometre'den açılır; panelde Kronometre vurgulu kalır
     'page-11-detail': 'page-11',
     'page-analytics': 'page-11',
     'page-zero-error': 'page-11',
@@ -51585,6 +51780,8 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
     const safe = (fn, fallback) => { try { return fn(); } catch (e) { return fallback; } };
 
     const render = () => {
+      // Masaüstünde widget canlıdır: çizimi "Ana sayfa: canlı mini takvim (masaüstü)" script'i yapar.
+      if (window.HomeCalLive && window.HomeCalLive.isOn()) { window.HomeCalLive.render(); return; }
       const now = new Date();
       const y = now.getFullYear(), m = now.getMonth(), todayNum = now.getDate();
       const ws = safe(() => calendarWeekStart, 1);
@@ -51644,8 +51841,11 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
         goToPage('page-6');
       }
     };
-    root.addEventListener('click', goCalendar);
+    window.homeGoCalendar = goCalendar;
+    const liveOn = () => !!(window.HomeCalLive && window.HomeCalLive.isOn());
+    root.addEventListener('click', () => { if (!liveOn()) goCalendar(); });
     root.addEventListener('keydown', (e) => {
+      if (liveOn()) return;
       if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); goCalendar(); }
     });
 
@@ -51655,6 +51855,308 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
     document.addEventListener('change', (e) => { if (e.target && e.target.classList && e.target.classList.contains('nav-input')) schedule(); });
     setInterval(render, 60000); // gün değişimini ve dışarıdan gelen verileri yakalar
     render();
+  })();
+</script>
+
+<script>
+  // ---------- Ana sayfa: canlı mini takvim (masaüstü) ----------
+  // Yalnızca büyük ekranda (min-width:768px ve min-height:600px) çalışır; mobilde isOn() false döner ve
+  // "Ana sayfa: mini ay takvimi" script'inin eski davranışı aynen sürer.
+  //  • Gün seç: dokun/tıkla → seçili günün dairesi Takvim sayfasındaki gibi yaylanarak kayar.
+  //  • Ay değiştir: sağ üstteki oklar ya da widget üzerinde sağa/sola kaydırma (fare sürükleme, dokunma, yatay tekerlek);
+  //    gün rakamları ve başlık gidilen yönden Takvim sayfasındaki dalga animasyonuyla akar.
+  //  • Basılı tut (≈0,5 sn) → Takvim sayfası açılır.
+  (function () {
+    const root = document.getElementById('homeCalWidget');
+    const headEl = document.getElementById('homeCalHead');
+    const wdEl = document.getElementById('homeCalWd');
+    const gridEl = document.getElementById('homeCalGrid');
+    const prevBtn = document.getElementById('homeCalPrev');
+    const nextBtn = document.getElementById('homeCalNext');
+    if (!root || !headEl || !wdEl || !gridEl || !prevBtn || !nextBtn) return;
+
+    const mq = window.matchMedia('(min-width:768px) and (min-height:600px)');
+    const safe = (fn, fallback) => { try { return fn(); } catch (e) { return fallback; } };
+    const same = (a, b) => a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+    const WAVE_ROW = 42, WAVE_COL = 20, BUBBLE_MS = 550;
+
+    const t0 = new Date();
+    let viewY = t0.getFullYear(), viewM = t0.getMonth();
+    let sel = new Date(t0.getFullYear(), t0.getMonth(), t0.getDate());
+    let dir = 0;          // son ay değişim yönü (−1/0/1)
+    let animate = false;  // bir sonraki çizimde dalga animasyonu oynasın mı
+    let on = false;
+
+    // ---- Seçili gün dairesi (Takvim sayfasındaki rAF kayması ile aynı eğri) ----
+    const bubble = document.createElement('span');
+    bubble.className = 'home-cal-bubble is-hidden';
+    bubble.setAttribute('aria-hidden', 'true');
+    bubble.innerHTML = '<i></i>';
+    const makeBezier = (x1, y1, x2, y2) => {
+      const cx = 3 * x1, bx = 3 * (x2 - x1) - cx, ax = 1 - cx - bx;
+      const cy = 3 * y1, by = 3 * (y2 - y1) - cy, ay = 1 - cy - by;
+      const X = (u) => ((ax * u + bx) * u + cx) * u;
+      const Y = (u) => ((ay * u + by) * u + cy) * u;
+      return (t) => {
+        if (t <= 0) return 0;
+        if (t >= 1) return 1;
+        let lo = 0, hi = 1, u = t;
+        for (let i = 0; i < 24; i++) { const x = X(u); if (Math.abs(x - t) < 1e-4) break; if (x < t) lo = u; else hi = u; u = (lo + hi) / 2; }
+        return Y(u);
+      };
+    };
+    const ease = makeBezier(0.34, 1.4, 0.64, 1);
+    let raf = 0, bCell = null, bFrom = null, bLastE = 0, selCell = null;
+    const cellPos = (c) => ({ x: c.offsetLeft, y: c.offsetTop, s: c.offsetWidth });
+    const setBox = (p) => {
+      bubble.style.width = p.s + 'px'; bubble.style.height = p.s + 'px';
+      bubble.style.transform = 'translate(' + p.x + 'px,' + p.y + 'px)';
+    };
+    const stopAnim = () => { if (raf) { cancelAnimationFrame(raf); raf = 0; } };
+    const replay = (el, cls) => { el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls); };
+
+    const placeBubble = (cell, anim) => {
+      if (!cell) { stopAnim(); bCell = null; bubble.classList.add('is-hidden'); return; }
+      const wasHidden = bubble.classList.contains('is-hidden');
+      if (!anim || wasHidden) {
+        stopAnim(); bCell = cell; setBox(cellPos(cell)); bubble.classList.remove('is-hidden');
+        if (anim && wasHidden) { bubble.style.setProperty('--pop-delay', '0ms'); replay(bubble, 'is-pop'); }
+        return;
+      }
+      const to = cell;
+      let fromFn;
+      if (raf && bCell && bCell.isConnected && bFrom) {
+        const oldFrom = bFrom, oldTo = bCell, k = bLastE;
+        fromFn = () => { const a = oldFrom(), b = cellPos(oldTo); return { x: a.x + (b.x - a.x) * k, y: a.y + (b.y - a.y) * k, s: a.s + (b.s - a.s) * k }; };
+      } else if (bCell && bCell.isConnected) { const prev = bCell; fromFn = () => cellPos(prev); }
+      else fromFn = () => cellPos(to);
+      stopAnim(); bFrom = fromFn; bCell = to; bubble.classList.remove('is-hidden');
+      const start = performance.now();
+      const step = (now) => {
+        if (!to.isConnected) { raf = 0; return; }
+        const t = Math.min(1, Math.max(0, (now - start) / BUBBLE_MS));
+        const e = ease(t); bLastE = e;
+        const a = fromFn(), b = cellPos(to);
+        setBox({ x: a.x + (b.x - a.x) * e, y: a.y + (b.y - a.y) * e, s: a.s + (b.s - a.s) * e });
+        if (t < 1) raf = requestAnimationFrame(step);
+        else { raf = 0; bFrom = null; setBox(cellPos(to)); }
+      };
+      step(start);
+    };
+
+    // Seçili günün dairesinin rengi/yazı rengi: geri sayım > off day > ilk etkinlik > tema.
+    const bubbleColors = (d) => {
+      if (safe(() => window.OffDay.isOff(d), false)) return { bc: '#ff3b3b', fg: '#fff' };
+      const cd = safe(() => getDayCountdown(d), null);
+      if (cd && cd.color) return { bc: cd.color, fg: safe(() => dayCdOnColor(cd.color), '#16171b') };
+      const evs = safe(() => getDayEvents(d), []);
+      if (evs.length) { const c = safe(() => ce_evColor(evs[0]), '#ff90e8'); return { bc: c, fg: safe(() => getReadableTextColor(c), '#16171b') }; }
+      return null;
+    };
+    const applyBubbleColors = () => {
+      const c = bubbleColors(sel);
+      if (c) { gridEl.style.setProperty('--bc', c.bc); gridEl.style.setProperty('--bfg', c.fg); }
+      else { gridEl.style.removeProperty('--bc'); gridEl.style.removeProperty('--bfg'); }
+    };
+
+    const render = () => {
+      const now = new Date();
+      const todayD = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const ws = safe(() => calendarWeekStart, 1);
+      const months = safe(() => CALENDAR_MONTHS, ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık']);
+      const wds = safe(() => CALENDAR_WEEKDAYS_SHORT_DOW, ['Pz', 'Pt', 'Sa', 'Ça', 'Pe', 'Cu', 'Ct']);
+      const d0 = dir, anim = animate;
+      dir = 0; animate = false;
+
+      headEl.style.setProperty('--dir', String(d0));
+      headEl.classList.toggle('is-swap', d0 !== 0);
+      headEl.innerHTML = '<span class="home-cal-month">' + months[viewM] + '</span><span class="home-cal-year">' + viewY + '</span>';
+      root.setAttribute('aria-label', 'Takvim, ' + months[viewM] + ' ' + viewY);
+
+      let wdHtml = '';
+      for (let c = 0; c < 7; c++) wdHtml += '<span>' + wds[(c + ws) % 7] + '</span>';
+      wdEl.innerHTML = wdHtml;
+
+      const lead = (new Date(viewY, viewM, 1).getDay() - ws + 7) % 7;
+      const dim = new Date(viewY, viewM + 1, 0).getDate();
+      const dimPrev = new Date(viewY, viewM, 0).getDate();
+      stopAnim();
+      gridEl.style.setProperty('--dir', String(d0));
+      gridEl.style.setProperty('--base', '30ms');
+      gridEl.innerHTML = '';
+      gridEl.appendChild(bubble);
+      selCell = null;
+      applyBubbleColors();
+
+      for (let i = 0; i < 42; i++) {
+        const dn = i - lead + 1;
+        const r = Math.floor(i / 7), c = i % 7;
+        let date, inMonth = false;
+        if (dn < 1) date = new Date(viewY, viewM - 1, dimPrev + dn);
+        else if (dn > dim) date = new Date(viewY, viewM + 1, dn - dim);
+        else { date = new Date(viewY, viewM, dn); inMonth = true; }
+
+        const cell = document.createElement('button');
+        cell.type = 'button';
+        cell.className = 'home-cal-day' + (anim ? ' is-anim' : '');
+        cell.style.setProperty('--r', String(r));
+        cell.style.setProperty('--c', String(c));
+        const dow = (c + ws) % 7;
+        if (dow === 0 || dow === 6) cell.classList.add('is-weekend');
+        const num = document.createElement('span');
+        num.className = 'home-cal-num';
+        num.textContent = String(date.getDate());
+        cell.appendChild(num);
+
+        if (!inMonth) { cell.classList.add('is-outside'); cell.disabled = true; cell.tabIndex = -1; gridEl.appendChild(cell); continue; }
+
+        cell.dataset.day = String(dn);
+        if (same(date, todayD)) { cell.classList.add('is-today'); cell.setAttribute('aria-current', 'date'); }
+        const isOff = safe(() => window.OffDay.isOff(date), false);
+        if (isOff) cell.classList.add('is-off');
+        const cd = safe(() => getDayCountdown(date), null);
+        if (cd && cd.color) { cell.classList.add('has-cd'); cell.style.setProperty('--cd-color', cd.color); }
+        const evs = safe(() => getDayEvents(date), []);
+        if (evs.length) {
+          const dots = document.createElement('span');
+          dots.className = 'home-cal-dots';
+          dots.innerHTML = evs.slice(0, 3).map((ev) => '<i style="--dot-c:' + safe(() => ce_evColor(ev), '#ff90e8') + '"></i>').join('');
+          num.appendChild(dots);
+        }
+        cell.setAttribute('aria-label', dn + ' ' + months[viewM] + (cd && cd.name ? ', ' + cd.name : '') + (isOff ? ', off day' : ''));
+        if (same(date, sel)) { cell.classList.add('is-selected'); selCell = cell; cell.setAttribute('aria-pressed', 'true'); }
+        cell._date = date;
+        gridEl.appendChild(cell);
+      }
+
+      if (selCell) {
+        bubble.style.setProperty('--pop-delay', (30 + Number(selCell.style.getPropertyValue('--r')) * WAVE_ROW + Number(selCell.style.getPropertyValue('--c')) * WAVE_COL + 40) + 'ms');
+      }
+      placeBubble(selCell, false);
+      if (selCell && anim) replay(bubble, 'is-pop');
+    };
+
+    const rerender = () => { if (on) render(); };
+    const go = (delta) => {
+      dir = delta; animate = true;
+      viewM += delta;
+      if (viewM < 0) { viewM = 11; viewY -= 1; }
+      if (viewM > 11) { viewM = 0; viewY += 1; }
+      render();
+    };
+
+    const emitSelect = () => window.dispatchEvent(new Event('home-cal-select'));
+    const selectCell = (cell) => {
+      if (!cell || cell === selCell || !cell._date) return;
+      if (selCell) { selCell.classList.remove('is-selected'); selCell.removeAttribute('aria-pressed'); }
+      selCell = cell; sel = cell._date;
+      cell.classList.add('is-selected'); cell.setAttribute('aria-pressed', 'true');
+      applyBubbleColors();
+      placeBubble(cell, true);
+      emitSelect();
+    };
+
+    // Ay/yıl başlığına dokununca: bugünün ayına dönüp bugünü seçer.
+    const goToday = () => {
+      const n = new Date();
+      const ty = n.getFullYear(), tm = n.getMonth();
+      sel = new Date(ty, tm, n.getDate());
+      if (ty === viewY && tm === viewM) {
+        const c = gridEl.querySelector('.home-cal-day[data-day="' + n.getDate() + '"]');
+        if (c && c !== selCell) { selectCell(c); return; }
+        emitSelect();
+        return;
+      }
+      dir = (ty * 12 + tm) > (viewY * 12 + viewM) ? 1 : -1;
+      animate = true; viewY = ty; viewM = tm;
+      render();
+      emitSelect();
+    };
+    headEl.addEventListener('click', (e) => {
+      if (!on) return;
+      if (lpFired || swiped) return;
+      e.stopPropagation();
+      goToday();
+    });
+
+    // ---- Etkileşim: seç / kaydır / basılı tut ----
+    let lpTimer = 0, lpFired = false, swiped = false, pid = null, sx = 0, sy = 0, tracking = false;
+    const clearLp = () => { if (lpTimer) { clearTimeout(lpTimer); lpTimer = 0; } root.classList.remove('is-holding'); };
+
+    root.addEventListener('pointerdown', (e) => {
+      if (!on || (e.pointerType === 'mouse' && e.button !== 0)) return;
+      if (e.target.closest('.home-cal-navbtns')) return;
+      lpFired = false; swiped = false; tracking = true; pid = e.pointerId; sx = e.clientX; sy = e.clientY;
+      clearLp();
+      root.classList.add('is-holding');
+      lpTimer = setTimeout(() => {
+        lpTimer = 0; lpFired = true; tracking = false;
+        root.classList.remove('is-holding');
+        if (navigator.vibrate) { try { navigator.vibrate(12); } catch (err) { /* yok say */ } }
+        if (typeof window.homeGoCalendar === 'function') window.homeGoCalendar();
+      }, 500);
+    });
+    root.addEventListener('pointermove', (e) => {
+      if (!on || !tracking || e.pointerId !== pid) return;
+      if (Math.hypot(e.clientX - sx, e.clientY - sy) > 10) clearLp();
+    });
+    const endPointer = (e) => {
+      if (!on || !tracking || e.pointerId !== pid) { clearLp(); return; }
+      tracking = false; clearLp();
+      if (e.type !== 'pointerup') return;
+      const dx = e.clientX - sx, dy = e.clientY - sy;
+      if (Math.abs(dx) >= 45 && Math.abs(dx) >= Math.abs(dy) * 1.3) {
+        swiped = true;
+        go(dx < 0 ? 1 : -1);
+      }
+    };
+    root.addEventListener('pointerup', endPointer);
+    root.addEventListener('pointercancel', endPointer);
+    root.addEventListener('pointerleave', (e) => { if (e.pointerType === 'mouse') { clearLp(); } });
+    root.addEventListener('contextmenu', (e) => { if (on) e.preventDefault(); });
+
+    // Yatay tekerlek / izleme dörtgeni kaydırması
+    let wheelAcc = 0, wheelLock = 0;
+    root.addEventListener('wheel', (e) => {
+      if (!on || Math.abs(e.deltaX) <= Math.abs(e.deltaY)) return;
+      e.preventDefault();
+      const now = performance.now();
+      if (now < wheelLock) return;
+      wheelAcc += e.deltaX;
+      if (Math.abs(wheelAcc) >= 60) { go(wheelAcc > 0 ? 1 : -1); wheelAcc = 0; wheelLock = now + 450; }
+    }, { passive: false });
+
+    root.addEventListener('click', (e) => {
+      if (!on) return;
+      if (lpFired || swiped) { lpFired = false; swiped = false; e.stopPropagation(); return; }
+      const cell = e.target.closest('.home-cal-day');
+      if (cell && !cell.disabled) selectCell(cell);
+    });
+    prevBtn.addEventListener('click', (e) => { e.stopPropagation(); if (on) go(-1); });
+    nextBtn.addEventListener('click', (e) => { e.stopPropagation(); if (on) go(1); });
+
+    // ---- Masaüstü / mobil geçişi ----
+    const sync = () => {
+      const want = mq.matches;
+      if (want === on) return;
+      on = want;
+      root.classList.toggle('is-live', on);
+      if (on) {
+        root.setAttribute('role', 'group'); root.removeAttribute('tabindex');
+        const n = new Date(); viewY = n.getFullYear(); viewM = n.getMonth();
+        sel = new Date(n.getFullYear(), n.getMonth(), n.getDate());
+      } else {
+        stopAnim(); clearLp();
+        root.setAttribute('role', 'button'); root.setAttribute('tabindex', '0');
+      }
+      window.dispatchEvent(new Event('home-cal-refresh')); // aktif moda göre yeniden çizilir
+    };
+    if (mq.addEventListener) mq.addEventListener('change', sync); else mq.addListener(sync);
+    window.addEventListener('resize', () => { if (on && selCell && !raf) placeBubble(selCell, false); });
+
+    window.HomeCalLive = { isOn: () => on, render: rerender, getSelected: () => new Date(sel.getFullYear(), sel.getMonth(), sel.getDate()) };
+    sync();
+    if (on) render();
   })();
 </script>
 
@@ -51674,7 +52176,10 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
     const SHOW = 3;
     let lastKey = '';
 
-    const goCalendar = () => { const cal = document.getElementById('homeCalWidget'); if (cal) cal.click(); };
+    const goCalendar = () => {
+      if (typeof window.homeGoCalendar === 'function') { window.homeGoCalendar(); return; }
+      const cal = document.getElementById('homeCalWidget'); if (cal) cal.click();
+    };
     moreEl.addEventListener('click', goCalendar);
 
     // ---- Bugün etkinlik yokken: yaklaşan etkinlik + günün mini özeti ----
@@ -51688,6 +52193,20 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
     const qValEl = document.getElementById('pgTodayQVal');
     const MON = ['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara'];
     let idleOn = false;
+
+    // ---- Masaüstü (canlı takvim): seçili günün etkinliği, "Yaklaşan" tasarımıyla; tek etkinlik + oklar/kaydırma ----
+    const dayEv = document.getElementById('pgTodayDayEv');
+    const dayNav = document.getElementById('pgDayNav');
+    const dayPrev = document.getElementById('pgDayPrev');
+    const dayNext = document.getElementById('pgDayNext');
+    const dayCard = document.getElementById('pgDayCard');
+    const dayKicker = document.getElementById('pgDayKicker');
+    const dayName = document.getElementById('pgDayName');
+    const dayWhen = document.getElementById('pgDayWhen');
+    const MONL = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
+    let dayIdx = 0, dayDateKey = '', daySig = '', dayDir = 0, dayAnim = false;
+    const liveOn = () => !!(window.HomeCalLive && window.HomeCalLive.isOn());
+    const dkey = (d) => d.getFullYear() + '-' + d.getMonth() + '-' + d.getDate();
     let lastStats = '';
 
     if (nextBtn) nextBtn.addEventListener('click', goCalendar);
@@ -51755,6 +52274,95 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
       qBtn.setAttribute('aria-label', 'Bugün çözülen soru: ' + q + ". Soru Takibi'ne git");
     };
 
+    const dayLabel = (d, now) => {
+      const t0 = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const diff = Math.round((d - t0) / 86400000);
+      if (diff === 0) return 'Bugün';
+      if (diff === 1) return 'Yarın';
+      if (diff === -1) return 'Dün';
+      return d.getDate() + ' ' + MONL[d.getMonth()];
+    };
+
+    const drawDay = (evs, d, now) => {
+      const n = evs.length;
+      dayIdx = ((dayIdx % n) + n) % n;
+      const ev = evs[dayIdx];
+      const sig = dkey(d) + '|' + dayIdx + '|' + n + '|' + ev.id + '|' + ev.name + '|' + ev.time + '|' + (ev.color || '');
+      const animNow = dayAnim; dayAnim = false;
+      if (sig === daySig && !animNow) return;
+      daySig = sig;
+      const when = safe(() => ce_evSub(ev), ev.time || 'Tüm gün');
+      dayEv.style.setProperty('--dir', String(dayDir));
+      dayCard.style.setProperty('--c', safe(() => ce_evColor(ev), '#ff90e8'));
+      dayKicker.textContent = dayLabel(d, now) + (n > 1 ? ' · ' + (dayIdx + 1) + '/' + n : '');
+      dayName.textContent = ev.name;
+      dayWhen.textContent = when;
+      dayCard.style.setProperty('--dir', String(dayDir));
+      dayCard.setAttribute('aria-label', 'Etkinlik: ' + ev.name + ', ' + when + ". Takvim'e git");
+      dayNav.hidden = n < 2;
+      if (animNow) { dayCard.classList.remove('is-swap'); void dayCard.offsetWidth; dayCard.classList.add('is-swap'); }
+      dayDir = 0;
+    };
+
+    const stepDay = (delta) => {
+      const hc = window.HomeCalLive;
+      if (!hc || !hc.isOn()) return;
+      dayIdx += delta; dayDir = delta; dayAnim = true;
+      render();
+    };
+    if (dayPrev) dayPrev.addEventListener('click', (e) => { e.stopPropagation(); stepDay(-1); });
+    if (dayNext) dayNext.addEventListener('click', (e) => { e.stopPropagation(); stepDay(1); });
+    if (dayCard) dayCard.addEventListener('click', (e) => { if (dayCard._swiped) { dayCard._swiped = false; return; } goCalendar(); });
+    if (dayEv) {
+      let sx = 0, sy = 0, tr = false, pid = null, acc = 0, lock = 0;
+      dayEv.addEventListener('pointerdown', (e) => {
+        if (e.target.closest('.pgt-dayev-nav') || (e.pointerType === 'mouse' && e.button !== 0)) return;
+        tr = true; pid = e.pointerId; sx = e.clientX; sy = e.clientY; dayCard._swiped = false;
+      });
+      const end = (e) => {
+        if (!tr || e.pointerId !== pid) return;
+        tr = false;
+        if (e.type !== 'pointerup') return;
+        const dx = e.clientX - sx, dy = e.clientY - sy;
+        if (Math.abs(dx) >= 40 && Math.abs(dx) >= Math.abs(dy) * 1.3 && !dayNav.hidden) {
+          dayCard._swiped = true;
+          stepDay(dx < 0 ? 1 : -1);
+        }
+      };
+      dayEv.addEventListener('pointerup', end);
+      dayEv.addEventListener('pointercancel', end);
+      dayEv.addEventListener('wheel', (e) => {
+        if (Math.abs(e.deltaX) <= Math.abs(e.deltaY) || dayNav.hidden) return;
+        e.preventDefault();
+        const now = performance.now();
+        if (now < lock) return;
+        acc += e.deltaX;
+        if (Math.abs(acc) >= 60) { stepDay(acc > 0 ? 1 : -1); acc = 0; lock = now + 450; }
+      }, { passive: false });
+    }
+
+    const renderLive = (now) => {
+      idleOn = true; lastKey = '';
+      listEl.innerHTML = ''; moreEl.hidden = true;
+      box.classList.remove('is-compact');
+      box.classList.add('is-idle');
+      idleEl.hidden = false;
+      const d = window.HomeCalLive.getSelected();
+      const k = dkey(d);
+      if (k !== dayDateKey) { dayDateKey = k; dayIdx = 0; daySig = ''; dayAnim = true; dayDir = 0; }
+      const evs = safe(() => getDayEvents(d), []);
+      if (evs.length) {
+        nextBtn.hidden = true;
+        dayEv.hidden = false;
+        drawDay(evs, d, now);
+      } else {
+        dayEv.hidden = true; daySig = '';
+        renderNext(now);
+      }
+      renderStats();
+      box.hidden = false;
+    };
+
     const showIdle = (now) => {
       if (!idleEl) { box.hidden = true; lastKey = ''; return; }
       idleOn = true; lastKey = ''; lastStats = '';
@@ -51769,6 +52377,8 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
 
     const render = () => {
       const now = new Date();
+      if (idleEl && dayEv && liveOn()) { renderLive(now); return; }
+      if (dayEv && !dayEv.hidden) { dayEv.hidden = true; daySig = ''; dayDateKey = ''; }
       const list = safe(() => getDayEvents(new Date(now.getFullYear(), now.getMonth(), now.getDate())), []);
       if (!list.length) { showIdle(now); return; }
       if (idleOn) {
@@ -51805,6 +52415,7 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
     const schedule = () => { if (!raf) raf = requestAnimationFrame(() => { raf = 0; render(); }); };
 
     window.addEventListener('home-cal-refresh', schedule);
+    window.addEventListener('home-cal-select', schedule);
     window.addEventListener('app-state-saved', schedule);
     window.addEventListener('load', schedule);
     document.addEventListener('visibilitychange', () => { if (!document.hidden) schedule(); });
@@ -77609,8 +78220,8 @@ html[data-pg="on"] #page-1 .pg-cdline{display:block;position:absolute;z-index:3;
 .pgn-wi.is-sel{color:var(--t)}
 .pgn-colon{position:relative;z-index:1;font-size:1.7rem;font-weight:800}
 .pgn-foot{padding:10px 20px calc(14px + env(safe-area-inset-bottom))}
-.pgn-save{width:100%;height:3.3rem;border:0;border-radius:999px;background:var(--t);color:var(--bg);font-weight:800;font-size:1.02rem;transition:transform .2s}
-.pgn-save:active{transform:scale(.97)}
+.pgn .pgn-save{width:100%;height:3.3rem;border:0;border-radius:999px;background:var(--t);color:var(--bg);font-weight:800;font-size:1.02rem;transition:transform .2s}
+.pgn .pgn-save:active{transform:scale(.97)}
 @media (prefers-reduced-motion:reduce){.pgn,.pgn-body{transition-duration:.01s}}
 </style>
 <style id="pg-ui2-css">
@@ -77876,7 +78487,7 @@ html[data-pg="on"] #page-1 .pg-cdline{display:block;position:absolute;z-index:3;
         '<div class="pgn-wd"><span>PT</span><span>SA</span><span>ÇA</span><span>PE</span><span>CU</span><span>CT</span><span>PZ</span></div><div class="pgn-grid"></div></div></div></div>' +
       '<div class="pgn-sec" data-s="time"><button type="button" class="pgn-head"><span class="pgn-lbl">Saat</span><span class="pgn-val" data-v="time"></span><span class="pgn-chev">' + CHEV + '</span></button>' +
         '<div class="pgn-body"><div><div class="pgn-wheels"><div class="pgn-wheel" data-w="h" aria-label="Saat"></div><span class="pgn-colon">:</span><div class="pgn-wheel" data-w="m" aria-label="Dakika"></div></div></div></div></div></div>' +
-      '<div class="pgn-foot"><button type="button" class="pgn-save">Sayacı kur</button></div>';
+      '<div class="pgn-foot"><button type="button" class="pgn-save">Ekle</button></div>';
     document.body.appendChild(bd);
     nameIn = q('.pgn-name');
     buildWheel(q('[data-w="h"]'), 24, 'h'); buildWheel(q('[data-w="m"]'), 60, 'm');
@@ -77985,6 +78596,45 @@ html[data-pg="on"] #page-1 .pg-tm{
 @media (prefers-reduced-motion:reduce){
   .pg-tm,.pg-tm *{animation:none !important;transition-duration:.01s !important}
 }
+</style>
+<style id="pg-tm-desktop-css">
+/* ===== ANA SAYFA (MASAÜSTÜ / TABLET): KRONOMETRE ADASI + SAAT =====
+   Mobildeki mini kronometre/zamanlayıcı (#pgTm: halka + süre + etiket + ⇄) masaüstünde ekranın TAM üst ortasında,
+   üst kenara yapışık, aşağı doğru yuvarlak köşeli koyu bir "ada" panelinin içinde durur (dinamik ada gibi). Boştayken de
+   çalışırken de orada kalır; dokununca başlatır/duraklatır, ⇄ ile zamanlayıcıya geçer. Davranış JS'te değişmedi.
+   Sağ üstte (Pace yazısıyla aynı hizada) saat gösterilir. */
+@media (min-width:768px) and (min-height:600px){
+  html[data-pg="on"] #page-1 .pg-tm{
+    --pg-ink:var(--theme-bg,#f6f4ef);
+    position:fixed;z-index:20;margin:0;top:0;left:0;right:0;margin-inline:auto;width:fit-content;min-width:17.5rem;
+    translate:var(--pg-isl-shift,0px) 0;
+    box-sizing:border-box;gap:.4rem;padding:.7rem .7rem .8rem 1rem;
+    background:var(--theme-text,#121212);color:var(--theme-bg,#f6f4ef);
+    border-radius:0 0 2.1rem 2.1rem;
+    box-shadow:0 14px 30px -14px color-mix(in srgb,var(--theme-text,#121212) 55%,transparent);
+    animation:pgIslandIn .7s cubic-bezier(.22,1,.36,1) both}
+  html[data-pg="on"] #page-1 .pg-tm .pg-tm-main{gap:.85rem;flex:1 1 auto}
+  html[data-pg="on"] #page-1 .pg-tm .pg-tm-ring{width:3rem;height:3rem}
+  html[data-pg="on"] #page-1 .pg-tm .pg-tm-track{opacity:.28}
+  html[data-pg="on"] #page-1 .pg-tm .pg-tm-track,
+  html[data-pg="on"] #page-1 .pg-tm .pg-tm-arc{stroke-width:6}
+  html[data-pg="on"] #page-1 .pg-tm .pg-tm-time{font-size:.8rem}
+  html[data-pg="on"] #page-1 .pg-tm.is-long .pg-tm-time{font-size:.62rem}
+  html[data-pg="on"] #page-1 .pg-tm .pg-tm-kicker{font-size:1.1rem;opacity:.55;padding-right:.5rem}
+  html[data-pg="on"] #page-1 .pg-tm.is-run .pg-tm-kicker{opacity:1}
+  html[data-pg="on"] #page-1 .pg-tm.is-finished .pg-tm-kicker{opacity:1}
+  html[data-pg="on"] #page-1 .pg-tm .pg-tm-swap{width:2.4rem;height:2.4rem;opacity:.75}
+  html[data-pg="on"] #page-1 .pg-tm .pg-tm-swap svg{width:1.2rem;height:1.2rem}
+  html[data-pg="on"] #page-1 .pg-tm.is-run .pg-tm-swap,
+  html[data-pg="on"] #page-1 .pg-tm.is-finished .pg-tm-swap{opacity:.25}
+  html[data-pg="on"] #page-1 .pg-tm .pg-tm-swap:active{background:color-mix(in srgb,var(--theme-bg,#f6f4ef) 16%,transparent)}
+  /* Saat: sağ üst köşe, Pace yazısıyla aynı dikey hizada */
+  html[data-pg="on"] #page-1 .home-datetime-widget{top:calc(env(safe-area-inset-top) + 16px);height:52px;justify-content:center;right:28px;
+    color:var(--pg-ink,var(--theme-c2,var(--theme-text,#1a1a1a)))}
+  html[data-pg="on"] #page-1 .home-datetime-widget-time{font-size:2.15rem}
+}
+@keyframes pgIslandIn{from{transform:translateY(-100%)}to{transform:none}}
+@media (prefers-reduced-motion:reduce){html[data-pg="on"] #page-1 .pg-tm{animation:none}}
 </style>
 <script>
 // ---------- Ana sayfa: mini kronometre / zamanlayıcı kartı (#pgTm) ----------
@@ -78165,6 +78815,9 @@ html[data-pg="on"] #page-1 .pg-tm{
         if (c.state === 'suspended') c.resume();
         const t = c.currentTime + 0.02;
         if (kind === 'start') { drop(500, 587.33, t, 0.5, 0.15); drop(783.99, 880, t + 0.11, 0.62, 0.1); }
+        // Mod değiştirme (⇄): başlat/duraklattan daha kısa ve ince; Zamanlayıcıya geçerken yukarı, Kronometreye dönerken aşağı süzülen iki küçük damla.
+        else if (kind === 'toTimer') { drop(587.33, 740, t, 0.3, 0.1); drop(880, 1108.7, t + 0.07, 0.42, 0.07); }
+        else if (kind === 'toStopwatch') { drop(880, 698.46, t, 0.3, 0.1); drop(587.33, 466.16, t + 0.07, 0.42, 0.07); }
         else { drop(523.25, 440, t, 0.5, 0.14); drop(349.23, 293.66, t + 0.1, 0.62, 0.09); }
       } catch (e) { /* ses hiçbir zaman akışı bozmasın */ }
     };
@@ -78194,7 +78847,9 @@ html[data-pg="on"] #page-1 .pg-tm{
   let spinT = 0;
   swapBtn.addEventListener('click', () => {
     if (swRun() || cdRun() || cdDone()) return;
-    setLast((curMode || lastMode) === 'timer' ? 'stopwatch' : 'timer');
+    const toTimer = (curMode || lastMode) !== 'timer';
+    setLast(toTimer ? 'timer' : 'stopwatch');
+    sfx.play(toTimer ? 'toTimer' : 'toStopwatch');
     swapBtn.classList.remove('is-spin'); void swapBtn.offsetWidth; swapBtn.classList.add('is-spin');
     clearTimeout(spinT); spinT = setTimeout(() => swapBtn.classList.remove('is-spin'), 650);
     if (navigator.vibrate) { try { navigator.vibrate(8); } catch (e) { /* yoksay */ } }
@@ -79434,5 +80089,66 @@ html[data-pg="on"] #page-1 .pg-rq.is-on{display:block}
 .pt-menu-tx small { font-weight: 700; font-size: .76rem; opacity: .6; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 12rem; }
 @media (prefers-reduced-motion: reduce) { .pt-menu { transition: opacity .15s linear; transform: none; } .page10-donut-legend-item { transition: none; } }
 </style>
+<script>
+// Ana sayfa (masaüstü): takvim + özet alanının genişliğini, planlayıcı widget'ının sol kenarına kadar uzatır (--pg-cal-avail).
+(function(){
+  var mq=window.matchMedia('(min-width:768px) and (min-height:600px)');
+  function upd(){
+    var page=document.getElementById('page-1'),cal=page&&page.querySelector('.pg-cal'),w=document.getElementById('homeRelaxWidget');
+    if(!page||!cal||!w)return;
+    var avail=0;
+    if(mq.matches&&w.offsetWidth>0){
+      var pr=page.getBoundingClientRect(),wl=w.getBoundingClientRect().left-pr.left;
+      avail=wl-22-40;
+    }
+    if(avail>480)cal.style.setProperty('--pg-cal-avail',Math.round(avail)+'px');
+    else cal.style.removeProperty('--pg-cal-avail');
+    // Geri sayım satırı: takvimin hemen altına, takvim satırıyla aynı genişlikte
+    var cd=document.getElementById('pgCdLine'),box=cal.querySelector('.pg-cal-box');
+    if(cd&&box){
+      if(mq.matches&&box.offsetHeight>0){
+        var p2=page.getBoundingClientRect();
+        cd.style.top=Math.round(box.getBoundingClientRect().bottom-p2.top+32)+'px';
+        cd.style.width=Math.round(cal.getBoundingClientRect().width)+'px';
+      }else{cd.style.top='';cd.style.width='';}
+    }
+    var p3=page.getBoundingClientRect();
+    // Soru hatırlatıcı: alt kenarı planlayıcının en alttaki görevinin alt kenarıyla hizalanır; geri sayım satırına
+    // çarpacak kadar yüksekse (kısa ekran / sonuç kartı) aradaki boşluğa sığacak kadar küçültülür.
+    var rq=document.getElementById('pgRq');
+    if(rq){
+      if(mq.matches&&w&&w.offsetWidth>0){
+        var marks=w.querySelectorAll('.relax-task-marker'),tgt=0;
+        for(var i=0;i<marks.length;i++){var mr=marks[i].getBoundingClientRect();if(mr.height>0&&mr.bottom>tgt)tgt=mr.bottom;}
+        if(!tgt)tgt=w.getBoundingClientRect().bottom;
+        rq.style.bottom=Math.round(p3.bottom-tgt)+'px';
+        rq.style.zoom='';
+        var hh=rq.offsetHeight,cdb=(cd&&cd.offsetHeight>0)?cd.getBoundingClientRect().bottom:0;
+        if(hh>0&&cdb){
+          var avail=tgt-(cdb+20),z=Math.max(.55,Math.min(1,avail/hh));
+          if(z<1)rq.style.zoom=String(Math.round(z*100)/100);
+        }
+        if(window.__pgRqRo&&!rq.__obs){rq.__obs=1;window.__pgRqRo.observe(rq);}
+      }else{rq.style.bottom='';rq.style.zoom='';}
+    }
+    // Kronometre adası: cihaz ekranının (yan panel dahil) tam ortasında dursun
+    var tm=document.getElementById('pgTm');
+    if(tm){
+      if(mq.matches){tm.style.setProperty('--pg-isl-shift',Math.round(window.innerWidth/2-(p3.left+p3.width/2))+'px');}
+      else tm.style.removeProperty('--pg-isl-shift');
+    }
+  }
+  function init(){
+    upd();
+    window.addEventListener('resize',upd);
+    if(window.ResizeObserver){
+      var ro=window.__pgRqRo=new ResizeObserver(upd),page=document.getElementById('page-1'),w=document.getElementById('homeRelaxWidget');
+      if(page)ro.observe(page);if(w)ro.observe(w);var bx=document.querySelector('#page-1 .pg-cal-box');if(bx)ro.observe(bx);
+    }
+    setTimeout(upd,400);setTimeout(upd,1500);
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+})();
+</script>
 </body>
 </html>
