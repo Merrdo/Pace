@@ -75182,7 +75182,18 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
     if (typeof prepareShare === 'function') prepareShare();
   }
 
-  let countToken = 0;
+  let countToken = 0, lastTot = 0;
+  function tweenTotal(el, from, to) {
+    const token = ++countToken, t0 = performance.now(), dur = 600;
+    const fmt = (v) => v < MIN_MS ? (v >= 1000 ? `${Math.round(v / 1000)} sn` : '0 dk') : fmtLong(v);
+    const step = (t) => {
+      if (token !== countToken) return;
+      const p = Math.min(1, (t - t0) / dur), e = 1 - Math.pow(1 - p, 3);
+      el.textContent = fmt(from + (to - from) * e);
+      if (p < 1) requestAnimationFrame(step); else el.textContent = fmt(to);
+    };
+    el.textContent = fmt(from); requestAnimationFrame(step);
+  }
   function countTo(el, to) {
     const token = ++countToken;
     if (to <= 0) { el.textContent = '0 dk'; return; }
@@ -75210,7 +75221,12 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
       name: it.name, ms: it.ms, track: it.track, key: `${it.track}::${it.name}`,
       color: (typeof page10ColorForSubject === 'function') ? page10ColorForSubject(it.track, it.name) : '#ff5da2'
     }));
-    if (bd.unlabeledMs >= MIN_MS && rows.length) rows.push({ name: 'Etiketsiz', ms: bd.unlabeledMs, key: '__unlabeled__', color: 'rgba(127,127,127,.7)' });
+    if (bd.unlabeledMs >= 1000) rows.push({ name: 'Etiketsiz', ms: bd.unlabeledMs, key: '__unlabeled__', color: 'rgba(127,127,127,.7)' });
+    const tot = Math.max(ms, bd.effectiveDayTotalMs || 0);
+    const manArr = Array.isArray((APP_STATE.stopwatchManualLogs || {})[sel]) ? APP_STATE.stopwatchManualLogs[sel] : [];
+    const manMsFor = (r) => manArr.reduce((a, e) => a + ((r.key === '__unlabeled__' ? !e.name : (e.name === r.name && e.track === r.track)) ? (Number(e.ms) || 0) : 0), 0);
+    const manTotal = manArr.reduce((a, e) => a + (Number(e.ms) || 0), 0);
+    const fmtRow = (v) => v < MIN_MS ? `${Math.max(1, Math.round(v / 1000))} sn` : fmtLong(v);
     const scale = Math.max(monthScale(), 1);
     const offRule = window.OffDay.find(date);
     let idx = 0;
@@ -75220,20 +75236,26 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
     html += `<div class="zt-d-total" style="--i:${idx++}"><span class="zt-d-total-v" id="ztTotalV">0 dk</span><span class="zt-d-total-l">toplam çalışma</span></div>`;
     html += `<button type="button" class="zt-add-btn" data-addtime style="--i:${idx++}">+ Süre ekle</button>`;
     if (isBest) html += `<span class="zt-d-best" style="--i:${idx++}">Ayın en uzun günü</span>`;
-    if (ms < MIN_MS) {
+    if (!rows.length) {
       html += `<div class="zt-empty" style="--i:${idx++}">Bu gün için çalışma kaydı yok.</div>`;
-    } else if (rows.length) {
-      html += `<div class="zt-sub-list"><span class="zt-sub-title" style="--i:${idx++}">Ders dağılımı</span>` +
-        rows.map((r) => `<div class="zt-sub" style="--i:${idx++};--c:${esc(r.color)};--w:${Math.max(3, Math.round(r.ms / denom * 100))}%"><div class="zt-sub-top"><span class="zt-sub-dot"></span><span class="zt-sub-name">${esc(r.name)}</span><span class="zt-sub-time">${fmtLong(r.ms)}</span><button type="button" class="zt-sub-del" data-delsub="${esc(r.key)}" aria-label="${esc(r.name)} süresini sil"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3"/></svg></button></div><div class="zt-bar"><i></i></div></div>`).join('') +
-        '</div>';
     } else {
-      html += `<div class="zt-empty zt-empty-row" style="--i:${idx++}"><span>Ders seçilmeden çalışıldı.</span><button type="button" class="zt-sub-del" data-delsub="__unlabeled__" aria-label="Süreyi sil"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3"/></svg></button></div>`;
+      html += `<div class="zt-sub-list"><span class="zt-sub-title" style="--i:${idx++}">Ders dağılımı</span>` +
+        rows.map((r) => {
+          const mm = manMsFor(r);
+          const del = mm > 0
+            ? `<button type="button" class="zt-sub-del" data-delsub="${esc(r.key)}" data-full="${mm >= r.ms - 500 ? 1 : 0}" aria-label="${esc(r.name)} için elle eklenen süreyi sil"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3"/></svg></button>`
+            : '<span class="zt-sub-del is-ph" aria-hidden="true"></span>';
+          return `<div class="zt-sub" style="--i:${idx++};--c:${esc(r.color)};--w:${Math.max(3, Math.round(r.ms / denom * 100))}%"><div class="zt-sub-top"><span class="zt-sub-dot"></span><span class="zt-sub-name">${esc(r.name)}</span><span class="zt-sub-time">${fmtRow(r.ms)}</span>${del}</div><div class="zt-bar"><i></i></div></div>`;
+        }).join('') + '</div>';
     }
-    if (ms >= MIN_MS) html += `<button type="button" class="zt-del-all" data-delall style="--i:${idx++}"><span class="zt-del-all-t">Günün tüm süresini sil</span><span class="zt-del-all-c">Emin misin? Sil</span></button>`;
+    if (manTotal > 0) html += `<button type="button" class="zt-del-all" data-delall style="--i:${idx++}"><span class="zt-del-all-t">Elle eklenenleri sil</span><span class="zt-del-all-c">Emin misin? Sil</span></button>`;
     if (offRule) html += `<span class="zt-d-offtag" style="--i:${idx++}">OFF DAY · ${esc(window.OffDay.label(offRule))}</span>`;
     detailEl.innerHTML = `<div class="zt-detail-in${quiet ? ' is-quiet' : ''}" style="--base:${first ? 420 : 0}ms">${html}</div>`;
-    if (quiet) { countToken += 1; $('ztTotalV').textContent = ms >= MIN_MS ? fmtLong(ms) : '0 dk'; }
-    else countTo($('ztTotalV'), ms >= MIN_MS ? ms : 0);
+    const totEl = $('ztTotalV');
+    if (tot < MIN_MS) { countToken += 1; totEl.textContent = tot >= 1000 ? `${Math.round(tot / 1000)} sn` : '0 dk'; }
+    else if (quiet) { tweenTotal(totEl, lastTot, tot); }
+    else countTo(totEl, tot);
+    lastTot = tot;
   }
   // Verilen ayın en uzun günü (anahtar); kayıt yoksa ''
   function monthBestKey(y, m) {
@@ -75883,21 +75905,26 @@ html[data-pace-theme="plum"] .ztp-bar i{background:linear-gradient(90deg,#8a3a6b
   aSave.addEventListener('click', saveAdd);
   detailEl.addEventListener('click', (e) => { if (e.target.closest('[data-addtime]')) openAdd(sel); });
 
-  // ---- Ders bazlı / etiketsiz / günün tüm süresini silme (geri alınabilir) ----
-  // Veri işi window.PaceTime'da (İstatistikler sayfasıyla ortak); burada yalnızca arayüz bağlanır.
+  // ---- Elle eklenen süreleri silme (geri alınabilir, yumuşak) ----
+  // Yalnızca "Süre ekle" ile eklenenler silinir; kronometreyle kaydedilen süre takvimden silinemez.
+  // Veri işi window.PaceTime'da; burada yalnızca arayüz bağlanır.
   let armedAllTimer = null;
   const disarmAll = () => { clearTimeout(armedAllTimer); detailEl.querySelectorAll('.zt-del-all.is-armed').forEach((x) => x.classList.remove('is-armed')); };
+  const collapseRow = (row) => {
+    row.style.height = row.offsetHeight + 'px'; void row.offsetHeight; row.classList.add('is-removing');
+  };
   detailEl.addEventListener('click', (e) => {
     const sb = e.target.closest('[data-delsub]');
     if (sb) {
       disarmAll();
-      const k = sb.dataset.delsub, row = sb.closest('.zt-sub, .zt-empty-row');
+      const k = sb.dataset.delsub, row = sb.closest('.zt-sub');
       let scope, label;
-      if (k === '__unlabeled__') { scope = { type: 'unlabeled' }; label = 'Etiketsiz süre'; }
-      else { const i = k.indexOf('::'); scope = { type: 'subject', track: k.slice(0, i), name: k.slice(i + 2) }; label = scope.name; }
-      if (row) row.classList.add('is-removing');
+      if (k === '__unlabeled__') { scope = { type: 'unlabeled' }; label = 'Etiketsiz (elle eklenen)'; }
+      else { const i = k.indexOf('::'); scope = { type: 'subject', track: k.slice(0, i), name: k.slice(i + 2) }; label = `${scope.name} (elle eklenen)`; }
+      const full = sb.dataset.full === '1' && row;
+      if (full) collapseRow(row);
       const key = sel;
-      setTimeout(() => { if (window.PaceTime) window.PaceTime.run([key], scope, label); }, row ? 260 : 0);
+      setTimeout(() => { if (window.PaceTime) window.PaceTime.run([key], scope, label, { manual: true }); }, full ? 380 : 120);
       return;
     }
     const ab = e.target.closest('[data-delall]');
@@ -75909,12 +75936,12 @@ html[data-pace-theme="plum"] .ztp-bar i{background:linear-gradient(90deg,#8a3a6b
       }
       clearTimeout(armedAllTimer);
       const key = sel;
-      detailEl.querySelectorAll('.zt-sub, .zt-empty-row, .zt-d-total').forEach((x) => x.classList.add('is-removing'));
-      setTimeout(() => { if (window.PaceTime) window.PaceTime.run([key], { type: 'all' }, 'Günün süresi'); }, 260);
+      setTimeout(() => { if (window.PaceTime) window.PaceTime.run([key], { type: 'all' }, 'Elle eklenenler', { manual: true }); }, 120);
     }
   });
   window.addEventListener('pace-time-edited', () => {
-    renderMonth(0, false); renderDetail(false, true);
+    const redo = () => { renderMonth(0, false); renderDetail(false, true); };
+    if (window.PaceTime && window.PaceTime.soft) window.PaceTime.soft(detailEl, redo); else redo();
     if (addPg.classList.contains('is-open')) { AD.mins = clampMins(AD.mins); renderAddEntries(); syncAddInputs(); renderAddSummary(); }
   });
 
@@ -75953,10 +75980,9 @@ html[data-pace-theme="plum"] .ztp-bar i{background:linear-gradient(90deg,#8a3a6b
 }
 .zt-sub-del:active { transform: scale(.86); opacity: 1; background: color-mix(in srgb, #e5484d 18%, transparent); color: #e5484d; }
 @media (hover: hover) { .zt-sub-del:hover { opacity: .9; color: #e5484d; } }
-.zt-empty-row { display: flex; align-items: center; gap: .6rem; }
-.zt-empty-row > span { flex: 1; min-width: 0; }
-.zt-sub.is-removing, .zt-empty-row.is-removing, .zt-d-total.is-removing { animation: ztRemoving .26s cubic-bezier(.4, 0, 1, 1) forwards; }
-@keyframes ztRemoving { to { opacity: 0; transform: translateX(14px) scale(.98); } }
+.zt-sub-del.is-ph { visibility: hidden; pointer-events: none; }
+.zt-sub { transition: height .4s cubic-bezier(.22, 1, .36, 1), opacity .28s ease, margin .4s cubic-bezier(.22, 1, .36, 1), transform .4s cubic-bezier(.22, 1, .36, 1); }
+.zt-sub.is-removing { height: 0 !important; opacity: 0; overflow: hidden; margin-bottom: -.85rem; transform: translateX(12px); pointer-events: none; }
 .zt-detail-in.is-quiet > * { animation: none !important; }
 .zt-del-all {
   align-self: flex-start; position: relative; display: inline-grid; padding: .5rem .95rem; border: 0; border-radius: 999px; cursor: pointer;
@@ -75970,7 +75996,7 @@ html[data-pace-theme="plum"] .ztp-bar i{background:linear-gradient(90deg,#8a3a6b
 .zt-del-all.is-armed { background: #e5484d; color: #fff; }
 .zt-del-all.is-armed .zt-del-all-t { opacity: 0; transform: translateY(-6px); }
 .zt-del-all.is-armed .zt-del-all-c { opacity: 1; transform: none; }
-@media (prefers-reduced-motion: reduce) { .zt-sub.is-removing, .zt-empty-row.is-removing, .zt-d-total.is-removing { animation-duration: .01s; } }
+@media (prefers-reduced-motion: reduce) { .zt-sub { transition: none; } }
 
 /* Soru Takibi (q9) ile aynı dil: tema yazı rengi + yumuşak yüzeyler, vurgu rengi yok, sade yaylı animasyonlar. */
 .zta-page {
@@ -79193,18 +79219,63 @@ html[data-pg="on"] #page-1 .pg-rq.is-on{display:block}
     return { L: L, S: S, M: M, removed: removed };
   }
 
-  function remove(keys, scope) {
+  // Yalnızca "Süre ekle" ile elle eklenen kayıtları siler (kronometreyle kaydedilen süreye dokunmaz).
+  function planManual(keys, scope) {
+    var L = clone(APP_STATE.stopwatchLogs), S = clone(APP_STATE.stopwatchSubjectLogs), M = clone(APP_STATE.stopwatchManualLogs);
+    var removed = 0;
+    var match = function (e) {
+      if (!e) return false;
+      if (scope.type === 'all') return true;
+      if (scope.type === 'unlabeled') return !e.name;
+      return e.name === scope.name && e.track === scope.track;
+    };
+    keys.forEach(function (day) {
+      var arr = Array.isArray(M[day]) ? M[day] : [];
+      var del = arr.filter(match); if (!del.length) return;
+      var keep = arr.filter(function (e) { return !match(e); });
+      del.forEach(function (e) {
+        var ms = Number(e.ms) || 0; removed += ms;
+        L[day] = Math.max(0, (Number(L[day]) || 0) - ms);
+        if (e.name && S[day]) {
+          var k = e.track + '::' + e.name, rec = S[day][k];
+          if (rec) { var left = (rec.ms || 0) - ms; if (left > 0) rec.ms = left; else delete S[day][k]; }
+        }
+      });
+      if (L[day] < 1) delete L[day];
+      if (S[day] && !Object.keys(S[day]).length) delete S[day];
+      if (keep.length) M[day] = keep; else delete M[day];
+    });
+    return { L: L, S: S, M: M, removed: removed };
+  }
+
+  // Sayfa yüksekliği ani değişip ekranı zıplatmasın: içerik yenilenirken kutu eski yükseklikten yenisine yumuşakça geçer.
+  function soft(el, fn) {
+    if (!el || !el.offsetHeight) { fn(); return; }
+    var h0 = el.offsetHeight;
+    clearTimeout(el._softT);
+    el.style.transition = 'none'; el.style.height = h0 + 'px'; el.style.overflow = 'hidden';
+    fn();
+    el.style.height = 'auto'; var h1 = el.offsetHeight; el.style.height = h0 + 'px';
+    void el.offsetHeight;
+    var done = function () { el.style.transition = ''; el.style.height = ''; el.style.overflow = ''; };
+    if (Math.abs(h1 - h0) < 2) { done(); return; }
+    el.style.transition = 'height .55s cubic-bezier(.22,1,.36,1)'; el.style.height = h1 + 'px';
+    el._softT = setTimeout(done, 600);
+  }
+
+  function remove(keys, scope, manual) {
     var before = { stopwatchLogs: clone(APP_STATE.stopwatchLogs), stopwatchSubjectLogs: clone(APP_STATE.stopwatchSubjectLogs), stopwatchManualLogs: clone(APP_STATE.stopwatchManualLogs) };
-    var p = plan(keys, scope);
+    var p = manual ? planManual(keys, scope) : plan(keys, scope);
     if (p.removed <= 0) return { removedMs: 0 };
     if (saveAppState({ stopwatchLogs: p.L, stopwatchSubjectLogs: p.S, stopwatchManualLogs: p.M }) === false) return { removedMs: 0, failed: true };
     notify();
     return { removedMs: p.removed, undo: function () { if (saveAppState(before) !== false) notify(); } };
   }
 
-  function run(keys, scope, label) {
-    var live = hasLive(keys);
-    var res = remove(keys, scope);
+  function run(keys, scope, label, opts) {
+    var manual = !!(opts && opts.manual);
+    var live = !manual && hasLive(keys);
+    var res = remove(keys, scope, manual);
     if (res.failed) return res;
     if (!res.removedMs) {
       if (window.paceNToast) window.paceNToast(live ? 'Kayıtlı süre yok · çalışan süre silinemez' : 'Silinecek süre yok', null, 2800);
@@ -79214,7 +79285,7 @@ html[data-pg="on"] #page-1 .pg-rq.is-on{display:block}
     if (window.paceNToast) window.paceNToast(msg, res.undo, 5500);
     return res;
   }
-  window.PaceTime = { plan: plan, remove: remove, run: run };
+  window.PaceTime = { plan: plan, remove: remove, run: run, soft: soft };
 
   /* ---------- İstatistikler > Ders Dağılımı: etikete basılı tut -> "Süreyi sil" ---------- */
   var legend = document.getElementById('page10DonutLegend');
@@ -79251,7 +79322,7 @@ html[data-pg="on"] #page-1 .pg-rq.is-on{display:block}
     setTimeout(function () {
       window.PaceTime.run(keys, o.scope, key === '__unlabeled__' ? 'Etiketsiz süre' : o.name);
       item.classList.remove('is-removing');
-    }, 240);
+    }, 300);
   }
 
   function openMenu(item, x, y) {
@@ -79303,8 +79374,10 @@ html[data-pg="on"] #page-1 .pg-rq.is-on{display:block}
   legend.addEventListener('click', function (e) { if (fired) { fired = false; e.stopPropagation(); e.preventDefault(); } }, true);
 
   window.addEventListener('pace-time-edited', function () {
-    try { if (typeof page10HideDonutTooltip === 'function') page10HideDonutTooltip(true); } catch (e) { /* yok say */ }
-    try { if (typeof renderPage10 === 'function') renderPage10(); } catch (e) { /* yok say */ }
+    soft(document.querySelector('.page10-donut-card'), function () {
+      try { if (typeof page10HideDonutTooltip === 'function') page10HideDonutTooltip(true); } catch (e) { /* yok say */ }
+      try { if (typeof renderPage10 === 'function') renderPage10(); } catch (e) { /* yok say */ }
+    });
   });
 })();
 </script>
@@ -79316,7 +79389,7 @@ html[data-pg="on"] #page-1 .pg-rq.is-on{display:block}
 }
 .page10-donut-legend-item.is-holding { transform: scale(.955); background-color: color-mix(in srgb, var(--theme-text, #121212) 9%, transparent); }
 .page10-donut-legend-item.is-ctx-active { background-color: color-mix(in srgb, var(--theme-text, #121212) 9%, transparent); }
-.page10-donut-legend-item.is-removing { opacity: 0; transform: scale(.92); }
+.page10-donut-legend-item.is-removing { opacity: 0; transform: scale(.9); transition-duration: .3s; }
 .pt-menu {
   position: fixed; z-index: 6000; min-width: 13rem; max-width: calc(100vw - 24px); padding: .35rem; border-radius: 1.25rem;
   background: color-mix(in srgb, var(--theme-bg, #f6f4ef) 93%, transparent);
