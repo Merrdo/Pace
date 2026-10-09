@@ -37990,6 +37990,585 @@ html[data-pg="on"] #page-1 .home-relax-widget.is-empty .home-relax-widget-time{d
   body .wheel-color-backdrop.is-open .wheel-color-grid.is-ring .wheel-color-swatch.is-selected { transform: scale(1.06); }
   body .wheel-color-backdrop.is-open .wheel-color-grid.is-ring .wheel-color-swatch.is-selected:active { transform: scale(.94); }
 </style>
+<style id="exam-q-popups-css">
+/* ==========================================================================
+   DENEMELERİM — Soru pop-up'ları yeniden tasarım (brütalist dil)
+   --------------------------------------------------------------------------
+   Kapsam: #examQLightboxBackdrop (soru görseli), #page11QuestionBackdrop
+   (görsel ekle/düzenle), #page11BulkQuestionBackdrop (toplu ekle) ve toplu
+   önizleme lightbox'ı. Soru Havuzu pop-up'ları ve ortak .qhavuz-* kuralları
+   etkilenmez: her kural bu ID'lerle sınırlı.
+   TELEFON : kalın çerçeve + sert gölge, branş renginde başlık bandı, görsel
+             hiçbir butonun altında kalmaz, büyük dokunma hedefleri.
+   MASAÜSTÜ: Soru Havuzu pop-up'larının DÜZENİ (görsel solda / bilgi sağda,
+             geniş kart, ayırıcılı başlık) — yüzey ise brütalist kalır.
+   ========================================================================== */
+
+/* ---------- 1) Soru görseli lightbox'ı ---------- */
+#examQLightboxBackdrop {
+  padding: 1rem;
+  background: rgba(12, 12, 16, 0.9);
+  --lb-color: #ff90e8;
+}
+
+#examQLightboxBackdrop .qhavuz-lightbox-card {
+  max-width: 400px;
+  max-height: calc(100dvh - 2rem);
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+  border: 4px solid #000;
+  border-radius: 1.2em;
+  box-shadow: 0 22px 50px -14px rgba(0, 0, 0, 0.65);
+}
+#examQLightboxBackdrop .qhavuz-lightbox-card::-webkit-scrollbar { display: none; }
+
+/* Yan panel telefonda kutusuz: çocukları kartın akışına karışır. */
+#examQLightboxBackdrop .exam-q-lb-side { display: contents; }
+
+/* Başlık bandı: görselin ÜSTÜNDE, branş renginde; butonlar artık görselin
+   üstüne binmez, bandın sağında durur. */
+#examQLightboxBackdrop .exam-q-lb-top {
+  order: -1;
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.6rem 0.65rem 0.6rem 0.9rem;
+  background: var(--lb-color, #ff90e8);
+  border-bottom: 4px solid #000;
+  color: #121212;
+}
+#examQLightboxBackdrop .exam-q-lb-title {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  line-height: 1.15;
+}
+#examQLightboxBackdrop .exam-q-lb-num {
+  font-family: "Space Grotesk", sans-serif;
+  font-weight: 800;
+  font-size: 0.66rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  opacity: 0.75;
+}
+#examQLightboxBackdrop .exam-q-lb-subject {
+  font-family: "Space Grotesk", sans-serif;
+  font-weight: 800;
+  font-size: 1.15rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+#examQLightboxBackdrop .qhavuz-lightbox-info,
+#examQLightboxBackdrop .exam-q-lightbox-edit,
+#examQLightboxBackdrop .qhavuz-lightbox-close {
+  position: static;
+  top: auto;
+  right: auto;
+  flex: 0 0 auto;
+  width: 2.15rem;
+  height: 2.15rem;
+}
+#examQLightboxBackdrop .qhavuz-lightbox-close { font-size: 1.35rem; }
+#examQLightboxBackdrop .exam-q-lightbox-edit:disabled { opacity: 0.4; pointer-events: none; }
+
+#examQLightboxBackdrop .qhavuz-lightbox-img-wrap { order: 0; }
+
+/* "DOĞRU CEVAP" etiketi + durum rozeti */
+#examQLightboxBackdrop .exam-q-lb-labelrow {
+  order: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  padding: 0.8rem 1rem 4px;
+  background: #fff;
+}
+#examQLightboxBackdrop .exam-q-lb-label {
+  font-family: "Space Grotesk", sans-serif;
+  font-weight: 800;
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #121212;
+  opacity: 0.6;
+}
+#examQLightboxBackdrop .exam-q-lb-status {
+  padding: 0.12rem 0.65rem;
+  font-family: "Space Grotesk", sans-serif;
+  font-weight: 800;
+  font-size: 0.72rem;
+  color: #121212;
+  background: #fff;
+  border: 2.5px solid #000;
+  border-radius: 999px;
+  box-shadow: 2px 2px 0 0 #000;
+  white-space: nowrap;
+}
+#examQLightboxBackdrop .exam-q-lb-status:empty { display: none; }
+#examQLightboxBackdrop .exam-q-lb-status[data-state="wrong"] { background: #ff5c5c; color: #5c0011; }
+#examQLightboxBackdrop .exam-q-lb-status[data-state="correct"] { background: #5cd68a; color: #0d3d20; }
+#examQLightboxBackdrop .exam-q-lb-status[data-state="later"] { background: #ffd23f; color: #4d3800; }
+
+/* Cevap şeridi: şıklar eşit aralıklı, daha büyük */
+#examQLightboxBackdrop .qhavuz-lightbox-answer-wrap { order: 2; }
+#examQLightboxBackdrop .qhavuz-lightbox-answer-row {
+  justify-content: space-between;
+  padding: 0.7rem 1rem 1rem;
+}
+#examQLightboxBackdrop .qhavuz-lightbox-answer-btn {
+  width: 2.5rem;
+  height: 2.5rem;
+  font-size: 1.05rem;
+  opacity: 1;
+}
+#examQLightboxBackdrop .qhavuz-lightbox-answer-btn.is-correct { box-shadow: 3px 3px 0 0 #000; }
+#examQLightboxBackdrop .qhavuz-lightbox-open-answer { width: 100%; }
+#examQLightboxBackdrop .qhavuz-answer-reveal {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  background: #fff;
+}
+body.is-anthracite #examQLightboxBackdrop .qhavuz-answer-reveal { background: var(--dark-card-color, #1c1c22); }
+
+/* Açıklama notu: sarı yapışkan not görünümü; boşsa gizli */
+#examQLightboxBackdrop .exam-q-lb-desc {
+  order: 3;
+  margin: 0 1rem 1rem;
+  padding: 0.6rem 0.8rem;
+  font-family: "Space Grotesk", sans-serif;
+  font-weight: 600;
+  font-size: 0.85rem;
+  line-height: 1.4;
+  color: #121212;
+  background: #fff6c7;
+  border: 2.5px solid #000;
+  border-radius: 0.75rem;
+  box-shadow: 3px 3px 0 0 #000;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+#examQLightboxBackdrop .exam-q-lb-desc.is-empty { display: none; }
+
+/* Soru atlama paneli: yalnızca masaüstünde (telefonda kart zaten dolu) */
+#examQLightboxBackdrop .exam-q-lb-jump { display: none; order: 4; }
+
+/* Önceki / sonraki gezinmesi */
+#examQLightboxBackdrop .exam-q-lb-nav {
+  order: 5;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  padding: 0 1rem 1rem;
+  background: #fff;
+}
+#examQLightboxBackdrop .exam-q-lb-nav.is-hidden { display: none; }
+#examQLightboxBackdrop .exam-q-lb-navbtn {
+  flex: 0 0 auto;
+  width: 3rem;
+  height: 2.6rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  color: #000;
+  background: #fff;
+  border: 3px solid #000;
+  border-radius: 0.8rem;
+  box-shadow: 3px 3px 0 0 #000;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+}
+#examQLightboxBackdrop .exam-q-lb-navbtn:active:not(:disabled) {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0 0 #000;
+  background: var(--lb-color, #ff90e8);
+}
+#examQLightboxBackdrop .exam-q-lb-navbtn:disabled { opacity: 0.3; cursor: default; box-shadow: none; }
+#examQLightboxBackdrop .exam-q-lb-counter {
+  font-family: "Space Grotesk", sans-serif;
+  font-weight: 800;
+  font-size: 0.9rem;
+  color: #121212;
+}
+
+/* Koyu tema (antresit) */
+body.is-anthracite #examQLightboxBackdrop .exam-q-lb-labelrow,
+body.is-anthracite #examQLightboxBackdrop .exam-q-lb-nav { background: var(--dark-card-color, #1c1c22); }
+body.is-anthracite #examQLightboxBackdrop .exam-q-lb-label,
+body.is-anthracite #examQLightboxBackdrop .exam-q-lb-counter { color: #f2f2f4; }
+body.is-anthracite #examQLightboxBackdrop .exam-q-lb-status { background: var(--dark-card-color, #1c1c22); color: #f2f2f4; }
+body.is-anthracite #examQLightboxBackdrop .exam-q-lb-status[data-state="wrong"] { background: #ff5c5c; color: #5c0011; }
+body.is-anthracite #examQLightboxBackdrop .exam-q-lb-status[data-state="correct"] { background: #5cd68a; color: #0d3d20; }
+body.is-anthracite #examQLightboxBackdrop .exam-q-lb-status[data-state="later"] { background: #ffd23f; color: #4d3800; }
+body.is-anthracite #examQLightboxBackdrop .exam-q-lb-desc { background: #3a3720; color: #f2f2f4; }
+body.is-anthracite #examQLightboxBackdrop .exam-q-lb-navbtn { background: var(--dark-card-color, #1c1c22); color: #f2f2f4; }
+body.is-anthracite #examQLightboxBackdrop .exam-q-lb-top .delete-btn { background: var(--dark-card-color, #1c1c22); color: #f2f2f4; }
+
+/* ---------- 2) Görsel ekle/düzenle + Toplu ekle (ortak iyileştirmeler) ---------- */
+:is(#page11QuestionBackdrop, #page11BulkQuestionBackdrop) .qhavuz-add-steps { gap: 0.4rem; }
+:is(#page11QuestionBackdrop, #page11BulkQuestionBackdrop) .qhavuz-add-step-dot {
+  height: 9px;
+  background: #fff;
+  border: 2px solid #000;
+  border-radius: 999px;
+}
+:is(#page11QuestionBackdrop, #page11BulkQuestionBackdrop) .qhavuz-add-step-dot.is-active { background: #ffd23f; }
+:is(#page11QuestionBackdrop, #page11BulkQuestionBackdrop) .qhavuz-add-step-dot.is-done { background: #5cd68a; }
+body.is-anthracite :is(#page11QuestionBackdrop, #page11BulkQuestionBackdrop) .qhavuz-add-step-dot { background: var(--dark-card-color, #1c1c22); border-color: #000; }
+body.is-anthracite :is(#page11QuestionBackdrop, #page11BulkQuestionBackdrop) .qhavuz-add-step-dot.is-active { background: #ffd23f; }
+body.is-anthracite :is(#page11QuestionBackdrop, #page11BulkQuestionBackdrop) .qhavuz-add-step-dot.is-done { background: #5cd68a; }
+
+:is(#page11QuestionBackdrop, #page11BulkQuestionBackdrop) .page9-add-header {
+  align-items: center;
+  padding-bottom: 0.75rem;
+  margin-bottom: 0.9rem;
+  border-bottom: 3px solid #000;
+}
+:is(#page11QuestionBackdrop, #page11BulkQuestionBackdrop) .page9-add-title { font-size: 1.2rem; }
+:is(#page11QuestionBackdrop, #page11BulkQuestionBackdrop) .page9-add-subtitle {
+  display: inline-block;
+  align-self: flex-start;
+  margin-top: 0.15rem;
+  padding: 0.05rem 0.6rem;
+  font-size: 0.72rem;
+  font-weight: 800;
+  opacity: 1;
+  color: var(--on-accent, #16171b);
+  background: var(--accent-color, #ff90e8);
+  border: 2px solid #000;
+  border-radius: 999px;
+}
+
+:is(#page11QuestionBackdrop, #page11BulkQuestionBackdrop) .qhavuz-crop-box {
+  width: calc(100% - 8px);
+  max-width: 320px;
+  border-width: 3px;
+  border-radius: 0.9rem;
+  box-shadow: 4px 4px 0 0 #000;
+}
+:is(#page11QuestionBackdrop, #page11BulkQuestionBackdrop) .qhavuz-add-answer-preview { box-shadow: 3px 3px 0 0 #000; margin-right: 3px; }
+:is(#page11QuestionBackdrop, #page11BulkQuestionBackdrop) .qhavuz-add-answer-preview-track {
+  background: var(--accent-color, #ff90e8);
+  color: var(--on-accent, #16171b);
+  border: 2px solid #000;
+}
+:is(#page11QuestionBackdrop, #page11BulkQuestionBackdrop) .qhavuz-add-nav .add-task-btn { padding-top: 0.7rem; padding-bottom: 0.7rem; }
+.page11-bulk-preview-wrap { cursor: pointer; }
+:is(#page11QuestionBackdrop, #page11BulkQuestionBackdrop) .qhavuz-add-answer-preview-track:empty { display: none; }
+
+/* ---------- 3) MASAÜSTÜ ---------- */
+@media (min-width: 768px) and (min-height: 600px) {
+
+  /* Lightbox: görsel solda, bilgi paneli sağda (Soru Havuzu düzeni) */
+  #examQLightboxBackdrop {
+    background: rgba(12, 12, 16, 0.82);
+    -webkit-backdrop-filter: blur(4px);
+    backdrop-filter: blur(4px);
+  }
+  #examQLightboxBackdrop .qhavuz-lightbox-card {
+    flex-direction: row;
+    align-items: stretch;
+    width: auto;
+    max-width: 100%;
+    max-height: 90vh;
+    overflow: hidden;
+    border-width: 5px;
+    border-radius: 1.3em;
+    box-shadow: 0 30px 70px -18px rgba(0, 0, 0, 0.7);
+  }
+  #examQLightboxBackdrop .qhavuz-lightbox-img-wrap {
+    flex: 0 0 auto;
+    width: min(560px, calc(90vh - 10px), calc(100vw - 2rem - 430px - 10px));
+    border-right: 5px solid #000;
+  }
+  #examQLightboxBackdrop .exam-q-lb-side {
+    display: flex;
+    flex-direction: column;
+    flex: 0 0 430px;
+    min-width: 0;
+    overflow-y: auto;
+    scrollbar-width: none;
+    background: #fff;
+  }
+  #examQLightboxBackdrop .exam-q-lb-side::-webkit-scrollbar { display: none; }
+  body.is-anthracite #examQLightboxBackdrop .exam-q-lb-side { background: var(--dark-card-color, #1c1c22); }
+
+  #examQLightboxBackdrop .exam-q-lb-top {
+    align-items: flex-start;
+    padding: 1.1rem 1rem 1.1rem 1.3rem;
+    gap: 0.5rem;
+  }
+  #examQLightboxBackdrop .exam-q-lb-num { font-size: 0.78rem; }
+  #examQLightboxBackdrop .exam-q-lb-subject { font-size: 1.7rem; margin-top: 0.1rem; }
+  #examQLightboxBackdrop .qhavuz-lightbox-info,
+  #examQLightboxBackdrop .exam-q-lightbox-edit,
+  #examQLightboxBackdrop .qhavuz-lightbox-close { width: 2.3rem; height: 2.3rem; }
+
+  #examQLightboxBackdrop .exam-q-lb-labelrow { padding: 1.3rem 1.3rem 4px; }
+  #examQLightboxBackdrop .exam-q-lb-label { font-size: 0.78rem; }
+  #examQLightboxBackdrop .exam-q-lb-status { font-size: 0.82rem; padding: 0.18rem 0.8rem; }
+
+  #examQLightboxBackdrop .qhavuz-lightbox-answer-wrap { margin: 0.6rem 1.3rem 0; border: 3px solid #000; border-radius: 1rem; box-shadow: 4px 4px 0 0 #000; }
+  #examQLightboxBackdrop .qhavuz-lightbox-answer-row { padding: 0.85rem 0.9rem; justify-content: space-between; gap: 0.4rem; }
+  #examQLightboxBackdrop .qhavuz-lightbox-answer-btn { width: 2.9rem; height: 2.9rem; border-radius: 0.8rem; font-size: 1.15rem; }
+  #examQLightboxBackdrop .qhavuz-lightbox-answer-wrap { overflow: hidden; isolation: isolate; background: #fff; }
+  body.is-anthracite #examQLightboxBackdrop .qhavuz-lightbox-answer-wrap { background: var(--dark-card-color, #1c1c22); }
+  #examQLightboxBackdrop .qhavuz-answer-reveal { border-radius: 0; font-size: 0.9rem; }
+
+  #examQLightboxBackdrop .exam-q-lb-desc { margin: 1.1rem 1.3rem 0; font-size: 0.92rem; }
+  #examQLightboxBackdrop .exam-q-lb-jump {
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+    flex: 1 1 auto;
+    min-height: 0;
+    margin: 1.2rem 0.9rem 0;
+    padding: 1.1rem 0.4rem 0.8rem;
+    border-top: 3px solid #000;
+    overflow-y: auto;
+    scrollbar-width: none;
+  }
+  #examQLightboxBackdrop .exam-q-lb-jump::-webkit-scrollbar { display: none; }
+  #examQLightboxBackdrop .exam-q-lb-jump { -webkit-mask-image: linear-gradient(#000 calc(100% - 1rem), transparent); mask-image: linear-gradient(#000 calc(100% - 1rem), transparent); }
+  #examQLightboxBackdrop .exam-q-lb-jump:empty { display: none; }
+  #examQLightboxBackdrop .exam-q-lb-jump-group { display: flex; flex-direction: column; gap: 0.4rem; }
+  #examQLightboxBackdrop .exam-q-lb-jump-name {
+    font-family: "Space Grotesk", sans-serif;
+    font-weight: 800;
+    font-size: 0.78rem;
+    color: #121212;
+  }
+  #examQLightboxBackdrop .exam-q-lb-jump-chips { display: flex; flex-wrap: wrap; gap: 0.6rem; padding: 8px 8px 10px; margin: -4px; }
+  #examQLightboxBackdrop .exam-q-lb-jump-chip {
+    min-width: 2.4rem;
+    height: 2.4rem;
+    padding: 0 0.3rem;
+    font-family: "Space Grotesk", sans-serif;
+    font-weight: 800;
+    font-size: 0.8rem;
+    color: #121212;
+    background: #fff;
+    border: 2.5px solid #000;
+    border-radius: 0.6rem;
+    box-shadow: 2px 2px 0 0 #000;
+    cursor: pointer;
+    transition: transform 0.12s ease, box-shadow 0.12s ease;
+  }
+  #examQLightboxBackdrop .exam-q-lb-jump-chip[data-state="wrong"] { background: #ff5c5c; color: #5c0011; }
+  #examQLightboxBackdrop .exam-q-lb-jump-chip[data-state="correct"] { background: #5cd68a; color: #0d3d20; }
+  #examQLightboxBackdrop .exam-q-lb-jump-chip[data-state="later"] { background: #ffd23f; color: #4d3800; }
+  #examQLightboxBackdrop .exam-q-lb-jump-chip.is-current { box-shadow: 0 0 0 3px #fff, 0 0 0 5px #000; }
+  #examQLightboxBackdrop .exam-q-lb-jump-chip:active { transform: translate(1px, 1px); box-shadow: 1px 1px 0 0 #000; }
+  body.is-anthracite #examQLightboxBackdrop .exam-q-lb-jump-name { color: #f2f2f4; }
+  body.is-anthracite #examQLightboxBackdrop .exam-q-lb-jump-chip[data-state="blank"] { background: var(--dark-card-color, #1c1c22); color: #f2f2f4; }
+  body.is-anthracite #examQLightboxBackdrop .exam-q-lb-jump-chip.is-current { box-shadow: 0 0 0 3px var(--dark-card-color, #1c1c22), 0 0 0 5px #fff; }
+  @media (hover: hover) and (pointer: fine) {
+    #examQLightboxBackdrop .exam-q-lb-jump-chip:hover { transform: translate(-1px, -1px); box-shadow: 3px 3px 0 0 #000; }
+  }
+
+  #examQLightboxBackdrop .exam-q-lb-nav { margin-top: auto; padding: 1.2rem 1.3rem 1.3rem; }
+  #examQLightboxBackdrop .exam-q-lb-navbtn { width: 3.4rem; height: 2.9rem; }
+  #examQLightboxBackdrop .exam-q-lb-counter { font-size: 1rem; }
+
+  @media (hover: hover) and (pointer: fine) {
+    #examQLightboxBackdrop .exam-q-lb-navbtn:hover:not(:disabled) {
+      transform: translate(-1px, -1px);
+      box-shadow: 4px 4px 0 0 #000;
+      background: var(--lb-color, #ff90e8);
+    }
+  }
+
+  /* Görsel ekle/düzenle + Toplu ekle: geniş kart, Soru Havuzu düzeni */
+  :is(#page11QuestionBackdrop, #page11BulkQuestionBackdrop) {
+    background: rgba(18, 18, 28, 0.6);
+    -webkit-backdrop-filter: blur(4px);
+    backdrop-filter: blur(4px);
+  }
+  :is(#page11QuestionBackdrop, #page11BulkQuestionBackdrop) .qhavuz-add-card {
+    max-width: 780px;
+    height: min(40rem, 90vh);
+    max-height: 90vh;
+    padding: 1.5rem 1.9rem 1.4rem;
+    border-width: 5px;
+    border-radius: 1.3em;
+    box-shadow: 10px 10px 0 0 #000;
+  }
+  :is(#page11QuestionBackdrop, #page11BulkQuestionBackdrop) .qhavuz-add-steps {
+    margin: -1.5rem -1.9rem 1.1rem;
+    padding: 1.2rem 1.9rem 0;
+  }
+  :is(#page11QuestionBackdrop, #page11BulkQuestionBackdrop) .page9-add-header { padding-bottom: 1rem; margin-bottom: 1.1rem; }
+  :is(#page11QuestionBackdrop, #page11BulkQuestionBackdrop) .page9-add-title { font-size: 1.65rem; }
+  :is(#page11QuestionBackdrop, #page11BulkQuestionBackdrop) .page9-add-subtitle { font-size: 0.82rem; padding: 0.1rem 0.8rem; }
+  :is(#page11QuestionBackdrop, #page11BulkQuestionBackdrop) .page9-add-close { width: 2.3rem; height: 2.3rem; }
+  :is(#page11QuestionBackdrop, #page11BulkQuestionBackdrop) .qhavuz-add-nav { margin-top: 1.2rem; }
+  :is(#page11QuestionBackdrop, #page11BulkQuestionBackdrop) .qhavuz-add-nav .add-task-btn { font-size: 1.1rem; }
+
+  /* Kırpma adımı: kare kutu solda, araçlar sağda */
+  :is(#page11QuestionStepCrop, #page11BulkStepCrop):not(.is-hidden) {
+    display: grid;
+    grid-template-columns: minmax(0, clamp(240px, calc(90vh - 24rem), 380px)) minmax(0, 1fr);
+    column-gap: 1.8rem;
+    align-content: start;
+    align-items: start;
+    height: auto;
+    min-height: 100%;
+  }
+  :is(#page11QuestionStepCrop, #page11BulkStepCrop) .qhavuz-crop-box {
+    grid-column: 1;
+    grid-row: 1 / span 4;
+    width: calc(100% - 8px);
+    max-width: none;
+    margin: 0;
+  }
+  :is(#page11QuestionStepCrop, #page11BulkStepCrop) .qhavuz-crop-zoom-row { grid-column: 2; grid-row: 1; margin: 0.4rem 0 0.9rem; }
+  #page11QuestionStepCrop .page11-question-tools { grid-column: 2; grid-row: 2; flex-direction: column; margin-right: 3px; }
+  #page11QuestionStepCrop .page11-question-tools .page11-question-change-btn,
+  #page11QuestionStepCrop .page11-question-tools .page11-question-remove-btn { width: 100%; padding: 0.65rem 0.9rem; font-size: 0.9rem; }
+  #page11BulkStepCrop .page11-bulk-skip-btn { grid-column: 2; grid-row: 2; }
+
+  /* Cevap adımı (tek ekleme): büyük görsel solda, kontroller sağda */
+  #page11QuestionStepAnswer:not(.is-hidden) {
+    display: grid;
+    grid-template-columns: minmax(0, clamp(220px, calc(90vh - 26rem), 340px)) minmax(0, 1fr);
+    column-gap: 1.8rem;
+    align-content: start;
+    align-items: start;
+    height: auto;
+    min-height: 100%;
+  }
+  #page11QuestionStepAnswer > :not(.qhavuz-add-answer-preview) { grid-column: 2; }
+  #page11QuestionStepAnswer .qhavuz-add-answer-preview {
+    grid-column: 1;
+    grid-row: 1 / span 6;
+    flex-direction: column;
+    align-self: start;
+    margin: 0 3px 0 0;
+  }
+  #page11QuestionStepAnswer .qhavuz-add-answer-preview img {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1;
+    border-right: none;
+    border-bottom: 2.5px solid #000;
+  }
+  #page11QuestionStepAnswer .qhavuz-add-answer-preview-info { padding: 0.7rem 0.9rem; }
+  #page11QuestionStepAnswer .qhavuz-add-answer-preview-subject { font-size: 1.05rem; }
+  #page11QuestionStepAnswer .qhavuz-add-label:first-of-type { margin-top: 0; }
+
+  /* Toplu ekle önizleme lightbox'ı: büyük ekranda orantılı, brütalist kart */
+  #page11BulkPreviewLightboxBackdrop .qhavuz-lightbox-card {
+    max-width: min(560px, 88vh);
+    border-width: 5px;
+    border-radius: 1.3em;
+    box-shadow: 10px 10px 0 0 #000;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #examQLightboxBackdrop .exam-q-lb-navbtn { transition: none; }
+}
+
+/* ---------- 4) Soru Bilgisi pop-up'ı (#examQInfoBackdrop) ---------- */
+.exam-q-info-foot {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin: -0.4rem 0 1rem;
+  font-family: "Space Grotesk", sans-serif;
+  font-weight: 700;
+  font-size: 0.72rem;
+}
+.exam-q-info-foot[hidden] { display: none; }
+.exam-q-info-save { display: inline-flex; align-items: center; gap: 0.35rem; min-height: 1.2rem; color: #121212; }
+.exam-q-info-save:not(:empty)::before {
+  content: "";
+  width: 0.55rem; height: 0.55rem;
+  border: 2px solid #000; border-radius: 50%;
+  background: #fff;
+}
+.exam-q-info-save[data-state="dirty"]::before { background: #ffd23f; }
+.exam-q-info-save[data-state="saved"]::before { background: #5cd68a; }
+.exam-q-info-hint { display: none; color: #121212; opacity: 0.5; }
+.exam-q-info-count { margin-left: auto; opacity: 0.5; color: #121212; }
+body.is-anthracite .exam-q-info-save,
+body.is-anthracite .exam-q-info-hint,
+body.is-anthracite .exam-q-info-count { color: #f2f2f4; }
+
+@media (min-width: 768px) and (min-height: 600px) {
+  #examQInfoBackdrop {
+    background: rgba(12, 12, 16, 0.6);
+    -webkit-backdrop-filter: blur(4px);
+    backdrop-filter: blur(4px);
+  }
+  #examQInfoBackdrop .qhavuz-info-card {
+    display: flex;
+    flex-direction: column;
+    max-width: 640px;
+    padding: 0;
+    overflow: hidden;
+    border-width: 5px;
+    border-radius: 1.3em;
+    box-shadow: 0 30px 70px -18px rgba(0, 0, 0, 0.7);
+    text-align: left;
+  }
+  /* Rozet (kaçıncı soru · branş) üstte, branşın rengiyle tam genişlikte bant */
+  #examQInfoBackdrop .qhavuz-info-badge {
+    order: -2;
+    width: auto;
+    margin: 0;
+    padding: 1.2rem 1.7rem;
+    font-size: 1.35rem;
+    border: none;
+    border-bottom: 5px solid #000;
+    border-radius: 0;
+    box-shadow: none;
+    text-align: left;
+  }
+  #examQInfoBackdrop .qhavuz-info-card .settings-confirm-title {
+    order: -1;
+    margin: 1.4rem 1.7rem 0;
+    text-align: left;
+    font-size: 0.8rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    opacity: 0.55;
+  }
+  #examQInfoBackdrop .qhavuz-info-rows { margin: 0.8rem 1.7rem 1rem; }
+  #examQInfoBackdrop .qhavuz-info-row { border-bottom: none; padding-bottom: 0; gap: 0.5rem; }
+  #examQInfoBackdrop .qhavuz-info-label { font-size: 0.78rem; }
+  #examQInfoBackdrop .qhavuz-info-value { font-size: 1.05rem; }
+  #examQInfoBackdrop .qhavuz-info-input--desc {
+    min-height: 9rem;
+    max-height: 260px;
+    padding: 0.8rem 1rem;
+    font-family: "Space Grotesk", sans-serif;
+    font-weight: 600;
+    font-size: 1.02rem;
+    line-height: 1.5;
+    border: 3px solid #000;
+    border-radius: 0.9rem;
+    box-shadow: 3px 3px 0 0 #000;
+    resize: none;
+    outline: none;
+    transition: background-color 0.15s ease, box-shadow 0.15s ease;
+  }
+  #examQInfoBackdrop .qhavuz-info-input--desc:focus { background: #fff6c7; box-shadow: 5px 5px 0 0 #000; }
+  body.is-anthracite #examQInfoBackdrop .qhavuz-info-input--desc:focus { background: #3a3720; }
+  #examQInfoBackdrop .exam-q-info-foot { margin: 0 1.7rem 1.2rem; font-size: 0.8rem; }
+  #examQInfoBackdrop .exam-q-info-hint { display: inline; margin-left: auto; }
+  #examQInfoBackdrop .exam-q-info-count { margin-left: 0; }
+  #examQInfoBackdrop .settings-confirm-actions { justify-content: flex-end; padding: 0 1.7rem 1.6rem; }
+  #examQInfoBackdrop .settings-confirm-actions button { flex: 0 0 auto; min-width: 9rem; padding: 0.7rem 1.4rem; font-size: 1rem; }
+}
+
+</style>
 </head>
 <body oncopy="return false" oncut="return false" onselectstart="return false" ondragstart="return false">
 
@@ -42347,6 +42926,7 @@ html[data-pg="on"] #page-1 .home-relax-widget.is-empty .home-relax-widget-time{d
               <span class="exam-detail-stat-label">Boş</span>
             </div>
           </div>
+          <div class="ed-dist ed-d-only" id="examDetailDist" role="img" aria-label=""><span class="is-c"></span><span class="is-w"></span><span class="is-b"></span></div>
         </div>
 
         <div class="exam-detail-bulk-actions">
@@ -42358,6 +42938,19 @@ html[data-pg="on"] #page-1 .home-relax-widget.is-empty .home-relax-widget-time{d
             Sonradan Çözüldü
           </button>
         </div>
+
+        <!-- Yalnızca masaüstü (telefonda .ed-d-only ile gizli): tıklama ipucu + branşlara atlama listesi -->
+        <div class="ed-legend ed-d-only">
+          <span class="ed-legend-cycle">Soruya tıkla:</span>
+          <span class="ed-legend-cycle ed-chip">Boş</span><span class="ed-legend-cycle ed-legend-arrow">→</span>
+          <span class="ed-legend-cycle ed-chip is-c">Doğru</span><span class="ed-legend-cycle ed-legend-arrow">→</span>
+          <span class="ed-legend-cycle ed-chip is-w">Yanlış</span>
+          <span class="ed-legend-later">Sonradan çözüldü açık: boş bir soruya tıkla, sarı işaretlenir.</span>
+        </div>
+        <nav class="ed-nav ed-d-only" aria-label="Branşlara git">
+          <div class="ed-nav-head">Branşlar</div>
+          <div class="ed-nav-list" id="examDetailNavList"></div>
+        </nav>
       </div>
 
       <div class="exam-detail-subject-list" id="examDetailSubjectList"></div>
@@ -44092,24 +44685,46 @@ html[data-pg="on"] #page-1 .home-relax-widget.is-empty .home-relax-widget-time{d
      deneme, tarih gibi detaylar havuzdaki gibi kartın üzerinde değil, bu
      butonla açılan ayrı bir "Soru Bilgisi" pop-up'ında yazar. Çözüldü
      yerine "Düzenle" (kalem) butonu vardır; o da kırp/cevap pop-up'ını açar. -->
-<div class="qhavuz-lightbox-backdrop" id="examQLightboxBackdrop">
+<div class="qhavuz-lightbox-backdrop exam-q-lb" id="examQLightboxBackdrop">
   <div class="qhavuz-lightbox-card">
-    <button type="button" class="delete-btn qhavuz-lightbox-info" id="examQLightboxInfoBtn" aria-label="Bilgi">
-      <svg viewBox="0 0 24 24" width="14" height="14"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2.4"/><line x1="12" y1="10.5" x2="12" y2="16.5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><circle cx="12" cy="7.3" r="1.15" fill="currentColor"/></svg>
-    </button>
-    <button type="button" class="delete-btn exam-q-lightbox-edit" id="examQLightboxEditBtn" aria-label="Soruyu düzenle">
-      <svg viewBox="0 0 24 24" width="14" height="14"><path d="M4 20l4.5-1 10.2-10.2-3.5-3.5L5 15.5 4 20z" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M13.3 6.8l3.5 3.5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
-    </button>
-    <button type="button" class="delete-btn qhavuz-lightbox-close" id="examQLightboxClose" aria-label="Kapat">×</button>
     <div class="qhavuz-lightbox-img-wrap" id="examQLightboxImgWrap">
       <img id="examQLightboxImg" alt="Soru görseli">
     </div>
-    <div class="qhavuz-lightbox-answer-wrap">
+    <!-- Yan panel: telefonda kutusuz (display: contents) — başlık görselin
+         ÜSTÜNE, geri kalanı altına dizilir (CSS order); masaüstünde görselin
+         sağında ayrı bir sütun. -->
+    <div class="exam-q-lb-side">
+      <div class="exam-q-lb-top">
+        <div class="exam-q-lb-title">
+          <span class="exam-q-lb-num" id="examQLightboxNum"></span>
+          <span class="exam-q-lb-subject" id="examQLightboxSubject"></span>
+        </div>
+        <button type="button" class="delete-btn qhavuz-lightbox-info" id="examQLightboxInfoBtn" aria-label="Bilgi">
+      <svg viewBox="0 0 24 24" width="14" height="14"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2.4"/><line x1="12" y1="10.5" x2="12" y2="16.5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><circle cx="12" cy="7.3" r="1.15" fill="currentColor"/></svg>
+    </button>
+        <button type="button" class="delete-btn exam-q-lightbox-edit" id="examQLightboxEditBtn" aria-label="Soruyu düzenle">
+      <svg viewBox="0 0 24 24" width="14" height="14"><path d="M4 20l4.5-1 10.2-10.2-3.5-3.5L5 15.5 4 20z" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M13.3 6.8l3.5 3.5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
+    </button>
+        <button type="button" class="delete-btn qhavuz-lightbox-close" id="examQLightboxClose" aria-label="Kapat">×</button>
+      </div>
+      <div class="exam-q-lb-labelrow">
+        <span class="exam-q-lb-label">Doğru Cevap</span>
+        <span class="exam-q-lb-status" id="examQLightboxStatus"></span>
+      </div>
+      <div class="qhavuz-lightbox-answer-wrap">
       <div class="qhavuz-lightbox-answer-row" id="examQLightboxAnswerRow"></div>
       <button type="button" class="qhavuz-answer-reveal" id="examQLightboxReveal">
         <svg viewBox="0 0 24 24" width="15" height="15"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="2"/></svg>
         <span>Görmek için Dokun</span>
       </button>
+    </div>
+      <div class="exam-q-lb-desc is-empty" id="examQLightboxDesc"></div>
+      <div class="exam-q-lb-jump" id="examQLightboxJump"></div>
+      <div class="exam-q-lb-nav" id="examQLightboxNav">
+        <button type="button" class="exam-q-lb-navbtn" id="examQLightboxPrev" aria-label="Önceki soru"><svg viewBox="0 0 24 24" width="16" height="16"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <span class="exam-q-lb-counter" id="examQLightboxCounter"></span>
+        <button type="button" class="exam-q-lb-navbtn" id="examQLightboxNext" aria-label="Sonraki soru"><svg viewBox="0 0 24 24" width="16" height="16"><path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      </div>
     </div>
   </div>
 </div>
@@ -44130,6 +44745,11 @@ html[data-pg="on"] #page-1 .home-relax-widget.is-empty .home-relax-widget-time{d
         <span class="qhavuz-info-label">Açıklama</span>
         <div class="qhavuz-info-value" id="examQInfoDesc"></div>
       </div>
+    </div>
+    <div class="exam-q-info-foot" id="examQInfoFoot">
+      <span class="exam-q-info-save" id="examQInfoSaveState" role="status" aria-live="polite"></span>
+      <span class="exam-q-info-hint">Enter: kaydet · Shift+Enter: yeni satır</span>
+      <span class="exam-q-info-count" id="examQInfoCount"></span>
     </div>
     <div class="settings-confirm-actions">
       <button type="button" class="settings-confirm-cancel" id="examQInfoCloseBtn">Kapat</button>
@@ -66073,7 +66693,86 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
     examQLightboxTarget = null;
   };
 
-  const openExamQLightbox = (exam, subjectKey, idx) => {
+  // ---- Yeni lightbox bileşenleri: başlık (kaçıncı soru / branş), durum
+  // rozeti, açıklama notu ve aynı denemedeki görselli sorular arasında
+  // önceki/sonraki gezinmesi. ----
+  const examQLightboxNum = document.getElementById('examQLightboxNum');
+  const examQLightboxSubject = document.getElementById('examQLightboxSubject');
+  const examQLightboxStatus = document.getElementById('examQLightboxStatus');
+  const examQLightboxDesc = document.getElementById('examQLightboxDesc');
+  const examQLightboxNav = document.getElementById('examQLightboxNav');
+  const examQLightboxPrev = document.getElementById('examQLightboxPrev');
+  const examQLightboxNext = document.getElementById('examQLightboxNext');
+  const examQLightboxCounter = document.getElementById('examQLightboxCounter');
+  let examQLightboxList = [];
+  const examQLightboxJump = document.getElementById('examQLightboxJump');
+
+  // Masaüstü yan panelinde: bu denemedeki görselli tüm sorular, branşa göre
+  // gruplanmış numara çipleri olarak; çipe dokununca o soruya atlanır.
+  const renderExamQJump = (exam, curKey, curIdx) => {
+    examQLightboxJump.innerHTML = '';
+    if (examQLightboxList.length < 2) return;
+    const head = document.createElement('span');
+    head.className = 'exam-q-lb-label';
+    head.textContent = 'Bu denemedeki görselli sorular';
+    examQLightboxJump.appendChild(head);
+    const groups = new Map();
+    examQLightboxList.forEach((it) => {
+      if (!groups.has(it.subjectKey)) groups.set(it.subjectKey, []);
+      groups.get(it.subjectKey).push(it);
+    });
+    const defs = EXAM_SUBJECTS[exam.type] || EXAM_SUBJECTS.tyt;
+    groups.forEach((items, key) => {
+      const def = defs.find((d) => d.key === key);
+      const g = document.createElement('div');
+      g.className = 'exam-q-lb-jump-group';
+      const name = document.createElement('span');
+      name.className = 'exam-q-lb-jump-name';
+      name.textContent = def ? def.name : key;
+      g.appendChild(name);
+      const chips = document.createElement('div');
+      chips.className = 'exam-q-lb-jump-chips';
+      items.forEach((it) => {
+        const st = (exam.answers[key] || [])[it.idx] || 'blank';
+        const later = st === 'blank' && typeof page11IsLater === 'function' && page11IsLater(exam, key, it.idx);
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'exam-q-lb-jump-chip';
+        if (key === curKey && it.idx === curIdx) b.classList.add('is-current');
+        b.dataset.state = later ? 'later' : st;
+        b.textContent = String(page11SubjectNumberOffset(exam.type, key) + it.idx + 1);
+        b.addEventListener('click', () => showExamQ(exam, key, it.idx));
+        chips.appendChild(b);
+      });
+      g.appendChild(chips);
+      examQLightboxJump.appendChild(g);
+    });
+  };
+
+  // Denemedeki görseli olan tüm soruları (branş sırası + soru sırası) listeler.
+  const examQBuildList = (exam) => {
+    const list = [];
+    (EXAM_SUBJECTS[exam.type] || EXAM_SUBJECTS.tyt).forEach((subj) => {
+      const count = Math.max(subj.count, (exam.answers[subj.key] || []).length);
+      for (let i = 0; i < count; i += 1) {
+        const p = page11GetPhoto(exam, subj.key, i);
+        if (p && p.image) list.push({ subjectKey: subj.key, idx: i });
+      }
+    });
+    return list;
+  };
+
+  const examQRefreshDesc = () => {
+    const t = examQLightboxTarget;
+    if (!t) return;
+    const exam = page11State.exams.find((it) => it.id === t.examId);
+    const photo = exam ? page11GetPhoto(exam, t.subjectKey, t.idx) : null;
+    const text = photo && photo.description ? photo.description.trim() : '';
+    examQLightboxDesc.textContent = text;
+    examQLightboxDesc.classList.toggle('is-empty', !text);
+  };
+
+  const showExamQ = (exam, subjectKey, idx) => {
     const photo = page11GetPhoto(exam, subjectKey, idx);
     if (!photo || !photo.image) return;
 
@@ -66092,6 +66791,30 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
         examQLightboxImg.src = url;
       }
     });
+
+    // Başlık: "TYT · 20. SORU" + branş adı; branşın rengi kartın vurgu rengi olur.
+    const subjectDef = (EXAM_SUBJECTS[exam.type] || EXAM_SUBJECTS.tyt).find((subj) => subj.key === subjectKey);
+    const subjectName = subjectDef ? subjectDef.name : subjectKey;
+    const qNum = page11SubjectNumberOffset(exam.type, subjectKey) + idx + 1;
+    examQLightboxNum.textContent = `${PAGE11_TYPE_LABELS[exam.type] || ''} · ${qNum}. soru`;
+    examQLightboxSubject.textContent = subjectName;
+    examQLightboxBackdrop.style.setProperty(
+      '--lb-color',
+      subjectDef ? page11SubjectColor(exam.type, subjectDef) : '#ff90e8'
+    );
+
+    // Durum rozeti: bu soru denemede nasıl işaretlenmişti?
+    const state = (exam.answers[subjectKey] || [])[idx] || 'blank';
+    let statusKey = state;
+    let statusText = state === 'wrong' ? 'Yanlış' : (state === 'correct' ? 'Doğru' : 'Boş');
+    if (state === 'blank' && typeof page11IsLater === 'function' && page11IsLater(exam, subjectKey, idx)) {
+      statusKey = 'later';
+      statusText = 'Sonradan çözüldü';
+    }
+    examQLightboxStatus.textContent = statusText;
+    examQLightboxStatus.dataset.state = statusKey;
+
+    examQRefreshDesc();
 
     examQLightboxAnswerRow.innerHTML = '';
     // Açık uçlu (yazılı cevaplı, şıksız) sorularda şık ızgarası yerine
@@ -66124,12 +66847,54 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
         examQLightboxAnswerRow.appendChild(btn);
       });
     }
-    // Cevap her açılışta yeniden gizlenmiş (blurlu) başlar.
+    // Cevap her açılışta/gezinmede yeniden gizlenmiş (blurlu) başlar.
     examQLightboxReveal.classList.remove('is-hidden');
 
+    // Gezinme: sıra + sayaç; tek görsel varsa gezinme satırı gizlenir.
+    const pos = examQLightboxList.findIndex((it) => it.subjectKey === subjectKey && it.idx === idx);
+    const many = examQLightboxList.length > 1;
+    examQLightboxNav.classList.toggle('is-hidden', !many);
+    examQLightboxCounter.textContent = pos >= 0 ? `${pos + 1} / ${examQLightboxList.length}` : '';
+    examQLightboxPrev.disabled = !many || pos <= 0;
+    examQLightboxNext.disabled = !many || pos < 0 || pos >= examQLightboxList.length - 1;
+
+    renderExamQJump(exam, subjectKey, idx);
     examQLightboxEditBtn.disabled = !!exam.locked;
+  };
+
+  const openExamQLightbox = (exam, subjectKey, idx) => {
+    const photo = page11GetPhoto(exam, subjectKey, idx);
+    if (!photo || !photo.image) return;
+    examQLightboxList = examQBuildList(exam);
+    showExamQ(exam, subjectKey, idx);
     examQLightboxBackdrop.classList.add('is-open');
   };
+
+  const examQStep = (dir) => {
+    const t = examQLightboxTarget;
+    if (!t) return;
+    const exam = page11State.exams.find((it) => it.id === t.examId);
+    if (!exam) return;
+    const pos = examQLightboxList.findIndex((it) => it.subjectKey === t.subjectKey && it.idx === t.idx);
+    const next = examQLightboxList[pos + dir];
+    if (pos < 0 || !next) return;
+    showExamQ(exam, next.subjectKey, next.idx);
+  };
+  examQLightboxPrev.addEventListener('click', () => examQStep(-1));
+  examQLightboxNext.addEventListener('click', () => examQStep(1));
+
+  // Klavye (masaüstü): ← → gezinir, Esc önce bilgi pop-up'ını, sonra lightbox'ı kapatır.
+  document.addEventListener('keydown', (e) => {
+    if (!examQLightboxBackdrop.classList.contains('is-open')) return;
+    const infoOpen = document.getElementById('examQInfoBackdrop').classList.contains('is-open');
+    if (e.key === 'Escape') {
+      if (infoOpen) closeExamQInfo(); else closeExamQLightbox();
+    } else if (!infoOpen && e.key === 'ArrowLeft') {
+      examQStep(-1);
+    } else if (!infoOpen && e.key === 'ArrowRight') {
+      examQStep(1);
+    }
+  });
 
   examQLightboxReveal.addEventListener('click', () => {
     examQLightboxReveal.classList.add('is-hidden');
@@ -66140,6 +66905,14 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
   const examQInfoSubjectBadge = document.getElementById('examQInfoSubjectBadge');
   const examQInfoDesc = document.getElementById('examQInfoDesc');
   const examQInfoCloseBtn = document.getElementById('examQInfoCloseBtn');
+
+  const examQInfoFoot = document.getElementById('examQInfoFoot');
+  const examQInfoCount = document.getElementById('examQInfoCount');
+  const examQInfoSaveState = document.getElementById('examQInfoSaveState');
+  const examQSetSaveState = (text, state) => {
+    examQInfoSaveState.textContent = text;
+    examQInfoSaveState.dataset.state = state;
+  };
 
   const openExamQInfo = () => {
     const target = examQLightboxTarget;
@@ -66157,6 +66930,9 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
 
     // Açıklama, exam kilitli değilse doğrudan yazılıp odaktan çıkınca kaydedilir.
     examQInfoDesc.innerHTML = '';
+    examQInfoFoot.hidden = !!exam.locked;
+    examQSetSaveState('', 'idle');
+    examQInfoCount.textContent = '';
     if (exam.locked) {
       const hasValue = !!(photo.description && photo.description.trim());
       examQInfoDesc.textContent = hasValue ? photo.description : '—';
@@ -66165,21 +66941,56 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
       examQInfoDesc.classList.remove('is-empty');
       const textarea = document.createElement('textarea');
       textarea.className = 'page9-add-custom-input qhavuz-info-input qhavuz-info-input--desc';
-      textarea.rows = 1;
+      textarea.rows = 4;
       textarea.maxLength = 500;
-      textarea.placeholder = 'Açıklama ekle...';
+      textarea.placeholder = 'Bu soruyla ilgili notunu yaz...';
+      textarea.enterKeyHint = 'done';
       textarea.value = photo.description || '';
+      let savedValue = (photo.description || '').trim();
+      let cancelled = false;
+      const fit = () => {
+        textarea.style.height = 'auto';
+        textarea.style.height = Math.min(textarea.scrollHeight + 2, 260) + 'px';
+        examQInfoCount.textContent = `${textarea.value.length} / 500`;
+      };
       const commit = () => {
         const v = textarea.value.trim();
         const current = page11GetPhoto(exam, target.subjectKey, target.idx);
         if (!current) return;
-        page11SetPhoto(exam, target.subjectKey, target.idx, { ...current, description: v || null });
+        if (v !== savedValue) {
+          page11SetPhoto(exam, target.subjectKey, target.idx, { ...current, description: v || null });
+          savedValue = v;
+        }
+        examQSetSaveState('Kaydedildi', 'saved');
       };
-      textarea.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape') { textarea.value = photo.description || ''; textarea.blur(); }
+      textarea.addEventListener('input', () => {
+        fit();
+        examQSetSaveState("Kaydedilmedi — Enter'a bas", 'dirty');
       });
-      textarea.addEventListener('blur', commit, { once: true });
+      textarea.addEventListener('keydown', (e) => {
+        if (e.isComposing) return;
+        if (e.key === 'Enter' && !e.shiftKey) {
+          // Enter: kaydet ve kutudan çık (klavye kapanır).
+          e.preventDefault();
+          textarea.blur();
+        } else if (e.key === 'Escape') {
+          e.stopPropagation();
+          cancelled = true;
+          textarea.value = savedValue;
+          textarea.blur();
+        }
+      });
+      textarea.addEventListener('blur', () => {
+        if (cancelled) {
+          cancelled = false;
+          fit();
+          examQSetSaveState('Değişiklik iptal edildi', 'idle');
+          return;
+        }
+        commit();
+      });
       examQInfoDesc.appendChild(textarea);
+      requestAnimationFrame(fit);
     }
 
     examQInfoBackdrop.classList.add('is-open');
@@ -66187,6 +66998,7 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
 
   const closeExamQInfo = () => {
     examQInfoBackdrop.classList.remove('is-open');
+    setTimeout(examQRefreshDesc, 0);
   };
 
   examQLightboxInfoBtn.addEventListener('click', openExamQInfo);
@@ -75732,7 +76544,7 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
     bubble.style.height = btn.offsetHeight + 'px';
     bubble.style.transform = `translate(${btn.offsetLeft}px, ${btn.offsetTop}px)`;
     if (instant) { void bubble.offsetWidth; bubble.style.transition = ''; }
-    if (pop) { bubble.classList.remove('is-pop'); void bubble.offsetWidth; bubble.classList.add('is-pop'); }
+    if (pop) { bubble.classList.remove('is-pop', 'is-soft'); void bubble.offsetWidth; bubble.classList.add('is-pop'); }
   }
 
   function renderMonth(dir, anim) {
@@ -75752,6 +76564,9 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
     const scale = Math.max(best, 3 * 3600000);
 
     grid.innerHTML = '';
+    // Mavi karo DOM'dan çıkıp geri takılınca CSS animasyonu baştan oynuyordu (silme/yeniden çizimde "sıçrama").
+    // Yalnızca gerçek giriş animasyonunda (anim) yaylı pop kalır; diğer yeniden çizimlerde sakin bir belirme olur.
+    if (anim) bubble.classList.remove('is-soft'); else { bubble.classList.remove('is-pop'); bubble.classList.add('is-soft'); }
     grid.appendChild(bubble);
     grid.style.setProperty('--rows', String(Math.ceil((lead + dim) / 7)));
     for (let i = 0; i < lead; i += 1) {
@@ -77046,6 +77861,25 @@ html[data-pace-theme="plum"] .ztp-bar i{background:linear-gradient(90deg,#8a3a6b
     };
   })();
 </script>
+<style id="softUndoCss">
+/* ===== Süre silme: sakin geri bildirim (mobil + masaüstü) =====
+   1) Zaman takviminde mavi seçili karo, takvim yeniden çizilince yaylı "pop" ile sıçramıyor; yalnızca hafifçe belirir.
+   2) "Geri al" bildirimi daha yumuşak gelir: kutu az kayarak, bulanıklık/ölçek sıçraması olmadan; düğme ise biraz sonra,
+      kendi içinde usulca belirir. (Düğmesiz, düz bildirimler eskisi gibi kalır.) */
+@keyframes ztBubbleSoft { from { opacity: 0; } }
+.zt-bubble.is-soft { animation: ztBubbleSoft .5s ease .05s backwards; }
+@keyframes nToastInSoft { from { opacity: 0; transform: translate(-50%, 10px); } to { opacity: 1; transform: translate(-50%, 0); } }
+@keyframes nToastBtnSoft { from { opacity: 0; transform: scale(.94); } to { opacity: 1; transform: none; } }
+@keyframes nToastOutSoft { from { opacity: 1; transform: translate(-50%, var(--ty, 0px)); } to { opacity: 0; transform: translate(-50%, calc(var(--ty, 0px) + 8px)); } }
+.n-toast:not(.is-plain):not(.is-out) { animation: nToastInSoft .7s cubic-bezier(.25,.8,.3,1) both; }
+.n-toast:not(.is-plain) button { animation: nToastBtnSoft .6s cubic-bezier(.25,.8,.3,1) .22s backwards; }
+.n-toast:not(.is-plain).is-out { animation: nToastOutSoft .32s ease forwards; }
+@media (prefers-reduced-motion: reduce) {
+  .zt-bubble.is-soft, .n-toast:not(.is-plain) button { animation: none; }
+  .n-toast:not(.is-plain):not(.is-out) { animation: none; }
+  .n-toast:not(.is-plain).is-out { animation: nToastFade .2s linear forwards; }
+}
+</style>
 <style id="p11MonoStyle">
 /* =====================================================================
    Denemelerim (telefon) · vurgusuz, sade premium görünüm
@@ -80191,6 +81025,600 @@ html[data-pg="on"] #page-1 .pg-rq.is-on{display:block}
     setTimeout(upd,400);setTimeout(upd,1500);
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+})();
+</script>
+<style id="examDetailDesktop">
+/* =====================================================================
+   Deneme detayı (#page-11-detail) — MASAÜSTÜ / TABLET yeniden tasarımı
+   Yalnızca geniş ekran (min-width:768px ve min-height:600px). Telefon kuralları
+   (examDetailMinimal / Brutal / Press / Polish) ve tüm JS/ID'ler aynen kalır.
+   Telefondaki dil: sola yaslı başlık, ince çerçeve + küçük sert gölge, renk
+   şeridi yok, solda büyük net + sağda noktalı sayaçlar, başlık satırı ayraçlı
+   branş kartları. Masaüstü düzeni: solda sabit panel, sağda branş "duvar örgüsü".
+   Yeni: panelde dağılım çubuğu, branşlara atlama listesi, tıklama ipucu.
+   ===================================================================== */
+.ed-d-only { display: none; }
+
+@media (min-width: 768px) and (min-height: 600px) {
+  #page-11-detail {
+    --ed-ink: var(--theme-text, #121212);
+    --ed-bg: var(--theme-bg, #f6f4ef);
+    --ed-tile: color-mix(in srgb, var(--ed-ink) 6%, transparent);
+    --ed-tile-hi: color-mix(in srgb, var(--ed-ink) 11%, transparent);
+    --ed-ring: color-mix(in srgb, var(--ed-ink) 15%, transparent);
+    --ed-mute: color-mix(in srgb, var(--ed-ink) 52%, transparent);
+    --ed-card: color-mix(in srgb, #fff 78%, var(--theme-bg, #f6f4ef));
+    --ed-line: var(--theme-text, #121212);
+    --ed-good: #52c98a;
+    --ed-bad: #ff6259;
+    --ed-warn: #ffd23f;
+    --ed-sh: 3px;
+    --ed-ease: cubic-bezier(0.22, 1, 0.36, 1);
+    --ed-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+    --p11d-stick-y: 24px;
+    padding: calc(44px + env(safe-area-inset-top)) 32px calc(48px + env(safe-area-inset-bottom));
+    gap: 0;
+  }
+  html[data-ed="dark"] #page-11-detail {
+    --ed-card: color-mix(in srgb, var(--theme-text, #f2f2f4) 8%, var(--theme-bg, #0b0b0c));
+    --ed-good: #43b878; --ed-bad: #f0584f; --ed-warn: #e8bd2f;
+  }
+  body.is-anthracite #page-11-detail { --ed-card: var(--dark-card-color, #1c1c22); }
+
+  #page-11-detail .exam-detail-wrap {
+    max-width: 1240px; width: 100%;
+    display: grid;
+    grid-template-columns: minmax(310px, 372px) minmax(0, 1fr);
+    grid-template-areas:
+      "topbar  topbar"
+      "title   title"
+      "sidebar subjects";
+    column-gap: 2.25rem; row-gap: .85rem; align-items: start;
+  }
+
+  /* ---- Üst çubuk: telefondaki yumuşak-brütal daire butonlar ---- */
+  #page-11-detail .calendar-topbar { grid-area: topbar; max-width: none; }
+  #page-11-detail .calendar-topbar-right-group { gap: .6rem; }
+  #page-11-detail .calendar-back-btn {
+    width: 2.7rem; height: 2.7rem; cursor: pointer;
+    background: var(--ed-card); color: var(--ed-ink);
+    border: 3px solid var(--ed-line); box-shadow: var(--ed-sh) var(--ed-sh) 0 0 var(--ed-line);
+    transition: transform .2s var(--ed-ease), box-shadow .2s var(--ed-ease), background-color .25s ease, color .25s ease;
+  }
+  #page-11-detail .calendar-back-btn svg { width: 18px; height: 18px; }
+  #page-11-detail .calendar-back-btn.is-active,
+  #page-11-detail #examDetailMenuBtn.is-open {
+    background: var(--accent-color, #6ec6ff); color: var(--on-accent, #16171b);
+  }
+  #page-11-detail #examDetailLockBtn[aria-pressed="true"] { background: var(--accent-color, #6ec6ff); color: var(--on-accent, #16171b); }
+  #page-11-detail .calendar-back-btn:focus-visible,
+  #page-11-detail .exam-detail-bulk-btn:focus-visible,
+  #page-11-detail .ed-nav-item:focus-visible,
+  body .exam-detail-menu-wrap .exam-detail-menu-item:focus-visible {
+    outline: 3px solid var(--accent-color, #6ec6ff); outline-offset: 3px;
+  }
+  @media (hover: hover) and (pointer: fine) {
+    #page-11-detail .calendar-back-btn:not(:disabled):hover {
+      transform: translate(-1px, -1px); box-shadow: 4px 4px 0 0 var(--ed-line);
+    }
+  }
+  #page-11-detail .calendar-back-btn.ed-press,
+  #page-11-detail .calendar-back-btn.is-pressed,
+  #page-11-detail #examDetailMenuBtn.is-open {
+    transform: translate(var(--ed-sh), var(--ed-sh)); box-shadow: 0 0 0 0 var(--ed-line); transition-duration: .07s;
+  }
+
+  /* ---- Başlık: sola yaslı, kaydırınca küçülüp üstte kalır ---- */
+  #page-11-detail .exam-detail-titlebar {
+    grid-area: title; top: -20px; justify-content: flex-start; min-height: 0; padding: 0;
+  }
+  #page-11-detail .exam-detail-title {
+    font-family: "Baloo 2", "Space Grotesk", sans-serif; font-weight: 800;
+    font-size: 2.3rem; line-height: 1.1; letter-spacing: -0.03em; text-align: left;
+    transform-origin: left center; will-change: transform;
+    transform: scale(calc(1 - 0.26 * var(--p11d-stick, 0)));
+  }
+
+  /* ---- Sol panel: tek parça, kaydırınca sabit ---- */
+  #page-11-detail .exam-detail-sidebar {
+    grid-area: sidebar; display: flex; flex-direction: column; gap: 1rem;
+    position: sticky; top: 38px; align-self: start;
+    max-height: calc(100vh - 82px - 60px); min-height: 0;
+  }
+  /* Sayfa sonunda sol panel yukarı kaymasın: satır her zaman panelden uzun kalır, esneme payı kapalı */
+  #page-11-detail { overscroll-behavior-y: none; }
+  #page-11-detail .exam-detail-subject-list { min-height: calc(100vh - 82px - 60px); }
+  #page-11-detail .exam-detail-sidebar > * { flex: 0 0 auto; }
+
+  /* Özet: solda büyük net, sağda noktalı sayaçlar, altında dağılım çubuğu */
+  #page-11-detail .exam-detail-summary-card {
+    box-sizing: border-box; width: calc(100% - 6px);
+    background: var(--ed-card); border: 4px solid var(--ed-line); border-radius: 1.4rem;
+    box-shadow: 6px 6px 0 var(--ed-line); padding: 1.1rem 1.3rem 1.25rem;
+    display: grid; grid-template-columns: 1fr auto; column-gap: 1rem; row-gap: 0;
+    align-items: end; text-align: left; justify-items: start;
+  }
+  #page-11-detail .exam-detail-summary-label {
+    grid-column: 1; grid-row: 1; color: var(--ed-ink); opacity: .55;
+    font-family: "Baloo 2", "Space Grotesk", sans-serif; font-weight: 700;
+    font-size: .7rem; letter-spacing: .14em; text-transform: uppercase;
+  }
+  #page-11-detail .exam-detail-summary-total {
+    grid-column: 1; grid-row: 2; color: var(--ed-ink);
+    font-family: "Baloo 2", "Space Grotesk", sans-serif; font-weight: 800;
+    font-size: 3.9rem; line-height: .95; letter-spacing: -0.04em; font-variant-numeric: tabular-nums;
+  }
+  #page-11-detail .exam-detail-summary-total span {
+    font-size: 1rem; font-weight: 600; letter-spacing: 0; margin-left: .3rem; color: var(--ed-mute);
+  }
+  #page-11-detail .exam-detail-summary-meta {
+    grid-column: 1; grid-row: 3; margin-top: .4rem; color: var(--ed-mute);
+    font-size: .82rem; font-weight: 600;
+  }
+  #page-11-detail .exam-detail-summary-stats {
+    grid-column: 2; grid-row: 1 / 4; align-self: end; min-width: 6rem;
+    display: flex; flex-direction: column; gap: .35rem; align-items: stretch;
+  }
+  #page-11-detail .exam-detail-stat,
+  body.is-anthracite #page-11-detail .exam-detail-stat {
+    background: none; border: 0; box-shadow: none; border-radius: 0;
+    display: flex; flex-direction: row-reverse; align-items: baseline; justify-content: flex-end; gap: .45rem;
+    position: relative; padding: 0 0 0 1rem;
+  }
+  #page-11-detail .exam-detail-stat::before {
+    content: ""; position: absolute; left: 0; top: 50%; width: .6rem; height: .6rem; margin-top: -.3rem;
+    box-sizing: border-box; border: 2px solid var(--ed-line); border-radius: 50%; background: var(--ed-card);
+  }
+  #page-11-detail .exam-detail-stat.is-correct::before { background: var(--ed-good); }
+  #page-11-detail .exam-detail-stat.is-wrong::before { background: var(--ed-bad); }
+  #page-11-detail .exam-detail-stat-value {
+    font-family: "Baloo 2", "Space Grotesk", sans-serif; font-weight: 800; font-size: 1.15rem; line-height: 1.15;
+    color: var(--ed-ink); font-variant-numeric: tabular-nums; min-width: 1.8rem; text-align: right; margin-left: auto;
+  }
+  #page-11-detail .exam-detail-stat-label {
+    font-size: .76rem; font-weight: 600; text-transform: none; letter-spacing: 0; color: var(--ed-mute);
+  }
+  #page-11-detail .ed-dist {
+    grid-column: 1 / -1; grid-row: 4; width: 100%; box-sizing: border-box; margin-top: 1rem;
+    height: .85rem; display: flex; overflow: hidden; border-radius: 999px;
+    border: 2.5px solid var(--ed-line); background: var(--ed-card);
+  }
+  #page-11-detail .ed-dist span { height: 100%; transition: flex-grow .5s var(--ed-ease); min-width: 0; }
+  #page-11-detail .ed-dist span.is-c { background: var(--ed-good); }
+  #page-11-detail .ed-dist span.is-w { background: var(--ed-bad); }
+  #page-11-detail .ed-dist span.is-b { background: transparent; }
+  #page-11-detail .ed-dist span + span:not([hidden]) { border-left: 2.5px solid var(--ed-line); }
+  #page-11-detail .ed-dist span[hidden] { display: none; }
+
+  /* Sonradan Çözüldü: panel genişliğinde tek hap */
+  #page-11-detail .exam-detail-bulk-actions { display: flex; flex-direction: column; width: calc(100% - 3px); }
+  #page-11-detail .exam-detail-bulk-btn.is-later {
+    flex: 0 0 auto; width: 100%; height: 2.8rem; padding: 0 1rem; gap: .5rem; cursor: pointer;
+    background: var(--ed-card); color: var(--ed-ink); border: 3px solid var(--ed-line); border-radius: .95rem;
+    box-shadow: var(--ed-sh) var(--ed-sh) 0 0 var(--ed-line);
+    font-family: "Baloo 2", "Space Grotesk", sans-serif; font-weight: 800; font-size: .9rem;
+    transition: transform .22s var(--ed-ease), box-shadow .22s var(--ed-ease), background-color .25s ease, color .25s ease;
+  }
+  #page-11-detail .exam-detail-bulk-btn.is-later svg { width: 16px; height: 16px; color: var(--ed-warn); }
+  @media (hover: hover) and (pointer: fine) {
+    #page-11-detail .exam-detail-bulk-btn.is-later:not(:disabled):hover {
+      transform: translate(-1px, -1px); box-shadow: 4px 4px 0 0 var(--ed-line); background: var(--ed-card);
+    }
+  }
+  #page-11-detail .exam-detail-bulk-btn.is-later.ed-press { transform: translate(var(--ed-sh), var(--ed-sh)); box-shadow: 0 0 0 0 var(--ed-line); transition-duration: .07s; }
+  #page-11-detail .exam-detail-bulk-btn.is-later[aria-pressed="true"],
+  #page-11-detail .exam-detail-bulk-btn.is-later[aria-pressed="true"]:hover {
+    background: var(--ed-warn); color: #4d3800; transform: translate(var(--ed-sh), var(--ed-sh)); box-shadow: 0 0 0 0 var(--ed-line);
+  }
+  #page-11-detail .exam-detail-bulk-btn.is-later[aria-pressed="true"] svg { color: #4d3800; }
+
+  /* Tıklama ipucu */
+  #page-11-detail .ed-legend {
+    display: flex; flex-wrap: wrap; align-items: center; gap: .3rem .45rem; padding: 0 .3rem;
+    font-size: .78rem; font-weight: 600; color: var(--ed-mute);
+  }
+  #page-11-detail .ed-legend-later { display: none; }
+  #page-11-detail.is-later-mode .ed-legend-cycle { display: none; }
+  #page-11-detail.is-later-mode .ed-legend-later { display: inline; }
+  #page-11-detail .ed-chip {
+    display: inline-flex; align-items: center; gap: .3rem; height: 1.45rem; padding: 0 .55rem;
+    border: 2px solid var(--ed-line); border-radius: .55rem; color: var(--ed-ink);
+    font-family: "Baloo 2", "Space Grotesk", sans-serif; font-weight: 800; font-size: .72rem; background: var(--ed-card);
+  }
+  #page-11-detail .ed-chip.is-c { background: var(--ed-good); color: #0d3d20; }
+  #page-11-detail .ed-chip.is-w { background: var(--ed-bad); color: #4a0710; }
+  #page-11-detail .ed-legend-arrow { opacity: .6; }
+
+  /* Branşlara atla listesi */
+  #page-11-detail .ed-nav { display: flex; flex-direction: column; gap: .35rem; min-height: 0; flex: 1 1 auto; margin-top: .2rem; }
+  #page-11-detail .ed-nav-head {
+    padding: 0 .35rem; color: var(--ed-mute);
+    font-family: "Baloo 2", "Space Grotesk", sans-serif; font-weight: 700; font-size: .68rem; letter-spacing: .14em; text-transform: uppercase;
+  }
+  #page-11-detail .ed-nav-list { display: flex; flex-direction: column; gap: 0; min-height: 4.5rem; overflow-y: auto; scrollbar-width: thin; padding-bottom: 2px; }
+  #page-11-detail .ed-nav-item {
+    display: grid; grid-template-columns: auto minmax(0, 1fr) auto; column-gap: .65rem; row-gap: .28rem; align-items: center;
+    width: 100%; box-sizing: border-box; padding: .42rem .75rem .5rem; border: 0; border-radius: .95rem; cursor: pointer;
+    background: transparent; color: var(--ed-ink); text-align: left;
+    font-family: "Baloo 2", "Space Grotesk", sans-serif; font-weight: 700; font-size: .92rem;
+    transition: background-color .2s ease, transform .3s var(--ed-spring);
+  }
+  @media (hover: hover) and (pointer: fine) { #page-11-detail .ed-nav-item:hover { background: var(--ed-tile); } }
+  #page-11-detail .ed-nav-item:active { background: var(--ed-tile-hi); transform: scale(.98); }
+  #page-11-detail .ed-nav-dot { width: .65rem; height: .65rem; box-sizing: border-box; border-radius: 50%; border: 2px solid var(--ed-line); }
+  #page-11-detail .ed-nav-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  #page-11-detail .ed-nav-net { font-variant-numeric: tabular-nums; font-size: .88rem; color: var(--ed-ink); }
+  #page-11-detail .ed-nav-net small { font-size: .7rem; font-weight: 600; color: var(--ed-mute); margin-left: .2rem; }
+  #page-11-detail .ed-nav-bar { grid-column: 1 / -1; height: .3rem; display: flex; overflow: hidden; border-radius: 999px; background: var(--ed-ring); }
+  #page-11-detail .ed-nav-bar i { display: block; height: 100%; transition: flex-grow .4s var(--ed-ease); }
+  #page-11-detail .ed-nav-bar i.is-c { background: var(--ed-good); }
+  #page-11-detail .ed-nav-bar i.is-w { background: var(--ed-bad); }
+
+
+  /* Branş atlama listesi: sağa-sola sürüklemeyle sayfa kaymasın, metin seçilmesin */
+  #page-11-detail .ed-nav, #page-11-detail .ed-nav-list, #page-11-detail .ed-nav-item {
+    touch-action: pan-y; overscroll-behavior: contain; -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent;
+  }
+  #page-11-detail .ed-nav-list { overflow-x: hidden; }
+  #page-11-detail { overflow-x: hidden; overscroll-behavior-x: none; }
+
+  /* ---- Branş kartları: masaüstü duvar örgüsü, telefon diliyle ---- */
+  #page-11-detail .exam-detail-subject-list {
+    grid-area: subjects; display: block; column-width: 330px; column-gap: 1.4rem; padding: 0 6px 0 0;
+  }
+  #page-11-detail .exam-detail-subject-card {
+    display: block; width: 100%; box-sizing: border-box; margin: 0 0 1.4rem;
+    break-inside: avoid; -webkit-column-break-inside: avoid;
+    background: var(--ed-card); border: 3.5px solid var(--ed-line); border-radius: 1.25rem;
+    box-shadow: 5px 5px 0 var(--ed-line); overflow: visible; scroll-margin-top: 92px;
+    animation: edRiseD .6s var(--ed-ease) both;
+  }
+  #page-11-detail .exam-detail-subject-card:nth-child(1) { animation-delay: .04s; }
+  #page-11-detail .exam-detail-subject-card:nth-child(2) { animation-delay: .08s; }
+  #page-11-detail .exam-detail-subject-card:nth-child(3) { animation-delay: .12s; }
+  #page-11-detail .exam-detail-subject-card:nth-child(4) { animation-delay: .16s; }
+  #page-11-detail .exam-detail-subject-card:nth-child(n+5) { animation-delay: .2s; }
+  @keyframes edRiseD { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+  @keyframes edFlashD {
+    0% { box-shadow: 5px 5px 0 var(--ed-line), 0 0 0 0 color-mix(in srgb, var(--accent-color, #6ec6ff) 80%, transparent); }
+    35% { box-shadow: 5px 5px 0 var(--ed-line), 0 0 0 8px color-mix(in srgb, var(--accent-color, #6ec6ff) 80%, transparent); }
+    100% { box-shadow: 5px 5px 0 var(--ed-line), 0 0 0 0 transparent; }
+  }
+  /* Vurgu artık WAAPI ile (JS) yapılıyor: kartın giriş animasyonuna (edRiseD) dokunmaz, böylece vurgu bitince kart yeniden "belirmez". */
+  #page-11-detail .exam-detail-subject-accent { display: none; }
+  #page-11-detail .exam-detail-subject-body { padding: 0 1.1rem 1.2rem; gap: .95rem; }
+  #page-11-detail .exam-detail-subject-top {
+    margin: 0 -1.1rem; padding: .8rem 1.1rem .7rem; border-bottom: 3px solid var(--ed-line); align-items: baseline;
+  }
+  #page-11-detail .exam-detail-subject-name {
+    font-family: "Baloo 2", "Space Grotesk", sans-serif; font-weight: 800; font-size: 1.12rem; letter-spacing: -0.01em; color: var(--ed-ink);
+  }
+  #page-11-detail .exam-detail-subject-net {
+    font-family: "Baloo 2", "Space Grotesk", sans-serif; font-weight: 800; font-size: 1.05rem; color: var(--ed-ink); font-variant-numeric: tabular-nums;
+  }
+  #page-11-detail .exam-detail-subject-net span { font-size: .74rem; font-weight: 600; opacity: .55; color: var(--ed-ink); }
+
+  /* ---- Soru baloncukları ---- */
+  #page-11-detail .exam-detail-bubble-grid { grid-template-columns: repeat(auto-fill, minmax(2.55rem, 1fr)); gap: .5rem; }
+  #page-11-detail .exam-detail-bubble {
+    background: var(--ed-card); color: var(--ed-ink); border: 2px solid var(--ed-line); border-radius: .65rem;
+    box-shadow: 2px 2px 0 0 var(--ed-line); font-family: "Baloo 2", "Space Grotesk", sans-serif; font-weight: 800; font-size: .84rem;
+    font-variant-numeric: tabular-nums; cursor: pointer;
+    transition: transform .15s var(--ed-spring), box-shadow .15s ease, background-color .15s ease, color .15s ease;
+  }
+  #page-11-detail .exam-detail-bubble:focus-visible { outline: 3px solid var(--accent-color, #6ec6ff); outline-offset: 2px; z-index: 1; }
+  #page-11-detail .exam-detail-bubble.is-blank { background: var(--ed-card); color: var(--ed-ink); }
+  #page-11-detail .exam-detail-bubble.is-correct { background: var(--ed-good); color: #0d3d20; }
+  #page-11-detail .exam-detail-bubble.is-wrong { background: var(--ed-bad); color: #4a0710; }
+  #page-11-detail .exam-detail-bubble.is-later { background: var(--ed-warn); color: #4d3800; }
+  @media (hover: hover) and (pointer: fine) {
+    #page-11-detail .exam-detail-bubble:hover { transform: translate(-1px, -1px); box-shadow: 3px 3px 0 0 var(--ed-line); }
+  }
+  #page-11-detail .exam-detail-bubble.ed-press { transform: translate(2px, 2px) scale(.97); box-shadow: 0 0 0 0 var(--ed-line); transition-duration: .06s; }
+  #page-11-detail.is-later-mode .exam-detail-bubble.is-correct,
+  #page-11-detail.is-later-mode .exam-detail-bubble.is-wrong { opacity: .4; }
+  #page-11-detail .exam-detail-bubble-photo-btn {
+    top: -6px; right: -6px; width: 16px; height: 16px; opacity: 1;
+    background: var(--ed-card); color: var(--ed-ink); border: 1.6px solid var(--ed-line); box-shadow: 1px 1px 0 0 var(--ed-line);
+  }
+  #page-11-detail .exam-detail-bubble-photo-btn.has-photo { background: var(--ed-good); color: #0d3d20; }
+  #page-11-detail .exam-detail-bubble-photo-btn.ed-press { transform: scale(.85); }
+
+  /* ---- ⋯ menüsü: telefondaki yumuşak-brütal yüzey ---- */
+  #page-11-detail .exam-detail-menu-wrap .exam-detail-menu {
+    min-width: 16.5rem; padding: .4rem; gap: .05rem; background: var(--ed-card);
+    border: 3px solid var(--ed-line); border-radius: 1.1rem; box-shadow: 5px 5px 0 var(--ed-line);
+    animation: edMenuInD .28s var(--ed-ease) both;
+  }
+  @keyframes edMenuInD { from { opacity: 0; transform: translateY(-8px) scale(.95); } to { opacity: 1; transform: none; } }
+  #page-11-detail .exam-detail-menu-wrap .exam-detail-menu-item {
+    color: var(--ed-ink); font-family: "Baloo 2", "Space Grotesk", sans-serif; font-weight: 800; font-size: .95rem;
+    padding: .7rem .8rem; border-radius: .8rem; gap: .75rem;
+  }
+  #page-11-detail .exam-detail-menu-wrap .exam-detail-menu-item svg { width: 18px; height: 18px; }
+  @media (hover: hover) and (pointer: fine) {
+    #page-11-detail .exam-detail-menu-wrap .exam-detail-menu-item:not(:disabled):hover { background: var(--ed-tile-hi); color: var(--ed-ink); }
+    #page-11-detail .exam-detail-menu-wrap .exam-detail-menu-item.is-danger:not(:disabled):hover { background: color-mix(in srgb, var(--ed-bad) 18%, transparent); }
+  }
+  #page-11-detail .exam-detail-menu-wrap .exam-detail-menu-item.ed-press { background: var(--accent-color, #ff90e8); color: var(--on-accent, #16171b); transform: scale(.98); }
+  #page-11-detail .exam-detail-menu-wrap .exam-detail-menu-item.is-correct svg { color: var(--ed-good); }
+  #page-11-detail .exam-detail-menu-wrap .exam-detail-menu-item.is-danger,
+  #page-11-detail .exam-detail-menu-wrap .exam-detail-menu-item.is-danger svg { color: var(--ed-bad); }
+  #page-11-detail .exam-detail-menu-wrap .exam-detail-menu-sep { height: 2.5px; margin: .3rem .5rem; background: var(--ed-line); opacity: .85; }
+
+  /* ---- Görünür/ görünmez yardımcılar ---- */
+  .ed-d-only { display: block; }
+  #page-11-detail .ed-dist.ed-d-only { display: flex; }
+  #page-11-detail .ed-legend.ed-d-only { display: flex; }
+
+  @media (prefers-reduced-motion: reduce) {
+    #page-11-detail .exam-detail-subject-card,
+    #page-11-detail .exam-detail-subject-card.ed-flash,
+    #page-11-detail .exam-detail-menu-wrap .exam-detail-menu { animation: none; }
+  }
+}
+
+/* Dar masaüstü / tablet dikey: panel üstte, branş listesi altında */
+@media (min-width: 768px) and (min-height: 600px) and (max-width: 1023px) {
+  #page-11-detail { padding-left: 24px; padding-right: 24px; }
+  #page-11-detail .exam-detail-wrap {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: "topbar" "title" "sidebar" "subjects";
+    row-gap: 1.1rem;
+  }
+  #page-11-detail .exam-detail-sidebar {
+    position: static; max-height: none; display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+    column-gap: 1.4rem; row-gap: .9rem; align-items: start;
+  }
+  #page-11-detail .exam-detail-summary-card { grid-column: 1; grid-row: 1 / span 3; }
+  #page-11-detail .exam-detail-bulk-actions { grid-column: 2; grid-row: 1; }
+  #page-11-detail .ed-legend { grid-column: 2; grid-row: 2; }
+  #page-11-detail .ed-nav { display: none; }
+  #page-11-detail .ed-legend > .ed-legend-cycle:first-child { display: none; }
+}
+</style>
+<style id="examResourcesDarkTheme">
+/* Kaynaklar pop-up'ı: koyu temalarda (Saf Siyah vb.; html[data-ed="dark"] tema yazı rengine göre otomatik) iç renkler temadan türer.
+   Açık temalarda (Fildişi) hiçbir şey değişmez. */
+html[data-ed="dark"] #examResourcesBackdrop .exam-resources-card {
+  --rc-ink: var(--theme-text, #f5f5f5);
+  --rc-card: color-mix(in srgb, var(--rc-ink) 8%, var(--theme-bg, #000));
+  --rc-raise: color-mix(in srgb, var(--rc-ink) 13%, var(--theme-bg, #000));
+  --rc-raise2: color-mix(in srgb, var(--rc-ink) 19%, var(--theme-bg, #000));
+  --rc-soft: color-mix(in srgb, var(--rc-ink) 45%, transparent);
+  --rc-line: color-mix(in srgb, var(--rc-ink) 16%, transparent);
+  background: var(--rc-card);
+  border-color: var(--rc-ink);
+  box-shadow: 6px 6px 0 0 var(--rc-ink);
+}
+@media (min-width: 768px) and (min-height: 600px) {
+  html[data-ed="dark"] #examResourcesBackdrop .exam-resources-card { box-shadow: 8px 8px 0 0 var(--rc-ink); }
+}
+html[data-ed="dark"] #examResourcesBackdrop .page11-modal-title,
+html[data-ed="dark"] #examResourcesBackdrop .exam-resources-section-title { color: var(--rc-ink); }
+html[data-ed="dark"] #examResourcesBackdrop .page11-modal-subtitle,
+html[data-ed="dark"] #examResourcesBackdrop .exam-resources-section-hint { color: color-mix(in srgb, var(--rc-ink) 58%, transparent); }
+html[data-ed="dark"] #examResourcesBackdrop .exam-resources-header { border-bottom-color: var(--rc-line); }
+html[data-ed="dark"] #examResourcesBackdrop .exam-resources-section,
+html[data-ed="dark"] #examResourcesBackdrop .exam-resources-section + .exam-resources-section { border-top-color: var(--rc-line); border-left-color: var(--rc-line); }
+html[data-ed="dark"] #examResourcesBackdrop .exam-resources-card > .exam-resources-section:first-of-type { border-top-color: transparent; }
+html[data-ed="dark"] #examResourcesBackdrop .exam-resources-section-icon { background: var(--rc-raise); color: var(--rc-ink); border-color: var(--rc-ink); }
+html[data-ed="dark"] #examResourcesBackdrop .exam-resources-add-chip,
+html[data-ed="dark"] #examResourcesBackdrop .exam-resources-video-save {
+  background: var(--rc-ink); color: var(--theme-bg, #000); border-color: var(--rc-ink); box-shadow: 3px 3px 0 0 var(--rc-soft);
+}
+html[data-ed="dark"] #examResourcesBackdrop .exam-resources-add-chip:active,
+html[data-ed="dark"] #examResourcesBackdrop .exam-resources-video-save:active { background: var(--accent-color, #6ec6ff); color: var(--on-accent, #16171b); box-shadow: 1.5px 1.5px 0 0 var(--rc-soft); }
+html[data-ed="dark"] #examResourcesBackdrop .exam-resources-thumb { background: var(--rc-raise); border-color: var(--rc-ink); box-shadow: 3px 3px 0 0 var(--rc-soft); }
+html[data-ed="dark"] #examResourcesBackdrop .exam-resources-image-grid:empty,
+html[data-ed="dark"] #examResourcesBackdrop .exam-resources-section:has(.exam-resources-video-form.is-hidden):has(.exam-resources-video-link.is-hidden)::after {
+  color: color-mix(in srgb, var(--rc-ink) 50%, transparent); background: color-mix(in srgb, var(--rc-ink) 4%, transparent); border-color: color-mix(in srgb, var(--rc-ink) 28%, transparent);
+}
+html[data-ed="dark"] #examResourcesBackdrop .exam-resources-video-input { background-color: var(--rc-raise); color: var(--rc-ink); border-color: var(--rc-ink); }
+html[data-ed="dark"] #examResourcesBackdrop .exam-resources-video-input::placeholder { color: color-mix(in srgb, var(--rc-ink) 40%, transparent); }
+html[data-ed="dark"] #examResourcesBackdrop .exam-resources-video-input:focus { background-color: var(--rc-raise); box-shadow: 3px 3px 0 0 var(--rc-soft); }
+html[data-ed="dark"] #examResourcesBackdrop .exam-resources-video-link { background-color: var(--rc-raise); border-color: var(--rc-ink); box-shadow: 3px 3px 0 0 var(--rc-soft); }
+html[data-ed="dark"] #examResourcesBackdrop .exam-resources-video-link:active { background-color: var(--rc-raise2); }
+html[data-ed="dark"] #examResourcesBackdrop .exam-resources-video-link-icon,
+html[data-ed="dark"] #examResourcesBackdrop .exam-resources-video-link-text { color: var(--rc-ink); }
+html[data-ed="dark"] #examResourcesBackdrop .delete-btn {
+  background-color: var(--rc-raise); color: var(--rc-ink); border-color: var(--rc-ink); box-shadow: 2px 2px 0 0 var(--rc-soft);
+}
+@media (hover: hover) and (pointer: fine) {
+  html[data-ed="dark"] #examResourcesBackdrop .exam-resources-video-link:hover { background-color: var(--rc-raise2); }
+}
+</style>
+<style id="examDetailLayoutV2">
+/* Deneme detayı (masaüstü): sol alan sabit (başlık + özet + branşlar), geri butonu Türkçe kartının sol üstünde */
+@media (min-width: 768px) and (min-height: 600px) {
+  /* Başlık artık kaydırınca küçülmez */
+  #page-11-detail .exam-detail-title { transform: none !important; will-change: auto; }
+}
+@media (min-width: 1024px) and (min-height: 600px) {
+  #page-11-detail {
+    --ed-bar-h: 2.7rem;      /* butonlarla başlığın paylaştığı satır yüksekliği */
+    --ed-row-gap: .85rem;
+  }
+  #page-11-detail .exam-detail-wrap {
+    grid-template-areas:
+      "title   topbar"
+      "sidebar subjects";
+    row-gap: var(--ed-row-gap);
+  }
+  /* Sağ sütun: geri butonu Türkçe kartının sol üstünde, kilit + ⋯ sağ üstünde */
+  #page-11-detail .calendar-topbar { grid-area: topbar; height: var(--ed-bar-h); align-items: center; }
+
+  /* Sol sütun: başlık, kilit/geri butonlarıyla aynı satırda ve kaydırmada hiç oynamaz */
+  #page-11-detail .exam-detail-titlebar {
+    grid-area: title; position: sticky; top: 0; z-index: 40;
+    height: var(--ed-bar-h); min-height: 0; padding: 0; margin: 0;
+    display: flex; align-items: center; justify-content: flex-start;
+  }
+  #page-11-detail .exam-detail-title {
+    font-size: 2.3rem; line-height: 1.3; margin: 0; max-width: 100%;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block;
+  }
+
+  /* Özet kartı + branş listesi: başlığın hemen altında, doğal yerinde sabit */
+  /* Sayfa altındaki boşluk küçültüldü: sol panel, sayfa sonunda bile sticky alanının dışına taşıp oynamasın */
+  #page-11-detail { padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px)); }
+  #page-11-detail .exam-detail-sidebar {
+    top: calc(var(--ed-bar-h) + var(--ed-row-gap)); gap: .75rem;
+    max-height: calc(100vh - 44px - env(safe-area-inset-top, 0px) - var(--ed-bar-h) - var(--ed-row-gap) - 24px - env(safe-area-inset-bottom, 0px) - 4px);
+  }
+  /* Başlığın arkasındaki gölge/zemin bandı kaldırıldı: sağdaki geri/kilit butonlarını ve kartları kapatıyordu.
+     Başlık sol sütunda, kartlarla hiç üst üste binmez. */
+  #page-11-detail .exam-detail-titlebar::before { display: none !important; }
+  /* Sabit başlık bandı kartları keserken nav ile kaydırma hedefi de ona göre */
+  #page-11-detail .exam-detail-subject-card { scroll-margin-top: 108px; }
+}
+
+/* Branşlar listesi: sade, noktasız */
+#page-11-detail .ed-nav-dot { display: none; }
+#page-11-detail .ed-nav-item {
+  grid-template-columns: minmax(0, 1fr) auto; row-gap: .2rem;
+  padding: .22rem .35rem .3rem; border-radius: .7rem; font-size: .88rem;
+}
+#page-11-detail .ed-nav-net { font-size: .84rem; }
+#page-11-detail .ed-nav-bar { height: .22rem; }
+#page-11-detail .ed-nav-list { scrollbar-width: none; }
+#page-11-detail .ed-nav-list::-webkit-scrollbar { display: none; }
+</style>
+<script id="examDetailDesktopJs">
+/* Deneme detayı — masaüstü yardımcıları: dağılım çubuğu + branşlara atlama listesi.
+   Sadece mevcut DOM'u okur (baloncuk sınıfları, branş kartları); veriye/mantığa dokunmaz.
+   Öğeler telefonda CSS ile gizlidir (.ed-d-only). */
+(function () {
+  var page = document.getElementById('page-11-detail');
+  var list = document.getElementById('examDetailSubjectList');
+  var navList = document.getElementById('examDetailNavList');
+  var dist = document.getElementById('examDetailDist');
+  if (!page || !list || !navList || !dist) return;
+  var segC = dist.querySelector('.is-c'), segW = dist.querySelector('.is-w'), segB = dist.querySelector('.is-b');
+  var items = [], queued = false;
+  var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function fmtNet(card) {
+    var el = card.querySelector('.exam-detail-subject-net');
+    return el ? el.textContent.replace(/net/i, '').replace(/\s+/g, ' ').trim() : '';
+  }
+  function setSeg(el, n) { if (!el) return; el.style.flexGrow = n; el.hidden = n === 0; }
+  /* ---- Kaydırma + vurgu ---- */
+  var scrollRaf = 0, cancelScroll = null;
+  function getScroller(el) {
+    var n = el.parentElement;
+    while (n && n !== document.body && n !== document.documentElement) {
+      var oy = getComputedStyle(n).overflowY;
+      if ((oy === 'auto' || oy === 'scroll') && n.scrollHeight > n.clientHeight + 1) return n;
+      n = n.parentElement;
+    }
+    return document.scrollingElement || document.documentElement;
+  }
+  function easeInOut(t) { return t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; }
+  function smoothScrollTo(sc, target, done) {
+    if (scrollRaf) { cancelAnimationFrame(scrollRaf); scrollRaf = 0; }
+    if (cancelScroll) { cancelScroll(); cancelScroll = null; }
+    var max = sc.scrollHeight - sc.clientHeight;
+    target = Math.max(0, Math.min(max, target));
+    var from = sc.scrollTop, dist = target - from;
+    if (reduce || Math.abs(dist) < 2) { sc.scrollTop = target; done(); return; }
+    var dur = Math.max(420, Math.min(900, 380 + Math.abs(dist) * 0.35));
+    var t0 = performance.now(), aborted = false;
+    function abort() { aborted = true; }
+    cancelScroll = function () { window.removeEventListener('wheel', abort); window.removeEventListener('touchstart', abort); window.removeEventListener('keydown', abort); };
+    window.addEventListener('wheel', abort, { passive: true, once: true });
+    window.addEventListener('touchstart', abort, { passive: true, once: true });
+    window.addEventListener('keydown', abort, { once: true });
+    (function step(now) {
+      if (aborted) { scrollRaf = 0; cancelScroll && cancelScroll(); cancelScroll = null; return; }
+      var t = Math.min(1, (now - t0) / dur);
+      sc.scrollTop = from + dist * easeInOut(t);
+      if (t < 1) { scrollRaf = requestAnimationFrame(step); }
+      else { scrollRaf = 0; cancelScroll && cancelScroll(); cancelScroll = null; done(); }
+    })(t0);
+  }
+  var pulsing = null;
+  function pulse(card) {
+    if (pulsing) { try { pulsing.cancel(); } catch (e) {} pulsing = null; }
+    if (!card.animate) return;
+    var col = 'color-mix(in srgb, var(--accent-color, #6ec6ff) 85%, transparent)';
+    var base = '5px 5px 0 var(--ed-line)';
+    var anim = card.animate([
+      { boxShadow: base + ', 0 0 0 0 ' + col, offset: 0 },
+      { boxShadow: base + ', 0 0 0 9px ' + col, offset: .4 },
+      { boxShadow: base + ', 0 0 0 0 transparent', offset: 1 }
+    ], { duration: 620, iterations: 3, easing: 'cubic-bezier(.22,1,.36,1)' });
+    pulsing = anim;
+    anim.onfinish = anim.oncancel = function () { if (pulsing === anim) pulsing = null; };
+  }
+  function goTo(i) {
+    var it = items[i]; if (!it) return;
+    var card = it.card;
+    if (!card || !card.isConnected) return;
+    var sc = getScroller(card);
+    var isDoc = (sc === document.scrollingElement || sc === document.documentElement);
+    var top = parseFloat(getComputedStyle(card).scrollMarginTop) || 92;
+    var cr = card.getBoundingClientRect();
+    var vTop = isDoc ? 0 : sc.getBoundingClientRect().top;
+    var vBot = isDoc ? window.innerHeight : sc.getBoundingClientRect().bottom;
+    var visible = cr.top >= vTop + top - 4 && cr.bottom <= vBot - 16;
+    if (visible) { pulse(card); return; }
+    smoothScrollTo(sc, sc.scrollTop + (cr.top - vTop) - top, function () { pulse(card); });
+  }
+
+  /* ---- Branş listesi: bir kez kurulur, yeniden çizimlerde DOM'u sıfırlamaz ---- */
+  function currentCards() { return [].slice.call(list.querySelectorAll('.exam-detail-subject-card')); }
+  function sigOf(cards) {
+    return cards.map(function (c) {
+      var n = c.querySelector('.exam-detail-subject-name'), a = c.querySelector('.exam-detail-subject-accent');
+      return (n ? n.textContent : '') + '|' + ((a && a.style.background) || '');
+    }).join('~');
+  }
+  var navSig = null;
+  function build(cards) {
+    navList.textContent = '';
+    items = cards.map(function (card, i) {
+      var nameEl = card.querySelector('.exam-detail-subject-name');
+      var btn = document.createElement('button'); btn.type = 'button'; btn.className = 'ed-nav-item';
+      var name = document.createElement('span'); name.className = 'ed-nav-name'; name.textContent = nameEl ? nameEl.textContent : '';
+      var net = document.createElement('span'); net.className = 'ed-nav-net';
+      var netNum = document.createTextNode(''); var small = document.createElement('small'); small.textContent = 'net';
+      net.appendChild(netNum); net.appendChild(small);
+      var bar = document.createElement('span'); bar.className = 'ed-nav-bar'; bar.setAttribute('aria-hidden', 'true');
+      var c = document.createElement('i'); c.className = 'is-c'; var w = document.createElement('i'); w.className = 'is-w';
+      var b = document.createElement('i'); b.className = 'is-b'; bar.appendChild(c); bar.appendChild(w); bar.appendChild(b);
+      btn.appendChild(name); btn.appendChild(net); btn.appendChild(bar);
+      btn.addEventListener('click', function () { goTo(i); });
+      navList.appendChild(btn);
+      return { card: card, net: net, netNum: netNum, c: c, w: w, b: b, last: '' };
+    });
+    navSig = sigOf(cards);
+  }
+  function update() {
+    queued = false;
+    var cards = currentCards();
+    var sig = sigOf(cards);
+    if (sig !== navSig || items.length !== cards.length) build(cards);
+    else items.forEach(function (it, i) { it.card = cards[i]; }); // kartlar yeniden çizildiyse sadece referansı tazele
+    var tc = 0, tw = 0, tb = 0;
+    items.forEach(function (it) {
+      var c = it.card.querySelectorAll('.exam-detail-bubble.is-correct').length;
+      var w = it.card.querySelectorAll('.exam-detail-bubble.is-wrong').length;
+      var all = it.card.querySelectorAll('.exam-detail-bubble').length;
+      var b = all - c - w;
+      tc += c; tw += w; tb += b;
+      var key = c + '/' + w + '/' + b;
+      if (key !== it.last) { it.last = key; it.c.style.flexGrow = c; it.w.style.flexGrow = w; it.b.style.flexGrow = b; }
+      var n = fmtNet(it.card);
+      if (it.netNum.nodeValue !== n) it.netNum.nodeValue = n;
+    });
+    setSeg(segC, tc); setSeg(segW, tw); setSeg(segB, tb);
+    var lbl = 'Doğru ' + tc + ', yanlış ' + tw + ', boş ' + tb;
+    if (dist.getAttribute('aria-label') !== lbl) dist.setAttribute('aria-label', lbl);
+  }
+  function schedule() { if (queued) return; queued = true; requestAnimationFrame(update); }
+  new MutationObserver(schedule).observe(list, { childList: true, subtree: true, attributes: true, attributeFilter: ['class'], characterData: true });
+  schedule();
 })();
 </script>
 </body>
