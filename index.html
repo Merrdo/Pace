@@ -78597,6 +78597,38 @@ html[data-pg="on"] #page-1 .pg-tm{
   .pg-tm,.pg-tm *{animation:none !important;transition-duration:.01s !important}
 }
 </style>
+<style id="relaxEmptyDesktopCss">
+/* ===== ANA SAYFA (MASAÜSTÜ): görev yokken "Rahatla" =====
+   Görev satırı gibi (ay + ayraç + yazı) değil: ekranın en sağından sola doğru uzanan, yumuşak köşeli koyu bir alan
+   (kronometre adasıyla aynı renkler: --theme-text zemin, --theme-bg yazı) ve içinde büyük, düz Baloo 2 yazısı.
+   Tema değişince renkler otomatik döner (Saf Siyah'ta zemin beyaz, yazı siyah olur). Görev gelince .is-empty kalkar ve
+   her şey eskisi gibi döner. Mobil bu bloğa girmez. Sağ taşma payı (--rx-bleed) JS ile ölçülür (aşağıdaki upd). */
+@media (min-width:768px) and (min-height:600px){
+  html[data-pg="on"] #page-1 .home-relax-widget.is-empty{overflow:visible;justify-content:center}
+  html[data-pg="on"] #page-1 .home-tile-relax.has-divider::after{display:none !important}
+  html[data-pg="on"] #page-1 .home-relax-widget.is-empty .home-relax-widget-lead,
+  html[data-pg="on"] #page-1 .home-relax-widget.is-empty .home-relax-widget-time{display:none !important}
+  html[data-pg="on"] #page-1 .home-relax-widget.is-empty .home-relax-task-row[data-row-index="0"]{
+    flex:0 0 auto;align-self:stretch;box-sizing:border-box;height:5.2rem;min-height:0;
+    width:calc(100% + var(--rx-bleed,22px));max-width:none;margin:0;padding:0 2.2rem 0 2.6rem;
+    display:flex;align-items:center;justify-content:flex-start;
+    background:var(--theme-text,#121212);color:var(--theme-bg,#f6f4ef);
+    border-radius:2.6rem 0 0 2.6rem;
+    box-shadow:0 14px 30px -14px color-mix(in srgb,var(--theme-text,#121212) 55%,transparent);
+    animation:rxEmptyIn .8s cubic-bezier(.22,1,.36,1) both}
+  html[data-pg="on"] #page-1 .home-relax-widget.is-empty .home-relax-task-row[data-row-index="0"] .home-relax-widget-bottom{
+    flex:0 1 auto;align-self:center;border:0 !important;padding:0 !important;margin:0;min-height:0;gap:0;position:static}
+  html[data-pg="on"] #page-1 .home-relax-widget.is-empty .home-relax-task-row[data-row-index="0"] .home-relax-widget-title{
+    display:block;overflow:visible;-webkit-line-clamp:unset;margin:0;padding:0;
+    font-family:"Baloo 2","Space Grotesk",sans-serif;font-style:normal;font-weight:700;
+    font-size:3.2rem;line-height:1.05;letter-spacing:-.015em;
+    color:var(--theme-bg,#f6f4ef);-webkit-text-fill-color:currentColor;-webkit-text-stroke:0;
+    background:none;-webkit-background-clip:border-box;background-clip:border-box;animation:none}
+  html[data-pg="on"] #page-1 .home-relax-widget.is-empty .home-relax-task-row[data-row-index="0"]:active{filter:brightness(1.12)}
+}
+@keyframes rxEmptyIn{from{opacity:0;transform:translateX(60%)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){html[data-pg="on"] #page-1 .home-relax-widget.is-empty .home-relax-task-row{animation:none !important}}
+</style>
 <style id="pg-tm-desktop-css">
 /* ===== ANA SAYFA (MASAÜSTÜ / TABLET): KRONOMETRE ADASI + SAAT =====
    Mobildeki mini kronometre/zamanlayıcı (#pgTm: halka + süre + etiket + ⇄) masaüstünde ekranın TAM üst ortasında,
@@ -80113,23 +80145,34 @@ html[data-pg="on"] #page-1 .pg-rq.is-on{display:block}
       }else{cd.style.top='';cd.style.width='';}
     }
     var p3=page.getBoundingClientRect();
-    // Soru hatırlatıcı: alt kenarı planlayıcının en alttaki görevinin alt kenarıyla hizalanır; geri sayım satırına
-    // çarpacak kadar yüksekse (kısa ekran / sonuç kartı) aradaki boşluğa sığacak kadar küçültülür.
+    // Boş durumdaki "Rahatla" alanı ekranın sağ kenarına kadar uzasın: widget'ın sağı ile sayfa sağı arasındaki fark
+    if(w){if(mq.matches&&w.offsetWidth>0)w.style.setProperty('--rx-bleed',Math.max(0,Math.round(p3.right-w.getBoundingClientRect().right))+'px');else w.style.removeProperty('--rx-bleed');}
+    // Soru hatırlatıcı: sol altta, takvim/geri sayım sütununun altında DURUR. Boyutu ve sol kenarı asla değişmez
+    // (eskiden `zoom` ile küçültülüp sola kayıyor ve geri sayım satırının üstüne biniyordu). Alt kenar, planlayıcının
+    // son görevinin alt kenarına yalnızca sayfa dibine yakınsa (24–72px) hizalanır; aksi halde sabit 40px kalır.
+    // Geri sayım satırıyla arada yer yetmezse (kısa ekran / sonuç kartı) kart solunda-altında sabit kalıp transform ile
+    // hafifçe küçülür (orijin: sol-alt), böylece konumu kaymaz.
     var rq=document.getElementById('pgRq');
     if(rq){
-      if(mq.matches&&w&&w.offsetWidth>0){
-        var marks=w.querySelectorAll('.relax-task-marker'),tgt=0;
-        for(var i=0;i<marks.length;i++){var mr=marks[i].getBoundingClientRect();if(mr.height>0&&mr.bottom>tgt)tgt=mr.bottom;}
-        if(!tgt)tgt=w.getBoundingClientRect().bottom;
-        rq.style.bottom=Math.round(p3.bottom-tgt)+'px';
-        rq.style.zoom='';
+      if(mq.matches){
+        var bot=40;
+        if(w&&w.offsetWidth>0){
+          var marks=w.querySelectorAll('.relax-task-marker'),tgt=0;
+          for(var i=0;i<marks.length;i++){var mr=marks[i].getBoundingClientRect();if(mr.height>0&&mr.bottom>tgt)tgt=mr.bottom;}
+          var gap=tgt?Math.round(p3.bottom-tgt):0;
+          if(gap>=24&&gap<=72)bot=gap;
+        }
+        rq.style.bottom=bot+'px';
+        rq.style.zoom='';rq.style.transform='';rq.style.transformOrigin='';
         var hh=rq.offsetHeight,cdb=(cd&&cd.offsetHeight>0)?cd.getBoundingClientRect().bottom:0;
         if(hh>0&&cdb){
-          var avail=tgt-(cdb+20),z=Math.max(.55,Math.min(1,avail/hh));
-          if(z<1)rq.style.zoom=String(Math.round(z*100)/100);
+          var room=(p3.bottom-bot)-(cdb+24);
+          if(room<hh*.72&&bot>16){bot=16;rq.style.bottom=bot+'px';room=(p3.bottom-bot)-(cdb+24);}
+          var z=Math.max(.6,Math.min(1,room/hh));
+          if(z<1){rq.style.transformOrigin='left bottom';rq.style.transform='scale('+(Math.round(z*100)/100)+')';}
         }
         if(window.__pgRqRo&&!rq.__obs){rq.__obs=1;window.__pgRqRo.observe(rq);}
-      }else{rq.style.bottom='';rq.style.zoom='';}
+      }else{rq.style.bottom='';rq.style.zoom='';rq.style.transform='';rq.style.transformOrigin='';}
     }
     // Kronometre adası: cihaz ekranının (yan panel dahil) tam ortasında dursun
     var tm=document.getElementById('pgTm');
