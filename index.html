@@ -76153,7 +76153,9 @@ html[data-pace-theme="plum"] .ztp-bar i{background:linear-gradient(90deg,#8a3a6b
     touch-action: none; user-select: none; -webkit-user-select: none;
     animation: nToastIn .55s cubic-bezier(.22,1,.36,1);
   }
-  .n-toast > span { min-width: 0; flex: 1 1 auto; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.2; }
+  .n-toast { border-radius: 1.5rem; }
+  /* Sığmazsa en fazla iki satıra böl (taşarsa sonu "…" olur) */
+  .n-toast > span { min-width: 0; flex: 1 1 auto; white-space: normal; overflow: hidden; line-height: 1.25; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow-wrap: anywhere; }
   .n-toast button { flex: 0 0 auto; white-space: nowrap; min-height: 2.25rem; padding: 0 1.05rem; font-size: .88rem; -webkit-tap-highlight-color: transparent; transition: transform .15s ease; }
   .n-toast button:active { transform: scale(.93); }
   .n-toast.is-out { pointer-events: none; animation: nToastOut .32s cubic-bezier(.4,0,1,1) forwards; }
@@ -79286,7 +79288,7 @@ html[data-pg="on"] #page-1 .pg-rq.is-on{display:block}
     var res = remove(keys, scope, manual);
     if (res.failed) return res;
     if (!res.removedMs) {
-      if (window.paceNToast) window.paceNToast(live ? 'Bugünkü süre kronometrede tutuluyor, gün bitince (00:00) kaydedilir. Kaydedildikten sonra silebilirsin.' : 'Silinecek süre yok', null, 4600);
+      if (window.paceNToast) window.paceNToast(live ? 'Bugünkü süre kronometrede tutuluyor; gün bitince (00:00) kaydedilir, sonra silebilirsin.' : 'Silinecek süre yok', null, 4600);
       return res;
     }
     var msg = label + ' silindi · ' + fmt(res.removedMs) + (live ? ' · kronometrede tutulan süre silinmedi' : '');
