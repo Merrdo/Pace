@@ -83028,7 +83028,16 @@ body.is-sport-mode .navbar:not(.sport-navbar){display:none !important}
     const toHex = (c) => { const m = String(c).match(/[\d.]+/g) || [0, 0, 0]; return '#' + [0, 1, 2].map((i) => Math.round(+m[i]).toString(16).padStart(2, '0')).join(''); };
     const veilHex = toHex(getComputedStyle(v).backgroundColor);
     let tinted = false;
-    const setTint = (on) => { if (!meta || on === tinted) return; tinted = on; meta.setAttribute('content', on ? veilHex : prevColor); };
+    let intended = prevColor;   // perde yokken meta'nın olması gereken (uygulamanın yazdığı) son renk
+    const setTint = (on) => { if (!meta || on === tinted) return; tinted = on; meta.setAttribute('content', on ? veilHex : intended); };
+    // Sayfa değişirken (goToPage) uygulamanın kendi tema mantığı meta'ya krem rengi geri yazıyordu ve perdenin
+    // rengini eziyordu (spora girişte şerit krem kalıyordu): perde açıkken her yazımı yakalayıp perde rengine geri çeviriyoruz.
+    const mo = meta ? new MutationObserver(() => {
+      const c = meta.getAttribute('content');
+      if (!tinted) { intended = c; return; }
+      if (c !== veilHex) { intended = c; meta.setAttribute('content', veilHex); }
+    }) : null;
+    if (mo) mo.observe(meta, { attributes: true, attributeFilter: ['content'] });
     // Perdenin üst şeridi tam kapladığı anı animasyon ilerlemesinden (eğri dahil) okur
     // Tarayıcı theme-color değişimini kendi içinde yumuşatıp geciktirdiği için, perde alttan açılırken
     // (spora giriş) şerit geç kalıyordu: lead ms kadar İLERİYE bakıp meta'yı o kadar erken değiştiriyoruz.
@@ -83076,7 +83085,9 @@ body.is-sport-mode .navbar:not(.sport-navbar){display:none !important}
         kind === 'in' ? 320 : 0, bezier(.65, 0, .35, 1), 760);
       await shrink.finished;
     } finally {
+      if (mo) mo.takeRecords();
       setTint(false);
+      if (mo) mo.disconnect();
       v.remove();
     }
   };
