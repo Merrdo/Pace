@@ -1462,12 +1462,12 @@ body.is-qhavuz-test-open .pf-side{opacity:.35;pointer-events:none}}
 @keyframes paRing{from{transform:scale(.6);opacity:0}to{transform:scale(1);opacity:1}}
 #paAuth{position:fixed;inset:0;z-index:2147483005;display:flex;padding:16px;overflow-y:auto;overscroll-behavior:contain;background:var(--theme-bg,#0b0b0b);color:var(--theme-text,#121212);animation:pfFade .5s ease both}
 #paAuth.out{animation:pfFadeOut .38s ease both;pointer-events:none}
-/* Üst güvenli alan (saat/Dynamic Island şeridi) yalnızca <meta name="theme-color"> (= --theme-bg) ile DÜZ boyanır;
-   arkadaki renk lekeleri (orb) o şeritte görünmediği için eskiden sayfayla arasında sert bir sınır oluşuyordu.
-   Üstte sabit duran şerit, güvenli alanı tam tema rengiyle doldurup altına doğru sayfanın renklerine eritir:
-   şerit ile sayfa tek parça görünür, saat yazısı da tema rengine göre kendiliğinden doğru kontrastta kalır. */
-#paAuth::after{content:"";position:fixed;left:0;right:0;top:0;z-index:5;pointer-events:none;height:calc(env(safe-area-inset-top,0px) + 34px);
-  background:linear-gradient(to bottom,var(--theme-bg,#F6F4EF) 0,var(--theme-bg,#F6F4EF) env(safe-area-inset-top,0px),color-mix(in srgb,var(--theme-bg,#F6F4EF) 55%,transparent) calc(env(safe-area-inset-top,0px) + 10px),transparent 100%)}
+/* Üst güvenli alan: sayfanın üst tonu (--pa-top = tema zemini + vurgu renginin hafif karışımı) hem sayfanın EN ÜSTÜNE
+   düz olarak yayılır hem de <meta name="theme-color"> olarak yazılır (openAuth > authTint). Böylece durum çubuğu ile sayfa
+   aynı renkte başlar; ton aşağı doğru uzun ve yumuşak bir geçişle arka plandaki renk lekelerine karışır (sert sınır yok). */
+#paAuth{--pa-top:color-mix(in srgb,var(--accent-color,#6ec1ff) 20%,var(--theme-bg,#F6F4EF))}
+.pa-bg::after{content:"";position:absolute;left:0;right:0;top:0;height:calc(env(safe-area-inset-top,0px) + 300px);pointer-events:none;
+  background:linear-gradient(to bottom,var(--pa-top) 0,var(--pa-top) calc(env(safe-area-inset-top,0px) + 6px),color-mix(in srgb,var(--pa-top) 72%,transparent) calc(env(safe-area-inset-top,0px) + 70px),color-mix(in srgb,var(--pa-top) 32%,transparent) calc(env(safe-area-inset-top,0px) + 170px),transparent 100%)}
 .pa-bg{position:fixed;inset:0;overflow:hidden;pointer-events:none}
 .pa-bg i{position:absolute;border-radius:50%;filter:blur(80px);opacity:.34;will-change:transform}
 .pa-bg i:nth-child(1){width:46vmax;height:46vmax;left:-14vmax;top:-18vmax;background:var(--accent-color,#6ec1ff);animation:paOrb1 22s ease-in-out infinite}
@@ -1539,6 +1539,23 @@ img.pa-mark{display:block;object-fit:cover;border-radius:23%;background:none;box
     lock: '<rect x="5" y="11" width="14" height="9.5" rx="2.6"/><path d="M8 11V8a4 4 0 018 0v3"/>',
     lock2: '<rect x="5" y="11" width="14" height="9.5" rx="2.6"/><path d="M8 11V8a4 4 0 018 0v3"/><path d="M12 15v2"/>'
   };
+  // Durum çubuğu (theme-color) rengini giriş sayfasının üst tonuna eşler; sayfa kapanınca eski değere döner.
+  function authTint(ov) {
+    var meta = document.querySelector('meta[name="theme-color"]'); if (!meta) return;
+    var prev = meta.getAttribute('content'), hex = null;
+    try {
+      var pr = document.createElement('i'); pr.style.cssText = 'position:absolute;width:0;height:0;visibility:hidden;background:var(--pa-top)';
+      ov.appendChild(pr); var col = getComputedStyle(pr).backgroundColor; pr.remove();
+      var c = document.createElement('canvas'); c.width = c.height = 1; var x = c.getContext('2d', { willReadFrequently: true });
+      x.fillStyle = '#000'; x.fillStyle = col; x.fillRect(0, 0, 1, 1); var d = x.getImageData(0, 0, 1, 1).data;
+      hex = '#' + [d[0], d[1], d[2]].map(function (n) { return ('0' + n.toString(16)).slice(-2); }).join('');
+    } catch (e) {}
+    if (!hex) return;
+    meta.setAttribute('content', hex);
+    var mo = new MutationObserver(function () { if (!ov.isConnected || ov.classList.contains('out')) done(); });
+    function done() { mo.disconnect(); if (meta.getAttribute('content') === hex) meta.setAttribute('content', prev); }
+    mo.observe(ov, { attributes: true, attributeFilter: ['class'] }); mo.observe(document.body, { childList: true });
+  }
   function openAuth(mode) {
     if (document.getElementById('paAuth')) return;
     var ov = document.createElement('div'); ov.id = 'paAuth'; ov.setAttribute('data-m', 'in');
@@ -1563,7 +1580,7 @@ img.pa-mark{display:block;object-fit:cover;border-radius:23%;background:none;box
       '</form>' +
       '<p class="pa-foot" id="paFoot"></p>' +
       '<div class="pa-st" id="paSt"></div></div>';
-    document.body.appendChild(ov);
+    document.body.appendChild(ov); authTint(ov);
     var lg = ov.querySelector('img.pa-mark'); if (lg) lg.addEventListener('error', function () { var f = document.createElement('span'); f.className = 'pa-mark f'; f.textContent = 'P'; lg.replaceWith(f); });
     A = { ov: ov, card: ov.querySelector('.pa-card'), mode: null, busy: false, done: false };
     setTimeout(function () { A && A.card.classList.remove('pa-in'); }, 1200);
@@ -1839,7 +1856,7 @@ img.pa-mark{display:block;object-fit:cover;border-radius:23%;background:none;box
         '<button type="submit" class="pa-go" id="rcGo"><span class="l">Şifreyi kaydet</span><span class="s"></span></button>' +
         '<button type="button" class="pa-cancel" data-rc="cancel">Vazgeç</button>' +
       '</form><div class="pa-st" id="rcSt"></div></div>';
-    document.body.appendChild(ov);
+    document.body.appendChild(ov); authTint(ov);
     var lg = ov.querySelector('img.pa-mark'); if (lg) lg.addEventListener('error', function () { var f = document.createElement('span'); f.className = 'pa-mark f'; f.textContent = 'P'; lg.replaceWith(f); });
     R = { ov: ov, card: ov.querySelector('.pa-card'), busy: false, done: false };
     setTimeout(function () { R && R.card.classList.remove('pa-in'); }, 1200);
