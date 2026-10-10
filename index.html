@@ -43800,12 +43800,6 @@ body.is-anthracite .exam-q-info-count { color: #f2f2f4; }
         <h2 class="kyn-q kyn-rise" style="--d:1">Hangi derse ait?</h2>
         <p class="kyn-hint kyn-rise" style="--d:2">Dersler, uygulamadaki ders listenden gelir.</p>
         <div class="kyn-rise" style="--d:3"><div class="kyn-chips" id="kynSubjects"></div></div>
-        <div class="kyn-acc" id="kynCustomAcc"><div>
-          <div class="kyn-custom">
-            <input type="text" class="kyn-input kyn-input--sm" id="kynCustomName" placeholder="Ders adını yaz" maxlength="30" autocomplete="off" enterkeyhint="done" aria-label="Ders adı">
-            <button type="button" class="kyn-btn kyn-btn--ink kyn-btn--soft" id="kynCustomOk" style="background:var(--k-ink);color:var(--k-bg)">Ekle</button>
-          </div>
-        </div></div>
       </div></div>
 
       <!-- 4 · Kapak -->
@@ -83080,7 +83074,7 @@ body.is-books-open .navbar .wrapper { opacity: 0; transform: translateY(28px); p
 .kyn-span { color: var(--k-soft); font-size: .88rem; }
 .kyn-rfoot .kyn-span.has-range { color: var(--k-blue); font-weight: 600; }
 .kyn-clear { background: none; border: 0; color: var(--k-soft); font-size: .8rem; padding: 6px 4px; text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--k-line); }
-.kyn { --k-blue: #2563eb; --k-blue-soft: rgba(37,99,235,.13); --k-blue-soft2: rgba(37,99,235,.22); }
+.kyn { --k-blue: var(--accent-color, #6ec6ff); --k-blue-soft: color-mix(in srgb, var(--k-blue) 20%, transparent); --k-blue-soft2: color-mix(in srgb, var(--k-blue) 34%, transparent); }
 
 /* Alt çubuk */
 .kyn-foot { display: flex; gap: 12px; width: 100%; max-width: 520px; margin: 0 auto; padding: 12px 24px calc(18px + env(safe-area-inset-bottom)); box-sizing: border-box; }
@@ -83156,6 +83150,34 @@ body.is-books-open .navbar .wrapper { opacity: 0; transform: translateY(28px); p
 @media (prefers-reduced-motion: reduce) {
   .kyn *, .kyn-ov, .kyn-ov * , .kyn-viewer, .kyn-viewer * { animation-duration: .01ms !important; transition-duration: .01ms !important; transition-delay: 0s !important; }
 }
+
+/* ===== Kaynaklarım · yenilenen tasarım ===== */
+.kyn, .kyn *, .kyn input, .kyn button, .kyn textarea,
+.kyn-ov, .kyn-ov * { font-family: "Baloo 2", system-ui, -apple-system, sans-serif !important; }
+.kyn-chip i { display: none !important; }
+.kyn-chip { gap: 0; }
+
+/* Kelime kelime yazılan metin */
+.kyn-rise.kyn-tw { opacity: 1 !important; transform: none !important; transition: none !important; }
+.kyn-w { display: inline-block; opacity: 0; transform: translateY(8px); filter: blur(5px); animation: kynWord .7s var(--k-ease) forwards; will-change: opacity, transform, filter; }
+@keyframes kynWord { 0% { opacity: 0; transform: translateY(8px); filter: blur(5px); } 100% { opacity: 1; transform: none; filter: blur(0); } }
+.kyn-step:not(.is-active) .kyn-w { animation: none; opacity: 0; }
+.kyn-step.is-active .kyn-rise:not(.kyn-tw) { transition-delay: calc(var(--tw-end, 600ms) * .5 + (var(--d, 0) - 3) * 90ms) !important; }
+
+/* Tarih seçici: seçili temanın rengi, yumuşak dikdörtgenler */
+.kyn { --k-blue-on: var(--on-accent, #16171b); }
+.kyn-rcard { border-radius: 18px; }
+.kyn-rcard.is-on { box-shadow: 0 8px 22px -14px var(--k-blue); }
+.kyn-rcal { border-radius: 26px; box-shadow: 0 10px 30px -18px var(--k-blue); }
+.kyn-cal-nav { border-radius: 14px; }
+.kyn-d .band { top: 3px; bottom: 3px; }
+.kyn-d.in.c1 .band, .kyn-d.in.m1 .band, .kyn-d.pv.c1 .band, .kyn-d.pv.m1 .band, .kyn-d.is-s .band { border-top-left-radius: 16px; border-bottom-left-radius: 16px; }
+.kyn-d.in.c7 .band, .kyn-d.in.mL .band, .kyn-d.pv.c7 .band, .kyn-d.pv.mL .band, .kyn-d.is-e .band { border-top-right-radius: 16px; border-bottom-right-radius: 16px; }
+.kyn-d .num { width: 42px; height: 40px; border-radius: 14px; }
+.kyn-d.is-s .num, .kyn-d.is-e .num { background: var(--k-blue); color: var(--k-blue-on); box-shadow: 0 8px 18px -8px var(--k-blue); }
+.kyn-d.is-s .num::after, .kyn-d.is-e .num::after { background: var(--k-blue-on); }
+.kyn-d .num.pop::before { border-radius: 14px; }
+.kyn-d.in:not(.is-s):not(.is-e) .num { color: inherit; font-weight: 600; }
 </style>
 
 <script id="kynScript">
@@ -83410,6 +83432,46 @@ body.is-books-open .navbar .wrapper { opacity: 0; transform: translateY(28px); p
     $('kynAddStepLabel').textContent = (W.step + 1) + ' / ' + STEPS;
   };
 
+  /* Kelime kelime, yavaşça yazılan metin animasyonu */
+  const TW_BASE = 160, TW_GAP = 150;
+  const typeIn = (root, startAt) => {
+    let i = 0;
+    const calm = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const walk = (node) => {
+      Array.from(node.childNodes).forEach((c) => {
+        if (c.nodeType === 3) {
+          const parts = c.nodeValue.split(/(\s+)/);
+          const frag = document.createDocumentFragment();
+          parts.forEach((w) => {
+            if (!w) return;
+            if (/^\s+$/.test(w)) { frag.appendChild(document.createTextNode(w)); return; }
+            const sp = document.createElement('span');
+            sp.className = 'kyn-w'; sp.textContent = w;
+            if (!calm) sp.style.animationDelay = (startAt + i * TW_GAP) + 'ms';
+            else sp.style.animation = 'none';
+            i++; frag.appendChild(sp);
+          });
+          c.replaceWith(frag);
+        } else if (c.nodeType === 1) walk(c);
+      });
+    };
+    walk(root);
+    return i;
+  };
+  const typeStep = (el) => {
+    let at = TW_BASE;
+    el.querySelectorAll('.kyn-kicker, .kyn-q, .kyn-hint').forEach((t) => {
+      if (t.id === 'kynPagesHint') t.dataset.src = t.textContent;
+      else if (t.dataset.src === undefined) t.dataset.src = t.innerHTML;
+      else t.innerHTML = t.dataset.src;
+      if (t.id === 'kynPagesHint') t.textContent = t.dataset.src;
+      t.classList.add('kyn-tw');
+      const cnt = typeIn(t, at);
+      at += cnt * TW_GAP + 120;
+    });
+    el.style.setProperty('--tw-end', at + 'ms');
+  };
+
   const goStep = (n) => {
     W.step = n;
     steps.forEach((el, i) => { el.classList.toggle('is-active', i === n); el.classList.toggle('is-before', i < n); if (i === n) el.scrollTop = 0; });
@@ -83419,6 +83481,7 @@ body.is-books-open .navbar .wrapper { opacity: 0; transform: translateY(28px); p
     if (n === 4) renderKeys();
     if (n === 5) renderDates();
     if (n === 1) { $('kynPagesHint').textContent = W.name.trim() ? '“' + W.name.trim() + '” kitabının toplam sayfa sayısı.' : 'Kitabın toplam sayfa sayısı.'; }
+    typeStep(steps[n]);
     updateFooter();
     if (n === 0) setTimeout(() => { if (W && W.step === 0) $('kynName').focus({ preventScroll: true }); }, 520);
   };
@@ -83426,8 +83489,6 @@ body.is-books-open .navbar .wrapper { opacity: 0; transform: translateY(28px); p
   const openAdd = () => {
     W = freshWizard();
     $('kynName').value = '';
-    $('kynCustomName').value = '';
-    $('kynCustomAcc').classList.remove('is-open');
     $('kynDone').classList.remove('is-on');
     renderNum(false);
     steps.forEach((el, i) => { el.classList.remove('is-active'); el.classList.toggle('is-before', false); });
@@ -83475,32 +83536,16 @@ body.is-books-open .navbar .wrapper { opacity: 0; transform: translateY(28px); p
     const l = subjectList(W.custom);
     $('kynSubjects').innerHTML = l.map((s) => {
       const sel = W.subject && W.subject.name.toLowerCase() === s.name.toLowerCase();
-      return '<button type="button" class="kyn-chip' + (sel ? ' is-sel' : '') + '" data-n="' + esc(s.name) + '" style="--c:' + s.color + ';--ci:' + inkFor(s.color) + '"><i></i>' + esc(s.name) + '</button>';
-    }).join('') + '<button type="button" class="kyn-chip kyn-chip--add" data-add="1">+ Başka ders</button>';
+      return '<button type="button" class="kyn-chip' + (sel ? ' is-sel' : '') + '" data-n="' + esc(s.name) + '" style="--c:' + s.color + ';--ci:' + inkFor(s.color) + '">' + esc(s.name) + '</button>';
+    }).join('');
   };
   $('kynSubjects').addEventListener('click', (e) => {
     const b = e.target.closest('.kyn-chip');
     if (!b) return;
-    if (b.hasAttribute('data-add')) {
-      const acc = $('kynCustomAcc'); acc.classList.toggle('is-open');
-      if (acc.classList.contains('is-open')) setTimeout(() => $('kynCustomName').focus({ preventScroll: true }), 350);
-      return;
-    }
     const s = subjectList(W.custom).find((x) => x.name === b.getAttribute('data-n'));
     W.subject = s || null;
     renderSubjects(); updateFooter();
   });
-  const addCustom = () => {
-    const n = $('kynCustomName').value.trim();
-    if (!n) return;
-    const exist = subjectList(W.custom).find((x) => x.name.toLowerCase() === n.toLowerCase());
-    if (exist) W.subject = exist;
-    else { const s = { name: n, color: palette()[hash(n) % palette().length] }; W.custom.push(s); W.subject = { name: s.name, color: safeColor(s.color) }; }
-    $('kynCustomName').value = ''; $('kynCustomAcc').classList.remove('is-open');
-    renderSubjects(); updateFooter();
-  };
-  $('kynCustomOk').addEventListener('click', addCustom);
-  $('kynCustomName').addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); addCustom(); } });
 
   /* 4 · Kapak */
   const renderCover = (pop) => {
@@ -83538,12 +83583,15 @@ body.is-books-open .navbar .wrapper { opacity: 0; transform: translateY(28px); p
   /* 6 · Tarihler: tatil rezervasyonu gibi aralık seçimli takvim.
      Başlangıçtan bitişe doğru mavi bir şerit animasyonla boyanır. */
   const applyBlue = () => {
-    let dark = false;
-    try { const t = getComputedStyle(document.documentElement).getPropertyValue('--theme-text').trim(); if (/^#/.test(t)) dark = lum(safeColor(t)) > 0.5; } catch (e) { /* yok say */ }
+    /* Seçili temanın vurgu rengi (Fildişi'nde mevcut mavi) kullanılır. */
+    const cs = getComputedStyle(document.documentElement);
+    const acc = (cs.getPropertyValue('--accent-color') || '').trim() || '#6ec6ff';
+    const on = (cs.getPropertyValue('--on-accent') || '').trim() || '#16171b';
     const host = $('page-book-add');
-    host.style.setProperty('--k-blue', dark ? '#5b9bff' : '#2563eb');
-    host.style.setProperty('--k-blue-soft', dark ? 'rgba(91,155,255,.20)' : 'rgba(37,99,235,.13)');
-    host.style.setProperty('--k-blue-soft2', dark ? 'rgba(91,155,255,.34)' : 'rgba(37,99,235,.24)');
+    host.style.setProperty('--k-blue', acc);
+    host.style.setProperty('--k-blue-on', on);
+    host.style.setProperty('--k-blue-soft', 'color-mix(in srgb, ' + acc + ' 20%, transparent)');
+    host.style.setProperty('--k-blue-soft2', 'color-mix(in srgb, ' + acc + ' 34%, transparent)');
   };
   const setText = (el, t) => { if (el.textContent === t) return; el.classList.remove('swap'); void el.offsetWidth; el.textContent = t; el.classList.add('swap'); };
   const monthOf = (s) => { const d = parseIso(s); return new Date(d.getFullYear(), d.getMonth(), 1); };
