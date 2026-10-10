@@ -83021,11 +83021,33 @@ body.is-sport-mode .navbar:not(.sport-navbar){display:none !important}
     v.style.clipPath = 'circle(0px at ' + ox + 'px ' + oy + 'px)';
     v.innerHTML = '<div class="sp-veil-word">' + word.split('').map((c, i) => '<span style="--i:' + i + '">' + c + '</span>').join('') + '</div><i class="sp-veil-rule"></i><span class="sp-veil-sub">' + sub + '</span>';
     document.body.appendChild(v);
+    // Üst güvenli alan (çentik/Dynamic Island şeridi) yalnızca <meta name="theme-color"> ile boyanır:
+    // perde o şeridi kapladığı AN meta'yı perde rengine çeker, perde çekilirken aynı anda geri bırakır.
+    const meta = document.querySelector('meta[name="theme-color"]');
+    const prevColor = meta ? meta.getAttribute('content') : null;
+    const toHex = (c) => { const m = String(c).match(/[\d.]+/g) || [0, 0, 0]; return '#' + [0, 1, 2].map((i) => Math.round(+m[i]).toString(16).padStart(2, '0')).join(''); };
+    const veilHex = toHex(getComputedStyle(v).backgroundColor);
+    let tinted = false;
+    const setTint = (on) => { if (!meta || on === tinted) return; tinted = on; meta.setAttribute('content', on ? veilHex : prevColor); };
+    // Perdenin üst şeridi tam kapladığı anı animasyon ilerlemesinden (eğri dahil) okur
+    const watchStrip = (anim, geo) => {
+      let f = 0, alive = true;
+      const tick = () => {
+        if (!alive) return;
+        const t = anim.effect.getComputedTiming();
+        if (t.progress != null) { const g = geo(t.progress); setTint(g.r >= Math.hypot(Math.max(g.cx, innerWidth - g.cx), g.cy)); }
+        f = requestAnimationFrame(tick);
+      };
+      tick();
+      anim.finished.then(() => { alive = false; cancelAnimationFrame(f); }, () => { alive = false; cancelAnimationFrame(f); });
+    };
     try {
       const grow = v.animate(
         [{ clipPath: 'circle(0px at ' + ox + 'px ' + oy + 'px)' }, { clipPath: 'circle(' + R + 'px at ' + ox + 'px ' + oy + 'px)' }],
         { duration: 640, easing: 'cubic-bezier(.76,0,.24,1)', fill: 'forwards' });
+      watchStrip(grow, (p) => ({ cx: ox, cy: oy, r: R * p }));
       await grow.finished;
+      setTint(true);
       onCovered();
       v.classList.add('is-on');
       await wait(980);
@@ -83035,8 +83057,10 @@ body.is-sport-mode .navbar:not(.sport-navbar){display:none !important}
       const shrink = v.animate(
         [{ clipPath: 'circle(' + R + 'px at ' + ox + 'px ' + oy + 'px)' }, { clipPath: 'circle(0px at ' + tx + 'px ' + ty + 'px)' }],
         { duration: 760, easing: 'cubic-bezier(.65,0,.35,1)', fill: 'forwards' });
+      watchStrip(shrink, (p) => ({ cx: ox + (tx - ox) * p, cy: oy + (ty - oy) * p, r: R * (1 - p) }));
       await shrink.finished;
     } finally {
+      setTint(false);
       v.remove();
     }
   };
