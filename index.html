@@ -120,12 +120,6 @@
     -webkit-tap-highlight-color: transparent;
   }
 
-  /* Tam ekran: tarayıcı pencere yeniden boyutlanırken (klavye açılıp kapanırken) en altta
-     görünen siyah yüzey (html + ::backdrop) tema rengiyle boyanır; böylece siyah flaş görünmez. */
-  html:fullscreen, html:-webkit-full-screen { background: var(--fs-bg, #F6F4EF); }
-  html:fullscreen::backdrop { background: var(--fs-bg, #F6F4EF); }
-  html:-webkit-full-screen::backdrop { background: var(--fs-bg, #F6F4EF); }
-
   button, a, * {
     -webkit-tap-highlight-color: transparent;
   }
@@ -45611,24 +45605,7 @@ body.is-anthracite .exam-q-info-count { color: #f2f2f4; }
       }
     };
 
-    // Tema rengini (meta theme-color) tam ekran zemini olarak yaz.
-    const themeMeta = document.querySelector('meta[name="theme-color"]');
-    const syncFsBg = () => {
-      const c = themeMeta && themeMeta.getAttribute('content');
-      if (c) document.documentElement.style.setProperty('--fs-bg', c);
-    };
-    if (themeMeta) new MutationObserver(syncFsBg).observe(themeMeta, { attributes: true, attributeFilter: ['content'] });
-    syncFsBg();
-
-    // Klavye, tam ekran isteği DAHA BAŞLAMADAN sayfanın üstüne binecek şekilde ayarlanır
-    // (fullscreenchange'i beklemek, ilk açılışta pencerenin yeniden boyutlanmasına yol açıyordu).
-    const tgl = document.getElementById('settingsFullscreenToggle');
-    if (tgl) tgl.addEventListener('change', () => {
-      try { vk.overlaysContent = tgl.checked; } catch (e) {}
-    }, true);
-
     const onFsChange = () => {
-      syncFsBg();
       try { vk.overlaysContent = isFs(); } catch (e) {}
       if (!isFs()) {
         clearShift();
@@ -45648,59 +45625,6 @@ body.is-anthracite .exam-q-info-count { color: #f2f2f4; }
 
     // Klavye zaten açıkken başka bir alana geçilirse de yeniden hizala.
     document.addEventListener('focusin', () => setTimeout(reveal, 350));
-  })();
-</script>
-
-<script>
-  // ---- Klavye açılırken yanal panel ikonlarının oynamasını engelle ----
-  // Sebep: Panel top:0/bottom:0 ile pencere yüksekliğine bağlı ve ikonlar dikeyde
-  // ORTALI; klavye pencereyi küçültünce panel de küçülüyor ve ikonlar yukarı kayıyordu.
-  // Çözüm: Panel yüksekliği, klavye kapalıyken ölçülen değerde SABİTLENİR; klavye
-  // açıkken/yazarken güncellenmez.
-  (function () {
-    const st = document.createElement('style');
-    st.textContent = '@media (min-width:768px) and (min-height:600px){.sidebar-nav{bottom:auto;height:var(--sb-h,100%)}}';
-    document.head.appendChild(st);
-    const root = document.documentElement;
-    const editing = () => {
-      const a = document.activeElement;
-      return !!(a && (a.tagName === 'INPUT' || a.tagName === 'TEXTAREA' || a.isContentEditable));
-    };
-    let timer = null;
-    let lastH = 0, lastLand = window.innerWidth > window.innerHeight;
-    const lock = () => {
-      if (editing()) return;
-      const h = window.innerHeight, land = window.innerWidth > window.innerHeight;
-      // Klavye kapanırken pencere yüksekliği henüz eski (küçük) değerdeyken ölçüm yapılırsa
-      // ikonlar yukarı sıçrıyordu: yön değişmediyse 120px'ten büyük bir DARALMA klavye sayılır, yok sayılır.
-      if (lastH && land === lastLand && h < lastH - 120) return;
-      lastH = h; lastLand = land;
-      root.style.setProperty('--sb-h', h + 'px');
-    };
-    const lockSoon = () => { clearTimeout(timer); timer = setTimeout(lock, 450); };
-    lock();
-    window.addEventListener('resize', lockSoon);
-    window.addEventListener('orientationchange', lockSoon);
-    document.addEventListener('fullscreenchange', lockSoon);
-    document.addEventListener('webkitfullscreenchange', lockSoon);
-    document.addEventListener('focusout', lockSoon);
-
-    // Yedek: Tam ekranda klavyenin pencereyi küçültmeden içeriğin üstüne binmesi için
-    // viewport meta'sına interactive-widget=overlays-content eklenir (Chrome 108+).
-    const vpMeta = document.querySelector('meta[name="viewport"]');
-    if (vpMeta) {
-      const base = vpMeta.getAttribute('content').replace(/,?\s*interactive-widget=[^,]*/g, '');
-      const apply = () => {
-        const fs = !!(document.fullscreenElement || document.webkitFullscreenElement);
-        vpMeta.setAttribute('content', fs ? base + ', interactive-widget=overlays-content' : base);
-      };
-      document.addEventListener('fullscreenchange', apply);
-      document.addEventListener('webkitfullscreenchange', apply);
-      const t = document.getElementById('settingsFullscreenToggle');
-      if (t) t.addEventListener('change', () => {
-        vpMeta.setAttribute('content', t.checked ? base + ', interactive-widget=overlays-content' : base);
-      }, true);
-    }
   })();
 </script>
 
