@@ -120,6 +120,12 @@
     -webkit-tap-highlight-color: transparent;
   }
 
+  /* Tam ekran: tarayıcı pencere yeniden boyutlanırken (klavye açılıp kapanırken) en altta
+     görünen siyah yüzey (html + ::backdrop) tema rengiyle boyanır; böylece siyah flaş görünmez. */
+  html:fullscreen, html:-webkit-full-screen { background: var(--fs-bg, #F6F4EF); }
+  html:fullscreen::backdrop { background: var(--fs-bg, #F6F4EF); }
+  html:-webkit-full-screen::backdrop { background: var(--fs-bg, #F6F4EF); }
+
   button, a, * {
     -webkit-tap-highlight-color: transparent;
   }
@@ -45605,7 +45611,24 @@ body.is-anthracite .exam-q-info-count { color: #f2f2f4; }
       }
     };
 
+    // Tema rengini (meta theme-color) tam ekran zemini olarak yaz.
+    const themeMeta = document.querySelector('meta[name="theme-color"]');
+    const syncFsBg = () => {
+      const c = themeMeta && themeMeta.getAttribute('content');
+      if (c) document.documentElement.style.setProperty('--fs-bg', c);
+    };
+    if (themeMeta) new MutationObserver(syncFsBg).observe(themeMeta, { attributes: true, attributeFilter: ['content'] });
+    syncFsBg();
+
+    // Klavye, tam ekran isteği DAHA BAŞLAMADAN sayfanın üstüne binecek şekilde ayarlanır
+    // (fullscreenchange'i beklemek, ilk açılışta pencerenin yeniden boyutlanmasına yol açıyordu).
+    const tgl = document.getElementById('settingsFullscreenToggle');
+    if (tgl) tgl.addEventListener('change', () => {
+      try { vk.overlaysContent = tgl.checked; } catch (e) {}
+    }, true);
+
     const onFsChange = () => {
+      syncFsBg();
       try { vk.overlaysContent = isFs(); } catch (e) {}
       if (!isFs()) {
         clearShift();
