@@ -83263,7 +83263,7 @@ body.is-books-open .navbar .wrapper { opacity: 0; transform: translateY(28px); p
 /* ==========================================================================
    Paneller (sheet), onay ve görüntüleyici
    ========================================================================== */
-.kyn-ov { position: fixed; inset: 0; z-index: 10000; display: flex; align-items: flex-end; justify-content: center; background: rgba(10,10,14,.34); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); opacity: 0; transition: opacity .4s var(--k-ease); }
+.kyn-ov { position: fixed; inset: 0; z-index: 10000; display: flex; align-items: flex-end; justify-content: center; background: rgba(10,10,14,.34); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); opacity: 0; transition: opacity var(--theme-transition-duration, .48s) var(--theme-transition-easing, var(--k-ease)); }
 .kyn-ov.is-open { opacity: 1; }
 .kyn-sheet { width: 100%; max-width: 440px; background: var(--k-bg); border-radius: 30px 30px 0 0; padding: 12px 20px calc(22px + env(safe-area-inset-bottom)); transform: translateY(100%); transition: transform .6s var(--k-ease); box-shadow: 0 -20px 60px -20px rgba(0,0,0,.35); }
 .kyn-ov.is-open .kyn-sheet { transform: none; }
@@ -83279,7 +83279,7 @@ body.is-books-open .navbar .wrapper { opacity: 0; transform: translateY(28px); p
 .kyn-sheet-btns { display: flex; gap: 10px; margin-top: 4px; }
 .kyn-sheet-btns .kyn-btn { flex: 1; }
 
-.kyn-viewer { position: fixed; inset: 0; z-index: 10001; background: rgba(8,8,10,.94); display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity .4s var(--k-ease); touch-action: pan-y; }
+.kyn-viewer { position: fixed; inset: 0; z-index: 10001; background: rgba(8,8,10,.94); display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity var(--theme-transition-duration, .48s) var(--theme-transition-easing, var(--k-ease)); touch-action: pan-y; }
 .kyn-viewer.is-open { opacity: 1; }
 .kyn-viewer img { max-width: 100%; max-height: 100%; object-fit: contain; transition: opacity .35s, transform .5s var(--k-ease); }
 .kyn-viewer img.is-swap { opacity: 0; transform: scale(.97); }
@@ -83511,6 +83511,10 @@ body.is-books-open .navbar .wrapper { opacity: 0; transform: translateY(28px); p
     ov.className = 'kyn kyn-ov';
     ov.innerHTML = '<div class="kyn-sheet" role="dialog" aria-modal="true"><div class="kyn-grab"></div>' + html + '</div>';
     document.body.appendChild(ov);
+    /* Üst/alt güvenli alan (theme-color): karartma (rgba(10,10,14,.34)) ile eş zamanlı aynı tona çekilir;
+       böylece panel açılınca saat/pil şeridi de sayfayla birlikte kararır, bütün ekran tek parça görünür. */
+    ov._themeTint = { r: 10, g: 10, b: 14, alpha: 0.34 };
+    if (typeof window.watchBackdropForThemeColor === 'function') window.watchBackdropForThemeColor(ov);
     requestAnimationFrame(() => requestAnimationFrame(() => ov.classList.add('is-open')));
     let closed = false;
     const close = () => { if (closed) return; closed = true; ov.classList.remove('is-open'); setTimeout(() => ov.remove(), 650); };
@@ -83569,6 +83573,9 @@ body.is-books-open .navbar .wrapper { opacity: 0; transform: translateY(28px); p
       (refs.length > 1 ? '<button class="kyn-v-prev" aria-label="Önceki"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><button class="kyn-v-next" aria-label="Sonraki"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button>' : '') +
       '<div class="kyn-v-count"></div><div class="kyn-v-hint">Yakınlaştırmak için iki parmağınla aç ya da çift dokun</div>';
     document.body.appendChild(v);
+    /* Üst/alt güvenli alan (theme-color): görüntüleyici karartmasıyla (rgba(8,8,10,.96)) eş zamanlı aynı tona çekilir. */
+    v._themeTint = { r: 8, g: 8, b: 10, alpha: 0.96 };
+    if (typeof window.watchBackdropForThemeColor === 'function') window.watchBackdropForThemeColor(v);
     const stage = v.querySelector('.kyn-v-stage'), img = v.querySelector('img'), cnt = v.querySelector('.kyn-v-count'), hint = v.querySelector('.kyn-v-hint');
     let sc = 1, px = 0, py = 0;
     const apply = () => { img.style.transform = 'translate(' + px + 'px,' + py + 'px) scale(' + sc + ')'; stage.classList.toggle('is-zoomed', sc > 1.01); };
