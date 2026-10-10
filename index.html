@@ -43741,14 +43741,20 @@ body.is-anthracite .exam-q-info-count { color: #f2f2f4; }
   <!-- ======================= KAYNAKLARIM ======================= -->
   <!-- Liste sayfası: eklenen ders kitapları / kaynaklar. JS: "Kaynaklarım" script'i (sayfa sonu). -->
   <section class="page kyn" id="page-books" aria-label="Kaynaklarım">
-    <div class="kyn-top">
-      <button type="button" class="kyn-iconbtn" id="kynBooksBack" aria-label="Geri dön"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
-      <h1 class="kyn-title">Kaynaklarım</h1>
-      <button type="button" class="kyn-iconbtn kyn-iconbtn--acc" id="kynBooksAdd" aria-label="Kaynak ekle"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
+    <div class="kyn-lib-head">
+      <div class="kyn-lib-bar">
+        <button type="button" class="kyn-iconbtn kyn-iconbtn--sq" id="kynBooksBack" aria-label="Geri dön"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
+        <span class="kyn-lib-spacer"></span>
+        <button type="button" class="kyn-iconbtn kyn-iconbtn--sq" id="kynViewBtn" aria-label="Görünüm biçimi"><svg viewBox="0 0 24 24" id="kynViewIcon"></svg></button>
+        <button type="button" class="kyn-iconbtn kyn-iconbtn--sq kyn-iconbtn--acc" id="kynBooksAdd" aria-label="Kaynak ekle"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
+      </div>
+      <div class="kyn-lib-titlebox">
+        <h1 class="kyn-title kyn-title--lib">Kaynaklarım</h1>
+        <p class="kyn-sub kyn-sub--lib" id="kynBooksSub"></p>
+      </div>
     </div>
     <div class="kyn-scroll" id="kynBooksScroll">
       <div class="kyn-wrap">
-        <p class="kyn-sub" id="kynBooksSub"></p>
         <div class="kyn-filters" id="kynFilters" hidden></div>
         <div class="kyn-grid" id="kynGrid"></div>
         <div class="kyn-empty" id="kynEmpty" hidden>
@@ -83178,6 +83184,62 @@ body.is-books-open .navbar .wrapper { opacity: 0; transform: translateY(28px); p
 .kyn-d.is-s .num::after, .kyn-d.is-e .num::after { background: var(--k-blue-on); }
 .kyn-d .num.pop::before { border-radius: 14px; }
 .kyn-d.in:not(.is-s):not(.is-e) .num { color: inherit; font-weight: 600; }
+
+/* ===== Kaynaklarım · başlık, galeri ve liste ===== */
+.kyn-lib-head { position: relative; width: 100%; max-width: 1040px; margin: 0 auto; padding: 4px 20px 14px; box-sizing: border-box; }
+.kyn-lib-head::before { content: ""; position: absolute; left: -10%; right: -10%; top: -60px; height: 230px; z-index: -1; pointer-events: none; background: radial-gradient(60% 100% at 30% 0%, color-mix(in srgb, var(--k-acc) 26%, transparent), transparent 72%); }
+.kyn-lib-bar { display: flex; align-items: center; gap: 10px; }
+.kyn-lib-spacer { flex: 1; }
+.kyn-iconbtn--sq { border-radius: 16px; width: 44px; height: 44px; background: var(--k-card); border-color: transparent; }
+.kyn-iconbtn--sq.kyn-iconbtn--acc { background: var(--k-acc); box-shadow: 0 10px 22px -10px var(--k-acc); }
+.kyn-lib-titlebox { padding: 22px 2px 0; }
+.kyn-title--lib { font-size: 2.05rem !important; line-height: 1.02; font-weight: 800 !important; letter-spacing: -.03em; }
+.kyn-sub--lib { margin: 6px 0 0 !important; font-size: .98rem !important; font-weight: 500; }
+.kyn-sub--lib:empty { display: none; }
+
+/* Galeri kartı */
+.kyn-grid { gap: 14px; }
+@media (min-width: 640px) { .kyn-grid { gap: 20px; } }
+.kyn-card:not(.kyn-card--row) { background: var(--k-card); border-radius: 26px; padding: 10px 10px 14px; gap: 12px; transition: transform .45s var(--k-ease), background .3s; }
+.kyn-card:not(.kyn-card--row):active { transform: scale(.975); }
+.kyn-card:not(.kyn-card--row) .kyn-cover { border-radius: 8px 18px 18px 8px; }
+.kyn-card:not(.kyn-card--row):hover .kyn-cover { transform: none; }
+.kyn-card-body { display: flex; flex-direction: column; gap: 9px; padding: 0 4px; min-width: 0; }
+.kyn-card-name { font-size: 1rem; font-weight: 700; letter-spacing: -.015em; }
+.kyn-card-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+.kyn-tag { display: inline-flex; align-items: center; height: 24px; padding: 0 10px; border-radius: 9px; font-size: .76rem; font-weight: 600; background: color-mix(in srgb, var(--sc, var(--k-soft)) 30%, transparent); color: var(--k-ink); white-space: nowrap; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
+.kyn-tag--ghost { background: color-mix(in srgb, var(--k-ink) 8%, transparent); color: var(--k-soft); }
+.kyn-card-foot, .kyn-row-date { display: flex; align-items: center; gap: 6px; font-size: .8rem; color: var(--k-soft); font-weight: 500; }
+.kyn-card-foot svg, .kyn-row-date svg { width: 14px; height: 14px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+.kyn-card-left { align-self: flex-start; font-size: .74rem; font-weight: 700; padding: 3px 9px; border-radius: 8px; color: var(--k-on); background: var(--k-acc); }
+
+/* Liste satırı */
+.kyn-grid.is-list { grid-template-columns: 1fr; gap: 10px; }
+.kyn-card--row { flex-direction: row !important; align-items: center; gap: 14px !important; background: var(--k-card); border-radius: 22px; padding: 10px 14px 10px 10px; transition: transform .4s var(--k-ease), background .3s; }
+.kyn-card--row:active { transform: scale(.985); background: var(--k-card2); }
+.kyn-row-cover { flex: none; width: 54px; display: block; }
+.kyn-row-cover .kyn-cover { border-radius: 3px 8px 8px 3px; box-shadow: 0 1px 2px rgba(0,0,0,.1), 0 6px 14px -6px rgba(0,0,0,.28); }
+.kyn-row-cover .kyn-cover-sub, .kyn-row-cover .kyn-cover-title { display: none; }
+.kyn-card--row:hover .kyn-cover { transform: none; }
+.kyn-row-info { display: flex; flex-direction: column; gap: 5px; min-width: 0; flex: 1; }
+.kyn-card--row .kyn-card-name { -webkit-line-clamp: 1; font-size: .98rem; }
+.kyn-row-meta { display: flex; align-items: center; gap: 8px; font-size: .8rem; color: var(--k-soft); font-weight: 500; min-width: 0; }
+.kyn-row-date em { font-style: normal; margin-left: auto; font-size: .72rem; font-weight: 700; color: var(--k-ink); background: color-mix(in srgb, var(--k-acc) 40%, transparent); padding: 2px 8px; border-radius: 8px; white-space: nowrap; }
+.kyn-row-chev { width: 18px; height: 18px; flex: none; fill: none; stroke: var(--k-soft); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+@media (min-width: 760px) { .kyn-grid.is-list { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+/* Görünüm seçim paneli */
+.kyn-opt { height: auto; min-height: 66px; border: 1.5px solid transparent; border-radius: 20px; background: var(--k-card); display: flex; align-items: center; gap: 14px; padding: 10px 16px 10px 12px; text-align: left; transition: transform .3s var(--k-ease), background .3s, border-color .3s; }
+.kyn-opt:active { transform: scale(.98); }
+.kyn-opt.is-on { border-color: var(--k-acc); background: color-mix(in srgb, var(--k-acc) 14%, var(--k-bg)); }
+.kyn-opt-ic { width: 44px; height: 44px; border-radius: 14px; background: var(--k-card2); display: grid; place-items: center; flex: none; }
+.kyn-opt.is-on .kyn-opt-ic { background: var(--k-acc); color: var(--k-on); }
+.kyn-opt-ic svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.kyn-opt-tx { display: flex; flex-direction: column; gap: 1px; flex: 1; min-width: 0; }
+.kyn-opt-tx b { font-size: 1.02rem; font-weight: 700; }
+.kyn-opt-tx small { font-size: .8rem; color: var(--k-soft); }
+.kyn-opt-chk { width: 20px; height: 20px; fill: none; stroke: var(--k-ink); stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; opacity: 0; transform: scale(.6); transition: opacity .3s, transform .4s var(--k-ease); }
+.kyn-opt.is-on .kyn-opt-chk { opacity: 1; transform: none; }
 </style>
 
 <script id="kynScript">
@@ -83360,6 +83422,13 @@ body.is-books-open .navbar .wrapper { opacity: 0; transform: translateY(28px); p
      ========================================================================== */
   let filter = 'all';
   let highlightId = null;
+  let viewMode = 'gallery';
+  try { if (localStorage.getItem('kynView') === 'list') viewMode = 'list'; } catch (e) { /* yok say */ }
+  const VIEW_ICONS = {
+    gallery: '<rect x="3.5" y="3.5" width="7" height="7" rx="2.2"/><rect x="13.5" y="3.5" width="7" height="7" rx="2.2"/><rect x="3.5" y="13.5" width="7" height="7" rx="2.2"/><rect x="13.5" y="13.5" width="7" height="7" rx="2.2"/>',
+    list: '<rect x="3.5" y="4" width="4.5" height="5.5" rx="1.4"/><rect x="3.5" y="14.5" width="4.5" height="5.5" rx="1.4"/><path d="M11.5 6.5h9M11.5 17h9"/>'
+  };
+  const syncViewIcon = () => { const ic = document.getElementById('kynViewIcon'); if (ic) ic.innerHTML = VIEW_ICONS[viewMode]; };
 
   const renderList = () => {
     const books = getBooks().slice().sort((a, b) => (b.ts || 0) - (a.ts || 0));
@@ -83377,12 +83446,31 @@ body.is-books-open .navbar .wrapper { opacity: 0; transform: translateY(28px); p
       filters.innerHTML = '<button type="button" class="kyn-fchip' + (filter === 'all' ? ' is-on' : '') + '" data-f="all">Tümü</button>' + subjects.map((s) => '<button type="button" class="kyn-fchip' + (filter === s.name ? ' is-on' : '') + '" data-f="' + esc(s.name) + '">' + esc(s.name) + '</button>').join('');
     }
     lastListRender = Date.now();
+    grid.classList.toggle('is-list', viewMode === 'list');
+    const today = todayIso();
+    const ICO_CAL = '<svg viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15" rx="3.5"/><path d="M8 3.5v3M16 3.5v3M3.5 10h17"/></svg>';
     grid.innerHTML = shown.map((b, n) => {
       const dates = b.end ? fmtShort(b.start) + ' – ' + fmtShort(b.end) : fmtShort(b.start);
-      return '<button type="button" class="kyn-card' + (b.id === highlightId ? ' is-new' : '') + '" data-id="' + esc(b.id) + '" style="--i:' + Math.min(n, 12) + '">' + coverHTML(b) +
-        '<span class="kyn-card-name">' + esc(b.name) + '</span>' +
-        '<span class="kyn-card-meta"><i class="kyn-dot" style="--c:' + safeColor(b.subjectColor) + '"></i><span>' + esc(b.subject) + ' · ' + b.pages + ' sf</span></span>' +
-        '<span class="kyn-card-meta" style="margin-top:-8px"><span>' + esc(dates) + '</span></span></button>';
+      let left = '';
+      if (b.end) {
+        const dd = Math.round((parseIso(b.end) - parseIso(today)) / 86400000);
+        left = dd < 0 ? 'Süre doldu' : dd === 0 ? 'Son gün' : dd + ' gün kaldı';
+      }
+      const col = safeColor(b.subjectColor);
+      const cls = 'kyn-card' + (viewMode === 'list' ? ' kyn-card--row' : '') + (b.id === highlightId ? ' is-new' : '');
+      const attrs = ' class="' + cls + '" data-id="' + esc(b.id) + '" style="--i:' + Math.min(n, 12) + ';--sc:' + col + '"';
+      if (viewMode === 'list') {
+        return '<button type="button"' + attrs + '><span class="kyn-row-cover">' + coverHTML(b) + '</span>' +
+          '<span class="kyn-row-info"><span class="kyn-card-name">' + esc(b.name) + '</span>' +
+          '<span class="kyn-row-meta"><span class="kyn-tag">' + esc(b.subject) + '</span><span>' + b.pages + ' sf</span></span>' +
+          '<span class="kyn-row-date">' + ICO_CAL + '<span>' + esc(dates) + '</span>' + (left ? '<em>' + esc(left) + '</em>' : '') + '</span></span>' +
+          '<svg class="kyn-row-chev" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button>';
+      }
+      return '<button type="button"' + attrs + '>' + coverHTML(b) +
+        '<span class="kyn-card-body"><span class="kyn-card-name">' + esc(b.name) + '</span>' +
+        '<span class="kyn-card-tags"><span class="kyn-tag">' + esc(b.subject) + '</span><span class="kyn-tag kyn-tag--ghost">' + b.pages + ' sf</span></span>' +
+        '<span class="kyn-card-foot">' + ICO_CAL + '<span>' + esc(dates) + '</span></span>' +
+        (left ? '<span class="kyn-card-left">' + esc(left) + '</span>' : '') + '</span></button>';
     }).join('');
     hydrate(grid);
     highlightId = null;
@@ -83395,6 +83483,19 @@ body.is-books-open .navbar .wrapper { opacity: 0; transform: translateY(28px); p
     if ($('page-books').classList.contains('is-active') && Date.now() - lastListRender > 600) renderList();
   }).observe($('page-books'), { attributes: true, attributeFilter: ['class'] });
 
+  syncViewIcon();
+  $('kynViewBtn').addEventListener('click', () => {
+    const chk = '<svg class="kyn-opt-chk" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+    const opt = (m, t, d) => '<button type="button" class="kyn-opt' + (viewMode === m ? ' is-on' : '') + '" data-m="' + m + '"><span class="kyn-opt-ic"><svg viewBox="0 0 24 24">' + VIEW_ICONS[m] + '</svg></span><span class="kyn-opt-tx"><b>' + t + '</b><small>' + d + '</small></span>' + chk + '</button>';
+    const sh = openSheet('<h3>Görüntüleme biçimi</h3><p>Kaynaklarını nasıl görmek istersin?</p><div class="kyn-sheet-list">' +
+      opt('gallery', 'Galeri', 'Büyük kapaklarla, kart kart') + opt('list', 'Liste', 'Küçük kapaklı, sıkı satırlar') + '</div>');
+    sh.el.addEventListener('click', (e) => {
+      const o = e.target.closest('.kyn-opt'); if (!o) return;
+      viewMode = o.getAttribute('data-m');
+      try { localStorage.setItem('kynView', viewMode); } catch (err) { /* yok say */ }
+      syncViewIcon(); renderList(); sh.close();
+    });
+  });
   $('kynBooksBack').addEventListener('click', () => showPage('page-1'));
   $('kynBooksAdd').addEventListener('click', () => openAdd());
   $('kynEmptyAdd').addEventListener('click', () => openAdd());
