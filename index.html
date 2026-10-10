@@ -45984,50 +45984,13 @@ body.is-anthracite .exam-q-info-count { color: #f2f2f4; }
     return `#${toHex(mix(r, tint.r))}${toHex(mix(g, tint.g))}${toHex(mix(b, tint.b))}`;
   };
 
-  const openThemeBackdrops = new Set();
+  // Üst güvenli alan kalktı: pop-up/perde tonları artık theme-color'a işlenmiyor,
+  // sadece aktif temanın arka plan rengi yazılıyor.
   const refreshThemeColorMeta = () => {
-    const baseColor = themes[themeIndex].color;
-    if (openThemeBackdrops.size === 0) {
-      updateThemeColorMeta(baseColor);
-      return;
-    }
-    // Aynı anda birden fazla pop-up üst üste açık olabilir (ör. Soru
-    // Havuzu'nda "Bilgi" pop-up'ı, soru lightbox'ının ÜSTÜNDE açılıyor).
-    // Bu durumda üst güvenli alanda GERÇEKTEN görünen renk sadece en
-    // üstteki pop-up'ın kendi tonu değil, ALTTAKİ pop-up'ların da üst
-    // üste binmiş yarı saydam katkılarının TOPLAMIdır (gerçek CSS
-    // compositing böyle çalışır). Sadece en üsttekini kullanmak (eski
-    // davranış) alttaki pop-up ondan daha koyu/opaksa şeridin gerçek
-    // görünen renkten daha AÇIK çıkmasına yol açıyordu — tam olarak Soru
-    // Havuzu'ndaki "Bilgi" pop-up'ında (lightbox'ın üstünde) görülen
-    // uyumsuzluk buydu. Artık açık olan TÜM backdrop'ları en alttakinden
-    // en üsttekine doğru sırayla teker teker harmanlıyoruz.
-    Array.from(openThemeBackdrops).forEach((el) => { if (!el.isConnected) openThemeBackdrops.delete(el); });
-    if (openThemeBackdrops.size === 0) { updateThemeColorMeta(baseColor); return; }
-    const openList = Array.from(openThemeBackdrops).sort((a, b) => {
-      const za = parseFloat(getComputedStyle(a).zIndex) || 0;
-      const zb = parseFloat(getComputedStyle(b).zIndex) || 0;
-      return za - zb;
-    });
-    let color = baseColor;
-    openList.forEach((el) => {
-      color = blendWithBackdropTint(color, getBackdropTint(el));
-    });
-    updateThemeColorMeta(color);
+    updateThemeColorMeta(themes[themeIndex].color);
   };
 
-  const watchBackdropForThemeColor = (backdrop) => {
-    if (!backdrop || backdrop.dataset.themeColorWatched) return;
-    backdrop.dataset.themeColorWatched = '1';
-    const observer = new MutationObserver(() => {
-      const isOpen = backdrop.classList.contains('is-open') || backdrop.classList.contains('is-in');
-      if (isOpen) openThemeBackdrops.add(backdrop);
-      else openThemeBackdrops.delete(backdrop);
-      refreshThemeColorMeta();
-    });
-    observer.observe(backdrop, { attributes: true, attributeFilter: ['class'] });
-    if (backdrop.classList.contains('is-open') || backdrop.classList.contains('is-in')) { openThemeBackdrops.add(backdrop); refreshThemeColorMeta(); }
-  };
+  const watchBackdropForThemeColor = () => {};
   // Başka <script> bloklarında (ör. Mini Oyunlar sürpriz pop-up'ı gibi
   // sonradan/dinamik olarak DOM'a eklenen pop-up'lar) da bu fonksiyona
   // erişilebilsin diye window'a da bağlanır. Yeni bir pop-up eklenince tek
@@ -53385,7 +53348,6 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
       overlay.style.setProperty('--ta-head-muted', `rgba(${fg}, 0.62)`);
       overlay.style.setProperty('--ta-head-chip', darkText ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.22)');
       overlay.classList.add('has-color');
-      if (themeMeta) themeMeta.setAttribute('content', color);
     };
 
     // ---- Pop-up (süre / tarih) açıkken üst güvenli alanı da boya ----
@@ -53398,19 +53360,8 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
     // NOT: POPUP_DIM, CSS'teki .task-add-dur-back.is-in alfasıyla aynı olmalı.
     const POPUP_DIM = 0.42;
     let dimmedBase = null;
-    const dimThemeMeta = () => {
-      if (!themeMeta) return;
-      if (dimmedBase === null) dimmedBase = themeMeta.getAttribute('content') || '';
-      if (!/^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(dimmedBase)) return;
-      const { r, g, b } = hexToRgb(dimmedBase);
-      const mix = (c) => Math.round(c * (1 - POPUP_DIM)).toString(16).padStart(2, '0');
-      themeMeta.setAttribute('content', `#${mix(r)}${mix(g)}${mix(b)}`);
-    };
-    const undimThemeMeta = () => {
-      if (dimmedBase === null) return;
-      if (themeMeta) themeMeta.setAttribute('content', dimmedBase);
-      dimmedBase = null;
-    };
+    const dimThemeMeta = () => {};
+    const undimThemeMeta = () => {};
 
     const applyColor = (color, chosen = true) => {
       selectedColor = color;
@@ -74679,11 +74630,6 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
   /* Arka plan katmanı: içerikten (alev/yazılar) bağımsız solar; güvenli alan rengiyle AYNI anda, AYNI süre ve eğriyle
      (tema geçişlerindeki --theme-transition-* ile; tarayıcının theme-color geçişine uydurulmuş değerler) canlanır/solar. */
   .gf-bd { position: absolute; inset: 0; z-index: 0; pointer-events: none; opacity: 0; background: radial-gradient(110% 80% at 50% 38%, rgba(70, 28, 6, .94), rgba(14, 8, 5, .98) 70%); }
-  /* Üst güvenli alan: overlay'in üst kenar tonu (rgba(31,14,5,.94)) aktif tema rengiyle harmanlanır;
-     <meta name="theme-color"> da aynı değere çekildiği için çentik/Dynamic Island şeridi ile overlay kesintisiz görünür. */
-  .gf-bd::before { content: ""; position: absolute; left: 0; right: 0; top: 0; z-index: 0; pointer-events: none;
-    height: calc(0px + 28px);
-    background: linear-gradient(to bottom, var(--gf-top, #1f0e05) 0, var(--gf-top, #1f0e05) 0px, transparent 100%); }
   .gf-ov > :not(.gf-bd) { position: relative; z-index: 1; }
   .gf-stage { position: relative; width: min(52vw, 210px, 27vh); aspect-ratio: 100 / 132; }
   .gf-glow { position: absolute; left: 50%; top: 58%; width: 360%; aspect-ratio: 1; border-radius: 50%; pointer-events: none; opacity: 0; transform: translate(-50%, -50%); display: none; }
@@ -74991,7 +74937,6 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
         + '<div class="gf-big gn"></div><div class="gf-lab">günlük seri</div><div class="gf-sub"></div>';
       ov.querySelector('.gf-sub').textContent = cur.total === 1 ? 'Bugünkü görevi tamamladın' : 'Bugünkü ' + cur.total + ' görevin hepsi tamam';
       const bd = ov.querySelector('.gf-bd'); // arka plan + üst güvenli alan şeridi
-      bd.style.setProperty('--gf-top', 'color-mix(in srgb, var(--theme-bg, #F6F4EF) 6%, rgb(31 14 5))');
       const EASE = (getComputedStyle(document.documentElement).getPropertyValue('--theme-transition-easing') || '').trim() || 'cubic-bezier(0.16, 1, 0.3, 1)';
       const BD_MS = rm ? 200 : 480;
       ov._themeTint = { r: 31, g: 14, b: 5, alpha: 0.94 }; // overlay'in üst kenar tonu (radial-gradient'in y=0 noktası)
@@ -75087,7 +75032,6 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
         + '<button type="button" class="of-btn"></button><div class="of-hint"></div>';
       ov.querySelector('.of-kt').textContent = cur.base > 0 ? cur.base + ' günlük seri korunuyor' : 'Serin bozulmaz';
       const bd = ov.querySelector('.gf-bd');
-      bd.style.setProperty('--gf-top', 'color-mix(in srgb, var(--theme-bg, #F6F4EF) 6%, rgb(40 8 12))');
       const EASE = (getComputedStyle(document.documentElement).getPropertyValue('--theme-transition-easing') || '').trim() || 'cubic-bezier(0.16, 1, 0.3, 1)';
       const BD_MS = rm ? 200 : 480;
       ov._themeTint = { r: 40, g: 8, b: 12, alpha: 0.94 };
@@ -77084,12 +77028,6 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
   transition:opacity 1.2s ease;animation:ztpAurora 9s ease-in-out infinite alternate;}
 .ztp-ov.is-in::before{opacity:1;}
 .ztp-stage,.ztp-row{position:relative;z-index:1;}
-/* Üst güvenli alan: aurora/blur şeridin rengini bozmasın diye üstte DÜZ bir şerit; rengi meta theme-color ile birebir
-   (tema rengi %26 + siyah %74 = rgba(0,0,0,.74) karartmanın tema üzerindeki sonucu). Karartmayla aynı sürede (.5s) belirir. */
-.ztp-ov::after{content:"";position:absolute;left:0;right:0;top:0;z-index:2;pointer-events:none;opacity:0;transition:opacity .5s ease;
-  height:calc(0px + 28px);
-  background:linear-gradient(to bottom,var(--ztp-top,#000) 0,var(--ztp-top,#000) 0px,transparent 100%);}
-.ztp-ov.is-in::after{opacity:1;}
 .ztp-row{position:relative;width:100%;}
 .ztp-fall{--fs:clamp(64px,21vw,116px);position:relative;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;
   width:min(100%,460px);height:calc(var(--fs) * 5.2);max-height:calc(100dvh - 190px);overflow:visible;
@@ -77192,7 +77130,6 @@ html[data-pace-theme="plum"] .ztp-bar i{background:linear-gradient(90deg,#8a3a6b
     // Üst güvenli alan (çentik/Dynamic Island): arka plan karartması rgba(0,0,0,.74); aktif tema rengiyle
     // harmanlanıp <meta name="theme-color">'a yazılır (is-in sınıfıyla açılır, kapanırken geri döner).
     ov._themeTint = { r: 0, g: 0, b: 0, alpha: 0.74 };
-    ov.style.setProperty('--ztp-top', 'color-mix(in srgb, var(--theme-bg, #F6F4EF) 26%, #000)');
     document.body.appendChild(ov);
     if (window.watchBackdropForThemeColor) window.watchBackdropForThemeColor(ov);
     requestAnimationFrame(() => requestAnimationFrame(() => ov.classList.add('is-in')));
@@ -77917,43 +77854,6 @@ html[data-pace-theme="plum"] .ztp-bar i{background:linear-gradient(90deg,#8a3a6b
     color: var(--theme-c2-on, #121212);
   }
 </style>
-<style id="safeAreaSyncCss">
-  /* Giriş/Kayıt tam sayfası: üst güvenli alan şeridi düz tema rengi olsun (arkadaki bulanık renk
-     toplarının tonu, düz theme-color ile uyuşmuyordu). */
-  #paAuth .pa-bg::after { content: ""; position: absolute; left: 0; right: 0; top: 0; z-index: 1; pointer-events: none;
-    height: 0px; background: var(--theme-bg, #0b0b0b); }
-</style>
-<script id="safeAreaSync">
-  /* Üst güvenli alan (saat/pil şeridi) eşlemesi: sync.js'in açtığı katmanlar (Profil, Profil resmi,
-     Çıkış/Onay pencereleri, Gelişmiş) oluşturulur oluşturulmaz karartma tonları theme-color'a
-     işlenir; kapanırken (out / pf-out) aynı anda geri döner. Yeni katman eklemek için tabloya satır ekle. */
-  (function () {
-    var T = [['.pf-ov', .5], ['#pfView', .74], ['.pcd-ov', .5], ['#paceSyncOv', .45]];
-    var sel = T.map(function (t) { return t[0]; }).join(',');
-    var isOut = function (el) { return el.classList.contains('out') || el.classList.contains('pf-out'); };
-    function adopt(el) {
-      if (el._saSync || typeof window.watchBackdropForThemeColor !== 'function') return;
-      var a = .5; T.forEach(function (t) { if (el.matches(t[0])) a = t[1]; });
-      el._saSync = 1; el._themeTint = { r: 0, g: 0, b: 0, alpha: a };
-      window.watchBackdropForThemeColor(el);
-      requestAnimationFrame(function () { if (el.isConnected && !isOut(el)) el.classList.add('is-in'); });
-      new MutationObserver(function () { if (isOut(el) && el.classList.contains('is-in')) el.classList.remove('is-in'); })
-        .observe(el, { attributes: true, attributeFilter: ['class'] });
-    }
-    function scan(n) {
-      if (!n || n.nodeType !== 1) return;
-      if (n.matches(sel)) adopt(n);
-      n.querySelectorAll && n.querySelectorAll(sel).forEach(adopt);
-    }
-    new MutationObserver(function (muts) {
-      muts.forEach(function (m) {
-        m.addedNodes.forEach(scan);
-        m.removedNodes.forEach(function (n) { if (n._saSync && n.classList.contains('is-in')) n.classList.remove('is-in'); });
-      });
-    }).observe(document.body, { childList: true });
-    scan(document.body);
-  })();
-</script>
 <script id="toastHelper">
   /* Ortak bildirim: window.paceNToast(mesaj, geriAlFn?, süreMs?) - yumuşak belirir/kaybolur, aşağı kaydırarak kapanır */
   (function () {
@@ -83029,10 +82929,10 @@ body.is-sport-mode .navbar:not(.sport-navbar){display:none !important}
     const veilHex = toHex(getComputedStyle(v).backgroundColor);
     let tinted = false;
     let intended = prevColor;   // perde yokken meta'nın olması gereken (uygulamanın yazdığı) son renk
-    const setTint = (on) => { if (!meta || on === tinted) return; tinted = on; meta.setAttribute('content', on ? veilHex : intended); };
+    const setTint = () => {};
     // Sayfa değişirken (goToPage) uygulamanın kendi tema mantığı meta'ya krem rengi geri yazıyordu ve perdenin
     // rengini eziyordu (spora girişte şerit krem kalıyordu): perde açıkken her yazımı yakalayıp perde rengine geri çeviriyoruz.
-    const mo = meta ? new MutationObserver(() => {
+    const mo = null && meta ? new MutationObserver(() => {
       const c = meta.getAttribute('content');
       if (!tinted) { intended = c; return; }
       if (c !== veilHex) { intended = c; meta.setAttribute('content', veilHex); }
@@ -83050,20 +82950,7 @@ body.is-sport-mode .navbar:not(.sport-navbar){display:none !important}
       }
       return 3 * (1 - t) * (1 - t) * t * y1 + 3 * (1 - t) * t * t * y2 + t * t * t;
     };
-    const watchStrip = (anim, geo, lead, ease, dur) => {
-      let f = 0, alive = true;
-      const tick = () => {
-        if (!alive) return;
-        const t = anim.effect.getComputedTiming();
-        if (lead && ease) {
-          const x = Math.min(1, Math.max(0, ((anim.currentTime || 0) + lead) / dur));
-          const g = geo(ease(x)); setTint(g.r >= Math.hypot(Math.max(g.cx, innerWidth - g.cx), g.cy));
-        } else if (t.progress != null) { const g = geo(t.progress); setTint(g.r >= Math.hypot(Math.max(g.cx, innerWidth - g.cx), g.cy)); }
-        f = requestAnimationFrame(tick);
-      };
-      tick();
-      anim.finished.then(() => { alive = false; cancelAnimationFrame(f); }, () => { alive = false; cancelAnimationFrame(f); });
-    };
+    const watchStrip = () => {};
     try {
       const grow = v.animate(
         [{ clipPath: 'circle(0px at ' + ox + 'px ' + oy + 'px)' }, { clipPath: 'circle(' + R + 'px at ' + ox + 'px ' + oy + 'px)' }],
