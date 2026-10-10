@@ -83027,9 +83027,17 @@ body.is-sport-mode .navbar:not(.sport-navbar){display:none !important}
     const prevColor = meta ? meta.getAttribute('content') : null;
     const toHex = (c) => { const m = String(c).match(/[\d.]+/g) || [0, 0, 0]; return '#' + [0, 1, 2].map((i) => Math.round(+m[i]).toString(16).padStart(2, '0')).join(''); };
     const veilHex = toHex(getComputedStyle(v).backgroundColor);
+    // Üst şeritle AYNI sürede/eğride beliren yumuşak degrade: şerit ile sayfa arasındaki çizgiyi maskeler.
+    const band = document.createElement('div');
+    band.setAttribute('aria-hidden', 'true');
+    band.style.cssText = 'position:fixed;left:0;right:0;top:0;pointer-events:none;opacity:0;' +
+      'z-index:2147482999;height:calc(env(safe-area-inset-top,0px) + 140px);' +
+      'background:linear-gradient(to bottom,' + veilHex + ' 0,' + veilHex + ' 35%,transparent 100%);' +
+      'transition:opacity var(--theme-transition-duration) var(--theme-transition-easing)';
+    document.body.appendChild(band);
     let tinted = false;
     let intended = prevColor;   // perde yokken meta'nın olması gereken (uygulamanın yazdığı) son renk
-    const setTint = (on) => { if (!meta || on === tinted) return; tinted = on; meta.setAttribute('content', on ? veilHex : intended); };
+    const setTint = (on) => { if (on === tinted) return; tinted = on; band.style.opacity = on ? '1' : '0'; if (!meta) return; meta.setAttribute('content', on ? veilHex : intended); };
     // Sayfa değişirken (goToPage) uygulamanın kendi tema mantığı meta'ya krem rengi geri yazıyordu ve perdenin
     // rengini eziyordu (spora girişte şerit krem kalıyordu): perde açıkken her yazımı yakalayıp perde rengine geri çeviriyoruz.
     const mo = meta ? new MutationObserver(() => {
@@ -83068,7 +83076,7 @@ body.is-sport-mode .navbar:not(.sport-navbar){display:none !important}
       const grow = v.animate(
         [{ clipPath: 'circle(0px at ' + ox + 'px ' + oy + 'px)' }, { clipPath: 'circle(' + R + 'px at ' + ox + 'px ' + oy + 'px)' }],
         { duration: 640, easing: 'cubic-bezier(.76,0,.24,1)', fill: 'forwards' });
-      watchStrip(grow, (p) => ({ cx: ox, cy: oy, r: R * p }));
+      setTint(true);   // şerit + degrade animasyonun BAŞINDA birlikte koyulaşır
       await grow.finished;
       setTint(true);
       onCovered();
@@ -83089,6 +83097,7 @@ body.is-sport-mode .navbar:not(.sport-navbar){display:none !important}
       setTint(false);
       if (mo) mo.disconnect();
       v.remove();
+      setTimeout(() => band.remove(), 600);
     }
   };
 
