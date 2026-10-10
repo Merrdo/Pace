@@ -9995,6 +9995,45 @@
     min-width: 0;
   }
 
+
+  /* Kaynak önerileri: yazdıkça, aynı harfle başlayan kayıtlı kaynaklar tek satırlık
+     kaydırılabilir hap şeridi olarak çıkar; eşleşme yoksa hiç yer kaplamaz. */
+  .qhavuz-book-suggest {
+    display: flex;
+    gap: 0.4rem;
+    margin: -0.15rem 0 0.2rem;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-x;
+  }
+  .qhavuz-book-suggest[hidden] { display: none; }
+  .qhavuz-book-suggest::-webkit-scrollbar { display: none; }
+  .qhavuz-book-chip {
+    flex: 0 0 auto;
+    max-width: 62%;
+    padding: 0.28rem 0.7rem;
+    font-family: "Space Grotesk", sans-serif;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: rgba(18, 18, 18, 0.55);
+    background: transparent;
+    border: 1.5px solid rgba(0, 0, 0, 0.22);
+    border-radius: 999px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    cursor: pointer;
+    animation: qhavuzChipIn 0.18s ease both;
+  }
+  .qhavuz-book-chip b { color: #121212; font-weight: 800; }
+  .qhavuz-book-chip:active { background: rgba(0, 0, 0, 0.08); }
+  body.is-anthracite .qhavuz-book-chip { color: rgba(242, 242, 244, 0.55); border-color: rgba(255, 255, 255, 0.22); }
+  body.is-anthracite .qhavuz-book-chip b { color: #f2f2f4; }
+  body.is-anthracite .qhavuz-book-chip:active { background: rgba(255, 255, 255, 0.1); }
+  @keyframes qhavuzChipIn { from { opacity: 0; transform: translateY(3px); } to { opacity: 1; transform: none; } }
+
   .qhavuz-add-page-input {
     flex: 0 0 5rem;
     min-width: 0;
@@ -44391,6 +44430,7 @@ body.is-anthracite .exam-q-info-count { color: #f2f2f4; }
         <input type="text" class="page9-add-custom-input qhavuz-add-book-input" id="qhavuzAddBookInput" placeholder="Kitap adı" maxlength="60">
         <input type="text" inputmode="numeric" class="page9-add-custom-input qhavuz-add-page-input" id="qhavuzAddPageInput" placeholder="Sayfa" maxlength="6">
       </div>
+      <div class="qhavuz-book-suggest" id="qhavuzBookSuggest" hidden aria-label="Kaynak önerileri"></div>
 
       <span class="qhavuz-add-label">Soru Açıklaması <span class="qhavuz-add-label-optional">(opsiyonel)</span></span>
       <textarea class="page9-add-custom-input qhavuz-add-desc-input" id="qhavuzAddDescInput" placeholder="Çözüm ipucu, not vb. yaz..." maxlength="500" rows="3"></textarea>
@@ -68472,6 +68512,7 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
     qhavuzPendingAnswer = null;
     qhavuzAddStep = 0;
     qhavuzAddBookInput.value = '';
+    if (typeof qhavuzBookSuggestEl !== 'undefined' && qhavuzBookSuggestEl) { qhavuzBookSuggestEl.hidden = true; qhavuzBookSuggestEl.innerHTML = ''; }
     qhavuzAddPageInput.value = '';
     qhavuzAddAnswerTextInput.value = '';
     qhavuzAddDescInput.value = '';
@@ -68584,6 +68625,7 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
     qhavuzCropState = null;
     qhavuzCropImg.removeAttribute('src');
     qhavuzAddBookInput.value = '';
+    if (typeof qhavuzBookSuggestEl !== 'undefined' && qhavuzBookSuggestEl) { qhavuzBookSuggestEl.hidden = true; qhavuzBookSuggestEl.innerHTML = ''; }
     qhavuzAddPageInput.value = '';
     qhavuzAddAnswerTextInput.value = '';
     qhavuzAddDescInput.value = '';
@@ -69957,6 +69999,69 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
     });
     return books;
   };
+
+  // ---- Soru Ekle · Kitap adı hızlı önerileri ----
+  // Kitap adı alanına yazılan harflerle BAŞLAYAN kayıtlı kaynakları (daha önce
+  // sorulara girilenler + Kaynaklarım'daki kitaplar) tek satırlık hap şeridi
+  // olarak gösterir; dokununca adı alana yazar. Eşleşme yoksa şerit gizlidir.
+  const qhavuzBookSuggestEl = document.getElementById('qhavuzBookSuggest');
+  const qhavuzBookNorm = (t) => String(t || '').trim().toLocaleLowerCase('tr');
+  const qhavuzBookCandidates = () => {
+    const seen = new Set();
+    const out = [];
+    const push = (n) => {
+      const name = String(n || '').trim();
+      const key = qhavuzBookNorm(name);
+      if (!name || seen.has(key)) return;
+      seen.add(key); out.push(name);
+    };
+    qhavuzAllBooks().forEach(push);
+    try { ((APP_STATE.resources && APP_STATE.resources.books) || []).forEach((b) => push(b && b.name)); } catch (e) { /* yok say */ }
+    return out;
+  };
+  const qhavuzRenderBookSuggest = () => {
+    const el = qhavuzBookSuggestEl;
+    if (!el) return;
+    const raw = qhavuzAddBookInput.value.replace(/^\s+/, '');
+    const q = qhavuzBookNorm(raw);
+    if (!q) { el.hidden = true; el.innerHTML = ''; return; }
+    const matches = qhavuzBookCandidates()
+      .filter((n) => { const k = qhavuzBookNorm(n); return k.startsWith(q) && k !== q; })
+      .slice(0, 8);
+    if (!matches.length) { el.hidden = true; el.innerHTML = ''; return; }
+    el.innerHTML = '';
+    matches.forEach((n) => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'qhavuz-book-chip';
+      b.dataset.name = n;
+      const head = document.createElement('b');
+      head.textContent = n.slice(0, q.length);
+      b.appendChild(head);
+      b.appendChild(document.createTextNode(n.slice(q.length)));
+      el.appendChild(b);
+    });
+    el.scrollLeft = 0;
+    el.hidden = false;
+  };
+  if (qhavuzBookSuggestEl) {
+    qhavuzAddBookInput.addEventListener('input', qhavuzRenderBookSuggest);
+    qhavuzAddBookInput.addEventListener('focus', qhavuzRenderBookSuggest);
+    // pointerdown'da odak kaybını engelle: klavye açık kalsın, hap hemen yazılsın.
+    qhavuzBookSuggestEl.addEventListener('pointerdown', (e) => { if (e.target.closest('.qhavuz-book-chip')) e.preventDefault(); });
+    qhavuzBookSuggestEl.addEventListener('click', (e) => {
+      const chip = e.target.closest('.qhavuz-book-chip');
+      if (!chip) return;
+      qhavuzAddBookInput.value = chip.dataset.name;
+      qhavuzBookSuggestEl.hidden = true;
+      qhavuzBookSuggestEl.innerHTML = '';
+      qhavuzAddBookInput.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+    // Alan dışına çıkınca (sayfa alanına geçmeden) şeridi kapat.
+    qhavuzAddBookInput.addEventListener('blur', () => {
+      setTimeout(() => { if (document.activeElement !== qhavuzAddBookInput) { qhavuzBookSuggestEl.hidden = true; } }, 150);
+    });
+  }
 
   // ---- Kaynaklarım pop-up'ı ----
   // Havuzdaki kaynak isimleri (büyük/küçük harf duyarsız tekilleştirilir) ve
