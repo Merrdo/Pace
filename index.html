@@ -10032,6 +10032,33 @@
   body.is-anthracite .qhavuz-book-chip { color: rgba(242, 242, 244, 0.55); border-color: rgba(255, 255, 255, 0.22); }
   body.is-anthracite .qhavuz-book-chip b { color: #f2f2f4; }
   body.is-anthracite .qhavuz-book-chip:active { background: rgba(255, 255, 255, 0.1); }
+
+  /* Soru Ekle penceresi her temada siyah yüzey; öneri hapları ona göre açık renkli. */
+  #qhavuzAddBackdrop .qhavuz-book-chip {
+    font-family: "Baloo 2", "Space Grotesk", sans-serif;
+    font-size: 0.86rem;
+    font-weight: 500;
+    padding: 0.32rem 0.8rem;
+    color: rgba(255, 255, 255, 0.62);
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+  }
+  #qhavuzAddBackdrop .qhavuz-book-chip b { color: #fff; font-weight: 700; }
+  #qhavuzAddBackdrop .qhavuz-book-chip:active { background: rgba(255, 255, 255, 0.2); }
+
+  /* Kitap adı / sayfa / açıklama: seçili yazı mavi vurgulanır (genel ::selection şeffaf olduğu için
+     burada açıkça geri açılıyor) ve imleç mavi olur. */
+  #qhavuzAddBackdrop input,
+  #qhavuzAddBackdrop textarea {
+    caret-color: #0a84ff;
+    -webkit-touch-callout: default;
+    -webkit-user-select: text;
+    user-select: text;
+  }
+  #qhavuzAddBackdrop input::selection,
+  #qhavuzAddBackdrop textarea::selection { background: rgba(10, 132, 255, 0.45); color: inherit; }
+  #qhavuzAddBackdrop input::-moz-selection,
+  #qhavuzAddBackdrop textarea::-moz-selection { background: rgba(10, 132, 255, 0.45); color: inherit; }
   @keyframes qhavuzChipIn { from { opacity: 0; transform: translateY(3px); } to { opacity: 1; transform: none; } }
 
   .qhavuz-add-page-input {
@@ -79128,7 +79155,7 @@ body #page-camera #qhavuzCanvasSelectBtn.is-active{background:var(--m-t);color:v
      yazı alanlarında ve görev penceresinde seçme, kopyalama ve yapıştırma çalışmalı. Yakalama aşamasında olay gövdeye
      ulaşmadan durdurulur (yalnızca bu alanlarda). */
   (function () {
-    var SEL = '.tsh-card textarea, .tsh-card input, #page-8 textarea, #page-8 input, #page-hatirla textarea, #page-hatirla input';
+    var SEL = '.tsh-card textarea, .tsh-card input, #page-8 textarea, #page-8 input, #page-hatirla textarea, #page-hatirla input, #qhavuzAddBackdrop textarea, #qhavuzAddBackdrop input';
     ['selectstart', 'copy', 'cut', 'paste'].forEach(function (ev) {
       document.addEventListener(ev, function (e) {
         var n = e.target; if (n && n.nodeType === 3) n = n.parentElement;
