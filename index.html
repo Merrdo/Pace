@@ -82870,17 +82870,25 @@ body.is-sport-mode .navbar:not(.sport-navbar){display:none !important}
 @keyframes spRuleOut{from{transform:scaleX(1)}to{transform:scaleX(0)}}
 @keyframes spSubOut{from{opacity:.7}to{opacity:0}}
 @keyframes spFadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:.7;transform:none}}
-/* Bar büyür: perdeden önce yalnızca seçili siyah hap kalır, bar yana doğru uzar, ikonlar sırayla zıplayarak açılır */
-body.sp-nav-grow .navbar .wrapper{animation:spNavGrow .85s cubic-bezier(.65,0,.35,1) backwards !important}
-body.sp-nav-grow .navbar .option{animation:spNavPop .55s cubic-bezier(.34,1.56,.64,1) backwards;animation-delay:calc(.38s + var(--k,0) * 60ms)}
+/* Perdeden damla: perde çekilirken alt kenardan siyah bir damla yükselir, yana yayılıp barın şeklini alır.
+   Sıçrama/titreme yok: overshoot'lu eğri ve ölçek animasyonu kullanılmaz, yalnızca clip-path + opaklık + tek yönlü kayma. */
+body.sp-nav-grow .navbar .wrapper{position:relative;will-change:clip-path,transform,opacity;backface-visibility:hidden;animation:spNavDrop 1s cubic-bezier(.45,0,.2,1) backwards !important}
+body.sp-nav-grow .navbar .wrapper::after{content:'';position:absolute;inset:0;z-index:0;border-radius:inherit;pointer-events:none;background:var(--n-t);animation:spNavInk 1s cubic-bezier(.45,0,.2,1) both}
+body.sp-nav-grow .navbar .wrapper::before{animation:spNavGlass 1s linear both}
+body.sp-nav-grow .navbar .option,body.sp-nav-grow .navbar .nav-slider{position:relative;z-index:1}
+body.sp-nav-grow .navbar .option{animation:spNavFade .45s ease-out backwards;animation-delay:calc(.5s + var(--k,0) * 55ms)}
 body.sp-nav-grow .navbar .option:nth-child(2){--k:0}body.sp-nav-grow .navbar .option:nth-child(3){--k:1}body.sp-nav-grow .navbar .option:nth-child(4){--k:2}body.sp-nav-grow .navbar .option:nth-child(5){--k:3}body.sp-nav-grow .navbar .option:nth-child(6){--k:4}
-body.sp-nav-grow .navbar .nav-add-btn{animation:spNavPop .55s cubic-bezier(.34,1.56,.64,1) .72s backwards}
-@keyframes spNavGrow{
-0%{clip-path:inset(0 calc(100% - 64px) 0 0 round 29px);opacity:0;transform:translateY(28px);animation-timing-function:cubic-bezier(.22,1,.36,1)}
-28%{clip-path:inset(0 calc(100% - 64px) 0 0 round 29px);opacity:1;transform:none;animation-timing-function:cubic-bezier(.65,0,.35,1)}
+/* + butonu dock'un dışında durduğu için clip-path bitene kadar bekler, sonra yalnızca belirir */
+body.sp-nav-grow .navbar .nav-add-btn{animation:spNavFade .4s ease-out 1.02s backwards}
+@keyframes spNavDrop{
+0%{clip-path:inset(7px calc(50% - 22px) 7px calc(50% - 22px) round 22px);opacity:0;transform:translateY(46px)}
+12%{opacity:1}
+38%{clip-path:inset(7px calc(50% - 22px) 7px calc(50% - 22px) round 22px);opacity:1;transform:none;animation-timing-function:cubic-bezier(.65,0,.25,1)}
 100%{clip-path:inset(0 0 0 0 round 29px);opacity:1;transform:none}}
-@keyframes spNavPop{from{opacity:0;transform:scale(.35)}to{opacity:1;transform:none}}
-@media (prefers-reduced-motion:reduce){body.sp-nav-grow .navbar .wrapper,body.sp-nav-grow .navbar .option,body.sp-nav-grow .navbar .nav-add-btn{animation:none !important}}
+@keyframes spNavInk{0%,45%{opacity:1}100%{opacity:0}}
+@keyframes spNavGlass{0%,50%{opacity:0}100%{opacity:1}}
+@keyframes spNavFade{from{opacity:0}to{opacity:1}}
+@media (prefers-reduced-motion:reduce){body.sp-nav-grow .navbar .wrapper,body.sp-nav-grow .navbar .wrapper::before,body.sp-nav-grow .navbar .option,body.sp-nav-grow .navbar .nav-add-btn{animation:none !important}body.sp-nav-grow .navbar .wrapper::after{display:none}}
 /* ===== Spor Ayarlar sayfası: klasik ayar sayfasından farklı, büyük başlıklı tasarım ===== */
 #page-sport-5{align-items:flex-start;justify-content:flex-start;overflow-y:auto;padding:calc(env(safe-area-inset-top,0px) + 30px) 24px calc(120px + env(safe-area-inset-bottom,0px))}
 #page-sport-5 .sp-set{--sp-t:var(--theme-text,#121212);width:100%;max-width:440px;margin:0 auto}
@@ -83104,7 +83112,7 @@ body.sp-nav-grow .navbar .nav-add-btn{animation:spNavPop .55s cubic-bezier(.34,1
   };
 
   // Bar büyüme animasyonunu yalnızca bu geçişte oynat (sınıf, barın göründüğü an eklenir)
-  const growNav = () => { document.body.classList.add('sp-nav-grow'); setTimeout(() => document.body.classList.remove('sp-nav-grow'), 1500); };
+  const growNav = () => { document.body.classList.add('sp-nav-grow'); setTimeout(() => document.body.classList.remove('sp-nav-grow'), 1700); };
 
   const enterSport = async (btn) => {
     if (sportNav || busy) return;
