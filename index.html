@@ -83012,7 +83012,7 @@ body.is-sport-mode .navbar:not(.sport-navbar){display:none !important}
     const ox = r.left + r.width / 2, oy = r.top + r.height / 2;
     const R = Math.hypot(Math.max(ox, innerWidth - ox), Math.max(oy, innerHeight - oy)) + 24;
     // Spora girerken alt bara (çarka), çıkarken yukarı (başlığa) çekilir
-    const tx = innerWidth / 2, ty = kind === 'in' ? innerHeight - 64 : 96;
+    const tx = innerWidth / 2, ty = 96;   // iki yönde de yukarı (başlığa) çekilir: üst şerit perdenin altında en son açılır
     const word = kind === 'in' ? 'Spor' : 'Ana';
     const sub = kind === 'in' ? 'modu' : 'uygulama';
     const v = document.createElement('div');
@@ -83082,7 +83082,7 @@ body.is-sport-mode .navbar:not(.sport-navbar){display:none !important}
         { duration: 760, easing: 'cubic-bezier(.65,0,.35,1)', fill: 'forwards' });
       // Girişte daire aşağıya (bara) çekildiği için şerit erken açılır -> theme-color gecikmesini önceden telafi et
       watchStrip(shrink, (p) => ({ cx: ox + (tx - ox) * p, cy: oy + (ty - oy) * p, r: R * (1 - p) }),
-        kind === 'in' ? 320 : 0, bezier(.65, 0, .35, 1), 760);
+        0, bezier(.65, 0, .35, 1), 760);
       await shrink.finished;
     } finally {
       if (mo) mo.takeRecords();
