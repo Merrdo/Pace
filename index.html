@@ -82870,6 +82870,17 @@ body.is-sport-mode .navbar:not(.sport-navbar){display:none !important}
 @keyframes spRuleOut{from{transform:scaleX(1)}to{transform:scaleX(0)}}
 @keyframes spSubOut{from{opacity:.7}to{opacity:0}}
 @keyframes spFadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:.7;transform:none}}
+/* Bar büyür: perdeden önce yalnızca seçili siyah hap kalır, bar yana doğru uzar, ikonlar sırayla zıplayarak açılır */
+body.sp-nav-grow .navbar .wrapper{animation:spNavGrow .85s cubic-bezier(.65,0,.35,1) backwards !important}
+body.sp-nav-grow .navbar .option{animation:spNavPop .55s cubic-bezier(.34,1.56,.64,1) backwards;animation-delay:calc(.38s + var(--k,0) * 60ms)}
+body.sp-nav-grow .navbar .option:nth-child(2){--k:0}body.sp-nav-grow .navbar .option:nth-child(3){--k:1}body.sp-nav-grow .navbar .option:nth-child(4){--k:2}body.sp-nav-grow .navbar .option:nth-child(5){--k:3}body.sp-nav-grow .navbar .option:nth-child(6){--k:4}
+body.sp-nav-grow .navbar .nav-add-btn{animation:spNavPop .55s cubic-bezier(.34,1.56,.64,1) .72s backwards}
+@keyframes spNavGrow{
+0%{clip-path:inset(0 calc(100% - 64px) 0 0 round 29px);opacity:0;transform:translateY(28px);animation-timing-function:cubic-bezier(.22,1,.36,1)}
+28%{clip-path:inset(0 calc(100% - 64px) 0 0 round 29px);opacity:1;transform:none;animation-timing-function:cubic-bezier(.65,0,.35,1)}
+100%{clip-path:inset(0 0 0 0 round 29px);opacity:1;transform:none}}
+@keyframes spNavPop{from{opacity:0;transform:scale(.35)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){body.sp-nav-grow .navbar .wrapper,body.sp-nav-grow .navbar .option,body.sp-nav-grow .navbar .nav-add-btn{animation:none !important}}
 /* ===== Spor Ayarlar sayfası: klasik ayar sayfasından farklı, büyük başlıklı tasarım ===== */
 #page-sport-5{align-items:flex-start;justify-content:flex-start;overflow-y:auto;padding:calc(env(safe-area-inset-top,0px) + 30px) 24px calc(120px + env(safe-area-inset-bottom,0px))}
 #page-sport-5 .sp-set{--sp-t:var(--theme-text,#121212);width:100%;max-width:440px;margin:0 auto}
@@ -83092,6 +83103,9 @@ body.is-sport-mode .navbar:not(.sport-navbar){display:none !important}
     }
   };
 
+  // Bar büyüme animasyonunu yalnızca bu geçişte oynat (sınıf, barın göründüğü an eklenir)
+  const growNav = () => { document.body.classList.add('sp-nav-grow'); setTimeout(() => document.body.classList.remove('sp-nav-grow'), 1500); };
+
   const enterSport = async (btn) => {
     if (sportNav || busy) return;
     busy = true;
@@ -83099,7 +83113,7 @@ body.is-sport-mode .navbar:not(.sport-navbar){display:none !important}
     try {
       await runVeil('in', btn || document.body,
         () => { goToPage('page-sport-1'); if (mainPanel) mainPanel.reset(); },
-        () => { mountSportNav(1); });                 // spor barı navDockIn ile perde kapanırken gelir
+        () => { growNav(); mountSportNav(1); });                 // spor barı navDockIn ile perde kapanırken gelir
     } finally { busy = false; }
   };
 
@@ -83111,6 +83125,7 @@ body.is-sport-mode .navbar:not(.sport-navbar){display:none !important}
       await runVeil('out', btn || document.body,
         () => { goToPage('page-1'); if (sportPanel) sportPanel.reset(); },
         () => {
+          growNav();
           if (sportNav) { sportNav.remove(); sportNav = null; }
           document.body.classList.remove('is-sport-mode'); // ana bar navDockIn ile gelir
           if (typeof selectHomeTabSilently === 'function') selectHomeTabSilently();
