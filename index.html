@@ -82894,6 +82894,32 @@ body.is-sport-mode .navbar:not(.sport-navbar){display:none !important}
 /* Çark ikonu seçilince döner (ana uygulamadaki gibi) */
 .sport-navbar .nav-input:checked + .nav-btn .nav-icon-gear{animation:navGearSpin .55s cubic-bezier(.34,1.56,.64,1)}
 /* Spor sayfaları 1-4 */
+.sp-bars{display:flex;gap:8px;height:130px;margin-top:16px}
+.sp-bar-col{flex:1;display:flex;flex-direction:column;gap:6px;align-items:center;font:600 11px "Baloo 2",sans-serif}
+.sp-bar-col span{opacity:.55}
+.sp-bar-col.now span{opacity:1}
+.sp-bar-fill{flex:1;width:100%;display:flex;align-items:flex-end}
+.sp-bar-fill i{display:block;width:100%;min-height:4px;border-radius:8px;background:var(--sp-t);opacity:.28}
+.sp-bar-col.now .sp-bar-fill i{opacity:1}
+.sp-seans>.sp-tiles{margin-top:22px}
+.sp-spark{display:block;width:100%;height:90px;margin-top:14px;overflow:visible}
+.sp-spark polyline{fill:none;stroke:var(--sp-t);stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+.sp-spark circle{fill:var(--sp-t)}
+.sp-cd-row.one{grid-template-columns:1fr}
+.sp-pace small{font-size:.8rem;font-weight:600;opacity:.6;letter-spacing:0}
+.sp-card2 .sp-pace{margin-top:14px}
+.sp-card2 .sp-bar{margin-top:8px}
+.sp-types{display:flex;gap:6px;margin-top:14px}
+.sp-types .sp-tab{flex:1;padding:9px 0;border-radius:999px;background:color-mix(in srgb,var(--sp-t) 9%,transparent);color:var(--sp-t);font-size:13px}
+.sp-types .sp-tab.on{background:var(--sp-t);color:var(--theme-bg,#f5f3ee)}
+.sp-cd-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+.sp-cd-row input{min-width:0;width:100%;border:0;border-radius:14px;padding:12px;background:color-mix(in srgb,var(--sp-t) 9%,transparent);color:var(--sp-t);font:600 16px "Baloo 2",sans-serif;outline:0}
+.sp-cd-row input::placeholder{color:var(--sp-t);opacity:.4}
+.sp-pace{display:flex;align-items:baseline;justify-content:space-between;margin-top:16px;font-family:"Baloo 2",sans-serif}
+.sp-pace span{font-weight:700;opacity:.65}
+.sp-pace strong{font-weight:800;font-size:1.8rem;letter-spacing:-.02em}
+.sp-err{margin-top:10px;font:600 14px "Baloo 2",sans-serif;opacity:1 !important}
+.sp-err[hidden]{display:none}
 .sp-seans[hidden]{display:none}
 .sp-days{display:flex;justify-content:space-between;margin-top:14px}
 .sp-chip{width:36px;height:36px;border-radius:50%;border:2px solid color-mix(in srgb,var(--sp-t) 22%,transparent);background:none;color:var(--sp-t);font:700 13px "Baloo 2",sans-serif;cursor:pointer;transition:background .25s,color .25s,border-color .25s}
@@ -82988,12 +83014,12 @@ body.is-sport-mode .navbar:not(.sport-navbar){display:none !important}
     { name: 'Antrenman', icon: P('<path d="M6 8v8M3.5 10v4M18 8v8M20.5 10v4M6 12h12"/>'),
       tabs: [['Seans', '', ''],
              ['Program', '', ''],
-             ['Kardiyo', 'Aktiviteni kaydet', 'Koşu, yürüyüş ve bisiklet için süre, mesafe ve tempo burada olacak.']] },
+             ['Kardiyo', '', '']] },
     { name: 'Beslenme', icon: P('<path d="M12 7.5c-1.2-1-3-1.5-4.5-.8C5.4 7.7 4.5 10 5 12.5c.6 3 2.4 7 4.4 7 1 0 1.4-.6 2.6-.6s1.6.6 2.6.6c2 0 3.8-4 4.4-7 .5-2.5-.4-4.8-2.5-5.8-1.5-.7-3.3-.2-4.5.8zM12 7.5c0-1.8.8-3.2 2.2-4"/>'),
-      tabs: [['Beslenme', 'Bugünkü öğünlerini ekle', 'Kalori, protein ve su takibi burada olacak.']] },
+      custom: true, tabs: [['Beslenme', '', '']] },
     { name: 'İlerleme', icon: P('<path d="M4 19h16M5 15l4-4 3 3 6-7M14.5 7H18v3.5"/>'),
-      tabs: [['Grafikler', 'Gelişimini gör', 'Kişisel rekorların ve haftalık hacmin burada olacak.'],
-             ['Vücut', 'Ölçülerini kaydet', 'Kilo, ölçüler ve toparlanma notların burada olacak.']] }
+      tabs: [['Grafikler', '', ''],
+             ['Vücut', '', '']] }
   ];
   const spTitle = (t) => Array.from(t).map((c, i) => '<span style="--i:' + i + '">' + c + '</span>').join('');
   const buildSportPage = (d) => {
@@ -83176,6 +83202,168 @@ body.is-sport-mode .navbar:not(.sport-navbar){display:none !important}
     });
     render();
   };
+
+  const initCardio = (sec) => {
+    const box = sec.querySelector('.sp-seans[data-k="2"]');
+    const TYPES = ['Koşu', 'Yürüyüş', 'Bisiklet'];
+    let type = 0;
+    const num = (v) => parseFloat(String(v).replace(',', '.')) || 0;
+    const fmtN = (n, d) => n.toLocaleString('tr-TR', { maximumFractionDigits: d });
+    const pace = (t, dur, dist) => {
+      if (!dur || !dist) return '–';
+      if (t === 'Bisiklet') return fmtN(dist / (dur / 60), 1) + ' km/sa';
+      const m = dur / dist, mm = Math.floor(m), ss = Math.round((m - mm) * 60);
+      return (ss === 60 ? mm + 1 : mm) + ':' + String(ss === 60 ? 0 : ss).padStart(2, '0') + ' /km';
+    };
+    const log = () => (Array.isArray(APP_STATE.sportCardio) ? APP_STATE.sportCardio : []);
+    const recent = () => log().slice(-5).reverse().map((e) =>
+      '<div class="sp-ex-row"><span>' + esc(e.t) + ' · ' + fmtN(e.km, 2) + ' km · ' + fmtN(e.min, 1) + ' dk · ' + pace(e.t, e.min, e.km) +
+      '</span><button type="button" data-del="' + e.id + '" aria-label="Kaydı sil">×</button></div>').join('');
+    const render = () => {
+      box.innerHTML = '<div class="sp-card2"><h3>Aktiviteni kaydet</h3>' +
+        '<div class="sp-types">' + TYPES.map((t, i) => '<button type="button" class="sp-tab' + (i === type ? ' on' : '') + '" data-ty="' + i + '">' + t + '</button>').join('') + '</div>' +
+        '<div class="sp-cd-row"><input id="cdDur" inputmode="decimal" placeholder="Süre (dk)"><input id="cdDist" inputmode="decimal" placeholder="Mesafe (km)"></div>' +
+        '<div class="sp-pace"><span id="cdLbl">' + (TYPES[type] === 'Bisiklet' ? 'Hız' : 'Tempo') + '</span><strong id="cdPace">–</strong></div>' +
+        '<p id="cdErr" class="sp-err" hidden>Süre ve mesafeyi gir.</p>' +
+        '<button type="button" class="sp-btn" data-save="1">Kaydet</button></div>' +
+        (log().length ? '<div class="sp-card2"><h3>Son kayıtlar</h3><div id="cdList">' + recent() + '</div></div>' : '');
+    };
+    const upd = () => {
+      const t = TYPES[type];
+      box.querySelector('#cdLbl').textContent = t === 'Bisiklet' ? 'Hız' : 'Tempo';
+      box.querySelector('#cdPace').textContent = pace(t, num(box.querySelector('#cdDur').value), num(box.querySelector('#cdDist').value));
+    };
+    box.addEventListener('input', (e) => { if (e.target.id === 'cdDur' || e.target.id === 'cdDist') { box.querySelector('#cdErr').hidden = true; upd(); } });
+    box.addEventListener('click', (e) => {
+      const ty = e.target.closest('[data-ty]');
+      if (ty) { type = +ty.dataset.ty; box.querySelectorAll('[data-ty]').forEach((x) => x.classList.toggle('on', x === ty)); upd(); return; }
+      const del = e.target.closest('[data-del]');
+      if (del) { saveAppState({ sportCardio: log().filter((x) => x.id !== del.dataset.del) }); render(); return; }
+      if (!e.target.closest('[data-save]')) return;
+      const dur = box.querySelector('#cdDur'), dist = box.querySelector('#cdDist');
+      if (!num(dur.value) || !num(dist.value)) { box.querySelector('#cdErr').hidden = false; (num(dur.value) ? dist : dur).focus(); return; }
+      const tk = dkey(new Date());
+      const done = Array.isArray(APP_STATE.sportDone) ? APP_STATE.sportDone.slice() : [];
+      if (!done.includes(tk)) done.push(tk);
+      saveAppState({ sportCardio: log().concat([{ id: 'c' + Date.now(), d: tk, t: TYPES[type], min: num(dur.value), km: num(dist.value) }]).slice(-200), sportDone: done });
+      render(); window.dispatchEvent(new Event('sport-data'));
+    });
+    render();
+  };
+
+  const initFood = (sec) => {
+    const box = sec.querySelector('.sp-today');
+    let edit = false;
+    const tr = (n) => Math.round(n).toLocaleString('tr-TR');
+    const num = (v) => parseFloat(String(v).replace(',', '.')) || 0;
+    const goals = () => Object.assign({ kcal: 2200, p: 130 }, APP_STATE.sportGoals || {});
+    const all = () => APP_STATE.sportFoodLog || {};
+    const items = () => all()[dkey(new Date())] || [];
+    const setItems = (arr) => {
+      const a = Object.assign({}, all()); a[dkey(new Date())] = arr;
+      Object.keys(a).sort().slice(0, -60).forEach((k) => delete a[k]);
+      saveAppState({ sportFoodLog: a });
+    };
+    const meter = (label, v, g, unit) =>
+      '<div class="sp-pace"><span>' + label + '</span><strong>' + tr(v) + '<small> / ' + tr(g) + ' ' + unit + '</small></strong></div>' +
+      '<div class="sp-bar"><i style="width:' + Math.min(100, Math.round(v / g * 100)) + '%"></i></div>';
+    const render = () => {
+      const it = items(), g = goals();
+      const kc = it.reduce((a, x) => a + x.kcal, 0), pr = it.reduce((a, x) => a + x.p, 0);
+      box.innerHTML = '<div class="sp-card2"><h3>Bugün</h3>' + meter('Kalori', kc, g.kcal, 'kcal') + meter('Protein', pr, g.p, 'g') +
+        (edit ? '<div class="sp-cd-row"><input id="fdGk" inputmode="numeric" placeholder="Kalori hedefi" value="' + g.kcal + '"><input id="fdGp" inputmode="numeric" placeholder="Protein hedefi" value="' + g.p + '"></div>' +
+          '<button type="button" class="sp-mini" data-a="goalsave">Hedefleri kaydet</button>'
+          : '<button type="button" class="sp-mini" data-a="goaledit">Hedefleri düzenle</button>') + '</div>' +
+        '<div class="sp-card2"><h3>Öğün ekle</h3><div class="sp-cd-row one"><input id="fdN" placeholder="Ne yedin?" maxlength="40" enterkeyhint="next"></div>' +
+        '<div class="sp-cd-row"><input id="fdK" inputmode="numeric" placeholder="Kalori"><input id="fdP" inputmode="decimal" placeholder="Protein (g)"></div>' +
+        '<p id="fdErr" class="sp-err" hidden>Öğün adı ve kaloriyi gir.</p><button type="button" class="sp-btn" data-a="add">Ekle</button></div>' +
+        (it.length ? '<div class="sp-card2"><h3>Bugün yediklerin</h3>' + it.map((x) =>
+          '<div class="sp-ex-row"><span>' + esc(x.n) + ' · ' + tr(x.kcal) + ' kcal · ' + tr(x.p) + ' g</span><button type="button" data-a="del" data-id="' + x.id + '" aria-label="Öğünü sil">×</button></div>').join('') + '</div>' : '');
+    };
+    box.addEventListener('input', (e) => { const r = box.querySelector('#fdErr'); if (r) r.hidden = true; });
+    box.addEventListener('click', (e) => {
+      const b = e.target.closest('[data-a]'); if (!b) return;
+      const a = b.dataset.a;
+      if (a === 'goaledit') { edit = true; render(); }
+      else if (a === 'goalsave') {
+        const k = num(box.querySelector('#fdGk').value), p = num(box.querySelector('#fdGp').value);
+        if (k > 0 && p > 0) saveAppState({ sportGoals: { kcal: k, p } });
+        edit = false; render();
+      } else if (a === 'del') { setItems(items().filter((x) => x.id !== b.dataset.id)); render(); }
+      else if (a === 'add') {
+        const n = box.querySelector('#fdN').value.trim(), k = num(box.querySelector('#fdK').value), p = num(box.querySelector('#fdP').value);
+        if (!n || !k) { box.querySelector('#fdErr').hidden = false; box.querySelector(n ? '#fdK' : '#fdN').focus(); return; }
+        setItems(items().concat([{ id: 'f' + Date.now(), n, kcal: k, p }]));
+        render(); box.querySelector('#fdN').focus();
+      }
+    });
+    render();
+  };
+
+  const initProgress = (sec) => {
+    const gb = sec.querySelector('.sp-seans[data-k="0"]'), bb = sec.querySelector('.sp-seans[data-k="1"]');
+    const num = (v) => parseFloat(String(v).replace(',', '.')) || 0;
+    const tr = (n, d) => n.toLocaleString('tr-TR', { maximumFractionDigits: d == null ? 0 : d });
+    const wk = (d) => { const x = new Date(d); x.setHours(0, 0, 0, 0); x.setDate(x.getDate() - ((x.getDay() + 6) % 7)); return x; };
+    const day = (k) => new Date(k + 'T00:00:00');
+    const vol = (e) => e.ex.reduce((a, x) => a + x.sets.reduce((b, st) => b + (st.d ? num(st.kg) * num(st.r) : 0), 0), 0);
+    const renderCharts = () => {
+      const log = Array.isArray(APP_STATE.sportLog) ? APP_STATE.sportLog : [];
+      const cd = Array.isArray(APP_STATE.sportCardio) ? APP_STATE.sportCardio : [];
+      const cur = wk(new Date()), weeks = [];
+      for (let i = 5; i >= 0; i--) { const d = new Date(cur); d.setDate(cur.getDate() - 7 * i); weeks.push(d); }
+      const idx = (k) => { const t = wk(day(k)).getTime(); return weeks.findIndex((w) => w.getTime() === t); };
+      const vols = weeks.map(() => 0); let km = 0;
+      log.forEach((e) => { const i = idx(e.d); if (i >= 0) vols[i] += vol(e); });
+      cd.forEach((e) => { if (idx(e.d) === 5) km += e.km; });
+      const max = Math.max.apply(null, vols.concat([1]));
+      const pr = {};
+      log.forEach((e) => e.ex.forEach((x) => x.sets.forEach((st) => {
+        const kg = num(st.kg), key = x.n.toLowerCase();
+        if (st.d && kg > 0 && (!pr[key] || pr[key].kg < kg)) pr[key] = { n: x.n, kg, r: num(st.r) };
+      })));
+      const prs = Object.keys(pr).map((k) => pr[k]).sort((a, b) => b.kg - a.kg).slice(0, 6);
+      gb.innerHTML = '<div class="sp-tiles"><div class="sp-tile"><span>Toplam seans</span><strong>' + log.length + '</strong><em>Bu hafta ' + tr(vols[5]) + ' kg hacim</em></div>' +
+        '<div class="sp-tile"><span>Bu hafta kardiyo</span><strong>' + tr(km, 1) + ' km</strong><em>Haftalık toplam</em></div></div>' +
+        '<div class="sp-card2"><h3>Haftalık hacim</h3><p>Tamamlanan setlerde kg × tekrar toplamı.</p><div class="sp-bars">' +
+        weeks.map((w, i) => '<div class="sp-bar-col' + (i === 5 ? ' now' : '') + '"><div class="sp-bar-fill"><i style="height:' + Math.round(vols[i] / max * 100) + '%"></i></div><span>' +
+          String(w.getDate()).padStart(2, '0') + '.' + String(w.getMonth() + 1).padStart(2, '0') + '</span></div>').join('') + '</div></div>' +
+        '<div class="sp-card2"><h3>Kişisel rekorlar</h3>' + (prs.length ? prs.map((x) =>
+          '<div class="sp-ex-row"><span>' + esc(x.n) + '</span><span>' + tr(x.kg, 1) + ' kg × ' + tr(x.r) + '</span></div>').join('') :
+          '<p>Setleri tamamlayıp seansı bitirince en yüksek kiloların burada görünecek.</p>') + '</div>';
+    };
+    const body = () => (Array.isArray(APP_STATE.sportBody) ? APP_STATE.sportBody : []);
+    const spark = (arr) => {
+      if (arr.length < 2) return '<p>Grafik için en az iki kilo kaydı gerekli.</p>';
+      const v = arr.map((x) => x.kg), lo = Math.min.apply(null, v), hi = Math.max.apply(null, v), r = hi - lo || 1;
+      const pts = v.map((y, i) => (8 + i * 284 / (v.length - 1)).toFixed(1) + ',' + (88 - (y - lo) / r * 76).toFixed(1));
+      const last = pts[pts.length - 1].split(',');
+      return '<svg class="sp-spark" viewBox="0 0 300 100" role="img" aria-label="Kilo grafiği"><polyline points="' + pts.join(' ') + '"/><circle cx="' + last[0] + '" cy="' + last[1] + '" r="4.5"/></svg>';
+    };
+    const renderBody = () => {
+      const b = body(), last = b[b.length - 1], first = b[0];
+      const diff = last && first && b.length > 1 ? last.kg - first.kg : null;
+      bb.innerHTML = '<div class="sp-card2"><h3>Kilo</h3>' +
+        (last ? '<div class="sp-pace"><span>Son kayıt</span><strong>' + tr(last.kg, 1) + '<small> kg' + (diff == null ? '' : ' · ' + (diff > 0 ? '+' : '') + tr(diff, 1) + ' kg') + '</small></strong></div>' : '') +
+        spark(b.slice(-12)) +
+        '<div class="sp-add"><input id="bdKg" inputmode="decimal" placeholder="Bugünkü kilon (kg)"><button type="button" class="sp-mini" data-a="save">Kaydet</button></div>' +
+        '<p id="bdErr" class="sp-err" hidden>Geçerli bir kilo gir.</p></div>' +
+        (b.length ? '<div class="sp-card2"><h3>Geçmiş</h3>' + b.slice(-6).reverse().map((x) =>
+          '<div class="sp-ex-row"><span>' + x.d.slice(8) + '.' + x.d.slice(5, 7) + '.' + x.d.slice(0, 4) + ' · ' + tr(x.kg, 1) + ' kg</span><button type="button" data-a="del" data-d="' + x.d + '" aria-label="Kaydı sil">×</button></div>').join('') + '</div>' : '');
+    };
+    bb.addEventListener('input', () => { const e = bb.querySelector('#bdErr'); if (e) e.hidden = true; });
+    bb.addEventListener('click', (e) => {
+      const t = e.target.closest('[data-a]'); if (!t) return;
+      if (t.dataset.a === 'del') { saveAppState({ sportBody: body().filter((x) => x.d !== t.dataset.d) }); renderBody(); return; }
+      const inp = bb.querySelector('#bdKg'), kg = num(inp.value);
+      if (kg < 20 || kg > 400) { bb.querySelector('#bdErr').hidden = false; inp.focus(); return; }
+      const tk = dkey(new Date());
+      saveAppState({ sportBody: body().filter((x) => x.d !== tk).concat([{ d: tk, kg }]).sort((a, b) => a.d < b.d ? -1 : 1).slice(-365) });
+      renderBody();
+    });
+    window.addEventListener('sport-data', renderCharts);
+    renderCharts(); renderBody();
+  };
   if (app) {
     for (let i = 1; i <= SPORT_PAGE_COUNT; i++) {
       const sec = document.createElement('section');
@@ -83187,7 +83375,9 @@ body.is-sport-mode .navbar:not(.sport-navbar){display:none !important}
         sec.classList.add('sp-page');
         sec.innerHTML = buildSportPage(SPORT_PAGES[i - 1]);
         if (i === 1) initToday(sec);
-        if (i === 2) { initSeans(sec); initProgram(sec); }
+        if (i === 3) initFood(sec);
+        if (i === 4) initProgress(sec);
+        if (i === 2) { initSeans(sec); initProgram(sec); initCardio(sec); }
         const bar = sec.querySelector('.sp-tabs');
         if (bar) bar.addEventListener('click', (e) => {
           const b = e.target.closest('.sp-tab'); if (!b) return;
