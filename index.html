@@ -45652,6 +45652,59 @@ body.is-anthracite .exam-q-info-count { color: #f2f2f4; }
 </script>
 
 <script>
+  // ---- Klavye açılırken yanal panel ikonlarının oynamasını engelle ----
+  // Sebep: Panel top:0/bottom:0 ile pencere yüksekliğine bağlı ve ikonlar dikeyde
+  // ORTALI; klavye pencereyi küçültünce panel de küçülüyor ve ikonlar yukarı kayıyordu.
+  // Çözüm: Panel yüksekliği, klavye kapalıyken ölçülen değerde SABİTLENİR; klavye
+  // açıkken/yazarken güncellenmez.
+  (function () {
+    const st = document.createElement('style');
+    st.textContent = '@media (min-width:768px) and (min-height:600px){.sidebar-nav{bottom:auto;height:var(--sb-h,100%)}}';
+    document.head.appendChild(st);
+    const root = document.documentElement;
+    const editing = () => {
+      const a = document.activeElement;
+      return !!(a && (a.tagName === 'INPUT' || a.tagName === 'TEXTAREA' || a.isContentEditable));
+    };
+    let timer = null;
+    let lastH = 0, lastLand = window.innerWidth > window.innerHeight;
+    const lock = () => {
+      if (editing()) return;
+      const h = window.innerHeight, land = window.innerWidth > window.innerHeight;
+      // Klavye kapanırken pencere yüksekliği henüz eski (küçük) değerdeyken ölçüm yapılırsa
+      // ikonlar yukarı sıçrıyordu: yön değişmediyse 120px'ten büyük bir DARALMA klavye sayılır, yok sayılır.
+      if (lastH && land === lastLand && h < lastH - 120) return;
+      lastH = h; lastLand = land;
+      root.style.setProperty('--sb-h', h + 'px');
+    };
+    const lockSoon = () => { clearTimeout(timer); timer = setTimeout(lock, 450); };
+    lock();
+    window.addEventListener('resize', lockSoon);
+    window.addEventListener('orientationchange', lockSoon);
+    document.addEventListener('fullscreenchange', lockSoon);
+    document.addEventListener('webkitfullscreenchange', lockSoon);
+    document.addEventListener('focusout', lockSoon);
+
+    // Yedek: Tam ekranda klavyenin pencereyi küçültmeden içeriğin üstüne binmesi için
+    // viewport meta'sına interactive-widget=overlays-content eklenir (Chrome 108+).
+    const vpMeta = document.querySelector('meta[name="viewport"]');
+    if (vpMeta) {
+      const base = vpMeta.getAttribute('content').replace(/,?\s*interactive-widget=[^,]*/g, '');
+      const apply = () => {
+        const fs = !!(document.fullscreenElement || document.webkitFullscreenElement);
+        vpMeta.setAttribute('content', fs ? base + ', interactive-widget=overlays-content' : base);
+      };
+      document.addEventListener('fullscreenchange', apply);
+      document.addEventListener('webkitfullscreenchange', apply);
+      const t = document.getElementById('settingsFullscreenToggle');
+      if (t) t.addEventListener('change', () => {
+        vpMeta.setAttribute('content', t.checked ? base + ', interactive-widget=overlays-content' : base);
+      }, true);
+    }
+  })();
+</script>
+
+<script>
   // Ayarlar/Desenler sayfasındaki renk paleti kartından (.theme-swatch-card)
   // seçilince tema (arka plan + yazı rengi) değişir; applyTheme() bu geçişi
   // uygular. Toplam 3 tema: saf siyah, krem ve fildişi.
