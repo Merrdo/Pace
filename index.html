@@ -83030,12 +83030,26 @@ body.is-sport-mode .navbar:not(.sport-navbar){display:none !important}
     let tinted = false;
     const setTint = (on) => { if (!meta || on === tinted) return; tinted = on; meta.setAttribute('content', on ? veilHex : prevColor); };
     // Perdenin üst şeridi tam kapladığı anı animasyon ilerlemesinden (eğri dahil) okur
-    const watchStrip = (anim, geo) => {
+    // Tarayıcı theme-color değişimini kendi içinde yumuşatıp geciktirdiği için, perde alttan açılırken
+    // (spora giriş) şerit geç kalıyordu: lead ms kadar İLERİYE bakıp meta'yı o kadar erken değiştiriyoruz.
+    const bezier = (x1, y1, x2, y2) => (x) => {
+      let lo = 0, hi = 1, t = x;
+      for (let i = 0; i < 24; i++) {
+        t = (lo + hi) / 2;
+        const cx = 3 * (1 - t) * (1 - t) * t * x1 + 3 * (1 - t) * t * t * x2 + t * t * t;
+        if (cx < x) lo = t; else hi = t;
+      }
+      return 3 * (1 - t) * (1 - t) * t * y1 + 3 * (1 - t) * t * t * y2 + t * t * t;
+    };
+    const watchStrip = (anim, geo, lead, ease, dur) => {
       let f = 0, alive = true;
       const tick = () => {
         if (!alive) return;
         const t = anim.effect.getComputedTiming();
-        if (t.progress != null) { const g = geo(t.progress); setTint(g.r >= Math.hypot(Math.max(g.cx, innerWidth - g.cx), g.cy)); }
+        if (lead && ease) {
+          const x = Math.min(1, Math.max(0, ((anim.currentTime || 0) + lead) / dur));
+          const g = geo(ease(x)); setTint(g.r >= Math.hypot(Math.max(g.cx, innerWidth - g.cx), g.cy));
+        } else if (t.progress != null) { const g = geo(t.progress); setTint(g.r >= Math.hypot(Math.max(g.cx, innerWidth - g.cx), g.cy)); }
         f = requestAnimationFrame(tick);
       };
       tick();
@@ -83057,7 +83071,9 @@ body.is-sport-mode .navbar:not(.sport-navbar){display:none !important}
       const shrink = v.animate(
         [{ clipPath: 'circle(' + R + 'px at ' + ox + 'px ' + oy + 'px)' }, { clipPath: 'circle(0px at ' + tx + 'px ' + ty + 'px)' }],
         { duration: 760, easing: 'cubic-bezier(.65,0,.35,1)', fill: 'forwards' });
-      watchStrip(shrink, (p) => ({ cx: ox + (tx - ox) * p, cy: oy + (ty - oy) * p, r: R * (1 - p) }));
+      // Girişte daire aşağıya (bara) çekildiği için şerit erken açılır -> theme-color gecikmesini önceden telafi et
+      watchStrip(shrink, (p) => ({ cx: ox + (tx - ox) * p, cy: oy + (ty - oy) * p, r: R * (1 - p) }),
+        kind === 'in' ? 320 : 0, bezier(.65, 0, .35, 1), 760);
       await shrink.finished;
     } finally {
       setTint(false);
