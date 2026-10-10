@@ -44853,6 +44853,7 @@ body.is-anthracite .exam-q-info-count { color: #f2f2f4; }
       <button type="button" class="nav-more-item" role="menuitem" data-action="exams" style="--k:3"><svg class="nav-more-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2"/><line x1="8" y1="8" x2="16" y2="8"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="8" y1="16" x2="13" y2="16"/></svg><span>Denemelerim</span></button>
       <button type="button" class="nav-more-item" role="menuitem" data-action="games" style="--k:4" hidden><svg class="nav-more-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7.4 7h9.2a4.5 4.5 0 0 1 4.4 5.4l-.8 4a2.5 2.5 0 0 1-4.2 1.3L14.4 16H9.6l-1.6 1.7A2.5 2.5 0 0 1 3.8 16.4l-.8-4A4.5 4.5 0 0 1 7.4 7z"/><path d="M8 10v3.2M6.4 11.6h3.2"/><circle cx="15.6" cy="10.6" r=".6"/><circle cx="17.6" cy="12.6" r=".6"/></svg><span>Oyunlar</span></button>
       <button type="button" class="nav-more-item" role="menuitem" data-action="sport" style="--k:5" hidden><svg class="nav-more-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 6.5v11M17.5 6.5v11M3.5 9v6M20.5 9v6M6.5 12h11"/></svg><span>Spor</span></button>
+      <button type="button" class="nav-more-item" role="menuitem" data-action="home-mode" style="--k:6" hidden><svg class="nav-more-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11.5L12 4l8 7.5"/><path d="M6 9.6V19a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V9.6"/></svg><span>Ana Uygulama</span><svg class="sport-check" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></button>
     </div>
   </div>
 </nav>
@@ -82857,6 +82858,11 @@ html[data-ed="dark"] #examResourcesBackdrop .delete-btn {
 @media (min-width:768px) and (min-height:600px){#settingsSportSection{display:none}}
 /* Spor modunda ana uygulamanın alt barı tamamen kalkar; yerine #sportNavbar gelir */
 body.is-sport-mode .navbar:not(.sport-navbar){display:none !important}
+/* Geçiş animasyonu: eski bar aşağı kayıp solar, yenisi navDockIn ile gelir */
+body.sport-switching .navbar:not(.sport-navbar),
+.navbar.sport-navbar.is-out{opacity:0 !important;transform:translateY(28px);pointer-events:none;transition:opacity .25s ease,transform .3s cubic-bezier(.22,1,.36,1)}
+.sport-check{margin-left:auto;flex:none;width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round;pointer-events:none;opacity:.7}
+@media (prefers-reduced-motion:reduce){body.sport-switching .navbar:not(.sport-navbar),.navbar.sport-navbar.is-out{transition-duration:.01s}}
 </style>
 <script id="sportModeScript">
 (function () {
@@ -82864,17 +82870,22 @@ body.is-sport-mode .navbar:not(.sport-navbar){display:none !important}
   const toggle = document.getElementById('settingsSportToggle');
   const mainMenu = document.getElementById('navMoreMenu');
   const sportItem = mainMenu && mainMenu.querySelector('[data-action="sport"]');
+  const homeModeItem = mainMenu && mainMenu.querySelector('[data-action="home-mode"]');
   const SPORT_PAGE_COUNT = 5;
+  const SWITCH_MS = 260;
+  const CHECK = '<svg class="sport-check" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+  const isDesktop = () => window.matchMedia('(min-width:768px) and (min-height:600px)').matches;
   let sportNav = null;
+  let busy = false;
 
   // Boş spor sayfaları (içerik sonra tasarlanacak)
   if (app) {
     for (let i = 1; i <= SPORT_PAGE_COUNT; i++) {
-      const s = document.createElement('section');
-      s.className = 'page';
-      s.id = 'page-sport-' + i;
-      s.setAttribute('aria-label', 'Spor sayfa ' + i);
-      app.appendChild(s);
+      const sec = document.createElement('section');
+      sec.className = 'page';
+      sec.id = 'page-sport-' + i;
+      sec.setAttribute('aria-label', 'Spor sayfa ' + i);
+      app.appendChild(sec);
     }
   }
 
@@ -82882,6 +82893,7 @@ body.is-sport-mode .navbar:not(.sport-navbar){display:none !important}
     const on = APP_STATE.sportModeEnabled === true;
     if (toggle) toggle.checked = on;
     if (sportItem) sportItem.hidden = !on;
+    if (homeModeItem) homeModeItem.hidden = !on;
   };
   if (toggle) {
     toggle.addEventListener('change', () => {
@@ -82892,14 +82904,14 @@ body.is-sport-mode .navbar:not(.sport-navbar){display:none !important}
   window.addEventListener('app-state-saved', syncEnabled);
   syncEnabled();
 
-  const buildSportNav = () => {
+  const buildSportNav = (startIdx) => {
     const nav = document.createElement('nav');
     nav.className = 'navbar sport-navbar';
     nav.id = 'sportNavbar';
     let opts = '';
     for (let i = 1; i <= SPORT_PAGE_COUNT; i++) {
       opts += '<div class="option" style="--i:' + (i - 1) + '">' +
-        '<input class="nav-input" type="radio" name="sportnav" value="page-sport-' + i + '" aria-label="Spor ' + i + '"' + (i === 1 ? ' checked' : '') + '>' +
+        '<input class="nav-input" type="radio" name="sportnav" value="page-sport-' + i + '" aria-label="Spor ' + i + '"' + (i === startIdx ? ' checked' : '') + '>' +
         '<div class="nav-btn"><svg class="nav-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/></svg></div></div>';
     }
     nav.innerHTML =
@@ -82908,18 +82920,25 @@ body.is-sport-mode .navbar:not(.sport-navbar){display:none !important}
         '<svg class="nav-add-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button>' +
       '<div class="nav-more-menu" id="sportMoreMenu" role="menu" aria-label="Menü">' +
         '<button type="button" class="nav-more-item" role="menuitem" data-action="exit" style="--k:0">' +
-        '<svg class="nav-more-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 17l-5-5 5-5"/></svg><span>Ana Uygulama</span></button>' +
+          '<svg class="nav-more-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11.5L12 4l8 7.5"/><path d="M6 9.6V19a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V9.6"/></svg><span>Ana Uygulama</span></button>' +
+        '<button type="button" class="nav-more-item" role="menuitem" data-action="stay" style="--k:1">' +
+          '<svg class="nav-more-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 6.5v11M17.5 6.5v11M3.5 9v6M20.5 9v6M6.5 12h11"/></svg><span>Spor</span>' + CHECK + '</button>' +
       '</div></div>';
 
     const slider = nav.querySelector('.nav-slider');
     const options = Array.from(nav.querySelectorAll('.option'));
+    const place = (input) => {
+      slider.style.transform = 'translateX(' + (input.closest('.option').offsetLeft - options[0].offsetLeft) + 'px)';
+    };
     nav.querySelectorAll('.nav-input').forEach((input) => {
       input.addEventListener('change', () => {
         if (!input.checked) return;
-        slider.style.transform = 'translateX(' + (input.closest('.option').offsetLeft - options[0].offsetLeft) + 'px)';
+        place(input);
         goToPage(input.value);
+        saveAppState({ sportPage: parseInt(input.value.replace('page-sport-', ''), 10) || 1 });
       });
     });
+    nav._place = place;
 
     const addBtn = nav.querySelector('#sportAddBtn');
     const menu = nav.querySelector('#sportMoreMenu');
@@ -82943,23 +82962,47 @@ body.is-sport-mode .navbar:not(.sport-navbar){display:none !important}
     return nav;
   };
 
-  const enterSport = () => {
-    if (sportNav) return;
-    sportNav = buildSportNav();
+  const mountSportNav = (idx) => {
+    sportNav = buildSportNav(idx);
     document.body.appendChild(sportNav);
     document.body.classList.add('is-sport-mode');
-    goToPage('page-sport-1');
+    const checked = sportNav.querySelector('.nav-input:checked');
+    if (checked && idx > 1) {
+      const sl = sportNav.querySelector('.nav-slider');
+      sl.style.transition = 'none';
+      sportNav._place(checked);
+      void sl.offsetWidth;
+      sl.style.transition = '';
+    }
+  };
+
+  const enterSport = () => {
+    if (sportNav || busy) return;
+    busy = true;
+    saveAppState({ sportModeActive: true });
+    document.body.classList.add('sport-switching');   // ana bar solar
+    goToPage('page-sport-' + (APP_STATE.sportPage || 1));
+    setTimeout(() => {
+      mountSportNav(APP_STATE.sportPage || 1);        // spor barı navDockIn ile gelir
+      document.body.classList.remove('sport-switching');
+      busy = false;
+    }, SWITCH_MS);
   };
 
   const exitSport = () => {
-    if (!sportNav) return;
-    document.removeEventListener('pointerdown', sportNav._outside);
-    sportNav.remove();
-    sportNav = null;
-    document.body.classList.remove('is-sport-mode');
-    // Ana navbar görünür olduktan sonra göstergeyi Ana Sayfa'ya animasyonsuz oturt
-    if (typeof selectHomeTabSilently === 'function') selectHomeTabSilently();
+    if (!sportNav || busy) return;
+    busy = true;
+    saveAppState({ sportModeActive: false });
+    sportNav.classList.add('is-out');                 // spor barı solar
     goToPage('page-1');
+    setTimeout(() => {
+      document.removeEventListener('pointerdown', sportNav._outside);
+      sportNav.remove();
+      sportNav = null;
+      document.body.classList.remove('is-sport-mode'); // ana bar navDockIn ile gelir
+      if (typeof selectHomeTabSilently === 'function') selectHomeTabSilently();
+      busy = false;
+    }, SWITCH_MS);
   };
 
   if (mainMenu) {
@@ -82967,6 +83010,13 @@ body.is-sport-mode .navbar:not(.sport-navbar){display:none !important}
       const it = e.target.closest('.nav-more-item');
       if (it && it.dataset.action === 'sport') enterSport();
     });
+  }
+
+  // Yenilemede spor modunu geri yükle (yalnızca telefon + özellik açıkken)
+  if (APP_STATE.sportModeActive === true && APP_STATE.sportModeEnabled === true && !isDesktop()) {
+    const idx = Math.min(Math.max(parseInt(APP_STATE.sportPage, 10) || 1, 1), SPORT_PAGE_COUNT);
+    mountSportNav(idx);
+    goToPage('page-sport-' + idx);
   }
 })();
 </script>
