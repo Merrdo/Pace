@@ -41014,18 +41014,14 @@ body.is-anthracite .exam-q-info-count { color: #f2f2f4; }
 
       <div class="settings-section" id="settingsSportSection">
         <span class="settings-section-label">Yeni Özellik</span>
-        <div class="settings-card">
-          <div class="settings-row" id="settingsSportRow">
-            <div class="settings-row-text">
-              <span class="settings-row-title">Spor Modu</span>
-              <span class="settings-row-desc">Açıldığında + butonunda Spor seçeneği belirir; uygulamayı ayrı bir spor uygulamasına çevirir</span>
+        <div class="settings-card settings-panel-card" id="settingsModeCard">
+          <div class="page9-summary-header">
+            <span class="page9-summary-title">Uygulama modu</span>
+            <div class="settings-segmented page9-segmented" id="modeMainSegmented" role="radiogroup" aria-label="Uygulama modu">
+              <div class="settings-segmented-slider" id="modeMainSlider"></div>
+              <button type="button" class="settings-segmented-option is-active" data-value="main" role="radio" aria-checked="true">Ana Uygulama</button>
+              <button type="button" class="settings-segmented-option" data-value="sport" role="radio" aria-checked="false">Spor Modu</button>
             </div>
-            <label class="toggle brutal-toggle settings-toggle" id="settingsSportToggleWrap">
-              <input type="checkbox" id="settingsSportToggle" />
-              <span class="track">
-                <span class="thumb"></span>
-              </span>
-            </label>
           </div>
         </div>
       </div>
@@ -44852,8 +44848,6 @@ body.is-anthracite .exam-q-info-count { color: #f2f2f4; }
       <button type="button" class="nav-more-item" role="menuitem" data-action="tracker" style="--k:2"><svg class="nav-more-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="5.5" width="14" height="15" rx="2.4"/><rect x="9" y="3" width="6" height="2.5" rx="1"/><polyline points="8.3 13 10.8 15.5 15.7 9.5"/></svg><span>Soru Takibi</span></button>
       <button type="button" class="nav-more-item" role="menuitem" data-action="exams" style="--k:3"><svg class="nav-more-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2"/><line x1="8" y1="8" x2="16" y2="8"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="8" y1="16" x2="13" y2="16"/></svg><span>Denemelerim</span></button>
       <button type="button" class="nav-more-item" role="menuitem" data-action="games" style="--k:4" hidden><svg class="nav-more-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7.4 7h9.2a4.5 4.5 0 0 1 4.4 5.4l-.8 4a2.5 2.5 0 0 1-4.2 1.3L14.4 16H9.6l-1.6 1.7A2.5 2.5 0 0 1 3.8 16.4l-.8-4A4.5 4.5 0 0 1 7.4 7z"/><path d="M8 10v3.2M6.4 11.6h3.2"/><circle cx="15.6" cy="10.6" r=".6"/><circle cx="17.6" cy="12.6" r=".6"/></svg><span>Oyunlar</span></button>
-      <button type="button" class="nav-more-item" role="menuitem" data-action="sport" style="--k:5" hidden><svg class="nav-more-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 6.5v11M17.5 6.5v11M3.5 9v6M20.5 9v6M6.5 12h11"/></svg><span>Spor</span></button>
-      <button type="button" class="nav-more-item" role="menuitem" data-action="home-mode" style="--k:6" hidden><svg class="nav-more-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11.5L12 4l8 7.5"/><path d="M6 9.6V19a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V9.6"/></svg><span>Ana Uygulama</span><svg class="sport-check" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></button>
     </div>
   </div>
 </nav>
@@ -82854,55 +82848,76 @@ html[data-ed="dark"] #examResourcesBackdrop .delete-btn {
 </script>
 
 <style id="sportModeStyle">
-/* Spor Modu: yalnızca telefon. Ayar ve + menüsü öğesi büyük ekranda gizli (masaüstü sonra). */
+/* Spor Modu: yalnızca telefon. Mod paneli büyük ekranda gizli (masaüstü sonra). */
 @media (min-width:768px) and (min-height:600px){#settingsSportSection{display:none}}
 /* Spor modunda ana uygulamanın alt barı tamamen kalkar; yerine #sportNavbar gelir */
 body.is-sport-mode .navbar:not(.sport-navbar){display:none !important}
+/* Spor barında + butonu yok: dock ortalı */
+.navbar.sport-navbar .wrapper{margin-left:0 !important;margin-right:0 !important}
 /* Geçiş animasyonu: eski bar aşağı kayıp solar, yenisi navDockIn ile gelir */
 body.sport-switching .navbar:not(.sport-navbar),
 .navbar.sport-navbar.is-out{opacity:0 !important;transform:translateY(28px);pointer-events:none;transition:opacity .25s ease,transform .3s cubic-bezier(.22,1,.36,1)}
-.sport-check{margin-left:auto;flex:none;width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round;pointer-events:none;opacity:.7}
 @media (prefers-reduced-motion:reduce){body.sport-switching .navbar:not(.sport-navbar),.navbar.sport-navbar.is-out{transition-duration:.01s}}
 </style>
 <script id="sportModeScript">
 (function () {
   const app = document.querySelector('.app');
-  const toggle = document.getElementById('settingsSportToggle');
-  const mainMenu = document.getElementById('navMoreMenu');
-  const sportItem = mainMenu && mainMenu.querySelector('[data-action="sport"]');
-  const homeModeItem = mainMenu && mainMenu.querySelector('[data-action="home-mode"]');
-  const SPORT_PAGE_COUNT = 5;
+  const SPORT_PAGE_COUNT = 5;          // 5. sayfa = Spor uygulamasının Ayarlar'ı
+  const SPORT_SETTINGS_ID = 'page-sport-5';
   const SWITCH_MS = 260;
-  const CHECK = '<svg class="sport-check" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+  const SPORT_SETTINGS_HTML = `<div class="settings-hero"><h1 class="settings-title">Ayarlar</h1></div>
+<div class="settings-scroll" id="sportSettingsScroll"><div class="settings-page"><div class="settings-col-left">
+<div class="settings-section"><span class="settings-section-label">Yeni Özellik</span>
+<div class="settings-card settings-panel-card" id="sportModeCard"><div class="page9-summary-header">
+            <span class="page9-summary-title">Uygulama modu</span>
+            <div class="settings-segmented page9-segmented" id="modeSportSegmented" role="radiogroup" aria-label="Uygulama modu">
+              <div class="settings-segmented-slider" id="modeSportSlider" style="transform:translateX(100%)"></div>
+              <button type="button" class="settings-segmented-option" data-value="main" role="radio" aria-checked="false">Ana Uygulama</button>
+              <button type="button" class="settings-segmented-option is-active" data-value="sport" role="radio" aria-checked="true">Spor Modu</button>
+            </div>
+          </div></div></div>
+</div></div></div>`;
   const isDesktop = () => window.matchMedia('(min-width:768px) and (min-height:600px)').matches;
   let sportNav = null;
   let busy = false;
 
-  // Boş spor sayfaları (içerik sonra tasarlanacak)
+  // Spor sayfaları: 1-4 boş, 5 = Ayarlar
   if (app) {
     for (let i = 1; i <= SPORT_PAGE_COUNT; i++) {
       const sec = document.createElement('section');
       sec.className = 'page';
       sec.id = 'page-sport-' + i;
-      sec.setAttribute('aria-label', 'Spor sayfa ' + i);
+      sec.setAttribute('aria-label', i === SPORT_PAGE_COUNT ? 'Spor ayarlar' : 'Spor sayfa ' + i);
+      if (i === SPORT_PAGE_COUNT) sec.innerHTML = SPORT_SETTINGS_HTML;
       app.appendChild(sec);
     }
   }
 
-  const syncEnabled = () => {
-    const on = APP_STATE.sportModeEnabled === true;
-    if (toggle) toggle.checked = on;
-    if (sportItem) sportItem.hidden = !on;
-    if (homeModeItem) homeModeItem.hidden = !on;
+  // Mod panelleri (ana Ayarlar + Spor Ayarlar): aynı panel, farklı başlangıç seçimi
+  const bindPanel = (prefix, home, onPick) => {
+    const seg = document.getElementById(prefix + 'Segmented');
+    const slider = document.getElementById(prefix + 'Slider');
+    if (!seg || !slider) return null;
+    const opts = Array.from(seg.querySelectorAll('.settings-segmented-option'));
+    const show = (value, instant) => {
+      if (instant) { slider.style.transition = 'none'; }
+      slider.style.transform = value === 'sport' ? 'translateX(100%)' : 'translateX(0)';
+      opts.forEach((b) => {
+        const on = b.dataset.value === value;
+        b.classList.toggle('is-active', on);
+        b.setAttribute('aria-checked', on ? 'true' : 'false');
+      });
+      if (instant) { void slider.offsetWidth; slider.style.transition = ''; }
+    };
+    opts.forEach((b) => b.addEventListener('click', () => {
+      if (busy || b.dataset.value === home) return;
+      show(b.dataset.value);          // gösterge kayar
+      onPick();                       // sonra mod değişir
+    }));
+    return { reset: () => show(home, true) };
   };
-  if (toggle) {
-    toggle.addEventListener('change', () => {
-      saveAppState({ sportModeEnabled: toggle.checked });
-      syncEnabled();
-    });
-  }
-  window.addEventListener('app-state-saved', syncEnabled);
-  syncEnabled();
+  const mainPanel = bindPanel('modeMain', 'main', () => enterSport());
+  const sportPanel = bindPanel('modeSport', 'sport', () => exitSport());
 
   const buildSportNav = (startIdx) => {
     const nav = document.createElement('nav');
@@ -82911,19 +82926,10 @@ body.sport-switching .navbar:not(.sport-navbar),
     let opts = '';
     for (let i = 1; i <= SPORT_PAGE_COUNT; i++) {
       opts += '<div class="option" style="--i:' + (i - 1) + '">' +
-        '<input class="nav-input" type="radio" name="sportnav" value="page-sport-' + i + '" aria-label="Spor ' + i + '"' + (i === startIdx ? ' checked' : '') + '>' +
+        '<input class="nav-input" type="radio" name="sportnav" value="page-sport-' + i + '" aria-label="' + (i === SPORT_PAGE_COUNT ? 'Ayarlar' : 'Spor ' + i) + '"' + (i === startIdx ? ' checked' : '') + '>' +
         '<div class="nav-btn"><svg class="nav-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/></svg></div></div>';
     }
-    nav.innerHTML =
-      '<div class="wrapper"><div class="nav-slider"></div>' + opts +
-      '<button type="button" class="nav-add-btn" id="sportAddBtn" aria-label="Menü" aria-haspopup="menu" aria-expanded="false" aria-controls="sportMoreMenu">' +
-        '<svg class="nav-add-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button>' +
-      '<div class="nav-more-menu" id="sportMoreMenu" role="menu" aria-label="Menü">' +
-        '<button type="button" class="nav-more-item" role="menuitem" data-action="exit" style="--k:0">' +
-          '<svg class="nav-more-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11.5L12 4l8 7.5"/><path d="M6 9.6V19a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V9.6"/></svg><span>Ana Uygulama</span></button>' +
-        '<button type="button" class="nav-more-item" role="menuitem" data-action="stay" style="--k:1">' +
-          '<svg class="nav-more-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 6.5v11M17.5 6.5v11M3.5 9v6M20.5 9v6M6.5 12h11"/></svg><span>Spor</span>' + CHECK + '</button>' +
-      '</div></div>';
+    nav.innerHTML = '<div class="wrapper"><div class="nav-slider"></div>' + opts + '</div>';
 
     const slider = nav.querySelector('.nav-slider');
     const options = Array.from(nav.querySelectorAll('.option'));
@@ -82939,26 +82945,6 @@ body.sport-switching .navbar:not(.sport-navbar),
       });
     });
     nav._place = place;
-
-    const addBtn = nav.querySelector('#sportAddBtn');
-    const menu = nav.querySelector('#sportMoreMenu');
-    const setOpen = (open) => {
-      menu.classList.toggle('is-open', open);
-      addBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
-    };
-    addBtn.addEventListener('click', (e) => { e.stopPropagation(); setOpen(!menu.classList.contains('is-open')); });
-    menu.addEventListener('click', (e) => {
-      const it = e.target.closest('.nav-more-item');
-      if (!it) return;
-      setOpen(false);
-      if (it.dataset.action === 'exit') exitSport();
-    });
-    nav._outside = (e) => {
-      if (!menu.classList.contains('is-open')) return;
-      if (menu.contains(e.target) || addBtn.contains(e.target)) return;
-      setOpen(false);
-    };
-    document.addEventListener('pointerdown', nav._outside);
     return nav;
   };
 
@@ -82976,15 +82962,18 @@ body.sport-switching .navbar:not(.sport-navbar),
     }
   };
 
+  const startPage = () => Math.min(Math.max(parseInt(APP_STATE.sportPage, 10) || 1, 1), SPORT_PAGE_COUNT);
+
   const enterSport = () => {
     if (sportNav || busy) return;
     busy = true;
-    saveAppState({ sportModeActive: true });
+    saveAppState({ sportModeActive: true, sportPage: 1 });
     document.body.classList.add('sport-switching');   // ana bar solar
-    goToPage('page-sport-' + (APP_STATE.sportPage || 1));
+    goToPage('page-sport-1');
     setTimeout(() => {
-      mountSportNav(APP_STATE.sportPage || 1);        // spor barı navDockIn ile gelir
+      mountSportNav(1);                               // spor barı navDockIn ile gelir
       document.body.classList.remove('sport-switching');
+      if (mainPanel) mainPanel.reset();               // ana panel "Ana Uygulama"ya döner
       busy = false;
     }, SWITCH_MS);
   };
@@ -82996,25 +82985,18 @@ body.sport-switching .navbar:not(.sport-navbar),
     sportNav.classList.add('is-out');                 // spor barı solar
     goToPage('page-1');
     setTimeout(() => {
-      document.removeEventListener('pointerdown', sportNav._outside);
       sportNav.remove();
       sportNav = null;
       document.body.classList.remove('is-sport-mode'); // ana bar navDockIn ile gelir
       if (typeof selectHomeTabSilently === 'function') selectHomeTabSilently();
+      if (sportPanel) sportPanel.reset();             // spor paneli "Spor Modu"na döner
       busy = false;
     }, SWITCH_MS);
   };
 
-  if (mainMenu) {
-    mainMenu.addEventListener('click', (e) => {
-      const it = e.target.closest('.nav-more-item');
-      if (it && it.dataset.action === 'sport') enterSport();
-    });
-  }
-
-  // Yenilemede spor modunu geri yükle (yalnızca telefon + özellik açıkken)
-  if (APP_STATE.sportModeActive === true && APP_STATE.sportModeEnabled === true && !isDesktop()) {
-    const idx = Math.min(Math.max(parseInt(APP_STATE.sportPage, 10) || 1, 1), SPORT_PAGE_COUNT);
+  // Yenilemede spor modunu geri yükle (yalnızca telefon)
+  if (APP_STATE.sportModeActive === true && !isDesktop()) {
+    const idx = startPage();
     mountSportNav(idx);
     goToPage('page-sport-' + idx);
   }
