@@ -68205,8 +68205,8 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
     if (!s) return;
     const dispW = s.natW * s.coverScale * s.zoom;
     const dispH = s.natH * s.coverScale * s.zoom;
-    const maxX = Math.max(0, (dispW - s.boxSize) / 2);
-    const maxY = Math.max(0, (dispH - s.boxSize) / 2);
+    const maxX = Math.max(0, (dispW - s.boxW) / 2);
+    const maxY = Math.max(0, (dispH - s.boxH) / 2);
     s.panX = Math.min(Math.max(s.panX, -maxX), maxX);
     s.panY = Math.min(Math.max(s.panY, -maxY), maxY);
   };
@@ -68223,13 +68223,23 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
     qhavuzCropZoomInput.value = 100;
     qhavuzSyncZoomFill();
     qhavuzCropImg.onload = () => {
-      const boxSize = qhavuzCropBox.clientWidth || 280;
-      const natW = qhavuzCropImg.naturalWidth || boxSize;
-      const natH = qhavuzCropImg.naturalHeight || boxSize;
-      const coverScale = boxSize / Math.min(natW, natH);
+      // Kutu bazı büyük ekran düzenlerinde kare olmaktan çıkabiliyor (yükseklik
+      // sıkışıyor). Kırpılan alan = ekranda görünen alan olsun diye kutuyu
+      // ölçüp küçük kenara göre kareye sabitliyoruz.
+      qhavuzCropBox.style.width = ''; qhavuzCropBox.style.height = '';
+      const side = Math.floor(Math.min(qhavuzCropBox.clientWidth || 280, qhavuzCropBox.clientHeight || 280));
+      qhavuzCropBox.style.maxWidth = 'none';
+      qhavuzCropBox.style.flex = '0 0 auto';
+      qhavuzCropBox.style.width = side + 'px';
+      qhavuzCropBox.style.height = side + 'px';
+      const boxW = qhavuzCropBox.clientWidth || side;
+      const boxH = qhavuzCropBox.clientHeight || side;
+      const natW = qhavuzCropImg.naturalWidth || boxW;
+      const natH = qhavuzCropImg.naturalHeight || boxH;
+      const coverScale = Math.max(boxW / natW, boxH / natH);
       qhavuzCropImg.style.width = `${natW * coverScale}px`;
       qhavuzCropImg.style.height = `${natH * coverScale}px`;
-      qhavuzCropState = { boxSize, natW, natH, coverScale, zoom: 1, panX: 0, panY: 0 };
+      qhavuzCropState = { boxW, boxH, natW, natH, coverScale, zoom: 1, panX: 0, panY: 0 };
       qhavuzCropApply();
     };
     qhavuzCropImg.src = imageDataUrl;
@@ -68246,16 +68256,17 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
     const effScale = s.coverScale * s.zoom;
     const dispW = s.natW * effScale;
     const dispH = s.natH * effScale;
-    const imgLeft = (s.boxSize - dispW) / 2 + s.panX;
-    const imgTop = (s.boxSize - dispH) / 2 + s.panY;
+    const imgLeft = (s.boxW - dispW) / 2 + s.panX;
+    const imgTop = (s.boxH - dispH) / 2 + s.panY;
     const srcX = -imgLeft / effScale;
     const srcY = -imgTop / effScale;
-    const srcSize = s.boxSize / effScale;
+    const srcW = s.boxW / effScale;
+    const srcH = s.boxH / effScale;
     const canvas = document.createElement('canvas');
     canvas.width = OUTPUT;
-    canvas.height = OUTPUT;
+    canvas.height = Math.round(OUTPUT * s.boxH / s.boxW);
     const ctx = canvas.getContext('2d');
-    ctx.drawImage(qhavuzCropImg, srcX, srcY, srcSize, srcSize, 0, 0, OUTPUT, OUTPUT);
+    ctx.drawImage(qhavuzCropImg, srcX, srcY, srcW, srcH, 0, 0, canvas.width, canvas.height);
     resolve(canvas.toDataURL('image/jpeg', 0.88));
   });
 
