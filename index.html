@@ -82858,6 +82858,33 @@ body.is-sport-mode .navbar:not(.sport-navbar){display:none !important}
 body.sport-switching .navbar:not(.sport-navbar),
 .navbar.sport-navbar.is-out{opacity:0 !important;transform:translateY(28px);pointer-events:none;transition:opacity .25s ease,transform .3s cubic-bezier(.22,1,.36,1)}
 @media (prefers-reduced-motion:reduce){body.sport-switching .navbar:not(.sport-navbar),.navbar.sport-navbar.is-out{transition-duration:.01s}}
+
+/* ===== Spor Ayarlar sayfası: klasik ayar sayfasından farklı, büyük başlıklı tasarım ===== */
+#page-sport-5{align-items:flex-start;justify-content:flex-start;overflow-y:auto;padding:calc(env(safe-area-inset-top,0px) + 72px) 24px calc(120px + env(safe-area-inset-bottom,0px))}
+#page-sport-5 .sp-set{--sp-t:var(--theme-text,#121212);width:100%;max-width:440px;margin:0 auto}
+#page-sport-5 .sp-kicker{display:inline-flex;align-items:center;gap:9px;font:800 12px/1 "Space Grotesk","Baloo 2",sans-serif;letter-spacing:.24em;text-transform:uppercase;color:color-mix(in srgb,var(--sp-t) 55%,transparent)}
+#page-sport-5 .sp-kicker::before{content:'';width:8px;height:8px;border-radius:50%;background:var(--sp-t)}
+#page-sport-5 .sp-title{display:flex;margin:12px 0 0;padding:0 0 .14em;overflow:hidden;font-family:"Baloo 2","Space Grotesk",sans-serif;font-weight:800;font-size:clamp(60px,20vw,88px);line-height:1;letter-spacing:-.045em;color:var(--sp-t);transition:color .5s ease}
+#page-sport-5 .sp-title span{display:inline-block}
+#page-sport-5 .sp-rule{display:block;height:3px;border-radius:3px;background:var(--sp-t);transform-origin:left center}
+#page-sport-5 .sp-card{margin-top:34px}
+#page-sport-5 .sp-card .page9-summary-header{flex-direction:column;align-items:stretch;gap:.9rem}
+#page-sport-5 .sp-card .settings-segmented{width:100%}
+/* Aynı panel görünümü (ana ayarlardaki settings-panel-card kuralları .settings-page içinde olduğundan burada yinelenir) */
+#page-sport-5 .settings-card.settings-panel-card{box-sizing:border-box;padding:18px 18px 20px !important;border-radius:30px !important;border:0 !important;box-shadow:none !important;background:color-mix(in srgb,var(--m-t) 6%,transparent) !important;transition:background-color .5s ease}
+#page-sport-5 .settings-panel-card .page9-summary-title{font-family:"Baloo 2","Space Grotesk",sans-serif;font-weight:800;font-size:.95rem;letter-spacing:-.005em;text-transform:none;color:var(--m-t) !important;opacity:1;transition:color .5s ease}
+/* Animasyonlar: sayfa her açıldığında yeniden oynar */
+@keyframes spLetter{from{transform:translateY(112%) rotate(9deg);opacity:0}to{transform:none;opacity:1}}
+@keyframes spRule{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+@keyframes spFade{from{opacity:0;transform:translateX(-10px)}to{opacity:1;transform:none}}
+@keyframes spRise{from{opacity:0;transform:translateY(26px)}to{opacity:1;transform:none}}
+#page-sport-5.is-active .sp-kicker{animation:spFade .6s cubic-bezier(.22,1,.36,1) both}
+#page-sport-5.is-active .sp-title span{animation:spLetter .85s cubic-bezier(.22,1,.36,1) both;animation-delay:calc(var(--i) * 55ms + 120ms)}
+#page-sport-5.is-active .sp-rule{animation:spRule .9s cubic-bezier(.65,0,.35,1) .5s both}
+#page-sport-5.is-active .sp-card{animation:spRise .7s cubic-bezier(.22,1,.36,1) .6s both}
+@media (prefers-reduced-motion:reduce){#page-sport-5 *{animation:none !important}}
+/* Çark ikonu seçilince döner (ana uygulamadaki gibi) */
+.sport-navbar .nav-input:checked + .nav-btn .nav-icon-gear{animation:navGearSpin .55s cubic-bezier(.34,1.56,.64,1)}
 </style>
 <script id="sportModeScript">
 (function () {
@@ -82865,18 +82892,24 @@ body.sport-switching .navbar:not(.sport-navbar),
   const SPORT_PAGE_COUNT = 5;          // 5. sayfa = Spor uygulamasının Ayarlar'ı
   const SPORT_SETTINGS_ID = 'page-sport-5';
   const SWITCH_MS = 260;
-  const SPORT_SETTINGS_HTML = `<div class="settings-hero"><h1 class="settings-title">Ayarlar</h1></div>
-<div class="settings-scroll" id="sportSettingsScroll"><div class="settings-page"><div class="settings-col-left">
-<div class="settings-section"><span class="settings-section-label">Yeni Özellik</span>
-<div class="settings-card settings-panel-card" id="sportModeCard"><div class="page9-summary-header">
-            <span class="page9-summary-title">Uygulama modu</span>
-            <div class="settings-segmented page9-segmented" id="modeSportSegmented" role="radiogroup" aria-label="Uygulama modu">
-              <div class="settings-segmented-slider" id="modeSportSlider" style="transform:translateX(100%)"></div>
-              <button type="button" class="settings-segmented-option" data-value="main" role="radio" aria-checked="false">Ana Uygulama</button>
-              <button type="button" class="settings-segmented-option is-active" data-value="sport" role="radio" aria-checked="true">Spor Modu</button>
-            </div>
-          </div></div></div>
-</div></div></div>`;
+  const GEAR_SVG = '<svg class="nav-icon nav-icon-gear" viewBox="0 0 24 24"><path d="M9.59356 3.94014C9.68397 3.39768 10.1533 3.00009 10.7033 3.00009H13.2972C13.8472 3.00009 14.3165 3.39768 14.4069 3.94014L14.6204 5.22119C14.6828 5.59523 14.9327 5.9068 15.2645 6.09045C15.3387 6.13151 15.412 6.17393 15.4844 6.21766C15.8095 6.41393 16.2048 6.47495 16.5604 6.34175L17.7772 5.88587C18.2922 5.69293 18.8712 5.9006 19.1462 6.37687L20.4432 8.6233C20.7181 9.09957 20.6085 9.70482 20.1839 10.0544L19.1795 10.8812C18.887 11.122 18.742 11.4938 18.7491 11.8726C18.7498 11.915 18.7502 11.9575 18.7502 12.0001C18.7502 12.0427 18.7498 12.0852 18.7491 12.1275C18.742 12.5064 18.887 12.8782 19.1795 13.119L20.1839 13.9458C20.6085 14.2953 20.7181 14.9006 20.4432 15.3769L19.1462 17.6233C18.8712 18.0996 18.2922 18.3072 17.7772 18.1143L16.5604 17.6584C16.2048 17.5252 15.8095 17.5862 15.4844 17.7825C15.412 17.8263 15.3387 17.8687 15.2645 17.9097C14.9327 18.0934 14.6828 18.4049 14.6204 18.779L14.4069 20.06C14.3165 20.6025 13.8472 21.0001 13.2972 21.0001H10.7033C10.1533 21.0001 9.68397 20.6025 9.59356 20.06L9.38005 18.779C9.31771 18.4049 9.06774 18.0934 8.73597 17.9097C8.66179 17.8687 8.58847 17.8263 8.51604 17.7825C8.19101 17.5863 7.79568 17.5252 7.44011 17.6584L6.22325 18.1143C5.70826 18.3072 5.12926 18.0996 4.85429 17.6233L3.55731 15.3769C3.28234 14.9006 3.39199 14.2954 3.81657 13.9458L4.82092 13.119C5.11343 12.8782 5.25843 12.5064 5.25141 12.1276C5.25063 12.0852 5.25023 12.0427 5.25023 12.0001C5.25023 11.9575 5.25063 11.915 5.25141 11.8726C5.25843 11.4938 5.11343 11.122 4.82092 10.8812L3.81657 10.0544C3.39199 9.70484 3.28234 9.09958 3.55731 8.62332L4.85429 6.37688C5.12926 5.90061 5.70825 5.69295 6.22325 5.88588L7.4401 6.34176C7.79566 6.47496 8.19099 6.41394 8.51603 6.21767C8.58846 6.17393 8.66179 6.13151 8.73597 6.09045C9.06774 5.9068 9.31771 5.59523 9.38005 5.22119L9.59356 3.94014Z"/> <path d="M15 12C15 13.6569 13.6569 15 12 15C10.3431 15 9 13.6569 9 12C9 10.3432 10.3431 9.00001 12 9.00001C13.6569 9.00001 15 10.3432 15 12Z"/></svg>';
+  const SPORT_SETTINGS_HTML = `<div class="sp-set">
+<div class="sp-head">
+<span class="sp-kicker">Spor Modu</span>
+<h1 class="sp-title" aria-label="Ayarlar"><span style="--i:0">A</span><span style="--i:1">y</span><span style="--i:2">a</span><span style="--i:3">r</span><span style="--i:4">l</span><span style="--i:5">a</span><span style="--i:6">r</span></h1>
+<i class="sp-rule"></i>
+</div>
+<div class="settings-card settings-panel-card sp-card" id="sportModeCard">
+<div class="page9-summary-header">
+<span class="page9-summary-title">Uygulama modu</span>
+<div class="settings-segmented page9-segmented" id="modeSportSegmented" role="radiogroup" aria-label="Uygulama modu">
+<div class="settings-segmented-slider" id="modeSportSlider" style="transform:translateX(100%)"></div>
+<button type="button" class="settings-segmented-option" data-value="main" role="radio" aria-checked="false">Ana Uygulama</button>
+<button type="button" class="settings-segmented-option is-active" data-value="sport" role="radio" aria-checked="true">Spor Modu</button>
+</div>
+</div>
+</div>
+</div>`;
   const isDesktop = () => window.matchMedia('(min-width:768px) and (min-height:600px)').matches;
   let sportNav = null;
   let busy = false;
@@ -82927,7 +82960,7 @@ body.sport-switching .navbar:not(.sport-navbar),
     for (let i = 1; i <= SPORT_PAGE_COUNT; i++) {
       opts += '<div class="option" style="--i:' + (i - 1) + '">' +
         '<input class="nav-input" type="radio" name="sportnav" value="page-sport-' + i + '" aria-label="' + (i === SPORT_PAGE_COUNT ? 'Ayarlar' : 'Spor ' + i) + '"' + (i === startIdx ? ' checked' : '') + '>' +
-        '<div class="nav-btn"><svg class="nav-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/></svg></div></div>';
+        '<div class="nav-btn">' + (i === SPORT_PAGE_COUNT ? GEAR_SVG : '<svg class="nav-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/></svg>') + '</div></div>';
     }
     nav.innerHTML = '<div class="wrapper"><div class="nav-slider"></div>' + opts + '</div>';
 
