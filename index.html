@@ -38524,402 +38524,6 @@ body.is-anthracite .exam-q-info-count { color: #f2f2f4; }
 }
 
 </style>
-<style id="kaynaklarim-css">
-/* ==========================================================================
-   Kaynaklarım (#page-resources) — ders kitapları kütüphanesi + aşamalı ekleme
-   Ders Listesi ile aynı tema değişkenlerini kullanır (tema duyarlı).
-   ========================================================================== */
-body.is-resources-open .navbar,
-body.is-resources-open .navbar .wrapper {
-  opacity: 0; transform: translateY(28px); pointer-events: none;
-}
-
-#page-resources {
-  --rs-ink: var(--theme-text, #121212);
-  --rs-bg: var(--theme-bg, #f6f4ef);
-  --rs-card: color-mix(in srgb, var(--rs-ink) 6%, var(--rs-bg));
-  --rs-line: color-mix(in srgb, var(--rs-ink) 13%, transparent);
-  --rs-soft: color-mix(in srgb, var(--rs-ink) 55%, transparent);
-  --rs-accent: var(--accent-color, #ff90e8);
-  flex-direction: column; align-items: center; justify-content: flex-start;
-  gap: 0.9rem; padding: calc(44px + env(safe-area-inset-top)) 0 0;
-  overflow: hidden; color: var(--rs-ink); font-family: "Space Grotesk", sans-serif;
-}
-#page-resources .calendar-topbar { max-width: 520px; padding: 0 20px; box-sizing: border-box; }
-#page-resources .calendar-back-btn {
-  background: color-mix(in srgb, var(--rs-ink) 7%, transparent);
-  border: none; box-shadow: none; color: var(--rs-ink);
-  width: 2.6rem; height: 2.6rem; border-radius: 50%;
-  transition: background-color 0.2s ease, transform 0.15s ease;
-}
-#page-resources .calendar-back-btn:hover { transform: none; box-shadow: none; background: color-mix(in srgb, var(--rs-ink) 12%, transparent); }
-#page-resources .calendar-back-btn:active, #page-resources .calendar-back-btn.is-pressed {
-  transform: scale(0.92); box-shadow: none; background: color-mix(in srgb, var(--rs-ink) 12%, transparent);
-}
-
-.res-scroll {
-  flex: 1 1 auto; min-height: 0; width: 100%; overflow-y: auto; overscroll-behavior: contain;
-  -webkit-overflow-scrolling: touch; touch-action: pan-y; box-sizing: border-box;
-  padding: 0.2rem 20px 1.2rem;
-}
-.res-wrap { width: 100%; max-width: 520px; margin: 0 auto; display: flex; flex-direction: column; gap: 1.1rem; }
-
-/* Ders filtresi: yatay kayan sade çipler */
-.res-filters {
-  display: flex; gap: 0.5rem; overflow-x: auto; margin: 0 -20px; padding: 0.1rem 20px 0.25rem;
-  touch-action: pan-x; overscroll-behavior-x: contain;
-}
-.res-filters:empty { display: none; }
-.res-chip {
-  flex: none; display: inline-flex; align-items: center; gap: 0.45rem; padding: 0.5rem 0.95rem;
-  border-radius: 999px; border: 1px solid var(--rs-line); background: transparent; cursor: pointer;
-  font: 700 0.84rem "Space Grotesk", sans-serif; color: var(--rs-soft); white-space: nowrap;
-  transition: background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease, transform 0.15s ease;
-  -webkit-tap-highlight-color: transparent;
-}
-.res-chip:active { transform: scale(0.95); }
-.res-chip i { width: 0.55rem; height: 0.55rem; border-radius: 50%; background: var(--c, var(--rs-ink)); flex: none; }
-.res-chip.is-active { background: var(--rs-ink); border-color: var(--rs-ink); color: var(--rs-bg); }
-.res-chip.is-active i { box-shadow: 0 0 0 1.5px var(--rs-bg); }
-
-/* Kitap ızgarası */
-.res-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.4rem 1.1rem; }
-.res-book {
-  display: flex; flex-direction: column; gap: 0.7rem; padding: 0; border: 0; background: none; cursor: pointer;
-  text-align: left; color: inherit; font: inherit; min-width: 0; -webkit-tap-highlight-color: transparent;
-  animation: resBookIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) backwards; animation-delay: calc(var(--i, 0) * 45ms);
-}
-@keyframes resBookIn { from { opacity: 0; transform: translateY(14px) scale(0.97); } to { opacity: 1; transform: none; } }
-.res-grid.is-quiet .res-book { animation: none; }
-.res-book .res-cover { transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.35s ease; }
-.res-book:active .res-cover { transform: scale(0.965); }
-.res-book-name {
-  font-weight: 800; font-size: 0.95rem; line-height: 1.2; display: -webkit-box; -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical; overflow: hidden; word-break: break-word;
-}
-.res-book-meta { display: flex; align-items: center; gap: 0.4rem; font-weight: 600; font-size: 0.74rem; color: var(--rs-soft); min-width: 0; }
-.res-book-meta i { width: 0.5rem; height: 0.5rem; border-radius: 50%; background: var(--c); flex: none; }
-.res-book-meta span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-
-/* Kapak (yüklenen görsel ya da otomatik çizim) */
-.res-cover {
-  position: relative; display: block; width: 100%; aspect-ratio: 3 / 4; border-radius: 0.35rem 0.8rem 0.8rem 0.35rem;
-  overflow: hidden; background: var(--c, #888);
-  box-shadow: 0 1px 0 rgba(255,255,255,0.18) inset, 0 14px 26px -14px rgba(0,0,0,0.55), 0 2px 5px -2px rgba(0,0,0,0.3);
-}
-.res-cover svg, .res-cover img { position: absolute; inset: 0; width: 100%; height: 100%; display: block; object-fit: cover; }
-.res-cover::after {
-  content: ""; position: absolute; inset: 0; pointer-events: none;
-  background: linear-gradient(90deg, rgba(0,0,0,0.22) 0, rgba(255,255,255,0.12) 3.2%, rgba(0,0,0,0) 7%);
-}
-
-/* Boş durum */
-.res-empty { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; padding: 3.2rem 1rem 1rem; text-align: center; }
-.res-empty[hidden] { display: none; }
-.res-empty-art { width: 7.2rem; margin-bottom: 0.8rem; opacity: 0; animation: resEmptyIn 0.7s 0.1s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
-@keyframes resEmptyIn { from { opacity: 0; transform: translateY(12px) rotate(-3deg); } to { opacity: 1; transform: none; } }
-.res-empty-title { font-weight: 800; font-size: 1.15rem; }
-.res-empty-text { font-weight: 600; font-size: 0.85rem; color: var(--rs-soft); line-height: 1.45; max-width: 18rem; }
-
-.res-footer {
-  flex: 0 0 auto; width: 100%; max-width: 520px; box-sizing: border-box;
-  padding: 0.7rem 20px calc(18px + env(safe-area-inset-bottom)); background: var(--rs-bg);
-}
-.res-primary {
-  display: flex; align-items: center; justify-content: center; gap: 0.5rem; width: 100%;
-  padding: 0.95rem 1rem; border: 0; border-radius: 1rem; cursor: pointer;
-  background: var(--rs-ink); color: var(--rs-bg); font: 800 1rem "Space Grotesk", sans-serif;
-  transition: transform 0.15s ease, opacity 0.25s ease, background-color 0.3s ease, color 0.3s ease;
-  -webkit-tap-highlight-color: transparent;
-}
-.res-primary:active { transform: scale(0.98); }
-
-/* ---------- Ortak: açılır paneller ---------- */
-.res-backdrop {
-  position: fixed; inset: 0; z-index: 62; display: flex; align-items: flex-end; justify-content: center;
-  background: rgba(8, 8, 12, 0.55); -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px);
-  opacity: 0; pointer-events: none; visibility: hidden; touch-action: none; overscroll-behavior: contain;
-  transition: opacity 0.28s ease, visibility 0s linear 0.28s;
-}
-.res-backdrop.is-open { opacity: 1; pointer-events: auto; visibility: visible; transition: opacity 0.28s ease, visibility 0s; }
-.res-backdrop.is-top { z-index: 72; }
-.res-backdrop.is-center { align-items: center; padding: 20px; }
-
-.res-sheet {
-  --rp-bg: var(--pop-bg, #0b0b0c); --rp-ink: #fff; --rp-r1: var(--pop-raise, #1d1d22); --rp-r2: var(--pop-raise2, #26262b);
-  --rp-ac: var(--pop-accent, #ff90e8); --rp-on: var(--pop-on-accent, #16171b);
-  --rp-line: rgba(255,255,255,0.13); --rp-soft: rgba(255,255,255,0.58);
-  position: relative; width: 100%; max-width: 520px; max-height: min(94dvh, 50rem); display: flex; flex-direction: column;
-  background: var(--rp-bg); color: var(--rp-ink); border: 1px solid var(--rp-line); border-bottom: 0;
-  border-radius: 1.7rem 1.7rem 0 0; box-sizing: border-box; overflow: hidden;
-  padding: 0.5rem 1.2rem calc(1rem + env(safe-area-inset-bottom)); font-family: "Space Grotesk", sans-serif;
-  transform: translateY(104%); transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1); touch-action: pan-y;
-}
-.res-backdrop.is-open .res-sheet { transform: none; }
-.res-sheet.is-wiz { height: min(94dvh, 46rem); }
-.res-backdrop.is-center .res-sheet { border-radius: 1.5rem; border-bottom: 1px solid var(--rp-line); padding-bottom: 1.2rem; transform: translateY(24px) scale(0.96); opacity: 0; transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.3s ease; max-width: 360px; }
-.res-backdrop.is-center.is-open .res-sheet { transform: none; opacity: 1; }
-.res-grip { align-self: center; width: 2.6rem; height: 0.28rem; margin: 0.15rem 0 0.6rem; border-radius: 999px; background: var(--rp-line); flex: none; }
-.res-icon-btn {
-  width: 2.3rem; height: 2.3rem; padding: 0; border: 0; border-radius: 50%; cursor: pointer; flex: none; display: grid; place-items: center;
-  background: var(--rp-r1); color: var(--rp-ink); font: 500 1.5rem/1 "Space Grotesk", sans-serif;
-  transition: background-color 0.2s ease, opacity 0.25s ease, transform 0.2s ease; -webkit-tap-highlight-color: transparent;
-}
-.res-icon-btn:active { background: var(--rp-r2); transform: scale(0.92); }
-.res-icon-btn[hidden] { display: none; }
-.res-icon-btn.is-ghost { display: none; }
-
-/* ---------- Ekleme sihirbazı ---------- */
-.res-wiz-head { display: flex; align-items: center; gap: 0.7rem; flex: none; padding-bottom: 0.7rem; }
-.res-wiz-heading { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0.1rem; }
-.res-wiz-title { font-size: 1.2rem; font-weight: 800; line-height: 1.15; }
-.res-wiz-step { font-size: 0.74rem; font-weight: 700; color: var(--rp-soft); transition: opacity 0.2s ease; }
-.res-progress { display: flex; gap: 0.3rem; flex: none; margin-bottom: 0.9rem; }
-.res-progress span { flex: 1; height: 0.24rem; border-radius: 999px; background: var(--rp-r2); position: relative; overflow: hidden; }
-.res-progress span::after {
-  content: ""; position: absolute; inset: 0; background: var(--rp-ac); border-radius: inherit;
-  transform: scaleX(0); transform-origin: left; transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
-}
-.res-progress span.is-done::after { transform: scaleX(1); }
-
-/* Canlı kapak özeti: ad yazıldıkça, ders seçildikçe güncellenir */
-.res-live {
-  display: flex; align-items: center; gap: 0.9rem; flex: none; padding: 0.7rem 0.8rem; margin-bottom: 0.9rem;
-  background: var(--rp-r1); border: 1px solid var(--rp-line); border-radius: 1.1rem;
-}
-.res-live { max-height: 6.5rem; overflow: hidden; transition: max-height 0.45s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.3s ease, margin 0.45s cubic-bezier(0.22, 1, 0.36, 1), padding 0.45s cubic-bezier(0.22, 1, 0.36, 1); }
-.res-live.is-hidden { max-height: 0; opacity: 0; margin-bottom: 0; padding-top: 0; padding-bottom: 0; border-width: 0; }
-.res-live-cover { width: 3.4rem; flex: none; transition: transform 0.4s cubic-bezier(0.34, 1.4, 0.64, 1); }
-.res-live-cover.is-pop { transform: scale(1.08) rotate(-2deg); }
-.res-live-cover .res-cover { border-radius: 0.2rem 0.45rem 0.45rem 0.2rem; box-shadow: 0 8px 16px -8px rgba(0,0,0,0.8); }
-.res-live-text { min-width: 0; display: flex; flex-direction: column; gap: 0.15rem; }
-.res-live-name { font-weight: 800; font-size: 1rem; line-height: 1.2; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.res-live-name.is-ph { color: var(--rp-soft); font-weight: 700; }
-.res-live-meta { font-size: 0.76rem; font-weight: 600; color: var(--rp-soft); display: flex; align-items: center; gap: 0.4rem; min-height: 1.1em; }
-.res-live-meta i { width: 0.5rem; height: 0.5rem; border-radius: 50%; background: var(--c); flex: none; }
-
-.res-steps { position: relative; flex: 1 1 auto; min-height: 0; overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain; touch-action: pan-y; padding: 0.1rem 0.15rem 0.5rem; }
-.res-pane { display: none; flex-direction: column; gap: 0.7rem; }
-.res-pane.is-active { display: flex; }
-.res-pane.is-leaving { display: flex; position: absolute; left: 0.15rem; right: 0.15rem; top: 0.1rem; pointer-events: none; }
-.res-pane.in-fwd { animation: resInFwd 0.5s cubic-bezier(0.22, 1, 0.36, 1) both; }
-.res-pane.in-back { animation: resInBack 0.5s cubic-bezier(0.22, 1, 0.36, 1) both; }
-.res-pane.out-fwd { animation: resOutFwd 0.3s cubic-bezier(0.4, 0, 1, 1) both; }
-.res-pane.out-back { animation: resOutBack 0.3s cubic-bezier(0.4, 0, 1, 1) both; }
-@keyframes resInFwd { from { opacity: 0; transform: translateX(32px); } to { opacity: 1; transform: none; } }
-@keyframes resInBack { from { opacity: 0; transform: translateX(-32px); } to { opacity: 1; transform: none; } }
-@keyframes resOutFwd { to { opacity: 0; transform: translateX(-24px); } }
-@keyframes resOutBack { to { opacity: 0; transform: translateX(24px); } }
-
-.res-q { font-size: 1.35rem; font-weight: 800; line-height: 1.2; margin: 0.1rem 0 0; }
-.res-q-sub { font-size: 0.8rem; font-weight: 600; color: var(--rp-soft); line-height: 1.45; margin-top: -0.35rem; }
-.res-label { font-size: 0.78rem; font-weight: 700; color: var(--rp-soft); margin-top: 0.3rem; display: flex; justify-content: space-between; align-items: baseline; }
-.res-label em { font-style: normal; font-weight: 600; opacity: 0.8; }
-.res-input {
-  width: 100%; box-sizing: border-box; padding: 0.9rem 1rem; border-radius: 1rem; outline: 0;
-  background: var(--rp-r1); color: var(--rp-ink); border: 1.5px solid var(--rp-line);
-  font: 700 1.05rem "Space Grotesk", sans-serif; -webkit-user-select: text; user-select: text;
-  transition: border-color 0.25s ease, background-color 0.25s ease;
-}
-.res-input::placeholder { color: rgba(255,255,255,0.32); font-weight: 600; }
-.res-input:focus { border-color: var(--rp-ac); background: var(--rp-r2); }
-
-/* Sayfa sayısı: büyük sayı + artır/azalt */
-.res-counter { display: flex; align-items: center; gap: 0.6rem; }
-.res-counter .res-input { text-align: center; font-size: 1.5rem; padding: 0.7rem 0.5rem; }
-.res-step-btn {
-  width: 3.3rem; height: 3.3rem; flex: none; border-radius: 1rem; border: 1.5px solid var(--rp-line); cursor: pointer;
-  background: var(--rp-r1); color: var(--rp-ink); display: grid; place-items: center;
-  transition: transform 0.15s ease, background-color 0.2s ease; -webkit-tap-highlight-color: transparent;
-}
-.res-step-btn:active { transform: scale(0.92); background: var(--rp-r2); }
-.res-quick { display: flex; gap: 0.45rem; flex-wrap: wrap; }
-.res-quick button {
-  padding: 0.45rem 0.8rem; border-radius: 999px; border: 1px solid var(--rp-line); background: transparent; cursor: pointer;
-  color: var(--rp-soft); font: 700 0.8rem "Space Grotesk", sans-serif; -webkit-tap-highlight-color: transparent; transition: all 0.2s ease;
-}
-.res-quick button:active { background: var(--rp-r2); color: var(--rp-ink); transform: scale(0.95); }
-
-/* Ders paneli */
-.res-seg { position: relative; display: grid; grid-template-columns: 1fr 1fr; padding: 4px; background: var(--rp-r1); border: 1px solid var(--rp-line); border-radius: 999px; }
-.res-seg-slider { position: absolute; top: 4px; bottom: 4px; left: 4px; width: calc(50% - 4px); background: var(--rp-ink); border-radius: 999px; transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1); }
-.res-seg[data-active="ayt"] .res-seg-slider { transform: translateX(100%); }
-.res-seg button { position: relative; z-index: 1; padding: 0.6rem 0; border: 0; background: none; cursor: pointer; font: 800 0.92rem "Space Grotesk", sans-serif; color: var(--rp-soft); transition: color 0.3s ease; -webkit-tap-highlight-color: transparent; }
-.res-seg button.is-active { color: var(--rp-bg); }
-.res-subjects { display: flex; flex-direction: column; gap: 0.45rem; }
-.res-subject {
-  display: flex; align-items: center; gap: 0.8rem; width: 100%; padding: 0.8rem 0.95rem; border-radius: 1rem; cursor: pointer; text-align: left;
-  background: var(--rp-r1); border: 1.5px solid transparent; color: var(--rp-ink); font: 700 0.98rem "Space Grotesk", sans-serif;
-  transition: border-color 0.25s ease, background-color 0.25s ease, transform 0.15s ease; -webkit-tap-highlight-color: transparent;
-  animation: resListIn 0.45s cubic-bezier(0.22, 1, 0.36, 1) backwards; animation-delay: calc(var(--i, 0) * 24ms);
-}
-@keyframes resListIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
-.res-subject:active { transform: scale(0.985); }
-.res-subject i { width: 1.15rem; height: 1.15rem; border-radius: 50%; background: var(--c); flex: none; }
-.res-subject span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.res-subject svg { width: 1.1rem; height: 1.1rem; flex: none; opacity: 0; transform: scale(0.4); transition: opacity 0.2s ease, transform 0.35s cubic-bezier(0.34, 1.6, 0.64, 1); }
-.res-subject.is-on { border-color: var(--c); background: color-mix(in srgb, var(--c) 14%, var(--rp-r1)); }
-.res-subject.is-on svg { opacity: 1; transform: none; }
-.res-note { padding: 1.1rem 0.6rem; text-align: center; font-size: 0.84rem; font-weight: 600; line-height: 1.45; color: var(--rp-soft); }
-
-/* Kapak adımı */
-.res-drop {
-  display: flex; align-items: center; gap: 0.9rem; width: 100%; padding: 1rem; border-radius: 1.1rem; cursor: pointer; text-align: left;
-  background: transparent; border: 1.5px dashed var(--rp-line); color: var(--rp-ink); font: inherit;
-  transition: background-color 0.25s ease, border-color 0.25s ease, transform 0.15s ease; -webkit-tap-highlight-color: transparent;
-}
-.res-drop:active { transform: scale(0.985); background: var(--rp-r1); }
-.res-drop-ic { width: 2.6rem; height: 2.6rem; border-radius: 0.85rem; background: var(--rp-r1); display: grid; place-items: center; flex: none; }
-.res-drop-t { display: flex; flex-direction: column; gap: 0.1rem; min-width: 0; }
-.res-drop-t b { font-weight: 800; font-size: 0.98rem; }
-.res-drop-t small { font-weight: 600; font-size: 0.76rem; color: var(--rp-soft); }
-.res-cover-ok { display: flex; align-items: center; justify-content: space-between; gap: 0.6rem; padding: 0.75rem 0.9rem; border-radius: 1rem; background: var(--rp-r1); font-weight: 700; font-size: 0.9rem; }
-.res-text-btn { border: 0; background: none; cursor: pointer; color: var(--rp-soft); font: 700 0.84rem "Space Grotesk", sans-serif; padding: 0.35rem 0.6rem; border-radius: 0.6rem; -webkit-tap-highlight-color: transparent; }
-.res-text-btn:active { background: var(--rp-r2); color: var(--rp-ink); }
-.res-text-btn.is-danger { color: #ff7b7b; }
-.res-patterns { display: flex; gap: 0.7rem; overflow-x: auto; margin: 0 -1.2rem; padding: 0.4rem 1.2rem 0.8rem; touch-action: pan-x; overscroll-behavior-x: contain; scroll-snap-type: x proximity; scroll-padding-left: 1.2rem; }
-.res-pat { flex: none; width: 4.4rem; padding: 0; border: 0; background: none; cursor: pointer; scroll-snap-align: start; border-radius: 0.55rem; position: relative; -webkit-tap-highlight-color: transparent; transition: transform 0.25s cubic-bezier(0.34, 1.4, 0.64, 1); }
-.res-pat .res-cover { border-radius: 0.2rem 0.5rem 0.5rem 0.2rem; transition: box-shadow 0.25s ease; }
-.res-pat::after { content: ""; position: absolute; inset: -4px; border-radius: 0.8rem; border: 2px solid var(--rp-ink); opacity: 0; transform: scale(0.94); transition: opacity 0.25s ease, transform 0.35s cubic-bezier(0.34, 1.4, 0.64, 1); pointer-events: none; }
-.res-pat.is-on::after { opacity: 1; transform: none; }
-.res-pat.is-on { transform: translateY(-3px); }
-.res-pat:active { transform: scale(0.94); }
-.res-cover-preview-big { width: 9rem; margin: 0.2rem auto 0.4rem; animation: resPop 0.55s cubic-bezier(0.34, 1.4, 0.64, 1) backwards; }
-@keyframes resPop { from { opacity: 0; transform: scale(0.9) translateY(10px); } to { opacity: 1; transform: none; } }
-
-/* Cevap anahtarı görselleri */
-.res-keys { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.6rem; }
-.res-key, .res-key-add { position: relative; aspect-ratio: 3 / 4; border-radius: 0.9rem; overflow: hidden; }
-.res-key { background: var(--rp-r1); border: 0; padding: 0; cursor: pointer; }
-.res-key.fresh { animation: resPop 0.45s cubic-bezier(0.34, 1.4, 0.64, 1) backwards; }
-.res-key img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.res-key-n { position: absolute; left: 0.35rem; bottom: 0.35rem; min-width: 1.35rem; height: 1.35rem; padding: 0 0.35rem; display: grid; place-items: center; border-radius: 999px; background: rgba(0,0,0,0.62); font: 800 0.7rem "Space Grotesk", sans-serif; color: #fff; }
-.res-key-x { position: absolute; top: 0.3rem; right: 0.3rem; width: 1.6rem; height: 1.6rem; border-radius: 50%; border: 0; background: rgba(0,0,0,0.62); color: #fff; cursor: pointer; display: grid; place-items: center; padding: 0; -webkit-tap-highlight-color: transparent; }
-.res-key-x:active { background: #ff5c5c; }
-.res-key-add { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.3rem; border: 1.5px dashed var(--rp-line); background: transparent; cursor: pointer; color: var(--rp-soft); font: 700 0.74rem "Space Grotesk", sans-serif; transition: background-color 0.25s ease, transform 0.15s ease; -webkit-tap-highlight-color: transparent; }
-.res-key-add:active { background: var(--rp-r1); transform: scale(0.96); }
-
-/* Tarih satırları */
-.res-date {
-  display: flex; align-items: center; gap: 0.9rem; width: 100%; padding: 0.95rem 1rem; border-radius: 1.1rem; cursor: pointer; text-align: left;
-  background: var(--rp-r1); border: 1.5px solid transparent; color: var(--rp-ink); font: inherit;
-  transition: border-color 0.25s ease, transform 0.15s ease; -webkit-tap-highlight-color: transparent;
-}
-.res-date:active { transform: scale(0.985); border-color: var(--rp-line); }
-.res-date-ic { width: 2.6rem; height: 2.6rem; border-radius: 0.85rem; background: var(--rp-r2); display: grid; place-items: center; flex: none; }
-.res-date-t { display: flex; flex-direction: column; gap: 0.1rem; flex: 1; min-width: 0; }
-.res-date-t small { font-weight: 700; font-size: 0.74rem; color: var(--rp-soft); }
-.res-date-t b { font-weight: 800; font-size: 1.05rem; }
-.res-date-t b.is-ph { color: var(--rp-soft); font-weight: 700; }
-.res-today-tag { padding: 0.15rem 0.55rem; border-radius: 999px; background: var(--rp-ac); color: var(--rp-on); font-size: 0.68rem; font-weight: 800; flex: none; }
-.res-span { text-align: center; font-weight: 700; font-size: 0.82rem; color: var(--rp-soft); min-height: 1.2em; transition: opacity 0.3s ease; }
-
-.res-wiz-foot { flex: none; padding-top: 0.7rem; display: flex; flex-direction: column; gap: 0.4rem; }
-.res-hint { min-height: 1.1em; text-align: center; font-size: 0.78rem; font-weight: 700; color: #ff8a8a; opacity: 0; transform: translateY(4px); transition: opacity 0.25s ease, transform 0.3s ease; }
-.res-hint.is-on { opacity: 1; transform: none; }
-.res-next {
-  display: flex; align-items: center; justify-content: center; gap: 0.5rem; width: 100%; padding: 0.95rem 1rem; border: 0; border-radius: 1rem; cursor: pointer;
-  background: var(--rp-ac); color: var(--rp-on); font: 800 1rem "Space Grotesk", sans-serif;
-  transition: transform 0.15s ease, opacity 0.3s ease, filter 0.3s ease; -webkit-tap-highlight-color: transparent;
-}
-.res-next:active { transform: scale(0.98); }
-.res-next.is-off { opacity: 0.38; filter: saturate(0.4); }
-.res-next.is-shake { animation: resShake 0.42s cubic-bezier(0.36, 0.07, 0.19, 0.97); }
-@keyframes resShake { 10%, 90% { transform: translateX(-1px); } 20%, 80% { transform: translateX(3px); } 30%, 50%, 70% { transform: translateX(-5px); } 40%, 60% { transform: translateX(5px); } }
-
-/* ---------- Uygulama içi takvim paneli ---------- */
-.res-cal-head { display: flex; align-items: center; justify-content: space-between; gap: 0.6rem; flex: none; padding-bottom: 0.4rem; }
-.res-cal-title { font-weight: 800; font-size: 1.1rem; text-align: center; flex: 1; transition: opacity 0.2s ease; }
-.res-cal-label { font-size: 0.74rem; font-weight: 700; color: var(--rp-soft); text-align: center; margin-bottom: 0.2rem; }
-.res-cal-dow { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-size: 0.72rem; font-weight: 700; color: var(--rp-soft); padding: 0.5rem 0 0.3rem; }
-.res-cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 0.2rem; }
-.res-cal-grid.is-next { animation: resCalNext 0.4s cubic-bezier(0.22, 1, 0.36, 1); }
-.res-cal-grid.is-prev { animation: resCalPrev 0.4s cubic-bezier(0.22, 1, 0.36, 1); }
-@keyframes resCalNext { from { opacity: 0; transform: translateX(22px); } to { opacity: 1; transform: none; } }
-@keyframes resCalPrev { from { opacity: 0; transform: translateX(-22px); } to { opacity: 1; transform: none; } }
-.res-day {
-  aspect-ratio: 1; display: grid; place-items: center; border: 0; border-radius: 50%; cursor: pointer; padding: 0; position: relative;
-  background: none; color: var(--rp-ink); font: 700 0.95rem "Space Grotesk", sans-serif; -webkit-tap-highlight-color: transparent;
-  transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s cubic-bezier(0.34, 1.5, 0.64, 1);
-}
-.res-day:active { transform: scale(0.88); background: var(--rp-r2); }
-.res-day.is-out { visibility: hidden; pointer-events: none; }
-.res-day.is-dis { opacity: 0.22; pointer-events: none; }
-.res-day.is-today::after { content: ""; position: absolute; bottom: 0.28rem; width: 0.26rem; height: 0.26rem; border-radius: 50%; background: var(--rp-ac); }
-.res-day.is-sel { background: var(--rp-ac); color: var(--rp-on); transform: scale(1.04); }
-.res-day.is-sel.is-today::after { background: var(--rp-on); }
-.res-day.is-between { background: color-mix(in srgb, var(--rp-ac) 18%, transparent); border-radius: 0.5rem; }
-.res-cal-foot { display: flex; gap: 0.6rem; padding-top: 0.8rem; flex: none; }
-.res-cal-foot button { flex: 1; padding: 0.8rem 0.6rem; border-radius: 0.95rem; border: 0; cursor: pointer; font: 800 0.92rem "Space Grotesk", sans-serif; -webkit-tap-highlight-color: transparent; transition: transform 0.15s ease; }
-.res-cal-foot button:active { transform: scale(0.97); }
-.res-cal-foot .is-soft { background: var(--rp-r1); color: var(--rp-ink); }
-.res-cal-foot .is-main { background: var(--rp-ac); color: var(--rp-on); }
-
-/* ---------- Kitap ayrıntısı ---------- */
-.res-detail-body { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; touch-action: pan-y; display: flex; flex-direction: column; gap: 1.1rem; padding: 0.2rem 0.1rem 0.6rem; }
-.res-detail-top { display: flex; flex-direction: column; align-items: center; gap: 0.9rem; text-align: center; padding-top: 0.2rem; }
-.res-detail-cover { width: 10.5rem; animation: resPop 0.6s cubic-bezier(0.34, 1.3, 0.64, 1) backwards; }
-.res-detail-name { font-weight: 800; font-size: 1.4rem; line-height: 1.2; word-break: break-word; }
-.res-tags { display: flex; gap: 0.45rem; justify-content: center; flex-wrap: wrap; }
-.res-tag { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.38rem 0.8rem; border-radius: 999px; background: var(--rp-r1); border: 1px solid var(--rp-line); font-weight: 700; font-size: 0.8rem; }
-.res-tag i { width: 0.55rem; height: 0.55rem; border-radius: 50%; background: var(--c); }
-.res-block { background: var(--rp-r1); border: 1px solid var(--rp-line); border-radius: 1.1rem; padding: 0.95rem 1rem; display: flex; flex-direction: column; gap: 0.7rem; }
-.res-block-h { display: flex; justify-content: space-between; align-items: baseline; font-size: 0.78rem; font-weight: 700; color: var(--rp-soft); }
-.res-block-h b { color: var(--rp-ink); font-size: 0.98rem; font-weight: 800; }
-.res-bar { height: 0.45rem; border-radius: 999px; background: var(--rp-r2); overflow: hidden; }
-.res-bar span { display: block; height: 100%; width: 100%; background: var(--c, var(--rp-ac)); border-radius: inherit; transform: scaleX(var(--p, 0)); transform-origin: left; animation: resBarIn 0.9s 0.15s cubic-bezier(0.22, 1, 0.36, 1) backwards; }
-@keyframes resBarIn { from { transform: scaleX(0); } }
-.res-bar-note { font-size: 0.8rem; font-weight: 700; }
-.res-keys.is-view .res-key-add, .res-keys.is-view .res-key-x { display: none; }
-.res-detail-foot { flex: none; display: flex; gap: 0.6rem; padding-top: 0.7rem; }
-.res-btn { flex: 1; display: flex; align-items: center; justify-content: center; gap: 0.45rem; padding: 0.85rem 0.6rem; border: 0; border-radius: 1rem; cursor: pointer; background: var(--rp-r1); color: var(--rp-ink); font: 800 0.92rem "Space Grotesk", sans-serif; -webkit-tap-highlight-color: transparent; transition: transform 0.15s ease, background-color 0.2s ease; }
-.res-btn:active { transform: scale(0.97); background: var(--rp-r2); }
-.res-btn.is-danger { color: #ff7b7b; flex: 0 0 auto; padding: 0.85rem 1.1rem; }
-.res-btn.is-main { background: var(--rp-ac); color: var(--rp-on); }
-
-/* Onay penceresi */
-.res-confirm-t { font-weight: 800; font-size: 1.15rem; margin: 0.3rem 0 0.4rem; }
-.res-confirm-p { font-size: 0.86rem; font-weight: 600; line-height: 1.5; color: var(--rp-soft); margin: 0 0 1.1rem; }
-.res-confirm-row { display: flex; gap: 0.6rem; }
-.res-confirm-row .res-btn.is-danger { flex: 1; background: #ff5c5c; color: #fff; }
-
-/* Cevap anahtarı görüntüleyici */
-.res-lightbox { position: fixed; inset: 0; z-index: 80; display: flex; flex-direction: column; background: rgba(0,0,0,0.94); opacity: 0; visibility: hidden; pointer-events: none; transition: opacity 0.3s ease, visibility 0s linear 0.3s; touch-action: pan-x; font-family: "Space Grotesk", sans-serif; }
-.res-lightbox.is-open { opacity: 1; visibility: visible; pointer-events: auto; transition: opacity 0.3s ease, visibility 0s; }
-.res-lb-top { display: flex; align-items: center; justify-content: space-between; padding: calc(14px + env(safe-area-inset-top)) 16px 10px; color: #fff; font-weight: 800; flex: none; }
-.res-lb-top .res-icon-btn { background: rgba(255,255,255,0.12); color: #fff; }
-.res-lb-strip { flex: 1; min-height: 0; display: flex; overflow-x: auto; scroll-snap-type: x mandatory; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
-.res-lb-slide { flex: 0 0 100%; scroll-snap-align: center; display: grid; place-items: center; padding: 0 12px calc(24px + env(safe-area-inset-bottom)); box-sizing: border-box; }
-.res-lb-slide img { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 0.6rem; }
-
-/* Bilgi çubuğu (toast yerine hafif bildirim) */
-.res-toast { position: fixed; left: 50%; bottom: calc(96px + env(safe-area-inset-bottom)); z-index: 90; transform: translate(-50%, 20px); opacity: 0; padding: 0.7rem 1.1rem; border-radius: 999px; background: #151518; color: #fff; font: 700 0.85rem "Space Grotesk", sans-serif; box-shadow: 0 10px 30px -8px rgba(0,0,0,0.6); pointer-events: none; transition: opacity 0.3s ease, transform 0.45s cubic-bezier(0.22, 1, 0.36, 1); white-space: nowrap; }
-.res-toast.is-on { opacity: 1; transform: translate(-50%, 0); }
-
-/* Geniş ekran */
-@media (min-width: 720px) {
-  #page-resources { padding-top: calc(36px + env(safe-area-inset-top)); }
-  #page-resources .calendar-topbar { max-width: 1040px; padding: 0 40px; }
-  .res-scroll { padding: 0.6rem 40px 1.6rem; }
-  .res-wrap { max-width: 1040px; }
-  .res-filters { margin: 0 -40px; padding: 0.1rem 40px 0.25rem; }
-  .res-grid { grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr)); gap: 1.8rem 1.4rem; }
-  .res-footer { max-width: 1040px; padding: 0.7rem 40px 28px; }
-  .res-primary { width: auto; min-width: 15rem; margin-left: auto; }
-  .res-backdrop { align-items: center; padding: 24px; }
-  .res-sheet { border-radius: 1.6rem; border-bottom: 1px solid var(--rp-line); max-height: min(90dvh, 46rem); transform: translateY(26px) scale(0.97); opacity: 0; transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.3s ease; }
-  .res-backdrop.is-open .res-sheet { transform: none; opacity: 1; }
-  .res-grip { display: none; }
-  .res-sheet.is-wiz { height: min(90dvh, 46rem); }
-  .res-sheet { padding-top: 1.2rem; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .res-book, .res-subject, .res-key.fresh, .res-pane, .res-cover-preview-big, .res-detail-cover, .res-empty-art, .res-bar span { animation: none !important; }
-  .res-sheet, .res-backdrop, .res-progress span::after { transition-duration: 0.01s !important; }
-}
-
-</style>
 </head>
 <body oncopy="return false" oncut="return false" onselectstart="return false" ondragstart="return false">
 
@@ -41193,21 +40797,6 @@ body.is-resources-open .navbar .wrapper {
             </div>
             <div class="settings-row-link-right">
               <span class="settings-subjects-chip" id="settingsSubjectsChip">—</span>
-              <svg class="settings-row-chevron" viewBox="0 0 24 24" width="16" height="16">
-                <path d="M9 4l8 8-8 8" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-            </div>
-          </button>
-
-          <div class="settings-divider"></div>
-
-          <button type="button" class="settings-row settings-row-link" id="settingsResourcesLink">
-            <div class="settings-row-text">
-              <span class="settings-row-title">Kaynaklarım</span>
-              <span class="settings-row-desc">Ders kitaplarını, cevap anahtarlarını ve çalışma tarihlerini yönet</span>
-            </div>
-            <div class="settings-row-link-right">
-              <span class="settings-subjects-chip" id="settingsResourcesChip">0</span>
               <svg class="settings-row-chevron" viewBox="0 0 24 24" width="16" height="16">
                 <path d="M9 4l8 8-8 8" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
@@ -43691,194 +43280,6 @@ body.is-resources-open .navbar .wrapper {
     </div>
   </section>
 
-  <!-- ==================== Kaynaklarım (ders kitapları) ==================== -->
-  <section class="page" id="page-resources" aria-label="Kaynaklarım">
-    <div class="calendar-topbar">
-      <button type="button" class="calendar-back-btn" id="resBackBtn" aria-label="Geri dön">
-        <svg viewBox="0 0 24 24" width="18" height="18"><path d="M15 4l-8 8 8 8" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      </button>
-      <span class="calendar-topbar-title">Kaynaklarım</span>
-      <span class="calendar-topbar-spacer" aria-hidden="true"></span>
-    </div>
-
-    <div class="res-scroll" id="resScroll">
-      <div class="res-wrap">
-        <div class="res-filters" id="resFilters" role="tablist" aria-label="Ders filtresi"></div>
-        <div class="res-grid" id="resGrid"></div>
-        <div class="res-empty" id="resEmpty" hidden>
-          <svg class="res-empty-art" viewBox="0 0 120 130" aria-hidden="true">
-            <rect x="14" y="30" width="62" height="86" rx="6" fill="currentColor" opacity="0.1" transform="rotate(-9 45 73)"/>
-            <rect x="34" y="14" width="68" height="94" rx="6" fill="currentColor" opacity="0.16"/>
-            <rect x="34" y="14" width="9" height="94" rx="3" fill="currentColor" opacity="0.22"/>
-            <path d="M56 46h30M56 56h22" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" opacity="0.45"/>
-            <circle cx="66" cy="84" r="10" fill="none" stroke="currentColor" stroke-width="3" opacity="0.4"/>
-          </svg>
-          <span class="res-empty-title">Henüz kaynak yok</span>
-          <span class="res-empty-text">Ders kitaplarını ekle; kapağı, cevap anahtarı ve çalışma tarihleri hep burada dursun.</span>
-        </div>
-      </div>
-    </div>
-
-    <div class="res-footer">
-      <button type="button" class="res-primary" id="resAddBtn">
-        <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg>
-        Kitap ekle
-      </button>
-    </div>
-  </section>
-
-  <!-- Kitap ekle / düzenle: 5 aşamalı sihirbaz -->
-  <div class="res-backdrop" id="resWizBackdrop" aria-hidden="true">
-    <div class="res-sheet is-wiz" role="dialog" aria-modal="true" aria-labelledby="resWizTitle">
-      <span class="res-grip" aria-hidden="true"></span>
-      <div class="res-wiz-head">
-        <button type="button" class="res-icon-btn is-ghost" id="resWizBack" aria-label="Önceki aşama">
-          <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M15 4l-8 8 8 8" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </button>
-        <div class="res-wiz-heading">
-          <span class="res-wiz-title" id="resWizTitle">Kitap ekle</span>
-          <span class="res-wiz-step" id="resWizStep">Aşama 1 / 5</span>
-        </div>
-        <button type="button" class="res-icon-btn" id="resWizClose" aria-label="Kapat">×</button>
-      </div>
-      <div class="res-progress" id="resProgress" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span></div>
-
-      <div class="res-live" id="resLive">
-        <div class="res-live-cover" id="resLiveCover"></div>
-        <div class="res-live-text">
-          <span class="res-live-name is-ph" id="resLiveName">Kitap adı</span>
-          <span class="res-live-meta" id="resLiveMeta"></span>
-        </div>
-      </div>
-
-      <div class="res-steps" id="resSteps">
-        <!-- 1: Kitap -->
-        <div class="res-pane" data-step="0">
-          <h3 class="res-q">Hangi kitap?</h3>
-          <div class="res-label">Kitap adı <em>zorunlu</em></div>
-          <input type="text" class="res-input" id="resName" placeholder="Örn. 3D Matematik Soru Bankası" maxlength="60" autocomplete="off" autocapitalize="words" enterkeyhint="next">
-          <div class="res-label">Sayfa sayısı <em>zorunlu</em></div>
-          <div class="res-counter">
-            <button type="button" class="res-step-btn" id="resPagesMinus" aria-label="Azalt"><svg viewBox="0 0 24 24" width="18" height="18"><path d="M5 12h14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg></button>
-            <input type="text" class="res-input" id="resPages" inputmode="numeric" pattern="[0-9]*" placeholder="0" maxlength="4" autocomplete="off" enterkeyhint="done">
-            <button type="button" class="res-step-btn" id="resPagesPlus" aria-label="Artır"><svg viewBox="0 0 24 24" width="18" height="18"><path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg></button>
-          </div>
-          <div class="res-quick" id="resPagesQuick">
-            <button type="button" data-n="96">96</button><button type="button" data-n="128">128</button><button type="button" data-n="192">192</button><button type="button" data-n="256">256</button><button type="button" data-n="320">320</button>
-          </div>
-        </div>
-
-        <!-- 2: Ders -->
-        <div class="res-pane" data-step="1">
-          <h3 class="res-q">Hangi derse ait?</h3>
-          <div class="res-seg" id="resSeg" data-active="tyt" role="tablist" aria-label="Sınav türü">
-            <span class="res-seg-slider" aria-hidden="true"></span>
-            <button type="button" class="is-active" data-track="tyt" role="tab" aria-selected="true">TYT</button>
-            <button type="button" data-track="ayt" role="tab" aria-selected="false">AYT</button>
-          </div>
-          <div class="res-subjects" id="resSubjects"></div>
-        </div>
-
-        <!-- 3: Kapak -->
-        <div class="res-pane" data-step="2">
-          <h3 class="res-q">Kapak</h3>
-          <div class="res-q-sub">İstersen kendi kapak görselini ekle. Eklemezsen kitap için şık bir kapak çizeriz.</div>
-          <div id="resCoverBody"></div>
-        </div>
-
-        <!-- 4: Cevap anahtarı -->
-        <div class="res-pane" data-step="3">
-          <h3 class="res-q">Cevap anahtarı</h3>
-          <div class="res-q-sub">Cevap anahtarı sayfalarının görsellerini ekleyebilirsin. Bu aşama isteğe bağlı.</div>
-          <div class="res-keys" id="resKeysGrid"></div>
-        </div>
-
-        <!-- 5: Tarihler -->
-        <div class="res-pane" data-step="4">
-          <h3 class="res-q">Çalışma tarihleri</h3>
-          <div class="res-q-sub">Başlangıç olarak bugün seçili geldi, istersen değiştir. Bitiş tarihi isteğe bağlı.</div>
-          <button type="button" class="res-date" id="resStartBtn">
-            <span class="res-date-ic"><svg viewBox="0 0 24 24" width="20" height="20"><rect x="4" y="5.5" width="16" height="14" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M4 10h16M9 3.5v4M15 3.5v4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span>
-            <span class="res-date-t"><small>Başlangıç</small><b id="resStartTxt">—</b></span>
-            <span class="res-today-tag" id="resStartTag" hidden>Bugün</span>
-          </button>
-          <button type="button" class="res-date" id="resEndBtn">
-            <span class="res-date-ic"><svg viewBox="0 0 24 24" width="20" height="20"><rect x="4" y="5.5" width="16" height="14" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M4 10h16M9 3.5v4M15 3.5v4M9.5 15l2 2 3.5-3.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-            <span class="res-date-t"><small>Bitiş</small><b id="resEndTxt" class="is-ph">Seçilmedi</b></span>
-          </button>
-          <div class="res-span" id="resSpan"></div>
-        </div>
-      </div>
-
-      <div class="res-wiz-foot">
-        <div class="res-hint" id="resHint" role="status"></div>
-        <button type="button" class="res-next" id="resWizNext">Devam</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Uygulama içi takvim paneli (sistem tarih seçici kullanılmaz) -->
-  <div class="res-backdrop is-top" id="resCalBackdrop" aria-hidden="true">
-    <div class="res-sheet" role="dialog" aria-modal="true" aria-label="Tarih seç">
-      <span class="res-grip" aria-hidden="true"></span>
-      <div class="res-cal-label" id="resCalLabel">Başlangıç tarihi</div>
-      <div class="res-cal-head">
-        <button type="button" class="res-icon-btn" id="resCalPrev" aria-label="Önceki ay"><svg viewBox="0 0 24 24" width="16" height="16"><path d="M15 4l-8 8 8 8" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-        <div class="res-cal-title" id="resCalTitle">—</div>
-        <button type="button" class="res-icon-btn" id="resCalNext" aria-label="Sonraki ay"><svg viewBox="0 0 24 24" width="16" height="16"><path d="M9 4l8 8-8 8" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-      </div>
-      <div class="res-cal-dow"><span>Pt</span><span>Sa</span><span>Ça</span><span>Pe</span><span>Cu</span><span>Ct</span><span>Pz</span></div>
-      <div class="res-cal-grid" id="resCalGrid"></div>
-      <div class="res-cal-foot">
-        <button type="button" class="is-soft" id="resCalToday">Bugün</button>
-        <button type="button" class="is-soft" id="resCalClear" hidden>Temizle</button>
-        <button type="button" class="is-main" id="resCalDone">Tamam</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Kitap ayrıntısı -->
-  <div class="res-backdrop" id="resDetailBackdrop" aria-hidden="true">
-    <div class="res-sheet" role="dialog" aria-modal="true" aria-label="Kitap ayrıntısı">
-      <span class="res-grip" aria-hidden="true"></span>
-      <div class="res-wiz-head">
-        <span class="res-icon-btn is-ghost" aria-hidden="true"></span>
-        <div class="res-wiz-heading"></div>
-        <button type="button" class="res-icon-btn" id="resDetailClose" aria-label="Kapat">×</button>
-      </div>
-      <div class="res-detail-body" id="resDetailBody"></div>
-      <div class="res-detail-foot">
-        <button type="button" class="res-btn is-danger" id="resDetailDelete" aria-label="Kitabı sil">
-          <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M5 7h14M10 7V5h4v2M7 7l1 12h8l1-12M10.5 11v5M13.5 11v5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </button>
-        <button type="button" class="res-btn is-main" id="resDetailEdit">Düzenle</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Onay -->
-  <div class="res-backdrop is-top is-center" id="resConfirmBackdrop" aria-hidden="true">
-    <div class="res-sheet" role="alertdialog" aria-modal="true" aria-labelledby="resConfirmTitle">
-      <div class="res-confirm-t" id="resConfirmTitle">—</div>
-      <p class="res-confirm-p" id="resConfirmText"></p>
-      <div class="res-confirm-row">
-        <button type="button" class="res-btn" id="resConfirmCancel">Vazgeç</button>
-        <button type="button" class="res-btn is-danger" id="resConfirmOk">Sil</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Cevap anahtarı görüntüleyici -->
-  <div class="res-lightbox" id="resLightbox" aria-hidden="true">
-    <div class="res-lb-top"><span id="resLbCount">1 / 1</span><button type="button" class="res-icon-btn" id="resLbClose" aria-label="Kapat">×</button></div>
-    <div class="res-lb-strip" id="resLbStrip"></div>
-  </div>
-
-  <input type="file" id="resCoverInput" accept="image/*" hidden>
-  <input type="file" id="resKeysInput" accept="image/*" multiple hidden>
-  <div class="res-toast" id="resToast" role="status" aria-live="polite"></div>
-
-
   <!-- Ders ekle / düzenle -->
   <div class="subj-backdrop" id="subjSheetBackdrop" aria-hidden="true">
     <div class="subj-sheet" role="dialog" aria-modal="true" aria-labelledby="subjSheetTitle">
@@ -44277,6 +43678,138 @@ body.is-resources-open .navbar .wrapper {
 
       <div class="qhavuz-grid" id="qhavuzPackageDetailGrid"></div>
     </div>
+  </section>
+
+  <!-- ======================= KAYNAKLARIM ======================= -->
+  <!-- Liste sayfası: eklenen ders kitapları / kaynaklar. JS: "Kaynaklarım" script'i (sayfa sonu). -->
+  <section class="page kyn" id="page-books" aria-label="Kaynaklarım">
+    <div class="kyn-top">
+      <button type="button" class="kyn-iconbtn" id="kynBooksBack" aria-label="Geri dön"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
+      <h1 class="kyn-title">Kaynaklarım</h1>
+      <button type="button" class="kyn-iconbtn kyn-iconbtn--acc" id="kynBooksAdd" aria-label="Kaynak ekle"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
+    </div>
+    <div class="kyn-scroll" id="kynBooksScroll">
+      <div class="kyn-wrap">
+        <p class="kyn-sub" id="kynBooksSub"></p>
+        <div class="kyn-filters" id="kynFilters" hidden></div>
+        <div class="kyn-grid" id="kynGrid"></div>
+        <div class="kyn-empty" id="kynEmpty" hidden>
+          <svg viewBox="0 0 64 64"><path d="M14 10h30a6 6 0 0 1 6 6v38H20a6 6 0 0 1-6-6V10z"/><path d="M14 48a6 6 0 0 1 6-6h30"/><path d="M24 20h16M24 27h10"/></svg>
+          <h2>Henüz kaynak yok</h2>
+          <p>Ders kitaplarını ekle; kapak, cevap anahtarı ve çalışma tarihleriyle bir arada dursun.</p>
+          <button type="button" class="kyn-btn kyn-btn--pri" id="kynEmptyAdd">İlk kaynağını ekle</button>
+        </div>
+        <button type="button" class="kyn-link" id="kynPoolFilter">Soru Havuzu kaynak filtresini aç</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Ekleme sayfası: pop-up değil, adım adım ilerleyen tam sayfa. -->
+  <section class="page kyn" id="page-book-add" aria-label="Kaynak ekle">
+    <div class="kyn-top">
+      <button type="button" class="kyn-iconbtn" id="kynAddClose" aria-label="Kapat"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+      <span class="kyn-top-mid" id="kynAddStepLabel">Yeni kaynak</span>
+      <span style="width:42px" aria-hidden="true"></span>
+    </div>
+    <div class="kyn-prog" id="kynProg"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+
+    <div class="kyn-stage" id="kynStage">
+      <!-- 1 · Kitap adı -->
+      <div class="kyn-step" data-step="0"><div class="kyn-step-in">
+        <div class="kyn-kicker kyn-rise" style="--d:0">Adım 1 <span class="kyn-req">· zorunlu</span></div>
+        <h2 class="kyn-q kyn-rise" style="--d:1">Kitabın adı ne?</h2>
+        <p class="kyn-hint kyn-rise" style="--d:2">Kapakta göründüğü gibi yazabilirsin.</p>
+        <div class="kyn-rise" style="--d:3"><input type="text" class="kyn-input" id="kynName" placeholder="Örn. Matematik Soru Bankası" maxlength="80" autocomplete="off" autocapitalize="words" enterkeyhint="next" aria-label="Kitap adı"></div>
+      </div></div>
+
+      <!-- 2 · Sayfa sayısı -->
+      <div class="kyn-step" data-step="1"><div class="kyn-step-in">
+        <div class="kyn-kicker kyn-rise" style="--d:0">Adım 2 <span class="kyn-req">· zorunlu</span></div>
+        <h2 class="kyn-q kyn-rise" style="--d:1">Kaç sayfa?</h2>
+        <p class="kyn-hint kyn-rise" style="--d:2" id="kynPagesHint">Kitabın toplam sayfa sayısı.</p>
+        <div class="kyn-numwrap kyn-rise" style="--d:3"><span class="kyn-num is-empty" id="kynNum">0</span><span class="kyn-num-unit">sayfa</span></div>
+        <div class="kyn-pad kyn-rise" style="--d:4" id="kynPad">
+          <button type="button" class="kyn-key" data-k="1">1</button><button type="button" class="kyn-key" data-k="2">2</button><button type="button" class="kyn-key" data-k="3">3</button>
+          <button type="button" class="kyn-key" data-k="4">4</button><button type="button" class="kyn-key" data-k="5">5</button><button type="button" class="kyn-key" data-k="6">6</button>
+          <button type="button" class="kyn-key" data-k="7">7</button><button type="button" class="kyn-key" data-k="8">8</button><button type="button" class="kyn-key" data-k="9">9</button>
+          <button type="button" class="kyn-key kyn-key--fn" data-k="c">Sıfırla</button><button type="button" class="kyn-key" data-k="0">0</button>
+          <button type="button" class="kyn-key kyn-key--fn" data-k="b" aria-label="Sil"><svg viewBox="0 0 24 24"><path d="M21 5H9l-6 7 6 7h12a1 1 0 0 0 1-1V6a1 1 0 0 0-1-1z"/><path d="M16 9.5l-5 5M11 9.5l5 5"/></svg></button>
+        </div>
+      </div></div>
+
+      <!-- 3 · Ders -->
+      <div class="kyn-step" data-step="2"><div class="kyn-step-in">
+        <div class="kyn-kicker kyn-rise" style="--d:0">Adım 3 <span class="kyn-req">· zorunlu</span></div>
+        <h2 class="kyn-q kyn-rise" style="--d:1">Hangi derse ait?</h2>
+        <p class="kyn-hint kyn-rise" style="--d:2">Dersler, uygulamadaki ders listenden gelir.</p>
+        <div class="kyn-rise" style="--d:3"><div class="kyn-chips" id="kynSubjects"></div></div>
+        <div class="kyn-acc" id="kynCustomAcc"><div>
+          <div class="kyn-custom">
+            <input type="text" class="kyn-input kyn-input--sm" id="kynCustomName" placeholder="Ders adını yaz" maxlength="30" autocomplete="off" enterkeyhint="done" aria-label="Ders adı">
+            <button type="button" class="kyn-btn kyn-btn--ink kyn-btn--soft" id="kynCustomOk" style="background:var(--k-ink);color:var(--k-bg)">Ekle</button>
+          </div>
+        </div></div>
+      </div></div>
+
+      <!-- 4 · Kapak -->
+      <div class="kyn-step" data-step="3"><div class="kyn-step-in">
+        <div class="kyn-kicker kyn-rise" style="--d:0">Adım 4 <span class="kyn-req">· isteğe bağlı</span></div>
+        <h2 class="kyn-q kyn-rise" style="--d:1">Kapak görseli</h2>
+        <p class="kyn-hint kyn-rise" style="--d:2">Eklemezsen sana minimalist bir kapak çizeriz.</p>
+        <div class="kyn-prev kyn-rise" style="--d:3" id="kynCoverPrev"></div>
+        <div class="kyn-row kyn-rise" style="--d:4">
+          <button type="button" class="kyn-btn kyn-btn--soft" id="kynCoverPick">Görsel ekle</button>
+          <button type="button" class="kyn-btn kyn-btn--soft" id="kynCoverShuffle">Başka desen</button>
+          <button type="button" class="kyn-btn kyn-btn--soft" id="kynCoverRemove" hidden>Görseli kaldır</button>
+        </div>
+      </div></div>
+
+      <!-- 5 · Cevap anahtarı -->
+      <div class="kyn-step" data-step="4"><div class="kyn-step-in">
+        <div class="kyn-kicker kyn-rise" style="--d:0">Adım 5 <span class="kyn-req">· isteğe bağlı</span></div>
+        <h2 class="kyn-q kyn-rise" style="--d:1">Cevap anahtarı</h2>
+        <p class="kyn-hint kyn-rise" style="--d:2">Cevap anahtarı sayfalarının fotoğraflarını ekleyebilirsin.</p>
+        <div class="kyn-rise" style="--d:3"><div class="kyn-keys" id="kynKeysGrid"></div></div>
+      </div></div>
+
+      <!-- 6 · Tarihler -->
+      <div class="kyn-step" data-step="5"><div class="kyn-step-in">
+        <div class="kyn-kicker kyn-rise" style="--d:0">Adım 6 <span class="kyn-req">· son adım</span></div>
+        <h2 class="kyn-q kyn-rise" style="--d:1">Çalışma tarihleri</h2>
+        <p class="kyn-hint kyn-rise" style="--d:2">Başlangıç olarak eklediğin gün seçili geldi; istersen değiştir.</p>
+        <div class="kyn-rise" style="--d:3">
+          <div class="kyn-field" data-f="start">
+            <button type="button" class="kyn-field-row" data-open="start"><span class="kyn-field-lab">Başlangıç</span><span class="kyn-field-val" id="kynStartVal"></span><span class="kyn-tag" id="kynStartTag">Bugün</span></button>
+            <div class="kyn-acc"><div><div class="kyn-cal" id="kynCalStart"></div></div></div>
+          </div>
+          <div class="kyn-field" data-f="end">
+            <button type="button" class="kyn-field-row" data-open="end"><span class="kyn-field-lab">Bitiş</span><span class="kyn-field-val is-none" id="kynEndVal">Belirlenmedi</span><span class="kyn-clear" id="kynEndClear" role="button" tabindex="0" hidden>Temizle</span></button>
+            <div class="kyn-acc"><div><div class="kyn-cal" id="kynCalEnd"></div></div></div>
+          </div>
+          <p class="kyn-span" id="kynSpan"></p>
+        </div>
+      </div></div>
+    </div>
+
+    <div class="kyn-foot">
+      <button type="button" class="kyn-btn kyn-btn--ghost is-gone" id="kynPrevBtn">Geri</button>
+      <button type="button" class="kyn-btn kyn-btn--pri" id="kynNextBtn" disabled>Devam</button>
+    </div>
+
+    <div class="kyn-done" id="kynDone" aria-live="polite">
+      <div class="kyn-done-ring"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div>
+      <b>Kaynak eklendi</b>
+    </div>
+  </section>
+
+  <!-- Detay sayfası -->
+  <section class="page kyn" id="page-book-detail" aria-label="Kaynak detayı">
+    <div class="kyn-top">
+      <button type="button" class="kyn-iconbtn" id="kynDetailBack" aria-label="Geri dön"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
+      <span class="kyn-top-mid">Kaynak</span>
+      <button type="button" class="kyn-iconbtn" id="kynDetailDel" aria-label="Kaynağı sil"><svg viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-12M9 7V4h6v3"/></svg></button>
+    </div>
+    <div class="kyn-scroll"><div class="kyn-wrap" id="kynDetail"></div></div>
   </section>
 
 </div>
@@ -45515,7 +45048,6 @@ body.is-resources-open .navbar .wrapper {
     'is-wheel-open': ['page-4', 'page-mini-games-hub'],
     'is-patterns-open': ['page-patterns'],
     'is-subjects-open': ['page-subjects'],
-    'is-resources-open': ['page-resources'],
     'is-ztakvim-open': ['page-ztakvim'],
   };
   const syncNavHideClasses = (targetId) => {
@@ -45735,7 +45267,6 @@ body.is-resources-open .navbar .wrapper {
     'page-camera-package-detail': 'page-camera',
     'page-patterns': 'page-settings',
     'page-subjects': 'page-settings',
-    'page-resources': 'page-settings',
   };
 
   const moveSidebarSlider = (item) => {
@@ -46068,7 +45599,7 @@ body.is-resources-open .navbar .wrapper {
         setTimeout(fin, 1500);
       } catch (e) { fin(); }
     });
-    return Promise.all([dropDb('gundelik-notes'), dropDb('takvimim_images_v1'), dropDb('pace_kaynaklar_v1')]);
+    return Promise.all([dropDb('gundelik-notes'), dropDb('takvimim_images_v1')]);
   };
 </script>
 
@@ -83245,753 +82776,781 @@ html[data-ed="dark"] #examResourcesBackdrop .delete-btn {
   schedule();
 })();
 </script>
-<script id="kaynaklarimJs">
+<style id="kynStyle">
+/* ==========================================================================
+   KAYNAKLARIM — liste, ekleme (adım adım) ve detay sayfaları
+   Minimalist, tema duyarlı; tüm renkler uygulamanın tema değişkenlerinden gelir.
+   ========================================================================== */
+body.is-books-open .navbar,
+body.is-books-open .navbar .wrapper { opacity: 0; transform: translateY(28px); pointer-events: none; }
+
+.kyn, .kyn * { -webkit-tap-highlight-color: transparent; }
+.kyn {
+  --k-ink: var(--theme-text, #121212);
+  --k-bg: var(--theme-bg, #f6f4ef);
+  --k-card: color-mix(in srgb, var(--k-ink) 5%, var(--k-bg));
+  --k-card2: color-mix(in srgb, var(--k-ink) 10%, var(--k-bg));
+  --k-line: color-mix(in srgb, var(--k-ink) 12%, transparent);
+  --k-soft: color-mix(in srgb, var(--k-ink) 55%, transparent);
+  --k-acc: var(--accent-color, #ff90e8);
+  --k-on: var(--on-accent, #16171b);
+  --k-ease: cubic-bezier(.22, 1, .36, 1);
+  font-family: "Space Grotesk", system-ui, -apple-system, sans-serif;
+  color: var(--k-ink);
+}
+.kyn [hidden] { display: none !important; }
+.kyn button { font-family: inherit; color: inherit; cursor: pointer; }
+
+#page-books, #page-book-add, #page-book-detail {
+  flex-direction: column; align-items: stretch; justify-content: flex-start;
+  padding: calc(16px + env(safe-area-inset-top)) 0 0; overflow: hidden;
+}
+
+/* ---------- Üst çubuk ---------- */
+.kyn-top { display: flex; align-items: center; gap: 12px; width: 100%; max-width: 1040px; margin: 0 auto; padding: 6px 20px 10px; box-sizing: border-box; }
+.kyn-title { flex: 1; margin: 0; font-size: 1.4rem; font-weight: 700; letter-spacing: -.02em; color: var(--k-ink) !important; }
+.kyn-top-mid { flex: 1; text-align: center; font-size: .95rem; font-weight: 600; color: var(--k-soft); letter-spacing: .01em; }
+.kyn-iconbtn { flex: none; width: 42px; height: 42px; border-radius: 50%; border: 1px solid var(--k-line); background: transparent; display: grid; place-items: center; padding: 0; transition: transform .35s var(--k-ease), background .3s, border-color .3s, opacity .3s; }
+.kyn-iconbtn:active { transform: scale(.92); background: var(--k-card2); }
+.kyn-iconbtn svg { width: 19px; height: 19px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.kyn-iconbtn--acc { background: var(--k-acc); color: var(--k-on); border-color: transparent; }
+.kyn-iconbtn--acc:active { background: var(--k-acc); filter: brightness(.94); }
+
+.kyn-scroll { flex: 1 1 auto; min-height: 0; width: 100%; overflow-y: auto; overscroll-behavior: contain; touch-action: pan-y; padding: 4px 20px calc(40px + env(safe-area-inset-bottom)); box-sizing: border-box; }
+.kyn-wrap { width: 100%; max-width: 1040px; margin: 0 auto; }
+.kyn-sub { margin: 0 0 16px; color: var(--k-soft); font-size: .9rem; }
+
+/* ---------- Filtre çipleri ---------- */
+.kyn-filters { display: flex; gap: 8px; overflow-x: auto; padding: 2px 0 22px; touch-action: pan-x; }
+.kyn-filters::-webkit-scrollbar { display: none; }
+.kyn-fchip { flex: none; height: 36px; padding: 0 16px; border-radius: 18px; border: 1px solid var(--k-line); background: transparent; font-size: .86rem; font-weight: 500; transition: background .3s, color .3s, border-color .3s, transform .3s var(--k-ease); }
+.kyn-fchip:active { transform: scale(.95); }
+.kyn-fchip.is-on { background: var(--k-ink); color: var(--k-bg); border-color: transparent; }
+
+/* ---------- Kitap kapağı ---------- */
+.kyn-cover { position: relative; width: 100%; aspect-ratio: 3 / 4; border-radius: 4px 10px 10px 4px; overflow: hidden; container-type: inline-size; isolation: isolate; box-shadow: 0 1px 2px rgba(0,0,0,.08), 0 14px 26px -14px rgba(0,0,0,.35); }
+.kyn-cover-art { position: absolute; inset: 0; width: 100%; height: 100%; }
+.kyn-cover-sub { position: absolute; left: 12cqw; right: 10cqw; top: 11cqw; font-size: max(7px, 5.4cqw); letter-spacing: .14em; text-transform: uppercase; font-weight: 600; opacity: .72; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.kyn-cover-title { position: absolute; left: 12cqw; right: 10cqw; bottom: 11cqw; font-size: max(10px, 9.4cqw); line-height: 1.16; font-weight: 700; letter-spacing: -.015em; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; word-break: break-word; }
+.kyn-spine { position: absolute; left: 0; top: 0; bottom: 0; width: 6cqw; background: linear-gradient(90deg, rgba(0,0,0,.18), rgba(255,255,255,.14) 55%, transparent); pointer-events: none; z-index: 2; }
+.kyn-cover.has-img { background: var(--k-card2); }
+.kyn-cover-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity .5s ease; }
+.kyn-cover-img.is-in { opacity: 1; }
+
+/* ---------- Kitap ızgarası ---------- */
+.kyn-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 28px 18px; }
+@media (min-width: 640px) { .kyn-grid { grid-template-columns: repeat(auto-fill, minmax(172px, 1fr)); gap: 34px 26px; } }
+.kyn-card { all: unset; box-sizing: border-box; cursor: pointer; display: flex; flex-direction: column; gap: 11px; min-width: 0; opacity: 0; transform: translateY(14px); animation: kynIn .65s var(--k-ease) forwards; animation-delay: calc(var(--i, 0) * 55ms); }
+.kyn-card:focus-visible { outline: 2px solid var(--k-ink); outline-offset: 4px; border-radius: 8px; }
+.kyn-card .kyn-cover { transition: transform .5s var(--k-ease), box-shadow .5s var(--k-ease); }
+.kyn-card:hover .kyn-cover { transform: translateY(-4px); }
+.kyn-card:active .kyn-cover { transform: scale(.97); }
+.kyn-card.is-new .kyn-cover { animation: kynGlow 1.4s var(--k-ease) .3s; }
+.kyn-card-name { font-size: .93rem; font-weight: 600; line-height: 1.25; letter-spacing: -.01em; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.kyn-card-meta { display: flex; align-items: center; gap: 7px; color: var(--k-soft); font-size: .78rem; margin-top: -5px; min-width: 0; }
+.kyn-card-meta span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.kyn-dot { flex: none; width: 8px; height: 8px; border-radius: 50%; background: var(--c, var(--k-soft)); }
+@keyframes kynIn { to { opacity: 1; transform: none; } }
+@keyframes kynGlow { 0%,100% { box-shadow: 0 1px 2px rgba(0,0,0,.08), 0 14px 26px -14px rgba(0,0,0,.35); } 40% { box-shadow: 0 0 0 4px var(--k-acc), 0 14px 26px -14px rgba(0,0,0,.35); } }
+
+/* ---------- Boş durum ---------- */
+.kyn-empty { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 10px; padding: 12vh 24px 0; animation: kynIn .7s var(--k-ease) both; }
+.kyn-empty svg { width: 76px; height: 76px; fill: none; stroke: var(--k-soft); stroke-width: 1.3; stroke-linecap: round; stroke-linejoin: round; margin-bottom: 8px; }
+.kyn-empty h2 { margin: 0; font-size: 1.2rem; font-weight: 700; letter-spacing: -.02em; }
+.kyn-empty p { margin: 0 0 14px; color: var(--k-soft); font-size: .92rem; max-width: 260px; line-height: 1.45; }
+.kyn-link { display: block; margin: 44px auto 0; background: none; border: 0; color: var(--k-soft); font-size: .82rem; padding: 10px 14px; text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--k-line); }
+
+/* ---------- Genel butonlar ---------- */
+.kyn-btn { height: 52px; padding: 0 26px; border-radius: 26px; border: 1px solid transparent; font-size: 1rem; font-weight: 600; display: inline-flex; align-items: center; justify-content: center; gap: 8px; transition: transform .35s var(--k-ease), opacity .35s, background .3s, filter .3s; }
+.kyn-btn:active { transform: scale(.97); }
+.kyn-btn--pri { background: var(--k-acc); color: var(--k-on); }
+.kyn-btn--ink { background: var(--k-ink); color: var(--k-bg); }
+.kyn-btn--ghost { background: transparent; border-color: var(--k-line); }
+.kyn-btn--soft { background: var(--k-card); height: 44px; padding: 0 18px; font-size: .88rem; font-weight: 500; }
+.kyn-btn--soft:active { background: var(--k-card2); }
+.kyn-btn--danger { background: transparent; color: #d64545; }
+.kyn-btn[disabled] { opacity: .28; pointer-events: none; }
+
+/* ==========================================================================
+   EKLEME SİHİRBAZI
+   ========================================================================== */
+.kyn-prog { display: flex; gap: 6px; width: 100%; max-width: 520px; margin: 4px auto 0; padding: 0 24px; box-sizing: border-box; }
+.kyn-prog i { position: relative; flex: 1; height: 3px; border-radius: 2px; background: var(--k-line); overflow: hidden; }
+.kyn-prog i::after { content: ""; position: absolute; inset: 0; background: var(--k-ink); transform: scaleX(0); transform-origin: left; transition: transform .6s var(--k-ease); }
+.kyn-prog i.is-done::after { transform: scaleX(1); }
+
+.kyn-stage { position: relative; flex: 1 1 auto; min-height: 0; margin-top: 10px; overflow: hidden; overflow: clip; }
+.kyn-step { position: absolute; inset: 0; overflow-y: auto; overscroll-behavior: contain; touch-action: pan-y; padding: 22px 24px 28px; box-sizing: border-box; visibility: hidden; opacity: 0; transform: translateX(34px); transition: opacity .45s var(--k-ease), transform .6s var(--k-ease), visibility 0s linear .6s; }
+.kyn-step.is-before { transform: translateX(-34px); }
+.kyn-step.is-active { visibility: visible; opacity: 1; transform: none; transition: opacity .55s var(--k-ease), transform .65s var(--k-ease), visibility 0s; }
+.kyn-step-in { max-width: 520px; margin: 0 auto; }
+
+.kyn-rise { opacity: 0; transform: translateY(16px); transition: opacity .5s var(--k-ease), transform .7s var(--k-ease); transition-delay: 0s; }
+.kyn-step.is-active .kyn-rise { opacity: 1; transform: none; transition-delay: calc(var(--d, 0) * 80ms + 140ms); }
+
+.kyn-kicker { font-size: .74rem; letter-spacing: .16em; text-transform: uppercase; color: var(--k-soft); font-weight: 600; }
+.kyn-q { margin: 10px 0 8px; font-size: 1.95rem; line-height: 1.1; letter-spacing: -.035em; font-weight: 700; }
+.kyn-hint { margin: 0 0 30px; color: var(--k-soft); font-size: .95rem; line-height: 1.45; }
+.kyn-req { color: var(--k-soft); font-weight: 500; font-size: .75rem; letter-spacing: .04em; margin-left: 6px; text-transform: none; }
+
+.kyn-input { width: 100%; box-sizing: border-box; background: transparent; border: 0; border-bottom: 1.5px solid var(--k-line); border-radius: 0; color: inherit; font: inherit; font-size: 1.5rem; font-weight: 600; letter-spacing: -.01em; padding: 12px 0; outline: 0; transition: border-color .4s; -webkit-appearance: none; appearance: none; }
+.kyn-input::placeholder { color: color-mix(in srgb, var(--k-ink) 28%, transparent); font-weight: 500; }
+.kyn-input:focus { border-bottom-color: var(--k-ink); }
+.kyn-input--sm { font-size: 1.05rem; padding: 10px 0; }
+
+/* Sayfa sayısı */
+.kyn-numwrap { text-align: center; padding-top: 6px; }
+.kyn-num { display: inline-block; font-size: 4.6rem; line-height: 1; font-weight: 700; letter-spacing: -.045em; font-variant-numeric: tabular-nums; min-width: 1ch; transition: color .3s; }
+.kyn-num.is-empty { color: color-mix(in srgb, var(--k-ink) 22%, transparent); }
+.kyn-num.is-pop { animation: kynNum .38s var(--k-ease); }
+.kyn-num-unit { display: block; margin-top: 8px; color: var(--k-soft); font-size: .9rem; letter-spacing: .12em; text-transform: uppercase; }
+@keyframes kynNum { 0% { transform: scale(.94); } 55% { transform: scale(1.035); } 100% { transform: none; } }
+.kyn-pad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; max-width: 320px; margin: 28px auto 0; }
+.kyn-key { height: 58px; border-radius: 19px; border: 0; background: var(--k-card); font-size: 1.4rem; font-weight: 600; display: grid; place-items: center; transition: transform .25s var(--k-ease), background .25s; user-select: none; -webkit-user-select: none; }
+.kyn-key:active { transform: scale(.93); background: var(--k-card2); }
+.kyn-key--fn { background: transparent; color: var(--k-soft); font-size: 1rem; }
+.kyn-key svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+
+/* Ders çipleri */
+.kyn-chips { display: flex; flex-wrap: wrap; gap: 10px; }
+.kyn-chip { display: inline-flex; align-items: center; gap: 9px; height: 46px; padding: 0 18px; border-radius: 23px; border: 1px solid var(--k-line); background: transparent; font-size: .96rem; font-weight: 500; transition: background .4s var(--k-ease), color .4s, border-color .4s, transform .4s var(--k-ease); }
+.kyn-chip i { width: 10px; height: 10px; border-radius: 50%; background: var(--c); transition: background .4s; }
+.kyn-chip:active { transform: scale(.95); }
+.kyn-chip.is-sel { background: var(--c); color: var(--ci); border-color: transparent; transform: scale(1.04); }
+.kyn-chip.is-sel i { background: var(--ci); }
+.kyn-chip--add { border-style: dashed; color: var(--k-soft); }
+.kyn-acc { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .55s var(--k-ease); }
+.kyn-acc > div { overflow: hidden; min-height: 0; }
+.kyn-acc.is-open { grid-template-rows: 1fr; }
+.kyn-custom { display: flex; align-items: flex-end; gap: 12px; padding-top: 22px; }
+.kyn-custom .kyn-input { flex: 1; }
+
+/* Kapak adımı */
+.kyn-prev { width: min(54vw, 210px); margin: 4px auto 26px; }
+.kyn-prev .kyn-cover.is-pop { animation: kynCover .6s var(--k-ease); }
+@keyframes kynCover { 0% { opacity: .2; transform: scale(.94) rotate(-1.5deg); } 100% { opacity: 1; transform: none; } }
+.kyn-row { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+
+/* Cevap anahtarı */
+.kyn-keys { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.kyn-key-tile { position: relative; aspect-ratio: 3 / 4; border-radius: 12px; overflow: hidden; background: var(--k-card); animation: kynTile .55s var(--k-ease) both; }
+.kyn-key-tile img { width: 100%; height: 100%; object-fit: cover; display: block; opacity: 0; transition: opacity .4s; }
+.kyn-key-tile img.is-in { opacity: 1; }
+.kyn-key-x { position: absolute; top: 6px; right: 6px; width: 26px; height: 26px; border-radius: 50%; border: 0; background: rgba(20,20,24,.62); color: #fff; display: grid; place-items: center; padding: 0; backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
+.kyn-key-x svg { width: 13px; height: 13px; stroke: currentColor; stroke-width: 2.4; fill: none; stroke-linecap: round; }
+.kyn-key-no { position: absolute; left: 7px; bottom: 6px; font-size: .7rem; font-weight: 600; color: #fff; text-shadow: 0 1px 6px rgba(0,0,0,.6); }
+.kyn-key-add { aspect-ratio: 3 / 4; border-radius: 12px; border: 1.5px dashed var(--k-line); background: transparent; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; color: var(--k-soft); font-size: .78rem; transition: background .3s, transform .3s var(--k-ease); }
+.kyn-key-add:active { transform: scale(.96); background: var(--k-card); }
+.kyn-key-add svg { width: 22px; height: 22px; stroke: currentColor; stroke-width: 1.8; fill: none; stroke-linecap: round; }
+@keyframes kynTile { from { opacity: 0; transform: scale(.9); } to { opacity: 1; transform: none; } }
+
+/* Tarih alanları */
+.kyn-field { border: 1px solid var(--k-line); border-radius: 22px; margin-bottom: 12px; overflow: hidden; transition: background .4s, border-color .4s; }
+.kyn-field.is-open { background: var(--k-card); border-color: transparent; }
+.kyn-field-row { width: 100%; display: flex; align-items: center; gap: 10px; padding: 16px 16px 16px 18px; background: none; border: 0; text-align: left; }
+.kyn-field-lab { font-size: .7rem; letter-spacing: .08em; text-transform: uppercase; color: var(--k-soft); font-weight: 600; width: 86px; flex: none; white-space: nowrap; }
+.kyn-field-val { flex: 1; white-space: nowrap; font-size: 1.02rem; font-weight: 600; letter-spacing: -.01em; }
+.kyn-field-val.is-none { color: var(--k-soft); font-weight: 500; }
+.kyn-tag { font-size: .7rem; font-weight: 600; padding: 4px 9px; border-radius: 10px; background: var(--k-card2); color: var(--k-soft); white-space: nowrap; }
+.kyn-clear { background: none; border: 0; color: var(--k-soft); font-size: .8rem; padding: 6px 4px; text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--k-line); }
+.kyn-cal { padding: 4px 14px 16px; }
+.kyn-cal-head { display: flex; align-items: center; justify-content: space-between; padding: 4px 6px 10px; }
+.kyn-cal-head b { font-size: .98rem; font-weight: 600; }
+.kyn-cal-nav { width: 36px; height: 36px; border-radius: 50%; border: 0; background: transparent; display: grid; place-items: center; transition: background .25s, transform .3s var(--k-ease); }
+.kyn-cal-nav:active { transform: scale(.88); background: var(--k-card2); }
+.kyn-cal-nav svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.kyn-cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); row-gap: 4px; justify-items: center; }
+.kyn-cal-wd { font-size: .7rem; color: var(--k-soft); font-weight: 600; padding: 6px 0; }
+.kyn-cal-d { width: 38px; height: 38px; border-radius: 50%; border: 0; background: transparent; font-size: .92rem; font-weight: 500; display: grid; place-items: center; transition: background .3s, color .3s, transform .3s var(--k-ease); }
+.kyn-cal-d:active { transform: scale(.88); }
+.kyn-cal-d.is-today { box-shadow: inset 0 0 0 1px var(--k-ink); }
+.kyn-cal-d.is-sel { background: var(--k-acc); color: var(--k-on); box-shadow: none; font-weight: 700; }
+.kyn-cal-d.is-dis { opacity: .22; pointer-events: none; }
+.kyn-cal-d.is-pad { visibility: hidden; pointer-events: none; }
+.kyn-span { margin: 6px 4px 0; color: var(--k-soft); font-size: .88rem; min-height: 1.3em; transition: opacity .4s; }
+
+/* Alt çubuk */
+.kyn-foot { display: flex; gap: 12px; width: 100%; max-width: 520px; margin: 0 auto; padding: 12px 24px calc(18px + env(safe-area-inset-bottom)); box-sizing: border-box; }
+.kyn-foot .kyn-btn--pri, .kyn-foot .kyn-btn--ink { flex: 1; }
+.kyn-foot .kyn-btn--ghost { transition: opacity .4s, transform .35s var(--k-ease), width .5s var(--k-ease), padding .5s var(--k-ease), margin .5s, border-width .5s; }
+.kyn-foot .kyn-btn--ghost.is-gone { opacity: 0; width: 0; padding: 0; margin-left: -12px; border-width: 0; pointer-events: none; overflow: hidden; }
+
+/* Başarı katmanı */
+.kyn-done { position: absolute; inset: 0; z-index: 5; background: var(--k-bg); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; opacity: 0; visibility: hidden; transition: opacity .5s var(--k-ease), visibility 0s .5s; }
+.kyn-done.is-on { opacity: 1; visibility: visible; transition: opacity .5s var(--k-ease), visibility 0s; }
+.kyn-done-ring { width: 84px; height: 84px; border-radius: 50%; background: var(--k-acc); color: var(--k-on); display: grid; place-items: center; transform: scale(.6); transition: transform .7s var(--k-ease) .1s; }
+.kyn-done.is-on .kyn-done-ring { transform: none; }
+.kyn-done-ring svg { width: 38px; height: 38px; fill: none; stroke: currentColor; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 30; stroke-dashoffset: 30; }
+.kyn-done.is-on .kyn-done-ring svg { stroke-dashoffset: 0; transition: stroke-dashoffset .6s var(--k-ease) .45s; }
+.kyn-done b { font-size: 1.15rem; letter-spacing: -.01em; opacity: 0; transform: translateY(8px); transition: opacity .5s .5s, transform .6s var(--k-ease) .5s; }
+.kyn-done.is-on b { opacity: 1; transform: none; }
+
+/* ==========================================================================
+   DETAY SAYFASI
+   ========================================================================== */
+.kyn-hero { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 16px; padding: 8px 0 26px; }
+.kyn-hero .kyn-cover { width: min(56vw, 230px); animation: kynCover .8s var(--k-ease) both; }
+.kyn-hero h2 { margin: 6px 0 0; font-size: 1.55rem; line-height: 1.15; letter-spacing: -.03em; font-weight: 700; max-width: 440px; }
+.kyn-pills { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+.kyn-pill { display: inline-flex; align-items: center; gap: 8px; height: 34px; padding: 0 14px; border-radius: 17px; background: var(--k-card); font-size: .84rem; font-weight: 500; }
+.kyn-pill .kyn-dot { width: 9px; height: 9px; }
+.kyn-sect { max-width: 520px; margin: 0 auto 26px; animation: kynIn .7s var(--k-ease) both; animation-delay: .12s; }
+.kyn-sect-h { display: flex; align-items: baseline; justify-content: space-between; margin: 0 0 12px; font-size: .74rem; letter-spacing: .16em; text-transform: uppercase; color: var(--k-soft); font-weight: 600; }
+.kyn-box { border: 1px solid var(--k-line); border-radius: 22px; padding: 18px 20px; }
+.kyn-dates { display: flex; justify-content: space-between; gap: 12px; }
+.kyn-dates div { display: flex; flex-direction: column; gap: 4px; }
+.kyn-dates div:last-child { text-align: right; }
+.kyn-dates small { color: var(--k-soft); font-size: .72rem; letter-spacing: .1em; text-transform: uppercase; font-weight: 600; }
+.kyn-dates b { font-size: 1rem; font-weight: 600; }
+.kyn-bar { height: 4px; border-radius: 2px; background: var(--k-line); margin: 16px 0 10px; overflow: hidden; }
+.kyn-bar i { display: block; height: 100%; border-radius: 2px; background: var(--k-ink); transform-origin: left; animation: kynBar 1.1s var(--k-ease) .3s both; }
+@keyframes kynBar { from { transform: scaleX(0); } to { transform: none; } }
+.kyn-bar-t { color: var(--k-soft); font-size: .84rem; }
+.kyn-keys-empty { color: var(--k-soft); font-size: .9rem; margin: 0 0 12px; }
+.kyn-keys button.kyn-key-tile { border: 0; padding: 0; cursor: pointer; }
+
+/* ==========================================================================
+   Paneller (sheet), onay ve görüntüleyici
+   ========================================================================== */
+.kyn-ov { position: fixed; inset: 0; z-index: 10000; display: flex; align-items: flex-end; justify-content: center; background: rgba(10,10,14,.34); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); opacity: 0; transition: opacity .4s var(--k-ease); }
+.kyn-ov.is-open { opacity: 1; }
+.kyn-sheet { width: 100%; max-width: 440px; background: var(--k-bg); border-radius: 30px 30px 0 0; padding: 12px 20px calc(22px + env(safe-area-inset-bottom)); transform: translateY(100%); transition: transform .6s var(--k-ease); box-shadow: 0 -20px 60px -20px rgba(0,0,0,.35); }
+.kyn-ov.is-open .kyn-sheet { transform: none; }
+@media (min-width: 640px) { .kyn-ov { align-items: center; } .kyn-sheet { border-radius: 30px; padding-bottom: 22px; transform: translateY(24px) scale(.97); opacity: 0; transition: transform .6s var(--k-ease), opacity .4s; } .kyn-ov.is-open .kyn-sheet { transform: none; opacity: 1; } }
+.kyn-grab { width: 38px; height: 4px; border-radius: 2px; background: var(--k-line); margin: 0 auto 18px; }
+.kyn-sheet h3 { margin: 0 0 6px; font-size: 1.2rem; font-weight: 700; letter-spacing: -.02em; text-align: center; }
+.kyn-sheet p { margin: 0 0 18px; text-align: center; color: var(--k-soft); font-size: .92rem; line-height: 1.45; }
+.kyn-sheet-list { display: flex; flex-direction: column; gap: 8px; margin-top: 16px; }
+.kyn-sheet-btn { height: 56px; border-radius: 18px; border: 0; background: var(--k-card); font-size: 1rem; font-weight: 500; display: flex; align-items: center; gap: 14px; padding: 0 20px; text-align: left; transition: transform .3s var(--k-ease), background .25s; }
+.kyn-sheet-btn:active { transform: scale(.98); background: var(--k-card2); }
+.kyn-sheet-btn svg { width: 21px; height: 21px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+.kyn-sheet-btn--center { justify-content: center; background: transparent; color: var(--k-soft); }
+.kyn-sheet-btns { display: flex; gap: 10px; margin-top: 4px; }
+.kyn-sheet-btns .kyn-btn { flex: 1; }
+
+.kyn-viewer { position: fixed; inset: 0; z-index: 10001; background: rgba(8,8,10,.94); display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity .4s var(--k-ease); touch-action: pan-y; }
+.kyn-viewer.is-open { opacity: 1; }
+.kyn-viewer img { max-width: 100%; max-height: 100%; object-fit: contain; transition: opacity .35s, transform .5s var(--k-ease); }
+.kyn-viewer img.is-swap { opacity: 0; transform: scale(.97); }
+.kyn-viewer button { position: absolute; width: 44px; height: 44px; border-radius: 50%; border: 0; background: rgba(255,255,255,.12); color: #fff; display: grid; place-items: center; padding: 0; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); transition: transform .3s var(--k-ease), background .25s; }
+.kyn-viewer button:active { transform: scale(.9); background: rgba(255,255,255,.22); }
+.kyn-viewer button svg { width: 19px; height: 19px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.kyn-v-close { top: calc(16px + env(safe-area-inset-top)); right: 16px; }
+.kyn-v-prev { left: 14px; top: 50%; margin-top: -22px; }
+.kyn-v-next { right: 14px; top: 50%; margin-top: -22px; }
+.kyn-v-count { position: absolute; bottom: calc(22px + env(safe-area-inset-bottom)); left: 0; right: 0; text-align: center; color: rgba(255,255,255,.75); font-size: .85rem; letter-spacing: .06em; }
+
+@media (prefers-reduced-motion: reduce) {
+  .kyn *, .kyn-ov, .kyn-ov * , .kyn-viewer, .kyn-viewer * { animation-duration: .01ms !important; transition-duration: .01ms !important; transition-delay: 0s !important; }
+}
+</style>
+
+<script id="kynScript">
+/* ==========================================================================
+   KAYNAKLARIM — veri, kapak üretimi, liste, adım adım ekleme, detay
+   Veri: APP_STATE.resources = { books: [...] }  (yedek/eşitleme ile birlikte gider)
+   Görseller: uygulamanın mevcut IndexedDB deposu (idb://...).
+   ========================================================================== */
 (function () {
   'use strict';
-  var page = document.getElementById('page-resources');
-  if (!page) return;
+  const $ = (id) => document.getElementById(id);
+  if (!$('page-books') || !$('page-book-add') || !$('page-book-detail')) return;
 
-  /* ============================== Yardımcılar ============================== */
-  var $ = function (id) { return document.getElementById(id); };
-  var MONTHS = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
-  var MAX_KEYS = 40;
-  var STEP_NAMES = ['Kitap', 'Ders', 'Kapak', 'Cevap anahtarı', 'Tarihler'];
-  var DEFAULT_COLOR = '#8f96a3';
+  /* ---- Gezinme kancaları: alt menüyü gizle, yan panelde Soru Havuzu vurgulu kalsın ---- */
+  try {
+    if (typeof NAV_HIDE_OWNERS !== 'undefined') NAV_HIDE_OWNERS['is-books-open'] = ['page-books', 'page-book-add', 'page-book-detail'];
+    if (typeof SIDEBAR_PARENT_PAGE !== 'undefined') ['page-books', 'page-book-add', 'page-book-detail'].forEach((p) => { SIDEBAR_PARENT_PAGE[p] = 'page-camera'; });
+  } catch (e) { /* yok say */ }
 
-  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
-  function pad(n) { return (n < 10 ? '0' : '') + n; }
-  function isoOf(d) { return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
-  function todayIso() { return isoOf(new Date()); }
-  function parseIso(s) { var p = String(s).split('-'); return new Date(+p[0], +p[1] - 1, +p[2], 12, 0, 0); }
-  function diffDays(a, b) { return Math.round((parseIso(a) - parseIso(b)) / 86400000); }
-  function fmtDate(s) { var d = parseIso(s); return d.getDate() + ' ' + MONTHS[d.getMonth()] + ' ' + d.getFullYear(); }
-  function fmtShort(s) { var d = parseIso(s); return d.getDate() + ' ' + MONTHS[d.getMonth()].slice(0, 3); }
-  function uid() { return 'k' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
-  function hashStr(s) { var h = 2166136261; s = String(s); for (var i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; }
-  function raf2(fn) { requestAnimationFrame(function () { requestAnimationFrame(fn); }); }
+  /* ---- Yardımcılar ---- */
+  const MONTHS = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
+  const MON_S = ['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara'];
+  const WD = ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'];
+  const FALLBACK_PALETTE = ['#ff90e8', '#ffd23f', '#6ec6ff', '#ff5c5c', '#8fe3a0', '#c9a6ff', '#ffb46e', '#9fb8ff', '#3f5aa8', '#7452a8', '#272727'];
+  const pad = (n) => String(n).padStart(2, '0');
+  const iso = (d) => d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+  const parseIso = (s) => { const p = s.split('-').map(Number); return new Date(p[0], p[1] - 1, p[2]); };
+  const fmtLong = (s) => { const d = parseIso(s); return d.getDate() + ' ' + MONTHS[d.getMonth()] + ' ' + d.getFullYear(); };
+  const fmtShort = (s) => { const d = parseIso(s); return d.getDate() + ' ' + MON_S[d.getMonth()]; };
+  const todayIso = () => iso(new Date());
+  const dayDiff = (a, b) => Math.round((parseIso(b) - parseIso(a)) / 86400000);
+  const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const hash = (s) => { let h = 2166136261; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; };
+  const genId = () => 'kaynak-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+  const palette = () => { try { if (Array.isArray(WHEEL_PALETTE) && WHEEL_PALETTE.length) return WHEEL_PALETTE; } catch (e) { /* yok say */ } return FALLBACK_PALETTE; };
 
-  var toastTimer = null;
-  function toast(msg) {
-    var t = $('resToast'); t.textContent = msg; t.classList.add('is-on');
-    clearTimeout(toastTimer); toastTimer = setTimeout(function () { t.classList.remove('is-on'); }, 2200);
-  }
+  const safeColor = (c) => (typeof c === 'string' && /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(c.trim())) ? c.trim() : '#c9a6ff';
+  const hex2rgb = (h) => { h = h.replace('#', ''); if (h.length === 3) h = h.split('').map((c) => c + c).join(''); const n = parseInt(h, 16); return [(n >> 16) & 255, (n >> 8) & 255, n & 255]; };
+  const rgb2hex = (a) => '#' + a.map((v) => Math.round(v).toString(16).padStart(2, '0')).join('');
+  const mix = (a, b, t) => { const x = hex2rgb(a), y = hex2rgb(b); return rgb2hex(x.map((v, i) => v + (y[i] - v) * t)); };
+  const lum = (h) => { const c = hex2rgb(h).map((v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); }); return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]; };
+  const inkFor = (bg) => (lum(bg) > 0.42 ? '#17181c' : '#ffffff');
 
-  /* ============================== Renk ============================== */
-  function rgbOf(h) {
-    h = String(h || DEFAULT_COLOR).replace('#', '');
-    if (h.length === 3) h = h.split('').map(function (c) { return c + c; }).join('');
-    var n = parseInt(h, 16); if (isNaN(n)) n = parseInt(DEFAULT_COLOR.slice(1), 16);
-    return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
-  }
-  function hexOf(r) { return '#' + r.map(function (v) { return pad2(Math.max(0, Math.min(255, Math.round(v)))); }).join(''); }
-  function pad2(v) { var s = v.toString(16); return s.length < 2 ? '0' + s : s; }
-  function mix(h, t, a) { var c = rgbOf(h); return hexOf([c[0] + (t[0] - c[0]) * a, c[1] + (t[1] - c[1]) * a, c[2] + (t[2] - c[2]) * a]); }
-  function lum(h) { var c = rgbOf(h).map(function (v) { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); }); return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]; }
+  const toast = (m, v) => { try { if (typeof showAppToast === 'function') showAppToast(m, v); } catch (e) { /* yok say */ } };
+  const compress = (d, max, q) => (typeof compressImageDataUrl === 'function' ? compressImageDataUrl(d, max, q) : Promise.resolve(d));
+  const storeImg = (d) => (typeof storeImageAndGetRef === 'function' ? storeImageAndGetRef(d) : Promise.resolve(d));
+  const delImg = (r) => { try { if (typeof deleteImageRef === 'function') return deleteImageRef(r); } catch (e) { /* yok say */ } return Promise.resolve(); };
+  const readFile = (f) => new Promise((res) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = () => res(null); r.readAsDataURL(f); });
 
-  /* ============================== Otomatik kapak çizimleri ============================== */
-  var coverUid = 0;
-  var PATTERN_COUNT = 8;
+  /* ---- Veri ---- */
+  const getBooks = () => { const r = APP_STATE.resources; return (r && Array.isArray(r.books)) ? r.books : []; };
+  const setBooks = (b) => saveAppState({ resources: { books: b } });
+  const findBook = (id) => getBooks().find((b) => b.id === id);
 
-  function wrapTitle(text, max, maxLines) {
-    var words = String(text).trim().split(/\s+/).filter(Boolean), lines = [], cur = '';
-    words.forEach(function (w) {
-      while (w.length > max) {
-        if (cur) { lines.push(cur); cur = ''; }
-        lines.push(w.slice(0, max - 1) + '-'); w = w.slice(max - 1);
-      }
-      if ((cur ? cur + ' ' + w : w).length <= max) cur = cur ? cur + ' ' + w : w;
-      else { lines.push(cur); cur = w; }
+  /* ---- Ders listesi (uygulamadaki derslerle aynı kaynak) ---- */
+  const subjectList = (extra) => {
+    let l = [];
+    try { l = (typeof qhavuzAllSubjects === 'function' ? qhavuzAllSubjects() : []).map((s) => ({ name: s.name, color: safeColor(s.color) })); } catch (e) { l = []; }
+    if (!l.length) ['Türkçe', 'Matematik', 'Fizik', 'Kimya', 'Biyoloji', 'Tarih', 'Coğrafya', 'Felsefe', 'Din'].forEach((n, i) => l.push({ name: n, color: palette()[i % palette().length] }));
+    (extra || []).forEach((c) => { if (!l.some((x) => x.name.toLowerCase() === c.name.toLowerCase())) l.push(c); });
+    return l;
+  };
+
+  /* ==========================================================================
+     OTOMATİK KAPAK: ders renginden türeyen, deseni kitap adından seçilen minimal çizim
+     ========================================================================== */
+  const PATTERNS = [
+    (k) => '<g fill="none" stroke="' + k + '" stroke-opacity=".26" stroke-width="1.1">' + [20, 36, 52, 68, 84].map((r) => '<circle cx="118" cy="38" r="' + r + '"/>').join('') + '</g><circle cx="118" cy="38" r="9" fill="' + k + '" fill-opacity=".22"/>',
+    (k) => '<g stroke="' + k + '" stroke-opacity=".2" stroke-width="1.1">' + Array.from({ length: 17 }, (_, i) => '<line x1="' + (-100 + i * 14) + '" y1="160" x2="' + (i * 14) + '" y2="0"/>').join('') + '</g><circle cx="92" cy="40" r="15" fill="' + k + '" fill-opacity=".2"/>',
+    (k) => '<g fill="' + k + '" fill-opacity=".3">' + Array.from({ length: 30 }, (_, n) => '<circle cx="' + (22 + (n % 5) * 20) + '" cy="' + (20 + Math.floor(n / 5) * 17) + '" r="1.6"/>').join('') + '</g><circle cx="86" cy="52" r="26" fill="none" stroke="' + k + '" stroke-opacity=".28" stroke-width="1.1"/>',
+    (k) => '<g fill="none" stroke="' + k + '" stroke-opacity=".28" stroke-width="1.1">' + [16, 30, 44].map((w) => '<path d="M' + (60 - w) + ' 160V96A' + w + ' ' + w + ' 0 0 1 ' + (60 + w) + ' 96V160"/>').join('') + '</g><circle cx="60" cy="96" r="5" fill="' + k + '" fill-opacity=".3"/>',
+    (k) => '<g fill="none" stroke="' + k + '" stroke-opacity=".24" stroke-width="1.1">' + Array.from({ length: 7 }, (_, i) => { const y = 26 + i * 13; return '<path d="M-5 ' + y + 'Q15 ' + (y - 9) + ' 30 ' + y + 'T60 ' + y + 'T90 ' + y + 'T125 ' + y + '"/>'; }).join('') + '</g>',
+    (k) => '<circle cx="84" cy="46" r="26" fill="' + k + '" fill-opacity=".14"/><rect x="18" y="62" width="32" height="32" transform="rotate(18 34 78)" fill="none" stroke="' + k + '" stroke-opacity=".3" stroke-width="1.1"/><polygon points="72,122 102,122 87,96" fill="' + k + '" fill-opacity=".18"/>'
+  ];
+  const patternIndex = (b) => (b.pattern != null ? b.pattern : hash((b.name || '') + (b.subject || ''))) % PATTERNS.length;
+
+  const coverHTML = (b) => {
+    if (b.cover) return '<div class="kyn-cover has-img"><img class="kyn-cover-img" data-ref="' + esc(b.cover) + '" alt=""><i class="kyn-spine"></i></div>';
+    const bg = mix(safeColor(b.subjectColor), '#f4f1ea', 0.16);
+    const ink = inkFor(bg);
+    const frame = '<rect x="7" y="7" width="106" height="146" rx="2" fill="none" stroke="' + ink + '" stroke-opacity=".16" stroke-width=".8"/>';
+    return '<div class="kyn-cover" style="background:' + bg + ';color:' + ink + '"><svg class="kyn-cover-art" viewBox="0 0 120 160" preserveAspectRatio="xMidYMid slice" aria-hidden="true">' + frame + PATTERNS[patternIndex(b)](ink) + '</svg><span class="kyn-cover-sub">' + esc(b.subject) + '</span><span class="kyn-cover-title">' + esc(b.name) + '</span><i class="kyn-spine"></i></div>';
+  };
+  const hydrate = (root) => {
+    root.querySelectorAll('img[data-ref]').forEach((img) => {
+      const ref = img.getAttribute('data-ref');
+      img.addEventListener('load', () => img.classList.add('is-in'), { once: true });
+      Promise.resolve(typeof resolveImageSrc === 'function' ? resolveImageSrc(ref) : ref).then((u) => { if (u) img.src = u; });
     });
-    if (cur) lines.push(cur);
-    if (lines.length > maxLines) { lines = lines.slice(0, maxLines); lines[maxLines - 1] = lines[maxLines - 1].replace(/.?$/, '…'); }
-    return lines;
-  }
+  };
 
-  function drawPattern(i, k, seed, id) {
-    var out = '', n, j, x, y;
-    switch (i) {
-      case 0: // Çizgiler
-        for (j = 0; j < 12; j++) {
-          y = 96 + j * 15;
-          out += '<line x1="0" x2="300" y1="' + y + '" y2="' + y + '" stroke="' + k + '" stroke-width="' + (j === 4 + (seed % 4) ? 3.5 : 1.4) + '" opacity="' + (j === 4 + (seed % 4) ? 0.5 : 0.17) + '"/>';
-        }
-        break;
-      case 1: // Noktalar
-        for (j = 0; j < 7; j++) for (n = 0; n < 8; n++) {
-          out += '<circle cx="' + (30 + n * 34) + '" cy="' + (60 + j * 34) + '" r="2.4" fill="' + k + '" opacity="0.26"/>';
-        }
-        out += '<circle cx="' + (30 + (seed % 8) * 34) + '" cy="' + (60 + (seed % 5) * 34) + '" r="13" fill="none" stroke="' + k + '" stroke-width="2" opacity="0.55"/>';
-        break;
-      case 2: // Yaylar
-        for (j = 1; j <= 8; j++) out += '<circle cx="300" cy="0" r="' + (j * 38) + '" fill="none" stroke="' + k + '" stroke-width="' + (j === 3 ? 3 : 1.5) + '" opacity="' + (j === 3 ? 0.42 : 0.17) + '"/>';
-        break;
-      case 3: // Dalgalar
-        for (j = 0; j < 7; j++) {
-          y = 100 + j * 24;
-          out += '<path d="M-10 ' + y + ' Q27 ' + (y - 20) + ' 65 ' + y + ' T140 ' + y + ' T215 ' + y + ' T290 ' + y + ' T365 ' + y + '" fill="none" stroke="' + k + '" stroke-width="' + (j === 2 ? 3 : 1.6) + '" opacity="' + (j === 2 ? 0.4 : 0.18) + '" stroke-linecap="round"/>';
-        }
-        break;
-      case 4: // Izgara
-        for (j = 0; j <= 10; j++) out += '<line x1="' + (j * 30) + '" x2="' + (j * 30) + '" y1="0" y2="270" stroke="' + k + '" stroke-width="1.2" opacity="0.14"/>';
-        for (j = 0; j <= 9; j++) out += '<line x1="0" x2="300" y1="' + (j * 30) + '" y2="' + (j * 30) + '" stroke="' + k + '" stroke-width="1.2" opacity="0.14"/>';
-        out += '<rect x="' + (30 * (1 + seed % 8)) + '" y="' + (30 * (1 + (seed >> 3) % 6)) + '" width="30" height="30" fill="' + k + '" opacity="0.22"/>';
-        break;
-      case 5: // Daireler
-        out += '<circle cx="118" cy="150" r="64" fill="' + k + '" fill-opacity="0.07" stroke="' + k + '" stroke-width="2" opacity="0.4"/>' +
-               '<circle cx="182" cy="150" r="64" fill="' + k + '" fill-opacity="0.07" stroke="' + k + '" stroke-width="2" opacity="0.4"/>' +
-               '<circle cx="150" cy="96" r="64" fill="' + k + '" fill-opacity="0.07" stroke="' + k + '" stroke-width="2" opacity="0.4"/>';
-        break;
-      case 6: // Üçgenler
-        for (j = 0; j < 6; j++) for (n = 0; n < 7; n++) {
-          var a = (n * 50), b = (j * 45), op = [0.05, 0.1, 0.17][(n + j * 2 + seed) % 3];
-          out += '<path d="M' + a + ' ' + (b + 45) + ' L' + (a + 25) + ' ' + b + ' L' + (a + 50) + ' ' + (b + 45) + 'Z" fill="' + k + '" opacity="' + op + '"/>';
-          out += '<path d="M' + (a + 25) + ' ' + b + ' L' + (a + 75) + ' ' + b + ' L' + (a + 50) + ' ' + (b + 45) + 'Z" fill="' + k + '" opacity="' + [0.12, 0.05, 0.09][(n + j + seed) % 3] + '"/>';
-        }
-        break;
-      default: // Çapraz şeritler
-        out += '<clipPath id="cp' + id + '"><rect x="0" y="0" width="300" height="285"/></clipPath><g clip-path="url(#cp' + id + ')">';
-        for (j = 0; j < 16; j++) {
-          x = -280 + j * 28;
-          out += '<line x1="' + x + '" y1="285" x2="' + (x + 285) + '" y2="0" stroke="' + k + '" stroke-width="' + (j === 8 ? 9 : 2) + '" opacity="' + (j === 8 ? 0.26 : 0.16) + '"/>';
-        }
-        out += '</g>';
-    }
-    return out;
-  }
+  /* ==========================================================================
+     PANELLER (sheet) — sistem seçicisi yerine uygulama içi paneller
+     ========================================================================== */
+  const openSheet = (html) => {
+    const ov = document.createElement('div');
+    ov.className = 'kyn kyn-ov';
+    ov.innerHTML = '<div class="kyn-sheet" role="dialog" aria-modal="true"><div class="kyn-grab"></div>' + html + '</div>';
+    document.body.appendChild(ov);
+    requestAnimationFrame(() => requestAnimationFrame(() => ov.classList.add('is-open')));
+    let closed = false;
+    const close = () => { if (closed) return; closed = true; ov.classList.remove('is-open'); setTimeout(() => ov.remove(), 650); };
+    ov.addEventListener('click', (e) => { if (e.target === ov) close(); });
+    return { el: ov, close };
+  };
+  const ask = (o) => new Promise((resolve) => {
+    const s = openSheet('<h3>' + esc(o.title) + '</h3><p>' + esc(o.text) + '</p><div class="kyn-sheet-btns"><button type="button" class="kyn-btn kyn-btn--ghost" data-a="no">' + esc(o.no || 'Vazgeç') + '</button><button type="button" class="kyn-btn ' + (o.danger ? 'kyn-btn--ink' : 'kyn-btn--pri') + '" data-a="yes"' + (o.danger ? ' style="background:#d64545;color:#fff"' : '') + '>' + esc(o.yes || 'Tamam') + '</button></div>');
+    let done = false;
+    const fin = (v) => { if (done) return; done = true; s.close(); resolve(v); };
+    s.el.querySelector('[data-a="yes"]').addEventListener('click', () => fin(true));
+    s.el.querySelector('[data-a="no"]').addEventListener('click', () => fin(false));
+    s.el.addEventListener('click', (e) => { if (e.target === s.el) fin(false); });
+  });
 
-  function autoPattern(name) { return hashStr(name || 'kitap') % PATTERN_COUNT; }
+  const ICON_IMG = '<svg viewBox="0 0 24 24"><rect x="3.5" y="4.5" width="17" height="15" rx="2.5"/><circle cx="9" cy="10" r="1.7"/><path d="M4 17l5-4.5 4 3.5 3-2.5 4 3.5"/></svg>';
+  const ICON_CAM = '<svg viewBox="0 0 24 24"><path d="M3 8.5A1.5 1.5 0 0 1 4.5 7h2.4l1.3-1.8a1.5 1.5 0 0 1 1.2-.6h5.2a1.5 1.5 0 0 1 1.2.6L17.1 7h2.4A1.5 1.5 0 0 1 21 8.5v9a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 17.5z"/><circle cx="12" cy="13" r="3.3"/></svg>';
 
-  function coverSVG(o) {
-    var id = ++coverUid;
-    var base = o.color || DEFAULT_COLOR;
-    var top = mix(base, [255, 255, 255], 0.2), bot = mix(base, [0, 0, 0], 0.16);
-    var mid = mix(base, [0, 0, 0], 0.06);
-    var dark = lum(mid) > 0.42;
-    var ink = dark ? '#14151a' : '#ffffff';
-    var seed = hashStr(o.name || 'kitap');
-    var pi = (o.pattern == null) ? autoPattern(o.name) : o.pattern;
-    var title = (o.name || '').trim();
-    var lines = title ? wrapTitle(title, 14, 4) : ['Kitap', 'Adı'];
-    var longest = lines.reduce(function (m, l) { return Math.max(m, l.length); }, 0);
-    var fs = longest <= 9 ? 36 : 29, lh = fs * 1.14;
-    var y0 = 372 - (lines.length - 1) * lh;
-    var tx = '';
-    lines.forEach(function (l, idx) {
-      tx += '<text x="28" y="' + (y0 + idx * lh).toFixed(1) + '" font-family="Space Grotesk, Arial, sans-serif" font-weight="700" font-size="' + fs + '" fill="' + ink + '" opacity="' + (title ? 1 : 0.5) + '" letter-spacing="-0.4">' + esc(l) + '</text>';
-    });
-    var subj = o.subject ? esc(String(o.subject).slice(0, 22)) : '';
-    return '<svg viewBox="0 0 300 400" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' +
-      '<defs><linearGradient id="g' + id + '" x1="0" y1="0" x2="0.35" y2="1"><stop offset="0" stop-color="' + top + '"/><stop offset="1" stop-color="' + bot + '"/></linearGradient></defs>' +
-      '<rect width="300" height="400" fill="url(#g' + id + ')"/>' +
-      drawPattern(pi, ink, seed, id) +
-      (subj ? '<text x="28" y="46" font-family="Space Grotesk, Arial, sans-serif" font-weight="600" font-size="15" fill="' + ink + '" opacity="0.72">' + subj + '</text>' : '') +
-      '<rect x="28" y="' + (y0 - fs - 18).toFixed(1) + '" width="34" height="4" rx="2" fill="' + ink + '" opacity="0.8"/>' +
-      tx + '</svg>';
-  }
-
-  function coverHTML(o) {
-    if (o.img) return '<span class="res-cover" style="--c:' + esc(o.color || DEFAULT_COLOR) + '"><img src="' + esc(o.img) + '" alt="" draggable="false"></span>';
-    return '<span class="res-cover" style="--c:' + esc(o.color || DEFAULT_COLOR) + '">' + coverSVG(o) + '</span>';
-  }
-
-  /* ============================== Depolama ============================== */
-  var imgCache = Object.create(null);
-  var dbp = null;
-  function openDb() {
-    if (dbp) return dbp;
-    dbp = new Promise(function (res, rej) {
-      try {
-        var r = indexedDB.open('pace_kaynaklar_v1', 1);
-        r.onupgradeneeded = function () { r.result.createObjectStore('img'); };
-        r.onsuccess = function () { res(r.result); };
-        r.onerror = function () { rej(r.error); };
-      } catch (e) { rej(e); }
-    });
-    dbp.catch(function () { dbp = null; });
-    return dbp;
-  }
-  function idb(mode, fn) {
-    return openDb().then(function (db) {
-      return new Promise(function (res, rej) {
-        var tx = db.transaction('img', mode), st = tx.objectStore('img'), rq = fn(st);
-        tx.oncomplete = function () { res(rq ? rq.result : true); };
-        tx.onerror = tx.onabort = function () { rej(tx.error); };
+  /* Görsel ekleme paneli: Galeri / Kamera. Dosya penceresi yalnızca fotoğrafı almak için açılır. */
+  const pickImages = (multiple, title, cb) => {
+    const s = openSheet('<h3>' + esc(title) + '</h3><p>' + (multiple ? 'Birden fazla görsel seçebilirsin.' : 'Tek bir görsel seç.') + '</p><div class="kyn-sheet-list"><button type="button" class="kyn-sheet-btn" data-s="gal">' + ICON_IMG + 'Galeriden seç</button><button type="button" class="kyn-sheet-btn" data-s="cam">' + ICON_CAM + 'Fotoğraf çek</button><button type="button" class="kyn-sheet-btn kyn-sheet-btn--center" data-s="x">Vazgeç</button></div>');
+    const run = (cam) => {
+      const inp = document.createElement('input');
+      inp.type = 'file'; inp.accept = 'image/*'; inp.multiple = !!multiple && !cam;
+      if (cam) inp.setAttribute('capture', 'environment');
+      inp.style.display = 'none';
+      document.body.appendChild(inp);
+      inp.addEventListener('change', async () => {
+        const files = Array.from(inp.files || []);
+        inp.remove();
+        if (!files.length) return;
+        const out = [];
+        for (const f of files) {
+          const raw = await readFile(f);
+          if (!raw) continue;
+          out.push(await compress(raw, multiple ? 1600 : 900, multiple ? 0.82 : 0.86));
+        }
+        if (out.length) cb(out);
       });
-    });
-  }
-  function idbPut(k, v) { return idb('readwrite', function (s) { return s.put(v, k); }).then(function () { return true; }, function () { return false; }); }
-  function idbGet(k) { return idb('readonly', function (s) { return s.get(k); }).catch(function () { return null; }); }
-  function idbDel(k) { return idb('readwrite', function (s) { return s.delete(k); }).catch(function () { return false; }); }
-  function loadImgs(ids) {
-    return Promise.all(ids.filter(function (i) { return i && !imgCache[i]; }).map(function (i) {
-      return idbGet(i).then(function (v) { if (v) imgCache[i] = v; });
-    }));
-  }
-
-  function getBooks() { try { return Array.isArray(APP_STATE.resources) ? APP_STATE.resources : []; } catch (e) { return []; } }
-  function saveBooks(arr) { try { return saveAppState({ resources: arr }) !== false; } catch (e) { return false; } }
-  function findBook(id) { return getBooks().filter(function (b) { return b.id === id; })[0] || null; }
-
-  function subjectColor(b) {
-    try { var c = window.PaceSubjects && window.PaceSubjects.colorOf(b.track, b.subject); if (c) return c; } catch (e) { /* yok say */ }
-    return b.color || DEFAULT_COLOR;
-  }
-  function coverOf(b) { return { name: b.name, color: subjectColor(b), subject: b.subject, pattern: b.pattern, img: b.cover ? imgCache[b.cover] : null }; }
-
-  /* ============================== Kütüphane (sayfa) ============================== */
-  var grid = $('resGrid'), filtersEl = $('resFilters'), emptyEl = $('resEmpty');
-  var filter = 'all';
-
-  function updateSettingsChip() {
-    var c = $('settingsResourcesChip'); if (c) c.textContent = String(getBooks().length);
-  }
-
-  function render(quiet) {
-    var books = getBooks().slice().sort(function (a, b) { return (b.createdAt || 0) - (a.createdAt || 0); });
-    updateSettingsChip();
-
-    // Filtre çipleri: yalnızca kitabı olan dersler
-    var seen = {}, subs = [];
-    books.forEach(function (b) { var key = b.track + '|' + b.subject; if (!seen[key]) { seen[key] = 1; subs.push({ key: key, track: b.track, name: b.subject, color: subjectColor(b) }); } });
-    if (filter !== 'all' && !seen[filter]) filter = 'all';
-    var names = {}; subs.forEach(function (s) { names[s.name] = (names[s.name] || 0) + 1; });
-    filtersEl.innerHTML = subs.length < 2 ? '' :
-      '<button type="button" class="res-chip' + (filter === 'all' ? ' is-active' : '') + '" data-f="all" role="tab">Tümü</button>' +
-      subs.map(function (s) {
-        return '<button type="button" class="res-chip' + (filter === s.key ? ' is-active' : '') + '" data-f="' + esc(s.key) + '" role="tab" style="--c:' + esc(s.color) + '"><i></i>' + esc(s.name) + (names[s.name] > 1 ? ' (' + s.track.toUpperCase() + ')' : '') + '</button>';
-      }).join('');
-
-    var list = filter === 'all' ? books : books.filter(function (b) { return b.track + '|' + b.subject === filter; });
-    grid.classList.toggle('is-quiet', !!quiet);
-    grid.innerHTML = list.map(function (b, i) {
-      var col = subjectColor(b);
-      return '<button type="button" class="res-book" data-id="' + esc(b.id) + '" style="--i:' + Math.min(i, 12) + ';--c:' + esc(col) + '" aria-label="' + esc(b.name) + '">' +
-        coverHTML(coverOf(b)) +
-        '<span><span class="res-book-name">' + esc(b.name) + '</span></span>' +
-        '<span class="res-book-meta"><i></i><span>' + esc(b.subject) + ' · ' + b.pages + ' sayfa</span></span></button>';
-    }).join('');
-    emptyEl.hidden = books.length > 0;
-  }
-
-  filtersEl.addEventListener('click', function (e) {
-    var b = e.target.closest('.res-chip'); if (!b) return;
-    filter = b.dataset.f; render(false);
-  });
-  grid.addEventListener('click', function (e) {
-    var b = e.target.closest('.res-book'); if (b) openDetail(b.dataset.id);
-  });
-
-  function openPage() {
-    document.body.classList.add('is-resources-open');
-    goToPage('page-resources');
-    var ids = getBooks().map(function (b) { return b.cover; });
-    render(false);
-    loadImgs(ids).then(function () { if (ids.some(function (i) { return i && imgCache[i]; })) render(true); });
-  }
-  function closePage() {
-    document.body.classList.remove('is-resources-open');
-    goToPage('page-settings');
-  }
-  $('resBackBtn').addEventListener('click', closePage);
-  $('resAddBtn').addEventListener('click', function () { openWizard(null); });
-  var settingsLink = $('settingsResourcesLink');
-  if (settingsLink) settingsLink.addEventListener('click', openPage);
-  updateSettingsChip();
-  window.addEventListener('pace-subjects-changed', function () {
-    if (page.classList.contains('is-active')) render(true);
-    if (wizOpen()) { renderSubjects(); refreshLive(); }
-  });
-
-  /* ============================== Panel yardımcıları ============================== */
-  function syncModal() {
-    var any = document.querySelector('.res-backdrop.is-open, .res-lightbox.is-open');
-    document.body.classList.toggle('has-modal-open', !!any);
-  }
-  function openLayer(el) { el.setAttribute('aria-hidden', 'false'); raf2(function () { el.classList.add('is-open'); syncModal(); }); }
-  function closeLayer(el) { el.classList.remove('is-open'); el.setAttribute('aria-hidden', 'true'); syncModal(); }
-
-  var confirmCb = null;
-  function confirmBox(o, cb) {
-    $('resConfirmTitle').textContent = o.title; $('resConfirmText').textContent = o.text;
-    $('resConfirmOk').textContent = o.ok; $('resConfirmCancel').textContent = o.cancel || 'Vazgeç';
-    confirmCb = cb; openLayer($('resConfirmBackdrop'));
-  }
-  $('resConfirmCancel').addEventListener('click', function () { confirmCb = null; closeLayer($('resConfirmBackdrop')); });
-  $('resConfirmOk').addEventListener('click', function () { var cb = confirmCb; confirmCb = null; closeLayer($('resConfirmBackdrop')); if (cb) cb(); });
-  $('resConfirmBackdrop').addEventListener('click', function (e) { if (e.target === this) { confirmCb = null; closeLayer(this); } });
-
-  /* ============================== Ekleme sihirbazı ============================== */
-  var wizBd = $('resWizBackdrop'), stepsEl = $('resSteps'), panes = Array.prototype.slice.call(stepsEl.querySelectorAll('.res-pane'));
-  var nameIn = $('resName'), pagesIn = $('resPages'), nextBtn = $('resWizNext'), hintEl = $('resHint');
-  var W = null;
-
-  function wizOpen() { return !!W && wizBd.classList.contains('is-open'); }
-
-  function newDraft() {
-    return { name: '', pages: '', track: 'tyt', subject: null, color: null, cover: null, pattern: null, keys: [], start: todayIso(), end: null };
-  }
-
-  function openWizard(book) {
-    var d = newDraft();
-    W = { step: 0, editId: null, dirty: false, removed: [], saving: false, t: null, d: d, orig: null };
-    if (book) {
-      W.editId = book.id; W.orig = book;
-      d.name = book.name; d.pages = String(book.pages); d.track = book.track; d.subject = book.subject; d.color = subjectColor(book);
-      d.pattern = book.pattern == null ? null : book.pattern; d.start = book.start || null; d.end = book.end || null;
-      var ids = [book.cover].concat(book.keys || []);
-      loadImgs(ids).then(function () {
-        if (!W || W.editId !== book.id) return;
-        if (book.cover && imgCache[book.cover]) d.cover = { id: book.cover, src: imgCache[book.cover], isNew: false };
-        d.keys = (book.keys || []).filter(function (i) { return imgCache[i]; }).map(function (i) { return { id: i, src: imgCache[i], isNew: false, fresh: false }; });
-        renderCoverStep(); renderKeys(); refreshLive();
-      });
-    }
-    $('resWizTitle').textContent = book ? 'Kitabı düzenle' : 'Kitap ekle';
-    nameIn.value = d.name; pagesIn.value = d.pages;
-    $('resSeg').dataset.active = d.track;
-    Array.prototype.forEach.call($('resSeg').querySelectorAll('button'), function (b) { var on = b.dataset.track === d.track; b.classList.toggle('is-active', on); b.setAttribute('aria-selected', on ? 'true' : 'false'); });
-    renderSubjects(); renderCoverStep(); renderKeys(); renderDates();
-    showStep(0, true);
-    openLayer(wizBd);
-  }
-
-  function closeWizard(force) {
-    if (!W) return;
-    if (!force && W.dirty && !W.saving) {
-      confirmBox({ title: 'Çıkılsın mı?', text: 'Girdiğin bilgiler kaydedilmeyecek.', ok: 'Çık' }, function () { closeWizard(true); });
-      return;
-    }
-    closeLayer(wizBd); closeLayer($('resCalBackdrop'));
-    var w = W; clearTimeout(w.t);
-    setTimeout(function () { if (W === w) W = null; }, 500);
-  }
-  $('resWizClose').addEventListener('click', function () { closeWizard(false); });
-  wizBd.addEventListener('click', function (e) { if (e.target === wizBd) closeWizard(false); });
-
-  /* --- Aşama geçişi --- */
-  function valid(step) {
-    var d = W.d;
-    if (step === 0) return d.name.trim().length > 0 && parseInt(d.pages, 10) >= 1;
-    if (step === 1) return !!d.subject;
-    return true;
-  }
-  function hintFor(step) {
-    var d = W.d;
-    if (step === 0) {
-      if (!d.name.trim() && !(parseInt(d.pages, 10) >= 1)) return 'Kitap adı ve sayfa sayısı gerekli.';
-      return !d.name.trim() ? 'Kitap adını yaz.' : 'Sayfa sayısını gir.';
-    }
-    if (step === 1) return 'Kitabın hangi derse ait olduğunu seç.';
-    return '';
-  }
-  function setHint(msg) {
-    hintEl.textContent = msg || ''; hintEl.classList.toggle('is-on', !!msg);
-  }
-  function refreshNext() {
-    if (!W) return;
-    var ok = valid(W.step), last = W.step === 4;
-    nextBtn.classList.toggle('is-off', !ok);
-    nextBtn.textContent = last ? (W.editId ? 'Değişiklikleri kaydet' : 'Kitabı kaydet') : (W.step === 3 && !W.d.keys.length ? 'Atla' : 'Devam');
-    if (ok) setHint('');
-  }
-  function ui() {
-    var s = W.step;
-    $('resWizStep').textContent = 'Aşama ' + (s + 1) + ' / 5 · ' + STEP_NAMES[s];
-    Array.prototype.forEach.call($('resProgress').children, function (el, i) { el.classList.toggle('is-done', i <= s); });
-    $('resWizBack').classList.toggle('is-ghost', s === 0);
-    $('resLive').classList.toggle('is-hidden', s === 2);
-    refreshNext(); refreshLive();
-  }
-  function showStep(n, instant) {
-    var prev = W.step; clearTimeout(W.t);
-    if (instant || prev === n) {
-      panes.forEach(function (p, i) { p.className = 'res-pane' + (i === n ? ' is-active' : ''); });
-      W.step = n; if (n === 2) renderCoverStep(); stepsEl.scrollTop = 0; ui(); return;
-    }
-    var fwd = n > prev, out = panes[prev], inn = panes[n];
-    if (n === 2) renderCoverStep();
-    panes.forEach(function (p) { if (p !== out && p !== inn) p.className = 'res-pane'; });
-    out.className = 'res-pane is-leaving ' + (fwd ? 'out-fwd' : 'out-back');
-    inn.className = 'res-pane is-active ' + (fwd ? 'in-fwd' : 'in-back');
-    stepsEl.scrollTop = 0; W.step = n; setHint(''); ui();
-    W.t = setTimeout(function () { out.className = 'res-pane'; inn.className = 'res-pane is-active'; }, 340);
-  }
-  $('resWizBack').addEventListener('click', function () { if (W && W.step > 0) showStep(W.step - 1); });
-  nextBtn.addEventListener('click', function () {
-    if (!W || W.saving) return;
-    if (!valid(W.step)) {
-      setHint(hintFor(W.step));
-      nextBtn.classList.remove('is-shake'); void nextBtn.offsetWidth; nextBtn.classList.add('is-shake');
-      return;
-    }
-    if (W.step < 4) { if (document.activeElement && document.activeElement.blur) document.activeElement.blur(); showStep(W.step + 1); }
-    else saveBook();
-  });
-
-  /* --- Canlı kapak özeti --- */
-  function draftCover(d) {
-    return { name: d.name, color: d.color, subject: d.subject, pattern: d.pattern, img: d.cover ? d.cover.src : null };
-  }
-  var liveKey = '';
-  function refreshLive() {
-    if (!W) return;
-    var d = W.d, nameEl = $('resLiveName'), meta = $('resLiveMeta');
-    nameEl.textContent = d.name.trim() || 'Kitap adı';
-    nameEl.classList.toggle('is-ph', !d.name.trim());
-    var pages = parseInt(d.pages, 10);
-    meta.innerHTML = (d.subject ? '<i style="--c:' + esc(d.color || DEFAULT_COLOR) + '"></i>' + esc(d.subject) : 'Ders seçilmedi') + (pages >= 1 ? ' · ' + pages + ' sayfa' : '');
-    var key = [d.name, d.color, d.subject, d.pattern, d.cover && d.cover.id].join('|');
-    if (key !== liveKey) {
-      liveKey = key;
-      var c = $('resLiveCover'); c.innerHTML = coverHTML(draftCover(d));
-    }
-  }
-  function popLive() { var c = $('resLiveCover'); c.classList.add('is-pop'); setTimeout(function () { c.classList.remove('is-pop'); }, 380); }
-
-  /* --- 1. aşama: ad ve sayfa sayısı --- */
-  nameIn.addEventListener('input', function () { W.d.name = nameIn.value; W.dirty = true; refreshNext(); refreshLive(); });
-  nameIn.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); pagesIn.focus(); } });
-  function setPages(v, silent) {
-    v = String(v).replace(/\D/g, '').replace(/^0+/, '').slice(0, 4);
-    W.d.pages = v; pagesIn.value = v; if (!silent) W.dirty = true; refreshNext(); refreshLive();
-  }
-  pagesIn.addEventListener('input', function () { setPages(pagesIn.value); });
-  pagesIn.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); pagesIn.blur(); nextBtn.click(); } });
-  $('resPagesMinus').addEventListener('click', function () { setPages(Math.max(0, (parseInt(W.d.pages, 10) || 0) - 1)); });
-  $('resPagesPlus').addEventListener('click', function () { setPages(Math.min(9999, (parseInt(W.d.pages, 10) || 0) + 1)); });
-  $('resPagesQuick').addEventListener('click', function (e) { var b = e.target.closest('button'); if (b) setPages(b.dataset.n); });
-
-  /* --- 2. aşama: ders paneli --- */
-  var seg = $('resSeg'), subjEl = $('resSubjects');
-  var CHECK = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
-  function renderSubjects() {
-    if (!W) return;
-    var track = seg.dataset.active, list = [];
-    try { list = (window.PaceSubjects && window.PaceSubjects.list(track)) || []; } catch (e) { list = []; }
-    if (!list.length) { subjEl.innerHTML = '<div class="res-note">' + track.toUpperCase() + ' için ders yok. Ayarlar › Ders Listesi’nden ders ekleyebilirsin.</div>'; return; }
-    subjEl.innerHTML = list.map(function (s, i) {
-      var on = W.d.subject === s.name && W.d.track === track;
-      return '<button type="button" class="res-subject' + (on ? ' is-on' : '') + '" data-name="' + esc(s.name) + '" style="--c:' + esc(s.color) + ';--i:' + Math.min(i, 14) + '"><i></i><span>' + esc(s.name) + '</span>' + CHECK + '</button>';
-    }).join('');
-    // Seçili dersin rengi ders listesinde değiştiyse taslağı güncel tut
-    if (W.d.subject && W.d.track === track) { var cur = list.filter(function (s) { return s.name === W.d.subject; })[0]; if (cur) W.d.color = cur.color; }
-  }
-  seg.addEventListener('click', function (e) {
-    var b = e.target.closest('button'); if (!b || b.dataset.track === seg.dataset.active) return;
-    seg.dataset.active = b.dataset.track;
-    Array.prototype.forEach.call(seg.querySelectorAll('button'), function (x) { var on = x === b; x.classList.toggle('is-active', on); x.setAttribute('aria-selected', on ? 'true' : 'false'); });
-    renderSubjects();
-  });
-  subjEl.addEventListener('click', function (e) {
-    var b = e.target.closest('.res-subject'); if (!b) return;
-    var track = seg.dataset.active, name = b.dataset.name, list = window.PaceSubjects.list(track);
-    var s = list.filter(function (x) { return x.name === name; })[0]; if (!s) return;
-    W.d.track = track; W.d.subject = name; W.d.color = s.color; W.dirty = true;
-    Array.prototype.forEach.call(subjEl.querySelectorAll('.res-subject'), function (x) { x.classList.toggle('is-on', x === b); });
-    refreshNext(); refreshLive(); popLive();
-  });
-
-  /* --- 3. aşama: kapak --- */
-  var UP_ICON = '<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><rect x="3.5" y="4.5" width="17" height="15" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="9" cy="10" r="1.7" fill="currentColor"/><path d="M4 17l5-4.5 3.5 3L15 13.5 20 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
-  function renderCoverStep() {
-    if (!W) return;
-    var d = W.d, body = $('resCoverBody'), html = '';
-    if (d.cover) {
-      html = '<div class="res-cover-preview-big">' + coverHTML({ color: d.color, img: d.cover.src }) + '</div>' +
-        '<div class="res-cover-ok"><span>Kapak görseli eklendi</span><span><button type="button" class="res-text-btn" data-a="replace">Değiştir</button><button type="button" class="res-text-btn is-danger" data-a="remove">Kaldır</button></span></div>';
-    } else {
-      var eff = d.pattern == null ? autoPattern(d.name) : d.pattern;
-      html = '<button type="button" class="res-drop" data-a="pick"><span class="res-drop-ic">' + UP_ICON + '</span><span class="res-drop-t"><b>Kapak görseli ekle</b><small>Galeriden seç ya da fotoğraf çek</small></span></button>' +
-        '<div class="res-label">Otomatik kapak <em>desen seç</em></div>' +
-        '<div class="res-cover-preview-big" id="resBigAuto">' + coverHTML(draftCover(d)) + '</div>' +
-        '<div class="res-patterns" id="resPatterns">';
-      for (var i = 0; i < PATTERN_COUNT; i++) {
-        html += '<button type="button" class="res-pat' + (i === eff ? ' is-on' : '') + '" data-p="' + i + '" aria-label="Desen ' + (i + 1) + '">' + coverHTML({ name: d.name, color: d.color, subject: d.subject, pattern: i }) + '</button>';
-      }
-      html += '</div>';
-    }
-    body.innerHTML = html;
-  }
-  $('resCoverBody').addEventListener('click', function (e) {
-    var pat = e.target.closest('.res-pat');
-    if (pat) {
-      W.d.pattern = +pat.dataset.p; W.dirty = true;
-      Array.prototype.forEach.call(document.querySelectorAll('#resPatterns .res-pat'), function (x) { x.classList.toggle('is-on', x === pat); });
-      var big = $('resBigAuto'); big.innerHTML = coverHTML(draftCover(W.d));
-      big.style.animation = 'none'; void big.offsetWidth; big.style.animation = '';
-      refreshLive(); return;
-    }
-    var a = e.target.closest('[data-a]'); if (!a) return;
-    if (a.dataset.a === 'pick' || a.dataset.a === 'replace') { $('resCoverInput').value = ''; $('resCoverInput').click(); }
-    if (a.dataset.a === 'remove') {
-      if (W.d.cover && !W.d.cover.isNew) W.removed.push(W.d.cover.id);
-      W.d.cover = null; W.dirty = true; renderCoverStep(); refreshLive();
-    }
-  });
-
-  function compress(file, o) {
-    return new Promise(function (resolve, reject) {
-      var url = URL.createObjectURL(file), im = new Image();
-      im.onload = function () {
-        try {
-          var sw = im.naturalWidth, sh = im.naturalHeight, cv = document.createElement('canvas'), cx = cv.getContext('2d');
-          if (o.crop) {
-            cv.width = o.w; cv.height = o.h;
-            var s = Math.max(o.w / sw, o.h / sh), dw = sw * s, dh = sh * s;
-            cx.fillStyle = '#fff'; cx.fillRect(0, 0, o.w, o.h); cx.drawImage(im, (o.w - dw) / 2, (o.h - dh) / 2, dw, dh);
-          } else {
-            var sc = Math.min(1, o.max / Math.max(sw, sh));
-            cv.width = Math.max(1, Math.round(sw * sc)); cv.height = Math.max(1, Math.round(sh * sc));
-            cx.fillStyle = '#fff'; cx.fillRect(0, 0, cv.width, cv.height); cx.drawImage(im, 0, 0, cv.width, cv.height);
-          }
-          resolve(cv.toDataURL('image/jpeg', o.q));
-        } catch (err) { reject(err); }
-        URL.revokeObjectURL(url);
-      };
-      im.onerror = function () { URL.revokeObjectURL(url); reject(new Error('image')); };
-      im.src = url;
-    });
-  }
-  $('resCoverInput').addEventListener('change', function () {
-    var f = this.files && this.files[0]; if (!f || !W) return;
-    compress(f, { crop: true, w: 600, h: 800, q: 0.86 }).then(function (src) {
-      if (!W) return;
-      if (W.d.cover && !W.d.cover.isNew) W.removed.push(W.d.cover.id);
-      W.d.cover = { id: uid(), src: src, isNew: true }; W.dirty = true;
-      renderCoverStep(); refreshLive(); popLive();
-    }, function () { toast('Görsel okunamadı. Başka bir görsel dene.'); });
-  });
-
-  /* --- 4. aşama: cevap anahtarı --- */
-  var keysGrid = $('resKeysGrid');
-  var X_ICON = '<svg viewBox="0 0 24 24" width="12" height="12" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>';
-  function renderKeys() {
-    if (!W) return;
-    var d = W.d;
-    keysGrid.innerHTML = d.keys.map(function (k, i) {
-      return '<div class="res-key' + (k.fresh ? ' fresh' : '') + '" data-i="' + i + '"><img src="' + esc(k.src) + '" alt="Cevap anahtarı ' + (i + 1) + '" draggable="false"><span class="res-key-n">' + (i + 1) + '</span><button type="button" class="res-key-x" data-x="' + i + '" aria-label="Görseli kaldır">' + X_ICON + '</button></div>';
-    }).join('') + (d.keys.length < MAX_KEYS ? '<button type="button" class="res-key-add" id="resKeyAdd"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>Görsel ekle</button>' : '');
-    d.keys.forEach(function (k) { k.fresh = false; });
-    refreshNext();
-  }
-  keysGrid.addEventListener('click', function (e) {
-    var x = e.target.closest('.res-key-x');
-    if (x) {
-      var i = +x.dataset.x, k = W.d.keys[i];
-      if (k && !k.isNew) W.removed.push(k.id);
-      W.d.keys.splice(i, 1); W.dirty = true; renderKeys(); return;
-    }
-    var it = e.target.closest('.res-key');
-    if (it) { openLightbox(W.d.keys.map(function (k) { return k.src; }), +it.dataset.i); return; }
-    if (e.target.closest('#resKeyAdd')) { $('resKeysInput').value = ''; $('resKeysInput').click(); }
-  });
-  $('resKeysInput').addEventListener('change', function () {
-    var files = Array.prototype.slice.call(this.files || []); if (!files.length || !W) return;
-    var w = W, room = MAX_KEYS - w.d.keys.length, bad = 0;
-    files = files.slice(0, Math.max(0, room));
-    var add = $('resKeyAdd'); if (add) add.lastChild.textContent = 'Ekleniyor…';
-    files.reduce(function (p, f) {
-      return p.then(function () {
-        return compress(f, { crop: false, max: 1600, q: 0.82 }).then(function (src) {
-          if (W !== w) return;
-          w.d.keys.push({ id: uid(), src: src, isNew: true, fresh: true }); w.dirty = true;
-        }, function () { bad++; });
-      });
-    }, Promise.resolve()).then(function () {
-      if (W !== w) return;
-      renderKeys();
-      if (bad) toast(bad + ' görsel okunamadı.');
-    });
-  });
-
-  /* --- 5. aşama: tarihler + uygulama içi takvim --- */
-  function renderDates() {
-    if (!W) return;
-    var d = W.d, t = todayIso();
-    $('resStartTxt').textContent = d.start ? fmtDate(d.start) : '—';
-    $('resStartTag').hidden = d.start !== t;
-    var e = $('resEndTxt'); e.textContent = d.end ? fmtDate(d.end) : 'Seçilmedi'; e.classList.toggle('is-ph', !d.end);
-    var sp = $('resSpan');
-    if (d.start && d.end) { var n = diffDays(d.end, d.start) + 1; sp.textContent = n + ' günlük çalışma planı'; }
-    else sp.textContent = '';
-  }
-  var C = null;
-  var calBd = $('resCalBackdrop'), calGrid = $('resCalGrid');
-  function openCal(mode) {
-    var d = W.d, today = todayIso();
-    var sel = d[mode] || null;
-    var ref = sel || (mode === 'end' && d.start ? d.start : today);
-    var rd = parseIso(ref);
-    C = { mode: mode, sel: sel, y: rd.getFullYear(), m: rd.getMonth() };
-    $('resCalLabel').textContent = mode === 'start' ? 'Başlangıç tarihi' : 'Bitiş tarihi';
-    $('resCalClear').hidden = mode !== 'end';
-    renderCal(null); openLayer(calBd);
-  }
-  function renderCal(dir) {
-    var d = W.d, today = todayIso(), first = new Date(C.y, C.m, 1, 12), off = (first.getDay() + 6) % 7, days = new Date(C.y, C.m + 1, 0).getDate();
-    $('resCalTitle').textContent = MONTHS[C.m] + ' ' + C.y;
-    var A = null, B = null;
-    if (C.mode === 'start') { A = C.sel; B = d.end; } else { A = d.start; B = C.sel; }
-    var html = '';
-    for (var i = 0; i < off; i++) html += '<span class="res-day is-out"></span>';
-    for (var n = 1; n <= days; n++) {
-      var iso = C.y + '-' + pad(C.m + 1) + '-' + pad(n), cls = 'res-day';
-      if (iso === today) cls += ' is-today';
-      if (iso === C.sel) cls += ' is-sel';
-      else if (A && B && iso > A && iso < B) cls += ' is-between';
-      if (C.mode === 'end' && d.start && iso < d.start) cls += ' is-dis';
-      html += '<button type="button" class="' + cls + '" data-d="' + iso + '">' + n + '</button>';
-    }
-    calGrid.innerHTML = html;
-    calGrid.classList.remove('is-next', 'is-prev');
-    if (dir) { void calGrid.offsetWidth; calGrid.classList.add(dir); }
-  }
-  function moveMonth(dm) {
-    C.m += dm; if (C.m < 0) { C.m = 11; C.y--; } if (C.m > 11) { C.m = 0; C.y++; }
-    renderCal(dm > 0 ? 'is-next' : 'is-prev');
-  }
-  $('resCalPrev').addEventListener('click', function () { moveMonth(-1); });
-  $('resCalNext').addEventListener('click', function () { moveMonth(1); });
-  calGrid.addEventListener('click', function (e) {
-    var b = e.target.closest('.res-day[data-d]'); if (!b) return;
-    C.sel = b.dataset.d; renderCal(null);
-  });
-  $('resCalToday').addEventListener('click', function () {
-    var t = todayIso();
-    if (C.mode === 'end' && W.d.start && t < W.d.start) { toast('Bitiş, başlangıçtan önce olamaz.'); return; }
-    var td = new Date(); C.sel = t; C.y = td.getFullYear(); C.m = td.getMonth(); renderCal(null);
-  });
-  $('resCalClear').addEventListener('click', function () { C.sel = null; renderCal(null); });
-  $('resCalDone').addEventListener('click', function () {
-    var d = W.d;
-    if (C.mode === 'start') {
-      if (!C.sel) C.sel = todayIso();
-      d.start = C.sel;
-      if (d.end && d.end < d.start) { d.end = null; toast('Bitiş tarihi başlangıçtan önce kaldığı için temizlendi.'); }
-    } else d.end = C.sel;
-    W.dirty = true; renderDates(); closeLayer(calBd);
-  });
-  calBd.addEventListener('click', function (e) { if (e.target === calBd) closeLayer(calBd); });
-  $('resStartBtn').addEventListener('click', function () { openCal('start'); });
-  $('resEndBtn').addEventListener('click', function () { openCal('end'); });
-
-  /* --- Kaydet --- */
-  function saveBook() {
-    var w = W, d = w.d; w.saving = true; nextBtn.classList.add('is-off'); nextBtn.textContent = 'Kaydediliyor…';
-    var failed = false, books = getBooks().slice(), puts = [];
-    var coverId = d.cover ? d.cover.id : null;
-    if (d.cover) { imgCache[d.cover.id] = d.cover.src; if (d.cover.isNew) puts.push(idbPut(d.cover.id, d.cover.src)); }
-    var keyIds = d.keys.map(function (k) { imgCache[k.id] = k.src; if (k.isNew) puts.push(idbPut(k.id, k.src)); return k.id; });
-    Promise.all(puts).then(function (r) {
-      if (r.some(function (ok) { return !ok; })) failed = true;
-      return Promise.all(w.removed.map(function (id) { delete imgCache[id]; return idbDel(id); }));
-    }).then(function () {
-      var obj = {
-        id: w.editId || uid(), name: d.name.trim().replace(/\s+/g, ' '), pages: Math.min(9999, parseInt(d.pages, 10)),
-        track: d.track, subject: d.subject, color: d.color || DEFAULT_COLOR, cover: coverId, pattern: d.pattern,
-        keys: keyIds, start: d.start || null, end: d.end || null,
-        addedAt: w.orig ? w.orig.addedAt : todayIso(), createdAt: w.orig ? w.orig.createdAt : Date.now()
-      };
-      if (w.editId) books = books.map(function (b) { return b.id === w.editId ? obj : b; }); else books.unshift(obj);
-      if (!saveBooks(books)) { w.saving = false; refreshNext(); return; }
-      w.dirty = false; closeWizard(true); filter = 'all'; render(false);
-      toast(failed ? 'Kaydedildi, ancak görseller bu cihazda saklanamadı.' : (w.editId ? 'Değişiklikler kaydedildi' : 'Kitap eklendi'));
-      if (detailId && w.editId) openDetail(w.editId, true);
-    });
-  }
-
-  /* ============================== Kitap ayrıntısı ============================== */
-  var detailBd = $('resDetailBackdrop'), detailBody = $('resDetailBody'), detailId = null;
-  function dateBlock(b) {
-    if (!b.start) return '';
-    var t = todayIso(), c = esc(subjectColor(b)), h = '';
-    if (b.end) {
-      var total = diffDays(b.end, b.start) + 1, el = Math.max(0, Math.min(total, diffDays(t, b.start) + 1)), p = el / total, note;
-      if (t < b.start) note = diffDays(b.start, t) + ' gün sonra başlıyor';
-      else if (t > b.end) note = 'Süre doldu';
-      else if (total - el === 0) note = 'Son gün';
-      else note = (total - el) + ' gün kaldı';
-      h = '<div class="res-block"><div class="res-block-h"><span>' + fmtShort(b.start) + ' – ' + fmtShort(b.end) + '</span><b>' + total + ' gün</b></div>' +
-        '<div class="res-bar" style="--p:' + p.toFixed(3) + ';--c:' + c + '"><span></span></div><div class="res-bar-note">' + note + '</div></div>';
-    } else {
-      var diff = diffDays(t, b.start), note2 = diff < 0 ? (-diff) + ' gün sonra başlıyor' : (diff === 0 ? 'Bugün başladı' : diff + ' gündür çalışılıyor');
-      h = '<div class="res-block"><div class="res-block-h"><span>Başlangıç</span><b>' + fmtDate(b.start) + '</b></div><div class="res-bar-note">' + note2 + '</div></div>';
-    }
-    return h;
-  }
-  function openDetail(id, silent) {
-    var b = findBook(id); if (!b) return;
-    detailId = id;
-    var ids = [b.cover].concat(b.keys || []);
-    var paint = function () {
-      var bb = findBook(id); if (!bb || detailId !== id) return;
-      var keys = (bb.keys || []).filter(function (k) { return imgCache[k]; });
-      detailBody.innerHTML =
-        '<div class="res-detail-top"><div class="res-detail-cover">' + coverHTML(coverOf(bb)) + '</div>' +
-        '<div class="res-detail-name">' + esc(bb.name) + '</div>' +
-        '<div class="res-tags"><span class="res-tag" style="--c:' + esc(subjectColor(bb)) + '"><i></i>' + esc(bb.subject) + ' · ' + bb.track.toUpperCase() + '</span><span class="res-tag">' + bb.pages + ' sayfa</span></div></div>' +
-        dateBlock(bb) +
-        '<div class="res-block"><div class="res-block-h"><span>Cevap anahtarı</span><b>' + (keys.length ? keys.length + ' görsel' : '') + '</b></div>' +
-        (keys.length ? '<div class="res-keys is-view">' + keys.map(function (k, i) { return '<div class="res-key" data-i="' + i + '"><img src="' + esc(imgCache[k]) + '" alt="Cevap anahtarı ' + (i + 1) + '" draggable="false"><span class="res-key-n">' + (i + 1) + '</span></div>'; }).join('') + '</div>'
-          : '<div class="res-bar-note" style="color:var(--rp-soft)">Eklenmemiş. Düzenle’den ekleyebilirsin.</div>') + '</div>' +
-        '<div class="res-bar-note" style="color:var(--rp-soft);text-align:center;font-weight:600">' + fmtDate(bb.addedAt || todayIso()) + ' tarihinde eklendi</div>';
-      detailBody.dataset.keys = JSON.stringify(keys);
+      inp.click();
+      s.close();
     };
-    paint();
-    if (!silent) openLayer(detailBd);
-    loadImgs(ids).then(paint);
-  }
-  function closeDetail() { closeLayer(detailBd); detailId = null; }
-  $('resDetailClose').addEventListener('click', closeDetail);
-  detailBd.addEventListener('click', function (e) { if (e.target === detailBd) closeDetail(); });
-  detailBody.addEventListener('click', function (e) {
-    var it = e.target.closest('.res-key'); if (!it) return;
-    var ks = []; try { ks = JSON.parse(detailBody.dataset.keys || '[]'); } catch (x) { /* yok say */ }
-    openLightbox(ks.map(function (k) { return imgCache[k]; }).filter(Boolean), +it.dataset.i);
+    s.el.querySelector('[data-s="gal"]').addEventListener('click', () => run(false));
+    s.el.querySelector('[data-s="cam"]').addEventListener('click', () => run(true));
+    s.el.querySelector('[data-s="x"]').addEventListener('click', s.close);
+  };
+
+  /* Görüntüleyici */
+  const openViewer = (refs, start) => {
+    let i = start || 0;
+    const v = document.createElement('div');
+    v.className = 'kyn-viewer';
+    v.innerHTML = '<img alt=""><button class="kyn-v-close" aria-label="Kapat"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>' + (refs.length > 1 ? '<button class="kyn-v-prev" aria-label="Önceki"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><button class="kyn-v-next" aria-label="Sonraki"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button>' : '') + '<div class="kyn-v-count"></div>';
+    document.body.appendChild(v);
+    const img = v.querySelector('img'), cnt = v.querySelector('.kyn-v-count');
+    const show = async () => {
+      img.classList.add('is-swap');
+      const u = await (typeof resolveImageSrc === 'function' ? resolveImageSrc(refs[i]) : refs[i]);
+      img.onload = () => img.classList.remove('is-swap');
+      img.src = u || '';
+      cnt.textContent = refs.length > 1 ? (i + 1) + ' / ' + refs.length : '';
+    };
+    const go = (d) => { i = (i + d + refs.length) % refs.length; show(); };
+    const close = () => { v.classList.remove('is-open'); setTimeout(() => v.remove(), 450); document.removeEventListener('keydown', onKey); };
+    const onKey = (e) => { if (e.key === 'Escape') close(); else if (e.key === 'ArrowRight') go(1); else if (e.key === 'ArrowLeft') go(-1); };
+    document.addEventListener('keydown', onKey);
+    v.querySelector('.kyn-v-close').addEventListener('click', close);
+    const pv = v.querySelector('.kyn-v-prev'), nx = v.querySelector('.kyn-v-next');
+    if (pv) pv.addEventListener('click', () => go(-1));
+    if (nx) nx.addEventListener('click', () => go(1));
+    v.addEventListener('click', (e) => { if (e.target === v) close(); });
+    let sx = null;
+    v.addEventListener('touchstart', (e) => { sx = e.touches[0].clientX; }, { passive: true });
+    v.addEventListener('touchend', (e) => { if (sx == null || refs.length < 2) return; const dx = e.changedTouches[0].clientX - sx; if (Math.abs(dx) > 50) go(dx < 0 ? 1 : -1); sx = null; }, { passive: true });
+    show();
+    requestAnimationFrame(() => v.classList.add('is-open'));
+  };
+
+  /* ==========================================================================
+     LİSTE SAYFASI
+     ========================================================================== */
+  let filter = 'all';
+  let highlightId = null;
+
+  const renderList = () => {
+    const books = getBooks().slice().sort((a, b) => (b.ts || 0) - (a.ts || 0));
+    const grid = $('kynGrid'), empty = $('kynEmpty'), filters = $('kynFilters'), sub = $('kynBooksSub');
+    const subjects = [];
+    books.forEach((b) => { if (!subjects.some((s) => s.name === b.subject)) subjects.push({ name: b.subject, color: b.subjectColor }); });
+    if (filter !== 'all' && !subjects.some((s) => s.name === filter)) filter = 'all';
+    const shown = filter === 'all' ? books : books.filter((b) => b.subject === filter);
+
+    sub.textContent = books.length ? (books.length + ' kaynak' + (subjects.length ? ' · ' + subjects.length + ' ders' : '')) : '';
+    sub.hidden = !books.length;
+    empty.hidden = !!books.length;
+    filters.hidden = subjects.length < 2;
+    if (subjects.length >= 2) {
+      filters.innerHTML = '<button type="button" class="kyn-fchip' + (filter === 'all' ? ' is-on' : '') + '" data-f="all">Tümü</button>' + subjects.map((s) => '<button type="button" class="kyn-fchip' + (filter === s.name ? ' is-on' : '') + '" data-f="' + esc(s.name) + '">' + esc(s.name) + '</button>').join('');
+    }
+    grid.innerHTML = shown.map((b, n) => {
+      const dates = b.end ? fmtShort(b.start) + ' – ' + fmtShort(b.end) : fmtShort(b.start);
+      return '<button type="button" class="kyn-card' + (b.id === highlightId ? ' is-new' : '') + '" data-id="' + esc(b.id) + '" style="--i:' + Math.min(n, 12) + '">' + coverHTML(b) +
+        '<span class="kyn-card-name">' + esc(b.name) + '</span>' +
+        '<span class="kyn-card-meta"><i class="kyn-dot" style="--c:' + safeColor(b.subjectColor) + '"></i><span>' + esc(b.subject) + ' · ' + b.pages + ' sf</span></span>' +
+        '<span class="kyn-card-meta" style="margin-top:-8px"><span>' + esc(dates) + '</span></span></button>';
+    }).join('');
+    hydrate(grid);
+    highlightId = null;
+  };
+
+  const showPage = (id) => { try { goToPage(id); } catch (e) { /* yok say */ } };
+  const openList = () => { renderList(); showPage('page-books'); };
+
+  $('kynBooksBack').addEventListener('click', () => showPage('page-camera'));
+  $('kynBooksAdd').addEventListener('click', () => openAdd());
+  $('kynEmptyAdd').addEventListener('click', () => openAdd());
+  $('kynFilters').addEventListener('click', (e) => { const b = e.target.closest('.kyn-fchip'); if (!b) return; filter = b.getAttribute('data-f'); renderList(); });
+  $('kynGrid').addEventListener('click', (e) => { const c = e.target.closest('.kyn-card'); if (c) openDetail(c.getAttribute('data-id')); });
+  /* Soru Havuzu'ndaki eski kaynak filtresi pop-up'ı kaybolmasın */
+  $('kynPoolFilter').addEventListener('click', () => {
+    showPage('page-camera');
+    setTimeout(() => { const b = $('qhavuzBooksBtn'); if (!b) return; window.__kynBypass = true; b.click(); window.__kynBypass = false; }, 380);
   });
-  $('resDetailEdit').addEventListener('click', function () {
-    var b = findBook(detailId); if (!b) return;
-    closeLayer(detailBd); var id = detailId;
-    setTimeout(function () { detailId = id; openWizard(findBook(id)); }, 180);
+  /* Soru Havuzu'ndaki "Kaynaklarım" düğmeleri artık bu sayfayı açar */
+  ['qhavuzBooksBtn', 'qhavuzMobileBooksBtn'].forEach((id) => {
+    const el = $(id);
+    if (!el) return;
+    el.addEventListener('click', (e) => {
+      if (window.__kynBypass) return;
+      e.stopImmediatePropagation(); e.preventDefault();
+      openList();
+    }, true);
   });
-  $('resDetailDelete').addEventListener('click', function () {
-    var b = findBook(detailId); if (!b) return;
-    confirmBox({ title: 'Kitap silinsin mi?', text: '“' + b.name + '” kütüphaneden kaldırılacak. Kapak ve cevap anahtarı görselleri de silinir.', ok: 'Sil' }, function () {
-      var ids = [b.cover].concat(b.keys || []).filter(Boolean);
-      ids.forEach(function (i) { delete imgCache[i]; idbDel(i); });
-      saveBooks(getBooks().filter(function (x) { return x.id !== b.id; }));
-      closeDetail(); render(false); toast('Kitap silindi');
+
+  /* ==========================================================================
+     EKLEME SİHİRBAZI
+     ========================================================================== */
+  const STEPS = 6;
+  const SKIPPABLE = { 3: true, 4: true };
+  let W = null;
+  const freshWizard = () => ({ step: 0, name: '', pages: '', subject: null, custom: [], cover: null, pattern: null, keys: [], start: todayIso(), end: null, open: null, cal: {}, busy: false });
+
+  const steps = Array.from(document.querySelectorAll('#kynStage .kyn-step'));
+  const progBars = Array.from(document.querySelectorAll('#kynProg i'));
+  const nextBtn = $('kynNextBtn'), prevBtn = $('kynPrevBtn');
+
+  const valid = (s) => (s === 0 ? W.name.trim().length > 0 : s === 1 ? parseInt(W.pages, 10) > 0 : s === 2 ? !!W.subject : true);
+  const draftBook = () => ({ name: W.name.trim() || 'Kitap adı', subject: W.subject ? W.subject.name : '', subjectColor: W.subject ? W.subject.color : '#c9a6ff', cover: W.cover, pattern: W.pattern });
+
+  const updateFooter = () => {
+    const last = W.step === STEPS - 1;
+    nextBtn.disabled = !valid(W.step) || W.busy;
+    nextBtn.textContent = last ? 'Kaynağı Ekle' : (SKIPPABLE[W.step] && ((W.step === 3 && !W.cover) || (W.step === 4 && !W.keys.length)) ? 'Atla' : 'Devam');
+    prevBtn.classList.toggle('is-gone', W.step === 0);
+    progBars.forEach((b, i) => b.classList.toggle('is-done', i <= W.step));
+    $('kynAddStepLabel').textContent = (W.step + 1) + ' / ' + STEPS;
+  };
+
+  const goStep = (n) => {
+    W.step = n;
+    steps.forEach((el, i) => { el.classList.toggle('is-active', i === n); el.classList.toggle('is-before', i < n); if (i === n) el.scrollTop = 0; });
+    if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
+    if (n === 2) renderSubjects();
+    if (n === 3) renderCover(true);
+    if (n === 4) renderKeys();
+    if (n === 5) renderDates();
+    if (n === 1) { $('kynPagesHint').textContent = W.name.trim() ? '“' + W.name.trim() + '” kitabının toplam sayfa sayısı.' : 'Kitabın toplam sayfa sayısı.'; }
+    updateFooter();
+    if (n === 0) setTimeout(() => { if (W && W.step === 0) $('kynName').focus({ preventScroll: true }); }, 520);
+  };
+
+  const openAdd = () => {
+    W = freshWizard();
+    $('kynName').value = '';
+    $('kynCustomName').value = '';
+    $('kynCustomAcc').classList.remove('is-open');
+    $('kynDone').classList.remove('is-on');
+    renderNum(false);
+    steps.forEach((el, i) => { el.classList.remove('is-active'); el.classList.toggle('is-before', false); });
+    goStep(0);
+    showPage('page-book-add');
+  };
+
+  const dirty = () => W && (W.name.trim() || W.pages || W.subject || W.cover || W.keys.length);
+  const closeAdd = async () => {
+    if (W && W.busy) return;
+    if (dirty()) { const ok = await ask({ title: 'Eklemeden çıkılsın mı?', text: 'Girdiğin bilgiler kaydedilmeyecek.', yes: 'Çık', no: 'Devam et', danger: true }); if (!ok) return; }
+    showPage('page-books');
+  };
+  $('kynAddClose').addEventListener('click', closeAdd);
+  prevBtn.addEventListener('click', () => { if (W.step > 0 && !W.busy) goStep(W.step - 1); });
+  nextBtn.addEventListener('click', () => { if (!valid(W.step) || W.busy) return; if (W.step < STEPS - 1) goStep(W.step + 1); else finish(); });
+
+  /* 1 · Ad */
+  $('kynName').addEventListener('input', (e) => { W.name = e.target.value; updateFooter(); });
+  $('kynName').addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); if (valid(0)) goStep(1); } });
+
+  /* 2 · Sayfa sayısı (uygulama içi tuş takımı) */
+  const renderNum = (pop) => {
+    const el = $('kynNum');
+    el.textContent = W.pages || '0';
+    el.classList.toggle('is-empty', !W.pages);
+    if (pop) { el.classList.remove('is-pop'); void el.offsetWidth; el.classList.add('is-pop'); }
+  };
+  const pressKey = (k) => {
+    if (k === 'c') W.pages = '';
+    else if (k === 'b') W.pages = W.pages.slice(0, -1);
+    else if (/^\d$/.test(k)) { if (W.pages.length < 4 && !(W.pages === '' && k === '0')) W.pages += k; }
+    renderNum(true); updateFooter();
+  };
+  $('kynPad').addEventListener('click', (e) => { const b = e.target.closest('.kyn-key'); if (b) pressKey(b.getAttribute('data-k')); });
+  document.addEventListener('keydown', (e) => {
+    if (!W || !$('page-book-add').classList.contains('is-active') || W.step !== 1) return;
+    if (/^\d$/.test(e.key)) pressKey(e.key);
+    else if (e.key === 'Backspace') pressKey('b');
+    else if (e.key === 'Enter' && valid(1)) goStep(2);
+  });
+
+  /* 3 · Ders */
+  const renderSubjects = () => {
+    const l = subjectList(W.custom);
+    $('kynSubjects').innerHTML = l.map((s) => {
+      const sel = W.subject && W.subject.name.toLowerCase() === s.name.toLowerCase();
+      return '<button type="button" class="kyn-chip' + (sel ? ' is-sel' : '') + '" data-n="' + esc(s.name) + '" style="--c:' + s.color + ';--ci:' + inkFor(s.color) + '"><i></i>' + esc(s.name) + '</button>';
+    }).join('') + '<button type="button" class="kyn-chip kyn-chip--add" data-add="1">+ Başka ders</button>';
+  };
+  $('kynSubjects').addEventListener('click', (e) => {
+    const b = e.target.closest('.kyn-chip');
+    if (!b) return;
+    if (b.hasAttribute('data-add')) {
+      const acc = $('kynCustomAcc'); acc.classList.toggle('is-open');
+      if (acc.classList.contains('is-open')) setTimeout(() => $('kynCustomName').focus({ preventScroll: true }), 350);
+      return;
+    }
+    const s = subjectList(W.custom).find((x) => x.name === b.getAttribute('data-n'));
+    W.subject = s || null;
+    renderSubjects(); updateFooter();
+  });
+  const addCustom = () => {
+    const n = $('kynCustomName').value.trim();
+    if (!n) return;
+    const exist = subjectList(W.custom).find((x) => x.name.toLowerCase() === n.toLowerCase());
+    if (exist) W.subject = exist;
+    else { const s = { name: n, color: palette()[hash(n) % palette().length] }; W.custom.push(s); W.subject = { name: s.name, color: safeColor(s.color) }; }
+    $('kynCustomName').value = ''; $('kynCustomAcc').classList.remove('is-open');
+    renderSubjects(); updateFooter();
+  };
+  $('kynCustomOk').addEventListener('click', addCustom);
+  $('kynCustomName').addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); addCustom(); } });
+
+  /* 4 · Kapak */
+  const renderCover = (pop) => {
+    const host = $('kynCoverPrev');
+    host.innerHTML = coverHTML(draftBook());
+    hydrate(host);
+    if (pop) { const c = host.firstElementChild; c.classList.add('is-pop'); }
+    $('kynCoverPick').textContent = W.cover ? 'Görseli değiştir' : 'Görsel ekle';
+    $('kynCoverRemove').hidden = !W.cover;
+    $('kynCoverShuffle').hidden = !!W.cover;
+    updateFooter();
+  };
+  $('kynCoverPick').addEventListener('click', () => pickImages(false, 'Kapak görseli', (imgs) => { W.cover = imgs[0]; renderCover(true); }));
+  $('kynCoverRemove').addEventListener('click', () => { W.cover = null; renderCover(true); });
+  $('kynCoverShuffle').addEventListener('click', () => {
+    const cur = W.pattern != null ? W.pattern : hash(draftBook().name + draftBook().subject) % PATTERNS.length;
+    W.pattern = (cur + 1) % PATTERNS.length; renderCover(true);
+  });
+
+  /* 5 · Cevap anahtarı */
+  const MAX_KEYS = 40;
+  const renderKeys = () => {
+    const g = $('kynKeysGrid');
+    g.innerHTML = W.keys.map((k, i) => '<div class="kyn-key-tile" style="animation-delay:' + Math.min(i, 9) * 40 + 'ms"><img data-ref="' + esc(k) + '" alt="Cevap anahtarı ' + (i + 1) + '"><button type="button" class="kyn-key-x" data-rm="' + i + '" aria-label="Kaldır"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button><span class="kyn-key-no">' + (i + 1) + '</span></div>').join('') +
+      (W.keys.length < MAX_KEYS ? '<button type="button" class="kyn-key-add" id="kynKeyAdd"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Ekle</button>' : '');
+    hydrate(g);
+    updateFooter();
+  };
+  $('kynKeysGrid').addEventListener('click', (e) => {
+    const rm = e.target.closest('[data-rm]');
+    if (rm) { W.keys.splice(parseInt(rm.getAttribute('data-rm'), 10), 1); renderKeys(); return; }
+    if (e.target.closest('#kynKeyAdd')) pickImages(true, 'Cevap anahtarı', (imgs) => { W.keys = W.keys.concat(imgs).slice(0, MAX_KEYS); renderKeys(); });
+  });
+
+  /* 6 · Tarihler (uygulama içi takvim) */
+  const calMonth = (which) => { if (!W.cal[which]) { const base = parseIso((which === 'end' && W.end) ? W.end : W.start); W.cal[which] = new Date(base.getFullYear(), base.getMonth(), 1); } return W.cal[which]; };
+  const renderCal = (which) => {
+    const host = $(which === 'start' ? 'kynCalStart' : 'kynCalEnd');
+    const m = calMonth(which);
+    const y = m.getFullYear(), mo = m.getMonth();
+    const off = (new Date(y, mo, 1).getDay() + 6) % 7;
+    const days = new Date(y, mo + 1, 0).getDate();
+    const sel = which === 'start' ? W.start : W.end, today = todayIso();
+    let cells = '';
+    for (let i = 0; i < off; i++) cells += '<span class="kyn-cal-d is-pad"></span>';
+    for (let d = 1; d <= days; d++) {
+      const s = y + '-' + pad(mo + 1) + '-' + pad(d);
+      const cls = 'kyn-cal-d' + (s === sel ? ' is-sel' : '') + (s === today ? ' is-today' : '') + (which === 'end' && s < W.start ? ' is-dis' : '');
+      cells += '<button type="button" class="' + cls + '" data-d="' + s + '">' + d + '</button>';
+    }
+    host.innerHTML = '<div class="kyn-cal-head"><button type="button" class="kyn-cal-nav" data-nav="-1" aria-label="Önceki ay"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><b>' + MONTHS[mo] + ' ' + y + '</b><button type="button" class="kyn-cal-nav" data-nav="1" aria-label="Sonraki ay"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button></div><div class="kyn-cal-grid">' + WD.map((w) => '<span class="kyn-cal-wd">' + w + '</span>').join('') + cells + '</div>';
+  };
+  const renderDates = () => {
+    $('kynStartVal').textContent = fmtLong(W.start);
+    $('kynStartTag').hidden = W.start !== todayIso();
+    const ev = $('kynEndVal');
+    ev.textContent = W.end ? fmtLong(W.end) : 'Belirlenmedi';
+    ev.classList.toggle('is-none', !W.end);
+    $('kynEndClear').hidden = !W.end;
+    const sp = $('kynSpan');
+    sp.textContent = W.end ? (dayDiff(W.start, W.end) + 1) + ' günlük çalışma planı' : '';
+    document.querySelectorAll('.kyn-field').forEach((f) => {
+      const w = f.getAttribute('data-f'), open = W.open === w;
+      f.classList.toggle('is-open', open);
+      f.querySelector('.kyn-acc').classList.toggle('is-open', open);
     });
+    renderCal('start'); renderCal('end');
+  };
+  const toggleField = (w) => { W.open = W.open === w ? null : w; if (W.open) W.cal[w] = null; renderDates(); };
+  document.querySelectorAll('.kyn-field-row').forEach((r) => r.addEventListener('click', () => toggleField(r.getAttribute('data-open'))));
+  $('kynEndClear').addEventListener('click', (e) => { e.stopPropagation(); W.end = null; renderDates(); });
+  document.querySelectorAll('.kyn-cal').forEach((host) => host.addEventListener('click', (e) => {
+    const which = host.id === 'kynCalStart' ? 'start' : 'end';
+    const nav = e.target.closest('[data-nav]');
+    if (nav) { const m = calMonth(which); W.cal[which] = new Date(m.getFullYear(), m.getMonth() + parseInt(nav.getAttribute('data-nav'), 10), 1); renderCal(which); return; }
+    const d = e.target.closest('[data-d]');
+    if (!d) return;
+    const v = d.getAttribute('data-d');
+    if (which === 'start') { W.start = v; if (W.end && W.end < W.start) W.end = null; } else W.end = v;
+    renderDates();
+    setTimeout(() => { W.open = null; renderDates(); }, 220);
+  }));
+
+  /* Kaydet */
+  const finish = async () => {
+    if (W.busy) return;
+    W.busy = true; updateFooter();
+    const made = [];
+    try {
+      const coverRef = W.cover ? await storeImg(W.cover) : null;
+      if (coverRef) made.push(coverRef);
+      const keyRefs = [];
+      for (const k of W.keys) { const r = await storeImg(k); if (r) { keyRefs.push(r); made.push(r); } }
+      const book = { id: genId(), name: W.name.trim(), pages: parseInt(W.pages, 10), subject: W.subject.name, subjectColor: W.subject.color, cover: coverRef, pattern: W.pattern, keys: keyRefs, start: W.start, end: W.end, addedAt: todayIso(), ts: Date.now() };
+      const ok = setBooks([book].concat(getBooks()));
+      if (!ok) throw new Error('save');
+      highlightId = book.id; filter = 'all';
+      $('kynDone').classList.add('is-on');
+      setTimeout(() => { renderList(); showPage('page-books'); W.busy = false; }, 1250);
+    } catch (err) {
+      made.forEach((r) => delImg(r));
+      W.busy = false; updateFooter();
+    }
+  };
+
+  /* ==========================================================================
+     DETAY SAYFASI
+     ========================================================================== */
+  let currentId = null;
+  const renderDetail = () => {
+    const b = findBook(currentId);
+    const host = $('kynDetail');
+    if (!b) { host.innerHTML = ''; return; }
+    let range = '';
+    const t = todayIso();
+    const startBox = '<div><small>Başlangıç</small><b>' + fmtLong(b.start) + '</b></div>';
+    if (b.end) {
+      const total = Math.max(1, dayDiff(b.start, b.end)), done = Math.min(total, Math.max(0, dayDiff(b.start, t)));
+      const left = dayDiff(t, b.end);
+      const txt = t < b.start ? dayDiff(t, b.start) + ' gün sonra başlıyor' : left < 0 ? 'Süre doldu' : left === 0 ? 'Bugün son gün' : left + ' gün kaldı';
+      range = '<div class="kyn-box"><div class="kyn-dates">' + startBox + '<div><small>Bitiş</small><b>' + fmtLong(b.end) + '</b></div></div><div class="kyn-bar"><i style="width:' + Math.round(done / total * 100) + '%"></i></div><div class="kyn-bar-t">' + txt + '</div></div>';
+    } else range = '<div class="kyn-box"><div class="kyn-dates">' + startBox + '<div><small>Bitiş</small><b style="color:var(--k-soft);font-weight:500">Belirlenmedi</b></div></div></div>';
+    const keys = b.keys || [];
+    host.innerHTML = '<div class="kyn-hero">' + coverHTML(b) + '<h2>' + esc(b.name) + '</h2><div class="kyn-pills"><span class="kyn-pill"><i class="kyn-dot" style="--c:' + safeColor(b.subjectColor) + '"></i>' + esc(b.subject) + '</span><span class="kyn-pill">' + b.pages + ' sayfa</span></div></div>' +
+      '<div class="kyn-sect"><h3 class="kyn-sect-h"><span>Tarihler</span></h3>' + range + '</div>' +
+      '<div class="kyn-sect"><h3 class="kyn-sect-h"><span>Cevap anahtarı</span><span>' + (keys.length ? keys.length + ' görsel' : '') + '</span></h3>' +
+      (keys.length ? '' : '<p class="kyn-keys-empty">Henüz cevap anahtarı eklenmedi.</p>') +
+      '<div class="kyn-keys">' + keys.map((k, i) => '<button type="button" class="kyn-key-tile" data-i="' + i + '" style="animation-delay:' + Math.min(i, 9) * 40 + 'ms"><img data-ref="' + esc(k) + '" alt="Cevap anahtarı ' + (i + 1) + '"><span class="kyn-key-no">' + (i + 1) + '</span></button>').join('') +
+      '<button type="button" class="kyn-key-add" id="kynDetailKeyAdd"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Ekle</button></div></div>';
+    hydrate(host);
+  };
+  const openDetail = (id) => { currentId = id; renderDetail(); showPage('page-book-detail'); $('kynDetail').parentElement.scrollTop = 0; };
+  $('kynDetailBack').addEventListener('click', () => { renderList(); showPage('page-books'); });
+  $('kynDetail').addEventListener('click', async (e) => {
+    const b = findBook(currentId);
+    if (!b) return;
+    const tile = e.target.closest('.kyn-key-tile');
+    if (tile) { openViewer(b.keys, parseInt(tile.getAttribute('data-i'), 10)); return; }
+    if (e.target.closest('#kynDetailKeyAdd')) {
+      pickImages(true, 'Cevap anahtarı ekle', async (imgs) => {
+        const refs = [];
+        for (const d of imgs) refs.push(await storeImg(d));
+        const books = getBooks().map((x) => x.id === b.id ? Object.assign({}, x, { keys: (x.keys || []).concat(refs) }) : x);
+        if (setBooks(books)) { renderDetail(); toast('Cevap anahtarı eklendi'); } else refs.forEach((r) => delImg(r));
+      });
+    }
   });
-
-  /* ============================== Görüntüleyici ============================== */
-  var lb = $('resLightbox'), strip = $('resLbStrip');
-  function openLightbox(srcs, index) {
-    if (!srcs.length) return;
-    strip.innerHTML = srcs.map(function (s, i) { return '<div class="res-lb-slide"><img src="' + esc(s) + '" alt="Cevap anahtarı ' + (i + 1) + '" draggable="false"></div>'; }).join('');
-    $('resLbCount').textContent = (index + 1) + ' / ' + srcs.length;
-    lb.setAttribute('aria-hidden', 'false'); lb.classList.add('is-open'); syncModal();
-    strip.scrollLeft = index * strip.clientWidth;
-    raf2(function () { strip.scrollLeft = index * strip.clientWidth; });
-  }
-  function closeLightbox() { lb.classList.remove('is-open'); lb.setAttribute('aria-hidden', 'true'); syncModal(); }
-  strip.addEventListener('scroll', function () {
-    var n = strip.children.length, i = Math.round(strip.scrollLeft / Math.max(1, strip.clientWidth));
-    $('resLbCount').textContent = (Math.min(n - 1, Math.max(0, i)) + 1) + ' / ' + n;
-  }, { passive: true });
-  strip.addEventListener('click', function (e) { if (e.target.classList.contains('res-lb-slide')) closeLightbox(); });
-  $('resLbClose').addEventListener('click', closeLightbox);
-
-  document.addEventListener('keydown', function (e) {
-    if (e.key !== 'Escape') return;
-    if (lb.classList.contains('is-open')) closeLightbox();
-    else if ($('resConfirmBackdrop').classList.contains('is-open')) $('resConfirmCancel').click();
-    else if (calBd.classList.contains('is-open')) closeLayer(calBd);
-    else if (wizOpen()) closeWizard(false);
-    else if (detailBd.classList.contains('is-open')) closeDetail();
+  $('kynDetailDel').addEventListener('click', async () => {
+    const b = findBook(currentId);
+    if (!b) return;
+    const ok = await ask({ title: 'Kaynak silinsin mi?', text: '“' + b.name + '” ve görselleri kalıcı olarak silinecek.', yes: 'Sil', no: 'Vazgeç', danger: true });
+    if (!ok) return;
+    if (setBooks(getBooks().filter((x) => x.id !== b.id))) {
+      [b.cover].concat(b.keys || []).forEach((r) => { if (r) delImg(r); });
+      toast('Kaynak silindi');
+      renderList(); showPage('page-books');
+    }
   });
 })();
-
 </script>
+
 </body>
 </html>
