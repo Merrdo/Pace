@@ -82893,6 +82893,23 @@ body.is-sport-mode .navbar:not(.sport-navbar){display:none !important}
 @media (prefers-reduced-motion:reduce){#page-sport-5 *{animation:none !important}}
 /* Çark ikonu seçilince döner (ana uygulamadaki gibi) */
 .sport-navbar .nav-input:checked + .nav-btn .nav-icon-gear{animation:navGearSpin .55s cubic-bezier(.34,1.56,.64,1)}
+/* Spor sayfaları 1-4 */
+.sp-page{align-items:flex-start;justify-content:flex-start;overflow-y:auto;padding:calc(env(safe-area-inset-top,0px) + 30px) 24px calc(120px + env(safe-area-inset-bottom,0px))}
+.sp-pg{--sp-t:var(--theme-text,#121212);width:100%;max-width:440px;margin:0 auto}
+.sp-pg .sp-title{display:flex;margin:0;padding:0 0 .14em;overflow:hidden;font-family:"Baloo 2","Space Grotesk",sans-serif;font-weight:800;font-size:clamp(60px,20vw,88px);line-height:1;letter-spacing:-.045em;color:var(--sp-t)}
+.sp-pg .sp-title span{display:inline-block}
+.sp-pg .sp-rule{display:block;height:3px;border-radius:3px;background:var(--sp-t);transform-origin:left center}
+.sp-tabs{position:relative;display:flex;margin-top:24px;padding:4px;border-radius:999px;background:color-mix(in srgb,var(--sp-t) 7%,transparent)}
+.sp-tabs i{position:absolute;top:4px;bottom:4px;left:4px;width:calc((100% - 8px)/var(--n));border-radius:999px;background:var(--sp-t);transform:translateX(calc(var(--k)*100%));transition:transform .45s cubic-bezier(.34,1.3,.64,1)}
+.sp-tab{position:relative;z-index:1;flex:1;border:0;background:none;padding:10px 0;border-radius:999px;font:700 14px "Baloo 2",sans-serif;color:var(--sp-t);cursor:pointer;transition:color .3s}
+.sp-tab.on{color:var(--theme-bg,#f5f3ee)}
+.sp-empty{margin-top:22px;padding:30px 22px;border-radius:30px;background:color-mix(in srgb,var(--sp-t) 6%,transparent);color:var(--sp-t)}
+.sp-empty h3{font:800 1.25rem/1.15 "Baloo 2",sans-serif;letter-spacing:-.01em}
+.sp-empty p{margin-top:8px;font:500 .95rem/1.45 "Baloo 2",sans-serif;opacity:.7}
+.sp-page.is-active .sp-title span{animation:spLetter .85s cubic-bezier(.22,1,.36,1) both;animation-delay:calc(var(--i) * 55ms + 120ms)}
+.sp-page.is-active .sp-rule{animation:spRule .9s cubic-bezier(.65,0,.35,1) .5s both}
+.sp-page.is-active .sp-tabs,.sp-page.is-active .sp-empty{animation:spRise .7s cubic-bezier(.22,1,.36,1) .6s both}
+@media (prefers-reduced-motion:reduce){.sp-page *{animation:none !important}}
 </style>
 <script id="sportModeScript">
 (function () {
@@ -82922,14 +82939,49 @@ body.is-sport-mode .navbar:not(.sport-navbar){display:none !important}
   let sportNav = null;
   let busy = false;
 
-  // Spor sayfaları: 1-4 boş, 5 = Ayarlar
+  // Spor sayfaları: 1 Bugün, 2 Antrenman, 3 Beslenme, 4 İlerleme, 5 Ayarlar
+  const P = (d) => '<svg class="nav-icon" viewBox="0 0 24 24">' + d + '</svg>';
+  const SPORT_PAGES = [
+    { name: 'Bugün', icon: P('<path d="M13 3 5 13.5h6L10 21l8-10.5h-6z"/>'),
+      tabs: [['Bugün', 'Bugünün antrenmanı', 'Planlı seansın, haftalık hedefin ve serin burada görünecek.']] },
+    { name: 'Antrenman', icon: P('<path d="M6 8v8M3.5 10v4M18 8v8M20.5 10v4M6 12h12"/>'),
+      tabs: [['Seans', 'İlk seansını başlat', 'Egzersiz, set, tekrar ve kilo girişi burada olacak.'],
+             ['Program', 'Programını kur', 'Haftalık rutinlerin ve egzersiz kütüphanen burada olacak.'],
+             ['Kardiyo', 'Aktiviteni kaydet', 'Koşu, yürüyüş ve bisiklet için süre, mesafe ve tempo burada olacak.']] },
+    { name: 'Beslenme', icon: P('<path d="M12 7.5c-1.2-1-3-1.5-4.5-.8C5.4 7.7 4.5 10 5 12.5c.6 3 2.4 7 4.4 7 1 0 1.4-.6 2.6-.6s1.6.6 2.6.6c2 0 3.8-4 4.4-7 .5-2.5-.4-4.8-2.5-5.8-1.5-.7-3.3-.2-4.5.8zM12 7.5c0-1.8.8-3.2 2.2-4"/>'),
+      tabs: [['Beslenme', 'Bugünkü öğünlerini ekle', 'Kalori, protein ve su takibi burada olacak.']] },
+    { name: 'İlerleme', icon: P('<path d="M4 19h16M5 15l4-4 3 3 6-7M14.5 7H18v3.5"/>'),
+      tabs: [['Grafikler', 'Gelişimini gör', 'Kişisel rekorların ve haftalık hacmin burada olacak.'],
+             ['Vücut', 'Ölçülerini kaydet', 'Kilo, ölçüler ve toparlanma notların burada olacak.']] }
+  ];
+  const spTitle = (t) => Array.from(t).map((c, i) => '<span style="--i:' + i + '">' + c + '</span>').join('');
+  const buildSportPage = (d) => {
+    const n = d.tabs.length;
+    const tabs = n > 1 ? '<div class="sp-tabs" style="--n:' + n + ';--k:0" role="tablist"><i></i>' +
+      d.tabs.map((t, k) => '<button type="button" class="sp-tab' + (k ? '' : ' on') + '" role="tab" data-k="' + k + '">' + t[0] + '</button>').join('') + '</div>' : '';
+    const panels = d.tabs.map((t, k) => '<div class="sp-empty" data-k="' + k + '"' + (k ? ' hidden' : '') + '><h3>' + t[1] + '</h3><p>' + t[2] + '</p></div>').join('');
+    return '<div class="sp-pg"><div class="sp-head"><h1 class="sp-title" aria-label="' + d.name + '">' + spTitle(d.name) +
+      '</h1><i class="sp-rule"></i></div>' + tabs + panels + '</div>';
+  };
   if (app) {
     for (let i = 1; i <= SPORT_PAGE_COUNT; i++) {
       const sec = document.createElement('section');
       sec.className = 'page';
       sec.id = 'page-sport-' + i;
-      sec.setAttribute('aria-label', i === SPORT_PAGE_COUNT ? 'Spor ayarlar' : 'Spor sayfa ' + i);
+      sec.setAttribute('aria-label', i === SPORT_PAGE_COUNT ? 'Spor ayarlar' : 'Spor ' + SPORT_PAGES[i - 1].name);
       if (i === SPORT_PAGE_COUNT) sec.innerHTML = SPORT_SETTINGS_HTML;
+      else {
+        sec.classList.add('sp-page');
+        sec.innerHTML = buildSportPage(SPORT_PAGES[i - 1]);
+        const bar = sec.querySelector('.sp-tabs');
+        if (bar) bar.addEventListener('click', (e) => {
+          const b = e.target.closest('.sp-tab'); if (!b) return;
+          const k = b.dataset.k;
+          bar.style.setProperty('--k', k);
+          bar.querySelectorAll('.sp-tab').forEach((x) => x.classList.toggle('on', x === b));
+          sec.querySelectorAll('.sp-empty').forEach((x) => { x.hidden = x.dataset.k !== k; });
+        });
+      }
       app.appendChild(sec);
     }
   }
@@ -82967,8 +83019,8 @@ body.is-sport-mode .navbar:not(.sport-navbar){display:none !important}
     let opts = '';
     for (let i = 1; i <= SPORT_PAGE_COUNT; i++) {
       opts += '<div class="option" style="--i:' + (i - 1) + '">' +
-        '<input class="nav-input" type="radio" name="sportnav" value="page-sport-' + i + '" aria-label="' + (i === SPORT_PAGE_COUNT ? 'Ayarlar' : 'Spor ' + i) + '"' + (i === startIdx ? ' checked' : '') + '>' +
-        '<div class="nav-btn">' + (i === SPORT_PAGE_COUNT ? GEAR_SVG : '<svg class="nav-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/></svg>') + '</div></div>';
+        '<input class="nav-input" type="radio" name="sportnav" value="page-sport-' + i + '" aria-label="' + (i === SPORT_PAGE_COUNT ? 'Ayarlar' : SPORT_PAGES[i - 1].name) + '"' + (i === startIdx ? ' checked' : '') + '>' +
+        '<div class="nav-btn">' + (i === SPORT_PAGE_COUNT ? GEAR_SVG : SPORT_PAGES[i - 1].icon) + '</div></div>';
     }
     nav.innerHTML = '<div class="wrapper"><div class="nav-slider"></div>' + opts + '</div>';
 
