@@ -82894,9 +82894,27 @@ body.is-sport-mode .navbar:not(.sport-navbar){display:none !important}
 /* Çark ikonu seçilince döner (ana uygulamadaki gibi) */
 .sport-navbar .nav-input:checked + .nav-btn .nav-icon-gear{animation:navGearSpin .55s cubic-bezier(.34,1.56,.64,1)}
 /* Spor sayfaları 1-4 */
+.sp-today{display:contents}
+.sp-week{display:flex;justify-content:space-between;margin-top:24px}
+.sp-day{display:flex;flex-direction:column;align-items:center;gap:8px;font:700 13px "Baloo 2",sans-serif;color:color-mix(in srgb,var(--sp-t) 55%,transparent)}
+.sp-day i{width:34px;height:34px;border-radius:50%;border:2px solid color-mix(in srgb,var(--sp-t) 22%,transparent);transition:background .3s,border-color .3s}
+.sp-day.today b{color:var(--sp-t)}
+.sp-day.today i{border-color:var(--sp-t)}
+.sp-day.done i{background:var(--sp-t);border-color:var(--sp-t)}
+.sp-btn{margin-top:18px;width:100%;border:0;border-radius:999px;padding:13px 0;background:var(--sp-t);color:var(--theme-bg,#f5f3ee);font:800 15px "Baloo 2",sans-serif;cursor:pointer;transition:transform .2s}
+.sp-btn:active,.sp-mini:active{transform:scale(.97)}
+.sp-tiles{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
+.sp-tile{display:flex;flex-direction:column;gap:4px;padding:18px;border-radius:26px;background:color-mix(in srgb,var(--sp-t) 6%,transparent);color:var(--sp-t);font-family:"Baloo 2",sans-serif}
+.sp-tile span{font-weight:700;font-size:.85rem;opacity:.65}
+.sp-tile strong{font-weight:800;font-size:1.5rem;line-height:1.1;letter-spacing:-.02em}
+.sp-tile em{font-style:normal;font-weight:500;font-size:.85rem;opacity:.65}
+.sp-bar{height:6px;margin-top:6px;border-radius:6px;background:color-mix(in srgb,var(--sp-t) 14%,transparent);overflow:hidden}
+.sp-bar i{display:block;height:100%;border-radius:6px;background:var(--sp-t);transition:width .5s cubic-bezier(.22,1,.36,1)}
+.sp-mini{margin-top:8px;border:0;border-radius:999px;padding:7px 0;background:color-mix(in srgb,var(--sp-t) 12%,transparent);color:var(--sp-t);font:700 13px "Baloo 2",sans-serif;cursor:pointer}
+.sp-page.is-active .sp-week,.sp-page.is-active .sp-tiles{animation:spRise .7s cubic-bezier(.22,1,.36,1) .6s both}
 .sp-page{align-items:flex-start;justify-content:flex-start;overflow-y:auto;padding:calc(env(safe-area-inset-top,0px) + 30px) 24px calc(120px + env(safe-area-inset-bottom,0px))}
 .sp-pg{--sp-t:var(--theme-text,#121212);width:100%;max-width:440px;margin:0 auto}
-.sp-pg .sp-title{display:flex;margin:0;padding:0 0 .14em;overflow:hidden;font-family:"Baloo 2","Space Grotesk",sans-serif;font-weight:800;font-size:clamp(60px,20vw,88px);line-height:1;letter-spacing:-.045em;color:var(--sp-t)}
+.sp-pg .sp-title{display:flex;margin:0;padding:0 0 .14em;overflow:hidden;font-family:"Baloo 2","Space Grotesk",sans-serif;font-weight:800;font-size:min(88px,calc((min(100vw,488px) - 48px) / (var(--len) * .6)));line-height:1;letter-spacing:-.045em;color:var(--sp-t)}
 .sp-pg .sp-title span{display:inline-block}
 .sp-pg .sp-rule{display:block;height:3px;border-radius:3px;background:var(--sp-t);transform-origin:left center}
 .sp-tabs{position:relative;display:flex;margin-top:24px;padding:4px;border-radius:999px;background:color-mix(in srgb,var(--sp-t) 7%,transparent)}
@@ -82943,7 +82961,7 @@ body.is-sport-mode .navbar:not(.sport-navbar){display:none !important}
   const P = (d) => '<svg class="nav-icon" viewBox="0 0 24 24">' + d + '</svg>';
   const SPORT_PAGES = [
     { name: 'Bugün', icon: P('<path d="M13 3 5 13.5h6L10 21l8-10.5h-6z"/>'),
-      tabs: [['Bugün', 'Bugünün antrenmanı', 'Planlı seansın, haftalık hedefin ve serin burada görünecek.']] },
+      custom: true, tabs: [['Bugün', '', '']] },
     { name: 'Antrenman', icon: P('<path d="M6 8v8M3.5 10v4M18 8v8M20.5 10v4M6 12h12"/>'),
       tabs: [['Seans', 'İlk seansını başlat', 'Egzersiz, set, tekrar ve kilo girişi burada olacak.'],
              ['Program', 'Programını kur', 'Haftalık rutinlerin ve egzersiz kütüphanen burada olacak.'],
@@ -82959,9 +82977,56 @@ body.is-sport-mode .navbar:not(.sport-navbar){display:none !important}
     const n = d.tabs.length;
     const tabs = n > 1 ? '<div class="sp-tabs" style="--n:' + n + ';--k:0" role="tablist"><i></i>' +
       d.tabs.map((t, k) => '<button type="button" class="sp-tab' + (k ? '' : ' on') + '" role="tab" data-k="' + k + '">' + t[0] + '</button>').join('') + '</div>' : '';
-    const panels = d.tabs.map((t, k) => '<div class="sp-empty" data-k="' + k + '"' + (k ? ' hidden' : '') + '><h3>' + t[1] + '</h3><p>' + t[2] + '</p></div>').join('');
-    return '<div class="sp-pg"><div class="sp-head"><h1 class="sp-title" aria-label="' + d.name + '">' + spTitle(d.name) +
+    const panels = d.custom ? '<div class="sp-today"></div>' : d.tabs.map((t, k) => '<div class="sp-empty" data-k="' + k + '"' + (k ? ' hidden' : '') + '><h3>' + t[1] + '</h3><p>' + t[2] + '</p></div>').join('');
+    return '<div class="sp-pg"><div class="sp-head"><h1 class="sp-title" style="--len:' + d.name.length + '" aria-label="' + d.name + '">' + spTitle(d.name) +
       '</h1><i class="sp-rule"></i></div>' + tabs + panels + '</div>';
+  };
+
+  const WEEK_GOAL = 4, WATER_GOAL = 2500;
+  const dkey = (d) => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  const initToday = (sec) => {
+    const box = sec.querySelector('.sp-today');
+    const goPage = (n) => {
+      const r = sportNav && sportNav.querySelector('.nav-input[value="page-sport-' + n + '"]');
+      if (r) { r.checked = true; r.dispatchEvent(new Event('change')); }
+    };
+    const render = () => {
+      const now = new Date(), tk = dkey(now);
+      const done = Array.isArray(APP_STATE.sportDone) ? APP_STATE.sportDone : [];
+      const w = APP_STATE.sportWater && APP_STATE.sportWater.d === tk ? APP_STATE.sportWater.ml : 0;
+      const mon = new Date(now); mon.setDate(now.getDate() - ((now.getDay() + 6) % 7));
+      let days = '', weekCount = 0;
+      ['P', 'S', 'Ç', 'P', 'C', 'C', 'P'].forEach((l, k) => {
+        const d = new Date(mon); d.setDate(mon.getDate() + k);
+        const key = dkey(d), on = done.includes(key);
+        if (on) weekCount++;
+        days += '<span class="sp-day' + (on ? ' done' : '') + (key === tk ? ' today' : '') + '"><b>' + l + '</b><i></i></span>';
+      });
+      let streak = 0; const c = new Date(now);
+      if (!done.includes(tk)) c.setDate(c.getDate() - 1);
+      while (done.includes(dkey(c))) { streak++; c.setDate(c.getDate() - 1); }
+      const pct = Math.min(100, Math.round(w / WATER_GOAL * 100));
+      box.innerHTML =
+        '<div class="sp-week">' + days + '</div>' +
+        '<div class="sp-empty"><h3>Bugün plan yok</h3><p>Program kurana kadar boş bir seansla başlayabilirsin.</p>' +
+        '<button type="button" class="sp-btn" data-go="2">Antrenman başlat</button></div>' +
+        '<div class="sp-tiles">' +
+        '<div class="sp-tile"><span>Seri</span><strong>' + streak + ' gün</strong><em>Bu hafta ' + weekCount + '/' + WEEK_GOAL + ' seans</em></div>' +
+        '<div class="sp-tile"><span>Su</span><strong>' + (w / 1000).toLocaleString('tr-TR', { maximumFractionDigits: 2 }) + ' L</strong>' +
+        '<div class="sp-bar"><i style="width:' + pct + '%"></i></div>' +
+        '<button type="button" class="sp-mini" data-water="250" aria-label="250 mililitre su ekle">+250 ml</button></div></div>';
+    };
+    box.addEventListener('click', (e) => {
+      const g = e.target.closest('[data-go]');
+      if (g) { goPage(g.dataset.go); return; }
+      if (e.target.closest('[data-water]')) {
+        const tk = dkey(new Date());
+        const cur = APP_STATE.sportWater && APP_STATE.sportWater.d === tk ? APP_STATE.sportWater.ml : 0;
+        saveAppState({ sportWater: { d: tk, ml: cur + 250 } });
+        render();
+      }
+    });
+    render();
   };
   if (app) {
     for (let i = 1; i <= SPORT_PAGE_COUNT; i++) {
@@ -82973,6 +83038,7 @@ body.is-sport-mode .navbar:not(.sport-navbar){display:none !important}
       else {
         sec.classList.add('sp-page');
         sec.innerHTML = buildSportPage(SPORT_PAGES[i - 1]);
+        if (i === 1) initToday(sec);
         const bar = sec.querySelector('.sp-tabs');
         if (bar) bar.addEventListener('click', (e) => {
           const b = e.target.closest('.sp-tab'); if (!b) return;
