@@ -42720,20 +42720,27 @@ body.is-anthracite .exam-q-info-count { color: #f2f2f4; }
        Veri: APP_STATE.resourceBooks · Görseller: IndexedDB (idb://) -->
   <section class="page" id="page-books" aria-label="Kaynaklarım">
     <div class="bk-scroll" id="bkScroll">
-      <div class="bk-wrap">
-        <header class="bk-head">
-          <div class="bk-head-text">
-            <h1 class="bk-title">Kaynaklarım</h1>
-            <p class="bk-subline" id="bkSub"></p>
+      <header class="bk-head" id="bkHead">
+        <div class="bk-head-in">
+          <div class="bk-head-row">
+            <div class="bk-head-text">
+              <h1 class="bk-title">Kaynaklarım</h1>
+              <p class="bk-subline" id="bkSub"></p>
+            </div>
+            <button type="button" class="bk-add" id="bkAddBtn" aria-label="Kitap ekle">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+            </button>
           </div>
-          <button type="button" class="bk-add" id="bkAddBtn" aria-label="Kitap ekle">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
-          </button>
-        </header>
-
-        <div class="bk-progress is-empty" id="bkProgress" aria-hidden="true"><i id="bkProgressFill"></i></div>
-
+          <div class="bk-progress is-empty" id="bkProgress" aria-hidden="true"><i id="bkProgressFill"></i></div>
+        </div>
+      </header>
+      <div class="bk-wrap">
         <div class="bk-toolbar">
+          <label class="bk-search" for="bkSearch">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg>
+            <input id="bkSearch" type="search" placeholder="Kaynak veya ders ara" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="search" aria-label="Kaynak veya ders ara">
+            <button type="button" class="bk-search-x" id="bkSearchX" hidden aria-label="Aramayı temizle"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7l10 10M17 7L7 17"/></svg></button>
+          </label>
           <div class="bk-seg" id="bkTrackFilter" role="tablist" aria-label="Sınav türü" style="--n:3;--i:0">
             <span class="bk-seg-thumb" aria-hidden="true"></span>
             <button type="button" class="is-on" role="tab" data-v="all">Tümü</button>
@@ -42741,8 +42748,8 @@ body.is-anthracite .exam-q-info-count { color: #f2f2f4; }
             <button type="button" role="tab" data-v="ayt">AYT</button>
           </div>
           <div class="bk-filters" id="bkStatusFilter">
-            <button type="button" class="bk-chip" data-v="active">Devam eden</button>
-            <button type="button" class="bk-chip" data-v="done">Çözüldü</button>
+            <button type="button" class="bk-chip" data-v="active"><span>Devam eden</span><em id="bkCntActive">0</em></button>
+            <button type="button" class="bk-chip" data-v="done"><span>Çözüldü</span><em id="bkCntDone">0</em></button>
           </div>
         </div>
 
@@ -42750,10 +42757,9 @@ body.is-anthracite .exam-q-info-count { color: #f2f2f4; }
 
         <div class="bk-empty" id="bkEmpty" hidden>
           <svg class="bk-empty-art" viewBox="0 0 120 96" aria-hidden="true">
-            <rect x="14" y="58" width="92" height="16" rx="4" fill="none" stroke="currentColor" stroke-width="2.2"/>
-            <rect x="24" y="40" width="80" height="16" rx="4" fill="none" stroke="currentColor" stroke-width="2.2" transform="rotate(-3 64 48)"/>
-            <rect x="20" y="22" width="76" height="16" rx="4" fill="none" stroke="currentColor" stroke-width="2.2" transform="rotate(2 58 30)"/>
-            <path d="M30 66h14M34 48h12M30 30h16" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" opacity=".55"/>
+            <g class="bk-bk b3"><rect x="14" y="58" width="92" height="16" rx="4"/><path class="ln" d="M30 66h14"/></g>
+            <g class="bk-bk b2"><rect x="24" y="40" width="80" height="16" rx="4" transform="rotate(-3 64 48)"/><path class="ln" d="M34 48h12"/></g>
+            <g class="bk-bk b1"><rect x="20" y="22" width="76" height="16" rx="4" transform="rotate(2 58 30)"/><path class="ln" d="M30 30h16"/></g>
           </svg>
           <h2 id="bkEmptyTitle">Henüz kaynak yok</h2>
           <p id="bkEmptyText">Başladığın ilk kitabı ekle; kapağını koy, hedefini belirle.</p>
@@ -82722,20 +82728,28 @@ html[data-ed="dark"] #examResourcesBackdrop .delete-btn {
 }
 
 #page-books.page { display: block; padding: 0; }
+#page-books { --bk-px: 22px; }
+@media (min-width: 768px) and (min-height: 600px) { #page-books { --bk-px: 30px; } }
 #page-books .bk-scroll {
-  position: absolute; inset: 0; overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain;
-  padding: calc(env(safe-area-inset-top, 0px) + 24px) 22px calc(136px + env(safe-area-inset-bottom, 0px));
+  position: absolute; inset: 0; overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain; padding: 0 0 calc(136px + env(safe-area-inset-bottom, 0px));
 }
-@media (min-width: 768px) and (min-height: 600px) {
-  #page-books .bk-scroll { padding: 38px 30px 72px; }
-}
-#page-books .bk-wrap { max-width: 1080px; margin: 0 auto; color: var(--bk-fg); }
+@media (min-width: 768px) and (min-height: 600px) { #page-books .bk-scroll { padding-bottom: 72px; } }
+#page-books .bk-wrap { box-sizing: border-box; max-width: calc(1080px + var(--bk-px) * 2); margin: 0 auto; padding: 8px var(--bk-px) 0; color: var(--bk-fg); }
 
 /* ---------- Başlık ---------- */
 #page-books .bk-head {
-  display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; margin-bottom: 22px;
+  position: sticky; top: 0; z-index: 20;
+  padding: calc(env(safe-area-inset-top, 0px) + 24px) 0 14px;
+  background: color-mix(in srgb, var(--bk-bg) 86%, transparent);
+  -webkit-backdrop-filter: blur(18px) saturate(1.2); backdrop-filter: blur(18px) saturate(1.2);
+  box-shadow: 0 1px 0 transparent; transition: box-shadow .4s ease, padding .4s var(--bk-ease);
   animation: bkFade .8s var(--bk-ease) both;
 }
+#page-books .bk-head.is-stuck { box-shadow: 0 1px 0 var(--bk-line); }
+#page-books .bk-head-in { box-sizing: border-box; max-width: calc(1080px + var(--bk-px) * 2); margin: 0 auto; padding: 0 var(--bk-px); }
+#page-books .bk-head-row { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; margin-bottom: 16px; }
+#page-books .bk-head.is-stuck .bk-subline { opacity: 0; max-height: 0; margin-top: 0; }
+#page-books .bk-subline { transition: opacity .35s ease, max-height .4s var(--bk-ease), margin .4s var(--bk-ease); max-height: 2em; overflow: hidden; }
 #page-books .bk-title {
   margin: 0; font-family: "Playfair Display", Georgia, serif; font-style: italic; font-weight: 700;
   font-size: clamp(34px, 9.5vw, 46px); line-height: 1.02; letter-spacing: -.012em; color: var(--bk-fg);
@@ -82756,13 +82770,13 @@ html[data-ed="dark"] #examResourcesBackdrop .delete-btn {
 }
 
 /* ---------- İlerleme çizgisi ---------- */
-#page-books .bk-progress { height: 3px; border-radius: 3px; background: var(--bk-line); overflow: hidden; margin-bottom: 24px; transition: opacity .6s ease; }
+#page-books .bk-progress { height: 3px; border-radius: 3px; background: var(--bk-line); overflow: hidden; transition: opacity .6s ease; }
 #page-books .bk-progress.is-empty { opacity: 0; }
 #page-books .bk-progress i { display: block; height: 100%; width: 0; border-radius: 3px; background: var(--bk-acc); transition: width 1.1s var(--bk-ease); }
 
 /* ---------- Araç çubuğu ---------- */
 #page-books .bk-toolbar {
-  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 16px; margin-bottom: 30px;
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 14px 16px; margin-bottom: 30px;
   animation: bkFade .9s .08s var(--bk-ease) both;
 }
 .bk-seg {
@@ -82781,17 +82795,36 @@ html[data-ed="dark"] #examResourcesBackdrop .delete-btn {
 .bk-seg-sm button { padding: 11px 0; font-size: 13px; }
 .bk-seg-sm { display: grid; grid-template-columns: repeat(var(--n), 1fr); width: 100%; }
 
-#page-books .bk-filters { display: flex; gap: 6px; }
+#page-books .bk-filters { display: flex; gap: 24px; padding: 0 2px; }
 #page-books .bk-chip {
-  border: 1px solid var(--bk-line); background: transparent; color: var(--bk-mute); padding: 9px 15px; border-radius: 999px;
-  font-family: inherit; font-weight: 600; font-size: 13px; cursor: pointer; transition: background .45s var(--bk-ease), color .35s, border-color .35s, transform .35s var(--bk-ease);
+  position: relative; display: inline-flex; align-items: center; gap: 8px; border: 0; background: none; padding: 7px 0 9px; border-radius: 0;
+  font-family: inherit; font-weight: 600; font-size: 14px; color: var(--bk-mute); cursor: pointer; -webkit-tap-highlight-color: transparent;
+  transition: color .35s ease, transform .35s var(--bk-ease);
+}
+#page-books .bk-chip::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 1.5px; border-radius: 2px; background: var(--bk-fg); transform: scaleX(0); transform-origin: left center; transition: transform .55s var(--bk-ease); }
+#page-books .bk-chip em {
+  font-style: normal; font-size: 11.5px; font-weight: 700; line-height: 1; min-width: 20px; height: 20px; padding: 0 6px; box-sizing: border-box; border-radius: 999px;
+  display: inline-grid; place-items: center; background: var(--bk-soft); color: var(--bk-mute); transition: background .4s ease, color .4s ease;
 }
 #page-books .bk-chip:active { transform: scale(.95); }
+@media (hover: hover) { #page-books .bk-chip:hover { color: var(--bk-fg); } }
+#page-books .bk-chip.is-on { color: var(--bk-fg); }
+#page-books .bk-chip.is-on::after { transform: scaleX(1); }
+#page-books .bk-chip.is-on em { background: var(--bk-fg); color: var(--bk-bg); }
+/* Arama */
+#page-books .bk-search { flex: 1 1 100%; display: flex; align-items: center; gap: 10px; height: 46px; padding: 0 8px 0 16px; border-radius: 999px; background: var(--bk-soft); border: 1.5px solid transparent; transition: border-color .35s ease, background .35s ease; cursor: text; }
+#page-books .bk-search:focus-within { border-color: color-mix(in srgb, var(--bk-fg) 24%, transparent); background: var(--bk-soft2); }
+#page-books .bk-search > svg { flex: none; width: 18px; height: 18px; fill: none; stroke: var(--bk-mute); stroke-width: 2; stroke-linecap: round; }
+#page-books .bk-search input { flex: 1; min-width: 0; height: 100%; border: 0; outline: 0; background: transparent; font-family: inherit; font-size: 16px; font-weight: 500; color: var(--bk-fg); -webkit-appearance: none; appearance: none; }
+#page-books .bk-search input::placeholder { color: var(--bk-faint); }
+#page-books .bk-search input::-webkit-search-cancel-button, #page-books .bk-search input::-webkit-search-decoration { -webkit-appearance: none; display: none; }
+#page-books .bk-search-x { flex: none; width: 30px; height: 30px; border: 0; border-radius: 50%; display: grid; place-items: center; background: var(--bk-soft2); color: var(--bk-fg); cursor: pointer; padding: 0; }
+#page-books .bk-search-x[hidden] { display: none; }
+#page-books .bk-search-x svg { width: 13px; height: 13px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; }
 @media (max-width: 559px) {
   #page-books .bk-toolbar > .bk-seg { display: grid; width: 100%; }
   #page-books .bk-toolbar > .bk-seg button { padding: 11px 0; }
 }
-#page-books .bk-chip.is-on { background: var(--bk-soft2); color: var(--bk-fg); border-color: transparent; }
 
 /* ---------- Kart ızgarası ---------- */
 #page-books .bk-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 30px 20px; }
@@ -82821,14 +82854,15 @@ html[data-ed="dark"] #examResourcesBackdrop .delete-btn {
 #page-books .bk-card.is-done .bk-img.is-loaded { filter: saturate(.78); }
 
 #page-books .bk-ph {
-  position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: space-between; padding: 20px 14px 16px 20px;
-  background: linear-gradient(155deg, color-mix(in srgb, var(--c) 62%, #fff), var(--c)); color: #16171b;
+  position: absolute; inset: 0; display: flex; flex-direction: column; padding: 46px 16px 16px 22px;
+  background: color-mix(in srgb, var(--bk-fg) 6.5%, var(--bk-bg)); color: var(--bk-fg);
 }
 #page-books .bk-ph b {
-  font-family: "Playfair Display", Georgia, serif; font-style: italic; font-weight: 700; font-size: clamp(15px, 4.4vw, 21px); line-height: 1.15;
-  display: -webkit-box; -webkit-line-clamp: 5; -webkit-box-orient: vertical; overflow: hidden; margin-top: 18px;
+  font-family: inherit; font-style: normal; font-weight: 600; font-size: clamp(13px, 3.8vw, 16px); line-height: 1.28; letter-spacing: -.01em;
+  display: -webkit-box; -webkit-line-clamp: 5; -webkit-box-orient: vertical; overflow: hidden;
 }
-#page-books .bk-ph span { font-size: 10px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; opacity: .6; }
+#page-books .bk-ph i { display: block; flex: none; width: 16px; height: 1.5px; margin-top: 14px; border-radius: 2px; background: var(--bk-fg); opacity: .5; }
+#page-books .bk-ph span { margin-top: auto; font-size: 10px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: var(--bk-mute); }
 
 #page-books .bk-tag {
   position: absolute; top: 10px; left: 14px; z-index: 2; padding: 5px 8px; border-radius: 8px; font-size: 10px; font-weight: 700; letter-spacing: .12em;
@@ -82856,19 +82890,23 @@ html[data-ed="dark"] #examResourcesBackdrop .delete-btn {
 #page-books .bk-info { padding: 15px 2px 0; animation: bkFade .5s ease both; }
 #page-books .bk-name { margin: 0; font-size: 15.5px; font-weight: 700; line-height: 1.25; letter-spacing: -.005em; color: var(--bk-fg); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 #page-books .bk-meta { margin: 6px 0 0; display: flex; align-items: center; gap: 7px; font-size: 12.5px; font-weight: 500; color: var(--bk-mute); }
-#page-books .bk-dot { flex: none; width: 7px; height: 7px; border-radius: 50%; background: var(--c); }
 #page-books .bk-when { margin: 9px 0 0; display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; color: var(--bk-mute); }
 #page-books .bk-when svg { width: 13px; height: 13px; fill: none; stroke: currentColor; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; }
 #page-books .bk-when.is-done { color: var(--bk-fg); }
 #page-books .bk-when.is-late { color: var(--bk-red); }
 #page-books .bk-when.is-soon { color: var(--bk-fg); }
 #page-books .bk-tl { height: 3px; border-radius: 3px; background: var(--bk-line); margin-top: 10px; overflow: hidden; }
-#page-books .bk-tl i { display: block; height: 100%; width: var(--p, 0%); border-radius: 3px; background: var(--c); animation: bkGrow 1.2s .35s var(--bk-ease) both; }
+#page-books .bk-tl i { display: block; height: 100%; width: var(--p, 0%); border-radius: 3px; background: var(--bk-fg); opacity: .75; animation: bkGrow 1.2s .35s var(--bk-ease) both; }
 
 /* ---------- Boş durum ---------- */
 #page-books .bk-empty { text-align: center; padding: 64px 20px 20px; color: var(--bk-fg); animation: bkRise .9s .1s var(--bk-ease) both; }
 #page-books .bk-empty[hidden] { display: none; }
-#page-books .bk-empty-art { width: 124px; height: 100px; color: var(--bk-faint); margin-bottom: 18px; animation: bkFloat 6s ease-in-out infinite; }
+#page-books .bk-empty-art { width: 124px; height: 100px; margin-bottom: 18px; overflow: visible; }
+#page-books .bk-bk rect { fill: var(--bk-bg); stroke: color-mix(in srgb, var(--bk-fg) 40%, var(--bk-bg)); stroke-width: 2.2; }
+#page-books .bk-bk .ln { fill: none; stroke: color-mix(in srgb, var(--bk-fg) 24%, var(--bk-bg)); stroke-width: 2.2; stroke-linecap: round; }
+#page-books .bk-bk { animation: bkBook 5.6s ease-in-out infinite; }
+#page-books .bk-bk.b2 { animation-delay: -1.9s; }
+#page-books .bk-bk.b1 { animation-delay: -3.8s; }
 #page-books .bk-empty h2 { margin: 0 0 8px; font-family: "Playfair Display", Georgia, serif; font-style: italic; font-weight: 700; font-size: 26px; color: var(--bk-fg); }
 #page-books .bk-empty p { margin: 0 auto 26px; max-width: 280px; font-size: 14.5px; line-height: 1.5; color: var(--bk-mute); }
 #page-books .bk-empty-btn {
@@ -82943,16 +82981,9 @@ html[data-ed="dark"] #examResourcesBackdrop .delete-btn {
 
 /* Ders çipleri */
 .bk-subs { display: flex; flex-wrap: wrap; gap: 8px; }
-.bk-sub { display: inline-flex; align-items: center; gap: 8px; height: 38px; padding: 0 15px; border: 1px solid var(--bk-line); border-radius: 999px; background: transparent; color: var(--bk-fg); font-family: inherit; font-weight: 600; font-size: 13.5px; cursor: pointer; transition: background .45s var(--bk-ease), color .35s, border-color .35s, transform .4s var(--bk-spring); }
-.bk-sub i { width: 8px; height: 8px; border-radius: 50%; transition: box-shadow .4s; }
+.bk-sub { display: inline-flex; align-items: center; height: 36px; padding: 0 16px; border: 0; border-radius: 999px; background: var(--bk-soft); color: var(--bk-mute); font-family: inherit; font-weight: 600; font-size: 13.5px; cursor: pointer; transition: background .45s var(--bk-ease), color .35s, transform .4s var(--bk-spring); }
 .bk-sub:active { transform: scale(.94); }
-.bk-sub.is-on { background: var(--bk-fg); color: var(--bk-bg); border-color: var(--bk-fg); }
-.bk-sub.is-on i { box-shadow: 0 0 0 2px color-mix(in srgb, var(--bk-bg) 85%, transparent); }
-.bk-sub-add { color: var(--bk-mute); border-style: dashed; }
-.bk-other { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .5s var(--bk-ease), margin .5s var(--bk-ease); }
-.bk-other.is-open { grid-template-rows: 1fr; margin-top: 12px; }
-.bk-other-in { overflow: hidden; min-height: 0; display: flex; gap: 8px; }
-.bk-other-btn { flex: none; height: 50px; padding: 0 20px; border: 0; border-radius: 16px; background: var(--bk-fg); color: var(--bk-bg); font-family: inherit; font-weight: 700; font-size: 14px; cursor: pointer; }
+.bk-sub.is-on { background: var(--bk-fg); color: var(--bk-bg); }
 
 /* Tarihler */
 .bk-dates { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
@@ -83059,6 +83090,7 @@ html[data-ed="dark"] #examResourcesBackdrop .delete-btn {
 @keyframes bkPop { 0% { transform: scale(1); } 40% { transform: scale(1.28); } 100% { transform: scale(1); } }
 @keyframes bkPopIn { from { opacity: 0; transform: scale(.8); } to { opacity: 1; transform: none; } }
 @keyframes bkShake { 0%, 100% { transform: translateX(0); } 20% { transform: translateX(-7px); } 40% { transform: translateX(6px); } 60% { transform: translateX(-4px); } 80% { transform: translateX(3px); } }
+@keyframes bkBook { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
 @keyframes bkFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-7px); } }
 @keyframes bkShimmer { to { background-position: -200% 0; } }
 @keyframes bkSwapN { from { opacity: 0; transform: translateX(16px); } to { opacity: 1; transform: none; } }
@@ -83162,7 +83194,8 @@ html[data-ed="dark"] #examResourcesBackdrop .delete-btn {
 
   /* ---------- Veri ---------- */
   var books = [];
-  var filt = { track: 'all', status: 'all' };
+  var filt = { track: 'all', status: 'all', q: '' };
+  function norm(t) { return String(t || '').toLocaleLowerCase('tr').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/ı/g, 'i').trim(); }
   function load() { var a = (typeof APP_STATE !== 'undefined' && APP_STATE) ? APP_STATE.resourceBooks : null; books = Array.isArray(a) ? a : []; }
   function persist() { try { if (typeof saveAppState === 'function') saveAppState({ resourceBooks: books }); } catch (e) { /* yok say */ } }
   function find(id) { for (var i = 0; i < books.length; i++) if (books[i].id === id) return books[i]; return null; }
@@ -83188,7 +83221,7 @@ html[data-ed="dark"] #examResourcesBackdrop .delete-btn {
     if (b.subject) parts.push(esc(b.subject));
     if (b.pages) parts.push(b.pages + ' sf');
     var h = '<h3 class="bk-name">' + esc(b.title) + '</h3>';
-    if (parts.length) h += '<p class="bk-meta"><i class="bk-dot"></i><span>' + parts.join(' · ') + '</span></p>';
+    if (parts.length) h += '<p class="bk-meta"><span>' + parts.join(' · ') + '</span></p>';
     var w = whenInfo(b);
     if (w) h += '<p class="bk-when ' + w.cls + '">' + (w.icon ? ICON.check : '') + '<span>' + w.txt + '</span></p>';
     if (!b.solved && b.startDate && b.targetDate && dayDiff(b.startDate, b.targetDate) > 0) {
@@ -83201,7 +83234,7 @@ html[data-ed="dark"] #examResourcesBackdrop .delete-btn {
     var c = subjectColor(b.track, b.subject || b.title || '');
     var cover = b.cover
       ? '<img class="bk-img" alt="" draggable="false">'
-      : '<div class="bk-ph"><b>' + esc(b.title) + '</b><span>' + esc(b.subject || (b.track === 'ayt' ? 'AYT' : 'TYT')) + '</span></div>';
+      : '<div class="bk-ph"><b>' + esc(b.title) + '</b><i></i><span>' + esc(b.subject || (b.track === 'ayt' ? 'AYT' : 'TYT')) + '</span></div>';
     var keys = (b.keys || []).length;
     return '<article class="bk-card' + (b.solved ? ' is-done' : '') + '" data-id="' + b.id + '" style="--i:' + i + ';--c:' + c + '">' +
       '<div class="bk-cover" role="button" tabindex="0" aria-label="' + esc(b.title) + ' — düzenle">' + cover +
@@ -83210,9 +83243,16 @@ html[data-ed="dark"] #examResourcesBackdrop .delete-btn {
       (keys ? '<button type="button" class="bk-keychip" data-act="keys" aria-label="Cevap anahtarını aç">' + ICON.key + '<span>Cevaplar · ' + keys + '</span></button>' : '') +
       '</div><div class="bk-info">' + infoHTML(b) + '</div></article>';
   }
-  function visibleBooks() {
-    var v = books.filter(function (b) {
+  function baseBooks() {
+    var q = norm(filt.q);
+    return books.filter(function (b) {
       if (filt.track !== 'all' && b.track !== filt.track) return false;
+      if (q && (norm(b.title) + ' ' + norm(b.subject)).indexOf(q) < 0) return false;
+      return true;
+    });
+  }
+  function visibleBooks() {
+    var v = baseBooks().filter(function (b) {
       if (filt.status === 'active') return !b.solved;
       if (filt.status === 'done') return !!b.solved;
       return true;
@@ -83238,12 +83278,15 @@ html[data-ed="dark"] #examResourcesBackdrop .delete-btn {
     var none = !v.length;
     emptyEl.hidden = !none;
     if (none) {
-      var filtered = books.length > 0;
-      $('#bkEmptyTitle').textContent = filtered ? 'Burada kitap yok' : 'Henüz kaynak yok';
-      $('#bkEmptyText').textContent = filtered ? 'Bu filtreye uyan bir kitap bulunamadı.' : 'Başladığın ilk kitabı ekle; kapağını koy, hedefini belirle.';
+      var filtered = books.length > 0, searching = filtered && !!norm(filt.q);
+      $('#bkEmptyTitle').textContent = searching ? 'Sonuç bulunamadı' : (filtered ? 'Burada kitap yok' : 'Henüz kaynak yok');
+      $('#bkEmptyText').textContent = searching ? 'Aramana uyan bir kaynak ya da ders yok.' : filtered ? 'Bu filtreye uyan bir kitap bulunamadı.' : 'Başladığın ilk kitabı ekle; kapağını koy, hedefini belirle.';
       $('#bkEmptyAdd').style.display = filtered ? 'none' : '';
     }
     updateHead();
+    var base = baseBooks();
+    $('#bkCntActive').textContent = base.filter(function (b) { return !b.solved; }).length;
+    $('#bkCntDone').textContent = base.filter(function (b) { return b.solved; }).length;
   }
   function setSeg(seg, key, val) {
     var btns = $$('button', seg), idx = 0;
@@ -83255,6 +83298,11 @@ html[data-ed="dark"] #examResourcesBackdrop .delete-btn {
     var b = e.target.closest('button[data-v]'); if (!b) return;
     filt.track = b.dataset.v; setSeg(trackSeg, 'track', filt.track); render();
   });
+  var searchIn = $('#bkSearch'), searchX = $('#bkSearchX'), headEl = $('#bkHead'), scrollEl = $('#bkScroll');
+  searchIn.addEventListener('input', function () { filt.q = searchIn.value; searchX.hidden = !searchIn.value; render(); });
+  searchIn.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); searchIn.blur(); } });
+  searchX.addEventListener('click', function () { searchIn.value = ''; filt.q = ''; searchX.hidden = true; render(); searchIn.focus(); });
+  scrollEl.addEventListener('scroll', function () { headEl.classList.toggle('is-stuck', scrollEl.scrollTop > 6); }, { passive: true });
   statusBox.addEventListener('click', function (e) {
     var b = e.target.closest('.bk-chip'); if (!b) return;
     filt.status = filt.status === b.dataset.v ? 'all' : b.dataset.v;
@@ -83315,8 +83363,7 @@ html[data-ed="dark"] #examResourcesBackdrop .delete-btn {
             '<div class="bk-field"><input class="bk-input" id="bkPages" type="number" inputmode="numeric" min="1" max="9999" placeholder="Sayfa sayısı" aria-label="Sayfa sayısı"><span class="bk-suffix">sayfa</span></div>' +
           '</div>' +
         '</div>' +
-        '<div class="bk-section"><span class="bk-label">Ders</span><div class="bk-subs" id="bkSubs"></div>' +
-          '<div class="bk-other" id="bkOther"><div class="bk-other-in"><input class="bk-input" id="bkOtherInput" type="text" maxlength="30" placeholder="Ders adı" autocomplete="off"><button type="button" class="bk-other-btn" id="bkOtherOk">Ekle</button></div></div></div>' +
+        '<div class="bk-section"><span class="bk-label">Ders</span><div class="bk-subs" id="bkSubs"></div></div>' +
         '<div class="bk-section"><span class="bk-label">Takvim</span>' +
           '<div class="bk-dates"><button type="button" class="bk-datebtn" data-field="startDate"><small>Başlama</small><span></span></button><button type="button" class="bk-datebtn" data-field="targetDate"><small>Çözülme hedefi</small><span></span></button></div>' +
           '<div class="bk-cal" id="bkCal"><div class="bk-cal-in"><div class="bk-cal-box">' +
@@ -83348,7 +83395,7 @@ html[data-ed="dark"] #examResourcesBackdrop .delete-btn {
 
   var sheet = $('.bk-sheet', layer), body = $('#bkBody'), titleIn = $('#bkTitle'), pagesIn = $('#bkPages');
   var coverPick = $('#bkCoverPick'), coverImg = $('#bkCoverImg'), keysBox = $('#bkKeys');
-  var subsBox = $('#bkSubs'), otherBox = $('#bkOther'), otherIn = $('#bkOtherInput');
+  var subsBox = $('#bkSubs');
   var calBox = $('#bkCal'), calGrid = $('#bkCalGrid'), calTitle = $('#bkCalTitle');
   var dateBtns = $$('.bk-datebtn', layer), solvedBtn = $('#bkSolved'), finishP = $('#bkFinish');
   var saveBtn = $('#bkSave'), delBtn = $('#bkDel'), sheetTrackSeg = $('#bkTrackSeg');
@@ -83368,7 +83415,7 @@ html[data-ed="dark"] #examResourcesBackdrop .delete-btn {
     $('#bkSheetTitle').textContent = book ? 'Kitabı düzenle' : 'Yeni kitap';
     titleIn.value = draft.title || ''; pagesIn.value = draft.pages || '';
     delBtn.hidden = !book; resetDel();
-    closeCal(true); otherBox.classList.remove('is-open'); otherIn.value = '';
+    closeCal(true);
     syncTrackSeg(); renderSubjects(); renderDates(); renderSolved(); renderCover(); renderKeys();
     saveBtn.disabled = false;
     body.scrollTop = 0;
@@ -83401,21 +83448,13 @@ html[data-ed="dark"] #examResourcesBackdrop .delete-btn {
     var list = subjectList(draft.track).slice();
     if (draft.subject && list.indexOf(draft.subject) < 0) list.push(draft.subject);
     subsBox.innerHTML = list.map(function (n) {
-      return '<button type="button" class="bk-sub' + (n === draft.subject ? ' is-on' : '') + '" data-s="' + esc(n) + '"><i style="background:' + subjectColor(draft.track, n) + '"></i>' + esc(n) + '</button>';
-    }).join('') + '<button type="button" class="bk-sub bk-sub-add" data-other>+ Diğer</button>';
+      return '<button type="button" class="bk-sub' + (n === draft.subject ? ' is-on' : '') + '" data-s="' + esc(n) + '">' + esc(n) + '</button>';
+    }).join('') ;
   }
   subsBox.addEventListener('click', function (e) {
     var b = e.target.closest('.bk-sub'); if (!b) return;
-    if (b.hasAttribute('data-other')) { var open = !otherBox.classList.contains('is-open'); otherBox.classList.toggle('is-open', open); if (open) setTimeout(function () { otherIn.focus(); }, 350); return; }
     var s = b.dataset.s; draft.subject = draft.subject === s ? '' : s; renderSubjects(); buzz(6);
   });
-  function applyOther() {
-    var v = otherIn.value.trim().replace(/\s+/g, ' ');
-    if (!v) { otherBox.classList.remove('is-open'); return; }
-    draft.subject = v.slice(0, 30); otherIn.value = ''; otherBox.classList.remove('is-open'); renderSubjects();
-  }
-  $('#bkOtherOk').addEventListener('click', applyOther);
-  otherIn.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); applyOther(); } });
 
   /* ---- Kapak ---- */
   function renderCover() {
