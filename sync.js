@@ -1516,7 +1516,7 @@ img.pa-mark{display:block;object-fit:cover;border-radius:23%;background:none;box
 .pa-go.ld{pointer-events:none}.pa-go.ld .l{opacity:0;transform:translateY(8px)}.pa-go.ld .s{opacity:1;animation:paSpin .8s linear infinite}
 .pa-foot{margin:16px 0 0;text-align:center;font-size:14.5px;opacity:.8}
 .pa-foot button{border:0;background:none;color:var(--accent-color,#6ec1ff);font-size:14.5px;font-weight:700;cursor:pointer;padding:4px 2px}
-.pa-st{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:28px;text-align:center;background:color-mix(in srgb,var(--theme-bg,#0b0b0b) 88%,transparent);opacity:0;pointer-events:none;transition:opacity .45s ease}
+.pa-st{position:absolute;z-index:10;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:28px;text-align:center;background:color-mix(in srgb,var(--theme-bg,#0b0b0b) 94%,transparent);opacity:0;pointer-events:none;transition:opacity .45s ease}
 .pa-card.st .pa-st{opacity:1;pointer-events:auto}
 .pa-st>*{opacity:0;transform:translateY(12px);transition:opacity .5s ease,transform .6s cubic-bezier(.22,1,.36,1)}
 .pa-card.st .pa-st>*{opacity:1;transform:none}.pa-card.st .pa-st>*:nth-child(2){transition-delay:.12s}.pa-card.st .pa-st>*:nth-child(3){transition-delay:.2s}.pa-card.st .pa-st>*:nth-child(4){transition-delay:.28s}
