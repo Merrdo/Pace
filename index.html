@@ -20587,6 +20587,14 @@
       animation: navCameraFlashRays 0.5s ease-out both;
     }
 
+    @keyframes sidebarBooksDraw {
+      from { stroke-dasharray: 40; stroke-dashoffset: 40; }
+      to { stroke-dasharray: 40; stroke-dashoffset: 0; }
+    }
+    .sidebar-nav-item.is-active .nav-icon-books path:nth-of-type(1) { animation: sidebarBooksDraw 0.45s ease-out both; }
+    .sidebar-nav-item.is-active .nav-icon-books path:nth-of-type(2) { animation: sidebarBooksDraw 0.35s ease-out 0.15s both; }
+    .sidebar-nav-item.is-active .nav-icon-books path:nth-of-type(3) { animation: sidebarBooksDraw 0.3s ease-out 0.3s both; }
+
     .sidebar-nav-item.is-active .nav-icon-gear {
       animation: none;
     }
@@ -39083,6 +39091,14 @@ body.is-anthracite .exam-q-info-count { color: #f2f2f4; }
       </svg>
     </button>
 
+    <button type="button" class="sidebar-nav-item" data-page="page-books" aria-label="Kaynaklarım">
+      <svg class="sidebar-nav-icon nav-icon-books" viewBox="0 0 24 24">
+        <path d="M5 4.5h10.5A2.5 2.5 0 0 1 18 7v13H7.5A2.5 2.5 0 0 1 5 17.5z"/>
+        <path d="M5 17.5A2.5 2.5 0 0 1 7.5 15H18"/>
+        <path d="M9 8.5h5"/>
+      </svg>
+    </button>
+
     <button type="button" class="sidebar-nav-item" data-page="page-settings" aria-label="Ayarlar">
       <svg class="sidebar-nav-icon nav-icon-gear" viewBox="0 0 24 24">
         <path d="M9.59356 3.94014C9.68397 3.39768 10.1533 3.00009 10.7033 3.00009H13.2972C13.8472 3.00009 14.3165 3.39768 14.4069 3.94014L14.6204 5.22119C14.6828 5.59523 14.9327 5.9068 15.2645 6.09045C15.3387 6.13151 15.412 6.17393 15.4844 6.21766C15.8095 6.41393 16.2048 6.47495 16.5604 6.34175L17.7772 5.88587C18.2922 5.69293 18.8712 5.9006 19.1462 6.37687L20.4432 8.6233C20.7181 9.09957 20.6085 9.70482 20.1839 10.0544L19.1795 10.8812C18.887 11.122 18.742 11.4938 18.7491 11.8726C18.7498 11.915 18.7502 11.9575 18.7502 12.0001C18.7502 12.0427 18.7498 12.0852 18.7491 12.1275C18.742 12.5064 18.887 12.8782 19.1795 13.119L20.1839 13.9458C20.6085 14.2953 20.7181 14.9006 20.4432 15.3769L19.1462 17.6233C18.8712 18.0996 18.2922 18.3072 17.7772 18.1143L16.5604 17.6584C16.2048 17.5252 15.8095 17.5862 15.4844 17.7825C15.412 17.8263 15.3387 17.8687 15.2645 17.9097C14.9327 18.0934 14.6828 18.4049 14.6204 18.779L14.4069 20.06C14.3165 20.6025 13.8472 21.0001 13.2972 21.0001H10.7033C10.1533 21.0001 9.68397 20.6025 9.59356 20.06L9.38005 18.779C9.31771 18.4049 9.06774 18.0934 8.73597 17.9097C8.66179 17.8687 8.58847 17.8263 8.51604 17.7825C8.19101 17.5863 7.79568 17.5252 7.44011 17.6584L6.22325 18.1143C5.70826 18.3072 5.12926 18.0996 4.85429 17.6233L3.55731 15.3769C3.28234 14.9006 3.39199 14.2954 3.81657 13.9458L4.82092 13.119C5.11343 12.8782 5.25843 12.5064 5.25141 12.1276C5.25063 12.0852 5.25023 12.0427 5.25023 12.0001C5.25023 11.9575 5.25063 11.915 5.25141 11.8726C5.25843 11.4938 5.11343 11.122 4.82092 10.8812L3.81657 10.0544C3.39199 9.70484 3.28234 9.09958 3.55731 8.62332L4.85429 6.37688C5.12926 5.90061 5.70825 5.69295 6.22325 5.88588L7.4401 6.34176C7.79566 6.47496 8.19099 6.41394 8.51603 6.21767C8.58846 6.17393 8.66179 6.13151 8.73597 6.09045C9.06774 5.9068 9.31771 5.59523 9.38005 5.22119L9.59356 3.94014Z"/>
@@ -43699,7 +43715,6 @@ body.is-anthracite .exam-q-info-count { color: #f2f2f4; }
           <p>Ders kitaplarını ekle; kapak, cevap anahtarı ve çalışma tarihleriyle bir arada dursun.</p>
           <button type="button" class="kyn-btn kyn-btn--pri" id="kynEmptyAdd">İlk kaynağını ekle</button>
         </div>
-        <button type="button" class="kyn-link" id="kynPoolFilter">Soru Havuzu kaynak filtresini aç</button>
       </div>
     </div>
   </section>
@@ -43776,17 +43791,23 @@ body.is-anthracite .exam-q-info-count { color: #f2f2f4; }
       <div class="kyn-step" data-step="5"><div class="kyn-step-in">
         <div class="kyn-kicker kyn-rise" style="--d:0">Adım 6 <span class="kyn-req">· son adım</span></div>
         <h2 class="kyn-q kyn-rise" style="--d:1">Çalışma tarihleri</h2>
-        <p class="kyn-hint kyn-rise" style="--d:2">Başlangıç olarak eklediğin gün seçili geldi; istersen değiştir.</p>
+        <p class="kyn-hint kyn-rise" style="--d:2">Başlangıç olarak eklediğin gün seçili geldi. Bitiş gününü takvimden seç.</p>
         <div class="kyn-rise" style="--d:3">
-          <div class="kyn-field" data-f="start">
-            <button type="button" class="kyn-field-row" data-open="start"><span class="kyn-field-lab">Başlangıç</span><span class="kyn-field-val" id="kynStartVal"></span><span class="kyn-tag" id="kynStartTag">Bugün</span></button>
-            <div class="kyn-acc"><div><div class="kyn-cal" id="kynCalStart"></div></div></div>
+          <div class="kyn-range-head">
+            <button type="button" class="kyn-rcard is-on" data-mode="start"><small>Başlangıç<i id="kynStartTag"> · bugün</i></small><b id="kynStartVal"></b></button>
+            <span class="kyn-rarrow" id="kynArrow" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 12h15M14 7l5 5-5 5"/></svg></span>
+            <button type="button" class="kyn-rcard" data-mode="end"><small>Bitiş</small><b class="is-none" id="kynEndVal">Seç</b></button>
           </div>
-          <div class="kyn-field" data-f="end">
-            <button type="button" class="kyn-field-row" data-open="end"><span class="kyn-field-lab">Bitiş</span><span class="kyn-field-val is-none" id="kynEndVal">Belirlenmedi</span><span class="kyn-clear" id="kynEndClear" role="button" tabindex="0" hidden>Temizle</span></button>
-            <div class="kyn-acc"><div><div class="kyn-cal" id="kynCalEnd"></div></div></div>
+          <div class="kyn-rcal">
+            <div class="kyn-cal-head">
+              <button type="button" class="kyn-cal-nav" id="kynCalPrev" aria-label="Önceki ay"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
+              <b id="kynCalTitle"></b>
+              <button type="button" class="kyn-cal-nav" id="kynCalNext" aria-label="Sonraki ay"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button>
+            </div>
+            <div class="kyn-cal-wds"><span>Pzt</span><span>Sal</span><span>Çar</span><span>Per</span><span>Cum</span><span>Cmt</span><span>Paz</span></div>
+            <div class="kyn-cal-view"><div class="kyn-cal-grid" id="kynCalGrid"></div></div>
           </div>
-          <p class="kyn-span" id="kynSpan"></p>
+          <div class="kyn-rfoot"><span class="kyn-span" id="kynSpan"></span><button type="button" class="kyn-clear" id="kynEndClear" hidden>Bitişi temizle</button></div>
         </div>
       </div></div>
     </div>
@@ -44852,7 +44873,8 @@ body.is-anthracite .exam-q-info-count { color: #f2f2f4; }
       <button type="button" class="nav-more-item" role="menuitem" data-action="calendar" style="--k:1"><svg class="nav-more-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="3.2"/><path d="M4 10h16M8.5 3v3.4M15.5 3v3.4"/><text class="nav-calendar-daynum" x="12" y="17.4" text-anchor="middle">1</text></svg><span>Takvim</span></button>
       <button type="button" class="nav-more-item" role="menuitem" data-action="tracker" style="--k:2"><svg class="nav-more-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="5.5" width="14" height="15" rx="2.4"/><rect x="9" y="3" width="6" height="2.5" rx="1"/><polyline points="8.3 13 10.8 15.5 15.7 9.5"/></svg><span>Soru Takibi</span></button>
       <button type="button" class="nav-more-item" role="menuitem" data-action="exams" style="--k:3"><svg class="nav-more-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2"/><line x1="8" y1="8" x2="16" y2="8"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="8" y1="16" x2="13" y2="16"/></svg><span>Denemelerim</span></button>
-      <button type="button" class="nav-more-item" role="menuitem" data-action="games" style="--k:4" hidden><svg class="nav-more-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7.4 7h9.2a4.5 4.5 0 0 1 4.4 5.4l-.8 4a2.5 2.5 0 0 1-4.2 1.3L14.4 16H9.6l-1.6 1.7A2.5 2.5 0 0 1 3.8 16.4l-.8-4A4.5 4.5 0 0 1 7.4 7z"/><path d="M8 10v3.2M6.4 11.6h3.2"/><circle cx="15.6" cy="10.6" r=".6"/><circle cx="17.6" cy="12.6" r=".6"/></svg><span>Oyunlar</span></button>
+      <button type="button" class="nav-more-item" role="menuitem" data-action="books" style="--k:4"><svg class="nav-more-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4.5h10.5A2.5 2.5 0 0 1 18 7v13H7.5A2.5 2.5 0 0 1 5 17.5z"/><path d="M5 17.5A2.5 2.5 0 0 1 7.5 15H18"/><path d="M9 8.5h5"/></svg><span>Kaynaklarım</span></button>
+      <button type="button" class="nav-more-item" role="menuitem" data-action="games" style="--k:5" hidden><svg class="nav-more-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7.4 7h9.2a4.5 4.5 0 0 1 4.4 5.4l-.8 4a2.5 2.5 0 0 1-4.2 1.3L14.4 16H9.6l-1.6 1.7A2.5 2.5 0 0 1 3.8 16.4l-.8-4A4.5 4.5 0 0 1 7.4 7z"/><path d="M8 10v3.2M6.4 11.6h3.2"/><circle cx="15.6" cy="10.6" r=".6"/><circle cx="17.6" cy="12.6" r=".6"/></svg><span>Oyunlar</span></button>
     </div>
   </div>
 </nav>
@@ -82944,30 +82966,68 @@ body.is-books-open .navbar .wrapper { opacity: 0; transform: translateY(28px); p
 .kyn-key-add svg { width: 22px; height: 22px; stroke: currentColor; stroke-width: 1.8; fill: none; stroke-linecap: round; }
 @keyframes kynTile { from { opacity: 0; transform: scale(.9); } to { opacity: 1; transform: none; } }
 
-/* Tarih alanları */
-.kyn-field { border: 1px solid var(--k-line); border-radius: 22px; margin-bottom: 12px; overflow: hidden; transition: background .4s, border-color .4s; }
-.kyn-field.is-open { background: var(--k-card); border-color: transparent; }
-.kyn-field-row { width: 100%; display: flex; align-items: center; gap: 10px; padding: 16px 16px 16px 18px; background: none; border: 0; text-align: left; }
-.kyn-field-lab { font-size: .7rem; letter-spacing: .08em; text-transform: uppercase; color: var(--k-soft); font-weight: 600; width: 86px; flex: none; white-space: nowrap; }
-.kyn-field-val { flex: 1; white-space: nowrap; font-size: 1.02rem; font-weight: 600; letter-spacing: -.01em; }
-.kyn-field-val.is-none { color: var(--k-soft); font-weight: 500; }
-.kyn-tag { font-size: .7rem; font-weight: 600; padding: 4px 9px; border-radius: 10px; background: var(--k-card2); color: var(--k-soft); white-space: nowrap; }
-.kyn-clear { background: none; border: 0; color: var(--k-soft); font-size: .8rem; padding: 6px 4px; text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--k-line); }
-.kyn-cal { padding: 4px 14px 16px; }
-.kyn-cal-head { display: flex; align-items: center; justify-content: space-between; padding: 4px 6px 10px; }
-.kyn-cal-head b { font-size: .98rem; font-weight: 600; }
-.kyn-cal-nav { width: 36px; height: 36px; border-radius: 50%; border: 0; background: transparent; display: grid; place-items: center; transition: background .25s, transform .3s var(--k-ease); }
-.kyn-cal-nav:active { transform: scale(.88); background: var(--k-card2); }
+/* Tarih aralığı (tatil rezervasyonu tarzı) */
+.kyn-range-head { display: flex; align-items: stretch; gap: 6px; margin-bottom: 16px; }
+.kyn-rcard { flex: 1; min-width: 0; text-align: left; border: 1.5px solid var(--k-line); background: transparent; border-radius: 20px; padding: 12px 14px; display: flex; flex-direction: column; gap: 4px; transition: border-color .45s var(--k-ease), background .45s var(--k-ease), transform .35s var(--k-ease); }
+.kyn-rcard:active { transform: scale(.97); }
+.kyn-rcard small { font-size: .68rem; letter-spacing: .12em; text-transform: uppercase; color: var(--k-soft); font-weight: 600; transition: color .4s; white-space: nowrap; }
+.kyn-rcard small i { font-style: normal; letter-spacing: .04em; text-transform: none; font-weight: 500; }
+.kyn-rcard b { font-size: 1rem; font-weight: 600; letter-spacing: -.01em; white-space: nowrap; transition: color .3s; }
+.kyn-rcard b.is-none { color: var(--k-soft); font-weight: 500; }
+.kyn-rcard.is-on { border-color: var(--k-blue); background: var(--k-blue-soft); }
+.kyn-rcard.is-on small { color: var(--k-blue); }
+.kyn-rcard b.swap, .kyn-span.swap { animation: kynSwap .45s var(--k-ease); }
+@keyframes kynSwap { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+.kyn-rarrow { align-self: center; width: 20px; flex: none; color: var(--k-soft); transition: color .5s, transform .6s var(--k-ease); }
+.kyn-rarrow svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; display: block; }
+.kyn-rarrow.is-on { color: var(--k-blue); transform: translateX(2px); }
+
+.kyn-rcal { border: 1px solid var(--k-line); border-radius: 30px; padding: 16px 10px 14px; background: var(--k-card); box-shadow: 0 1px 0 rgba(255,255,255,.04) inset, 0 10px 30px -18px rgba(47,107,255,.35); }
+.kyn-cal-head { display: flex; align-items: center; justify-content: space-between; padding: 0 4px 12px; }
+.kyn-cal-head b { font-size: 1.08rem; font-weight: 700; letter-spacing: -.01em; }
+.kyn-cal-nav { width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--k-line); background: transparent; display: grid; place-items: center; transition: background .25s, border-color .25s, color .25s, transform .35s var(--k-ease); }
+@media (hover: hover) { .kyn-cal-nav:hover { background: var(--k-blue-soft); border-color: transparent; color: var(--k-blue); } }
+.kyn-cal-nav:active { transform: scale(.86); background: var(--k-blue-soft); }
 .kyn-cal-nav svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
-.kyn-cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); row-gap: 4px; justify-items: center; }
-.kyn-cal-wd { font-size: .7rem; color: var(--k-soft); font-weight: 600; padding: 6px 0; }
-.kyn-cal-d { width: 38px; height: 38px; border-radius: 50%; border: 0; background: transparent; font-size: .92rem; font-weight: 500; display: grid; place-items: center; transition: background .3s, color .3s, transform .3s var(--k-ease); }
-.kyn-cal-d:active { transform: scale(.88); }
-.kyn-cal-d.is-today { box-shadow: inset 0 0 0 1px var(--k-ink); }
-.kyn-cal-d.is-sel { background: var(--k-acc); color: var(--k-on); box-shadow: none; font-weight: 700; }
-.kyn-cal-d.is-dis { opacity: .22; pointer-events: none; }
-.kyn-cal-d.is-pad { visibility: hidden; pointer-events: none; }
-.kyn-span { margin: 6px 4px 0; color: var(--k-soft); font-size: .88rem; min-height: 1.3em; transition: opacity .4s; }
+.kyn-cal-wds { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; padding-bottom: 8px; }
+.kyn-cal-wds span { font-size: .68rem; color: var(--k-soft); font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+.kyn-cal-view { overflow: hidden; }
+.kyn-cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); row-gap: 3px; }
+.kyn-cal-grid.slide-r { animation: kynSlideR .5s var(--k-ease); }
+.kyn-cal-grid.slide-l { animation: kynSlideL .5s var(--k-ease); }
+@keyframes kynSlideR { from { opacity: 0; transform: translateX(28px); } to { opacity: 1; transform: none; } }
+@keyframes kynSlideL { from { opacity: 0; transform: translateX(-28px); } to { opacity: 1; transform: none; } }
+
+.kyn-d { position: relative; height: 46px; padding: 0; border: 0; background: none; display: grid; place-items: center; font-size: .95rem; font-weight: 500; touch-action: manipulation; cursor: pointer; }
+.kyn-d.pad { visibility: hidden; pointer-events: none; }
+.kyn-d.wk .num { color: var(--k-soft); }
+/* Aralık şeridi: başlangıçtan bitişe doğru soldan sağa boyanır, kısalırken sondan geri çekilir */
+.kyn-d .band { position: absolute; top: 4px; bottom: 4px; left: 0; right: 0; background: linear-gradient(90deg, var(--k-blue-soft), var(--k-blue-soft2, var(--k-blue-soft))); transform: scaleX(0); transform-origin: left center; opacity: 0; transition: transform .2s var(--k-ease) var(--rd, 0ms), opacity .2s ease var(--rd, 0ms); }
+.kyn-d.in .band { transform: scaleX(1); opacity: 1; transition: transform .34s var(--k-ease) var(--bd, 0ms), opacity .2s ease var(--bd, 0ms); }
+.kyn-d.pv:not(.in) .band { transform: scaleX(1); opacity: .5; transition: transform .16s ease, opacity .16s ease; }
+.kyn-d.is-s .band { left: 50%; }
+.kyn-d.is-e .band { right: 50%; }
+.kyn-d.is-s.is-e .band { display: none; }
+.kyn-d.in.c1 .band, .kyn-d.in.m1 .band, .kyn-d.pv.c1 .band, .kyn-d.pv.m1 .band { border-top-left-radius: 23px; border-bottom-left-radius: 23px; }
+.kyn-d.in.c7 .band, .kyn-d.in.mL .band, .kyn-d.pv.c7 .band, .kyn-d.pv.mL .band { border-top-right-radius: 23px; border-bottom-right-radius: 23px; }
+.kyn-d .num { position: relative; z-index: 1; width: 42px; height: 42px; border-radius: 50%; display: grid; place-items: center; transition: background .35s var(--k-ease), color .35s, transform .35s var(--k-ease), box-shadow .35s; }
+@media (hover: hover) { .kyn-d:not(.is-s):not(.is-e):hover .num { box-shadow: inset 0 0 0 1.5px var(--k-blue); } }
+.kyn-d:active .num { transform: scale(.88); }
+.kyn-d.in:not(.is-s):not(.is-e) .num { color: var(--k-blue); font-weight: 600; }
+.kyn-d.is-today .num::after { content: ""; position: absolute; bottom: 5px; width: 4px; height: 4px; border-radius: 50%; background: var(--k-blue); }
+.kyn-d.is-s .num::after, .kyn-d.is-e .num::after { background: #fff; }
+.kyn-d.is-s .num, .kyn-d.is-e .num { background: var(--k-blue); color: #fff; font-weight: 700; box-shadow: 0 6px 16px -6px var(--k-blue); }
+.kyn-d.is-e .num { transition-delay: var(--bd, 0ms), var(--bd, 0ms), 0s, 0s; }
+.kyn-d .num.pop { animation: kynDpop .5s var(--k-ease) var(--bd, 0ms) backwards; }
+.kyn-d .num.pop::before { content: ""; position: absolute; inset: 0; border-radius: 50%; border: 2px solid var(--k-blue); animation: kynRing .7s ease-out var(--bd, 0ms) both; pointer-events: none; }
+@keyframes kynDpop { 0% { transform: scale(.4); opacity: 0; } 60% { transform: scale(1.12); } 100% { transform: none; opacity: 1; } }
+@keyframes kynRing { 0% { transform: scale(1); opacity: .7; } 100% { transform: scale(1.7); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .kyn-d .band, .kyn-d .num, .kyn-cal-grid { transition: none !important; animation: none !important; } .kyn-d .num.pop::before { display: none; } }
+.kyn-rfoot { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 12px 6px 0; min-height: 30px; }
+.kyn-span { color: var(--k-soft); font-size: .88rem; }
+.kyn-rfoot .kyn-span.has-range { color: var(--k-blue); font-weight: 600; }
+.kyn-clear { background: none; border: 0; color: var(--k-soft); font-size: .8rem; padding: 6px 4px; text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--k-line); }
+.kyn { --k-blue: #2563eb; --k-blue-soft: rgba(37,99,235,.13); --k-blue-soft2: rgba(37,99,235,.22); }
 
 /* Alt çubuk */
 .kyn-foot { display: flex; gap: 12px; width: 100%; max-width: 520px; margin: 0 auto; padding: 12px 24px calc(18px + env(safe-area-inset-bottom)); box-sizing: border-box; }
@@ -83059,7 +83119,7 @@ body.is-books-open .navbar .wrapper { opacity: 0; transform: translateY(28px); p
   /* ---- Gezinme kancaları: alt menüyü gizle, yan panelde Soru Havuzu vurgulu kalsın ---- */
   try {
     if (typeof NAV_HIDE_OWNERS !== 'undefined') NAV_HIDE_OWNERS['is-books-open'] = ['page-books', 'page-book-add', 'page-book-detail'];
-    if (typeof SIDEBAR_PARENT_PAGE !== 'undefined') ['page-books', 'page-book-add', 'page-book-detail'].forEach((p) => { SIDEBAR_PARENT_PAGE[p] = 'page-camera'; });
+    if (typeof SIDEBAR_PARENT_PAGE !== 'undefined') ['page-book-add', 'page-book-detail'].forEach((p) => { SIDEBAR_PARENT_PAGE[p] = 'page-books'; });
   } catch (e) { /* yok say */ }
 
   /* ---- Yardımcılar ---- */
@@ -83241,6 +83301,7 @@ body.is-books-open .navbar .wrapper { opacity: 0; transform: translateY(28px); p
     if (subjects.length >= 2) {
       filters.innerHTML = '<button type="button" class="kyn-fchip' + (filter === 'all' ? ' is-on' : '') + '" data-f="all">Tümü</button>' + subjects.map((s) => '<button type="button" class="kyn-fchip' + (filter === s.name ? ' is-on' : '') + '" data-f="' + esc(s.name) + '">' + esc(s.name) + '</button>').join('');
     }
+    lastListRender = Date.now();
     grid.innerHTML = shown.map((b, n) => {
       const dates = b.end ? fmtShort(b.start) + ' – ' + fmtShort(b.end) : fmtShort(b.start);
       return '<button type="button" class="kyn-card' + (b.id === highlightId ? ' is-new' : '') + '" data-id="' + esc(b.id) + '" style="--i:' + Math.min(n, 12) + '">' + coverHTML(b) +
@@ -83253,36 +83314,32 @@ body.is-books-open .navbar .wrapper { opacity: 0; transform: translateY(28px); p
   };
 
   const showPage = (id) => { try { goToPage(id); } catch (e) { /* yok say */ } };
+  let lastListRender = 0;
   const openList = () => { renderList(); showPage('page-books'); };
+  new MutationObserver(() => {
+    if ($('page-books').classList.contains('is-active') && Date.now() - lastListRender > 600) renderList();
+  }).observe($('page-books'), { attributes: true, attributeFilter: ['class'] });
 
-  $('kynBooksBack').addEventListener('click', () => showPage('page-camera'));
+  $('kynBooksBack').addEventListener('click', () => showPage('page-1'));
   $('kynBooksAdd').addEventListener('click', () => openAdd());
   $('kynEmptyAdd').addEventListener('click', () => openAdd());
+  /* Nav bardaki "+" menüsünden açılır */
+  const navMenu = $('navMoreMenu');
+  if (navMenu) navMenu.addEventListener('click', (e) => {
+    const it = e.target.closest('.nav-more-item');
+    if (!it || it.dataset.action !== 'books') return;
+    try { if (typeof selectHomeTabSilently === 'function') selectHomeTabSilently(); } catch (err) { /* yok say */ }
+    openList();
+  });
   $('kynFilters').addEventListener('click', (e) => { const b = e.target.closest('.kyn-fchip'); if (!b) return; filter = b.getAttribute('data-f'); renderList(); });
   $('kynGrid').addEventListener('click', (e) => { const c = e.target.closest('.kyn-card'); if (c) openDetail(c.getAttribute('data-id')); });
-  /* Soru Havuzu'ndaki eski kaynak filtresi pop-up'ı kaybolmasın */
-  $('kynPoolFilter').addEventListener('click', () => {
-    showPage('page-camera');
-    setTimeout(() => { const b = $('qhavuzBooksBtn'); if (!b) return; window.__kynBypass = true; b.click(); window.__kynBypass = false; }, 380);
-  });
-  /* Soru Havuzu'ndaki "Kaynaklarım" düğmeleri artık bu sayfayı açar */
-  ['qhavuzBooksBtn', 'qhavuzMobileBooksBtn'].forEach((id) => {
-    const el = $(id);
-    if (!el) return;
-    el.addEventListener('click', (e) => {
-      if (window.__kynBypass) return;
-      e.stopImmediatePropagation(); e.preventDefault();
-      openList();
-    }, true);
-  });
-
   /* ==========================================================================
      EKLEME SİHİRBAZI
      ========================================================================== */
   const STEPS = 6;
   const SKIPPABLE = { 3: true, 4: true };
   let W = null;
-  const freshWizard = () => ({ step: 0, name: '', pages: '', subject: null, custom: [], cover: null, pattern: null, keys: [], start: todayIso(), end: null, open: null, cal: {}, busy: false });
+  const freshWizard = () => ({ step: 0, name: '', pages: '', subject: null, custom: [], cover: null, pattern: null, keys: [], start: todayIso(), end: null, mode: 'end', calMonth: null, busy: false });
 
   const steps = Array.from(document.querySelectorAll('#kynStage .kyn-step'));
   const progBars = Array.from(document.querySelectorAll('#kynProg i'));
@@ -83425,54 +83482,115 @@ body.is-books-open .navbar .wrapper { opacity: 0; transform: translateY(28px); p
     if (e.target.closest('#kynKeyAdd')) pickImages(true, 'Cevap anahtarı', (imgs) => { W.keys = W.keys.concat(imgs).slice(0, MAX_KEYS); renderKeys(); });
   });
 
-  /* 6 · Tarihler (uygulama içi takvim) */
-  const calMonth = (which) => { if (!W.cal[which]) { const base = parseIso((which === 'end' && W.end) ? W.end : W.start); W.cal[which] = new Date(base.getFullYear(), base.getMonth(), 1); } return W.cal[which]; };
-  const renderCal = (which) => {
-    const host = $(which === 'start' ? 'kynCalStart' : 'kynCalEnd');
-    const m = calMonth(which);
-    const y = m.getFullYear(), mo = m.getMonth();
-    const off = (new Date(y, mo, 1).getDay() + 6) % 7;
-    const days = new Date(y, mo + 1, 0).getDate();
-    const sel = which === 'start' ? W.start : W.end, today = todayIso();
-    let cells = '';
-    for (let i = 0; i < off; i++) cells += '<span class="kyn-cal-d is-pad"></span>';
+  /* 6 · Tarihler: tatil rezervasyonu gibi aralık seçimli takvim.
+     Başlangıçtan bitişe doğru mavi bir şerit animasyonla boyanır. */
+  const applyBlue = () => {
+    let dark = false;
+    try { const t = getComputedStyle(document.documentElement).getPropertyValue('--theme-text').trim(); if (/^#/.test(t)) dark = lum(safeColor(t)) > 0.5; } catch (e) { /* yok say */ }
+    const host = $('page-book-add');
+    host.style.setProperty('--k-blue', dark ? '#5b9bff' : '#2563eb');
+    host.style.setProperty('--k-blue-soft', dark ? 'rgba(91,155,255,.20)' : 'rgba(37,99,235,.13)');
+    host.style.setProperty('--k-blue-soft2', dark ? 'rgba(91,155,255,.34)' : 'rgba(37,99,235,.24)');
+  };
+  const setText = (el, t) => { if (el.textContent === t) return; el.classList.remove('swap'); void el.offsetWidth; el.textContent = t; el.classList.add('swap'); };
+  const monthOf = (s) => { const d = parseIso(s); return new Date(d.getFullYear(), d.getMonth(), 1); };
+
+  const paint = () => {
+    const cells = Array.from($('kynCalGrid').querySelectorAll('.kyn-d[data-d]'));
+    let n = 0;
+    const leaving = [];
+    cells.forEach((c) => {
+      const d = c.getAttribute('data-d');
+      const isS = d === W.start, isE = !!W.end && d === W.end, inR = !!W.end && d >= W.start && d <= W.end;
+      const wasIn = c.classList.contains('in'), wasS = c.classList.contains('is-s'), wasE = c.classList.contains('is-e');
+      let delay = 0;
+      if (inR && !wasIn) { delay = Math.min(n * 24, 650); n++; }
+      if (!inR && wasIn) leaving.push(c);
+      c.style.setProperty('--bd', delay + 'ms');
+      c.classList.remove('pv');
+      c.classList.toggle('in', inR); c.classList.toggle('is-s', isS); c.classList.toggle('is-e', isE);
+      if ((isS && !wasS) || (isE && !wasE)) {
+        const num = c.querySelector('.num');
+        c.style.setProperty('--bd', (isE ? Math.min(n * 24, 650) : 0) + 'ms');
+        num.classList.remove('pop'); void num.offsetWidth; num.classList.add('pop');
+      }
+    });
+    leaving.reverse().forEach((c, i) => c.style.setProperty('--rd', Math.min(i * 16, 400) + 'ms'));
+  };
+  const clearPreview = () => $('kynCalGrid').querySelectorAll('.kyn-d.pv').forEach((c) => c.classList.remove('pv'));
+  const showPreview = (v) => {
+    clearPreview();
+    if (W.mode !== 'end' || v <= W.start) return;
+    $('kynCalGrid').querySelectorAll('.kyn-d[data-d]').forEach((c) => {
+      const d = c.getAttribute('data-d');
+      if (d > W.start && d <= v) c.classList.add('pv');
+    });
+  };
+  const renderGrid = (dir) => {
+    const m = W.calMonth, y = m.getFullYear(), mo = m.getMonth();
+    const off = (new Date(y, mo, 1).getDay() + 6) % 7, days = new Date(y, mo + 1, 0).getDate(), today = todayIso();
+    let h = '';
+    for (let i = 0; i < off; i++) h += '<span class="kyn-d pad"></span>';
     for (let d = 1; d <= days; d++) {
       const s = y + '-' + pad(mo + 1) + '-' + pad(d);
-      const cls = 'kyn-cal-d' + (s === sel ? ' is-sel' : '') + (s === today ? ' is-today' : '') + (which === 'end' && s < W.start ? ' is-dis' : '');
-      cells += '<button type="button" class="' + cls + '" data-d="' + s + '">' + d + '</button>';
+      h += '<button type="button" class="kyn-d c' + ((off + d - 1) % 7 + 1) + ((off + d - 1) % 7 > 4 ? ' wk' : '') + (d === 1 ? ' m1' : '') + (d === days ? ' mL' : '') + (s === today ? ' is-today' : '') + '" data-d="' + s + '"><i class="band"></i><span class="num">' + d + '</span></button>';
     }
-    host.innerHTML = '<div class="kyn-cal-head"><button type="button" class="kyn-cal-nav" data-nav="-1" aria-label="Önceki ay"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><b>' + MONTHS[mo] + ' ' + y + '</b><button type="button" class="kyn-cal-nav" data-nav="1" aria-label="Sonraki ay"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button></div><div class="kyn-cal-grid">' + WD.map((w) => '<span class="kyn-cal-wd">' + w + '</span>').join('') + cells + '</div>';
+    const g = $('kynCalGrid');
+    g.className = 'kyn-cal-grid'; void g.offsetWidth;
+    if (dir) g.className = 'kyn-cal-grid ' + (dir > 0 ? 'slide-r' : 'slide-l');
+    g.innerHTML = h;
+    setText($('kynCalTitle'), MONTHS[mo] + ' ' + y);
+    requestAnimationFrame(() => requestAnimationFrame(paint));
   };
-  const renderDates = () => {
-    $('kynStartVal').textContent = fmtLong(W.start);
+  const shiftMonth = (delta) => { const m = W.calMonth; W.calMonth = new Date(m.getFullYear(), m.getMonth() + delta, 1); renderGrid(delta); };
+  const jumpTo = (s) => {
+    const t = monthOf(s), c = W.calMonth;
+    if (t.getTime() === c.getTime()) return;
+    W.calMonth = t; renderGrid(t > c ? 1 : -1);
+  };
+  const updateHead = () => {
+    setText($('kynStartVal'), fmtLong(W.start));
     $('kynStartTag').hidden = W.start !== todayIso();
     const ev = $('kynEndVal');
-    ev.textContent = W.end ? fmtLong(W.end) : 'Belirlenmedi';
+    setText(ev, W.end ? fmtLong(W.end) : 'Seç');
     ev.classList.toggle('is-none', !W.end);
-    $('kynEndClear').hidden = !W.end;
+    document.querySelectorAll('.kyn-rcard').forEach((c) => c.classList.toggle('is-on', c.getAttribute('data-mode') === W.mode));
+    $('kynArrow').classList.toggle('is-on', !!W.end);
     const sp = $('kynSpan');
-    sp.textContent = W.end ? (dayDiff(W.start, W.end) + 1) + ' günlük çalışma planı' : '';
-    document.querySelectorAll('.kyn-field').forEach((f) => {
-      const w = f.getAttribute('data-f'), open = W.open === w;
-      f.classList.toggle('is-open', open);
-      f.querySelector('.kyn-acc').classList.toggle('is-open', open);
-    });
-    renderCal('start'); renderCal('end');
+    setText(sp, W.end ? (dayDiff(W.start, W.end) + 1) + ' günlük çalışma planı' : (W.mode === 'start' ? 'Başlangıç gününü seç' : 'Bitiş gününü seç · isteğe bağlı'));
+    sp.classList.toggle('has-range', !!W.end);
+    $('kynEndClear').hidden = !W.end;
   };
-  const toggleField = (w) => { W.open = W.open === w ? null : w; if (W.open) W.cal[w] = null; renderDates(); };
-  document.querySelectorAll('.kyn-field-row').forEach((r) => r.addEventListener('click', () => toggleField(r.getAttribute('data-open'))));
-  $('kynEndClear').addEventListener('click', (e) => { e.stopPropagation(); W.end = null; renderDates(); });
-  document.querySelectorAll('.kyn-cal').forEach((host) => host.addEventListener('click', (e) => {
-    const which = host.id === 'kynCalStart' ? 'start' : 'end';
-    const nav = e.target.closest('[data-nav]');
-    if (nav) { const m = calMonth(which); W.cal[which] = new Date(m.getFullYear(), m.getMonth() + parseInt(nav.getAttribute('data-nav'), 10), 1); renderCal(which); return; }
-    const d = e.target.closest('[data-d]');
-    if (!d) return;
-    const v = d.getAttribute('data-d');
-    if (which === 'start') { W.start = v; if (W.end && W.end < W.start) W.end = null; } else W.end = v;
-    renderDates();
-    setTimeout(() => { W.open = null; renderDates(); }, 220);
+  const renderDates = () => {
+    applyBlue();
+    W.mode = 'end';
+    W.calMonth = monthOf(W.start);
+    renderGrid(0);
+    updateHead();
+  };
+  document.querySelectorAll('.kyn-rcard').forEach((c) => c.addEventListener('click', () => {
+    W.mode = c.getAttribute('data-mode');
+    updateHead();
+    jumpTo(W.mode === 'end' && W.end ? W.end : W.start);
   }));
+  $('kynCalPrev').addEventListener('click', () => shiftMonth(-1));
+  $('kynCalNext').addEventListener('click', () => shiftMonth(1));
+  $('kynEndClear').addEventListener('click', () => { W.end = null; W.mode = 'end'; updateHead(); paint(); });
+  $('kynCalGrid').addEventListener('pointerover', (e) => {
+    if (e.pointerType !== 'mouse') return;
+    const c = e.target.closest('.kyn-d[data-d]');
+    if (c) showPreview(c.getAttribute('data-d'));
+  });
+  $('kynCalGrid').addEventListener('pointerleave', clearPreview);
+  $('kynCalGrid').addEventListener('click', (e) => {
+    const c = e.target.closest('.kyn-d[data-d]');
+    if (!c) return;
+    const v = c.getAttribute('data-d');
+    if (W.mode === 'start') { W.start = v; if (W.end && W.end < v) W.end = null; W.mode = 'end'; }
+    else if (v < W.start) { W.start = v; if (W.end && W.end < v) W.end = null; }
+    else W.end = v;
+    updateHead(); paint();
+  });
 
   /* Kaydet */
   const finish = async () => {
