@@ -3,63 +3,6 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover">
-
-<!-- iOS ana ekran: tam ekran. Durum çubuğu şeffaf olur, içerik üst güvenli alanın altına da uzanır
-     (sayfadaki env(safe-area-inset-top) boşlukları bunu zaten karşılıyor). -->
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Pace">
-
-<!-- iOS ana ekran (standalone) tuval düzeltmesi: iOS bazı cihazlarda sayfa yüksekliğini ekrandan
-     (üst güvenli alan kadar) kısa bildirir ve "fixed" katmanları o yükseklikte kırpar. Bu durumda
-     belge gerçek ekran yüksekliğine uzatılır; "fixed" öğeler body'ye göre konumlanır. Diğer
-     cihazlarda ve tarayıcıda hiçbir şey değişmez. -->
-<style>
-  html.ios-vp-fix { position: static; inset: auto; height: var(--fix-h); }
-  html.ios-vp-fix body { position: relative; inset: auto; height: var(--fix-h); transform: translateZ(0); }
-  html.ios-vp-fix .app { min-height: var(--fix-h); }
-</style>
-<script>
-(function () {
-  var de = document.documentElement, active = false;
-  function inset() {
-    var p = document.createElement('div');
-    p.style.cssText = 'position:absolute;left:0;top:0;width:0;height:0;visibility:hidden;pointer-events:none;padding-top:env(safe-area-inset-top,0px)';
-    de.appendChild(p);
-    var v = parseFloat(getComputedStyle(p).paddingTop) || 0;
-    de.removeChild(p);
-    return v;
-  }
-  function typing() {
-    var a = document.activeElement;
-    return !!a && (/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName) || a.isContentEditable);
-  }
-  function set(on, h) {
-    if (on) {
-      de.style.setProperty('--fix-h', h + 'px');
-      if (!active) { active = true; de.classList.add('ios-vp-fix'); }
-    } else if (active) {
-      active = false; de.classList.remove('ios-vp-fix'); de.style.removeProperty('--fix-h');
-    }
-  }
-  function evaluate() {
-    if (navigator.standalone !== true) return;            // yalnızca iOS ana ekran modu
-    if (!matchMedia('(orientation: portrait)').matches) { set(false); return; }
-    var sh = Math.max(screen.width, screen.height), ih = window.innerHeight;
-    if (active) { if (ih >= sh - 1 && !typing()) set(false); else set(true, sh); return; }
-    if (typing()) return;
-    var gap = sh - ih;                                   // eksik yükseklik
-    if (gap >= 10 && inset() >= gap - 2) set(true, sh);  // eksiği üst güvenli alan açıklıyorsa hata var
-  }
-  evaluate();
-  ['resize', 'orientationchange', 'pageshow', 'load', 'DOMContentLoaded', 'visibilitychange'].forEach(function (ev) {
-    window.addEventListener(ev, evaluate);
-  });
-  [150, 500, 1500, 3000].forEach(function (t) { setTimeout(evaluate, t); });
-  window.addEventListener('scroll', function () { if (active && (window.scrollY || window.scrollX)) window.scrollTo(0, 0); }, { passive: true });
-})();
-</script>
 <title>Pace</title>
 
 <!-- PWA: manifest ve tema rengi -->
