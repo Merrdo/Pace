@@ -82906,6 +82906,14 @@ body.is-sport-mode .navbar:not(.sport-navbar){display:none !important}
 .sp-spark polyline{fill:none;stroke:var(--sp-t);stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
 .sp-spark circle{fill:var(--sp-t)}
 .sp-cd-row.one{grid-template-columns:1fr}
+.sp-cd-row.three{grid-template-columns:1fr 1fr 1fr}
+.sp-mv{gap:6px}
+.sp-mv-t{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.sp-mv-t b{font-weight:700;overflow-wrap:anywhere}
+.sp-mv-t small{font-size:12.5px;font-weight:600;opacity:.6}
+.sp-mv button{display:inline-flex;align-items:center;justify-content:center;min-width:34px;height:34px}
+.sp-mv.editing{outline:2px solid var(--sp-t);outline-offset:-2px}
+.sp-tabs[style*="--n:4"] .sp-tab{font-size:13px;padding:10px 0}
 .sp-pace small{font-size:.8rem;font-weight:600;opacity:.6;letter-spacing:0}
 .sp-card2 .sp-pace{margin-top:14px}
 .sp-card2 .sp-bar{margin-top:8px}
@@ -83013,6 +83021,7 @@ body.is-sport-mode .navbar:not(.sport-navbar){display:none !important}
       custom: true, tabs: [['Bugün', '', '']] },
     { name: 'Antrenman', icon: P('<path d="M6 8v8M3.5 10v4M18 8v8M20.5 10v4M6 12h12"/>'),
       tabs: [['Seans', '', ''],
+             ['Hareketler', '', ''],
              ['Program', '', ''],
              ['Kardiyo', '', '']] },
     { name: 'Beslenme', icon: P('<path d="M12 7.5c-1.2-1-3-1.5-4.5-.8C5.4 7.7 4.5 10 5 12.5c.6 3 2.4 7 4.4 7 1 0 1.4-.6 2.6-.6s1.6.6 2.6.6c2 0 3.8-4 4.4-7 .5-2.5-.4-4.8-2.5-5.8-1.5-.7-3.3-.2-4.5.8zM12 7.5c0-1.8.8-3.2 2.2-4"/>'),
@@ -83153,7 +83162,7 @@ body.is-sport-mode .navbar:not(.sport-navbar){display:none !important}
     if (tab) tab.click();
   };
   const initProgram = (sec) => {
-    const box = sec.querySelector('.sp-seans[data-k="1"]');
+    const box = sec.querySelector('.sp-seans[data-k="2"]');
     const list = () => (Array.isArray(APP_STATE.sportRoutines) ? APP_STATE.sportRoutines : []);
     const save = (v) => { saveAppState({ sportRoutines: v }); window.dispatchEvent(new Event('sport-data')); };
     const render = () => {
@@ -83203,8 +83212,80 @@ body.is-sport-mode .navbar:not(.sport-navbar){display:none !important}
     render();
   };
 
+  // Hareketler: kullanıcının kendi egzersiz kütüphanesi (ad, set, tekrar, süre). Sonra seans/rutin oluşturmada kullanılacak.
+  const initMoves = (sec) => {
+    const box = sec.querySelector('.sp-seans[data-k="1"]');
+    const MAX = 200;
+    const list = () => (Array.isArray(APP_STATE.sportMoves) ? APP_STATE.sportMoves : []);
+    const save = (v) => { saveAppState({ sportMoves: v }); window.dispatchEvent(new Event('sport-data')); };
+    const int = (v) => Math.max(0, Math.min(9999, parseInt(String(v).replace(/\D/g, ''), 10) || 0));
+    const fmtSec = (s) => { const m = Math.floor(s / 60), r = s % 60; return m ? m + ' dk' + (r ? ' ' + r + ' sn' : '') : r + ' sn'; };
+    const sum = (m) => {
+      const p = [];
+      if (m.sets && m.reps) p.push(m.sets + ' set × ' + m.reps + ' tekrar');
+      else if (m.sets) p.push(m.sets + ' set');
+      else if (m.reps) p.push(m.reps + ' tekrar');
+      if (m.sec) p.push(fmtSec(m.sec));
+      return p.join(' · ') || 'Ayrıntı girilmedi';
+    };
+    const PEN = '<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16z"/></svg>';
+    let editId = null;
+    const render = () => {
+      const ed = list().find((m) => m.id === editId) || null;
+      if (!ed) editId = null;
+      const v = (k) => (ed && ed[k] ? ed[k] : '');
+      const sorted = list().slice().sort((a, b) => a.n.localeCompare(b.n, 'tr'));
+      box.innerHTML = '<div class="sp-card2"><h3>' + (ed ? 'Hareketi düzenle' : 'Hareket ekle') + '</h3>' +
+        '<p>Set, tekrar ve süre isteğe bağlı; sadece adı girmen yeter.</p>' +
+        '<div class="sp-cd-row one"><input id="mvN" placeholder="Hareket adı" maxlength="40" enterkeyhint="next" value="' + esc(ed ? ed.n : '') + '"></div>' +
+        '<div class="sp-cd-row three"><input id="mvS" inputmode="numeric" placeholder="Set" maxlength="4" value="' + v('sets') + '">' +
+        '<input id="mvR" inputmode="numeric" placeholder="Tekrar" maxlength="4" value="' + v('reps') + '">' +
+        '<input id="mvT" inputmode="numeric" placeholder="Süre (sn)" maxlength="4" value="' + v('sec') + '"></div>' +
+        '<p id="mvErr" class="sp-err" hidden></p>' +
+        '<button type="button" class="sp-btn" data-a="save">' + (ed ? 'Değişiklikleri kaydet' : 'Hareketi ekle') + '</button>' +
+        (ed ? '<button type="button" class="sp-mini" data-a="cancel">Vazgeç</button>' : '') + '</div>' +
+        (sorted.length
+          ? '<div class="sp-card2"><h3>Hareketlerim · ' + sorted.length + '</h3>' + sorted.map((m) =>
+            '<div class="sp-ex-row sp-mv' + (m.id === editId ? ' editing' : '') + '"><div class="sp-mv-t"><b>' + esc(m.n) + '</b><small>' + esc(sum(m)) + '</small></div>' +
+            '<button type="button" data-a="edit" data-id="' + m.id + '" aria-label="Hareketi düzenle">' + PEN + '</button>' +
+            '<button type="button" data-a="del" data-id="' + m.id + '" aria-label="Hareketi sil">×</button></div>').join('') + '</div>'
+          : '<div class="sp-card2"><h3>Henüz hareket yok</h3><p>Eklediğin hareketler burada listelenir; ileride seans ve rutinlerde bunları seçeceksin.</p></div>');
+    };
+    const fail = (msg, id) => {
+      const e = box.querySelector('#mvErr'); e.textContent = msg; e.hidden = false;
+      const f = box.querySelector(id); if (f) f.focus();
+    };
+    const commit = () => {
+      const n = box.querySelector('#mvN').value.trim();
+      if (!n) return fail('Hareket adını gir.', '#mvN');
+      const all = list();
+      if (all.some((m) => m.id !== editId && m.n.toLowerCase() === n.toLowerCase())) return fail('Bu isimde bir hareket zaten var.', '#mvN');
+      const d = { n, sets: int(box.querySelector('#mvS').value), reps: int(box.querySelector('#mvR').value), sec: int(box.querySelector('#mvT').value) };
+      if (editId) { save(all.map((m) => m.id === editId ? Object.assign({}, m, d) : m)); editId = null; render(); }
+      else {
+        if (all.length >= MAX) return fail('En fazla ' + MAX + ' hareket ekleyebilirsin.', '#mvN');
+        save(all.concat([Object.assign({ id: 'm' + Date.now() + Math.floor(Math.random() * 1000) }, d)]));
+        render(); box.querySelector('#mvN').focus();
+      }
+    };
+    box.addEventListener('input', () => { const e = box.querySelector('#mvErr'); if (e) e.hidden = true; });
+    box.addEventListener('keydown', (e) => {
+      if (e.key !== 'Enter' || !e.target.closest('.sp-cd-row')) return;
+      if (e.target.id === 'mvN') { e.preventDefault(); box.querySelector('#mvS').focus(); } else commit();
+    });
+    box.addEventListener('click', (e) => {
+      const b = e.target.closest('[data-a]'); if (!b) return;
+      const a = b.dataset.a;
+      if (a === 'save') commit();
+      else if (a === 'cancel') { editId = null; render(); }
+      else if (a === 'edit') { editId = b.dataset.id; render(); sec.scrollTo({ top: 0, behavior: REDUCED() ? 'auto' : 'smooth' }); }
+      else if (a === 'del') { if (editId === b.dataset.id) editId = null; save(list().filter((m) => m.id !== b.dataset.id)); render(); }
+    });
+    render();
+  };
+
   const initCardio = (sec) => {
-    const box = sec.querySelector('.sp-seans[data-k="2"]');
+    const box = sec.querySelector('.sp-seans[data-k="3"]');
     const TYPES = ['Koşu', 'Yürüyüş', 'Bisiklet'];
     let type = 0;
     const num = (v) => parseFloat(String(v).replace(',', '.')) || 0;
@@ -83377,7 +83458,7 @@ body.is-sport-mode .navbar:not(.sport-navbar){display:none !important}
         if (i === 1) initToday(sec);
         if (i === 3) initFood(sec);
         if (i === 4) initProgress(sec);
-        if (i === 2) { initSeans(sec); initProgram(sec); initCardio(sec); }
+        if (i === 2) { initSeans(sec); initMoves(sec); initProgram(sec); initCardio(sec); }
         const bar = sec.querySelector('.sp-tabs');
         if (bar) bar.addEventListener('click', (e) => {
           const b = e.target.closest('.sp-tab'); if (!b) return;
