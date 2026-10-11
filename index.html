@@ -61306,6 +61306,9 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
 
   window.addEventListener('pace-subjects-changed', () => {
     if (stopwatchSubjectsBackdrop && stopwatchSubjectsBackdrop.classList.contains('is-open')) stopwatchSubjectsRenderGrid();
+    // Ders rengi Ayarlar > Ders Listesi'nden (veya başka yerden) değiştiğinde
+    // Kronometre/Sayaç başlığındaki etiket de yeni rengi hemen alsın.
+    if (typeof renderStopwatchSubjectTag === 'function') renderStopwatchSubjectTag();
   });
 
   const openStopwatchSubjects = () => {
@@ -79641,6 +79644,9 @@ html #examResourcesBackdrop :is(.exam-resources-add-chip,.exam-resources-video-s
     openCustomColor: function (initial, cb) { openCustom(initial, cb); }
   };
   window.PaceSubjects = API;
+  // Etiket ilk kez PaceSubjects tanımlanmadan çizildiği için ders kaydındaki
+  // gerçek renk yerine yedek renk kullanılıyordu; kayıt hazır olunca yeniden çiz.
+  try { if (typeof renderStopwatchSubjectTag === 'function') renderStopwatchSubjectTag(); } catch (e) { /* yok say */ }
 
   function nextColor(t) {
     var used = {}; reg[t].forEach(function (s) { used[s.color.toLowerCase()] = 1; });
