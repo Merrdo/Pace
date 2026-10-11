@@ -47731,6 +47731,10 @@ body.is-anthracite .exam-q-info-count { color: #f2f2f4; }
 
   const resetStopwatch = () => {
     if (swRunning) return;
+    rolloverStopwatchDay();
+    // Sıfırlamadan önce biriken süreyi günün genel toplamına yaz; aksi halde ders bazlı kayıt
+    // kalırken günlük toplam kayboluyor ve İstatistiklerim'deki trend/takvim o günü boş gösteriyordu.
+    if (swAccumulatedMs > 0) addStopwatchLogMs(swActiveDayKey, swAccumulatedMs);
     swAccumulatedMs = 0;
     formatAndRenderTime(0);
     stopwatchHint.textContent = 'Başlatmak için dokun';
@@ -47950,6 +47954,21 @@ body.is-anthracite .exam-q-info-count { color: #f2f2f4; }
   };
 
   restoreStopwatch();
+
+  // Eski verileri onar: geçmiş bir günün ders bazlı toplamı genel gün kaydından büyükse
+  // (sıfırlama yüzünden eksik yazılmış), genel kaydı ders toplamına yükselt.
+  (() => {
+    try {
+      const subj = loadStopwatchSubjectLogs(), logs = loadStopwatchLogs(), today = page10DateKey(new Date());
+      let changed = false;
+      Object.keys(subj).forEach((day) => {
+        if (day >= today || !subj[day] || typeof subj[day] !== 'object') return;
+        const sum = Object.keys(subj[day]).reduce((a, k) => a + ((subj[day][k] && subj[day][k].ms) || 0), 0);
+        if (sum > (logs[day] || 0)) { logs[day] = sum; changed = true; }
+      });
+      if (changed) saveAppState({ stopwatchLogs: logs });
+    } catch (e) { /* onarım başarısızsa sessizce geç */ }
+  })();
 
   // Sekme uzun süre arka planda kalıp (requestAnimationFrame duraklar)
   // tekrar öne geldiğinde gece yarısını kaçırmamak için ek kontrol.
@@ -61623,6 +61642,9 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
       const key = page10DateKeyOf(cursor);
       let ms = logs[key] || 0;
       if (key === todayKey) ms += page10LiveTodayMs();
+      // Özet kartı/donut ile AYNI değer: genel gün kaydı ile ders bazlı kayıtların büyüğü.
+      // (Genel kayıt eksik kalmışsa trend grafiği günü 0 göstermesin.)
+      ms = page10SubjectBreakdownForDay(key, ms).effectiveDayTotalMs;
       days.push({ date: new Date(cursor), key, ms });
       cursor.setDate(cursor.getDate() + 1);
     }
@@ -62318,7 +62340,16 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
     // düzeliyor.
     const lineD = page10SmoothPathD(points);
 
-    const overallDiff = values[values.length - 1] - values[0];
+    let overallDiff = values[values.length - 1] - values[0];
+    if (page10Range === 'day') {
+      // Gün modunda rozet: seçili gün, bir önceki güne göre (ilk-son hafta farkı değil).
+      const selKey = page10DateKey(page10SelectedDate);
+      const sel = days.find((d) => d.key === selKey);
+      if (sel) {
+        const prev = new Date(page10SelectedDate); prev.setDate(prev.getDate() - 1);
+        overallDiff = sel.ms - page10BuildDaysList(prev, prev)[0].ms;
+      }
+    }
     // PointsChart'ta noktaların üstünde ayrı sayı etiketi yok: değer artık
     // soldaki Y ekseninden ve dokunulunca açılan tooltip'ten okunuyor, bu
     // yüzden eski üst-üste binen nokta etiketleri kaldırıldı.
@@ -82854,8 +82885,11 @@ html[data-ed="dark"] #examResourcesBackdrop .delete-btn {
 body.is-sport-mode .navbar:not(.sport-navbar){display:none !important}
 /* Spor barı: sağda "Hızlı ekle" düğmesi. Ana uygulamadaki cam/yuvarlak + menüsünden bilerek farklı:
    dolu tema rengi, yuvarlatılmış kare. Sayfa değiştirmez; açık sayfadaki ekleme alanına götürür. */
-.sport-navbar .wrapper{transition:margin .55s cubic-bezier(.65,0,.35,1)}
-.navbar.sport-navbar.no-fab .wrapper{margin-left:0 !important;margin-right:0 !important}
+/* Dock genişliği/marjı HİÇ değişmez (yeniden yerleşim + cam bulanıklığı takılma yapıyordu);
+   Ayarlar'da düğme solarken dock yalnızca GPU ile (translate) ortaya kayar. */
+.sport-navbar .wrapper{transition:translate .5s cubic-bezier(.65,0,.35,1);will-change:translate}
+.navbar.sport-navbar.no-fab .wrapper{translate:33px 0}
+body.nav-add-left .navbar.sport-navbar.no-fab .wrapper{translate:-33px 0}
 .sport-navbar .sp-fab{position:absolute;top:50%;left:calc(100% + 8px);box-sizing:border-box;width:58px;height:58px;margin:-29px 0 0;padding:0;display:flex;align-items:center;justify-content:center;border:0;border-radius:22px;cursor:pointer;-webkit-tap-highlight-color:transparent;background:var(--n-t);color:var(--n-bg);box-shadow:0 12px 26px -10px color-mix(in srgb,var(--n-t) 60%,transparent);transition:transform .45s var(--n-ease),opacity .3s ease,visibility 0s,background-color .5s ease,color .5s ease}
 .sport-navbar .sp-fab:active{transform:scale(.88);transition-duration:.2s}
 .sport-navbar .sp-fab:focus-visible{outline:2px solid color-mix(in srgb,var(--n-t) 45%,transparent);outline-offset:3px}
