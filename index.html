@@ -82852,8 +82852,23 @@ html[data-ed="dark"] #examResourcesBackdrop .delete-btn {
 @media (min-width:768px) and (min-height:600px){#settingsSportSection{display:none}}
 /* Spor modunda ana uygulamanın alt barı tamamen kalkar; yerine #sportNavbar gelir */
 body.is-sport-mode .navbar:not(.sport-navbar){display:none !important}
-/* Spor barında + butonu yok: dock ortalı */
-.navbar.sport-navbar .wrapper{margin-left:0 !important;margin-right:0 !important}
+/* Spor barı: sağda "Hızlı ekle" düğmesi. Ana uygulamadaki cam/yuvarlak + menüsünden bilerek farklı:
+   dolu tema rengi, yuvarlatılmış kare. Sayfa değiştirmez; açık sayfadaki ekleme alanına götürür. */
+.sport-navbar .wrapper{transition:margin .55s cubic-bezier(.65,0,.35,1)}
+.navbar.sport-navbar.no-fab .wrapper{margin-left:0 !important;margin-right:0 !important}
+.sport-navbar .sp-fab{position:absolute;top:50%;left:calc(100% + 8px);box-sizing:border-box;width:58px;height:58px;margin:-29px 0 0;padding:0;display:flex;align-items:center;justify-content:center;border:0;border-radius:22px;cursor:pointer;-webkit-tap-highlight-color:transparent;background:var(--n-t);color:var(--n-bg);box-shadow:0 12px 26px -10px color-mix(in srgb,var(--n-t) 60%,transparent);transition:transform .45s var(--n-ease),opacity .3s ease,visibility 0s,background-color .5s ease,color .5s ease}
+.sport-navbar .sp-fab:active{transform:scale(.88);transition-duration:.2s}
+.sport-navbar .sp-fab:focus-visible{outline:2px solid color-mix(in srgb,var(--n-t) 45%,transparent);outline-offset:3px}
+.sport-navbar .sp-fab-icon{width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;pointer-events:none}
+.sport-navbar.no-fab .sp-fab{opacity:0;visibility:hidden;pointer-events:none;transform:scale(.6);transition:transform .35s var(--n-ease),opacity .25s ease,visibility 0s .3s}
+.sport-navbar .sp-fab-tip{position:absolute;bottom:calc(100% + 12px);right:-66px;padding:8px 13px;border-radius:999px;background:var(--n-t);color:var(--n-bg);font:700 13px/1 "Baloo 2",system-ui,-apple-system,sans-serif;white-space:nowrap;opacity:0;transform:translateY(6px) scale(.95);transform-origin:100% 100%;transition:opacity .25s ease,transform .4s var(--n-ease);pointer-events:none}
+.sport-navbar .sp-fab-tip.on{opacity:1;transform:none}
+.sport-navbar.no-fab .sp-fab-tip{display:none}
+body.nav-add-left .sport-navbar .sp-fab{left:-66px}
+body.nav-add-left .sport-navbar .sp-fab-tip{right:auto;left:-66px;transform-origin:0 100%}
+@keyframes spPulse{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--sp-t) 38%,transparent)}100%{box-shadow:0 0 0 16px transparent}}
+.sp-pulse{animation:spPulse .9s ease-out}
+@media (prefers-reduced-motion:reduce){.sport-navbar .wrapper,.sport-navbar .sp-fab,.sport-navbar .sp-fab-tip{transition-duration:.01s !important}.sp-pulse{animation:none}}
 /* Geçiş: "Mürekkep perdesi" — dokunulan butondan büyüyen siyah daire, içinde mod adı harf harf yükselir, sonra bara/başlığa doğru çekilir */
 .sp-veil{position:fixed;inset:0;z-index:2147483000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:var(--theme-text,#111);color:var(--theme-bg,#f5f3ee);pointer-events:auto;touch-action:none;will-change:clip-path}
 .sp-veil-word{display:flex;overflow:hidden;padding:0 .06em .16em;font-family:"Baloo 2","Space Grotesk",sans-serif;font-weight:800;font-size:clamp(88px,32vw,150px);line-height:1;letter-spacing:-.05em}
@@ -83508,12 +83523,15 @@ body.is-sport-mode .navbar:not(.sport-navbar){display:none !important}
         '<input class="nav-input" type="radio" name="sportnav" value="page-sport-' + i + '" aria-label="' + (i === SPORT_PAGE_COUNT ? 'Ayarlar' : SPORT_PAGES[i - 1].name) + '"' + (i === startIdx ? ' checked' : '') + '>' +
         '<div class="nav-btn">' + (i === SPORT_PAGE_COUNT ? GEAR_SVG : SPORT_PAGES[i - 1].icon) + '</div></div>';
     }
-    nav.innerHTML = '<div class="wrapper"><div class="nav-slider"></div>' + opts + '</div>';
+    nav.innerHTML = '<div class="wrapper"><div class="nav-slider"></div>' + opts +
+      '<button type="button" class="sp-fab" id="sportFab" aria-label="Ekle"><svg class="sp-fab-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button>' +
+      '<span class="sp-fab-tip" aria-hidden="true"></span></div>';
 
     const slider = nav.querySelector('.nav-slider');
     const options = Array.from(nav.querySelectorAll('.option'));
     const place = (input) => {
-      slider.style.transform = 'translateX(' + (input.closest('.option').offsetLeft - options[0].offsetLeft) + 'px)';
+      // Yüzde: dock genişliği değişse (+ düğmesi gizlenince) hap doğru yerde kalır
+      slider.style.transform = 'translateX(' + options.indexOf(input.closest('.option')) * 100 + '%)';
     };
     nav.querySelectorAll('.nav-input').forEach((input) => {
       input.addEventListener('change', () => {
@@ -83521,16 +83539,88 @@ body.is-sport-mode .navbar:not(.sport-navbar){display:none !important}
         place(input);
         goToPage(input.value);
         saveAppState({ sportPage: parseInt(input.value.replace('page-sport-', ''), 10) || 1 });
+        syncFab(true);
       });
     });
     nav._place = place;
+    nav.querySelector('.sp-fab').addEventListener('click', () => {
+      const a = fabAction();
+      if (a) { a.run(); const t = nav.querySelector('.sp-fab-tip'); if (t) t.classList.remove('on'); }
+    });
     return nav;
   };
+
+  // ===== Hızlı ekle (+): sayfa DEĞİŞTİRMEZ; açık sayfa/sekmedeki ekleme işlemini başlatır =====
+  const spCurPage = () => {
+    const r = sportNav && sportNav.querySelector('.nav-input:checked');
+    return r ? parseInt(r.value.replace('page-sport-', ''), 10) || 1 : 1;
+  };
+  const spCurTab = (sec) => {
+    const t = sec && sec.querySelector('.sp-tabs > .sp-tab.on');
+    return t ? parseInt(t.dataset.k, 10) || 0 : 0;
+  };
+  const spGoField = (sec, sel) => {
+    const el = sec.querySelector(sel); if (!el) return;
+    const card = el.closest('.sp-card2') || el;
+    card.scrollIntoView({ block: 'center', behavior: REDUCED() ? 'auto' : 'smooth' });
+    try { el.focus({ preventScroll: true }); } catch (e) { el.focus(); }
+    card.classList.remove('sp-pulse'); void card.offsetWidth; card.classList.add('sp-pulse');
+    setTimeout(() => card.classList.remove('sp-pulse'), 1000);
+  };
+  const fabAction = () => {
+    const n = spCurPage(), sec = document.getElementById('page-sport-' + n);
+    if (!sec) return null;
+    const k = spCurTab(sec);
+    if (n === 1) return { label: 'Su ekle +250 ml', run: () => {
+      const b = sec.querySelector('[data-water]'); if (!b) return;
+      b.click();
+      const tile = b.closest('.sp-tile');
+      if (tile) { tile.classList.remove('sp-pulse'); void tile.offsetWidth; tile.classList.add('sp-pulse'); setTimeout(() => tile.classList.remove('sp-pulse'), 1000); }
+    } };
+    if (n === 2) {
+      if (k === 0) {
+        const active = !!APP_STATE.sportSession;
+        return { label: active ? 'Egzersiz ekle' : 'Seans başlat', run: () => {
+          if (!APP_STATE.sportSession) { const s = sec.querySelector('.sp-seans[data-k="0"] [data-a="start"]'); if (s) s.click(); }
+          spGoField(sec, '#spExName');
+        } };
+      }
+      if (k === 1) return { label: 'Hareket ekle', run: () => spGoField(sec, '#mvN') };
+      if (k === 2) return { label: 'Rutin ekle', run: () => spGoField(sec, '#spRtName') };
+      return { label: 'Aktivite ekle', run: () => spGoField(sec, '#cdDur') };
+    }
+    if (n === 3) return { label: 'Öğün ekle', run: () => spGoField(sec, '#fdN') };
+    if (n === 4) return { label: 'Kilo ekle', run: () => {
+      if (k !== 1) { const t = sec.querySelector('.sp-tabs > .sp-tab[data-k="1"]'); if (t) t.click(); }
+      spGoField(sec, '#bdKg');
+    } };
+    return null;   // Ayarlar: eklenecek bir şey yok
+  };
+  let fabTipTimer = 0;
+  const syncFab = (showTip) => {
+    if (!sportNav) return;
+    const a = fabAction(), fab = sportNav.querySelector('.sp-fab'), tip = sportNav.querySelector('.sp-fab-tip');
+    sportNav.classList.toggle('no-fab', !a);
+    if (!a || !fab || !tip) return;
+    fab.setAttribute('aria-label', a.label);
+    tip.textContent = a.label;
+    if (showTip) {
+      tip.classList.add('on');
+      clearTimeout(fabTipTimer);
+      fabTipTimer = setTimeout(() => tip.classList.remove('on'), 1700);
+    }
+  };
+  // Sekme değişince (sayfa içi) etiketi güncelle
+  document.addEventListener('click', (e) => {
+    if (sportNav && e.target.closest && e.target.closest('.sp-tabs > .sp-tab')) syncFab(true);
+  });
+  window.addEventListener('sport-session', () => syncFab(false));
 
   const mountSportNav = (idx) => {
     sportNav = buildSportNav(idx);
     document.body.appendChild(sportNav);
     document.body.classList.add('is-sport-mode');
+    syncFab(false);
     const checked = sportNav.querySelector('.nav-input:checked');
     if (checked && idx > 1) {
       const sl = sportNav.querySelector('.nav-slider');
