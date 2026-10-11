@@ -83034,6 +83034,75 @@ body.nav-add-left .sport-navbar .sp-fab-tip{right:auto;left:-66px;transform-orig
 .sp-page.is-active .sp-rule{animation:spRule .9s cubic-bezier(.65,0,.35,1) .5s both}
 .sp-page.is-active .sp-tabs,.sp-page.is-active .sp-empty{animation:spRise .7s cubic-bezier(.22,1,.36,1) .6s both}
 @media (prefers-reduced-motion:reduce){.sp-page *{animation:none !important}}
+/* ===== Hareketler: yatay kartlar + alttan açılan sayfa ===== */
+.spmv-hint{margin-top:16px;text-align:center;font:600 13px "Baloo 2",sans-serif;color:var(--sp-t);opacity:.5}
+.spmv-hint:empty{display:none}
+.spmv-list{position:relative;display:flex;flex-direction:column;margin-top:12px}
+.spmv{--e:cubic-bezier(.22,1,.36,1);position:relative;display:flex;align-items:center;gap:14px;height:76px;margin-top:10px;padding:0 18px 0 14px;box-sizing:border-box;border-radius:26px;background:color-mix(in srgb,var(--sp-t) 6%,var(--theme-bg,#f5f3ee));color:var(--sp-t);cursor:pointer;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;touch-action:pan-y;-webkit-tap-highlight-color:transparent;transition:translate .38s var(--e),scale .3s var(--e),box-shadow .3s,opacity .3s}
+.spmv:first-child{margin-top:0}
+.spmv.press{scale:.97}
+.spmv.drag{scale:1.04;z-index:5;box-shadow:0 22px 40px -16px color-mix(in srgb,var(--sp-t) 50%,transparent),0 0 0 1.5px color-mix(in srgb,var(--sp-t) 14%,transparent);transition:scale .3s var(--e),box-shadow .3s}
+.spmv-list.nt .spmv{transition:none !important}
+@keyframes spmvIn{from{opacity:0;transform:translateY(22px) scale(.97)}}
+.spmv.in,.spmv.fresh{animation:spmvIn .65s var(--e) backwards}
+.spmv.in{animation-delay:calc(var(--i) * 50ms)}
+.spmv-ic{flex:none;display:grid;place-items:center;width:48px;height:48px;border-radius:17px;background:color-mix(in srgb,var(--sp-t) 10%,var(--theme-bg,#f5f3ee))}
+.spmv-t{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
+.spmv-t b{font:800 16.5px/1.2 "Baloo 2",sans-serif;letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.spmv-t small{font:600 13px/1.3 "Baloo 2",sans-serif;opacity:.6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.spmv-grip{flex:none;width:18px;display:flex;flex-direction:column;gap:4px;opacity:.28}
+.spmv-grip i{display:block;height:2.5px;border-radius:2px;background:currentColor}
+.spmv.out{height:0 !important;margin-top:0 !important;padding-top:0;padding-bottom:0;opacity:0;scale:.94;overflow:hidden;pointer-events:none;transition:height .4s var(--e),margin .4s var(--e),padding .4s,opacity .25s,scale .4s var(--e)}
+@media (prefers-reduced-motion:reduce){.spmv,.spsh *{transition-duration:.01s !important;animation:none !important}}
+
+.spsh{--sp-t:var(--theme-text,#121212);--e:cubic-bezier(.22,1,.36,1);position:fixed;inset:0;z-index:2147482000;visibility:hidden;pointer-events:none;transition:visibility 0s .65s}
+.spsh.open{visibility:visible;pointer-events:auto;transition-delay:0s}
+.spsh-bd{position:absolute;inset:0;background:rgba(0,0,0,.45);opacity:0;transition:opacity .5s ease;-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px)}
+.spsh.open .spsh-bd{opacity:1}
+.spsh-panel{position:absolute;left:0;right:0;bottom:var(--kb,0px);margin:0 auto;max-width:520px;max-height:calc(var(--vh,100dvh) - env(safe-area-inset-top,0px) - 18px);display:flex;flex-direction:column;box-sizing:border-box;border-radius:34px 34px 0 0;background:var(--theme-bg,#f5f3ee);color:var(--sp-t);box-shadow:0 -20px 50px -20px rgba(0,0,0,.4);transform:translateY(106%);transition:transform .45s var(--e),bottom .25s ease;will-change:transform;overscroll-behavior:contain}
+.spsh.open .spsh-panel{transform:none;transition-duration:.65s,.25s}
+.spsh-grab{flex:none;display:flex;justify-content:center;padding:10px 0 2px}
+.spsh-grab i{width:40px;height:5px;border-radius:5px;background:color-mix(in srgb,var(--sp-t) 18%,transparent)}
+.spsh-head{flex:none;display:flex;align-items:center;justify-content:space-between;padding:8px 20px 4px 24px}
+.spsh-head h2{font:800 1.45rem/1.1 "Baloo 2",sans-serif;letter-spacing:-.02em}
+.spsh-x{display:grid;place-items:center;width:36px;height:36px;border:0;border-radius:50%;background:color-mix(in srgb,var(--sp-t) 9%,transparent);color:var(--sp-t);cursor:pointer;transition:scale .25s var(--e)}
+.spsh-x:active{scale:.88}
+.spsh-body{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:8px 24px 18px;-webkit-overflow-scrolling:touch}
+@keyframes spshRise{from{opacity:0;transform:translateY(22px)}}
+.spsh.open .spsh-f{animation:spshRise .65s var(--e) backwards;animation-delay:calc(.14s + var(--d) * 70ms)}
+.spsh-f{margin-top:16px}
+.spsh-f>label{display:block;margin-bottom:8px;font:700 13px "Baloo 2",sans-serif;opacity:.6}
+.spsh input,.spsh textarea{box-sizing:border-box;width:100%;min-width:0;border:0;border-radius:16px;padding:13px 14px;background:color-mix(in srgb,var(--sp-t) 8%,transparent);color:var(--sp-t);font:600 16px "Baloo 2",sans-serif;outline:0;transition:background .25s,box-shadow .25s}
+.spsh input:focus,.spsh textarea:focus{background:color-mix(in srgb,var(--sp-t) 11%,transparent);box-shadow:0 0 0 2px color-mix(in srgb,var(--sp-t) 70%,transparent)}
+.spsh input::placeholder,.spsh textarea::placeholder{color:var(--sp-t);opacity:.38}
+.spsh textarea{resize:none;line-height:1.45;min-height:84px}
+@keyframes spshShake{20%{translate:-6px 0}40%{translate:5px 0}60%{translate:-3px 0}80%{translate:2px 0}}
+.spsh .shake{animation:spshShake .4s ease}
+.spsh-icons{display:grid;grid-template-columns:repeat(7,1fr);gap:8px}
+.spsh-ic{aspect-ratio:1;display:grid;place-items:center;border:0;border-radius:15px;background:color-mix(in srgb,var(--sp-t) 7%,transparent);color:var(--sp-t);cursor:pointer;-webkit-tap-highlight-color:transparent;transition:background .3s,color .3s,scale .4s cubic-bezier(.34,1.56,.64,1)}
+.spsh-ic.on{background:var(--sp-t);color:var(--theme-bg,#f5f3ee);scale:1.08}
+.spsh-ic:active{scale:.9}
+.spsh-seg{position:relative;display:flex;padding:4px;border-radius:999px;background:color-mix(in srgb,var(--sp-t) 7%,transparent)}
+.spsh-seg i{position:absolute;top:4px;bottom:4px;left:4px;width:calc(50% - 4px);border-radius:999px;background:var(--sp-t);transform:translateX(calc(var(--k) * 100%));transition:transform .5s cubic-bezier(.34,1.3,.64,1)}
+.spsh-seg button{position:relative;z-index:1;flex:1;border:0;background:none;padding:10px 0;border-radius:999px;font:700 14px "Baloo 2",sans-serif;color:var(--sp-t);cursor:pointer;transition:color .3s}
+.spsh-seg button.on{color:var(--theme-bg,#f5f3ee)}
+.spsh-pair{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px;transition:opacity .16s,translate .16s}
+.spsh-pair.swap{opacity:0;translate:0 6px}
+.spsh-st{padding:10px 10px 10px 14px;border-radius:20px;background:color-mix(in srgb,var(--sp-t) 6%,transparent)}
+.spsh-st>span{display:block;font:700 12.5px "Baloo 2",sans-serif;opacity:.6}
+.spsh-st-c{display:flex;align-items:center;gap:2px;margin-top:6px}
+.spsh-st-c button{flex:none;width:34px;height:34px;border:0;border-radius:50%;background:color-mix(in srgb,var(--sp-t) 10%,transparent);color:var(--sp-t);font:700 20px/1 "Baloo 2",sans-serif;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:scale .25s var(--e)}
+.spsh-st-c button:active{scale:.86}
+.spsh .spsh-st-c input{padding:4px 0;background:none;box-shadow:none;text-align:center;font:800 22px "Baloo 2",sans-serif;font-variant-numeric:tabular-nums}
+@keyframes spshBump{40%{scale:1.18}}
+.spsh .bump{animation:spshBump .25s ease}
+.spsh-sum{margin-top:10px;text-align:center;font:700 13.5px "Baloo 2",sans-serif;opacity:.6}
+.spsh-f small{display:block;margin-top:6px;text-align:right;font:600 12px "Baloo 2",sans-serif;opacity:.45}
+.spsh-foot{flex:none;display:flex;flex-direction:column;gap:6px;padding:10px 24px calc(14px + env(safe-area-inset-bottom,0px))}
+.spsh-foot .sp-btn{margin-top:0}
+.spsh-del{border:0;border-radius:999px;padding:11px 0;background:none;color:var(--sp-t);opacity:.6;font:700 14px "Baloo 2",sans-serif;cursor:pointer;transition:background .3s,color .3s,opacity .3s}
+.spsh-del[hidden]{display:none}
+.spsh-del.arm{opacity:1;background:var(--sp-t);color:var(--theme-bg,#f5f3ee)}
 </style>
 <script id="sportModeScript">
 (function () {
@@ -83261,15 +83330,33 @@ body.nav-add-left .sport-navbar .sp-fab-tip{right:auto;left:-66px;transform-orig
     render();
   };
 
-  // Hareketler: kullanıcının kendi egzersiz kütüphanesi (ad, set, tekrar, süre). Sonra seans/rutin oluşturmada kullanılacak.
+  // Hareketler: kart listesi (basılı tutup sırala) + alttan açılan ekleme/düzenleme sayfası.
   const initMoves = (sec) => {
     const box = sec.querySelector('.sp-seans[data-k="1"]');
-    const MAX = 200;
+    const MAX = 200, DESC_MAX = 600;
+    const ICONS = [
+      ['dumbbell', '<path d="M6 8v8M3.5 10v4M18 8v8M20.5 10v4M6 12h12"/>'],
+      ['barbell', '<path d="M2.5 12h19M5.5 8v8M8.5 6v12M15.5 6v12M18.5 8v8"/>'],
+      ['kettlebell', '<path d="M9 8.5V7a3 3 0 0 1 6 0v1.5"/><path d="M12 8.5c-3.9 0-6.5 2.6-6.5 5.7 0 3 2.5 5.3 6.5 5.3s6.5-2.3 6.5-5.3c0-3.1-2.6-5.7-6.5-5.7z"/>'],
+      ['run', '<circle cx="14.5" cy="4.5" r="1.6"/><path d="M12.5 8.5l-3.2 2.2-1.3 3.3M12.5 8.5l2.4 3 3.1.6M12.2 12.2l-1.2 3.6 3.2 2.4.6 3.3M8 14l-3 2.6"/>'],
+      ['bike', '<circle cx="6" cy="17" r="3.5"/><circle cx="18" cy="17" r="3.5"/><path d="M6 17l3.5-7h5.5l3 7M9.5 10 8.5 7.5h-2M15 10l-1.2-3h-2"/>'],
+      ['jack', '<circle cx="12" cy="4.5" r="1.6"/><path d="M12 7.5v6M12 9.5 6.5 6.5M12 9.5l5.5-3M12 13.5 8.5 20M12 13.5l3.5 6.5"/>'],
+      ['heart', '<path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.5A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/>'],
+      ['flame', '<path d="M12 3c1 3.5 5 5.5 5 10a5 5 0 0 1-10 0c0-2 1-3 2-4 .3 1.5 1 2 1.8 2C10.5 8 11 5.5 12 3z"/>'],
+      ['bolt', '<path d="M13 3 5 13.5h6L10 21l8-10.5h-6z"/>'],
+      ['target', '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.5"/><path d="M12 12h.01"/>'],
+      ['timer', '<circle cx="12" cy="13.5" r="7.5"/><path d="M12 9.5v4l2.5 1.5M9.5 3h5"/>'],
+      ['waves', '<path d="M3 10c2 0 2-1.5 4-1.5S9 10 11 10s2-1.5 4-1.5S17 10 19 10s1.5-.7 2-1M3 16c2 0 2-1.5 4-1.5S9 16 11 16s2-1.5 4-1.5S17 16 19 16s1.5-.7 2-1"/>'],
+      ['mountain', '<path d="M3 19l6.5-11 4 6.5 2-3L21 19z"/>'],
+      ['star', '<path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/>']
+    ];
+    const ico = (k, s) => '<svg viewBox="0 0 24 24" width="' + s + '" height="' + s + '" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + (ICONS.find((x) => x[0] === k) || ICONS[0])[1] + '</svg>';
     const list = () => (Array.isArray(APP_STATE.sportMoves) ? APP_STATE.sportMoves : []);
     const save = (v) => { saveAppState({ sportMoves: v }); window.dispatchEvent(new Event('sport-data')); };
-    const int = (v) => Math.max(0, Math.min(9999, parseInt(String(v).replace(/\D/g, ''), 10) || 0));
     const fmtSec = (s) => { const m = Math.floor(s / 60), r = s % 60; return m ? m + ' dk' + (r ? ' ' + r + ' sn' : '') : r + ' sn'; };
+    const modeOf = (m) => m.mode || (m.sec && !m.reps ? 'time' : 'reps');
     const sum = (m) => {
+      if (modeOf(m) === 'time') return (m.sec ? fmtSec(m.sec) : '') + (m.sec && m.sets ? ' × ' : '') + (m.sets ? m.sets + ' tekrar' : '') || 'Ayrıntı girilmedi';
       const p = [];
       if (m.sets && m.reps) p.push(m.sets + ' set × ' + m.reps + ' tekrar');
       else if (m.sets) p.push(m.sets + ' set');
@@ -83277,59 +83364,227 @@ body.nav-add-left .sport-navbar .sp-fab-tip{right:auto;left:-66px;transform-orig
       if (m.sec) p.push(fmtSec(m.sec));
       return p.join(' · ') || 'Ayrıntı girilmedi';
     };
-    const PEN = '<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16z"/></svg>';
-    let editId = null;
-    const render = () => {
-      const ed = list().find((m) => m.id === editId) || null;
-      if (!ed) editId = null;
-      const v = (k) => (ed && ed[k] ? ed[k] : '');
-      const sorted = list().slice().sort((a, b) => a.n.localeCompare(b.n, 'tr'));
-      box.innerHTML = '<div class="sp-card2"><h3>' + (ed ? 'Hareketi düzenle' : 'Hareket ekle') + '</h3>' +
-        '<p>Set, tekrar ve süre isteğe bağlı; sadece adı girmen yeter.</p>' +
-        '<div class="sp-cd-row one"><input id="mvN" placeholder="Hareket adı" maxlength="40" enterkeyhint="next" value="' + esc(ed ? ed.n : '') + '"></div>' +
-        '<div class="sp-cd-row three"><input id="mvS" inputmode="numeric" placeholder="Set" maxlength="4" value="' + v('sets') + '">' +
-        '<input id="mvR" inputmode="numeric" placeholder="Tekrar" maxlength="4" value="' + v('reps') + '">' +
-        '<input id="mvT" inputmode="numeric" placeholder="Süre (sn)" maxlength="4" value="' + v('sec') + '"></div>' +
-        '<p id="mvErr" class="sp-err" hidden></p>' +
-        '<button type="button" class="sp-btn" data-a="save">' + (ed ? 'Değişiklikleri kaydet' : 'Hareketi ekle') + '</button>' +
-        (ed ? '<button type="button" class="sp-mini" data-a="cancel">Vazgeç</button>' : '') + '</div>' +
-        (sorted.length
-          ? '<div class="sp-card2"><h3>Hareketlerim · ' + sorted.length + '</h3>' + sorted.map((m) =>
-            '<div class="sp-ex-row sp-mv' + (m.id === editId ? ' editing' : '') + '"><div class="sp-mv-t"><b>' + esc(m.n) + '</b><small>' + esc(sum(m)) + '</small></div>' +
-            '<button type="button" data-a="edit" data-id="' + m.id + '" aria-label="Hareketi düzenle">' + PEN + '</button>' +
-            '<button type="button" data-a="del" data-id="' + m.id + '" aria-label="Hareketi sil">×</button></div>').join('') + '</div>'
-          : '<div class="sp-card2"><h3>Henüz hareket yok</h3><p>Eklediğin hareketler burada listelenir; ileride seans ve rutinlerde bunları seçeceksin.</p></div>');
+    const card = (m, i, fresh) => '<div class="spmv' + (fresh ? ' fresh' : ' in') + '" data-id="' + m.id + '" style="--i:' + i + '" role="button" tabindex="0" aria-label="' + esc(m.n) + ' düzenle">' +
+      '<span class="spmv-ic">' + ico(m.icon, 24) + '</span><div class="spmv-t"><b>' + esc(m.n) + '</b><small>' + esc(sum(m)) + '</small></div>' +
+      '<span class="spmv-grip" aria-hidden="true"><i></i><i></i><i></i></span></div>';
+    const hintTxt = () => list().length ? list().length + ' hareket · sıralamak için basılı tut' : '';
+    const updHint = () => { const h = box.querySelector('.spmv-hint'); if (h) h.textContent = hintTxt(); };
+    const render = (freshId, pulseId) => {
+      const all = list();
+      box.innerHTML = all.length
+        ? '<p class="spmv-hint">' + hintTxt() + '</p><div class="spmv-list">' + all.map((m, i) => card(m, i, m.id === freshId)).join('') + '</div>'
+        : '<div class="sp-card2"><h3>Henüz hareket yok</h3><p>Alttaki + düğmesine dokunarak ilk hareketini ekle.</p></div>';
+      const f = freshId && box.querySelector('.spmv[data-id="' + freshId + '"]');
+      if (f) f.scrollIntoView({ block: 'center', behavior: REDUCED() ? 'auto' : 'smooth' });
+      const p = pulseId && box.querySelector('.spmv[data-id="' + pulseId + '"]');
+      if (p) { p.classList.add('sp-pulse'); setTimeout(() => p.classList.remove('sp-pulse'), 1000); }
     };
-    const fail = (msg, id) => {
-      const e = box.querySelector('#mvErr'); e.textContent = msg; e.hidden = false;
-      const f = box.querySelector(id); if (f) f.focus();
+
+    // ---------- Basılı tut + sürükle ----------
+    let D = null, settling = false;
+    const lst = () => box.querySelector('.spmv-list');
+    box.addEventListener('touchmove', (e) => { if (D && D.on && e.cancelable) e.preventDefault(); }, { passive: false });
+    box.addEventListener('contextmenu', (e) => { if (e.target.closest('.spmv')) e.preventDefault(); });
+    const shift = () => D.items.forEach((el, j) => {
+      if (el === D.card) return;
+      let s = 0;
+      if (D.from < D.to && j > D.from && j <= D.to) s = -D.step;
+      else if (D.from > D.to && j >= D.to && j < D.from) s = D.step;
+      el.style.translate = s ? '0 ' + s + 'px' : '';
+    });
+    const upd = () => {
+      const dy = (D.y - D.y0) + (sec.scrollTop - D.s0);
+      const c = Math.max(D.top0 - D.base, Math.min(D.top0 + (D.n - 1) * D.step - D.base, dy));
+      D.card.style.translate = '0 ' + c + 'px';
+      const to = Math.max(0, Math.min(D.n - 1, Math.round((D.base + c - D.top0) / D.step)));
+      if (to !== D.to) { D.to = to; shift(); if (navigator.vibrate) navigator.vibrate(6); }
+    };
+    const startDrag = () => {
+      if (!D) return;
+      const l = lst(), items = Array.from(l.children);
+      Object.assign(D, { on: true, items, n: items.length, from: items.indexOf(D.card), top0: items[0].offsetTop, base: D.card.offsetTop, s0: sec.scrollTop, y0: D.y });
+      D.to = D.from;
+      D.step = items.length > 1 ? items[1].offsetTop - items[0].offsetTop : D.card.offsetHeight + 10;
+      D.card.classList.remove('press'); D.card.classList.add('drag'); l.classList.add('dragging');
+      try { D.card.setPointerCapture(D.pid); } catch (e) {}
+      if (navigator.vibrate) navigator.vibrate(12);
+      const tick = () => {
+        if (!D || !D.on) return;
+        const r = sec.getBoundingClientRect(), top = r.top + 110, bot = Math.min(r.bottom, innerHeight) - 140;
+        if (D.y < top) sec.scrollTop -= Math.min(1, (top - D.y) / 80) * 16;
+        else if (D.y > bot) sec.scrollTop += Math.min(1, (D.y - bot) / 80) * 16;
+        upd(); D.raf = requestAnimationFrame(tick);
+      };
+      D.raf = requestAnimationFrame(tick);
+    };
+    const endDrag = () => {
+      const d = D; D = null; settling = true;
+      cancelAnimationFrame(d.raf);
+      d.card.classList.remove('drag');
+      d.card.style.translate = '0 ' + (d.to - d.from) * d.step + 'px';
+      setTimeout(() => {
+        const l = lst(); if (!l) { settling = false; return; }
+        l.classList.add('nt');
+        const rest = d.items.filter((x) => x !== d.card);
+        l.insertBefore(d.card, rest[d.to] || null);
+        d.items.forEach((x) => { x.style.translate = ''; });
+        void l.offsetWidth; l.classList.remove('nt', 'dragging');
+        if (d.to !== d.from) {
+          const by = new Map(list().map((m) => [m.id, m]));
+          save(Array.from(l.children).map((x) => by.get(x.dataset.id)).filter(Boolean));
+        }
+        settling = false;
+      }, 330);
+    };
+    box.addEventListener('pointerdown', (e) => {
+      const c = e.target.closest('.spmv');
+      if (!c || D || settling || (e.pointerType === 'mouse' && e.button !== 0)) return;
+      D = { card: c, id: c.dataset.id, pid: e.pointerId, sx: e.clientX, sy: e.clientY, y: e.clientY, on: false, moved: false };
+      c.classList.add('press');
+      D.timer = setTimeout(startDrag, 330);
+    });
+    box.addEventListener('pointermove', (e) => {
+      if (!D || e.pointerId !== D.pid) return;
+      D.y = e.clientY;
+      if (!D.on && !D.moved && Math.hypot(e.clientX - D.sx, e.clientY - D.sy) > 9) { D.moved = true; clearTimeout(D.timer); D.card.classList.remove('press'); }
+    });
+    const up = (e) => {
+      if (!D || e.pointerId !== D.pid) return;
+      clearTimeout(D.timer);
+      if (D.on) return endDrag();
+      D.card.classList.remove('press');
+      const id = D.id, moved = D.moved; D = null;
+      if (!moved && e.type === 'pointerup') openSheet(id);
+    };
+    box.addEventListener('pointerup', up);
+    box.addEventListener('pointercancel', up);
+    box.addEventListener('keydown', (e) => { const c = e.target.closest('.spmv'); if (c && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); openSheet(c.dataset.id); } });
+
+    // ---------- Alttan açılan ekleme / düzenleme sayfası ----------
+    let sheet = null, panel = null, editId = null, draft = null, delTimer = 0;
+    const $ = (s) => sheet.querySelector(s);
+    const fmap = () => draft.mode === 'time' ? ['sec', 'sets'] : ['sets', 'reps'];
+    const LBL = { reps: ['Set sayısı', 'Tekrar sayısı'], time: ['Süre (sn)', 'Tekrar'] };
+    const syncFields = () => {
+      const [a, b] = fmap(), L = LBL[draft.mode];
+      $('#shLa').textContent = L[0]; $('#shLb').textContent = L[1];
+      $('#shA').value = draft[a]; $('#shB').value = draft[b];
+      $('#shSum').textContent = sum({ mode: draft.mode, sets: draft.sets, reps: draft.reps, sec: draft.sec });
+    };
+    const setMode = (m, instant) => {
+      draft.mode = m;
+      $('.spsh-seg').style.setProperty('--k', m === 'time' ? 1 : 0);
+      $('.spsh-seg').querySelectorAll('button').forEach((b) => b.classList.toggle('on', b.dataset.mode === m));
+      const pair = $('.spsh-pair');
+      if (instant) return syncFields();
+      pair.classList.add('swap');
+      setTimeout(() => { syncFields(); pair.classList.remove('swap'); }, 160);
+    };
+    const fit = () => {
+      const v = window.visualViewport; if (!v || !panel) return;
+      panel.style.setProperty('--kb', Math.max(0, innerHeight - v.height - v.offsetTop) + 'px');
+      panel.style.setProperty('--vh', v.height + 'px');
+    };
+    const sizeDesc = () => { const t = $('#shDesc'); t.style.height = 'auto'; t.style.height = Math.min(t.scrollHeight, 220) + 'px'; $('#shCnt').textContent = t.value.length + ' / ' + DESC_MAX; };
+    const fail = (msg, sel) => { const e = $('#shErr'); e.textContent = msg; e.hidden = false; const f = $(sel); f.classList.remove('shake'); void f.offsetWidth; f.classList.add('shake'); f.focus(); };
+    const closeSheet = () => {
+      if (!sheet || !sheet.classList.contains('open')) return;
+      sheet.classList.remove('open'); sheet.setAttribute('aria-hidden', 'true');
+      if (sheet.contains(document.activeElement)) document.activeElement.blur();
+    };
+    const removeCard = (id) => {
+      const el = box.querySelector('.spmv[data-id="' + id + '"]');
+      const finish = () => { save(list().filter((m) => m.id !== id)); if (el) el.remove(); if (!list().length) render(); else updHint(); };
+      if (!el || REDUCED()) return finish();
+      el.style.height = el.offsetHeight + 'px'; void el.offsetHeight; el.classList.add('out');
+      setTimeout(finish, 420);
     };
     const commit = () => {
-      const n = box.querySelector('#mvN').value.trim();
-      if (!n) return fail('Hareket adını gir.', '#mvN');
-      const all = list();
-      if (all.some((m) => m.id !== editId && m.n.toLowerCase() === n.toLowerCase())) return fail('Bu isimde bir hareket zaten var.', '#mvN');
-      const d = { n, sets: int(box.querySelector('#mvS').value), reps: int(box.querySelector('#mvR').value), sec: int(box.querySelector('#mvT').value) };
-      if (editId) { save(all.map((m) => m.id === editId ? Object.assign({}, m, d) : m)); editId = null; render(); }
+      const n = $('#shName').value.trim(), desc = $('#shDesc').value.trim(), all = list();
+      if (!n) return fail('Hareket ismini gir.', '#shName');
+      if (all.some((m) => m.id !== editId && m.n.toLowerCase() === n.toLowerCase())) return fail('Bu isimde bir hareket zaten var.', '#shName');
+      const t = draft.mode === 'time';
+      const d = { n, icon: draft.icon, mode: draft.mode, sets: draft.sets, reps: t ? 0 : draft.reps, sec: t ? draft.sec : 0, desc };
+      let id = editId;
+      if (editId) save(all.map((m) => m.id === editId ? Object.assign({}, m, d) : m));
       else {
-        if (all.length >= MAX) return fail('En fazla ' + MAX + ' hareket ekleyebilirsin.', '#mvN');
-        save(all.concat([Object.assign({ id: 'm' + Date.now() + Math.floor(Math.random() * 1000) }, d)]));
-        render(); box.querySelector('#mvN').focus();
+        if (all.length >= MAX) return fail('En fazla ' + MAX + ' hareket ekleyebilirsin.', '#shName');
+        id = 'm' + Date.now() + Math.floor(Math.random() * 1000);
+        save(all.concat([Object.assign({ id }, d)]));
       }
+      const isNew = !editId;
+      closeSheet();
+      setTimeout(() => render(isNew ? id : null, isNew ? null : id), 380);
     };
-    box.addEventListener('input', () => { const e = box.querySelector('#mvErr'); if (e) e.hidden = true; });
-    box.addEventListener('keydown', (e) => {
-      if (e.key !== 'Enter' || !e.target.closest('.sp-cd-row')) return;
-      if (e.target.id === 'mvN') { e.preventDefault(); box.querySelector('#mvS').focus(); } else commit();
-    });
-    box.addEventListener('click', (e) => {
-      const b = e.target.closest('[data-a]'); if (!b) return;
-      const a = b.dataset.a;
-      if (a === 'save') commit();
-      else if (a === 'cancel') { editId = null; render(); }
-      else if (a === 'edit') { editId = b.dataset.id; render(); sec.scrollTo({ top: 0, behavior: REDUCED() ? 'auto' : 'smooth' }); }
-      else if (a === 'del') { if (editId === b.dataset.id) editId = null; save(list().filter((m) => m.id !== b.dataset.id)); render(); }
-    });
+    const ensureSheet = () => {
+      if (sheet) return;
+      sheet = document.createElement('div');
+      sheet.className = 'spsh'; sheet.setAttribute('aria-hidden', 'true');
+      const st = (id, i) => '<div class="spsh-st"><span id="shL' + id.toLowerCase() + '"></span><div class="spsh-st-c"><button type="button" data-step="-1" data-i="' + i + '" aria-label="Azalt">−</button><input id="sh' + id + '" inputmode="numeric" maxlength="4" autocomplete="off"><button type="button" data-step="1" data-i="' + i + '" aria-label="Arttır">+</button></div></div>';
+      sheet.innerHTML = '<div class="spsh-bd" data-sh="close"></div><div class="spsh-panel" role="dialog" aria-modal="true" aria-labelledby="shTitle">' +
+        '<div class="spsh-grab"><i></i></div><div class="spsh-head"><h2 id="shTitle"></h2><button type="button" class="spsh-x" data-sh="close" aria-label="Kapat"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>' +
+        '<div class="spsh-body">' +
+        '<div class="spsh-f" style="--d:0"><label for="shName">Hareket ismi</label><input id="shName" placeholder="Örn. Şınav" maxlength="40" enterkeyhint="done" autocomplete="off"></div>' +
+        '<div class="spsh-f" style="--d:1"><label>Hareket ikonu</label><div class="spsh-icons">' + ICONS.map((x) => '<button type="button" class="spsh-ic" data-ic="' + x[0] + '" aria-label="' + x[0] + '">' + ico(x[0], 22) + '</button>').join('') + '</div></div>' +
+        '<div class="spsh-f" style="--d:2"><label>Hareket türü</label><div class="spsh-seg" style="--k:0"><i></i><button type="button" data-mode="reps">Tekrarlı</button><button type="button" data-mode="time">Süreli</button></div>' +
+        '<div class="spsh-pair">' + st('A', 0) + st('B', 1) + '</div><p class="spsh-sum" id="shSum"></p></div>' +
+        '<div class="spsh-f" style="--d:3"><label for="shDesc">Nasıl yapılır?</label><textarea id="shDesc" rows="3" maxlength="' + DESC_MAX + '" placeholder="Hareketin doğru yapılışını adım adım anlat…"></textarea><small id="shCnt"></small></div>' +
+        '<p id="shErr" class="sp-err" hidden></p></div>' +
+        '<div class="spsh-foot"><button type="button" class="sp-btn" data-sh="save"></button><button type="button" class="spsh-del" data-sh="del" hidden>Hareketi sil</button></div></div>';
+      document.body.appendChild(sheet);
+      panel = $('.spsh-panel');
+      sheet.addEventListener('click', (e) => {
+        const b = e.target.closest('[data-sh]'), ic = e.target.closest('[data-ic]'), md = e.target.closest('[data-mode]'), sp = e.target.closest('[data-step]');
+        if (b) {
+          const a = b.dataset.sh;
+          if (a === 'close') closeSheet();
+          else if (a === 'save') commit();
+          else if (!b.classList.contains('arm')) {
+            b.classList.add('arm'); b.textContent = 'Silmek için tekrar dokun';
+            clearTimeout(delTimer); delTimer = setTimeout(() => { b.classList.remove('arm'); b.textContent = 'Hareketi sil'; }, 2600);
+          } else { clearTimeout(delTimer); const id = editId; closeSheet(); setTimeout(() => removeCard(id), 420); }
+        } else if (ic) {
+          draft.icon = ic.dataset.ic;
+          sheet.querySelectorAll('.spsh-ic').forEach((x) => x.classList.toggle('on', x === ic));
+        } else if (md) { if (md.dataset.mode !== draft.mode) setMode(md.dataset.mode); }
+        else if (sp) {
+          const key = fmap()[+sp.dataset.i], inp = $(sp.dataset.i === '0' ? '#shA' : '#shB');
+          draft[key] = Math.max(0, Math.min(key === 'sec' ? 3600 : 999, (draft[key] || 0) + (+sp.dataset.step) * (key === 'sec' ? 5 : 1)));
+          inp.value = draft[key]; inp.classList.remove('bump'); void inp.offsetWidth; inp.classList.add('bump'); syncFields();
+        }
+      });
+      sheet.addEventListener('input', (e) => {
+        $('#shErr').hidden = true;
+        if (e.target.id === 'shA' || e.target.id === 'shB') {
+          const key = fmap()[e.target.id === 'shA' ? 0 : 1];
+          draft[key] = Math.min(key === 'sec' ? 3600 : 999, parseInt(e.target.value.replace(/\D/g, ''), 10) || 0);
+          e.target.value = e.target.value.replace(/\D/g, '');
+          $('#shSum').textContent = sum({ mode: draft.mode, sets: draft.sets, reps: draft.reps, sec: draft.sec });
+        } else if (e.target.id === 'shDesc') sizeDesc();
+      });
+      sheet.addEventListener('focusout', (e) => { if (e.target.id === 'shA' || e.target.id === 'shB') syncFields(); });
+      $('#shName').addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); e.target.blur(); } });
+      document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeSheet(); });
+      if (window.visualViewport) { window.visualViewport.addEventListener('resize', fit); window.visualViewport.addEventListener('scroll', fit); }
+    };
+    const openSheet = (id) => {
+      ensureSheet();
+      const m = id ? list().find((x) => x.id === id) : null;
+      editId = m ? m.id : null;
+      draft = m ? { icon: m.icon || 'dumbbell', mode: modeOf(m), sets: m.sets || 0, reps: m.reps || 0, sec: m.sec || 0 }
+                : { icon: 'dumbbell', mode: 'reps', sets: 3, reps: 10, sec: 30 };
+      $('#shTitle').textContent = m ? 'Hareketi düzenle' : 'Yeni hareket';
+      $('#shName').value = m ? m.n : '';
+      $('#shDesc').value = m && m.desc ? m.desc : '';
+      sheet.querySelectorAll('.spsh-ic').forEach((x) => x.classList.toggle('on', x.dataset.ic === draft.icon));
+      setMode(draft.mode, true);
+      $('#shErr').hidden = true;
+      $('[data-sh="save"]').textContent = m ? 'Değişiklikleri kaydet' : 'Hareketi ekle';
+      const del = $('[data-sh="del"]'); del.hidden = !m; del.classList.remove('arm'); del.textContent = 'Hareketi sil';
+      sheet.setAttribute('aria-hidden', 'false'); fit(); sizeDesc();
+      requestAnimationFrame(() => requestAnimationFrame(() => sheet.classList.add('open')));
+    };
+    window.addEventListener('sport-move-add', () => openSheet(null));
     render();
   };
 
@@ -83619,7 +83874,7 @@ body.nav-add-left .sport-navbar .sp-fab-tip{right:auto;left:-66px;transform-orig
           spGoField(sec, '#spExName');
         } };
       }
-      if (k === 1) return { label: 'Hareket ekle', run: () => spGoField(sec, '#mvN') };
+      if (k === 1) return { label: 'Hareket ekle', run: () => window.dispatchEvent(new Event('sport-move-add')) };
       if (k === 2) return { label: 'Rutin ekle', run: () => spGoField(sec, '#spRtName') };
       return { label: 'Aktivite ekle', run: () => spGoField(sec, '#cdDur') };
     }
