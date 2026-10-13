@@ -5411,6 +5411,27 @@
     border-radius: 1.6rem;
   }
 
+  /* Zaman kartı başlık satırı: solda başlık, sağda "Son görev" ipucu */
+  .task-add-card-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.6rem;
+    margin-bottom: 0.45rem;
+  }
+  .task-add-card-head .task-add-card-title { margin-bottom: 0; }
+  .task-add-last-hint {
+    flex: none;
+    font-size: 0.72rem;
+    font-weight: 600;
+    line-height: 1.2;
+    letter-spacing: 0;
+    font-variant-numeric: tabular-nums;
+    color: var(--ta-body-fg, var(--ta-text));
+    opacity: 0.6;
+    white-space: nowrap;
+  }
+  .task-add-last-hint[hidden] { display: none; }
   .task-add-card-title {
     margin-bottom: 0.45rem;
     font-family: var(--ta-title-font);
@@ -39880,7 +39901,10 @@ body.is-anthracite .exam-q-info-count { color: #f2f2f4; }
 
         <!-- Zaman: dikey çark, 15 dk adımlı -->
         <div class="task-add-card">
-          <h3 class="task-add-card-title">Zaman</h3>
+          <div class="task-add-card-head">
+            <h3 class="task-add-card-title">Zaman</h3>
+            <span class="task-add-last-hint" id="taskAddLastHint" hidden></span>
+          </div>
           <div class="task-add-wheel-wrap">
             <div class="task-add-wheel-pill" aria-hidden="true"></div>
             <div class="task-add-wheel" id="taskAddWheel" aria-label="Başlangıç saatini kaydırarak seç"></div>
@@ -53313,6 +53337,8 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
     let repeatCustomDays = new Set();   // 'custom' modunda seçili günler ('MO','TU',... REPEAT_DOW_CODE)
     let editingTask = null;             // { id, dateStr }: form "Düzenle" modunda mı (yoksa yeni görev)
     let taskSubtasks = [];               // [{id, text, done}]: bu oturumdaki alt görevler (isteğe bağlı)
+    let timeTouched = false;            // kullanıcı saat çarkına kendisi dokundu mu (dokunduysa öneri ezmez)
+    let syncStartSuggestion = null;     // aşağıda tanımlanır: seçili günün son görevine göre başlangıç saati önerir
     const topbarTitleEl = overlay.querySelector('.task-add-topbar-title');
 
     // "14:30" biçimi (gün taşarsa 24 saate sarar)
@@ -53758,6 +53784,7 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
       dateTextEl.textContent = `${selectedDate.getDate()} ${MONTHS_SHORT_TR[selectedDate.getMonth()]} ${selectedDate.getFullYear()} ${DAYS_SHORT_TR[selectedDate.getDay()]}`;
       dateRelEl.textContent = relativeDayLabel(selectedDate);
       if (repeatMode === 'weekly') updateRepeatHint(); // hafta içindeki gün adı tarihe göre değişir
+      if (syncStartSuggestion) syncStartSuggestion();
     };
 
     const onDatePicked = () => {
@@ -54005,6 +54032,65 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
       }
       wheel.appendChild(frag);
       wheel.addEventListener('scroll', schedulePaint, { passive: true });
+      // Kullanıcı çarka kendisi dokunursa/kaydırırsa artık otomatik öneriyi ezmeyiz.
+      ['pointerdown', 'touchstart', 'wheel'].forEach((ev) => {
+        wheel.addEventListener(ev, () => { timeTouched = true; }, { passive: true });
+      });
+    };
+
+    // ---------------- Son göreve göre başlangıç önerisi ----------------
+    // Seçili günün EN SON eklenen görevinin bitişi, yeni görevin başlangıç saati
+    // olarak çarkta hazır gelir (çark 15 dk adımlı olduğundan bitiş, bir sonraki
+    // 15 dk'ya yukarı yuvarlanır → asla çakışmaz). Kullanıcı isterse çarkı değiştirir.
+    // Küçük "Son görev 13:00–14:00" ipucu Zaman başlığının yanında görünür.
+    const lastHintEl = $('taskAddLastHint');
+    const hmToMin = (str) => {
+      const p = String(str || '').split(':').map(Number);
+      return (p.length >= 2 && p.every(Number.isFinite)) ? p[0] * 60 + p[1] : null;
+    };
+    const lastTaskOfDate = (dateStr) => {
+      try {
+        const list = getRelaxTasksByDate()[dateStr];
+        if (!Array.isArray(list)) return null;
+        for (let i = list.length - 1; i >= 0; i -= 1) {
+          if (list[i] && hmToMin(list[i].start) != null) return list[i];
+        }
+      } catch (err) { /* henüz hazır değil */ }
+      return null;
+    };
+    syncStartSuggestion = () => {
+      if (editingTask) {                         // düzenlerken öneri/ipucu yok
+        if (lastHintEl) lastHintEl.hidden = true;
+        return;
+      }
+      const last = lastTaskOfDate(ymd(selectedDate));
+      let endMin = null;
+      if (last) {
+        const s = hmToMin(last.start);
+        const d = Number(last.durationMinutes);
+        endMin = (Number.isFinite(d) && d > 0) ? s + d : hmToMin(last.end);
+        if (endMin != null && endMin < s) endMin += 1440;
+        if (lastHintEl) {
+          lastHintEl.textContent = `Son görev ${fmt(s)}–${fmt(endMin != null ? endMin : s)}`;
+          lastHintEl.title = last.name || '';
+          lastHintEl.hidden = false;
+        }
+      } else if (lastHintEl) {
+        lastHintEl.hidden = true;
+      }
+      if (timeTouched) return;
+      let idx;
+      if (endMin != null && Math.ceil(endMin / STEP) < COUNT) {
+        idx = Math.ceil(endMin / STEP);
+      } else {                                   // görev yok ya da gün sonuna taştı → şimdiki saat
+        const now = new Date();
+        idx = Math.round((now.getHours() * 60 + now.getMinutes()) / STEP) % COUNT;
+      }
+      selectedIndex = idx;
+      if (items.length) {
+        updateLabels();
+        if (rowPx) { scrollToIndex(selectedIndex, true); paint(); }
+      }
     };
 
     const measureRow = () => {
@@ -54298,6 +54384,7 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
 
     const prepareForm = () => {
       editingTask = null;
+      timeTouched = false;
       if (topbarTitleEl) topbarTitleEl.textContent = 'Yeni Aktivite';
       overlay.setAttribute('aria-label', 'Yeni Aktivite');
       saveBtn.textContent = 'Ekle';
@@ -54330,8 +54417,7 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
       repeatCustomDays = new Set();
       applyRepeatMode('none');
 
-      const now = new Date();
-      selectedIndex = Math.round((now.getHours() * 60 + now.getMinutes()) / STEP) % COUNT;
+      syncStartSuggestion(); // son görevin bitişi (yoksa şimdiki saat)
       clearTempChip();
       applyDuration(defaultDuration());
     };
