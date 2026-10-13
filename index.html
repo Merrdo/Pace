@@ -54089,7 +54089,9 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
       selectedIndex = idx;
       if (items.length) {
         updateLabels();
-        if (rowPx) { scrollToIndex(selectedIndex, true); paint(); }
+        // Çark gizliyken (ikon/renk adımı) kaydırma işe yaramaz ve paint() konumu 0 okuyup
+        // seçimi 00:00'a çeker; bu yüzden sadece görünürse kaydır. Gizliyse goToStep('time') kaydırır.
+        if (rowPx && wheel.offsetHeight > 0) { scrollToIndex(selectedIndex, true); paint(); }
       }
     };
 
