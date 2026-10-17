@@ -41110,7 +41110,7 @@ body.is-anthracite .exam-q-info-count { color: #f2f2f4; }
   <div class="settings-confirm-backdrop" id="stopwatchResetConfirmBackdrop">
     <div class="settings-confirm-card">
       <span class="settings-confirm-title">Emin misin?</span>
-      <span class="settings-confirm-desc">Kronometre sıfırlanacak ve turlar silinecek.</span>
+      <span class="settings-confirm-desc">Kronometre sıfırlanacak, turlar silinecek ve bugünün süresi geçmişten de kaldırılacak.</span>
       <div class="settings-confirm-actions">
         <button type="button" class="settings-confirm-cancel" id="stopwatchResetConfirmCancel">Vazgeç</button>
         <button type="button" class="settings-confirm-confirm" id="stopwatchResetConfirmConfirm">Evet, sıfırla</button>
@@ -47742,10 +47742,34 @@ body.is-anthracite .exam-q-info-count { color: #f2f2f4; }
   const resetStopwatch = () => {
     if (swRunning) return;
     rolloverStopwatchDay();
-    // Sıfırlamadan önce biriken süreyi günün genel toplamına yaz; aksi halde ders bazlı kayıt
-    // kalırken günlük toplam kayboluyor ve İstatistiklerim'deki trend/takvim o günü boş gösteriyordu.
-    if (swAccumulatedMs > 0) addStopwatchLogMs(swActiveDayKey, swAccumulatedMs);
+    // Sıfırlama bugünün kronometre süresini geçmişten (İstatistiklerim / takvim) de siler:
+    // bugünün genel ve ders bazlı kayıtları temizlenir; yalnızca "Süre ekle" ile elle
+    // eklenen kayıtlar korunur. (Önceden süre sıfırlanırken geçmişe yazılıyordu.)
+    try {
+      const day = swActiveDayKey;
+      const L = Object.assign({}, loadStopwatchLogs());
+      const S = Object.assign({}, loadStopwatchSubjectLogs());
+      const Mall = (APP_STATE.stopwatchManualLogs && typeof APP_STATE.stopwatchManualLogs === 'object') ? APP_STATE.stopwatchManualLogs : {};
+      const manual = Array.isArray(Mall[day]) ? Mall[day] : [];
+      let manualTotal = 0;
+      const keepS = {};
+      manual.forEach((e) => {
+        const ms = Number(e && e.ms) || 0;
+        if (ms <= 0) return;
+        manualTotal += ms;
+        if (e.name) {
+          const k = `${e.track}::${e.name}`;
+          keepS[k] = { track: e.track, name: e.name, ms: ((keepS[k] && keepS[k].ms) || 0) + ms };
+        }
+      });
+      if (manualTotal >= 1) L[day] = manualTotal; else delete L[day];
+      if (Object.keys(keepS).length) S[day] = keepS; else delete S[day];
+      swSubjectSegmentStartEpoch = null;
+      saveAppState({ stopwatchLogs: L, stopwatchSubjectLogs: S });
+    } catch (err) { console.warn('Geçmiş süre temizlenemedi:', err); }
     swAccumulatedMs = 0;
+    try { window.dispatchEvent(new Event('pace-time-edited')); } catch (e2) { /* yok say */ }
+    try { if (typeof renderPage10 === 'function') renderPage10(); } catch (e3) { /* yok say */ }
     formatAndRenderTime(0);
     stopwatchHint.textContent = 'Başlatmak için dokun';
     stopwatchLaps = [];
@@ -61436,6 +61460,14 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
   // henüz bu fonksiyonlar yokken varsayılan renkle çizilmiş olabilir) doğru
   // rengiyle yeniden çizilir.
   renderStopwatchSubjectTag();
+
+  // Ders kayıt defteri (PaceSubjects) bu script'ten SONRA yüklenir; o güne
+  // kadar renkler paletten sıra numarasına göre (çoğunlukla pembe) düşüyordu.
+  // Defter hazır olunca/renkler değişince etiket ve geçmiş sayfası yeniden çizilir.
+  window.addEventListener('pace-subjects-changed', () => {
+    try { renderStopwatchSubjectTag(); } catch (e) { /* yok say */ }
+    try { if (typeof renderPage10 === 'function') renderPage10(); } catch (e) { /* yok say */ }
+  });
 </script>
 
 <script>
@@ -62019,7 +62051,10 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
     // Lejant KARTLARININ SAYISI VE SIRASI (hangi dersler var) aynı kaldığı
     // sürece mevcut kartları YOK EDİP BAŞTAN OLUŞTURMAK yerine sadece
     // değer/yüzdelerini güncelliyoruz.
-    const signature = entries.map((e) => e.key).join('|');
+    const signature = entries.map((e) => {
+      const k = e.key === '__unlabeled__' ? null : e.key.split('::');
+      return e.key + '~' + (k ? page10ColorForSubject(k[0], k[1]) : '');
+    }).join('|');
     const structureChanged = page10DonutLegend.dataset.signature !== signature;
 
     if (structureChanged) {
