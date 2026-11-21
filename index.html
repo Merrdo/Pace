@@ -64832,8 +64832,15 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
     page11TypeSegmented.classList.remove('is-locked');
     if (page11AddModalTitle) page11AddModalTitle.textContent = 'Yeni Deneme';
     page11AddConfirmBtn.textContent = 'Ekle';
+    syncPage11ConfirmState();
     page11AddBackdrop.classList.add('is-open');
   };
+
+  // Deneme adı boşken Ekle/Kaydet butonu pasif (soluk) kalır, ad yazılınca açılır.
+  const syncPage11ConfirmState = () => {
+    page11AddConfirmBtn.disabled = !page11ExamNameInput.value.trim();
+  };
+  page11ExamNameInput.addEventListener('input', syncPage11ConfirmState);
 
   // Var olan bir denemenin adını/tarihini düzenlemek için aynı pop-up'ı
   // "düzenleme" moduna alır. Tür bilgisi sonradan değiştirilemez; segmented
@@ -64855,6 +64862,7 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
     page11TypeSegmented.classList.add('is-locked');
     if (page11AddModalTitle) page11AddModalTitle.textContent = 'Denemeyi Düzenle';
     page11AddConfirmBtn.textContent = 'Kaydet';
+    syncPage11ConfirmState();
     page11AddBackdrop.classList.add('is-open');
   };
 
@@ -79114,13 +79122,6 @@ body .wheel-color-backdrop.is-open .wheel-color-card{transform:none;opacity:1}
     -webkit-tap-highlight-color:transparent;
     transition:transform .4s cubic-bezier(.22,1,.36,1),background-color .3s,box-shadow .3s;
   }
-  #page-11.page .page11-canvas-results-empty.is-actionable::after{
-    content:'Eklemek için dokun';
-    font-size:.78rem;
-    font-weight:700;
-    opacity:.7;
-    margin-top:-6px;
-  }
   #page-11.page .page11-canvas-results-empty.is-actionable:active{
     transform:scale(.985);
     background:color-mix(in srgb,var(--theme-text,#121212) 6%,transparent);
@@ -79129,6 +79130,81 @@ body .wheel-color-backdrop.is-open .wheel-color-card{transform:none;opacity:1}
     outline:2px solid color-mix(in srgb,var(--theme-text,#121212) 40%,transparent);
     outline-offset:3px;
   }
+}
+</style>
+<style id="p11AddModalCss">
+/* =====================================================================
+   "Yeni Deneme" paneli (BÜYÜK EKRAN)
+   1) Ekle butonunun altındaki parlama kesiliyordu: kayan görünümleri
+      tutan .page11-add-panels overflow:hidden olduğu için gölge kutunun
+      kenarında sert/köşeli bitiyordu. Kutu etrafına görünmez bir pay
+      (padding + eşit negatif margin) verildi; yerleşim değişmez, gölge
+      artık yumuşakça yayılır. Parlama da biraz kısıldı.
+   2) Panel genişletildi ve tarih sütunu daha geniş; tarih tek satırda
+      kalır ("21 Kasım 2026, Cumartesi"), sığmazsa üç nokta ile kısalır.
+   GERİ ALMAK İÇİN: bu <style> bloğunu silmek yeterli.
+   ===================================================================== */
+@media (min-width:768px) and (min-height:600px){
+  #page11AddBackdrop .page11-modal-card,
+  #page11AddBackdrop.is-date-view .page11-modal-card{max-width:690px}
+
+  #page11AddBackdrop .page11-add-panel-form{
+    grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);
+  }
+
+  #page11AddBackdrop .page11-date-btn{gap:.7rem}
+  #page11AddBackdrop .page11-date-btn > span{
+    min-width:0;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  #page11AddBackdrop .page11-date-btn svg{flex:0 0 auto}
+
+  #page11AddBackdrop .page11-add-panels{
+    padding:0 1.6rem 2.2rem;
+    margin:0 -1.6rem -2.2rem;
+  }
+
+  #page11AddBackdrop .page11-modal-confirm{
+    box-shadow:
+      0 8px 18px -8px color-mix(in srgb,var(--accent-color,#ff90e8) 55%,transparent),
+      inset 0 1px 0 0 rgba(255,255,255,.35);
+  }
+  @media (hover:hover) and (pointer:fine){
+    #page11AddBackdrop .page11-modal-confirm:hover{
+      box-shadow:
+        0 10px 20px -8px color-mix(in srgb,var(--accent-color,#ff90e8) 65%,transparent),
+        inset 0 1px 0 0 rgba(255,255,255,.35);
+    }
+  }
+}
+</style>
+<style id="p11AddModalSoftCss">
+/* "Yeni Deneme" paneli: parlak/ışıltılı beyaz yüzeyler yerine yumuşak, düz
+   yüzeyler (Hata Analizi kartı dili). Seçili tür artık parlayan beyaz hap
+   değil, siyah zeminde hafif açık bir yüzey + beyaz yazı. Ekle tek dolu
+   hap olarak kalır ama gölgesiz/düz; ad boşken pasif (soluk).
+   GERİ ALMAK İÇİN: bu <style> bloğunu silmek yeterli. */
+html #page11AddBackdrop .settings-segmented-slider{
+  background:rgba(255,255,255,.17);
+  box-shadow:none;
+}
+html #page11AddBackdrop .settings-segmented-option{color:rgba(255,255,255,.55)}
+html #page11AddBackdrop .settings-segmented-option.is-active{color:#fff}
+
+html #page11AddBackdrop .page11-modal-confirm{
+  background:#f2f2f4;
+  color:#141416;
+  box-shadow:none;
+  transition:transform .3s cubic-bezier(.22,1,.36,1),background-color .25s,color .25s,opacity .25s;
+}
+html #page11AddBackdrop .page11-modal-confirm:hover{box-shadow:none}
+html #page11AddBackdrop .page11-modal-confirm:disabled{
+  background:rgba(255,255,255,.1);
+  color:rgba(255,255,255,.34);
+  cursor:not-allowed;
+  transform:none;
 }
 </style>
 <style id="qhavuzDesktopBtnStyle">
