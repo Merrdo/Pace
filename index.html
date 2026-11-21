@@ -62840,6 +62840,14 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
     page11State.zeroErrorFixedCount = 0;
   }
 
+  // Soru bazlı "giderilen" kaydı: anahtar = "denemeId|branş|soruNo". Aynı soru
+  // kaç kez doğru yapılırsa yapılsın yalnızca 1 sayılır; sonradan yanlış
+  // yapılırsa kayıt silinir ve Giderilen'den düşer. (zeroErrorFixedCount bu
+  // sistemden ÖNCE birikmiş eski toplamdır, olduğu gibi korunur.)
+  if (!page11State.zeroErrorFixed || typeof page11State.zeroErrorFixed !== 'object') {
+    page11State.zeroErrorFixed = {};
+  }
+
   const savePage11State = () => saveAppState({ page11: page11State });
 
   // Bir denemenin branş bazlı ve toplam net hesabı (4 yanlış 1 doğruyu götürür).
@@ -63651,6 +63659,20 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
       empty.textContent = page11State.exams.length
         ? 'Eşleşen deneme bulunamadı.'
         : 'Henüz deneme eklenmedi.';
+      // Hiç deneme yokken bu alana dokunmak "Deneme Ekle" ile aynı işi yapar.
+      if (!page11State.exams.length) {
+        empty.classList.add('is-actionable');
+        empty.setAttribute('role', 'button');
+        empty.setAttribute('tabindex', '0');
+        empty.setAttribute('aria-label', 'Deneme ekle');
+        empty.addEventListener('click', () => openPage11AddModal());
+        empty.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            openPage11AddModal();
+          }
+        });
+      }
       page11CanvasResultsEl.appendChild(empty);
       return;
     }
@@ -63821,7 +63843,10 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
       totalBlank += result.totalBlank;
       totalLaterFixed += page11CountLater(exam);
     });
-    const fixed = (page11State.zeroErrorFixedCount || 0) + totalLaterFixed;
+    const examIds = new Set(page11State.exams.map((exam) => String(exam.id)));
+    const perQuestionFixed = Object.keys(page11State.zeroErrorFixed || {})
+      .filter((key) => examIds.has(key.split('|')[0])).length;
+    const fixed = (page11State.zeroErrorFixedCount || 0) + perQuestionFixed + totalLaterFixed;
     const totalMistakes = totalWrong + totalBlank;
     const barMax = Math.max(totalMistakes, fixed, 1);
 
@@ -67756,7 +67781,7 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
           // sonradan "doğru" yapılırsa 0 Hata listesinden düşer.
           if (state !== 'wrong' && state !== 'blank') return;
           if (!bySubject[subjectName]) bySubject[subjectName] = [];
-          bySubject[subjectName].push({ image: photo.image, answer: photo.answer, subject: subjectName });
+          bySubject[subjectName].push({ image: photo.image, answer: photo.answer, subject: subjectName, fixKey: `${exam.id}|${subjectKey}|${idxStr}` });
         });
       });
     });
@@ -71921,9 +71946,24 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
   // grafiğinin "Giderilen" sayacını 1 artırır ve kalıcı olarak kaydeder.
   const qhavuzTestNoteZeroErrorFix = (zItem) => {
     if (qhavuzTestReturnPage !== 'page-zero-error' && !(window.__rqActive && zItem && !qhavuzState.items.includes(zItem))) return;
-    page11State.zeroErrorFixedCount = (page11State.zeroErrorFixedCount || 0) + 1;
+    // Kimliği olmayan soru sayılmaz; aynı soru ikinci kez doğru yapılırsa değişmez.
+    if (!zItem || !zItem.fixKey) return;
+    if (!page11State.zeroErrorFixed) page11State.zeroErrorFixed = {};
+    if (page11State.zeroErrorFixed[zItem.fixKey]) return;
+    page11State.zeroErrorFixed[zItem.fixKey] = true;
     savePage11State();
     if (typeof renderPage11MistakeStats === 'function') renderPage11MistakeStats();
+  };
+
+  // Aynı soru sonradan yanlış/boş yapılırsa "Giderilen"den çıkarılır.
+  // Her zaman false döner (koşul zincirinde yan etki olarak kullanılıyor).
+  const qhavuzTestNoteZeroErrorMiss = (zItem) => {
+    if (qhavuzTestReturnPage !== 'page-zero-error' && !(window.__rqActive && zItem && !qhavuzState.items.includes(zItem))) return false;
+    if (!zItem || !zItem.fixKey || !page11State.zeroErrorFixed || !page11State.zeroErrorFixed[zItem.fixKey]) return false;
+    delete page11State.zeroErrorFixed[zItem.fixKey];
+    savePage11State();
+    if (typeof renderPage11MistakeStats === 'function') renderPage11MistakeStats();
+    return false;
   };
 
   // Bir şıkka basılınca: doğru cevap her zaman yeşile "zıplar"; kullanıcı
@@ -71946,7 +71986,7 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
         item.solved = true;
         saveQhavuzState();
       }
-    } else if (item.solved && qhavuzState.items.includes(item)) {
+    } else if (qhavuzTestNoteZeroErrorMiss(item) || (item.solved && qhavuzState.items.includes(item))) {
       // Daha önce "çözüldü" işaretlenmiş bir soru testte yanlış
       // yapılırsa, havuzdaki yeşil tik artık gerçeği yansıtmıyor demektir;
       // tiki kaldırıp soruyu tekrar "çözülmedi" durumuna alıyoruz.
@@ -71990,7 +72030,7 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
         item.solved = true;
         saveQhavuzState();
       }
-    } else if (item.solved && qhavuzState.items.includes(item)) {
+    } else if (qhavuzTestNoteZeroErrorMiss(item) || (item.solved && qhavuzState.items.includes(item))) {
       item.solved = false;
       saveQhavuzState();
     }
@@ -72034,7 +72074,7 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
         item.solved = true;
         saveQhavuzState();
       }
-    } else if (item.solved && qhavuzState.items.includes(item)) {
+    } else if (qhavuzTestNoteZeroErrorMiss(item) || (item.solved && qhavuzState.items.includes(item))) {
       item.solved = false;
       saveQhavuzState();
     }
@@ -72972,6 +73012,7 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
         return 'correct';
       }
       wrong += 1;
+      qhavuzTestNoteZeroErrorMiss(item);
       if (item.solved && inPool) { item.solved = false; changed = true; }
       return 'wrong';
     });
@@ -79062,6 +79103,31 @@ body .wheel-color-backdrop.is-open .wheel-color-card{transform:none;opacity:1}
     background:color-mix(in srgb,var(--theme-text,#121212) 28%,transparent);
     -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 17l6-6 4 4 8-8'/%3E%3Cpath d='M15 7h6v6'/%3E%3C/svg%3E") center/100% 100% no-repeat;
     mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 17l6-6 4 4 8-8'/%3E%3Cpath d='M15 7h6v6'/%3E%3C/svg%3E") center/100% 100% no-repeat;
+  }
+}
+</style>
+<style id="p11EmptyAddCss">
+/* Hiç deneme yokken boş durum kutusu tıklanabilir (Deneme Ekle ile aynı). */
+@media (min-width:768px) and (min-height:600px){
+  #page-11.page .page11-canvas-results-empty.is-actionable{
+    cursor:pointer;
+    -webkit-tap-highlight-color:transparent;
+    transition:transform .4s cubic-bezier(.22,1,.36,1),background-color .3s,box-shadow .3s;
+  }
+  #page-11.page .page11-canvas-results-empty.is-actionable::after{
+    content:'Eklemek için dokun';
+    font-size:.78rem;
+    font-weight:700;
+    opacity:.7;
+    margin-top:-6px;
+  }
+  #page-11.page .page11-canvas-results-empty.is-actionable:active{
+    transform:scale(.985);
+    background:color-mix(in srgb,var(--theme-text,#121212) 6%,transparent);
+  }
+  #page-11.page .page11-canvas-results-empty.is-actionable:focus-visible{
+    outline:2px solid color-mix(in srgb,var(--theme-text,#121212) 40%,transparent);
+    outline-offset:3px;
   }
 }
 </style>
