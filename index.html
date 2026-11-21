@@ -196,6 +196,32 @@
     opacity: 1;
   }
 
+  /* ---------- TEK PARÇA TEMA GEÇİŞİ ----------
+     Eskiden tema değişince --theme-* değişkenleri ANINDA değişiyor, ama
+     her öğenin kendi `transition`'ı (0.15s / 0.2s / 0.3s / 0.5s ... yüzlerce
+     farklı süre) ayrı ayrı devreye giriyor, arka plan katmanı ise 480ms ile
+     soluyordu. Bu yüzden her şey farklı anda/farklı hızda renk değiştiriyordu.
+     Artık tema değişirken JS kök öğeye `theme-swap` sınıfını ekler: bu süre
+     boyunca TÜM geçişler kapanır, tüm renkler aynı karede değişir (referans
+     dosyadaki [data-theme] davranışı). Sınıf, değişim bittikten hemen sonra
+     kalkar; normal hover/basma animasyonları etkilenmez. */
+  :root.theme-swap,
+  :root.theme-swap *,
+  :root.theme-swap *::before,
+  :root.theme-swap *::after {
+    transition: none !important;
+  }
+
+  /* İsteğe bağlı 'fade' modu (THEME_SWITCH_MODE = 'fade'): tüm sayfanın tek
+     görüntüsü, tek bir çapraz solmayla yeni temaya geçer. Süre/eğri güvenli
+     alan (theme-color) geçişine uydurulmuş değerlerle aynıdır. */
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation-duration: 480ms;
+    animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+    mix-blend-mode: normal;
+  }
+
   /* Tema katmanlarının hemen üzerinde duran, isteğe bağlı ince doku
      (desen) katmanı. Rengi her zaman "currentColor" ile tanımlanır ve
      JS tarafından o an aktif temanın yazı rengine (--theme-text) göre,
@@ -46325,63 +46351,91 @@ body.is-anthracite .exam-q-info-count { color: #f2f2f4; }
   applyThemeColors(themes[themeIndex]);
   refreshThemeColorMeta();
 
-  const applyNextTheme = () => {
-    themeIndex = (themeIndex + 1) % themes.length;
-    const theme = themes[themeIndex];
+  // ===================== TEK PARÇA TEMA GEÇİŞİ =====================
+  // Tüm tema yazımı (gradyan katmanı, --theme-* / --accent-* değişkenleri,
+  // pop-up yüzeyleri, theme-color meta, color-scheme) TEK fonksiyonda
+  // (writeThemeState) ve TEK karede yapılır. runThemeSwap bunu geçişleri
+  // kapatan bir sarmalayıcıyla çalıştırır; böylece hiçbir öğe kendi
+  // transition'ıyla geç/yavaş kalmaz.
+  //   'instant' : her şey aynı karede, anında değişir (referans dosya gibi).
+  //   'fade'    : View Transitions API ile tüm sayfa tek parça çapraz solar
+  //               (destek yoksa ya da "hareketi azalt" açıksa otomatik anında).
+  const THEME_SWITCH_MODE = 'instant';
+  const themeRoot = document.documentElement;
+  const reduceMotionQuery = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
+
+  const writeThemeState = (index) => {
+    const theme = themes[index];
 
     hiddenLayer.style.background = theme.gradient;
     hiddenLayer.classList.add('is-visible');
     visibleLayer.classList.remove('is-visible');
 
-    document.documentElement.style.setProperty('--theme-text', theme.text);
-    document.documentElement.style.setProperty('--theme-pure', themePureOf(theme.text));
-    document.documentElement.style.setProperty('--theme-ring', themePureOf(theme.text) === '#ffffff' ? '#ffffff' : '#272727');
-    document.documentElement.style.setProperty('--theme-bg', theme.color);
-    document.documentElement.style.setProperty('--weekend-color', theme.weekend);
+    const rs = themeRoot.style;
+    rs.setProperty('--theme-text', theme.text);
+    rs.setProperty('--theme-pure', themePureOf(theme.text));
+    rs.setProperty('--theme-ring', themePureOf(theme.text) === '#ffffff' ? '#ffffff' : '#272727');
+    rs.setProperty('--theme-bg', theme.color);
+    rs.setProperty('--weekend-color', theme.weekend);
     applyThemeColors(theme);
     refreshThemeColorMeta();
 
     const temp = visibleLayer;
     visibleLayer = hiddenLayer;
     hiddenLayer = temp;
+  };
 
-    // Tema değiştiğinde, Sayfa 3'teki tik işareti de yeni aktif temaya
-    // taşınmalı (eski gradyanın üzerinde kalmamalı).
+  let themeSwapDepth = 0;
+  let themeSwapToken = 0;
+  const runThemeSwap = (fn) => {
+    // İç içe çağrılarda (ör. başka bir swap'ın içinden) doğrudan çalıştır.
+    if (themeSwapDepth > 0) { fn(); return; }
+    const useFade = THEME_SWITCH_MODE === 'fade'
+      && typeof document.startViewTransition === 'function'
+      && !(reduceMotionQuery && reduceMotionQuery.matches);
+    const token = ++themeSwapToken;
+    themeRoot.classList.add('theme-swap');
+    const release = () => { if (token === themeSwapToken) themeRoot.classList.remove('theme-swap'); };
+
+    if (useFade) {
+      themeSwapDepth++;
+      let vt;
+      try {
+        vt = document.startViewTransition(() => { try { fn(); } finally { themeSwapDepth--; } });
+      } catch (e) {
+        themeSwapDepth--; fn(); release(); return;
+      }
+      vt.finished.then(release, release);
+      return;
+    }
+
+    themeSwapDepth++;
+    try { fn(); } finally { themeSwapDepth--; }
+    // Yeni değerleri geçişsiz olarak ŞİMDİ hesaplat; sınıfı sonra kaldır.
+    void themeRoot.offsetWidth;
+    requestAnimationFrame(() => requestAnimationFrame(release));
+  };
+  window.runThemeSwap = runThemeSwap;
+
+  // Sıradaki temaya geçer (şu an dışarıdan çağrılmıyor, uyumluluk için duruyor).
+  const applyNextTheme = () => {
+    themeIndex = (themeIndex + 1) % themes.length;
+    runThemeSwap(() => writeThemeState(themeIndex));
     // syncSwatchSelection henüz tanımlanmamış olabilir (bu script, swatch
-    // kartını oluşturan script'ten önce çalışır), o yüzden varlığını kontrol
-    // ediyoruz; window üzerinden erişip çağırma zamanında referans alıyoruz.
+    // kartını oluşturan script'ten önce çalışır); varlığı çağrı anında kontrol edilir.
     if (typeof window.syncSwatchSelection === 'function') {
       window.syncSwatchSelection(themeIndex);
     }
-
     saveAppState({ theme: themeIndex, themeV3: true });
   };
 
   // Belirli bir tema index'ini doğrudan uygular (Sayfa 3'teki gradyana
-  // tıklanınca kullanılır). applyNextTheme ile aynı katman-geçiş mantığını
-  // kullanır, farkı sıradaki değil, seçilen temaya geçmesidir.
+  // tıklanınca, Ayarlar'dan ya da otomatik tema ile kullanılır).
   const applyTheme = (index) => {
     if (isThemeLocked(index)) return;
     if (index === themeIndex) return;
     themeIndex = index;
-    const theme = themes[themeIndex];
-
-    hiddenLayer.style.background = theme.gradient;
-    hiddenLayer.classList.add('is-visible');
-    visibleLayer.classList.remove('is-visible');
-
-    document.documentElement.style.setProperty('--theme-text', theme.text);
-    document.documentElement.style.setProperty('--theme-pure', themePureOf(theme.text));
-    document.documentElement.style.setProperty('--theme-ring', themePureOf(theme.text) === '#ffffff' ? '#ffffff' : '#272727');
-    document.documentElement.style.setProperty('--theme-bg', theme.color);
-    document.documentElement.style.setProperty('--weekend-color', theme.weekend);
-    applyThemeColors(theme);
-    refreshThemeColorMeta();
-
-    const temp = visibleLayer;
-    visibleLayer = hiddenLayer;
-    hiddenLayer = temp;
-
+    runThemeSwap(() => writeThemeState(themeIndex));
     saveAppState({ theme: themeIndex, themeV3: true });
   };
 </script>
