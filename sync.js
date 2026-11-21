@@ -75,15 +75,25 @@
   // diğer cihazda gereksiz "Yenile" çıkarmaz. Yalnızca hesaba bağlı cihazda geçerli.
   var userActed = false;
   // Yedek içe aktarma / "önceki veriyi geri getir" sonrası yenilenen sayfa: bu veri kullanıcı değişikliği sayılır ve buluta gider
-  try { if (localStorage.getItem('pace_force_push')) { userActed = true; localStorage.removeItem('pace_force_push'); } } catch (e) {}
+  // İşaret eşitleme kaydına (meta.forceAll) taşınır ve bulutla eşitleme BAŞARIYLA bitene kadar kalır: giriş yapılmamışsa
+  // ya da internet yoksa kaybolmaz. Bu sürede geri yüklenen veri "yerel yeni" sayılır, buluttaki eski veri onu ezmez;
+  // görsellerin "yüklendi" işaretleri de sıfırlanır (bulutta silinmiş olabilirler, yeniden yüklenir).
+  try {
+    if (localStorage.getItem('pace_force_push')) {
+      userActed = true; meta.forceAll = true; meta.imgUp = {}; meta.imgGone = {};
+      saveMeta(); localStorage.removeItem('pace_force_push');
+    }
+  } catch (e) {}
   ['pointerdown', 'touchstart', 'keydown'].forEach(function (ev) {
     window.addEventListener(ev, function () { userActed = true; }, { capture: true, passive: true });
   });
   function scan() {
-    var now = new Date().toISOString(), changed = false, absorb = !!meta.linked && !userActed;
+    var now = new Date().toISOString(), changed = false, absorb = !!meta.linked && !userActed && !meta.forceAll;
+    var force = !!meta.forceAll && !!meta.linked;   // geri yükleme: bu cihazdaki tüm alanlar buluta yeni sürüm olarak gider
     Object.keys(APP_STATE).forEach(function (k) {
       if (SKIP[k]) return;
       var hs = hash(APP_STATE[k]);
+      if (force) { meta.times[k] = now; meta.hashes[k] = hs; meta.dirty[k] = 1; changed = true; return; }
       if (meta.hashes[k] !== hs) {
         var known = Object.prototype.hasOwnProperty.call(meta.hashes, k);
         if (absorb && known) { meta.hashes[k] = hs; changed = true; return; }   // sessizce kabul et, gönderme
@@ -196,18 +206,26 @@
     var m = JSON.stringify(APP_STATE).match(/idb:\/\/[\w-]+/g) || [], seen = {};
     return m.map(function (x) { return x.slice(6); }).filter(function (id) { return seen[id] ? false : (seen[id] = true); });
   }
+  var imgRetry = 0;
   async function uploadImages() {
     var db = await imgDb(); if (!db) return;
     var local = {}; (await idbReq(db, 'readonly', function (s) { return s.getAllKeys(); }) || []).forEach(function (k) { local[k] = 1; });
-    var todo = imageRefs().filter(function (id) { return local[id] && !meta.imgUp[id]; });
+    var todo = imageRefs().filter(function (id) { return local[id] && !meta.imgUp[id]; }), failed = 0;
     for (var i = 0; i < todo.length; i++) {
       setStatus('Görseller yükleniyor (' + (i + 1) + '/' + todo.length + ')');
-      var blob = await idbReq(db, 'readonly', function (s) { return s.get(todo[i]); });
-      if (!blob) continue;
-      var r = await sb.storage.from('images').upload(uid + '/' + todo[i], blob, { contentType: blob.type || 'image/jpeg', upsert: false });
-      if (r.error && !(String(r.error.statusCode) === '409' || /already exists|duplicate/i.test(r.error.message || ''))) throw r.error;
-      meta.imgUp[todo[i]] = 1; saveMeta();
+      try {
+        var blob = await idbReq(db, 'readonly', function (s) { return s.get(todo[i]); });
+        if (!blob) continue;
+        var r = await sb.storage.from('images').upload(uid + '/' + todo[i], blob, { contentType: blob.type || 'image/jpeg', upsert: false });
+        if (r.error && !(String(r.error.statusCode) === '409' || /already exists|duplicate/i.test(r.error.message || ''))) throw r.error;
+        meta.imgUp[todo[i]] = 1; saveMeta();
+      } catch (e) {
+        if (/jwt|token|not authenticated|401/i.test((e && (e.message || e.code)) + '')) throw e;   // oturum sorunu: eşitleme hatası
+        failed++; console.warn('Görsel yüklenemedi, sonra tekrar denenecek:', todo[i], e);   // yalnızca bu görsel atlanır
+      }
     }
+    if (failed && imgRetry < 5) { imgRetry++; setTimeout(function () { schedule(500); }, 30000); }
+    else if (!failed) imgRetry = 0;
   }
   async function downloadImages() {
     var db = await imgDb(); if (!db) return false;
@@ -221,7 +239,13 @@
       meta.imgUp[todo[i]] = 1; got++;
     }
     if (got) saveMeta();
+    if (got < todo.length && imgRetry < 5) { imgRetry++; setTimeout(function () { schedule(500); }, 30000); }   // inemeyenler sonra tekrar denenir
     return got > 0;
+  }
+  // index.html: yedek / sıfırlama öncesi, yalnızca bulutta duran görselleri cihaza indirir
+  async function pullImages() {
+    if (!uid || wiping) return false;
+    try { return await downloadImages(); } catch (e) { console.warn('Görseller indirilemedi:', e); return false; }
   }
 
   // ---------- kullanılmayan görselleri depodan temizleme ----------
@@ -229,11 +253,39 @@
   // Güvenlik: bir dosya ilk kez "kullanılmıyor" görüldüğünde yalnızca işaretlenir; IMG_GRACE süre sonra hâlâ kullanılmıyorsa
   // silinir. Böylece "geri al" ve başka cihazın henüz kaydı gelmemiş yeni görseli yanlışlıkla silinmez.
   var IMG_GRACE = 10 * 60 * 1000, gcLast = 0, gcTimer = 0;
+  // "Önceki veriyi geri getir" kopyasında (IndexedDB 'pace_safety_v1') geçen görseller bulutta da korunur;
+  // aksi halde geri getirilen veri, bulutta silinmiş görsellerle diğer cihazlarda boş görünürdü.
+  function safetyImageIds() {
+    return new Promise(function (res, rej) {
+      try {
+        var r = indexedDB.open('pace_safety_v1', 1);
+        r.onupgradeneeded = function () { if (!r.result.objectStoreNames.contains('k')) r.result.createObjectStore('k'); };
+        r.onerror = function () { rej(r.error); };
+        r.onsuccess = function () {
+          var db = r.result, ids = {};
+          try {
+            var q = db.transaction('k').objectStore('k').get('last');
+            q.onsuccess = function () {
+              var snap = q.result;
+              if (snap) {
+                var m = JSON.stringify(snap.appState || {}).match(/idb:\/\/[\w-]+/g) || [];
+                m.forEach(function (x) { ids[x.slice(6)] = 1; });
+                (snap.images || []).forEach(function (e) { if (e && e.id) ids[e.id] = 1; });
+              }
+              db.close(); res(Object.keys(ids));
+            };
+            q.onerror = function () { db.close(); rej(q.error); };
+          } catch (e) { db.close(); res([]); }
+        };
+      } catch (e) { rej(e); }
+    });
+  }
   async function cleanCloudImages() {
     if (!uid || wiping || !meta.linked) return;
     if (Date.now() - gcLast < 60000) return;                 // art arda eşitlemelerde depoyu sürekli listeleme
     gcLast = Date.now();
     var used = {}; imageRefs().forEach(function (id) { used[id] = 1; });
+    try { (await safetyImageIds()).forEach(function (id) { used[id] = 1; }); } catch (se) { return; }   // güvenlik kopyası okunamadıysa hiçbir şey silinmez
     var names = [], off = 0;
     for (var n = 0; n < 50; n++) {                           // en fazla 5000 dosya
       var l = await sb.storage.from('images').list(uid, { limit: 100, offset: off });
@@ -329,7 +381,7 @@
       var ch = await pull();
       await uploadImages();                  // dosyalar, kayıttan ÖNCE yüklenir
       await push();
-      meta.linked = true; saveMeta();
+      meta.linked = true; delete meta.forceAll; saveMeta();
       var imgs = await downloadImages();
       try { await cleanCloudImages(); } catch (ge) { console.warn('Görsel temizliği atlandı:', ge); }   // hata eşitlemeyi bozmaz
       if ((ch && chKeys.some(function (k) { return k !== 'profile'; })) || imgs) {
@@ -446,7 +498,7 @@
       localStorage.removeItem(APP_STORAGE_KEY); localStorage.removeItem(META_KEY);
       sessionStorage.setItem('pace_sync_rl', '1'); location.reload(); return;
     }
-    if (wasWiped()) { meta = newMeta(id); sessionStorage.removeItem('pace_sync_rl'); }   // sıfırlanmış cihaz: bulut kazanır
+    if (!meta.forceAll && wasWiped()) { meta = newMeta(id); sessionStorage.removeItem('pace_sync_rl'); }   // sıfırlanmış cihaz: bulut kazanır
     uid = id; meta.uid = id; meta.signedOut = false; authState = 'in'; email = session.user.email || ''; stampEpoch(); saveMeta();
     setStatus('Bağlandı'); closeModal(); finishAuth();
     if (channel) sb.removeChannel(channel);
@@ -2172,7 +2224,7 @@ img.pa-mark{display:block;object-fit:cover;border-radius:23%;background:none;box
   mountSide();
   mountUpdate();
 
-  window.PaceSync = { syncNow: function () { return syncNow(false); }, wipeCloud: wipeCloud };
+  window.PaceSync = { syncNow: function () { return syncNow(false); }, wipeCloud: wipeCloud, pullImages: pullImages };
 })();
 
 /* Bağlantı bildirimi (sürüm 29): internet kesilince kırmızı, gelince yeşil Wi-Fi simgeli animasyonlu bildirim.

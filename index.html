@@ -57738,6 +57738,9 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
         //    aksi halde eşitleme bulut kopyasını geri yüklerdi ("silmiyor" hatası).
         const sync = window.PaceSync;
         if (sync && typeof sync.wipeCloud === 'function') {
+          // Yalnızca bulutta duran görseller silinmeden önce cihaza indirilir; "önceki veriyi geri getir" onları da içersin.
+          showAppToast('Görseller güvenlik için kontrol ediliyor…');
+          try { if (window.pullCloudImagesBestEffort) await window.pullCloudImagesBestEffort(); } catch (e) { /* yok say */ }
           const r = await sync.wipeCloud();
           if (!r || !r.ok) {
             showAppToast((r && r.msg) || 'Buluttaki veri silinemedi, hiçbir şey silinmedi.', 'error');
@@ -73643,20 +73646,45 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
     if (bd) bd.classList.remove('is-open');
   };
 
+  // Bulut hesabına bağlıysa, bu cihaza henüz inmemiş görselleri indirir (en çok 20 sn bekler).
+  // Yedek / sıfırlama öncesi çağrılır: yalnızca bulutta duran görseller yedeğe girmeden kaybolmasın.
+  const pullCloudImagesBestEffort = async () => {
+    try {
+      const sync = window.PaceSync;
+      if (sync && typeof sync.pullImages === 'function') {
+        await Promise.race([sync.pullImages(), new Promise((r) => setTimeout(r, 20000))]);
+      }
+    } catch (e) { /* yok say */ }
+  };
+
+  window.pullCloudImagesBestEffort = pullCloudImagesBestEffort;
+
   const exportBackup = async () => {
     try {
+      await pullCloudImagesBestEffort();
       const rawState = localStorage.getItem(APP_STORAGE_KEY);
       const appStateSnapshot = rawState ? JSON.parse(rawState) : {};
 
       const entries = await idbGetAllEntries();
       const images = {};
+      let imgFailed = 0;
       for (const { id, blob } of entries) {
         try {
           images[`idb://${id}`] = await blobToDataUrl(blob);
         } catch (err) {
+          imgFailed++;
           console.warn(`Görsel dışa aktarılamadı (idb://${id}):`, err);
         }
       }
+      // State'te referansı olup depoda bulunmayan görseller de say (yedekte eksik kalacaklar)
+      let imgMissing = 0;
+      try {
+        const have = new Set(entries.map((e) => e.id));
+        const m = JSON.stringify(appStateSnapshot).match(/idb:\/\/[\w-]+/g) || [];
+        imgMissing = [...new Set(m.map((x) => x.slice(6)))].filter((id) => !have.has(id)).length;
+      } catch (e) { /* yok say */ }
+      const imgProblem = imgFailed + imgMissing;
+      if (imgProblem) showAppToast(`${imgProblem} görsel yedeğe eklenemedi (cihazda bulunamadı).`, 'error');
 
       const payload = {
         schemaVersion: APP_SCHEMA_VERSION,
@@ -73685,7 +73713,7 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
       }
       downloadBackupFile(json, fileName);
 
-      showAppToast('Yedek indirildi');
+      if (!imgProblem) showAppToast('Yedek indirildi');
       return true;
     } catch (err) {
       console.warn('Yedek dışa aktarılamadı:', err);
@@ -73713,35 +73741,108 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
     return payload;
   };
 
+  // ---- Geri yükleme ortak yardımcıları ----
+  // State içindeki tüm "idb://<id>" görsel kimliklerini döndürür.
+  const collectImageIds = (state) => {
+    try {
+      const m = JSON.stringify(state).match(/idb:\/\/[\w-]+/g) || [];
+      return [...new Set(m.map((x) => x.slice('idb://'.length)))];
+    } catch (e) { return []; }
+  };
+  // State'te referansı olup cihazın görsel deposunda bulunmayanlar.
+  const findMissingImages = async (state) => {
+    const missing = [];
+    for (const id of collectImageIds(state)) {
+      let blob = null;
+      try { blob = await idbGetImageBlob(id); } catch (e) { /* yok say */ }
+      if (!blob) missing.push(id);
+    }
+    return missing;
+  };
+  // Eşitleme çağı (epoch): geri yüklenen veride kalırsa sync.js cihazı "sıfırlanmış" sanıp
+  // buluttaki eski veriyle ezebiliyordu; bu yüzden cihazın mevcut çağı korunur.
+  const currentSyncEpoch = () => {
+    try { const m = JSON.parse(localStorage.getItem('pace_sync_meta_v1')); return (m && m.epoch) || null; } catch (e) { return null; }
+  };
+  // Durumu localStorage'a yazar ve yazılanı geri okuyup doğrular; olmazsa hata fırlatır (eski veri yerinde kalır).
+  const writeStateVerified = (state) => {
+    const prevRaw = localStorage.getItem(APP_STORAGE_KEY);
+    const json = JSON.stringify(state);
+    try {
+      localStorage.setItem(APP_STORAGE_KEY, json);
+      if (localStorage.getItem(APP_STORAGE_KEY) !== json) throw new Error('Yazılan veri doğrulanamadı');
+    } catch (err) {
+      try { if (prevRaw !== null) localStorage.setItem(APP_STORAGE_KEY, prevRaw); } catch (e2) { /* yok say */ }
+      throw err;
+    }
+  };
+  // Görsel listesini (id -> Blob/dataURL) depoya yazar; başarısız olanların sayısını döndürür.
+  const putImagesVerified = async (items) => {
+    let failed = 0;
+    for (const { id, get } of items) {
+      let ok = false;
+      try { ok = await idbPutImageBlobWithId(id, await get()); } catch (err) { console.warn(`Görsel geri yüklenemedi (${id}):`, err); }
+      if (!ok) failed++;
+    }
+    return failed;
+  };
+  let restoreBusy = false;
+
   // Doğrulanmış yedeği uygular: görselleri geri yükler, mevcut tüm veriyi
   // yedektekiyle DEĞİŞTİRİR ve sayfayı yeniden yükler. Bu fonksiyon veriyi
   // doğrudan ezdiği için, çağıran kod önce farkları denetleyip (bkz.
   // analyzeBackupDiff) gerekirse kullanıcıdan onay almış olmalıdır.
+  // Güvenlik sırası: (1) mevcut veri güvenlik kopyasına alınır, (2) görseller yazılır ve doğrulanır,
+  // (3) yalnızca ikisi de başarılıysa veri değiştirilir. Herhangi bir adım başarısız olursa
+  // cihazdaki veriye hiç dokunulmaz.
   const applyBackupPayload = async (payload) => {
+    if (restoreBusy) return false;
+    restoreBusy = true;
+    let reloading = false;
     try {
-      try { if (window.savePaceSafety) await window.savePaceSafety(); } catch (e) { /* yok say */ }
+      const saved = await window.savePaceSafety();   // true: saklandı, null: saklanacak veri yok, false: BAŞARISIZ
+      if (saved === false) {
+        showAppToast('Mevcut verin güvenlik için saklanamadı (depolama dolu olabilir). Hiçbir şey değiştirilmedi.', 'error');
+        return false;
+      }
+
       const images = payload.images && typeof payload.images === 'object' ? payload.images : {};
-      for (const [ref, dataUrl] of Object.entries(images)) {
-        if (!ref.startsWith('idb://') || typeof dataUrl !== 'string') continue;
-        const id = ref.slice('idb://'.length);
-        try {
-          const blob = await dataUrlToBlob(dataUrl);
-          await idbPutImageBlobWithId(id, blob);
-        } catch (err) {
-          console.warn(`Görsel geri yüklenemedi (${ref}):`, err);
-        }
+      const items = Object.entries(images)
+        .filter(([ref, dataUrl]) => ref.startsWith('idb://') && typeof dataUrl === 'string')
+        .map(([ref, dataUrl]) => ({ id: ref.slice('idb://'.length), get: () => dataUrlToBlob(dataUrl) }));
+      const failed = await putImagesVerified(items);
+      if (failed) {
+        showAppToast(`${failed} görsel geri yüklenemedi (depolama dolu olabilir). Hiçbir şey değiştirilmedi.`, 'error');
+        return false;
       }
 
       const restoredState = { ...payload.appState, schemaVersion: APP_SCHEMA_VERSION, updatedAt: new Date().toISOString() };
-      localStorage.setItem(APP_STORAGE_KEY, JSON.stringify(restoredState));
+      const ep = currentSyncEpoch(); if (ep) restoredState._paceEpoch = ep;
+      const missing = await findMissingImages(restoredState);
+
+      window.__appWiping = true;   // yenilenene kadar bellekteki eski durum geri yazılıp yedeği ezmesin
+      try {
+        writeStateVerified(restoredState);
+      } catch (err) {
+        window.__appWiping = false;
+        throw err;
+      }
       try { localStorage.setItem('pace_force_push', '1'); } catch (e) { /* yok say */ }   // sync.js: yenilenince bu veri buluta da gitsin
-      showAppToast('Yedek geri yüklendi, uygulama yenileniyor…');
-      setTimeout(() => location.reload(), 700);
+      reloading = true;
+      if (missing.length) {
+        showAppToast(`Yedek geri yüklendi. ${missing.length} görsel yedekte yoktu; bulutta varsa eşitlenince inecek.`, 'error');
+        setTimeout(() => location.reload(), 2600);
+      } else {
+        showAppToast('Yedek geri yüklendi, uygulama yenileniyor…');
+        setTimeout(() => location.reload(), 700);
+      }
       return true;
     } catch (err) {
       console.warn('Yedek içe aktarılamadı:', err);
-      showAppToast('Yedek geri yüklenemedi. Depolama alanı dolu olabilir.', 'error');
+      showAppToast('Yedek geri yüklenemedi. Depolama alanı dolu olabilir. Verin değişmedi.', 'error');
       return false;
+    } finally {
+      if (!reloading) restoreBusy = false;
     }
   };
 
@@ -73958,13 +74059,20 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
     });
   };
   // Cihazda gerçek kullanıcı verisi yoksa (boş/yeni cihaz) kaydedilmez: eski güvenlik kopyası boşla ezilmesin.
+  // Mevcut durumun (veri + görseller) kopyasını bellekte hazırlar; saklanacak bir şey yoksa null döner.
+  const makeSafetySnapshot = async () => {
+    const raw = localStorage.getItem(APP_STORAGE_KEY); if (!raw) return null;
+    const appState = JSON.parse(raw);
+    if (!analyzeBackupDiff(appState, {}).hasLoss) return null;
+    const images = await idbGetAllEntries();
+    return { ts: Date.now(), appState, images };
+  };
+  // Dönüş: true = saklandı, null = saklanacak veri yok, false = saklanamadı (hata)
   window.savePaceSafety = async () => {
     try {
-      const raw = localStorage.getItem(APP_STORAGE_KEY); if (!raw) return false;
-      const appState = JSON.parse(raw);
-      if (!analyzeBackupDiff(appState, {}).hasLoss) return false;
-      const images = await idbGetAllEntries();
-      return await safetyPut({ ts: Date.now(), appState, images });
+      const snap = await makeSafetySnapshot();
+      if (!snap) return null;
+      return (await safetyPut(snap)) ? true : false;
     } catch (err) { console.warn('Güvenlik kopyası alınamadı:', err); return false; }
   };
   const safetyAgo = (ts) => {
@@ -73978,24 +74086,62 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
     const d = document.getElementById('settingsSafetyDesc');
     if (d && snap && snap.ts) d.textContent = `Son sıfırlama ya da geri yüklemeden önceki veri · ${safetyAgo(snap.ts)}`;
   };
+  // Önceki veriyi geri getirir. Güvenlik sırası: (1) kopyadaki görseller yazılıp doğrulanır,
+  // (2) şu anki veri kopya yuvasına alınır (yer değiştirme; asıl kopya bellekte durur),
+  // (3) veri yazılır. Yazma başarısız olursa asıl kopya yuvasına geri konur: hiçbir şey kaybolmaz.
   const restoreSafety = async () => {
+    if (restoreBusy) return false;
+    restoreBusy = true;
+    let reloading = false;
     try {
       const snap = await safetyGet();
       if (!snap || !snap.appState) { showAppToast('Geri getirilecek önceki veri bulunamadı.', 'error'); return false; }
-      await window.savePaceSafety();   // şu anki veri de saklanır (yer değiştirme); snap zaten bellekte
-      for (const { id, blob } of (snap.images || [])) { try { await idbPutImageBlobWithId(id, blob); } catch (e) { /* tek görsel atlanır */ } }
-      window.__appWiping = true;       // yenilenene kadar eski bellek durumu geri yazılmasın
+
+      const failed = await putImagesVerified((snap.images || []).map(({ id, blob }) => ({ id, get: async () => blob })));
+      if (failed) {
+        showAppToast(`${failed} görsel geri getirilemedi (depolama dolu olabilir). Hiçbir şey değiştirilmedi.`, 'error');
+        return false;
+      }
+
+      let swapped = false;
+      const cur = await makeSafetySnapshot();
+      if (cur) {
+        if (!(await safetyPut(cur))) {
+          showAppToast('Şu anki verin saklanamadı. Hiçbir şey değiştirilmedi.', 'error');
+          return false;
+        }
+        swapped = true;
+      }
+
       const restored = { ...snap.appState, schemaVersion: APP_SCHEMA_VERSION, updatedAt: new Date().toISOString() };
-      localStorage.setItem(APP_STORAGE_KEY, JSON.stringify(restored));
+      const ep = currentSyncEpoch(); if (ep) restored._paceEpoch = ep;
+      const missing = await findMissingImages(restored);
+
+      window.__appWiping = true;       // yenilenene kadar eski bellek durumu geri yazılmasın
+      try {
+        writeStateVerified(restored);
+      } catch (err) {
+        window.__appWiping = false;
+        if (swapped) { try { await safetyPut(snap); } catch (e) { /* yok say */ } }   // asıl kopyayı yerine koy
+        throw err;
+      }
       try { localStorage.setItem('pace_force_push', '1'); } catch (e) { /* yok say */ }
-      showAppToast('Önceki veri geri getirildi, uygulama yenileniyor…');
-      setTimeout(() => location.reload(), 700);
+      reloading = true;
+      if (missing.length) {
+        showAppToast(`Önceki veri geri getirildi. ${missing.length} görsel bulunamadı; bulutta varsa eşitlenince inecek.`, 'error');
+        setTimeout(() => location.reload(), 2600);
+      } else {
+        showAppToast('Önceki veri geri getirildi, uygulama yenileniyor…');
+        setTimeout(() => location.reload(), 700);
+      }
       return true;
     } catch (err) {
       window.__appWiping = false;
       console.warn('Önceki veri geri getirilemedi:', err);
-      showAppToast('Önceki veri geri getirilemedi. Depolama alanı dolu olabilir.', 'error');
+      showAppToast('Önceki veri geri getirilemedi. Depolama alanı dolu olabilir. Verin değişmedi.', 'error');
       return false;
+    } finally {
+      if (!reloading) restoreBusy = false;
     }
   };
   {
@@ -79756,7 +79902,7 @@ body #page-camera #qhavuzCanvasSelectBtn.is-active{background:var(--m-t);color:v
   })();
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" crossorigin="anonymous"></script>
-<script src="sync.js?v=45"></script>
+<script src="sync.js?v=46"></script>
 <style id="subjectsCss">
 /* ==========================================================================
    Ayarlar > Ders Listesi (#page-subjects) — tema duyarlı, mobil ve masaüstü ayrı optimize
