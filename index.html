@@ -64656,7 +64656,10 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
         }
         cell.addEventListener('click', () => {
           selectPage11DateCell(cell, cellDate);
-          closePage11DatePicker();
+          // Seçim balonu/tarih metni güncellenirken aynı anda geri kayma
+          // başlamasın: kısa bir an bekleyip forma dön.
+          clearTimeout(page11DateCloseTimer);
+          page11DateCloseTimer = setTimeout(closePage11DatePicker, 170);
         });
       }
 
@@ -64687,11 +64690,19 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
     page11DateViewYear = page11SelectedDate.getFullYear();
     page11DateViewMonth = page11SelectedDate.getMonth();
     renderPage11DateGrid();
-    page11AddBackdrop.classList.add('is-date-view');
     page11ExamDateBtn.setAttribute('aria-expanded', 'true');
+    // Izgara (42 hücre) çizildikten sonra bir kare bekle; yerleşim/ölçüm işi
+    // kayma animasyonuyla aynı karede yapılmasın (takılmayı önler).
+    requestAnimationFrame(() => {
+      if (page11ExamDateBtn.getAttribute('aria-expanded') === 'true') {
+        page11AddBackdrop.classList.add('is-date-view');
+      }
+    });
   };
 
+  let page11DateCloseTimer = 0;
   const closePage11DatePicker = () => {
+    clearTimeout(page11DateCloseTimer);
     page11AddBackdrop.classList.remove('is-date-view');
     page11ExamDateBtn.setAttribute('aria-expanded', 'false');
   };
@@ -64834,6 +64845,8 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
     page11AddConfirmBtn.textContent = 'Ekle';
     syncPage11ConfirmState();
     page11AddBackdrop.classList.add('is-open');
+    // Dokunuşun içinde odaklanınca klavye hemen açılır (yalnızca yeni deneme).
+    try { page11ExamNameInput.focus({ preventScroll: true }); } catch (e) { page11ExamNameInput.focus(); }
   };
 
   // Deneme adı boşken Ekle/Kaydet butonu pasif (soluk) kalır, ad yazılınca açılır.
@@ -79205,6 +79218,28 @@ html #page11AddBackdrop .page11-modal-confirm:disabled{
   color:rgba(255,255,255,.34);
   cursor:not-allowed;
   transform:none;
+}
+</style>
+<style id="p11AddModalPerfCss">
+/* "Yeni Deneme" paneli akıcılığı:
+   - Kartın gölgesi form ve takvim görünümünde aynı; böylece geçişte büyük
+     bulanık gölge her karede yeniden çizilmiyor (eskiden gölge animasyonluydu).
+   - Kart yüzeyi/gölgesi için geçiş kapatıldı (renk zaten aynı siyah).
+   - Arkadaki 2px bulanıklık (backdrop-filter) bu pop-up'ta kapatıldı; hemen
+     hemen görünmez ama tablette her karede ek maliyet getiriyordu.
+   GERİ ALMAK İÇİN: bu <style> bloğunu silmek yeterli. */
+html #page11AddBackdrop{
+  -webkit-backdrop-filter:none;
+  backdrop-filter:none;
+}
+html #page11AddBackdrop .page11-modal-card,
+html #page11AddBackdrop.is-date-view .page11-modal-card{
+  box-shadow:0 28px 60px -18px rgba(0,0,0,.55),0 2px 10px 0 rgba(0,0,0,.3);
+  transition:transform .26s cubic-bezier(.34,1.56,.64,1),opacity .22s ease;
+}
+html #page11AddBackdrop .page11-add-panel{
+  backface-visibility:hidden;
+  transition:transform .34s cubic-bezier(.32,.72,0,1),opacity .24s ease;
 }
 </style>
 <style id="qhavuzDesktopBtnStyle">
