@@ -74,8 +74,6 @@
   // varsayılan alan ekleme, yeniden hesaplama vb.) gerçek değişiklik sayılmaz: buluta gönderilmez,
   // diğer cihazda gereksiz "Yenile" çıkarmaz. Yalnızca hesaba bağlı cihazda geçerli.
   var userActed = false;
-  // Yedek içe aktarma / "önceki veriyi geri getir" sonrası yenilenen sayfa: bu veri kullanıcı değişikliği sayılır ve buluta gider
-  try { if (localStorage.getItem('pace_force_push')) { userActed = true; localStorage.removeItem('pace_force_push'); } } catch (e) {}
   ['pointerdown', 'touchstart', 'keydown'].forEach(function (ev) {
     window.addEventListener(ev, function () { userActed = true; }, { capture: true, passive: true });
   });
@@ -114,8 +112,7 @@
     if (ts(r.updated_at) <= ts(meta.resetSeen)) return false;
     if (r.device_id === getOrCreateDeviceId() || !meta.linked) { meta.resetSeen = r.updated_at; saveMeta(); return false; }
     wiping = true; clearTimeout(pushT); pushT = null; clearTimeout(scanT); scanT = 0;
-    try { pcToast('Başka cihazdan sıfırlandı'); } catch (e0) {}
-    try { if (window.savePaceSafety) await window.savePaceSafety(); } catch (e5) {}   // "Önceki veriyi geri getir" için
+    try { pcToast('Başka cihazdan sıfırlandı. Veriler siliniyor…'); } catch (e0) {}
     try {
       if (window.wipeLocalAppData) await window.wipeLocalAppData();
       else { localStorage.removeItem(APP_STORAGE_KEY); localStorage.removeItem(BACKUP_KEY); localStorage.removeItem(BACKUP_KEY + '_son'); }
@@ -1077,7 +1074,7 @@ body.is-qhavuz-test-open .pf-side{opacity:.35;pointer-events:none}}
 .pf-pend button{flex:none;border:0;background:none;color:var(--pc);font-size:12.5px;font-weight:700;cursor:pointer;padding:4px;white-space:nowrap}
 .pf-pend button:disabled{opacity:.5}
 @keyframes pcT{0%{opacity:0;transform:translate(-50%,-16px)}10%,86%{opacity:1;transform:translate(-50%,0)}100%{opacity:0;transform:translate(-50%,-10px)}}
-#pcToast{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 14px);z-index:2147483020;width:max-content;max-width:calc(100vw - 32px);box-sizing:border-box;padding:11px 18px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.3;border-radius:999px;background:var(--theme-text,#121212);color:var(--theme-bg,#fff);font-size:14.5px;font-weight:600;text-align:center;box-shadow:0 12px 30px rgba(0,0,0,.3);animation:pcT 3.4s ease both;pointer-events:none}
+#pcToast{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 14px);z-index:2147483020;max-width:calc(100% - 32px);box-sizing:border-box;padding:11px 18px;border-radius:999px;background:var(--theme-text,#121212);color:var(--theme-bg,#fff);font-size:14.5px;font-weight:600;text-align:center;box-shadow:0 12px 30px rgba(0,0,0,.3);animation:pcT 3.4s ease both;pointer-events:none}
 @media (prefers-reduced-motion:reduce){#pcToast{animation-duration:3.4s}}
 @media (prefers-reduced-motion:reduce){#pwBody,#pwBody>*,.pw-ico,.pw-ico *,.pw-steps i::after{animation:none!important;transition:none!important}.pw-ico.ok path{stroke-dashoffset:0}}
 `;
