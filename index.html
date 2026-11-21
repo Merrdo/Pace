@@ -64854,6 +64854,14 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
     page11AddConfirmBtn.disabled = !page11ExamNameInput.value.trim();
   };
   page11ExamNameInput.addEventListener('input', syncPage11ConfirmState);
+  // Klavyedeki Enter/Git tuşu: klavyeyi kapatır (formu göndermez).
+  page11ExamNameInput.setAttribute('enterkeyhint', 'done');
+  page11ExamNameInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      page11ExamNameInput.blur();
+    }
+  });
 
   // Var olan bir denemenin adını/tarihini düzenlemek için aynı pop-up'ı
   // "düzenleme" moduna alır. Tür bilgisi sonradan değiştirilemez; segmented
