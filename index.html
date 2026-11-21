@@ -8,6 +8,13 @@
 <!-- PWA: manifest ve tema rengi -->
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#F6F4EF">
+<!-- Uygulama modunda sayfa durum çubuğunun (saat/çentik) altına kadar uzanır: üst şerit sayfanın kendi pikselleri olur,
+     pop-up karartması ve renk geçişleri onu da aynı anda kaplar. Saat yazısı rengi color-scheme ile temaya göre seçilir
+     (bkz. syncStatusBarScheme). Tarayıcı sekmesinde theme-color kullanılmaya devam eder. -->
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="color-scheme" content="light">
 
 <!-- Favicon ve uygulama ikonları -->
 <link rel="icon" href="icons/favicon.ico" sizes="any">
@@ -46165,8 +46172,22 @@ body.is-anthracite .exam-q-info-count { color: #f2f2f4; }
   };
 
   const openThemeBackdrops = new Set();
+  // Durum çubuğu yazısı (saat, pil) black-translucent modunda color-scheme'e göre açık/koyu seçilir:
+  // koyu zeminde beyaz, açık zeminde siyah. Parlaklık eşiği uygulamanın diğer yerleriyle aynı (YIQ >= 150 = açık).
+  const syncStatusBarScheme = (hex) => {
+    try {
+      const m = /^#?([0-9a-f]{6})$/i.exec(String(hex || '')); if (!m) return;
+      const n = parseInt(m[1], 16);
+      const yiq = (((n >> 16) & 255) * 299 + ((n >> 8) & 255) * 587 + (n & 255) * 114) / 1000;
+      let meta = document.querySelector('meta[name="color-scheme"]');
+      if (!meta) { meta = document.createElement('meta'); meta.name = 'color-scheme'; document.head.appendChild(meta); }
+      const v = yiq >= 150 ? 'light' : 'dark';
+      if (meta.content !== v) meta.content = v;
+    } catch (e) { /* yok say */ }
+  };
   const refreshThemeColorMeta = () => {
     const baseColor = themes[themeIndex].color;
+    syncStatusBarScheme(baseColor);
     if (openThemeBackdrops.size === 0) {
       updateThemeColorMeta(baseColor);
       return;
