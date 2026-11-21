@@ -78971,6 +78971,68 @@ body .wheel-color-backdrop.is-open .wheel-color-card{transform:none;opacity:1}
 }
 @media (prefers-reduced-motion:reduce){#page-11.page *{animation:none !important}}
 </style>
+<style id="p11FitCss">
+/* =====================================================================
+   Denemelerim (BÜYÜK EKRAN) · tam ekran OLMAYAN görünümde de sığsın
+   Tablet tarayıcıda adres çubuğu vb. görünür yüksekliği düşürünce sağ
+   analiz sütunu (Genel Performans / Hata Analizi / Net Trend) sığmayıp
+   kendi içinde kayıyordu. Burada yalnızca görünür yükseklik azaldığında
+   (<=860px) devreye giren, vh tabanlı sıkılaştırma var: içerik biraz
+   yukarı alınır, boşluklar/halka/grafik yüksekliğe göre küçülür, sütun
+   artık kaymaz. Yükseklik >860px (tam ekran) ise HİÇBİR ŞEY değişmez.
+   GERİ ALMAK İÇİN: bu <style> bloğunu silmek yeterli.
+   ===================================================================== */
+@media (min-width:768px) and (min-height:600px) and (max-height:860px){
+  #page-11.page{
+    padding-top:calc(clamp(18px,3.2vh,30px) + env(safe-area-inset-top));
+    padding-bottom:calc(clamp(10px,1.8vh,18px) + env(safe-area-inset-bottom));
+  }
+  #page-11.page .page11-canvas{gap:clamp(1.2rem,2.6vw,2rem)}
+
+  /* Sağ sütun: kaymaz, kutunun yüksekliğine sığar; kalan boşluğu Net Trend alır */
+  #page-11.page .page11-canvas-side{
+    align-self:stretch;
+    overflow:visible;
+    gap:clamp(.55rem,2vh,1.6rem);
+  }
+  #page-11.page .page11-canvas-side-divider{flex:0 0 auto}
+  #page-11.page .page11-perf-section,
+  #page-11.page .page11-mistake-section{flex:0 0 auto}
+
+  /* Genel Performans */
+  #page-11.page .page11-perf-section{gap:clamp(.4rem,1.5vh,.9rem)}
+  #page-11.page .page11-perf-donut-wrap{width:clamp(88px,15.5vh,128px);height:clamp(88px,15.5vh,128px)}
+  #page-11.page .page11-perf-side-stats{gap:clamp(.4rem,1.5vh,.95rem)}
+
+  /* Hata Analizi */
+  #page-11.page .page11-mistake-section{gap:clamp(.45rem,1.5vh,1rem)}
+  #page-11.page .page11-mistake-chart{gap:clamp(.35rem,1.1vh,.7rem)}
+
+  /* Net Trend: kalan alanı doldurur, gerekirse küçülür */
+  #page-11.page .page11-nettrend-section{
+    min-height:0;
+    gap:clamp(.4rem,1.3vh,.85rem);
+  }
+  #page-11.page .page11-nettrend-chart-wrap,
+  #page-11.page .page11-nettrend-chart{min-height:4.2rem}
+}
+</style>
+<style id="p11TrendRatioCss">
+/* Net Trend grafiği SVG'si preserveAspectRatio="none" ile çizildiği için,
+   kutu viewBox oranından (300:130) daha uzun olursa eksen yazıları (%60, 21.9)
+   dikeyde esniyordu. Kutu artık her zaman viewBox oranında kalır; yazılar
+   normal oranında görünür. Kalan boşluk kartın altında boş kalır. */
+@media (min-width:768px) and (min-height:600px){
+  #page-11.page .page11-nettrend-section{flex:0 0 auto}
+  #page-11.page .page11-nettrend-chart-wrap{
+    flex:0 0 auto;
+    height:auto;
+    min-height:0;
+    aspect-ratio:300/130;
+  }
+  #page-11.page .page11-nettrend-chart{height:100%;min-height:0}
+}
+</style>
 <style id="qhavuzDesktopBtnStyle">
 /* =====================================================================
    Soru Havuzu (BÜYÜK EKRAN) · Kaynaklarım, Test Oluştur, Paketlerim, Soru Ekle
