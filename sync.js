@@ -6,7 +6,8 @@
   var SUPABASE_KEY = 'sb_publishable_vooRR4tCBcpl1Cpn7arj1g_wAQB6ByB';
   var META_KEY = 'pace_sync_meta_v1';
   var BACKUP_KEY = 'pace_pre_sync_backup_v1';
-  var SKIP = { updatedAt: 1, schemaVersion: 1, page: 1, _paceEpoch: 1 };          // cihaza özel alanlar
+  var SKIP = { updatedAt: 1, schemaVersion: 1, page: 1, _paceEpoch: 1, _paceReset: 1 };          // cihaza özel alanlar
+  var RESET_ID = '_paceReset';                                       // buluttaki "sıfırlama işareti" kaydı (kind='state', deleted=true)
   var UNION = { stopwatchLogs: 1, stopwatchSubjectLogs: 1 };       // çakışmada anahtar bazlı birleştirilir
 
   if (!window.supabase || typeof APP_STATE === 'undefined' || typeof saveAppState === 'undefined') {
@@ -100,6 +101,28 @@
       localStorage.setItem(BACKUP_KEY + '_son', cur);
     } catch (e) {}
   }
+  // ---------- başka cihazdan "Tüm verileri sıfırla" ----------
+  // Bir cihaz sıfırlayınca bulutta bir "sıfırlama işareti" (zamanıyla) bırakır. Başka cihaz eşitlenirken bu işareti
+  // kendi bildiğinden yeni görürse yerel verisini BİRLEŞTİRMEDEN siler; böylece eski veri buluta geri yüklenmez.
+  // Hesaba hiç bağlanmamış (meta.linked yok) cihaz silinmez: eski bir işaret yeni girişi etkilemesin.
+  async function checkReset() {
+    var q = await sb.from('sync_records').select('id,updated_at,device_id').eq('kind', 'state').eq('id', RESET_ID).limit(1);
+    if (q.error) throw q.error;
+    var r = q.data && q.data[0]; if (!r) return false;
+    if (ts(r.updated_at) <= ts(meta.resetSeen)) return false;
+    if (r.device_id === getOrCreateDeviceId() || !meta.linked) { meta.resetSeen = r.updated_at; saveMeta(); return false; }
+    wiping = true; clearTimeout(pushT); pushT = null; clearTimeout(scanT); scanT = 0;
+    try { pcToast('Başka cihazdan sıfırlandı. Veriler siliniyor…'); } catch (e0) {}
+    try {
+      if (window.wipeLocalAppData) await window.wipeLocalAppData();
+      else { localStorage.removeItem(APP_STORAGE_KEY); localStorage.removeItem(BACKUP_KEY); localStorage.removeItem(BACKUP_KEY + '_son'); }
+    } catch (e1) { console.warn('Yerel veri silinemedi:', e1); }
+    meta = newMeta(uid); meta.imgUp = {}; meta.resetSeen = r.updated_at; saveMeta();   // hesaba bağlı kalır, bulut (boş/yeni) hâli indirilir
+    try { sessionStorage.removeItem('pace_sync_rl'); } catch (e2) {}
+    setTimeout(function () { location.reload(); }, 1200);
+    return true;   // wiping açık kalır: sayfa yenilenecek
+  }
+
   // ---------- çekme ----------
   async function pull() {
     chKeys = [];
@@ -273,18 +296,22 @@
       if (meta.uid) return { ok: false, msg: 'Buluttaki verin de silinsin diye önce hesabına giriş yap.' };
       return { ok: true };   // hesapsız cihaz: yalnızca yerel veri var
     }
-    var id = uid;
+    var id = uid, markerAt = '';
     wiping = true; clearTimeout(pushT); pushT = null; clearTimeout(scanT); scanT = 0;
     try {
       for (var w = 0; busy && w < 100; w++) await new Promise(function (r) { setTimeout(r, 100); });   // süren eşitleme bitsin
       await delCloudImages(id);
       await delCloudRows(id);
+      // Sıfırlama işareti: diğer cihazlar bunu görünce kendi yerel verilerini siler (deleted:true: eski sürümler yok sayar)
+      markerAt = new Date().toISOString();
+      var mk = await sb.from('sync_records').upsert([{ user_id: id, kind: 'state', id: RESET_ID, data: { v: null }, updated_at: markerAt, deleted: true, device_id: getOrCreateDeviceId() }], { onConflict: 'user_id,kind,id' });
+      if (mk.error) throw mk.error;
     } catch (e) {
       console.warn('Bulut verisi silinemedi:', e);
       wiping = false; schedule(1500);
       return { ok: false, msg: 'Buluttaki veri silinemedi, hiçbir şey silinmedi. İnternet bağlantını kontrol edip tekrar dene.' };
     }
-    meta = newMeta(id); meta.imgUp = {}; saveMeta();   // eşitleme kaydı sıfırlanır; cihaz hesaba bağlı kalır
+    meta = newMeta(id); meta.imgUp = {}; meta.resetSeen = markerAt; saveMeta();   // eşitleme kaydı sıfırlanır; cihaz hesaba bağlı kalır
     try { sessionStorage.removeItem('pace_sync_rl'); } catch (e2) {}
     return { ok: true };   // wiping açık kalır: sayfa hemen yenilenecek
   }
@@ -294,6 +321,7 @@
     if (busy) { again = true; return; }
     busy = true; syncState = 'busy'; stat = { down: 0, up: 0 }; setStatus('Eşitleniyor…');
     try {
+      if (await checkReset()) { busy = false; return; }   // başka cihazdan sıfırlandıysa yerel veri gönderilmeden silinir
       scan();
       var ch = await pull();
       await uploadImages();                  // dosyalar, kayıttan ÖNCE yüklenir
