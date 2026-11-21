@@ -19905,6 +19905,12 @@
     }
 
     .settings-danger-btn,
+    /* Güvenlik kopyası yokken 'Geri Getir' pasif görünür (satır gizlenmez). */
+    .settings-outline-btn:disabled {
+      opacity: 0.4;
+      pointer-events: none;
+    }
+
     .settings-outline-btn {
       padding: 0.85rem 1.6rem;
       font-size: 0.98rem;
@@ -41226,14 +41232,14 @@ body.is-anthracite .exam-q-info-count { color: #f2f2f4; }
             <input type="file" id="settingsImportFileInput" class="qhavuz-file-input" accept="application/json,.json">
           </div>
 
-          <div id="settingsSafetyWrap" hidden>
+          <div id="settingsSafetyWrap">
             <div class="settings-divider"></div>
             <div class="settings-row">
               <div class="settings-row-text">
                 <span class="settings-row-title">Önceki veriyi geri getir</span>
-                <span class="settings-row-desc" id="settingsSafetyDesc">Son sıfırlama ya da geri yüklemeden önceki veri</span>
+                <span class="settings-row-desc" id="settingsSafetyDesc">Henüz önceki veri yok. Sıfırlama ya da yedek yüklemeden önce otomatik saklanır.</span>
               </div>
-              <button type="button" class="settings-outline-btn" id="settingsSafetyBtn">Geri Getir</button>
+              <button type="button" class="settings-outline-btn" id="settingsSafetyBtn" disabled>Geri Getir</button>
             </div>
           </div>
 
@@ -74049,9 +74055,14 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
   const paintSafetyRow = async () => {
     const wrap = document.getElementById('settingsSafetyWrap'); if (!wrap) return;
     const snap = await safetyGet();
-    wrap.hidden = !(snap && snap.appState);
+    const has = !!(snap && snap.appState);
+    wrap.hidden = false;   // satır her zaman görünür; kopya yoksa pasif + açıklamalı
+    const b = document.getElementById('settingsSafetyBtn');
+    if (b) b.disabled = !has;
     const d = document.getElementById('settingsSafetyDesc');
-    if (d && snap && snap.ts) d.textContent = `Son sıfırlama ya da geri yüklemeden önceki veri · ${safetyAgo(snap.ts)}`;
+    if (d) d.textContent = has && snap.ts
+      ? `Son sıfırlama ya da geri yüklemeden önceki veri · ${safetyAgo(snap.ts)}`
+      : 'Henüz önceki veri yok. Sıfırlama ya da yedek yüklemeden önce otomatik saklanır.';
   };
   const restoreSafety = async () => {
     try {
@@ -74092,6 +74103,8 @@ body.wn2-menu-open .stopwatch-lap-btn,body.wn2-menu-open .stopwatch-fullscreen-h
     const bb = document.getElementById('backupShareBackdrop');
     if (bb) bb.addEventListener('click', (e) => { if (e.target === bb) closeBackupShare(); });
     paintSafetyRow();
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) paintSafetyRow(); });
+    window.addEventListener('pageshow', () => { paintSafetyRow(); });
   }
 
 
